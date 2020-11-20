@@ -10,6 +10,7 @@ from .gen_utils import (
     jupyter_check,
     safe_repr,
     _convert_woodwork_types_wrapper,
+    _convert_to_woodwork_structure,
     drop_rows_with_nans,
     pad_with_nans
 )

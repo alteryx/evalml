@@ -1,8 +1,9 @@
-import pandas as pd
-
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
-from evalml.utils.gen_utils import boolean, categorical_dtypes, numeric_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class Imputer(Transformer):
@@ -62,19 +63,22 @@ class Imputer(Transformer):
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        cat_cols = list(X.select('category').columns)
+        numeric_cols = list(X.select('numeric').columns)
+
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         X_copy = X.copy()
         X_null_dropped = X_copy.drop(self._all_null_cols, axis=1, errors='ignore')
 
-        X_numerics = X_null_dropped.select_dtypes(include=numeric_dtypes)
+        X_numerics = X_null_dropped[[col for col in numeric_cols if col not in self._all_null_cols]]
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X_null_dropped.select_dtypes(include=categorical_dtypes + boolean)
+        X_categorical = X_null_dropped[[col for col in cat_cols if col not in self._all_null_cols]]
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
@@ -91,8 +95,9 @@ class Imputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         X_null_dropped.reset_index(inplace=True, drop=True)

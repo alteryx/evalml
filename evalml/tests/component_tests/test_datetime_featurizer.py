@@ -77,6 +77,6 @@ def test_datetime_featurizer_no_datetime_cols():
 
 def test_datetime_featurizer_numpy_array_input():
     datetime_transformer = DateTimeFeaturizer()
-    X = np.array(['2007-02-03', '2016-06-07', '2020-05-19'], dtype='datetime64')
+    X = np.array([['2007-02-03'], ['2016-06-07'], ['2020-05-19']], dtype='datetime64')
     datetime_transformer.fit(X)
     assert list(datetime_transformer.transform(X).columns) == ["0_year", "0_month", "0_day_of_week", "0_hour"]

@@ -1,8 +1,10 @@
-import pandas as pd
-
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer
+)
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
 )
 
 
@@ -43,14 +45,14 @@ class PerColumnImputer(Transformer):
         """Fits imputers on input data
 
         Arguments:
-            X (pd.DataFrame): Data to fit
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             self
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
@@ -64,17 +66,17 @@ class PerColumnImputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms input data by imputing missing values
+        """Transforms input data by imputing missing values.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             pd.DataFrame: Transformed X
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():
@@ -90,8 +92,8 @@ class PerColumnImputer(Transformer):
         """Fits imputer and imputes missing values in input data.
 
         Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Target data.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             pd.DataFrame: Transformed X

@@ -30,7 +30,7 @@ class NoVarianceDataCheck(DataCheck):
             any_nulls (bool): Whether this column has any missing data.
 
         Returns:
-            DataCheckError if the column has no variance.
+            DataCheckError if the column has no variance or DataCheckWarning if the column has two unique values including NaN.
         """
         message = f"{column_name} has {int(count_unique)} unique value."
 
@@ -50,32 +50,29 @@ class NoVarianceDataCheck(DataCheck):
             y (pd.Series): The target data.
 
         Returns:
-            list (DataCheckWarning or DataCheckError): List of warnings/errors corresponding to features or target with no variance.
+            dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
         """
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
-
-        messages = []
-
         for name in unique_counts:
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
-
-            if message:
-                messages.append(message)
-
+            if not message:
+                continue
+            DataCheck._add_message(message, messages)
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
-
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
-
         if target_message:
-            messages.append(target_message)
-
+            DataCheck._add_message(target_message, messages)
         return messages

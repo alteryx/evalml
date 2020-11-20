@@ -3,8 +3,10 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Updated pipelines and ``make_pipeline`` to accept Woodwork DataTables :pr:`1393`
+        * Updated pipelines and ``make_pipeline`` to accept ``Woodwork`` inputs :pr:`1393`
+        * Updated components to accept ``Woodwork`` inputs :pr:`1423`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
+        * Added ``Target Encoder`` into transformer components :pr:`1401`
         * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
         * The top_k features displayed in ``explain_predictions_*`` functions are now determined by the magnitude of shap values as opposed to the ``top_k`` largest and smallest shap values. :pr:`1374`
@@ -24,6 +26,7 @@ Release Notes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
+        * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
@@ -33,12 +36,16 @@ Release Notes
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`
         * Modified ``make lint`` to check notebook versions in the docs :pr:`1431`
         * Modified ``make lint-fix`` to standardize notebook versions in the docs :pr:`1431`
+        * Use new version of pull request Github Action for dependency check (:pr:`1443`)
 
 .. warning::
 
     **Breaking Changes**
         * The ``top_k`` and ``top_k_features`` parameters in ``explain_predictions_*`` functions now return ``k`` features as opposed to ``2 * k`` features :pr:`1374`
         * Renamed ``problem_type`` to ``problem_types`` in ``RegressionObjective``, ``BinaryClassificationObjective``, and ``MulticlassClassificationObjective`` :pr:`1319`
+        * Data checks now return a dictionary of warnings and errors instead of a list :pr:`1448`
+
+
 
 **v0.15.0 Oct. 29, 2020**
     * Enhancements
