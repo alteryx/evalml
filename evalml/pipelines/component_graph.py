@@ -19,7 +19,7 @@ class ComponentGraph:
         for key, value in self.component_dict.items():
             if not isinstance(value, list):
                 raise ValueError('All component information should be passed in as a list')
-        self._compute_order = []
+        self.compute_order = []
         self._recompute_order()
         self.random_state = random_state
 
@@ -80,7 +80,7 @@ class ComponentGraph:
         """
         output_cache = {}
         final_component = None
-        for component_name in list(self._compute_order):
+        for component_name in self.compute_order:
             final_component = component_name
             component_class = self.component_dict[component_name][0]
             if not isinstance(component_class, ComponentBase):
@@ -198,11 +198,9 @@ class ComponentGraph:
         Returns:
             ComponentBase object
         """
-        compute_list = list(self._compute_order)
-        self._recompute_order()
-        if len(compute_list) == 0:
+        if len(self.compute_order) == 0:
             return None
-        last_component_name = compute_list[-1]
+        last_component_name = self.compute_order[-1]
         return self.get_component(last_component_name)
 
     def get_estimators(self):
@@ -288,24 +286,8 @@ class ComponentGraph:
     def _recompute_order(self):
         """Regenerated the topologically sorted order of the graph"""
         if len(self.component_dict) == 1:
-            self._compute_order = iter(self.component_dict.keys())
+            self.compute_order = list(self.component_dict.keys())
             return
         digraph = nx.DiGraph()
         digraph.add_edges_from(self._get_edges())
-        self._compute_order = topological_sort(digraph)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        """ Returns the next component in topologically sorted order of computation
-
-        Returns:
-            str, ComponentBase: The component name and class that come next
-        """
-        try:
-            component = next(self._compute_order)
-            return component, self.component_dict[component][0]
-        except StopIteration:
-            self._recompute_order()  # Reset the generator
-            raise StopIteration
+        self.compute_order = list(topological_sort(digraph))

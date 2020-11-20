@@ -34,9 +34,8 @@ def test_init(example_graph):
     comp_graph = ComponentGraph(graph)
     assert len(comp_graph.component_dict) == 6
 
-    order = [comp_name for comp_name, _ in comp_graph]
     expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
-    assert order == expected_order
+    assert comp_graph.compute_order == expected_order
 
     invalid_graph = {'Imputer': [Imputer], 'OHE': OneHotEncoder}
     with pytest.raises(ValueError, match='All component information should be passed in as a list'):
@@ -48,8 +47,7 @@ def test_order_x_and_y():
              'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y'],
              'Random Forest': [RandomForestClassifier, 'OHE.x']}
     component_graph = ComponentGraph(graph).instantiate({})
-    order = [component_name for component_name, _ in component_graph]
-    assert order == ['Imputer', 'OHE', 'Random Forest']
+    assert component_graph.compute_order == ['Imputer', 'OHE', 'Random Forest']
 
 
 def test_from_list():
@@ -62,9 +60,8 @@ def test_from_list():
     assert component_graph.get_component('One Hot Encoder') == OneHotEncoder
     assert component_graph.get_component('Random Forest Classifier') == RandomForestClassifier
 
-    order = [comp_name for comp_name, _ in component_graph]
     expected_order = ['Imputer', 'One Hot Encoder', 'Random Forest Classifier']
-    assert order == expected_order
+    assert component_graph.compute_order == expected_order
 
     bad_component_list = ['Imputer', 'Fake Estimator']
     with pytest.raises(MissingComponentError, match='was not found'):
@@ -156,9 +153,8 @@ def test_add_node():
     assert component_graph.get_parents('Random Forest') == ['OneHot']
     assert component_graph.get_parents('Final') == ['OneHot', 'Random Forest']
 
-    order = [comp_name for comp_name, _ in component_graph]
     expected_order = ['OneHot', 'Random Forest', 'Final']
-    assert order == expected_order
+    assert component_graph.compute_order == expected_order
 
 
 def test_add_node_invalid():
@@ -177,22 +173,18 @@ def test_add_edge():
                       'OneHot_2': [OneHotEncoder],
                       'Random Forest': [RandomForestClassifier]}
     component_graph = ComponentGraph(component_dict)
-    order = [comp_name for comp_name, _ in component_graph]
     assert len(component_graph.component_dict) == 4
-    assert order == []
+    assert component_graph.compute_order == []
 
     component_graph.add_edge('Imputer', 'OneHot')
     component_graph.add_edge('Imputer', 'OneHot_2')
-    order = [comp_name for comp_name, _ in component_graph]
-    assert len(order) == 3
+    assert len(component_graph.compute_order) == 3
     assert list(component_graph.get_parents('OneHot')) == ['Imputer']
 
     component_graph.add_edge('OneHot', 'Random Forest')
-    order = [comp_name for comp_name, _ in component_graph]
-    assert len(order) == 4
+    assert len(component_graph.compute_order) == 4
     component_graph.add_edge('OneHot_2', 'Random Forest')
-    order = [comp_name for comp_name, _ in component_graph]
-    assert len(order) == 4
+    assert len(component_graph.compute_order) == 4
     assert list(component_graph.get_parents('Random Forest')) == ['OneHot', 'OneHot_2']
 
 
@@ -350,19 +342,11 @@ def test_multiple_y_parents(mock_fit_transform, X_y_binary):
         component_graph.compute_final_features(X, y, fit=True)
 
 
-def test_iterator_reset(example_graph):
+def test_component_graph_order(example_graph):
     component_graph = ComponentGraph(example_graph)
     expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
-    order = [component_name for component_name, _ in component_graph]
-    order_2 = [component_name for component_name, _ in component_graph]
-
-    assert expected_order == order
-    assert expected_order == order_2
+    assert expected_order == component_graph.compute_order
 
     component_graph = ComponentGraph({'Imputer': [Imputer]})
     expected_order = ['Imputer']
-    order = [component_name for component_name, _ in component_graph]
-    order_2 = [component_name for component_name, _ in component_graph]
-
-    assert expected_order == order
-    assert expected_order == order_2
+    assert expected_order == component_graph.compute_order
