@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_code import DataCheckMessageCode
 
 from evalml.utils import get_random_state
 from evalml.utils.gen_utils import numeric_dtypes

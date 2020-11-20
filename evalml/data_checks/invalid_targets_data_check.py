@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckError
+from .data_check_message_code import DataCheckMessageCode
 
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (

@@ -2,6 +2,7 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_code import DataCheckMessageCode
 
 
 class HighVarianceCVDataCheck(DataCheck):
