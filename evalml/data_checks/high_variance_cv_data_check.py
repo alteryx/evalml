@@ -48,5 +48,5 @@ class HighVarianceCVDataCheck(DataCheck):
         # if there are items that occur less than the threshold, add them to the list of messages
         if high_variance_cv:
             warning_msg = f"High coefficient of variation (cv >= {self.threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data."
-            messages["warnings"].append(DataCheckWarning(warning_msg, self.name).to_dict())
+            DataCheck._add_message(DataCheckWarning(warning_msg, self.name), messages)
         return messages

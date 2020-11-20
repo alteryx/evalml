@@ -24,7 +24,7 @@ Release Notes
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
-        * Reverted changes from :pr:`1337` :pr:`1409``
+        * Reverted changes from :pr:`1337` :pr:`1409`
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`

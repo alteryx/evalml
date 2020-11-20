@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.utils import classproperty
 
 
@@ -23,3 +24,10 @@ class DataCheck(ABC):
         Returns:
             dict (DataCheckMessage): Dictionary of DataCheckError and DataCheckWarning messages
         """
+
+    @staticmethod
+    def _add_message(message, messages):
+        if message.message_type == DataCheckMessageType.ERROR:
+            messages["errors"].append(message.to_dict())
+        elif message.message_type == DataCheckMessageType.WARNING:
+            messages["warnings"].append(message.to_dict())
