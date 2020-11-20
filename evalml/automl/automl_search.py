@@ -696,7 +696,6 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-                raise e
 
                 if self.error_callback is not None:
                     self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
