@@ -30,15 +30,19 @@ class DataCheckMessage:
         return (self.message_type == other.message_type and
                 self.message == other.message and
                 self.data_check_name == other.data_check_name and
-                self.message_code == other.message_code)
+                self.message_code == other.message_code and
+                self.details == other.details)
 
     def to_dict(self):
-        return {
+        message_dict = {
             "message": self.message,
             "data_check_name": self.data_check_name,
             "code": self.message_code,
-            "level": self.message_type.value
+            "level": self.message_type.value,
         }
+        if self.details is not None:
+            message_dict.update({"details": self.details})
+        return message_dict
 
 
 class DataCheckError(DataCheckMessage):
