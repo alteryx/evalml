@@ -6,7 +6,7 @@ class DataCheckMessage:
 
     message_type = None
 
-    def __init__(self, message, data_check_name, message_code=None):
+    def __init__(self, message, data_check_name, message_code=None, details=None):
         """
         Message returned by a DataCheck, tagged by name.
 
@@ -14,11 +14,12 @@ class DataCheckMessage:
             message (str): Message string
             data_check_name (str): Name of data check
             message_code (DataCheckMessageCode, optional): Message code associated with message.
-
+            details (dict, optional): Additional useful information associated with the message
         """
         self.message = message
         self.data_check_name = data_check_name
         self.message_code = message_code
+        self.details = details
 
     def __str__(self):
         """String representation of data check message, equivalent to self.message attribute."""
