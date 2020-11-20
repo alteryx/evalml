@@ -76,16 +76,37 @@ class ComponentGraph:
         self._compute_features(self.compute_order, X, y, fit=True)
         return self
 
+    def fit_features(self, X, y):
+        """ Fit all components save the final one, usually an estimator.
+
+        Arguments:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
+        """
+        self._compute_features(self.compute_order[:-1], X, y, fit=True)
+        return self
+
     def predict(self, X):       
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
 
         Returns:
             pd.Series: Predicted values.
         """
         return self._compute_features(self.compute_order, X)
+
+    def transform_features(self, X):
+        """ Transform all components save the final one, usually an estimator
+        
+        Arguments:
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
+
+        Returns:
+            pd.DataFrame: Transformed values.
+        """
+        return self._compute_features(self.compute_order[:-1], X)
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.

@@ -274,6 +274,22 @@ def test_fit(mock_fit_transform, mock_fit, mock_predict, example_graph, X_y_bina
     assert mock_predict.call_count == 3
 
 
+@patch('evalml.pipelines.components.Transformer.fit_transform')
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_fit_features(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
+    X, y = X_y_binary
+    mock_fit_transform.return_value = pd.DataFrame(X)
+    mock_fit.return_value = Estimator
+    mock_predict.return_value = pd.Series(y)
+    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph.fit_features(X, y)
+
+    assert mock_fit_transform.call_count == 3
+    assert mock_fit.call_count == 2
+    assert mock_predict.call_count == 2
+
+
 @patch('evalml.pipelines.components.Transformer.transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -288,6 +304,22 @@ def test_predict(mock_transform, mock_fit, mock_predict, example_graph, X_y_bina
     component_graph.predict(X)
     assert mock_transform.call_count == 6  # Called thrice when fitting pipeline, thrice when predicting
     assert mock_fit.call_count == 3  # Only called during fit, not predict
+
+
+@patch('evalml.pipelines.components.Transformer.transform')
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_transform_features(mock_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+    X, y = X_y_binary
+    mock_transform.return_value = pd.DataFrame(X)
+    mock_fit.return_value = Estimator
+    mock_predict.return_value = pd.Series(y)
+    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph.fit(X, y)
+
+    component_graph.transform_features(X)
+    assert mock_transform.call_count == 5
+    assert mock_fit.call_count == 3
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')
