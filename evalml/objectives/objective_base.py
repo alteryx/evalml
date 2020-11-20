@@ -111,7 +111,7 @@ class ObjectiveBase(ABC):
         # else:
         #     is_multidimensional = True
         #     y_predicted = pd.DataFrame(y_predicted)
-        if len(y_predicted) > 1:
+        if len(y_predicted.shape) > 1:
             is_multidimensional = True
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
