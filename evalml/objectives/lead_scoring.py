@@ -1,7 +1,5 @@
 import math
 
-import pandas as pd
-
 from .binary_classification_objective import BinaryClassificationObjective
 
 

@@ -1715,3 +1715,15 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     assert len(automl._results['errors']) == 1  # Raises exception at first error
     for e in automl._results['errors']:
         assert str(e) == msg
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_woodwork_passed_to_pipelines(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+    automl = AutoMLSearch(problem_type='binary', max_batches=4)
+    automl.search(X, y)
+    for call in mock_fit.call_args:
+        for arg in call:
+            assert isinstance(arg, (ww.DataTable, ww.DataColumn))

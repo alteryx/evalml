@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper
 
 
 class ObjectiveBase(ABC):

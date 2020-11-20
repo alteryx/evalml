@@ -409,8 +409,6 @@ class AutoMLSearch:
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
 
-        # X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        # y = _convert_woodwork_types_wrapper(y.to_series())
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
@@ -645,9 +643,9 @@ class AutoMLSearch:
         logger.info("\tStarting cross validation")
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
+
         X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
-
         for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
@@ -658,8 +656,8 @@ class AutoMLSearch:
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                diff_train = set(np.setdiff1d(y_pd, y_train.to_series()))
-                diff_test = set(np.setdiff1d(y_pd, y_test.to_series()))
+                diff_train = set(np.setdiff1d(y.to_series(), y_train.to_series()))
+                diff_test = set(np.setdiff1d(y.to_series(), y_test.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the test set after data split: {diff_test}." if diff_test else ""
                 if diff_string:

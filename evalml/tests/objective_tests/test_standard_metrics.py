@@ -62,6 +62,7 @@ def test_input_contains_nan():
             with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
                 objective.score(y_true, y_predicted_proba)
 
+
 def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
@@ -126,6 +127,7 @@ def test_probabilities_not_in_0_1_range():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted_proba)
+
 
 def test_negative_with_log():
     y_predicted = np.array([-1, 10, 30])

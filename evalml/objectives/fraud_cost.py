@@ -39,8 +39,8 @@ class FraudCost(BinaryClassificationObjective):
 
         Arguments:
             ypred_proba (pd.Series): Predicted probablities
-            X (pd.DataFrame): Dataframe containing transaction amount
             threshold (float): Dollar threshold to determine if transaction is fraud
+            X (ww.DataTable, pd.DataFrame): Data containing transaction amounts
 
         Returns:
             pd.Series: pd.Series of predicted fraud labels using X and threshold
@@ -61,7 +61,7 @@ class FraudCost(BinaryClassificationObjective):
 
         Arguments:
             y_predicted (pd.Series): Predicted fraud labels
-             y_true (pd.Series): True fraud labels
+            y_true (pd.Series): True fraud labels
             X (ww.DataTable, pd.DataFrame): Data with transaction amounts
 
         Returns:
