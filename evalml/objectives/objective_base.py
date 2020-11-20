@@ -80,9 +80,9 @@ class ObjectiveBase(ABC):
         if isinstance(y_in, (pd.Series, pd.DataFrame)):
             return y_in.to_numpy()
         if isinstance(y_in, ww.DataColumn):
-            return y_in.to_series().to_numpy()
+            return _convert_woodwork_types_wrapper(y_in.to_series()).to_numpy()
         if isinstance(y_in, ww.DataTable):
-            return y_in.to_dataframe().to_numpy()
+            return _convert_woodwork_types_wrapper(y_in.to_dataframe()).to_numpy()
         return y_in
 
     def validate_inputs(self, y_true, y_predicted):
@@ -96,9 +96,13 @@ class ObjectiveBase(ABC):
             None
         """
         if isinstance(y_true, ww.DataColumn):
-            y_true = y_true.to_series()
+            y_true = _convert_woodwork_types_wrapper(y_true.to_series())
         if isinstance(y_predicted, ww.DataColumn):
-            y_predicted = y_predicted.to_series()
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        if not isinstance(y_true, pd.Series):
+            y_true = pd.Series(y_true)
+        if not isinstance(y_predicted, pd.Series):
+            y_predicted = pd.Series(y_predicted)
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
         if len(y_true) == 0:

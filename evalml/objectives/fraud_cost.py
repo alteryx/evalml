@@ -1,4 +1,5 @@
 import pandas as pd
+import woodwork as ww
 
 from .binary_classification_objective import BinaryClassificationObjective
 
@@ -42,6 +43,8 @@ class FraudCost(BinaryClassificationObjective):
         Returns:
             pd.Series: pd.Series of predicted fraud labels using X and threshold
         """
+        if isinstance(X, ww.DataTable):
+            X = X.to_dataframe()
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
@@ -62,6 +65,13 @@ class FraudCost(BinaryClassificationObjective):
         Returns:
             float: Amount lost to fraud per transaction
         """
+        if isinstance(X, ww.DataTable):
+            X = X.to_dataframe()
+        if isinstance(y_true, ww.DataColumn):
+            y_true = y_true.to_series()
+        if isinstance(y_predicted, ww.DataColumn):
+            y_predicted = y_predicted.to_series()
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
