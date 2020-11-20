@@ -27,3 +27,6 @@ class DataCheckMessageCode(Enum):
 
     TARGET_LEAKAGE = "target_leakage"
     """Message code for when target leakage is detected."""
+
+    HAS_OUTLIERS = "has_outliers"
+    """Message code for when outliers are detected."""

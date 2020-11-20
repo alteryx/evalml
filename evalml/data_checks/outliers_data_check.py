@@ -62,5 +62,7 @@ class OutliersDataCheck(DataCheck):
         has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
         warning_msg = "Column '{}' is likely to have outlier data"
         cols = has_outliers.index[has_outliers]
-        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col), self.name).to_dict() for col in cols])
+        messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col),
+                                                      data_check_name=self.name,
+                                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict() for col in cols])
         return messages
