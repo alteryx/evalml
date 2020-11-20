@@ -6,16 +6,19 @@ class DataCheckMessage:
 
     message_type = None
 
-    def __init__(self, message, data_check_name):
+    def __init__(self, message, data_check_name, message_code):
         """
         Message returned by a DataCheck, tagged by name.
 
         Arguments:
             message (str): Message string
             data_check_name (str): Name of data check
+            message_code (DataCheckMessageCode): Message code associated with message
+
         """
         self.message = message
         self.data_check_name = data_check_name
+        self.message_code = message_code
 
     def __str__(self):
         """String representation of data check message, equivalent to self.message attribute."""
@@ -25,12 +28,15 @@ class DataCheckMessage:
         """Checks for equality. Two DataCheckMessage objs are considered equivalent if their message type and message are equivalent."""
         return (self.message_type == other.message_type and
                 self.message == other.message and
-                self.data_check_name == other.data_check_name)
+                self.data_check_name == other.data_check_name and
+                self.message_code == other.message_code)
 
     def to_dict(self):
         return {
             "message": self.message,
-            "data_check_name": self.data_check_name
+            "data_check_name": self.data_check_name,
+            "code": self.message_code,
+            "level": self.message_type.value
         }
 
 
@@ -38,17 +44,7 @@ class DataCheckError(DataCheckMessage):
     """DataCheckMessage subclass for errors returned by data checks."""
     message_type = DataCheckMessageType.ERROR
 
-    def to_dict(self):
-        message_dict = super().to_dict()
-        message_dict.update({"level": "error"})
-        return message_dict
-
 
 class DataCheckWarning(DataCheckMessage):
     """DataCheckMessage subclass for warnings returned by data checks."""
     message_type = DataCheckMessageType.WARNING
-
-    def to_dict(self):
-        message_dict = super().to_dict()
-        message_dict.update({"level": "warning"})
-        return message_dict

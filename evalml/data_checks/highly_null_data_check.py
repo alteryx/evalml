@@ -2,6 +2,8 @@ import pandas as pd
 
 from .data_check import DataCheck
 from .data_check_message import DataCheckWarning
+from .data_check_message_code import DataCheckMessageCode
+from .data_check_message_type import DataCheckMessageType
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -48,7 +50,10 @@ class HighlyNullDataCheck(DataCheck):
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
             warning_msg = "Column '{}' is more than 0% null"
-            messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name), self.name).to_dict() for col_name in all_null_cols])
+            messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
+                                                          data_check_name=self.name,
+                                                          message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()
+                                         for col_name in all_null_cols])
         else:
             highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
             warning_msg = "Column '{}' is {}% or more null"
