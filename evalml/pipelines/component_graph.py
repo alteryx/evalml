@@ -187,39 +187,6 @@ class ComponentGraph:
             return_y = y
         return return_x, return_y
 
-    def add_node(self, component_name, component_obj, parents=[]):
-        """Add a node to the component graph.
-
-        Arguments:
-            component_name (str or int): The name or ID of the component to add
-            component_obj (Object or string): The component to add
-            parents (list): A list of parents of this new node. Defaults to None.
-        """
-        if component_name in self.component_dict.keys():
-            raise ValueError('Cannot add a component that already exists')
-        self.component_dict[component_name] = [component_obj]
-        valid_parents = self.component_dict.keys()
-        for parent in parents:
-            if parent[:-2] not in valid_parents and parent not in valid_parents:
-                raise ValueError('Cannot add parent that is not yet in the graph')
-            self.component_dict[component_name].append(parent)
-        self._recompute_order()
-        return self
-
-    def add_edge(self, from_component, to_component):
-        """Add an edge connecting two nodes of the component graph. Note that both nodes
-        must already exist inside the graph.
-
-        Arguments:
-            from_component (str or int): The parent node, to be computed first
-            to_component (str or int): The child node, to be computed after the parent
-        """
-        if from_component not in self.component_dict.keys() or to_component not in self.component_dict.keys():
-            raise ValueError("Cannot add an edge for a component not in the graph yet")
-        self.component_dict[to_component].append(from_component)
-        self._recompute_order()
-        return self
-
     def get_component(self, component_name):
         """Retrieves a single component object from the graph.
 

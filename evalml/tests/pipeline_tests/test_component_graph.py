@@ -142,65 +142,6 @@ def test_invalid_instantiate():
         component_graph.instantiate({'OneHot': {'top_n': 3}})
 
 
-def test_add_node():
-    component_graph = ComponentGraph()
-    component_graph.add_node('OneHot', OneHotEncoder)
-    component_graph.add_node('Random Forest', RandomForestClassifier, parents=['OneHot'])
-    assert len(component_graph.component_dict) == 2
-
-    component_graph.add_node('Final', Imputer, parents=['OneHot', 'Random Forest'])
-    assert len(component_graph.component_dict) == 3
-
-    assert component_graph.get_parents('Random Forest') == ['OneHot']
-    assert component_graph.get_parents('Final') == ['OneHot', 'Random Forest']
-
-    expected_order = ['OneHot', 'Random Forest', 'Final']
-    assert component_graph.compute_order == expected_order
-
-
-def test_add_node_invalid():
-    component_graph = ComponentGraph()
-    with pytest.raises(ValueError, match='Cannot add parent that is not yet in the graph'):
-        component_graph.add_node('OneHot', OneHotEncoder, parents=['Imputer'])
-
-    component_graph = ComponentGraph({'OneHot': [OneHotEncoder]})
-    with pytest.raises(ValueError, match='Cannot add a component that already exists'):
-        component_graph.add_node('OneHot', OneHotEncoder)
-
-
-def test_add_edge():
-    component_dict = {'Imputer': [Imputer],
-                      'OneHot': [OneHotEncoder],
-                      'OneHot_2': [OneHotEncoder],
-                      'Random Forest': [RandomForestClassifier]}
-    component_graph = ComponentGraph(component_dict)
-    assert len(component_graph.component_dict) == 4
-    assert component_graph.compute_order == []
-
-    component_graph.add_edge('Imputer', 'OneHot')
-    component_graph.add_edge('Imputer', 'OneHot_2')
-    assert len(component_graph.compute_order) == 3
-    assert list(component_graph.get_parents('OneHot')) == ['Imputer']
-
-    component_graph.add_edge('OneHot', 'Random Forest')
-    assert len(component_graph.compute_order) == 4
-    component_graph.add_edge('OneHot_2', 'Random Forest')
-    assert len(component_graph.compute_order) == 4
-    assert list(component_graph.get_parents('Random Forest')) == ['OneHot', 'OneHot_2']
-
-
-def test_add_invalid_edge():
-    component_dict = {'Imputer': [Imputer],
-                      'OneHot': [OneHotEncoder],
-                      'OneHot_2': [OneHotEncoder],
-                      'Random Forest': [RandomForestClassifier]}
-    component_graph = ComponentGraph(component_dict)
-    with pytest.raises(ValueError, match='component not in the graph yet'):
-        component_graph.add_edge('Imputer', 'Fake Component')
-    with pytest.raises(ValueError, match='component not in the graph yet'):
-        component_graph.add_edge('Fake Component', 'Random Forest')
-
-
 def test_get_component(example_graph):
     graph = example_graph
     component_graph = ComponentGraph(graph)
