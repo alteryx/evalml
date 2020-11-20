@@ -28,6 +28,7 @@ class DefaultDataChecks(DataChecks):
     def __init__(self, problem_type):
         """
         A collection of basic data checks.
+
         Arguments:
             problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         """

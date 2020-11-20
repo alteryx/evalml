@@ -27,12 +27,28 @@ class DataCheckMessage:
                 self.message == other.message and
                 self.data_check_name == other.data_check_name)
 
+    def to_dict(self):
+        return {
+            "message": self.message,
+            "data_check_name": self.data_check_name
+        }
+
 
 class DataCheckError(DataCheckMessage):
     """DataCheckMessage subclass for errors returned by data checks."""
     message_type = DataCheckMessageType.ERROR
 
+    def to_dict(self):
+        message_dict = super().to_dict()
+        message_dict.update({"level": "error"})
+        return message_dict
+
 
 class DataCheckWarning(DataCheckMessage):
     """DataCheckMessage subclass for warnings returned by data checks."""
     message_type = DataCheckMessageType.WARNING
+
+    def to_dict(self):
+        message_dict = super().to_dict()
+        message_dict.update({"level": "warning"})
+        return message_dict

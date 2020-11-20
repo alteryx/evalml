@@ -81,13 +81,17 @@ class DataChecks:
             y (pd.Series): The target data of length [n_samples]
 
         Returns:
-            list (DataCheckMessage): List containing DataCheckMessage objects
+            dict: Dictionary containing DataCheckMessage objects
 
         """
-        messages = []
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)
-            messages.extend(messages_new)
+            messages["warnings"].extend(messages_new["warnings"])
+            messages["errors"].extend(messages_new["errors"])
         return messages
 
 

@@ -35,17 +35,20 @@ def test_target_leakage_data_check_warnings():
     y = y.astype(bool)
 
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
-    assert leakage_check.validate(X, y) == [DataCheckWarning("Column 'a' is 50.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                                            DataCheckWarning("Column 'b' is 50.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                                            DataCheckWarning("Column 'c' is 50.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                                            DataCheckWarning("Column 'd' is 50.0% or more correlated with the target", "TargetLeakageDataCheck")]
+    assert leakage_check.validate(X, y) == {
+        "warnings": [DataCheckWarning("Column 'a' is 50.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column 'b' is 50.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column 'c' is 50.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column 'd' is 50.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict()],
+        "errors": []
+    }
 
 
 def test_target_leakage_data_check_input_formats():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
 
     # test empty pd.DataFrame, empty pd.Series
-    assert leakage_check.validate(pd.DataFrame(), pd.Series()) == []
+    assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {"warnings": [], "errors": []}
 
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
@@ -56,16 +59,22 @@ def test_target_leakage_data_check_input_formats():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected_messages = [DataCheckWarning("Column 'a' is 80.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                         DataCheckWarning("Column 'b' is 80.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                         DataCheckWarning("Column 'c' is 80.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                         DataCheckWarning("Column 'd' is 80.0% or more correlated with the target", "TargetLeakageDataCheck")]
+    expected_messages = {
+        "warnings": [DataCheckWarning("Column 'a' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column 'b' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column 'c' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column 'd' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict()],
+        "errors": []
+    }
 
     #  test y as list
     assert leakage_check.validate(X, y.values) == expected_messages
 
     # test X as np.array
-    assert leakage_check.validate(X.to_numpy(), y) == [DataCheckWarning("Column '0' is 80.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                                                       DataCheckWarning("Column '1' is 80.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                                                       DataCheckWarning("Column '2' is 80.0% or more correlated with the target", "TargetLeakageDataCheck"),
-                                                       DataCheckWarning("Column '3' is 80.0% or more correlated with the target", "TargetLeakageDataCheck")]
+    assert leakage_check.validate(X.to_numpy(), y) == {
+        "warnings": [DataCheckWarning("Column '0' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column '1' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column '2' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict(),
+                     DataCheckWarning("Column '3' is 80.0% or more correlated with the target", "TargetLeakageDataCheck").to_dict()],
+        "errors": []
+    }

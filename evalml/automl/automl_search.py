@@ -28,7 +28,6 @@ from evalml.data_checks import (
     EmptyDataChecks,
     HighVarianceCVDataCheck
 )
-from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -416,16 +415,13 @@ class AutoMLSearch:
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
-        data_check_results = data_checks.validate(X, y)
-        if data_check_results:
-            self._data_check_results = data_check_results
-            for message in self._data_check_results:
-                if message.message_type == DataCheckMessageType.WARNING:
-                    logger.warning(message)
-                elif message.message_type == DataCheckMessageType.ERROR:
-                    logger.error(message)
-            if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
-                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
+        self._data_check_results = data_checks.validate(X, y)
+        for message in self._data_check_results["warnings"]:
+            logger.warning(message)
+        for message in self._data_check_results["errors"]:
+            logger.error(message)
+        if self._data_check_results["errors"]:
+            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -740,8 +736,8 @@ class AutoMLSearch:
         high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
         high_variance_cv = False
 
-        if high_variance_cv_check_results:
-            logger.warning(high_variance_cv_check_results[0])
+        if high_variance_cv_check_results["warnings"]:
+            logger.warning(high_variance_cv_check_results["warnings"][0])
             high_variance_cv = True
 
         self._results['pipeline_results'][pipeline_id] = {
