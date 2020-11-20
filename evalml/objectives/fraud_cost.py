@@ -67,19 +67,10 @@ class FraudCost(BinaryClassificationObjective):
         """
         if isinstance(X, ww.DataTable):
             X = X.to_dataframe()
-        if isinstance(y_true, ww.DataColumn):
-            y_true = y_true.to_series()
-        if isinstance(y_predicted, ww.DataColumn):
-            y_predicted = y_predicted.to_series()
-
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-
-        if not isinstance(y_predicted, pd.Series):
-            y_predicted = pd.Series(y_predicted)
-
-        if not isinstance(y_true, pd.Series):
-            y_true = pd.Series(y_true)
+        y_true = self._standardize_input_type(y_true)
+        y_predicted = self._standardize_input_type(y_predicted)
 
         # extract transaction using the amount columns in users data
         try:

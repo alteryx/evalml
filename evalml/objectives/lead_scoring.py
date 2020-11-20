@@ -26,18 +26,15 @@ class LeadScoring(BinaryClassificationObjective):
         """Calculate the profit per lead.
 
             Arguments:
-                y_predicted (pd.Series): Predicted labels
-                y_true (pd.Series): True labels
-                X (pd.DataFrame): None, not used.
+                y_predicted (pd.Series, ww.DataColumn): Predicted labels
+                y_true (pd.Series, ww.DataColumn): True labels
+                X (pd.DataFrame, ww.DataTable): Ignored.
 
             Returns:
-                float: profit per lead
+                float: Profit per lead
         """
-        if not isinstance(y_predicted, pd.Series):
-            y_predicted = pd.Series(y_predicted)
-
-        if not isinstance(y_true, pd.Series):
-            y_true = pd.Series(y_true)
+        y_true = self._standardize_input_type(y_true)
+        y_predicted = self._standardize_input_type(y_predicted)
 
         true_positives = (y_true & y_predicted).sum()
         false_positives = (~y_true & y_predicted).sum()
