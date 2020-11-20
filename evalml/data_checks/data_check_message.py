@@ -6,14 +6,14 @@ class DataCheckMessage:
 
     message_type = None
 
-    def __init__(self, message, data_check_name, message_code):
+    def __init__(self, message, data_check_name, message_code=None):
         """
         Message returned by a DataCheck, tagged by name.
 
         Arguments:
             message (str): Message string
             data_check_name (str): Name of data check
-            message_code (DataCheckMessageCode): Message code associated with message
+            message_code (DataCheckMessageCode, optional): Message code associated with message.
 
         """
         self.message = message
