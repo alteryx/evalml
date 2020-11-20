@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
@@ -39,7 +38,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 If None, all appropriate columns will be encoded. Defaults to None.
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
-            drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
+            drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
                 a list specifying which method to use for each feature. Defaults to None.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
@@ -152,8 +151,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
-            cat_cols_str = [str(c) for c in self.features_to_encode]
-            X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
+            X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
         return X_t
@@ -185,10 +183,48 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
         return self._encoder.categories_[index]
 
+    @staticmethod
+    def _make_name_unique(name, seen_before):
+        """Helper to make the name unique."""
+
+        if name not in seen_before:
+            return name
+
+        # Only modify the name if it has been seen before
+        i = 1
+        name = f"{name}_{i}"
+        while name in seen_before:
+            name = f"{name[:name.rindex('_')]}_{i}"
+            i += 1
+        return name
+
     def get_feature_names(self):
-        """Return feature names for the input features after fitting.
+        """Return feature names for the categorical features after fitting.
+
+        Feature names are formatted as {column name}_{category name}. In the event of a duplicate name,
+        an integer will be added at the end of the feature name to distinguish it.
+
+        For example, consider a dataframe with a column called "A" and category "x_y" and another column
+        called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
 
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
-        return self._encoder.get_feature_names(self.features_to_encode)
+        unique_names = []
+        seen_before = set([])
+        for col_index, col in enumerate(self.features_to_encode):
+            column_categories = self.categories(col)
+            for cat_index, category in enumerate(column_categories):
+
+                # Drop categories specified by the user
+                if self._encoder.drop_idx_ is not None and self._encoder.drop_idx_[col_index] is not None:
+                    if cat_index == self._encoder.drop_idx_[col_index]:
+                        continue
+
+                # Follow sklearn naming convention but if name has been seen before
+                # then add an int to make it unique
+                proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
+
+                unique_names.append(proposed_name)
+                seen_before.add(proposed_name)
+        return unique_names
