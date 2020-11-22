@@ -46,7 +46,7 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)
         >>> assert target_check.validate(X, y) == {"errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",\
-                                                               "data_check_name": "ClassImbalanceDataCheck",
+                                                               "data_check_name": "ClassImbalanceDataCheck",\
                                                                "level": "error",\
                                                                "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,\
                                                                "details": {"target_values": [0]}}],\

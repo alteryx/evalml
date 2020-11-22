@@ -43,7 +43,11 @@ class TargetLeakageDataCheck(DataCheck):
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 80.0% or more correlated with the target", "data_check_name": "TargetLeakageDataCheck", "level": "warning"}],\
+            >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 80.0% or more correlated with the target",\
+                                                                             "data_check_name": "TargetLeakageDataCheck",\
+                                                                             "level": "warning",\
+                                                                             "code": DataCheckMessageCode.TARGET_LEAKAGE,\
+                                                                             "details": {"column": "leak"}}],\
                                                                "errors": []}
         """
         messages = {
