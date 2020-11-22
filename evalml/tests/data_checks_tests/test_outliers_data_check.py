@@ -36,16 +36,20 @@ def test_outliers_data_check_warnings():
     assert outliers_check.validate(X) == {
         "warnings": [DataCheckWarning(message="Column '3' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict(),
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 3}).to_dict(),
                      DataCheckWarning(message="Column '25' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict(),
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 25}).to_dict(),
                      DataCheckWarning(message="Column '55' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict(),
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 55}).to_dict(),
                      DataCheckWarning(message="Column '72' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict()],
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 72}).to_dict()],
         "errors": []
     }
 
@@ -70,16 +74,20 @@ def test_outliers_data_check_input_formats():
     assert outliers_check.validate(X.to_numpy()) == {
         "warnings": [DataCheckWarning(message="Column '3' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict(),
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 3}).to_dict(),
                      DataCheckWarning(message="Column '25' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict(),
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 25}).to_dict(),
                      DataCheckWarning(message="Column '55' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict(),
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 55}).to_dict(),
                      DataCheckWarning(message="Column '72' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict()],
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": 72}).to_dict()],
         "errors": []
     }
 
@@ -96,6 +104,7 @@ def test_outliers_data_check_string_cols():
     assert outliers_check.validate(X) == {
         "warnings": [DataCheckWarning(message="Column 'd' is likely to have outlier data",
                                       data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS).to_dict()],
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"column": "d"}).to_dict()],
         "errors": []
     }

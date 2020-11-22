@@ -54,17 +54,21 @@ class ClassImbalanceDataCheck(DataCheck):
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
+            below_threshold_values = below_threshold_folds.index.tolist()
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            DataCheck._add_message(DataCheckError(message=error_msg.format(self.cv_folds, below_threshold_folds.index.tolist()),
+            DataCheck._add_message(DataCheckError(message=error_msg.format(self.cv_folds, below_threshold_values),
                                                   data_check_name=self.name,
-                                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS), messages)
+                                                  message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
+                                                  details={"target_values": below_threshold_values}), messages)
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of messages
         if len(below_threshold):
+            below_threshold_values = below_threshold.index.tolist()
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
-            DataCheck._add_message(DataCheckWarning(message=warning_msg.format(self.threshold * 100, below_threshold.index.tolist()),
+            DataCheck._add_message(DataCheckWarning(message=warning_msg.format(self.threshold * 100, below_threshold_values),
                                                     data_check_name=self.name,
-                                                    message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD), messages)
+                                                    message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
+                                                    details={"target_values": below_threshold_values}), messages)
         return messages

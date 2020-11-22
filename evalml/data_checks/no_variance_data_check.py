@@ -38,14 +38,16 @@ class NoVarianceDataCheck(DataCheck):
         if count_unique <= 1:
             return DataCheckError(message=message.format(name=column_name),
                                   data_check_name=self.name,
-                                  message_code=DataCheckMessageCode.NO_VARIANCE)
+                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                  details={"column": column_name})
 
         elif count_unique == 2 and not self._dropnan and any_nulls:
             return DataCheckWarning(message=f"{column_name} has two unique values including nulls. "
                                             "Consider encoding the nulls for "
                                             "this column to be useful for machine learning.",
                                     data_check_name=self.name,
-                                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL)
+                                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                                    details={"column": column_name})
 
     def validate(self, X, y):
         """Check if the target or any of the features have no variance (1 unique value).

@@ -38,10 +38,12 @@ def test_highly_null_data_check_warnings():
     assert no_null_check.validate(data) == {
         "warnings": [DataCheckWarning(message="Column 'lots_of_null' is more than 0% null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict(),
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": "lots_of_null"}).to_dict(),
                      DataCheckWarning(message="Column 'all_null' is more than 0% null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": "all_null"}).to_dict()],
         "errors": []
     }
 
@@ -49,10 +51,12 @@ def test_highly_null_data_check_warnings():
     assert some_null_check.validate(data) == {
         "warnings": [DataCheckWarning(message="Column 'lots_of_null' is 50.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict(),
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": "lots_of_null"}).to_dict(),
                      DataCheckWarning(message="Column 'all_null' is 50.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": "all_null"}).to_dict()],
         "errors": []
     }
 
@@ -60,7 +64,8 @@ def test_highly_null_data_check_warnings():
     assert all_null_check.validate(data) == {
         "warnings": [DataCheckWarning(message="Column 'all_null' is 100.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": "all_null"}).to_dict()],
         "errors": []
     }
 
@@ -75,7 +80,8 @@ def test_highly_null_data_check_input_formats():
     assert highly_null_check.validate([None, None, None, None, 5]) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 0}).to_dict()],
         "errors": []
     }
 
@@ -83,7 +89,8 @@ def test_highly_null_data_check_input_formats():
     assert highly_null_check.validate(pd.Series([None, None, None, None, 5])) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 0}).to_dict()],
         "errors": []
     }
 
@@ -91,13 +98,16 @@ def test_highly_null_data_check_input_formats():
     assert highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]]) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict(),
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 0}).to_dict(),
                      DataCheckWarning(message="Column '1' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict(),
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 1}).to_dict(),
                      DataCheckWarning(message="Column '2' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 2}).to_dict()],
         "errors": []
     }
 
@@ -105,12 +115,15 @@ def test_highly_null_data_check_input_formats():
     assert highly_null_check.validate(np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict(),
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 0}).to_dict(),
                      DataCheckWarning(message="Column '1' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict(),
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 1}).to_dict(),
                      DataCheckWarning(message="Column '2' is 80.0% or more null",
                                       data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL).to_dict()],
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 2}).to_dict()],
         "errors": []
     }
