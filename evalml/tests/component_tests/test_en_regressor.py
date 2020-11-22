@@ -24,7 +24,8 @@ def test_en_parameters():
 
 
 def test_problem_types():
-    assert set(ElasticNetRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
+    assert set(ElasticNetRegressor.supported_problem_types) == {ProblemTypes.REGRESSION,
+                                                                ProblemTypes.TIME_SERIES_REGRESSION}
 
 
 def test_fit_predict(X_y_regression):

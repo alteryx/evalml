@@ -1,11 +1,13 @@
-
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
-from ..transformer import Transformer
-
 from evalml.pipelines.components import ComponentBaseMeta
+from evalml.pipelines.components.transformers.transformer import Transformer
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class OneHotEncoderMeta(ComponentBaseMeta):
@@ -36,7 +38,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 If None, all appropriate columns will be encoded. Defaults to None.
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
-            drop (string): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
+            drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
                 a list specifying which method to use for each feature. Defaults to None.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
@@ -82,20 +84,16 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X
-
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X_t)
         invalid_features = [col for col in self.features_to_encode if col not in list(X.columns)]
         if len(invalid_features) > 0:
             raise ValueError("Could not find and encode {} in input data.".format(', '.join(invalid_features)))
 
-        if self.parameters['handle_missing'] == "as_category":
-            X_t[self.features_to_encode] = X_t[self.features_to_encode].replace(np.nan, "nan")
-        elif self.parameters['handle_missing'] == "error" and X.isnull().any().any():
-            raise ValueError("Input contains NaN")
+        X_t = self._handle_parameter_handle_missing(X_t)
 
         if len(self.features_to_encode) == 0:
             categories = 'auto'
@@ -137,34 +135,39 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        cat_cols = self.features_to_encode
-
-        if self.parameters['handle_missing'] == "as_category":
-            X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
-        if self.parameters['handle_missing'] == "error" and X.isnull().any().any():
-            raise ValueError("Input contains NaN")
+        X_copy = _convert_to_woodwork_structure(X)
+        X_copy = _convert_woodwork_types_wrapper(X_copy.to_dataframe())
+        X_copy = self._handle_parameter_handle_missing(X_copy)
 
         X_t = pd.DataFrame()
         # Add the non-categorical columns, untouched
-        for col in X.columns:
-            if col not in cat_cols:
-                X_t = pd.concat([X_t, X[col]], axis=1)
+        for col in X_copy.columns:
+            if col not in self.features_to_encode:
+                X_t = pd.concat([X_t, X_copy[col]], axis=1)
         # The call to pd.concat above changes the type of the index so we will manually keep it the same.
         if not X_t.empty:
-            X_t.index = X.index
+            X_t.index = X_copy.index
 
         # Call sklearn's transform on the categorical columns
-        if len(cat_cols) > 0:
-            X_cat = pd.DataFrame(self._encoder.transform(X[cat_cols]).toarray(), index=X.index)
-            cat_cols_str = [str(c) for c in cat_cols]
-            X_cat.columns = self._encoder.get_feature_names(input_features=cat_cols_str)
+        if len(self.features_to_encode) > 0:
+            X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
+            X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
         return X_t
+
+    def _handle_parameter_handle_missing(self, X):
+        """Helper method to handle the `handle_missing` parameter."""
+        cat_cols = self.features_to_encode
+        if self.parameters['handle_missing'] == "error" and X.isnull().any().any():
+            raise ValueError("Input contains NaN")
+        if self.parameters['handle_missing'] == "as_category":
+            for col in cat_cols:
+                if X[col].dtype == 'category' and pd.isna(X[col]).any():
+                    X[col] = X[col].cat.add_categories("nan")
+                    X[col] = X[col].where(~pd.isna(X[col]), other='nan')
+            X[cat_cols] = X[cat_cols].replace(np.nan, "nan")
+        return X
 
     def categories(self, feature_name):
         """Returns a list of the unique categories to be encoded for the particular feature, in order.
@@ -180,10 +183,48 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             raise ValueError(f'Feature "{feature_name}" was not provided to one-hot encoder as a training feature')
         return self._encoder.categories_[index]
 
+    @staticmethod
+    def _make_name_unique(name, seen_before):
+        """Helper to make the name unique."""
+
+        if name not in seen_before:
+            return name
+
+        # Only modify the name if it has been seen before
+        i = 1
+        name = f"{name}_{i}"
+        while name in seen_before:
+            name = f"{name[:name.rindex('_')]}_{i}"
+            i += 1
+        return name
+
     def get_feature_names(self):
-        """Return feature names for the input features after fitting.
+        """Return feature names for the categorical features after fitting.
+
+        Feature names are formatted as {column name}_{category name}. In the event of a duplicate name,
+        an integer will be added at the end of the feature name to distinguish it.
+
+        For example, consider a dataframe with a column called "A" and category "x_y" and another column
+        called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
 
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
-        return self._encoder.get_feature_names(self.features_to_encode)
+        unique_names = []
+        seen_before = set([])
+        for col_index, col in enumerate(self.features_to_encode):
+            column_categories = self.categories(col)
+            for cat_index, category in enumerate(column_categories):
+
+                # Drop categories specified by the user
+                if self._encoder.drop_idx_ is not None and self._encoder.drop_idx_[col_index] is not None:
+                    if cat_index == self._encoder.drop_idx_[col_index]:
+                        continue
+
+                # Follow sklearn naming convention but if name has been seen before
+                # then add an int to make it unique
+                proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
+
+                unique_names.append(proposed_name)
+                seen_before.add(proposed_name)
+        return unique_names

@@ -20,6 +20,7 @@ from evalml.exceptions import (
 )
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
+    _convert_to_woodwork_structure,
     check_random_state_equality,
     classproperty,
     get_logger,
@@ -29,10 +30,6 @@ from evalml.utils import (
     log_subtitle,
     log_title,
     safe_repr
-)
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
 )
 
 logger = get_logger(__file__)
@@ -75,6 +72,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
+        self._pipeline_params = parameters.get("pipeline", {})
 
     @classproperty
     def name(cls):
@@ -179,7 +177,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             logger.info(component_string)
             component.describe(print_name=False)
 
-    def compute_estimator_features(self, X):
+    def compute_estimator_features(self, X, y=None):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
@@ -190,18 +188,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         X_t = X
         for component in self.component_graph[:-1]:
-            X_t = component.transform(X_t)
+            X_t = component.transform(X_t, y=y)
+        return X_t
+
+    def _compute_features_during_fit(self, X, y):
+        X_t = X
+        for component in self.component_graph[:-1]:
+            self.input_feature_names.update({component.name: list(X_t.columns)})
+            X_t = component.fit_transform(X_t, y=y)
+        self.input_feature_names.update({self.estimator.name: list(X_t.columns)})
         return X_t
 
     def _fit(self, X, y):
-        X_t = X
-        y_t = y
-        for component in self.component_graph[:-1]:
-            self.input_feature_names.update({component.name: list(pd.DataFrame(X_t))})
-            X_t = component.fit_transform(X_t, y_t)
-
-        self.input_feature_names.update({self.estimator.name: list(pd.DataFrame(X_t))})
-        self.estimator.fit(X_t, y_t)
+        X_t = self._compute_features_during_fit(X, y)
+        self.estimator.fit(X_t, y)
 
     @abstractmethod
     def fit(self, X, y):
@@ -227,8 +227,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pd.Series: Predicted values.
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_pandas())
-        X_t = self.compute_estimator_features(X)
+        X_t = self.compute_estimator_features(X, y=None)
         return self.estimator.predict(X_t)
 
     @abstractmethod
@@ -303,7 +302,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of all component parameters
         """
-        return {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
+        component_parameters = {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
+        if self._pipeline_params:
+            component_parameters['pipeline'] = self._pipeline_params
+        return component_parameters
 
     @classproperty
     def default_parameters(cls):

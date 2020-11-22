@@ -10,7 +10,11 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import categorical_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    _rename_column_names_to_numeric
+)
 
 
 class LightGBMClassifier(Estimator):
@@ -69,42 +73,42 @@ class LightGBMClassifier(Estimator):
                          random_state=random_seed)
 
     def _encode_categories(self, X, fit=False):
-        X2 = pd.DataFrame(copy.copy(X))
-        # encode each categorical feature as an integer
-        X2.columns = np.arange(len(X2.columns))
-        # necessary to wipe out column names in case any names contain symbols ([, ], <) which LightGBM cannot properly handle
-        cat_cols = X2.select_dtypes(categorical_dtypes).columns
+        """Encodes each categorical feature using ordinal encoding."""
+        X_encoded = _convert_to_woodwork_structure(X)
+        X_encoded = _rename_column_names_to_numeric(X_encoded)
+        cat_cols = list(X_encoded.select('category').columns)
+        X_encoded = _convert_woodwork_types_wrapper(X_encoded.to_dataframe())
         if len(cat_cols) == 0:
-            return X2
+            return X_encoded
         if fit:
             self._ordinal_encoder = OrdinalEncoder()
-            encoder_output = self._ordinal_encoder.fit_transform(X2[cat_cols])
+            encoder_output = self._ordinal_encoder.fit_transform(X_encoded[cat_cols])
         else:
-            encoder_output = self._ordinal_encoder.transform(X2[cat_cols])
-        X2[cat_cols] = pd.DataFrame(encoder_output)
-        X2[cat_cols] = X2[cat_cols].astype('category')
-        return X2
+            encoder_output = self._ordinal_encoder.transform(X_encoded[cat_cols])
+        X_encoded[cat_cols] = pd.DataFrame(encoder_output)
+        X_encoded[cat_cols] = X_encoded[cat_cols].astype('category')
+        return X_encoded
 
     def _encode_labels(self, y):
-        y1 = pd.Series(y)
+        y_encoded = pd.Series(y)
         # change only if dtype isn't int
-        if not is_integer_dtype(y1):
+        if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()
-            y1 = pd.Series(self._label_encoder.fit_transform(y1), dtype='int64')
-        return y1
+            y_encoded = pd.Series(self._label_encoder.fit_transform(y_encoded), dtype='int64')
+        return y_encoded
 
     def fit(self, X, y=None):
-        X2 = self._encode_categories(X, fit=True)
-        y2 = self._encode_labels(y)
-        return super().fit(X2, y2)
+        X_encoded = self._encode_categories(X, fit=True)
+        y_encoded = self._encode_labels(y)
+        return super().fit(X_encoded, y_encoded)
 
     def predict(self, X):
-        X2 = self._encode_categories(X)
-        predictions = super().predict(X2)
+        X_encoded = self._encode_categories(X)
+        predictions = super().predict(X_encoded)
         if self._label_encoder:
             predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
         return predictions
 
     def predict_proba(self, X):
-        X2 = self._encode_categories(X)
-        return super().predict_proba(X2)
+        X_encoded = self._encode_categories(X)
+        return super().predict_proba(X_encoded)

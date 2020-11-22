@@ -1,4 +1,3 @@
-import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -18,7 +17,7 @@ class XGBoostRegressor(Estimator):
         "n_estimators": Integer(1, 1000),
     }
     model_family = ModelFamily.XGBOOST
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     # xgboost supports seeds from -2**31 to 2**31 - 1 inclusive. these limits ensure the random seed generated below
     # is within that range.
@@ -42,15 +41,11 @@ class XGBoostRegressor(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
-        if isinstance(X, pd.DataFrame):
-            X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
     def predict(self, X):
-        # rename column names to column number if input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot properly handle
-        if isinstance(X, pd.DataFrame):
-            X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
         return predictions
 

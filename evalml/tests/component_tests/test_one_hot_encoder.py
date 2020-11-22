@@ -1,10 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
-from evalml.utils import get_random_state
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    get_random_state
+)
 
 
 def test_init():
@@ -122,6 +127,31 @@ def test_drop():
     assert col_names == expected_col_names
 
 
+def test_drop_binary():
+    X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=None, drop='if_binary', handle_unknown='error')
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    col_names = set(X_t.columns)
+    expected_col_names = set(["col_1_b", "col_2_a",
+                              "col_2_b", "col_2_c", "col_3_a"])
+    assert col_names == expected_col_names
+
+
+def test_drop_parameter_is_array():
+    X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=None, drop=["b", "c", "a"], handle_unknown='error')
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    col_names = set(X_t.columns)
+    expected_col_names = {"col_1_a", "col_2_a", "col_2_b"}
+    assert col_names == expected_col_names
+
+
 def test_handle_unknown():
     X = pd.DataFrame({"col_1": ["a", "b", "c", "d", "e", "f", "g"],
                       "col_2": ["a", "c", "d", "b", "e", "e", "f"],
@@ -147,7 +177,6 @@ def test_no_top_n():
                       "col_2": ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"],
                       "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
                       "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]})
-
     expected_col_names = set(["col_3_a", "col_3_b", "col_4"])
     for val in X["col_1"]:
         expected_col_names.add("col_1_" + val)
@@ -228,6 +257,10 @@ def test_more_top_n_unique_values():
     encoder = OneHotEncoder(top_n=5, random_state=random_seed)
     encoder.fit(X)
     X_t = encoder.transform(X)
+
+    # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
@@ -260,6 +293,10 @@ def test_more_top_n_unique_values_large():
     encoder = OneHotEncoder(top_n=3, random_state=random_seed)
     encoder.fit(X)
     X_t = encoder.transform(X)
+
+    # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=test_random_state)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
@@ -310,7 +347,7 @@ def test_numpy_input():
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert pd.DataFrame(X).equals(X_t)
+    pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
 
 
 def test_large_number_of_categories():
@@ -329,16 +366,18 @@ def test_large_number_of_categories():
     assert set(expected_col_names) == set(list(X_t.columns))
 
 
-@pytest.mark.parametrize('data_type', ['list', 'np', 'pd_no_index', 'pd_index'])
+@pytest.mark.parametrize('data_type', ['list', 'np', 'pd_no_index', 'pd_index', 'ww'])
 def test_data_types(data_type):
     if data_type == 'list':
-        X = ["a", "b", "c"]
+        X = [["a"], ["b"], ["c"]]
     elif data_type == 'np':
-        X = np.array(["a", "b", "c"])
+        X = np.array([["a"], ["b"], ["c"]])
     elif data_type == 'pd_no_index':
         X = pd.DataFrame(["a", "b", "c"])
     elif data_type == 'pd_index':
         X = pd.DataFrame(["a", "b", "c"], columns=['0'])
+    elif data_type == 'ww':
+        X = ww.DataTable(pd.DataFrame(["a", "b", "c"]))
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -441,3 +480,15 @@ def test_ohe_top_n_categories_always_the_same():
 
     check_df_equality(5)
     check_df_equality(get_random_state(5))
+
+
+def test_ohe_column_names_unique():
+    df = pd.DataFrame({"A": ["x_y"], "A_x": ["y"]})
+    df_transformed = OneHotEncoder().fit_transform(df)
+    assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1"}
+    df = pd.DataFrame({"A": ["x_y", "z"], "A_x": ["y_1", "y"], "A_x_y": ["1", "y"]})
+    df_transformed = OneHotEncoder().fit_transform(df)
+    # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
+    # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
+    # category 1 in A_x_y gets mapped to A_x_y_1_2 because A_x_y_1_1 already exists
+    assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_2", "A_x_y_y"}

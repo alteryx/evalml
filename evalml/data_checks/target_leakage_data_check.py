@@ -32,7 +32,7 @@ class TargetLeakageDataCheck(DataCheck):
             y (pd.Series): The target data
 
         Returns:
-            list (DataCheckWarning): List with a DataCheckWarning if target leakage is detected.
+            dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
         Example:
             >>> X = pd.DataFrame({
@@ -42,19 +42,25 @@ class TargetLeakageDataCheck(DataCheck):
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert target_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "TargetLeakageDataCheck")]
+            >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 80.0% or more correlated with the target", "data_check_name": "TargetLeakageDataCheck", "level": "warning"}],\
+                                                               "errors": []}
         """
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
         if y.dtype not in numeric_and_boolean_dtypes:
-            return []
+            return messages
         X = X.select_dtypes(include=numeric_and_boolean_dtypes)
         if len(X.columns) == 0:
-            return []
+            return messages
 
         highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
-        return [DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name) for col_name in highly_corr_cols]
+        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name).to_dict() for col_name in highly_corr_cols])
+        return messages
