@@ -34,8 +34,8 @@ class InvalidTargetDataCheck(DataCheck):
             >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
                                                                    "data_check_name": "InvalidTargetDataCheck",\
                                                                    "level": "error",\
-                                                                   "code": DataCheckMessageCode.TARGET_HAS_NULL,
-                                                                   "details": {"num_null_rows": 2, "pct_null_rows": 50}],\
+                                                                   "code": DataCheckMessageCode.TARGET_HAS_NULL,\
+                                                                   "details": {"num_null_rows": 2, "pct_null_rows": 50}}],\
                                                        "warnings": []}
         """
         messages = {
