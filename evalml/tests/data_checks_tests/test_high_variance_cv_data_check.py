@@ -25,6 +25,7 @@ def test_high_variance_cv_data_check():
 
     cv_scores = pd.Series([0, 1, 2, 3])
     variance = abs(cv_scores.std() / cv_scores.mean())
+    import pdb; pdb.set_trace()
     assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=cv_scores) == {
         "warnings": [DataCheckWarning(message="High coefficient of variation (cv >= 0.2) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.",
                                       data_check_name=high_variance_data_check_name,

@@ -1,6 +1,12 @@
 import pandas as pd
 
-from evalml.data_checks import DataCheck, DataChecks, DataCheckError, DataCheckWarning, DataCheckMessageCode
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckError,
+    DataCheckMessageCode,
+    DataChecks,
+    DataCheckWarning
+)
 
 
 class ClassImbalanceDataCheck(DataCheck):
@@ -45,10 +51,10 @@ class ClassImbalanceDataCheck(DataCheck):
                                                                "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,\
                                                                "details": {"target_values": [0]}}],\
                                                    "warnings": [{"message": "The following labels fall below 10% of the target: [0]",\
-                                                   "data_check_name": "ClassImbalanceDataCheck",\
-                                                   "level": "warning",\
-                                                   "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,\
-                                                    "details": {"target_values": [0]}}]}
+                                                                 "data_check_name": "ClassImbalanceDataCheck",\
+                                                                 "level": "warning",\
+                                                                 "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,\
+                                                                 "details": {"target_values": [0]}}]}
         """
         messages = {
             "warnings": [],

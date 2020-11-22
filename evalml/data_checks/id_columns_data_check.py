@@ -40,7 +40,11 @@ class IDColumnsDataCheck(DataCheck):
             ... })
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == {"errors": [],\
-                                                     "warnings": [{"message": "Column 'df_id' is 100.0% or more likely to be an ID column", "data_check_name": "IDColumnsDataCheck", "level": "warning"}]}
+                                                     "warnings": [{"message": "Column 'df_id' is 100.0% or more likely to be an ID column",\
+                                                                   "data_check_name": "IDColumnsDataCheck",\
+                                                                   "level": "warning",\
+                                                                   "code": DataCheckMessageCode.HAS_ID_COLUMN,\
+                                                                   "details": {"column": "df_id"}}]}
         """
         messages = {
             "warnings": [],

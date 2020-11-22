@@ -32,7 +32,11 @@ class HighVarianceCVDataCheck(DataCheck):
         Example:
             >>> cv_scores = pd.Series([0, 1, 1, 1])
             >>> check = HighVarianceCVDataCheck(threshold=0.10)
-            >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == {"warnings": [{"message": "High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.", "data_check_name": "HighVarianceCVDataCheck", "level": "warning"}],\
+            >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == {"warnings": [{"message": "High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.",\
+                                                                                                 "data_check_name": "HighVarianceCVDataCheck",\
+                                                                                                 "level": "warning",\
+                                                                                                 "code": DataCheckMessageCode.HIGH_VARIANCE,\
+                                                                                                 "details": {"variance": 2.0/3, "pipeline_name": LogisticRegressionPipeline}],\
                                                                                    "errors": []}
         """
         messages = {
