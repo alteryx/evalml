@@ -60,14 +60,13 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
                                          data_check_name=no_variance_data_check_name,
                                          message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                                          details={"column": "Y"}).to_dict()],
-           "errors": []}
-    ),
+           "errors": []}),
          (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
          (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError(message="Labels has 0 unique value.",
                                                                                                   data_check_name=no_variance_data_check_name,
                                                                                                   message_code=DataCheckMessageCode.NO_VARIANCE,
                                                                                                   details={"column": "Labels"}).to_dict()]})
-    ]
+         ]
 
 
 @pytest.mark.parametrize("X, y, count_nan_as_value, expected_validation_result", cases)

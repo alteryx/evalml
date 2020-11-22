@@ -11,7 +11,7 @@ from evalml.data_checks import (
 high_variance_data_check_name = HighVarianceCVDataCheck.name
 hv_pipeline_name = "LogisticRegressionPipeline"
 
- 
+
 def test_high_variance_cv_data_check_invalid_threshold():
     with pytest.raises(ValueError, match="needs to be greater than 0."):
         HighVarianceCVDataCheck(threshold=-0.1).validate(pipeline_name=hv_pipeline_name, cv_scores=pd.Series([0, 1, 1]))

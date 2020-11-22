@@ -6,7 +6,6 @@ from evalml.data_checks import (
     ClassImbalanceDataCheck,
     DataCheckError,
     DataCheckMessageCode,
-    DataCheckMessageType,
     DataCheckWarning
 )
 

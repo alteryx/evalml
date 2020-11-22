@@ -14,8 +14,6 @@ from evalml.data_checks import (
 )
 from evalml.exceptions import DataCheckInitError
 
-## TODO
-
 
 def test_data_checks(X_y_binary):
     X, y = X_y_binary

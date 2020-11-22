@@ -4,7 +4,6 @@ from evalml.data_checks import (
     DataCheck,
     DataCheckError,
     DataCheckMessageCode,
-    DataChecks,
     DataCheckWarning
 )
 
