@@ -53,7 +53,7 @@ class ClassImbalanceDataCheck(DataCheck):
                                                    "warnings": [{"message": "The following labels fall below 10% of the target: [0]",\
                                                                  "data_check_name": "ClassImbalanceDataCheck",\
                                                                  "level": "warning",\
-                                                                 "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,\
+                                                                 "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,\
                                                                  "details": {"target_values": [0]}}]}
         """
         messages = {
