@@ -57,6 +57,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
 
     pp_components.append(Imputer)
     pp_components.append(FeatureTools)
+    
     if text_columns:
         pp_components.append(TextFeaturizer)
 
