@@ -1774,3 +1774,36 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
             assert arg.semantic_tags['text col'] == set()
             assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+
+
+def test_automl_validates_problem_type():
+
+    assert AutoMLSearch(problem_type="binary").problem_configuration == {}
+    assert AutoMLSearch(problem_type="multiclass").problem_configuration == {}
+    assert AutoMLSearch(problem_type="regression").problem_configuration == {}
+    msg = "user_parameters must be a dict containing values for at least the gap and max_delay parameters"
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(problem_type="time series regression")
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(problem_type="time series regression", problem_configuration={"gap": 3})
+
+    problem_config = AutoMLSearch(problem_type="time series regression",
+                                  problem_configuration={"max_delay": 2, "gap": 3}).problem_configuration
+    assert problem_config == {"max_delay": 2, "gap": 3}
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+@patch('evalml.pipelines.ModeBaselineBinaryPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.ModeBaselineBinaryPipeline.fit')
+@patch('evalml.pipelines.ModeBaselineMulticlassPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.ModeBaselineMulticlassPipeline.fit')
+@patch('evalml.pipelines.MeanBaselineRegressionPipeline.score', return_value={"R2": 0.8})
+@patch('evalml.pipelines.MeanBaselineRegressionPipeline.fit')
+def test_automl_creates_algo_with_problem_types(mock_reg_fit, mock_reg_score,
+                                                mock_multi_fit, mock_multi_score,
+                                                mock_binary_fit, mock_binary_score, problem_type, X_y_binary):
+    X, y = X_y_binary
+    problem_params = {"gap": 3, "max_delay": 2, "extra": "foo"}
+    automl = AutoMLSearch(problem_type=problem_type, problem_configuration=problem_params, max_iterations=1)
+    automl.search(X, y)
+    assert automl._automl_algorithm._pipeline_params == problem_params

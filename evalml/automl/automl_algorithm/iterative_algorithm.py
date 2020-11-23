@@ -22,7 +22,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
-                 ensembling=False):
+                 ensembling=False,
+                 pipeline_params=None):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -34,6 +35,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
+            pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
@@ -46,6 +48,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._first_batch_results = []
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
+        self._pipeline_params = pipeline_params or {}
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -119,6 +122,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
+        if self._pipeline_params:
+            parameters['pipeline'] = self._pipeline_params
         component_graph = [handle_component_class(c) for c in pipeline_class.component_graph]
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
@@ -133,5 +138,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
+            if self._pipeline_params:
+                component_parameters.update(self._pipeline_params)
             parameters[component_class.name] = component_parameters
         return parameters
