@@ -1,14 +1,18 @@
 import numpy as np
 import pandas as pd
 
-from evalml.data_checks import DataCheckError
-from evalml.data_checks.invalid_targets_data_check import (
+from evalml.data_checks import (
+    DataCheckError,
+    DataCheckMessageCode,
+    DataCheckWarning,
     InvalidTargetDataCheck
 )
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
 )
+
+invalid_targets_data_check_name = InvalidTargetDataCheck.name
 
 
 def test_invalid_target_data_check_nan_error():
@@ -18,7 +22,10 @@ def test_invalid_target_data_check_nan_error():
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": []}
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == {
         "warnings": [],
-        "errors": [DataCheckError("3 row(s) (100.0%) of target values are null", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="3 row(s) (100.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()]
     }
 
 
@@ -32,17 +39,28 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck("binary")
     assert invalid_targets_check.validate(X, y=pd.Series([1, 5, 1, 5, 1, 1])) == {
-        "warnings": [],
-        "errors": [DataCheckError("Numerical binary classification target classes must be [0, 1], got [1, 5] instead", "InvalidTargetDataCheck").to_dict()]
+        "warnings": [DataCheckWarning(message="Numerical binary classification target classes must be [0, 1], got [1, 5] instead",
+                                      data_check_name=invalid_targets_data_check_name,
+                                      message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
+                                      details={"target_values": [1, 5]}).to_dict()],
+        "errors": []
     }
     assert invalid_targets_check.validate(X, y=pd.Series([0, 5, np.nan, np.nan])) == {
-        "warnings": [],
-        "errors": [DataCheckError("2 row(s) (50.0%) of target values are null", "InvalidTargetDataCheck").to_dict(),
-                   DataCheckError("Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead", "InvalidTargetDataCheck").to_dict()]
+        "warnings": [DataCheckWarning(message="Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead",
+                                      data_check_name=invalid_targets_data_check_name,
+                                      message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
+                                      details={"target_values": [5.0, 0.0]}).to_dict()],
+        "errors": [DataCheckError(message="2 row(s) (50.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 2, "pct_null_rows": 50}).to_dict()]
     }
     assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 0, 1, 2])) == {
         "warnings": [],
-        "errors": [DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": [1, 0, 2]}).to_dict()]
     }
 
 
@@ -56,10 +74,17 @@ def test_invalid_target_data_check_invalid_data_types_error():
         assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
 
     y = pd.date_range('2000-02-03', periods=5, freq='W')
+    unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
-        "errors": [DataCheckError("Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_data_types)), "InvalidTargetDataCheck").to_dict(),
-                   DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_data_types)),
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                                  details={"unsupported_type": y.dtype}).to_dict(),
+                   DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": unique_values}).to_dict()]
     }
 
 
@@ -71,28 +96,46 @@ def test_invalid_target_data_input_formats():
     messages = invalid_targets_check.validate(X, y=None)
     assert messages == {
         "warnings": [],
-        "errors": [DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": []}).to_dict()]
     }
 
     # test empty pd.Series
     messages = invalid_targets_check.validate(X, pd.Series())
     assert messages == {
         "warnings": [],
-        "errors": [DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": []}).to_dict()]
     }
 
     #  test list
     messages = invalid_targets_check.validate(X, [None, None, None, 0])
     assert messages == {
         "warnings": [],
-        "errors": [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck").to_dict(),
-                   DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 3, "pct_null_rows": 75}).to_dict(),
+                   DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": [0]}).to_dict()]
     }
 
     # test np.array
     messages = invalid_targets_check.validate(X, np.array([None, None, None, 0]))
     assert messages == {
         "warnings": [],
-        "errors": [DataCheckError("3 row(s) (75.0%) of target values are null", "InvalidTargetDataCheck").to_dict(),
-                   DataCheckError("Target does not have two unique values which is not supported for binary classification", "InvalidTargetDataCheck").to_dict()]
+        "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 3, "pct_null_rows": 75}).to_dict(),
+                   DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": [0]}).to_dict()]
     }

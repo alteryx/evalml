@@ -3,9 +3,14 @@ import string
 import numpy as np
 import pandas as pd
 
-from evalml.data_checks.data_check_message import DataCheckWarning
-from evalml.data_checks.outliers_data_check import OutliersDataCheck
+from evalml.data_checks import (
+    DataCheckMessageCode,
+    DataCheckWarning,
+    OutliersDataCheck
+)
 from evalml.utils import get_random_state
+
+outliers_data_check_name = OutliersDataCheck.name
 
 
 def test_outliers_data_check_init():
@@ -29,10 +34,10 @@ def test_outliers_data_check_warnings():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck").to_dict(),
-                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck").to_dict(),
-                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck").to_dict(),
-                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
+                                      data_check_name=outliers_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"columns": [3, 25, 55, 72]}).to_dict()],
         "errors": []
     }
 
@@ -55,10 +60,10 @@ def test_outliers_data_check_input_formats():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X.to_numpy()) == {
-        "warnings": [DataCheckWarning("Column '3' is likely to have outlier data", "OutliersDataCheck").to_dict(),
-                     DataCheckWarning("Column '25' is likely to have outlier data", "OutliersDataCheck").to_dict(),
-                     DataCheckWarning("Column '55' is likely to have outlier data", "OutliersDataCheck").to_dict(),
-                     DataCheckWarning("Column '72' is likely to have outlier data", "OutliersDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
+                                      data_check_name=outliers_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"columns": [3, 25, 55, 72]}).to_dict()],
         "errors": []
     }
 
@@ -73,6 +78,9 @@ def test_outliers_data_check_string_cols():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column 'd' is likely to have outlier data", "OutliersDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column(s) 'd' are likely to have outlier data.",
+                                      data_check_name=outliers_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"columns": ["d"]}).to_dict()],
         "errors": []
     }
