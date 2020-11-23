@@ -18,6 +18,7 @@ from evalml.pipelines.components import (  # noqa: F401
     DateTimeFeaturizer,
     DropNullColumns,
     Estimator,
+    FeatureTools,
     Imputer,
     OneHotEncoder,
     RandomForestClassifier,
@@ -55,7 +56,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
         pp_components.append(DropNullColumns)
 
     pp_components.append(Imputer)
-
+    pp_components.append(FeatureTools)
     if text_columns:
         pp_components.append(TextFeaturizer)
 

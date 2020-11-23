@@ -534,6 +534,10 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, FeatureTools):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] >= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, DelayedFeatureTransformer):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
@@ -551,6 +555,10 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, PCA):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, FeatureTools):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] >= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
