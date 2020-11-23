@@ -29,6 +29,7 @@ Release Notes
         * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
+        * Updated ``AutoMLSearch`` to pass ``Woodwork`` data structures to every pipeline (instead of pandas DataFrames) :pr:`1450`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
