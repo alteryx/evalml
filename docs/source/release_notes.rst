@@ -41,6 +41,7 @@ Release Notes
         * Modified ``make lint`` to check notebook versions in the docs :pr:`1431`
         * Modified ``make lint-fix`` to standardize notebook versions in the docs :pr:`1431`
         * Use new version of pull request Github Action for dependency check (:pr:`1443`)
+        * Reduced number of workers for tests to 4 :pr:`1447`
 
 .. warning::
 
