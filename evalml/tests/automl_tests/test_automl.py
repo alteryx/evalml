@@ -1828,7 +1828,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
 
     automl = AutoMLSearch(problem_type="time series regression", problem_configuration=configuration,
                           allowed_pipelines=[Pipeline1, Pipeline2], max_iterations=4)
-    automl.search(X, y, data_checks='disabled')
+    automl.search(X, y)
     assert isinstance(automl.data_split, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:

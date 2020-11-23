@@ -144,6 +144,12 @@ def test_default_data_checks_regression():
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
+def test_default_data_checks_time_series_regression():
+    regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("regression").data_checks]
+    ts_regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("time series regression").data_checks]
+    assert regression_data_check_classes == ts_regression_data_check_classes
+
+
 def test_data_checks_init_from_classes():
     def make_mock_data_check(check_name):
         class MockCheck(DataCheck):
