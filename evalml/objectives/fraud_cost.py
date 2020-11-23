@@ -3,8 +3,6 @@ import woodwork as ww
 
 from .binary_classification_objective import BinaryClassificationObjective
 
-from evalml.utils import _convert_woodwork_types_wrapper
-
 
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud."""
@@ -45,14 +43,8 @@ class FraudCost(BinaryClassificationObjective):
         Returns:
             pd.Series: pd.Series of predicted fraud labels using X and threshold
         """
-        if isinstance(X, ww.DataTable):
-            X = X.to_dataframe()
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        if not isinstance(ypred_proba, pd.Series):
-            ypred_proba = pd.Series(ypred_proba)
-
+        X = self._standardize_input_type(X)
+        ypred_proba = self._standardize_input_type(ypred_proba)
         transformed_probs = (ypred_proba.values * X[self.amount_col])
         return transformed_probs > threshold
 
@@ -67,10 +59,7 @@ class FraudCost(BinaryClassificationObjective):
         Returns:
             float: Amount lost to fraud per transaction
         """
-        if isinstance(X, ww.DataTable):
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)

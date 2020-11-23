@@ -59,26 +59,32 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
+        X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(y_true, y_predicted, X=X)
 
     @staticmethod
-    def _standardize_input_type(y_in):
+    def _standardize_input_type(input_data):
         """Standardize np or pd input to np for scoring
 
         Arguments:
-            y_in (np.ndarray or pd.Series): A matrix of predictions or predicted probabilities
+            input_data (ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
-            np.ndarray: a 1d np array, or a 2d np array if predicted probabilities were provided.
+            pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
         """
-        if isinstance(y_in, (pd.Series, pd.DataFrame)):
-            return y_in.to_numpy()
-        if isinstance(y_in, ww.DataColumn):
-            return _convert_woodwork_types_wrapper(y_in.to_series()).to_numpy()
-        return y_in
+        # import pdb; pdb.set_trace()
+        if isinstance(input_data, (pd.Series, pd.DataFrame)):
+            return input_data
+        if isinstance(input_data, ww.DataTable):
+            return _convert_woodwork_types_wrapper(input_data.to_dataframe())
+        if isinstance(input_data, ww.DataColumn):
+            return _convert_woodwork_types_wrapper(input_data.to_series())
+        if len(input_data.shape) == 1:
+            return pd.Series(input_data)
+        return pd.DataFrame(input_data)
 
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.

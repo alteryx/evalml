@@ -125,7 +125,7 @@ def test_fraud_objective_score(X_y_binary):
 
     # testing with other types of inputs
     y_predicted = np.array([.1, .5, .5])
-    extra_columns = {"value": [100, 5, 250]}
+    extra_columns = pd.DataFrame({"value": [100, 5, 250]})
     out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     pd.testing.assert_series_equal(out, y_true, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)

@@ -1725,7 +1725,7 @@ def test_automl_woodwork_user_types_preserved(mock_fit, mock_score, X_y_binary):
     new_col = np.zeros(len(X))
     new_col[:int(len(new_col) / 2)] = 1
     X['cat col'] = pd.Series(new_col)
-    X = ww.DataTable(X, semantic_tags={'cat col': 'category'}, logical_types={'cat col': ww.logical_types.Categorical})
+    X = ww.DataTable(X, semantic_tags={'cat col': 'category'}, logical_types={'cat col': "Categorical"})
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl = AutoMLSearch(problem_type='binary', max_batches=5)
     automl.search(X, y)
@@ -1737,43 +1737,47 @@ def test_automl_woodwork_user_types_preserved(mock_fit, mock_score, X_y_binary):
         assert isinstance(arg, (ww.DataTable, ww.DataColumn))
         if isinstance(arg, ww.DataTable):
             assert arg.semantic_tags['cat col'] == {'category'}
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_woodwork_passed_to_pipelines_binary(mock_fit, mock_score, X_y_binary):
-    X, y = X_y_binary
-    X = pd.DataFrame(X)
-    mock_score.return_value = {'Log Loss Binary': 1.0}
-    automl = AutoMLSearch(problem_type='binary', max_batches=5)
-    automl.search(X, y)
-    for arg in mock_fit.call_args[0]:
-        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
-    for arg in mock_score.call_args[0]:
-        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
 
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_woodwork_passed_to_pipelines_multiclass(mock_fit, mock_score, X_y_multi):
     X, y = X_y_multi
+    X = pd.DataFrame(X)
+    new_col = np.zeros(len(X))
+    new_col[:int(len(new_col) / 2)] = 1
+    X['cat col'] = pd.Series(new_col)
+    X = ww.DataTable(X, semantic_tags={'cat col': 'category'}, logical_types={'cat col': "Categorical"})
     mock_score.return_value = {'Log Loss Multiclass': 1.0}
     automl = AutoMLSearch(problem_type='multiclass', max_batches=5)
     automl.search(X, y)
     for arg in mock_fit.call_args[0]:
         assert isinstance(arg, (ww.DataTable, ww.DataColumn))
+        if isinstance(arg, ww.DataTable):
+            assert arg.semantic_tags['cat col'] == {'category'}
     for arg in mock_score.call_args[0]:
         assert isinstance(arg, (ww.DataTable, ww.DataColumn))
+        if isinstance(arg, ww.DataTable):
+            assert arg.semantic_tags['cat col'] == {'category'}
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
 @patch('evalml.pipelines.RegressionPipeline.fit')
 def test_automl_woodwork_passed_to_pipelines_regression(mock_fit, mock_score, X_y_regression):
     X, y = X_y_regression
+    X = pd.DataFrame(X)
+    new_col = np.zeros(len(X))
+    new_col[:int(len(new_col) / 2)] = 1
+    X['cat col'] = pd.Series(new_col)
     mock_score.return_value = {'R2': 1.0}
+    X = ww.DataTable(X, semantic_tags={'cat col': 'category'}, logical_types={'cat col': "Categorical"})
     automl = AutoMLSearch(problem_type='regression', max_batches=5)
     automl.search(X, y)
     for arg in mock_fit.call_args[0]:
         assert isinstance(arg, (ww.DataTable, ww.DataColumn))
+        if isinstance(arg, ww.DataTable):
+            assert arg.semantic_tags['cat col'] == {'category'}
     for arg in mock_score.call_args[0]:
         assert isinstance(arg, (ww.DataTable, ww.DataColumn))
+        if isinstance(arg, ww.DataTable):
+            assert arg.semantic_tags['cat col'] == {'category'}
