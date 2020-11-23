@@ -33,6 +33,7 @@ from evalml.pipelines.components import (
     Estimator,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    FeatureTools,
     Imputer,
     LightGBMClassifier,
     LinearRegressor,
@@ -146,6 +147,7 @@ def test_describe_component():
     text_featurizer = TextFeaturizer()
     lsa = LSA()
     pca = PCA()
+    ft = FeatureTools()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -167,6 +169,7 @@ def test_describe_component():
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
+    assert ft.describe(return_dict=True) == {'name': 'Featuretools Component', 'parameters': {}}
 
     # testing estimators
     base_classifier = BaselineClassifier()

@@ -37,7 +37,8 @@ from .transformers import (
     SelectColumns,
     TextFeaturizer,
     LSA,
-    PCA
+    PCA,
+    FeatureTools
 )
 from .ensemble import (
     StackedEnsembleClassifier,
