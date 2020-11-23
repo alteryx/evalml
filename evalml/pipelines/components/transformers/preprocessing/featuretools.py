@@ -9,7 +9,7 @@ from evalml.utils.gen_utils import (
 
 class FeatureTools(Transformer):
     """Featuretools component that generates features for ww.DataTables and pd.DataFrames"""
-    name = "Featuretools Component"
+    name = "Featuretools"
     hyperparameter_ranges = {}
 
     def __init__(self, random_state=0, **kwargs):
