@@ -149,21 +149,11 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
 def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value, dummy_binary_pipeline_classes):
 
-    def check_params_passed_to_component(pipeline):
-        for params in pipeline.parameters.values():
-            assert params["gap"] == 2
-            assert params["max_delay"] == 10
-        for component in pipeline.component_graph:
-            assert component.parameters["gap"] == 2
-            assert component.parameters["max_delay"] == 10
-        return True
-
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value,
                               pipeline_params={"gap": 2, "max_delay": 10})
 
     next_batch = algo.next_batch()
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
-    assert all(check_params_passed_to_component(p) for p in next_batch)
 
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
@@ -174,7 +164,6 @@ def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value
         for _ in range(len(dummy_binary_pipeline_classes)):
             next_batch = algo.next_batch()
             assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
-            assert all(check_params_passed_to_component(p) for p in next_batch)
             scores = -np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
@@ -183,7 +172,6 @@ def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value
             next_batch = algo.next_batch()
             input_pipelines = next_batch[0].parameters['Stacked Ensemble Classifier']['input_pipelines']
             assert all([pl.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for pl in input_pipelines])
-            assert all(check_params_passed_to_component(p) for p in input_pipelines)
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])

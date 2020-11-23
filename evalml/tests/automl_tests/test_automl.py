@@ -41,7 +41,8 @@ from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -1807,3 +1808,28 @@ def test_automl_creates_algo_with_problem_types(mock_reg_fit, mock_reg_score,
     automl = AutoMLSearch(problem_type=problem_type, problem_configuration=problem_params, max_iterations=1)
     automl.search(X, y)
     assert automl._automl_algorithm._pipeline_params == problem_params
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
+    X, y = X_y_regression
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    class Pipeline1(TimeSeriesRegressionPipeline):
+        name = "Pipeline 1"
+        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+
+    class Pipeline2(TimeSeriesRegressionPipeline):
+        name = "Pipeline 2"
+        component_graph = ["Delayed Feature Transformer", "Elastic Net Regressor"]
+
+    automl = AutoMLSearch(problem_type="time series regression", problem_configuration=configuration,
+                          allowed_pipelines=[Pipeline1, Pipeline2], max_iterations=4)
+    automl.search(X, y, data_checks='disabled')
+    for result in automl.results['pipeline_results'].values():
+        if result["id"] == 0:
+            continue
+        assert result['parameters']['Delayed Feature Transformer'] == configuration
+        assert result['parameters']['pipeline'] == configuration
