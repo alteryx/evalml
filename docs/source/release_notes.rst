@@ -17,6 +17,7 @@ Release Notes
         * Added a ``TimeSeriesRegressionPipeline`` class :pr:`1418`
         * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
         * Updated data check messages to include a `"code"` and `"details"` fields :pr:`1451`
+        * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
@@ -28,6 +29,7 @@ Release Notes
         * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
+        * Updated ``AutoMLSearch`` to pass ``Woodwork`` data structures to every pipeline (instead of pandas DataFrames) :pr:`1450`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`

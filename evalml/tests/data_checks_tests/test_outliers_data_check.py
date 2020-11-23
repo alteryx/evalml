@@ -34,22 +34,10 @@ def test_outliers_data_check_warnings():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        "warnings": [DataCheckWarning(message="Column '3' is likely to have outlier data",
+        "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 3}).to_dict(),
-                     DataCheckWarning(message="Column '25' is likely to have outlier data",
-                                      data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 25}).to_dict(),
-                     DataCheckWarning(message="Column '55' is likely to have outlier data",
-                                      data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 55}).to_dict(),
-                     DataCheckWarning(message="Column '72' is likely to have outlier data",
-                                      data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 72}).to_dict()],
+                                      details={"columns": [3, 25, 55, 72]}).to_dict()],
         "errors": []
     }
 
@@ -72,22 +60,10 @@ def test_outliers_data_check_input_formats():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X.to_numpy()) == {
-        "warnings": [DataCheckWarning(message="Column '3' is likely to have outlier data",
+        "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 3}).to_dict(),
-                     DataCheckWarning(message="Column '25' is likely to have outlier data",
-                                      data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 25}).to_dict(),
-                     DataCheckWarning(message="Column '55' is likely to have outlier data",
-                                      data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 55}).to_dict(),
-                     DataCheckWarning(message="Column '72' is likely to have outlier data",
-                                      data_check_name=outliers_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": 72}).to_dict()],
+                                      details={"columns": [3, 25, 55, 72]}).to_dict()],
         "errors": []
     }
 
@@ -102,9 +78,9 @@ def test_outliers_data_check_string_cols():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X) == {
-        "warnings": [DataCheckWarning(message="Column 'd' is likely to have outlier data",
+        "warnings": [DataCheckWarning(message="Column(s) 'd' are likely to have outlier data.",
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                      details={"column": "d"}).to_dict()],
+                                      details={"columns": ["d"]}).to_dict()],
         "errors": []
     }

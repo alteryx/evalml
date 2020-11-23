@@ -409,20 +409,16 @@ class AutoMLSearch:
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
 
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
-
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(X, y)
+        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()))
         for message in self._data_check_results["warnings"]:
             logger.warning(message)
         for message in self._data_check_results["errors"]:
             logger.error(message)
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
-
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
@@ -645,7 +641,13 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
-        for i, (train, test) in enumerate(self.data_split.split(X, y)):
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+
+        X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y_pd = _convert_woodwork_types_wrapper(y.to_series())
+        for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
+
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
@@ -654,8 +656,8 @@ class AutoMLSearch:
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                diff_train = set(np.setdiff1d(y, y_train))
-                diff_test = set(np.setdiff1d(y, y_test))
+                diff_train = set(np.setdiff1d(y.to_series(), y_train.to_series()))
+                diff_test = set(np.setdiff1d(y.to_series(), y_test.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the test set after data split: {diff_test}." if diff_test else ""
                 if diff_string:
@@ -687,6 +689,7 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
+
                 if self.error_callback is not None:
                     self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
                                         fold_num=i, pipeline=pipeline)
@@ -702,8 +705,8 @@ class AutoMLSearch:
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
             ordered_scores.update(scores)
-            ordered_scores.update({"# Training": len(y_train)})
-            ordered_scores.update({"# Testing": len(y_test)})
+            ordered_scores.update({"# Training": y_train.shape[0]})
+            ordered_scores.update({"# Testing": y_test.shape[0]})
 
             evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
             if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
