@@ -11,9 +11,9 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
 from evalml.automl import (
+    TimeSeriesSplit,
     TrainingValidationSplit,
-    get_default_primary_search_objective,
-    TimeSeriesSplit
+    get_default_primary_search_objective
 )
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
