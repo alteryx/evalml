@@ -290,7 +290,7 @@ def test_rename_column_names_to_numeric():
     X_renamed = _rename_column_names_to_numeric(X)
     X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
     pd.testing.assert_frame_equal(X_renamed.to_dataframe(), X_expected)
-    assert X_renamed.logical_types == {0: ww.logical_types.Categorical, 1: ww.logical_types.Categorical}
+    assert X_renamed.logical_types == {0: "Categorical", 1: "Categorical"}
 
 
 def test_convert_woodwork_types_wrapper_with_nan():

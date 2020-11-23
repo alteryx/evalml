@@ -1,5 +1,3 @@
-import pandas as pd
-import woodwork as ww
 
 from .binary_classification_objective import BinaryClassificationObjective
 
