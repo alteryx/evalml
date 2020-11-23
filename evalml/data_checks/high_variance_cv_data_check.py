@@ -1,8 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 
 
 class HighVarianceCVDataCheck(DataCheck):
@@ -35,7 +37,7 @@ class HighVarianceCVDataCheck(DataCheck):
             >>> assert check.validate("LogisticRegressionPipeline", cv_scores) == {"warnings": [{"message": "High coefficient of variation (cv >= 0.1) within cross validation scores. LogisticRegressionPipeline may not perform as estimated on unseen data.",\
                                                                                                  "data_check_name": "HighVarianceCVDataCheck",\
                                                                                                  "level": "warning",\
-                                                                                                 "code": DataCheckMessageCode.HIGH_VARIANCE,\
+                                                                                                 "code": "HIGH_VARIANCE",\
                                                                                                  "details": {"variance": 2.0/3.0, "pipeline_name": "LogisticRegressionPipeline"}}],\
                                                                                    "errors": []}
         """

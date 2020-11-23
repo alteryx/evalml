@@ -1,8 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -43,7 +45,7 @@ class IDColumnsDataCheck(DataCheck):
                                                      "warnings": [{"message": "Column 'df_id' is 100.0% or more likely to be an ID column",\
                                                                    "data_check_name": "IDColumnsDataCheck",\
                                                                    "level": "warning",\
-                                                                   "code": DataCheckMessageCode.HAS_ID_COLUMN,\
+                                                                   "code": "HAS_ID_COLUMN",\
                                                                    "details": {"column": "df_id"}}]}
         """
         messages = {

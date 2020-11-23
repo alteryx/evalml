@@ -26,7 +26,7 @@ class DataCheckMessage:
         return self.message
 
     def __eq__(self, other):
-        """Checks for equality. Two DataCheckMessage objs are considered equivalent if their message type and message are equivalent."""
+        """Checks for equality. Two DataCheckMessage objs are considered equivalent if all of their attributes are equivalent."""
         return (self.message_type == other.message_type and
                 self.message == other.message and
                 self.data_check_name == other.data_check_name and
@@ -37,9 +37,10 @@ class DataCheckMessage:
         message_dict = {
             "message": self.message,
             "data_check_name": self.data_check_name,
-            "code": self.message_code.name,
             "level": self.message_type.value,
         }
+        if self.message_code is not None:
+            message_dict.update({"code": self.message_code.name})
         if self.details is not None:
             message_dict.update({"details": self.details})
         return message_dict

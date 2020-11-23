@@ -1,9 +1,11 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckError, DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
-
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckError,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
     categorical_dtypes,
@@ -34,7 +36,7 @@ class InvalidTargetDataCheck(DataCheck):
             >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
                                                                    "data_check_name": "InvalidTargetDataCheck",\
                                                                    "level": "error",\
-                                                                   "code": DataCheckMessageCode.TARGET_HAS_NULL,\
+                                                                   "code": "TARGET_HAS_NULL",\
                                                                    "details": {"num_null_rows": 2, "pct_null_rows": 50}}],\
                                                        "warnings": []}
         """

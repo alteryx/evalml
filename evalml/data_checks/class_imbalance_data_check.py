@@ -47,12 +47,12 @@ class ClassImbalanceDataCheck(DataCheck):
         >>> assert target_check.validate(X, y) == {"errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",\
                                                                "data_check_name": "ClassImbalanceDataCheck",\
                                                                "level": "error",\
-                                                               "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,\
+                                                               "code": "CLASS_IMBALANCE_BELOW_FOLDS",\
                                                                "details": {"target_values": [0]}}],\
                                                    "warnings": [{"message": "The following labels fall below 10% of the target: [0]",\
                                                                  "data_check_name": "ClassImbalanceDataCheck",\
                                                                  "level": "warning",\
-                                                                 "code": DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,\
+                                                                 "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",\
                                                                  "details": {"target_values": [0]}}]}
         """
         messages = {

@@ -1,8 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -40,7 +42,7 @@ class HighlyNullDataCheck(DataCheck):
                                                    "warnings": [{"message": "Column 'lots_of_null' is 80.0% or more null",\
                                                                  "data_check_name": "HighlyNullDataCheck",\
                                                                  "level": "warning",\
-                                                                 "code": DataCheckMessageCode.HIGHLY_NULL.,\
+                                                                 "code": "HIGHLY_NULL",\
                                                                  "details": {"column": "lots_of_null"}}]}
         """
         messages = {

@@ -1,9 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
-
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 from evalml.utils.gen_utils import numeric_and_boolean_dtypes
 
 
@@ -46,7 +47,7 @@ class TargetLeakageDataCheck(DataCheck):
             >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 80.0% or more correlated with the target",\
                                                                              "data_check_name": "TargetLeakageDataCheck",\
                                                                              "level": "warning",\
-                                                                             "code": DataCheckMessageCode.TARGET_LEAKAGE,\
+                                                                             "code": "TARGET_LEAKAGE",\
                                                                              "details": {"column": "leak"}}],\
                                                                "errors": []}
         """

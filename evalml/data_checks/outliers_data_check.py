@@ -1,9 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
-
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 from evalml.utils import get_random_state
 from evalml.utils.gen_utils import numeric_dtypes
 
@@ -39,7 +40,7 @@ class OutliersDataCheck(DataCheck):
             >>> assert outliers_check.validate(df) == {"warnings": [{"message": "Column 'z' is likely to have outlier data",\
                                                                      "data_check_name": "OutliersDataCheck",\
                                                                      "level": "warning",\
-                                                                     "code": DataCheckMessageCode.HAS_OUTLIERS,\
+                                                                     "code": "HAS_OUTLIERS",\
                                                                      "details": {"column": "z"}}],\
                                                        "errors": []}
         """
@@ -70,5 +71,5 @@ class OutliersDataCheck(DataCheck):
                                                       data_check_name=self.name,
                                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                                       details={"column": col_name}).to_dict()
-                                    for col_name in cols])
+                                     for col_name in cols])
         return messages
