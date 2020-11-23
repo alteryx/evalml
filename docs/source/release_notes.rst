@@ -17,7 +17,7 @@ Release Notes
         * Added a ``TimeSeriesRegressionPipeline`` class :pr:`1418`
         * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
         * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`
-        * Added ``LightGBM Regressor`` to regression components :pr:``
+        * Added ``LightGBM Regressor`` to regression components :pr:`1459`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
