@@ -43,7 +43,8 @@ class FraudCost(BinaryClassificationObjective):
         Returns:
             pd.Series: pd.Series of predicted fraud labels using X and threshold
         """
-        X = self._standardize_input_type(X)
+        if X is not None:
+            X = self._standardize_input_type(X)
         ypred_proba = self._standardize_input_type(ypred_proba)
         transformed_probs = (ypred_proba.values * X[self.amount_col])
         return transformed_probs > threshold

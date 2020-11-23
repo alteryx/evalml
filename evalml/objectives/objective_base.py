@@ -59,7 +59,8 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
-        X = self._standardize_input_type(X)
+        if X is not None:
+            X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
