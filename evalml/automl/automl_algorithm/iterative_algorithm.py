@@ -139,9 +139,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
             # Pass the pipeline params to the components that need them
-            if self._pipeline_params:
-                for param_name, value in self._pipeline_params.items():
-                    if param_name in init_params:
-                        component_parameters[param_name] = value
+            for param_name, value in self._pipeline_params.items():
+                if param_name in init_params:
+                    component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
         return parameters
