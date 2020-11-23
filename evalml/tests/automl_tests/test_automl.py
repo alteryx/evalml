@@ -1778,7 +1778,7 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
 
 
-def test_automl_validates_problem_type():
+def test_automl_validates_problem_configuration():
 
     assert AutoMLSearch(problem_type="binary").problem_configuration == {}
     assert AutoMLSearch(problem_type="multiclass").problem_configuration == {}
@@ -1801,7 +1801,7 @@ def test_automl_validates_problem_type():
 @patch('evalml.pipelines.ModeBaselineMulticlassPipeline.fit')
 @patch('evalml.pipelines.MeanBaselineRegressionPipeline.score', return_value={"R2": 0.8})
 @patch('evalml.pipelines.MeanBaselineRegressionPipeline.fit')
-def test_automl_creates_algo_with_problem_types(mock_reg_fit, mock_reg_score,
+def test_automl_creates_algo_with_problem_configuration(mock_reg_fit, mock_reg_score,
                                                 mock_multi_fit, mock_multi_score,
                                                 mock_binary_fit, mock_binary_score, problem_type, X_y_binary):
     X, y = X_y_binary
