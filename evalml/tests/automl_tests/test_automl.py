@@ -1715,3 +1715,62 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     assert len(automl._results['errors']) == 1  # Raises exception at first error
     for e in automl._results['errors']:
         assert str(e) == msg
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score,
+                                              mock_multi_fit, mock_multi_score,
+                                              mock_regression_fit, mock_regression_score, problem_type,
+                                              X_y_binary, X_y_multi, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        mock_fit = mock_binary_fit
+        mock_score = mock_binary_score
+        mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        mock_fit = mock_multi_fit
+        mock_score = mock_multi_score
+        mock_score.return_value = {'Log Loss Multiclass': 1.0}
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        mock_fit = mock_regression_fit
+        mock_score = mock_regression_score
+        mock_score.return_value = {'R2': 1.0}
+
+    X = pd.DataFrame(X)
+    new_col = np.zeros(len(X))
+    new_col[:int(len(new_col) / 2)] = 1
+    X['cat col'] = pd.Series(new_col)
+    X['num col'] = pd.Series(new_col)
+    X['text col'] = pd.Series([f"{num}" for num in range(len(new_col))])
+    X = ww.DataTable(X, semantic_tags={'cat col': 'category', 'num col': 'numeric'},
+                     logical_types={'cat col': 'Categorical', 'num col': 'WholeNumber', 'text col': 'NaturalLanguage'})
+    automl = AutoMLSearch(problem_type=problem_type, max_batches=5)
+    automl.search(X, y)
+    for arg in mock_fit.call_args[0]:
+        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
+        if isinstance(arg, ww.DataTable):
+            assert arg.semantic_tags['cat col'] == {'category'}
+            assert arg.logical_types['cat col'] == ww.logical_types.Categorical
+            assert arg.semantic_tags['num col'] == {'numeric'}
+            assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
+            assert arg.semantic_tags['text col'] == set()
+            assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+    for arg in mock_score.call_args[0]:
+        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
+        if isinstance(arg, ww.DataTable):
+            assert arg.semantic_tags['cat col'] == {'category'}
+            assert arg.logical_types['cat col'] == ww.logical_types.Categorical
+            assert arg.semantic_tags['num col'] == {'numeric'}
+            assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
+            assert arg.semantic_tags['text col'] == set()
+            assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage

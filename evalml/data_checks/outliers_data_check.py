@@ -1,8 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 from evalml.utils import get_random_state
 from evalml.utils.gen_utils import numeric_dtypes
 
@@ -35,7 +37,11 @@ class OutliersDataCheck(DataCheck):
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {"warnings": [{"message": "Column 'z' is likely to have outlier data", "data_check_name": "OutliersDataCheck", "level": "warning"}],\
+            >>> assert outliers_check.validate(df) == {"warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",\
+                                                                     "data_check_name": "OutliersDataCheck",\
+                                                                     "level": "warning",\
+                                                                     "code": "HAS_OUTLIERS",\
+                                                                     "details": {"columns": ["z"]}}],\
                                                        "errors": []}
         """
         messages = {
@@ -59,7 +65,10 @@ class OutliersDataCheck(DataCheck):
 
         iqr = get_IQR(X, k=2.0)
         has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
-        warning_msg = "Column '{}' is likely to have outlier data"
-        cols = has_outliers.index[has_outliers]
-        messages["warnings"].extend([DataCheckWarning(warning_msg.format(col), self.name).to_dict() for col in cols])
+        cols = list(has_outliers.index[has_outliers])
+        warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in cols]))
+        messages["warnings"].append(DataCheckWarning(message=warning_msg,
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                                     details={"columns": cols}).to_dict())
         return messages
