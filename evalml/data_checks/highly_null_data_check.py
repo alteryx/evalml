@@ -66,5 +66,6 @@ class HighlyNullDataCheck(DataCheck):
             messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
                                                           data_check_name=self.name,
                                                           message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                                          details={"column": col_name}).to_dict() for col_name in highly_null_cols])
+                                                          details={"column": col_name}).to_dict()
+                                         for col_name in highly_null_cols])
         return messages
