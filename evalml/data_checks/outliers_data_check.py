@@ -69,5 +69,6 @@ class OutliersDataCheck(DataCheck):
         messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
                                                       data_check_name=self.name,
                                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                                      details={"column": col_name}).to_dict() for col_name in cols])
+                                                      details={"column": col_name}).to_dict()
+                                    for col_name in cols])
         return messages

@@ -37,7 +37,7 @@ class DataCheckMessage:
         message_dict = {
             "message": self.message,
             "data_check_name": self.data_check_name,
-            "code": self.message_code,
+            "code": self.message_code.name,
             "level": self.message_type.value,
         }
         if self.details is not None:

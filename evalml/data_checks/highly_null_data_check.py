@@ -40,7 +40,7 @@ class HighlyNullDataCheck(DataCheck):
                                                    "warnings": [{"message": "Column 'lots_of_null' is 80.0% or more null",\
                                                                  "data_check_name": "HighlyNullDataCheck",\
                                                                  "level": "warning",\
-                                                                 "code": DataCheckMessageCode.HIGHLY_NULL,\
+                                                                 "code": DataCheckMessageCode.HIGHLY_NULL.,\
                                                                  "details": {"column": "lots_of_null"}}]}
         """
         messages = {
