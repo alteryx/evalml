@@ -3,6 +3,7 @@ from .estimators import (
     Estimator,
     LinearRegressor,
     LightGBMClassifier,
+    LightGBMRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,

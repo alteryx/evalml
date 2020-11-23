@@ -9,6 +9,7 @@ from .classifiers import (LogisticRegressionClassifier,
                           BaselineClassifier,
                           DecisionTreeClassifier)
 from .regressors import (LinearRegressor,
+                         LightGBMRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
                          XGBoostRegressor,
