@@ -68,7 +68,7 @@ class ObjectiveBase(ABC):
 
     @staticmethod
     def _standardize_input_type(input_data):
-        """Standardize np or pd input to np for scoring
+        """Standardize input to pandas for scoring.
 
         Arguments:
             input_data (ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
