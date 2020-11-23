@@ -309,8 +309,8 @@ class AutoMLSearch:
         return search_desc + rankings_desc
 
     def _validate_problem_configuration(self, problem_configuration=None):
-        required_parameters = {'gap', 'max_delay'}
         if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            required_parameters = {'gap', 'max_delay'}
             if not problem_configuration or not all(p in problem_configuration for p in required_parameters):
                 raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
                                  f"parameters. Received {problem_configuration}.")
