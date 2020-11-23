@@ -17,7 +17,7 @@ executors:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
         environment:
-          OMP_NUM_THREADS: 1
+          OMP_NUM_THREADS: 8
 
 commands:
   install_dependencies:
