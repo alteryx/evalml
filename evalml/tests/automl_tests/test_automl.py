@@ -12,7 +12,8 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from evalml import AutoMLSearch
 from evalml.automl import (
     TrainingValidationSplit,
-    get_default_primary_search_objective
+    get_default_primary_search_objective,
+    TimeSeriesSplit
 )
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
@@ -1828,6 +1829,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
     automl = AutoMLSearch(problem_type="time series regression", problem_configuration=configuration,
                           allowed_pipelines=[Pipeline1, Pipeline2], max_iterations=4)
     automl.search(X, y, data_checks='disabled')
+    assert isinstance(automl.data_split, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:
             continue
