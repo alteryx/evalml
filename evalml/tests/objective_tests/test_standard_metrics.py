@@ -14,6 +14,7 @@ from evalml.objectives import (
     BalancedAccuracyMulticlass,
     BinaryClassificationObjective,
     CostBenefitMatrix,
+    ExpVariance,
     F1Macro,
     F1Micro,
     F1Weighted,
@@ -473,3 +474,10 @@ def test_calculate_percent_difference_negative_and_equal_numbers():
     assert LogLossBinary.calculate_percent_difference(score=-10, baseline_score=-5) == 100
     assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=10) == 150
     assert LogLossBinary.calculate_percent_difference(score=10, baseline_score=-5) == -300
+
+
+def test_calculate_percent_difference_small():
+    expected_value = 100 * -1 * np.abs(1e-9 / (1e-9))
+    assert np.isclose(ExpVariance.calculate_percent_difference(score=0, baseline_score=1e-9), expected_value, atol=1e-8)
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=1e-9, baseline_score=0))
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=0, baseline_score=0))
