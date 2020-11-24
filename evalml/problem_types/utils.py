@@ -16,7 +16,7 @@ def handle_problem_types(problem_type):
     """
     if isinstance(problem_type, str):
         try:
-            tpe = ProblemTypes[problem_type.upper()]
+            tpe = ProblemTypes._all_values[problem_type.upper()]
         except KeyError:
             raise KeyError('Problem type \'{}\' does not exist'.format(problem_type))
         return tpe

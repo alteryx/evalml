@@ -16,7 +16,9 @@ Release Notes
         * Added ``DelayedFeaturesTransformer`` :pr:`1396`
         * Added a ``TimeSeriesRegressionPipeline`` class :pr:`1418`
         * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
-        * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`.
+        * Updated data check messages to include a `"code"` and `"details"` fields :pr:`1451`
+        * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`
+        * Added a ``problem_configuration`` parameter to AutoMLSearch :pr:`1457`
         * Added `FeatureTools Component` into transformer components :pr:`1454`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
@@ -29,16 +31,19 @@ Release Notes
         * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
+        * Updated ``AutoMLSearch`` to pass ``Woodwork`` data structures to every pipeline (instead of pandas DataFrames) :pr:`1450`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
-        *  Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
+        * Updated docstrings from ``np.array`` to ``np.ndarray`` :pr:`1417`
+        * Added section on stacking ensembles in AutoMLSearch documentation :pr:`1425`
     * Testing Changes
         * Removed ``category_encoders`` from test-requirements.txt :pr:`1373`
         * Tweak codecov.io settings again to avoid flakes :pr:`1413`
         * Modified ``make lint`` to check notebook versions in the docs :pr:`1431`
         * Modified ``make lint-fix`` to standardize notebook versions in the docs :pr:`1431`
         * Use new version of pull request Github Action for dependency check (:pr:`1443`)
+        * Reduced number of workers for tests to 4 :pr:`1447`
 
 .. warning::
 

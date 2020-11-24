@@ -2,8 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.data_checks.data_check_message import DataCheckWarning
-from evalml.data_checks.id_columns_data_check import IDColumnsDataCheck
+from evalml.data_checks import (
+    DataCheckMessageCode,
+    DataCheckWarning,
+    IDColumnsDataCheck
+)
+
+id_data_check_name = IDColumnsDataCheck.name
 
 
 def test_id_cols_data_check_init():
@@ -36,18 +41,36 @@ def test_id_columns_warning():
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_3_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column 'Id' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "Id"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_1_id' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_1_id"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_2' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_2"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_3_id' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_3_id"}).to_dict()],
         "errors": []
     }
 
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
     assert id_cols_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column 'Id' is 100.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "Id"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_1_id' is 100.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_1_id"}).to_dict()],
         "errors": []
     }
 
@@ -63,17 +86,35 @@ def test_id_columns_strings():
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column 'Id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_1_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_2' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_3_id' is 95.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column 'Id' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "Id"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_1_id' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_1_id"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_2' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_2"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_3_id' is 95.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_3_id"}).to_dict()],
         "errors": []
     }
 
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
     assert id_cols_check.validate(X) == {
-        "warnings": [DataCheckWarning("Column 'Id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column 'col_1_id' is 100.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column 'Id' is 100.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "Id"}).to_dict(),
+                     DataCheckWarning(message="Column 'col_1_id' is 100.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": "col_1_id"}).to_dict()],
         "errors": []
     }
 
@@ -86,26 +127,44 @@ def test_id_cols_data_check_input_formats():
 
     #  test list
     assert id_cols_check.validate([1, 2, 3, 4, 5]) == {
-        "warnings": [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": 0}).to_dict()],
         "errors": []
     }
 
     #  test pd.Series
     assert id_cols_check.validate(pd.Series([1, 2, 3, 4, 5])) == {
-        "warnings": [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": 0}).to_dict()],
         "errors": []
     }
 
     #  test 2D list
     assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == {
-        "warnings": [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": 0}).to_dict(),
+                     DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": 1}).to_dict()],
         "errors": []
     }
 
     # test np.array
     assert id_cols_check.validate(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]])) == {
-        "warnings": [DataCheckWarning("Column '0' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict(),
-                     DataCheckWarning("Column '1' is 80.0% or more likely to be an ID column", "IDColumnsDataCheck").to_dict()],
+        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": 0}).to_dict(),
+                     DataCheckWarning(message="Column '1' is 80.0% or more likely to be an ID column",
+                                      data_check_name=id_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                      details={"column": 1}).to_dict()],
         "errors": []
     }

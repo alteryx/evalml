@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml import AutoMLSearch
 from evalml.objectives import FraudCost
@@ -32,7 +33,7 @@ def test_fraud_objective_function_amount_col(X_y_binary):
                           fraud_payout_percentage=.75,
                           amount_col="this column does not exist")
     y_predicted = pd.Series([.1, .5, .5])
-    y_true = [True, False, True]
+    y_true = pd.Series([True, False, True])
     with pytest.raises(ValueError, match="`this column does not exist` is not a valid column in X."):
         objective.objective_function(y_true, y_predicted, X)
 
@@ -102,34 +103,39 @@ def test_fraud_objective_score(X_y_binary):
     fraud_cost = FraudCost(amount_col="value")
 
     y_predicted = pd.Series([.1, .5, .5])
-    y_true = [True, False, True]
+    y_true = pd.Series([True, False, True])
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
 
     out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     assert isinstance(out, pd.Series)
-    assert out.tolist() == y_true
+    pd.testing.assert_series_equal(out, y_true, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
 
     out = fraud_cost.decision_function(y_predicted.to_numpy(), 5, extra_columns)
     assert isinstance(out, pd.Series)
-    assert out.tolist() == y_true
+    pd.testing.assert_series_equal(out, y_true, check_names=False)
+    score = fraud_cost.score(y_true, out, extra_columns)
+    assert (score == 0.0)
+
+    out = ww.DataColumn(fraud_cost.decision_function(y_predicted, 5, extra_columns))
+    pd.testing.assert_series_equal(out.to_series(), y_true, check_dtype=False, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
 
     # testing with other types of inputs
     y_predicted = np.array([.1, .5, .5])
-    extra_columns = {"value": [100, 5, 250]}
+    extra_columns = pd.DataFrame({"value": [100, 5, 250]})
     out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
-    assert out.tolist() == y_true
+    pd.testing.assert_series_equal(out, y_true, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
 
     y_predicted = pd.Series([.2, .01, .01])
     extra_columns = pd.DataFrame({"value": [100, 50, 50]})
-    y_true = [False, False, True]
-    expected_y_pred = [True, False, False]
+    y_true = pd.Series([False, False, True])
+    expected_y_pred = pd.Series([True, False, False])
     out = fraud_cost.decision_function(y_predicted, 10, extra_columns)
-    assert out.tolist() == expected_y_pred
+    pd.testing.assert_series_equal(out, expected_y_pred, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.255)

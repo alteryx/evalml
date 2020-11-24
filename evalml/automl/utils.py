@@ -14,5 +14,6 @@ def get_default_primary_search_objective(problem_type):
     problem_type = handle_problem_types(problem_type)
     objective_name = {'binary': 'Log Loss Binary',
                       'multiclass': 'Log Loss Multiclass',
-                      'regression': 'R2'}[problem_type.value]
+                      'regression': 'R2',
+                      'time series regression': 'R2'}[problem_type.value]
     return get_objective(objective_name, return_instance=True)

@@ -22,12 +22,12 @@ def test_lead_scoring_objective(X_y_binary):
 
     predicted = pd.Series([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)
-    y_true = [False, True, False, True]
+    y_true = pd.Series([False, True, False, True])
     assert out.tolist() == [False, True, False, True]
 
     predicted = np.array([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)
-    assert out.tolist() == y_true
+    assert out.tolist() == y_true.to_list()
 
     score = objective.score(out, y_true)
     assert (score == 0.5)

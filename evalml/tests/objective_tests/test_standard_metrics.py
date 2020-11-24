@@ -55,6 +55,13 @@ def test_input_contains_nan():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, np.nan], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+                objective.score(y_true, y_predicted_proba)
+
 
 def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
@@ -68,6 +75,13 @@ def test_input_contains_inf():
     for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
+
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, np.inf], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+                objective.score(y_true, y_predicted_proba)
 
 
 def test_different_input_lengths():
@@ -106,6 +120,13 @@ def test_probabilities_not_in_0_1_range():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
+
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, 3], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
+                objective.score(y_true, y_predicted_proba)
 
 
 def test_negative_with_log():

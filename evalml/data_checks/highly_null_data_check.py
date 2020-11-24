@@ -1,7 +1,10 @@
 import pandas as pd
 
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -36,7 +39,11 @@ class HighlyNullDataCheck(DataCheck):
             ... })
             >>> null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
             >>> assert null_check.validate(df) == {"errors": [],\
-                                                   "warnings": [{"message": "Column 'lots_of_null' is 80.0% or more null", "data_check_name": "HighlyNullDataCheck", "level": "warning"}]}
+                                                   "warnings": [{"message": "Column 'lots_of_null' is 80.0% or more null",\
+                                                                 "data_check_name": "HighlyNullDataCheck",\
+                                                                 "level": "warning",\
+                                                                 "code": "HIGHLY_NULL",\
+                                                                 "details": {"column": "lots_of_null"}}]}
         """
         messages = {
             "warnings": [],
@@ -48,9 +55,17 @@ class HighlyNullDataCheck(DataCheck):
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
             warning_msg = "Column '{}' is more than 0% null"
-            messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name), self.name).to_dict() for col_name in all_null_cols])
+            messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
+                                                          data_check_name=self.name,
+                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                                          details={"column": col_name}).to_dict()
+                                         for col_name in all_null_cols])
         else:
             highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
             warning_msg = "Column '{}' is {}% or more null"
-            messages["warnings"].extend([DataCheckWarning(warning_msg.format(col_name, self.pct_null_threshold * 100), self.name).to_dict() for col_name in highly_null_cols])
+            messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
+                                                          data_check_name=self.name,
+                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                                          details={"column": col_name}).to_dict()
+                                         for col_name in highly_null_cols])
         return messages
