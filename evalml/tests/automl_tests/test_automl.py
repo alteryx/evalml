@@ -1403,7 +1403,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     # Use the old default when all are None
     automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary")
     automl.search(X, y, data_checks=None)
-    assert len(automl.results["pipeline_results"]) == 5
+    assert len(automl.results["pipeline_results"]) == len(get_estimators(problem_type='binary')) + 1
 
     # Use max_iterations when both max_iterations and max_batches are set
     automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", max_batches=10,
@@ -1420,7 +1420,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
 @pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
 def test_max_batches_must_be_non_negative(max_batches):
 
-    with pytest.raises(ValueError, match=f"Parameter max batches must be None or non-negative. Received {max_batches}."):
+    with pytest.raises(ValueError, match=f"Parameter max_batches must be None or non-negative. Received {max_batches}."):
         AutoMLSearch(problem_type="binary", max_batches=max_batches)
 
 
@@ -1705,7 +1705,8 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl.search(X, y)
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
-    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    # first automl batch, times 3 for 3-fold cross validation
+    assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
     for e in automl._results['errors']:
         assert str(e) == msg
 
