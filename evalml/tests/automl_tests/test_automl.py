@@ -1794,23 +1794,6 @@ def test_automl_validates_problem_configuration():
     assert problem_config == {"max_delay": 2, "gap": 3}
 
 
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-@patch('evalml.pipelines.ModeBaselineBinaryPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.ModeBaselineBinaryPipeline.fit')
-@patch('evalml.pipelines.ModeBaselineMulticlassPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.ModeBaselineMulticlassPipeline.fit')
-@patch('evalml.pipelines.MeanBaselineRegressionPipeline.score', return_value={"R2": 0.8})
-@patch('evalml.pipelines.MeanBaselineRegressionPipeline.fit')
-def test_automl_creates_algo_with_problem_configuration(mock_reg_fit, mock_reg_score,
-                                                        mock_multi_fit, mock_multi_score,
-                                                        mock_binary_fit, mock_binary_score, problem_type, X_y_binary):
-    X, y = X_y_binary
-    problem_params = {"gap": 3, "max_delay": 2, "extra": "foo"}
-    automl = AutoMLSearch(problem_type=problem_type, problem_configuration=problem_params, max_iterations=1)
-    automl.search(X, y)
-    assert automl._automl_algorithm._pipeline_params == problem_params
-
-
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
 def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
@@ -1827,7 +1810,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
         component_graph = ["Delayed Feature Transformer", "Elastic Net Regressor"]
 
     automl = AutoMLSearch(problem_type="time series regression", problem_configuration=configuration,
-                          allowed_pipelines=[Pipeline1, Pipeline2], max_iterations=4)
+                          allowed_pipelines=[Pipeline1, Pipeline2], max_batches=2)
     automl.search(X, y)
     assert isinstance(automl.data_split, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
