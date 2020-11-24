@@ -1424,7 +1424,7 @@ def test_max_batches_must_be_non_negative(max_batches):
 
 
 def test_stopping_criterion_bad():
-    with pytest.raises(TypeError, match=f"Parameter max_time must be a float, int, string or None. Received \('test',\)."):
+    with pytest.raises(TypeError, match=r"Parameter max_time must be a float, int, string or None. Received \('test',\)."):
         AutoMLSearch(problem_type="binary", max_time=('test',))
     with pytest.raises(ValueError, match=f"Parameter max_batches must be None or non-negative. Received -1."):
         AutoMLSearch(problem_type="binary", max_batches=-1)
