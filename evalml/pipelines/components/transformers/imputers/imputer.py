@@ -71,7 +71,6 @@ class Imputer(Transformer):
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         X_copy = X.copy()
-
         X_null_dropped = X_copy.drop(self._all_null_cols, axis=1, errors='ignore')
 
         X_numerics = X_null_dropped[[col for col in numeric_cols if col not in self._all_null_cols]]

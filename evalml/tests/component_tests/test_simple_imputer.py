@@ -105,13 +105,21 @@ def test_simple_imputer_col_with_non_numeric():
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
 def test_imputer_all_bool(data_type):
-    X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
+    X = pd.DataFrame([True, True, False, True, True], dtype=object)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='category')
     y = pd.Series([1, 0, 0, 1, 0])
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=object)
     if data_type == 'ww':
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
-        X_expected_arr = X = ww.DataTable(X_expected_arr)
+    imputer = SimpleImputer()
+    imputer.fit(X, y)
+    X_t = imputer.transform(X)
+    assert_frame_equal(X_expected_arr, X_t)
+
+    X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='category')
+    if data_type == 'ww':
+        X = ww.DataTable(X)
     imputer = SimpleImputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)
@@ -123,12 +131,11 @@ def test_imputer_all_bool(data_type):
     })
 
     X_multi_expected_arr = pd.DataFrame({
-        "bool with nan": pd.Series([True, False, False, False, False], dtype=object),
-        "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+        "bool with nan": pd.Series([True, False, False, False, False], dtype='category'),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype=object),
     })
     if data_type == 'ww':
         X_multi = ww.DataTable(X_multi)
-        X_multi_expected_arr = X = ww.DataTable(X_multi_expected_arr)
     imputer = SimpleImputer()
     imputer.fit(X_multi, y)
     X_multi_t = imputer.transform(X_multi)
