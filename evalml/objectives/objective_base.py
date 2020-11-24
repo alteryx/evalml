@@ -126,7 +126,7 @@ class ObjectiveBase(ABC):
         if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 
-        if baseline_score == 0:
+        if np.isclose(baseline_score, 0, atol=1e-10):
             return np.nan
 
         if baseline_score == score:
