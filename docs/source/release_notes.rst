@@ -16,7 +16,7 @@ Release Notes
         * Added ``DelayedFeaturesTransformer`` :pr:`1396`
         * Added a ``TimeSeriesRegressionPipeline`` class :pr:`1418`
         * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
-        * Updated data check messages to include a `"code"` and `"details"` fields :pr:`1451`
+        * Updated data check messages to include a `"code"` and `"details"` fields :pr:`1451`, :pr:`1462`
         * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`
         * Added a ``problem_configuration`` parameter to AutoMLSearch :pr:`1457`
         * Added `FeatureTools Component` into transformer components :pr:`1454`
