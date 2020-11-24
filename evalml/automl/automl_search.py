@@ -206,7 +206,7 @@ class AutoMLSearch:
         self.additional_objectives = additional_objectives
 
         if not isinstance(max_time, (int, float, str, type(None))):
-            raise TypeError(f"Parameter max_time must be a float, int, string or None. Received {str(max_time)}.")
+            raise TypeError(f"Parameter max_time must be a float, int, string or None. Received {type(max_time)} with value {str(max_time)}..")
         if isinstance(max_time, (int, float)) and max_time <= 0:
             raise ValueError(f"Parameter max_time must be None or non-negative. Received {max_time}.")
         if max_batches is not None and max_batches <= 0:
