@@ -740,7 +740,7 @@ class AutoMLSearch:
         high_variance_cv = False
 
         if high_variance_cv_check_results["warnings"]:
-            logger.warning(high_variance_cv_check_results["warnings"][0])
+            logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
             high_variance_cv = True
 
         self._results['pipeline_results'][pipeline_id] = {
