@@ -105,8 +105,8 @@ def test_simple_imputer_col_with_non_numeric():
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
 def test_imputer_all_bool(data_type):
-    X = pd.DataFrame([True, True, False, True, True], dtype=object)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='category')
+    X = pd.DataFrame([True, True, False, True, True], dtype=bool)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
     y = pd.Series([1, 0, 0, 1, 0])
     if data_type == 'ww':
         X = ww.DataTable(X)
