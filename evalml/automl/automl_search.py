@@ -19,7 +19,10 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.data_splitters import TrainingValidationSplit
+from evalml.automl.data_splitters import (
+    TimeSeriesSplit,
+    TrainingValidationSplit
+)
 from evalml.automl.utils import get_default_primary_search_objective
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -96,6 +99,7 @@ class AutoMLSearch:
                  optimize_thresholds=False,
                  ensembling=False,
                  max_batches=None,
+                 problem_configuration=None,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -162,6 +166,9 @@ class AutoMLSearch:
 
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
+
+            problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
+                in time series problems, values should be passed in for the gap and max_delay variables.
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -246,6 +253,7 @@ class AutoMLSearch:
         self._baseline_cv_scores = {}
 
         self._validate_problem_type()
+        self.problem_configuration = self._validate_problem_configuration(problem_configuration)
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -299,6 +307,14 @@ class AutoMLSearch:
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
 
         return search_desc + rankings_desc
+
+    def _validate_problem_configuration(self, problem_configuration=None):
+        if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            required_parameters = {'gap', 'max_delay'}
+            if not problem_configuration or not all(p in problem_configuration for p in required_parameters):
+                raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
+                                 f"parameters. Received {problem_configuration}.")
+        return problem_configuration or {}
 
     def _validate_data_checks(self, data_checks):
         """Validate data_checks parameter.
@@ -363,6 +379,9 @@ class AutoMLSearch:
             default_data_split = KFold(n_splits=3, random_state=self.random_state, shuffle=True)
         elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
+        elif self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            default_data_split = TimeSeriesSplit(n_splits=3, gap=self.problem_configuration['gap'],
+                                                 max_delay=self.problem_configuration['max_delay'])
 
         if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
             default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
@@ -456,7 +475,8 @@ class AutoMLSearch:
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling
+            ensembling=run_ensembling,
+            pipeline_params=self.problem_configuration
         )
 
         log_title(logger, "Beginning pipeline search")
@@ -593,7 +613,7 @@ class AutoMLSearch:
             baseline = ModeBaselineBinaryPipeline(parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = ModeBaselineMulticlassPipeline(parameters={})
-        elif self.problem_type == ProblemTypes.REGRESSION:
+        else:
             baseline = MeanBaselineRegressionPipeline(parameters={})
 
         pipelines = [baseline]

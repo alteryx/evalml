@@ -11,6 +11,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
 from evalml.automl import (
+    TimeSeriesSplit,
     TrainingValidationSplit,
     get_default_primary_search_objective
 )
@@ -41,7 +42,8 @@ from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -1774,3 +1776,45 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
             assert arg.semantic_tags['text col'] == set()
             assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+
+
+def test_automl_validates_problem_configuration():
+
+    assert AutoMLSearch(problem_type="binary").problem_configuration == {}
+    assert AutoMLSearch(problem_type="multiclass").problem_configuration == {}
+    assert AutoMLSearch(problem_type="regression").problem_configuration == {}
+    msg = "user_parameters must be a dict containing values for at least the gap and max_delay parameters"
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(problem_type="time series regression")
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(problem_type="time series regression", problem_configuration={"gap": 3})
+
+    problem_config = AutoMLSearch(problem_type="time series regression",
+                                  problem_configuration={"max_delay": 2, "gap": 3}).problem_configuration
+    assert problem_config == {"max_delay": 2, "gap": 3}
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
+    X, y = X_y_regression
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    class Pipeline1(TimeSeriesRegressionPipeline):
+        name = "Pipeline 1"
+        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+
+    class Pipeline2(TimeSeriesRegressionPipeline):
+        name = "Pipeline 2"
+        component_graph = ["Delayed Feature Transformer", "Elastic Net Regressor"]
+
+    automl = AutoMLSearch(problem_type="time series regression", problem_configuration=configuration,
+                          allowed_pipelines=[Pipeline1, Pipeline2], max_batches=2)
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TimeSeriesSplit)
+    for result in automl.results['pipeline_results'].values():
+        if result["id"] == 0:
+            continue
+        assert result['parameters']['Delayed Feature Transformer'] == configuration
+        assert result['parameters']['pipeline'] == configuration
