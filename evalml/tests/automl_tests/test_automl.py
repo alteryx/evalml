@@ -1802,8 +1802,8 @@ def test_automl_validates_problem_configuration():
 @patch('evalml.pipelines.MeanBaselineRegressionPipeline.score', return_value={"R2": 0.8})
 @patch('evalml.pipelines.MeanBaselineRegressionPipeline.fit')
 def test_automl_creates_algo_with_problem_configuration(mock_reg_fit, mock_reg_score,
-                                                mock_multi_fit, mock_multi_score,
-                                                mock_binary_fit, mock_binary_score, problem_type, X_y_binary):
+                                                        mock_multi_fit, mock_multi_score,
+                                                        mock_binary_fit, mock_binary_score, problem_type, X_y_binary):
     X, y = X_y_binary
     problem_params = {"gap": 3, "max_delay": 2, "extra": "foo"}
     automl = AutoMLSearch(problem_type=problem_type, problem_configuration=problem_params, max_iterations=1)
