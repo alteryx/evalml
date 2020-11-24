@@ -18,6 +18,7 @@ Release Notes
         * Removed ``core-requirements.txt`` from the package distribution :pr:`1429`
         * Updated data check messages to include a `"code"` and `"details"` fields :pr:`1451`, :pr:`1462`
         * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`
+        * Added a ``problem_configuration`` parameter to AutoMLSearch :pr:`1457`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
