@@ -1325,7 +1325,7 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     ensemble_nth_batch = len(automl.allowed_pipelines) + 1
 
     if max_batches is None:
-        n_results = 5
+        n_results = len(automl.allowed_pipelines) + 1
         max_batches = 1
         # _automl_algorithm will include all allowed_pipelines in the first batch even
         # if they are not searched over. That is why n_automl_pipelines does not equal
