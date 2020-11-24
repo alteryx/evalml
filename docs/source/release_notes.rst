@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.16.0 Nov. 24, 2020**
+    * Enhancements
         * Updated pipelines and ``make_pipeline`` to accept ``Woodwork`` inputs :pr:`1393`
         * Updated components to accept ``Woodwork`` inputs :pr:`1423`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
