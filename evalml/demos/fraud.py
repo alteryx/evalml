@@ -1,7 +1,7 @@
 import os
 
 from evalml.preprocessing import load_data
-
+import woodwork as ww
 
 def load_fraud(n_rows=None, verbose=True):
     """Load credit card fraud dataset.
@@ -23,5 +23,6 @@ def load_fraud(n_rows=None, verbose=True):
                      target="fraud",
                      n_rows=n_rows,
                      verbose=verbose)
-
+    X = ww.DataTable(X)
+    y = ww.DataColumn(y)
     return X, y

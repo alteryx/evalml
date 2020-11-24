@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
+import woodwork as ww
 
 
 def load_breast_cancer():
@@ -12,4 +13,6 @@ def load_breast_cancer():
     X = pd.DataFrame(data.data, columns=data.feature_names)
     y = pd.Series(data.target)
     y = y.map(lambda x: data["target_names"][x])
+    X = ww.DataTable(X)
+    y = ww.DataColumn(y)
     return X, y
