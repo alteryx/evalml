@@ -12,14 +12,16 @@ class FeatureTools(Transformer):
     name = "Featuretools"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=0, **kwargs):
+    def __init__(self, max_depth=2, random_state=0, **kwargs):
         """Allows for featuretools to be used in EvalML
 
         Arguments:
+            max_depth (int): The max allowed depth of features. Defaults to 2
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-        parameters = {}
+        parameters = {"max_depth": max_depth}
         self._ft_es = EntitySet()
+        self.max_depth = max_depth
         self.features = None
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
@@ -47,7 +49,8 @@ class FeatureTools(Transformer):
         es = self._make_entity_set(X)
         self.features = dfs(entityset=es,
                             target_entity='X',
-                            features_only=True)
+                            features_only=True,
+                            max_depth=self.max_depth)
         return self
 
     def transform(self, X, y=None):
