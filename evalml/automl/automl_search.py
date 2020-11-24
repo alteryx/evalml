@@ -256,6 +256,7 @@ class AutoMLSearch:
 
         self._validate_problem_type()
         self.problem_configuration = self._validate_problem_configuration(problem_configuration)
+        self.data_split_seeds = []
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -624,6 +625,7 @@ class AutoMLSearch:
 
         X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
+        self.data_split_seeds.append(self.data_split.random_state.get_state())
         for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
