@@ -1417,7 +1417,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     assert len(automl.results["pipeline_results"]) == 4
 
 
-@pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
+@pytest.mark.parametrize("max_batches", [-1, -10, -np.inf])
 def test_max_batches_must_be_non_negative(max_batches):
     with pytest.raises(ValueError, match=f"Parameter max_batches must be None or non-negative. Received {max_batches}."):
         AutoMLSearch(problem_type="binary", max_batches=max_batches)
