@@ -142,7 +142,7 @@ def test_pipeline_limits(mock_fit_binary, mock_score_binary,
     automl.search(X, y)
     out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
-    assert len(automl.results['pipeline_results']) >= 1
+    assert len(automl.results['pipeline_results']) >= 5
 
     caplog.clear()
     automl = AutoMLSearch(problem_type=automl_type, max_time=1, max_iterations=5)
@@ -156,8 +156,9 @@ def test_pipeline_limits(mock_fit_binary, mock_score_binary,
     automl = AutoMLSearch(problem_type=automl_type)
     automl.search(X, y)
     out = caplog.text
-    assert "Using default limit of max_iterations=5." in out
-    assert len(automl.results['pipeline_results']) <= 5
+    assert "Using default limit of max_batches=1." in out
+    assert "Searching up to 1 batches for a total of" in out
+    assert len(automl.results['pipeline_results']) > 5
 
     caplog.clear()
     automl = AutoMLSearch(problem_type=automl_type, max_time=1e-16)
