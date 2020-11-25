@@ -205,22 +205,21 @@ class AutoMLSearch:
         additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
 
-        if max_time is None or isinstance(max_time, (int, float)):
-            self.max_time = max_time
-        elif isinstance(max_time, str):
-            self.max_time = convert_to_seconds(max_time)
-        else:
-            raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-
-        if max_batches is not None and max_batches <= 0:
-            raise ValueError(f"Parameter max batches must be None or non-negative. Received {max_batches}.")
+        if not isinstance(max_time, (int, float, str, type(None))):
+            raise TypeError(f"Parameter max_time must be a float, int, string or None. Received {type(max_time)} with value {str(max_time)}..")
+        if isinstance(max_time, (int, float)) and max_time < 0:
+            raise ValueError(f"Parameter max_time must be None or non-negative. Received {max_time}.")
+        if max_batches is not None and max_batches < 0:
+            raise ValueError(f"Parameter max_batches must be None or non-negative. Received {max_batches}.")
+        if max_iterations is not None and max_iterations < 0:
+            raise ValueError(f"Parameter max_iterations must be None or non-negative. Received {max_iterations}.")
+        self.max_time = convert_to_seconds(max_time) if isinstance(max_time, str) else max_time
+        self.max_iterations = max_iterations
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
-
-        self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not self.max_batches:
-            self.max_iterations = 5
-            logger.info("Using default limit of max_iterations=5.\n")
+            self.max_batches = 1
+            logger.info("Using default limit of max_batches=1.\n")
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
@@ -287,6 +286,7 @@ class AutoMLSearch:
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Iterations: {self.max_iterations}\n"
+            f"Max Batches: {self.max_batches}\n"
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"

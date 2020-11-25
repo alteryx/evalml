@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.16.0 Nov. 24, 2020**
+    * Enhancements
         * Updated pipelines and ``make_pipeline`` to accept ``Woodwork`` inputs :pr:`1393`
         * Updated components to accept ``Woodwork`` inputs :pr:`1423`
         * Added ability to freeze hyperparameters for ``AutoMLSearch`` :pr:`1284`
@@ -25,12 +33,14 @@ Release Notes
         * Updated enum classes to show possible enum values as attributes :pr:`1391`
         * Updated calls to ``Woodwork``'s ``to_pandas()`` to ``to_series()`` and ``to_dataframe()`` :pr:`1428`
         * Fixed bug in OHE where column names were not guaranteed to be unique :pr:`1349`
+        * Fixed bug with percent improvement of ``ExpVariance`` objective on data with highly skewed target :pr:`1467`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
         * Reverted changes from :pr:`1337` :pr:`1409`
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
         * Updated ``AutoMLSearch`` to pass ``Woodwork`` data structures to every pipeline (instead of pandas DataFrames) :pr:`1450`
+        * Update ``AutoMLSearch`` to default to ``max_batches=1`` instead of ``max_iterations=5`` :pr:`1452`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`
