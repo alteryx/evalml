@@ -2,20 +2,27 @@ from unittest.mock import patch
 
 import featuretools as ft
 import pandas as pd
+import pytest
 import woodwork as ww
 
-from evalml.pipelines.components import FeatureTools
-from evalml.utils.gen_utils import _rename_column_names_to_numeric
+from evalml.pipelines.components import DFSTransformer
+
+
+def test_index_errors(X_y_binary):
+    with pytest.raises(ValueError, match="Index provided must be string"):
+        DFSTransformer(index=0)
+
+    with pytest.raises(ValueError, match="Index provided must be string"):
+        DFSTransformer(index=None)
 
 
 def test_numeric_columns(X_y_multi):
     X, y = X_y_multi
     X_pd = pd.DataFrame(X)
-    X_num = _rename_column_names_to_numeric(X_pd)
 
-    feature = FeatureTools()
-    feature.fit(X_num, y)
-    feature.transform(X_num)
+    feature = DFSTransformer()
+    feature.fit(X_pd, y)
+    feature.transform(X_pd)
 
 
 @patch('evalml.pipelines.components.transformers.preprocessing.featuretools.dfs')
@@ -29,7 +36,7 @@ def test_index(mock_dfs, mock_calculate_feature_matrix, X_y_multi):
     X_new_index['index'] = new_index
 
     # check if _make_entity_set keeps the intended index
-    feature = FeatureTools()
+    feature = DFSTransformer()
     feature.fit(X_new_index)
     feature.transform(X_new_index)
     arg_es = mock_dfs.call_args[1]['entityset'].entities[0].df['index']
@@ -46,24 +53,6 @@ def test_index(mock_dfs, mock_calculate_feature_matrix, X_y_multi):
     assert arg_tr.to_list() == index
 
 
-def test_input_types(X_y_binary, X_y_multi, X_y_regression):
-    datasets = locals()
-    for dataset in datasets.values():
-        X, y = dataset
-
-        feature = FeatureTools()
-        feature.fit(X, y)
-        feature.transform(X)
-
-        X_pd = pd.DataFrame(X)
-        feature.fit(X_pd, y)
-        feature.transform(X_pd)
-
-        X_ww = ww.DataTable(X_pd)
-        feature.fit(X_ww)
-        feature.transform(X_ww)
-
-
 def test_transform(X_y_binary, X_y_multi, X_y_regression):
     datasets = locals()
     for dataset in datasets.values():
@@ -74,12 +63,19 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         es = es.entity_from_dataframe(entity_id="X", dataframe=X_pd, index='index', make_index=True)
         matrix, features = ft.dfs(entityset=es, target_entity="X")
 
-        feature = FeatureTools()
+        feature = DFSTransformer()
         feature.fit(X)
         X_feature_matrix = feature.transform(X)
 
         pd.testing.assert_frame_equal(matrix, X_feature_matrix)
         assert features == feature.features
+
+        feature.fit(X, y)
+        feature.transform(X)
+
+        X_ww = ww.DataTable(X_pd)
+        feature.fit(X_ww)
+        feature.transform(X_ww)
 
 
 def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
@@ -95,7 +91,7 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         es = es.entity_from_dataframe(entity_id="X", dataframe=X_transform, index='index', make_index=True)
         matrix, features = ft.dfs(entityset=es, target_entity="X")
 
-        feature = FeatureTools()
+        feature = DFSTransformer()
         feature.fit(X_fit)
         X_feature_matrix = feature.transform(X_transform)
 

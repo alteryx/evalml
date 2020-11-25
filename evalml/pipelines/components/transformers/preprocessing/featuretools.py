@@ -7,21 +7,24 @@ from evalml.utils.gen_utils import (
 )
 
 
-class FeatureTools(Transformer):
-    """Featuretools component that generates features for ww.DataTables and pd.DataFrames"""
-    name = "Featuretools"
+class DFSTransformer(Transformer):
+    """Featuretools DFS component that generates features for ww.DataTables and pd.DataFrames"""
+    name = "DFS Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, max_depth=2, random_state=0, **kwargs):
+    def __init__(self, index='index', random_state=0, **kwargs):
         """Allows for featuretools to be used in EvalML
 
         Arguments:
-            max_depth (int): The max allowed depth of features. Defaults to 2
+            index (string): The name of the column that contains the indices. If no column with this name exists,
+                then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-        parameters = {"max_depth": max_depth}
-        self._ft_es = EntitySet()
-        self.max_depth = max_depth
+        parameters = {"index": index}
+        if not isinstance(index, str):
+            raise ValueError("Index provided must be string")
+
+        self.index = index
         self.features = None
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
@@ -30,14 +33,15 @@ class FeatureTools(Transformer):
     def _make_entity_set(self, X):
         """helper method that creates and returns the entity set given the datatable X
         """
-        if 'index' not in X.columns:
-            es = self._ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index='index', make_index=True)
+        ft_es = EntitySet()
+        if self.index not in X.columns:
+            es = ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index=self.index, make_index=True)
         else:
-            es = self._ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index='index')
+            es = ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index=self.index)
         return es
 
     def fit(self, X, y=None):
-        """Fits the FeatureTools Transformer component
+        """Fits the DFSTransformer Transformer component
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
@@ -49,8 +53,7 @@ class FeatureTools(Transformer):
         es = self._make_entity_set(X)
         self.features = dfs(entityset=es,
                             target_entity='X',
-                            features_only=True,
-                            max_depth=self.max_depth)
+                            features_only=True)
         return self
 
     def transform(self, X, y=None):

@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added `FeatureTools Component` into transformer components :pr:`1454`
+        * Added `DFS Transformer` component into transformer components :pr:`1454`
     * Fixes
     * Changes
     * Documentation Changes
