@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
     * Testing Changes
 
