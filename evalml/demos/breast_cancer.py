@@ -1,6 +1,6 @@
 import pandas as pd
-from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
 import woodwork as ww
+from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
 
 
 def load_breast_cancer():

@@ -1,6 +1,7 @@
 import pandas as pd
-from sklearn.datasets import load_diabetes as load_diabetes_sk
 import woodwork as ww
+from sklearn.datasets import load_diabetes as load_diabetes_sk
+
 
 def load_diabetes():
     """Load diabetes dataset. Regression problem

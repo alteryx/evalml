@@ -1,7 +1,9 @@
 import os
 
-from evalml.preprocessing import load_data
 import woodwork as ww
+
+from evalml.preprocessing import load_data
+
 
 def load_fraud(n_rows=None, verbose=True):
     """Load credit card fraud dataset.

@@ -1,7 +1,7 @@
 import pandas as pd
+import woodwork as ww
 from sklearn.datasets import load_wine as load_wine_sk
 
-import woodwork as ww
 
 def load_wine():
     """Load wine dataset. Multiclass problem

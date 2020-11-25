@@ -19,7 +19,12 @@ from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise, jupyter_check
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    import_or_raise,
+    jupyter_check
+)
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
@@ -33,6 +38,10 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
+    y_true = _convert_to_woodwork_structure(y_true)
+    y_predicted = _convert_to_woodwork_structure(y_predicted)
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
     if isinstance(y_true, pd.Series):
         y_true = y_true.to_numpy()
     if isinstance(y_predicted, pd.Series):
@@ -216,6 +225,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     return _go.Figure(layout=layout, data=graph_data)
 
 
+
 def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
     """Generate and display a confusion matrix plot.
 
@@ -234,10 +244,10 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
-    if isinstance(y_true, pd.Series):
-        y_true = y_true.to_numpy()
-    if isinstance(y_pred, pd.Series):
-        y_pred = y_pred.to_numpy()
+    # if isinstance(y_true, pd.Series):
+    #     y_true = y_true.to_numpy()
+    # if isinstance(y_pred, pd.Series):
+    #     y_pred = y_pred.to_numpy()
 
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
     conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
