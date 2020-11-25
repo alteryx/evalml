@@ -272,24 +272,37 @@ def regression_core_objectives():
 
 
 @pytest.fixture
-def stackable_classifiers():
+def stackable_classifiers(helper_functions):
     stackable_classifiers = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_classifiers.append(estimator_class())
+            stackable_classifiers.append(helper_functions.safe_init_with_njobs_1(estimator_class))
     return stackable_classifiers
 
 
 @pytest.fixture
-def stackable_regressors():
+def stackable_regressors(helper_functions):
     stackable_regressors = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         if (set(supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_regressors.append(estimator_class())
+            stackable_regressors.append(helper_functions.safe_init_with_njobs_1(estimator_class))
     return stackable_regressors
+
+
+@pytest.fixture
+def helper_functions():
+    class Helpers:
+        @staticmethod
+        def safe_init_with_njobs_1(component_class):
+            try:
+                component = component_class(n_jobs=1)
+            except TypeError:
+                component = component_class()
+            return component
+    return Helpers

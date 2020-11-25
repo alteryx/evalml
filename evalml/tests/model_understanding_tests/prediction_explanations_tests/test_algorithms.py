@@ -85,7 +85,10 @@ N_FEATURES = 20
 
 def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain):
     """Helper function to compute the SHAP values for n_points_to_explain for a given pipeline."""
-    pipeline = pipeline_class({}, random_state=0)
+    try:
+        pipeline = pipeline_class({pipeline_class.component_graph[-1].name: {'n_jobs': 1}}, random_state=0)
+    except ValueError:
+        pipeline = pipeline_class(parameters={}, random_state=0)
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
     return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
