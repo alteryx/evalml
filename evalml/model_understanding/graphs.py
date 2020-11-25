@@ -95,6 +95,10 @@ def precision_recall_curve(y_true, y_pred_proba):
                   * `thresholds`: Threshold values used to produce the precision and recall.
                   * `auc_score`: The area under the ROC curve.
     """
+    y_true = _convert_to_woodwork_structure(y_true)
+    y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
     return {'precision': precision,
@@ -117,12 +121,6 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
-
-    if isinstance(y_true, pd.Series):
-        y_true = y_true.to_numpy()
-    if isinstance(y_pred_proba, (pd.Series, pd.DataFrame)):
-        y_pred_proba = y_pred_proba.to_numpy()
-
     precision_recall_curve_data = precision_recall_curve(y_true, y_pred_proba)
     title = 'Precision-Recall{}'.format('' if title_addition is None else (' ' + title_addition))
     layout = _go.Layout(title={'text': title},
@@ -151,14 +149,14 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    if isinstance(y_true, pd.Series):
-        y_true = y_true.to_numpy()
-    if isinstance(y_pred_proba, (pd.Series, pd.DataFrame)):
-        y_pred_proba = y_pred_proba.to_numpy()
-
-    if y_pred_proba.ndim == 1:
+    y_true = _convert_to_woodwork_structure(y_true)
+    y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    if len(y_pred_proba.shape) == 1:
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
         y_pred_proba = y_pred_proba.reshape(-1, 1)
     if y_pred_proba.shape[1] == 2:
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
         y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
 
     nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
@@ -225,7 +223,6 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     return _go.Figure(layout=layout, data=graph_data)
 
 
-
 def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
     """Generate and display a confusion matrix plot.
 
@@ -243,11 +240,6 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
-
-    # if isinstance(y_true, pd.Series):
-    #     y_true = y_true.to_numpy()
-    # if isinstance(y_pred, pd.Series):
-    #     y_pred = y_pred.to_numpy()
 
     conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
     conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
@@ -290,6 +282,11 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     Returns:
         Mean feature importance scores over 5 shuffles.
     """
+    X = _convert_to_woodwork_structure(X)
+    y = _convert_to_woodwork_structure(y)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    y = _convert_woodwork_types_wrapper(y.to_series())
+
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
@@ -436,8 +433,9 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             over all samples of X and the values used to calculate those predictions.
 
     """
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
