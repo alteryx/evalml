@@ -1,4 +1,3 @@
-import pandas as pd
 
 from .binary_classification_objective import BinaryClassificationObjective
 
@@ -36,18 +35,15 @@ class FraudCost(BinaryClassificationObjective):
 
         Arguments:
             ypred_proba (pd.Series): Predicted probablities
-            X (pd.DataFrame): Dataframe containing transaction amount
             threshold (float): Dollar threshold to determine if transaction is fraud
+            X (ww.DataTable, pd.DataFrame): Data containing transaction amounts
 
         Returns:
             pd.Series: pd.Series of predicted fraud labels using X and threshold
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        if not isinstance(ypred_proba, pd.Series):
-            ypred_proba = pd.Series(ypred_proba)
-
+        if X is not None:
+            X = self._standardize_input_type(X)
+        ypred_proba = self._standardize_input_type(ypred_proba)
         transformed_probs = (ypred_proba.values * X[self.amount_col])
         return transformed_probs > threshold
 
@@ -56,20 +52,16 @@ class FraudCost(BinaryClassificationObjective):
 
         Arguments:
             y_predicted (pd.Series): Predicted fraud labels
-             y_true (pd.Series): True fraud labels
-            X (pd.DataFrame): pd.Dataframe with transaction amounts
+            y_true (pd.Series): True fraud labels
+            X (ww.DataTable, pd.DataFrame): Data with transaction amounts
 
         Returns:
             float: Amount lost to fraud per transaction
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-
-        if not isinstance(y_predicted, pd.Series):
-            y_predicted = pd.Series(y_predicted)
-
-        if not isinstance(y_true, pd.Series):
-            y_true = pd.Series(y_true)
+        X = self._standardize_input_type(X)
+        y_true = self._standardize_input_type(y_true)
+        y_predicted = self._standardize_input_type(y_predicted)
+        self.validate_inputs(y_true, y_predicted)
 
         # extract transaction using the amount columns in users data
         try:
