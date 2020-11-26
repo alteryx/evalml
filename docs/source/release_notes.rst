@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
