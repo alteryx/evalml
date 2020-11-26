@@ -151,13 +151,14 @@ def roc_curve(y_true, y_pred_proba):
     """
     y_true = _convert_to_woodwork_structure(y_true)
     y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
     if len(y_pred_proba.shape) == 1:
         y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
         y_pred_proba = y_pred_proba.reshape(-1, 1)
     if y_pred_proba.shape[1] == 2:
         y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
         y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
+    import pdb; pdb.set_trace()
 
     nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
     y_true = y_true[~nan_indices]
