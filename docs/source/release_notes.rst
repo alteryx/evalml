@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
+        * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
     * Testing Changes
 
