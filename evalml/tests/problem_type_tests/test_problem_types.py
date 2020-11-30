@@ -95,6 +95,14 @@ def test_detect_problem_type_regression():
     assert detect_problem_type(y_float) == ProblemTypes.REGRESSION
 
 
+def test_numeric_extensions():
+    y_Int64 = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], dtype='Int64')
+    y_Int64_null = pd.Series([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, None], dtype='Int64')
+
+    assert detect_problem_type(y_Int64) == ProblemTypes.REGRESSION
+    assert detect_problem_type(y_Int64_null) == ProblemTypes.REGRESSION
+
+
 def test_nan_none_na():
     y_none = pd.Series([None])
     y_pdna = pd.Series([pd.NA])
