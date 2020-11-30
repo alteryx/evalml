@@ -2,7 +2,7 @@ import pandas as pd
 
 from .problem_types import ProblemTypes
 
-from evalml.utils.gen_utils import numeric_dtypes
+from pandas.api.types import is_numeric_dtype
 
 
 def handle_problem_types(problem_type):
@@ -46,7 +46,7 @@ def detect_problem_type(y):
         raise ValueError("Less than 2 classes detected! Target unusable for modeling")
     if num_classes == 2:
         return ProblemTypes.BINARY
-    if y.dtype in numeric_dtypes:
+    if is_numeric_dtype(y.dtype):
         if (num_classes > 10):
             return ProblemTypes.REGRESSION
     return ProblemTypes.MULTICLASS
