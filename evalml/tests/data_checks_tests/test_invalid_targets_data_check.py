@@ -1,6 +1,6 @@
 import numpy as np
-import pytest
 import pandas as pd
+import pytest
 
 from evalml.data_checks import (
     DataCheckError,
@@ -87,6 +87,7 @@ def test_invalid_target_data_check_invalid_data_types_error():
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": unique_values}).to_dict()]
     }
+
 
 def test_invalid_target_y_none():
     invalid_targets_check = InvalidTargetDataCheck("binary")

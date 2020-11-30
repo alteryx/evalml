@@ -28,7 +28,7 @@ def test_highly_null_data_check_init():
         HighlyNullDataCheck(pct_null_threshold=-0.1)
     with pytest.raises(ValueError, match="pct_null_threshold must be a float between 0 and 1, inclusive."):
         HighlyNullDataCheck(pct_null_threshold=1.1)
- 
+
 
 def test_highly_null_data_check_warnings():
     data = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],

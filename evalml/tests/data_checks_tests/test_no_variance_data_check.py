@@ -42,7 +42,7 @@ labels_1_unique = DataCheckError(message="Y has 1 unique value.",
 
 
 cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
-         ([1, 2, 3, 4], [1, 2, 3, 2], False, {"warnings": [], "errors": []}),
+         ([[1], [2], [3], [4]], [1, 2, 3, 2], False, {"warnings": [], "errors": []}),
          (np.arange(12).reshape(4, 3), [1, 2, 3], True, {"warnings": [], "errors": []}),
          (all_null_X, all_distinct_y, False, {"warnings": [], "errors": [feature_0_unique]}),
          (all_null_X, [1] * 4, False, {"warnings": [], "errors": [feature_0_unique, labels_1_unique]}),

@@ -10,7 +10,7 @@ from evalml.data_checks import (
 
 id_data_check_name = IDColumnsDataCheck.name
 
- 
+
 def test_id_cols_data_check_init():
     id_cols_check = IDColumnsDataCheck()
     assert id_cols_check.id_threshold == 1.0

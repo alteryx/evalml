@@ -9,7 +9,7 @@ from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper,
     woodwork_wrapper
 )
-import woodwork as ww
+
 
 class IDColumnsDataCheck(DataCheck):
     """Check if any of the features are likely to be ID columns."""

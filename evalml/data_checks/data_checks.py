@@ -7,6 +7,7 @@ from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper
 )
 
+
 def _has_defaults_for_all_args(init):
     """Tests whether the init method has defaults for all arguments."""
     signature = inspect.getfullargspec(init)
@@ -90,7 +91,7 @@ class DataChecks:
             "warnings": [],
             "errors": []
         }
-        
+
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])

@@ -1,12 +1,15 @@
 import pandas as pd
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import woodwork_wrapper, _convert_woodwork_types_wrapper
-import woodwork as ww
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    woodwork_wrapper
+)
 
 
 class HighlyNullDataCheck(DataCheck):

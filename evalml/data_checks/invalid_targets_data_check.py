@@ -8,14 +8,13 @@ from evalml.data_checks import (
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
-    categorical_dtypes,
-    numeric_and_boolean_dtypes
-)
-
-from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper,
+    categorical_dtypes,
+    numeric_and_boolean_dtypes,
     woodwork_wrapper
 )
+
+
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
 

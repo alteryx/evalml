@@ -11,6 +11,7 @@ from evalml.utils.gen_utils import (
     woodwork_wrapper
 )
 
+
 class ClassImbalanceDataCheck(DataCheck):
     """Checks if any target labels are imbalanced beyond a threshold. Use for classification problems"""
 
