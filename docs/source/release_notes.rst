@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
+        * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
