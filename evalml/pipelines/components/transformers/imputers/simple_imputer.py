@@ -48,7 +48,6 @@ class SimpleImputer(Transformer):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
             X = X.astype('category')
 
@@ -75,6 +74,7 @@ class SimpleImputer(Transformer):
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
 
+        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
             return X
         X_null_dropped = X.copy()
