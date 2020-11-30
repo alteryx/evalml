@@ -1767,7 +1767,7 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
     X['num col'] = pd.Series(new_col)
     X['text col'] = pd.Series([f"{num}" for num in range(len(new_col))])
     X = ww.DataTable(X, semantic_tags={'cat col': 'category', 'num col': 'numeric'},
-                     logical_types={'cat col': 'Categorical', 'num col': 'WholeNumber', 'text col': 'NaturalLanguage'})
+                     logical_types={'cat col': 'Categorical', 'num col': 'Integer', 'text col': 'NaturalLanguage'})
     automl = AutoMLSearch(problem_type=problem_type, max_batches=5)
     automl.search(X, y)
     for arg in mock_fit.call_args[0]:
@@ -1776,7 +1776,7 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.semantic_tags['cat col'] == {'category'}
             assert arg.logical_types['cat col'] == ww.logical_types.Categorical
             assert arg.semantic_tags['num col'] == {'numeric'}
-            assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
+            assert arg.logical_types['num col'] == ww.logical_types.Integer
             assert arg.semantic_tags['text col'] == set()
             assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
     for arg in mock_score.call_args[0]:
@@ -1785,7 +1785,7 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.semantic_tags['cat col'] == {'category'}
             assert arg.logical_types['cat col'] == ww.logical_types.Categorical
             assert arg.semantic_tags['num col'] == {'numeric'}
-            assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
+            assert arg.logical_types['num col'] == ww.logical_types.Integer
             assert arg.semantic_tags['text col'] == set()
             assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
 
