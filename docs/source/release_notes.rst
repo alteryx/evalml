@@ -6,6 +6,7 @@ Release Notes
         * Added `DFS Transformer` component into transformer components :pr:`1454`
     * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
+        * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
