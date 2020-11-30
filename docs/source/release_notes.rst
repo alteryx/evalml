@@ -11,6 +11,7 @@ Release Notes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
     * Testing Changes
+        * Update dependency update checker to use everything from core and optional dependencies :pr:`1480`
 
 
 **v0.16.0 Nov. 24, 2020**
