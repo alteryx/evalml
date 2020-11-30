@@ -76,24 +76,6 @@ def test_highly_null_data_check_input_formats():
     # test empty pd.DataFrame
     assert highly_null_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
 
-    #  test list
-    assert highly_null_check.validate([None, None, None, None, 5]) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 0}).to_dict()],
-        "errors": []
-    }
-
-    #  test pd.Series
-    assert highly_null_check.validate(pd.Series([None, None, None, None, 5])) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 0}).to_dict()],
-        "errors": []
-    }
-
     #  test 2D list
     assert highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]]) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",

@@ -10,7 +10,7 @@ from evalml.data_checks import (
 
 id_data_check_name = IDColumnsDataCheck.name
 
-
+ 
 def test_id_cols_data_check_init():
     id_cols_check = IDColumnsDataCheck()
     assert id_cols_check.id_threshold == 1.0
@@ -124,24 +124,6 @@ def test_id_cols_data_check_input_formats():
 
     # test empty pd.DataFrame
     assert id_cols_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
-
-    #  test list
-    assert id_cols_check.validate([1, 2, 3, 4, 5]) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
-                                      data_check_name=id_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": 0}).to_dict()],
-        "errors": []
-    }
-
-    #  test pd.Series
-    assert id_cols_check.validate(pd.Series([1, 2, 3, 4, 5])) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
-                                      data_check_name=id_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": 0}).to_dict()],
-        "errors": []
-    }
 
     #  test 2D list
     assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == {

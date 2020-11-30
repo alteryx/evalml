@@ -29,7 +29,7 @@ class HighlyNullDataCheck(DataCheck):
         """Checks if there are any highly-null columns in the input.
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.ndarray, list): Features
+            X (pd.DataFrame, np.ndarray): Features
             y: Ignored.
 
         Returns:
@@ -52,12 +52,8 @@ class HighlyNullDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        import pdb; pdb.set_trace()
-        if isinstance(X, ww.DataTable):
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        elif isinstance(X, ww.DataColumn):
-            X = _convert_woodwork_types_wrapper(X.to_series())
 
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         percent_null = (X.isnull().mean()).to_dict()
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}

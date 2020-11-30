@@ -5,7 +5,11 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    woodwork_wrapper
+)
+import woodwork as ww
 
 class IDColumnsDataCheck(DataCheck):
     """Check if any of the features are likely to be ID columns."""
@@ -20,6 +24,7 @@ class IDColumnsDataCheck(DataCheck):
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
         self.id_threshold = id_threshold
 
+    @woodwork_wrapper
     def validate(self, X, y=None):
         """Check if any of the features are likely to be ID columns. Currently performs these simple checks:
 
@@ -52,8 +57,8 @@ class IDColumnsDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         col_names = [col for col in X.columns.tolist()]
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
