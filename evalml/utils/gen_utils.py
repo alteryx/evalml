@@ -300,7 +300,7 @@ def _convert_to_woodwork_structure(data):
         ww_data = pd.DataFrame(ww_data)
 
     # Convert pandas data structures to Woodwork data structures
-    ww_data = ww.data.copy()
+    ww_data = ww_data.copy()
     if isinstance(ww_data, pd.Series):
         return ww.DataColumn(ww_data)
     
