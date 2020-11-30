@@ -68,6 +68,7 @@ class NoVarianceDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
+
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 

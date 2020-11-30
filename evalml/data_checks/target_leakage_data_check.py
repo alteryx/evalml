@@ -5,7 +5,11 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    numeric_and_boolean_dtypes,
+    woodwork_wrapper
+)
 
 
 class TargetLeakageDataCheck(DataCheck):
@@ -24,6 +28,7 @@ class TargetLeakageDataCheck(DataCheck):
             raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
         self.pct_corr_threshold = pct_corr_threshold
 
+    @woodwork_wrapper
     def validate(self, X, y):
         """Check if any of the features are highly correlated with the target.
 
@@ -55,10 +60,9 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         if y.dtype not in numeric_and_boolean_dtypes:
             return messages
