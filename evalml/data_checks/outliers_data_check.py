@@ -6,11 +6,12 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.utils import get_random_state
-from evalml.utils.gen_utils import numeric_dtypes
 from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper,
+    numeric_dtypes,
     woodwork_wrapper
 )
+
 
 class OutliersDataCheck(DataCheck):
     """Checks if there are any outliers in input data by using IQR to determine score anomalies. Columns with score anomalies are considered to contain outliers."""

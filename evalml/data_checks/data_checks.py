@@ -4,8 +4,8 @@ from evalml.data_checks import DataCheck
 from evalml.exceptions import DataCheckInitError
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    woodwork_wrapper,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    woodwork_wrapper
 )
 
 
