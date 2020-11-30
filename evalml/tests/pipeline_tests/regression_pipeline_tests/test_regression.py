@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.demos import load_breast_cancer, load_diabetes, load_wine
 

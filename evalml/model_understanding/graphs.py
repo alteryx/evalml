@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
@@ -151,12 +152,15 @@ def roc_curve(y_true, y_pred_proba):
     """
     y_true = _convert_to_woodwork_structure(y_true)
     y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    if isinstance(y_pred_proba, ww.DataTable):
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
+    else:
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
+
     y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
     if len(y_pred_proba.shape) == 1:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
         y_pred_proba = y_pred_proba.reshape(-1, 1)
     if y_pred_proba.shape[1] == 2:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
         y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
     nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
     y_true = y_true[~nan_indices]
