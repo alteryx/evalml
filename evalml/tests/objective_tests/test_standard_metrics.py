@@ -14,6 +14,7 @@ from evalml.objectives import (
     BalancedAccuracyMulticlass,
     BinaryClassificationObjective,
     CostBenefitMatrix,
+    ExpVariance,
     F1Macro,
     F1Micro,
     F1Weighted,
@@ -55,6 +56,13 @@ def test_input_contains_nan():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, np.nan], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+                objective.score(y_true, y_predicted_proba)
+
 
 def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
@@ -68,6 +76,13 @@ def test_input_contains_inf():
     for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
+
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, np.inf], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+                objective.score(y_true, y_predicted_proba)
 
 
 def test_different_input_lengths():
@@ -106,6 +121,13 @@ def test_probabilities_not_in_0_1_range():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
+
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, 3], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
+                objective.score(y_true, y_predicted_proba)
 
 
 def test_negative_with_log():
@@ -452,3 +474,11 @@ def test_calculate_percent_difference_negative_and_equal_numbers():
     assert LogLossBinary.calculate_percent_difference(score=-10, baseline_score=-5) == 100
     assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=10) == 150
     assert LogLossBinary.calculate_percent_difference(score=10, baseline_score=-5) == -300
+
+
+def test_calculate_percent_difference_small():
+    expected_value = 100 * -1 * np.abs(1e-9 / (1e-9))
+    assert np.isclose(ExpVariance.calculate_percent_difference(score=0, baseline_score=1e-9), expected_value, atol=1e-8)
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=0, baseline_score=1e-10))
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=1e-9, baseline_score=0))
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=0, baseline_score=0))

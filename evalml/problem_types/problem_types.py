@@ -22,6 +22,10 @@ class ProblemTypes(Enum):
         return problem_type_dict[self.name]
 
     @classproperty
+    def _all_values(cls):
+        return {pt.value.upper(): pt for pt in cls.all_problem_types}
+
+    @classproperty
     def all_problem_types(cls):
         """Get a list of all defined problem types.
 

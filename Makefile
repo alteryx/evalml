@@ -4,6 +4,7 @@ clean:
 	find . -name '*.pyc' -delete
 	find . -name __pycache__ -delete
 	find . -name '*~' -delete
+	find . -name '.coverage.*' -delete
 
 .PHONY: lint
 lint:
@@ -21,11 +22,11 @@ test:
 
 .PHONY: circleci-test
 circleci-test:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
+	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
 
 .PHONY: circleci-test-minimal-deps
 circleci-test-minimal-deps:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --has-minimal-dependencies
+	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --has-minimal-dependencies
 
 .PHONY: win-circleci-test
 win-circleci-test:
