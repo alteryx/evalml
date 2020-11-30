@@ -14,8 +14,8 @@ jobs:
         id: vars
         run: |
           make installdeps
-          make dependenciesfile DEPENDENCY_FILE_PATH=evalml/tests/latest_dependency_versions.txt
-          cat evalml/tests/latest_dependency_versions.txt
+          evalml/tests/dependency_update_check/make_deps_diff.sh DEPENDENCY_FILE_PATH=evalml/tests/dependency_update_check/latest_dependency_versions.txt
+          cat evalml/tests/dependency_update_check/latest_dependency_versions.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
