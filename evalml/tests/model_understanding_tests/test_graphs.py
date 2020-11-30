@@ -756,7 +756,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
 
         class CatBoostTestPipeline(BinaryClassificationPipeline):
             component_graph = ["CatBoost Classifier"]
-        pipeline = CatBoostTestPipeline({})
+        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
         assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -767,7 +767,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
         # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
         X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
         y = ['a', 'b', 'a']
-        pipeline = CatBoostTestPipeline({})
+        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, feature='string')
         assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -799,7 +799,7 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
 
     X = pd.DataFrame(X)
     X = X.rename(columns={0: '<[0]'})
-    pipeline = XGBoostPipeline({})
+    pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature="<[0]", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]

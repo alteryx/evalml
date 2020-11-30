@@ -1154,7 +1154,7 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
     X = pd.DataFrame(X)
     X = X.rename(columns={col_name: f'<[{col_name}]' for col_name in X.columns.values})
     col_names = X.columns.values
-    pipeline = XGBoostPipeline({})
+    pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
     assert len(pipeline.feature_importance) == len(X.columns)
     assert not pipeline.feature_importance.isnull().all().all()
@@ -1198,7 +1198,8 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
-def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes, all_multiclass_pipeline_classes):
+def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
+                                                     all_multiclass_pipeline_classes, helper_functions):
     if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
@@ -1239,7 +1240,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         y = ww.DataColumn(y)
 
     for pipeline_class in pipeline_classes:
-        pipeline = pipeline_class(parameters={})
+        pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
         pipeline.fit(X, y)
         predictions = pipeline.predict(X, objective)
         assert set(predictions.unique()).issubset(unique_vals)

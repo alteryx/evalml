@@ -305,4 +305,15 @@ def helper_functions():
             except TypeError:
                 component = component_class()
             return component
+
+        @staticmethod
+        def safe_init_pipeline_with_njobs_1(pipeline_class):
+            try:
+                estimator = pipeline_class.component_class[-1]
+                estimator_name = estimator if isinstance(estimator, str) else estimator.name
+                pl = pipeline_class({estimator_name: {'n_jobs': 1}})
+            except:
+                pl = pipeline_class({})
+            return pl
+
     return Helpers
