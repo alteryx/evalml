@@ -1198,7 +1198,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
-        X, y = load_breast_cancer()
+        X, y = load_breast_cancer(return_pandas=True)
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -1206,7 +1206,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
-        X, y = load_wine()
+        X, y = load_wine(return_pandas=True)
 
     # Update target types as necessary
     unique_vals = y.unique()

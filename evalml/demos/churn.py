@@ -5,7 +5,7 @@ import woodwork as ww
 from evalml.preprocessing import load_data
 
 
-def load_churn(n_rows=None, verbose=True):
+def load_churn(n_rows=None, verbose=True, return_pandas=False):
     """Load credit card fraud dataset.
         The fraud dataset can be used for binary classification problems.
 
@@ -25,6 +25,6 @@ def load_churn(n_rows=None, verbose=True):
                      target="Churn",
                      n_rows=n_rows,
                      verbose=verbose)
-    X = ww.DataTable(X)
-    y = ww.DataColumn(y)
-    return X, y
+    if return_pandas:
+        return X, y
+    return ww.DataTable(X), ww.DataColumn(y)
