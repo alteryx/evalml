@@ -6,7 +6,10 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    woodwork_wrapper
+)
 
 class ClassImbalanceDataCheck(DataCheck):
     """Checks if any target labels are imbalanced beyond a threshold. Use for classification problems"""
@@ -28,6 +31,7 @@ class ClassImbalanceDataCheck(DataCheck):
             raise ValueError("Provided number of CV folds {} is less than 0".format(num_cv_folds))
         self.cv_folds = num_cv_folds * 2
 
+    @woodwork_wrapper
     def validate(self, X, y):
         """Checks if any target labels are imbalanced beyond a threshold for binary and multiclass problems
             Ignores NaN values in target labels if they appear.
@@ -59,8 +63,7 @@ class ClassImbalanceDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
         fold_counts = y.value_counts(normalize=False)
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()

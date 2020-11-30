@@ -5,6 +5,8 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
+from evalml.utils.gen_utils import woodwork_wrapper, _convert_woodwork_types_wrapper
+import woodwork as ww
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -22,6 +24,7 @@ class HighlyNullDataCheck(DataCheck):
             raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
         self.pct_null_threshold = pct_null_threshold
 
+    @woodwork_wrapper
     def validate(self, X, y=None):
         """Checks if there are any highly-null columns in the input.
 
@@ -49,8 +52,12 @@ class HighlyNullDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        import pdb; pdb.set_trace()
+        if isinstance(X, ww.DataTable):
+            X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        elif isinstance(X, ww.DataColumn):
+            X = _convert_woodwork_types_wrapper(X.to_series())
+
         percent_null = (X.isnull().mean()).to_dict()
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}

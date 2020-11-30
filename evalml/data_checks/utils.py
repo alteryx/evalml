@@ -10,3 +10,5 @@ class EmptyDataChecks(DataChecks):
             data_checks (list (DataCheck)): Ignored.
         """
         self.data_checks = []
+
+

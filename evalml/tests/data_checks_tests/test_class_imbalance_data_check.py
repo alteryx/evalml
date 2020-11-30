@@ -75,7 +75,7 @@ def test_class_imbalance_data_check_binary():
                                   message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                   details={"target_values": ["No", "Yes"]}).to_dict()]
     }
-
+ 
 
 def test_class_imbalance_data_check_multiclass():
     X = pd.DataFrame()
