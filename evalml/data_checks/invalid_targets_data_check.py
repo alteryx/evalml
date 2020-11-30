@@ -12,13 +12,17 @@ from evalml.utils.gen_utils import (
     numeric_and_boolean_dtypes
 )
 
-
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    woodwork_wrapper
+)
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
 
     def __init__(self, problem_type):
         self.problem_type = handle_problem_types(problem_type)
 
+    @woodwork_wrapper
     def validate(self, X, y):
         """Checks if the target data contains missing or invalid values.
 
@@ -44,9 +48,9 @@ class InvalidTargetDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if y is None:
+            raise ValueError("y cannot be None")
+        y = _convert_woodwork_types_wrapper(y.to_series())
         null_rows = y.isnull()
         if null_rows.any():
             num_null_rows = null_rows.sum()
