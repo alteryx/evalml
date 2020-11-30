@@ -16,6 +16,32 @@ def test_datetime_featurizer_init():
         DateTimeFeaturizer(features_to_extract=["invalid", "parameters"])
 
 
+def test_datetime_featurizer_encodes_as_ints():
+    X = pd.DataFrame({"date": ["2016-04-10 16:10:09", "2017-03-15 13:32:05", "2018-07-10 07:15:10",
+                               "2019-08-19 20:20:20", "2020-01-03 06:45:12"]})
+    dt = DateTimeFeaturizer()
+    X_transformed = dt.fit_transform(X)
+    answer = pd.DataFrame({"date_year": [2016, 2017, 2018, 2019, 2020],
+                           "date_month": [3, 2, 6, 7, 0],
+                           "date_day_of_week": [0, 3, 2, 1, 5],
+                           "date_hour": [16, 13, 7, 20, 6]})
+    pd.testing.assert_frame_equal(X_transformed, answer)
+    assert dt.get_feature_names() == {'date_month': {'April': 3, 'March': 2, 'July': 6, 'August': 7, 'January': 0},
+                                      'date_day_of_week': {'Sunday': 0, 'Wednesday': 3, 'Tuesday': 2, 'Monday': 1,
+                                                           'Friday': 5}
+                                      }
+
+    X = pd.DataFrame({"date": ["2020-04-10", "2017-03-15", "2019-08-19"]})
+    X_transformed = dt.fit_transform(X)
+    answer = pd.DataFrame({"date_year": [2020, 2017, 2019],
+                           "date_month": [3, 2, 7],
+                           "date_day_of_week": [5, 3, 1],
+                           "date_hour": [0, 0, 0]})
+    pd.testing.assert_frame_equal(X_transformed, answer)
+    assert dt.get_feature_names() == {'date_month': {'April': 3, 'March': 2, 'August': 7},
+                                      'date_day_of_week': {'Friday': 5, 'Wednesday': 3, 'Monday': 1}}
+
+
 def test_datetime_featurizer_transform():
     datetime_transformer = DateTimeFeaturizer(features_to_extract=["year"])
     X = pd.DataFrame({'Numerical 1': range(20),

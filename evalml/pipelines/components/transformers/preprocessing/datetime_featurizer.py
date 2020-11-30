@@ -7,19 +7,33 @@ from evalml.utils.gen_utils import (
 
 
 def _extract_year(col):
-    return col.dt.year
+    return col.dt.year, None
+
+
+_month_to_int_mapping = {"January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
+                         "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11}
 
 
 def _extract_month(col):
-    return col.dt.month_name().astype('category')
+    months = col.dt.month_name()
+    months_unique = months.unique()
+    months_encoded = months.map(lambda m: _month_to_int_mapping[m])
+    return months_encoded, {m: _month_to_int_mapping[m] for m in months_unique}
+
+
+_day_to_int_mapping = {"Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5,
+                       "Saturday": 6}
 
 
 def _extract_day_of_week(col):
-    return col.dt.day_name().astype('category')
+    days = col.dt.day_name()
+    days_unique = days.unique()
+    days_encoded = days.map(lambda d: _day_to_int_mapping[d])
+    return days_encoded, {d: _day_to_int_mapping[d] for d in days_unique}
 
 
 def _extract_hour(col):
-    return col.dt.hour
+    return col.dt.hour, None
 
 
 class DateTimeFeaturizer(Transformer):
@@ -48,6 +62,7 @@ class DateTimeFeaturizer(Transformer):
         parameters.update(kwargs)
 
         self._date_time_col_names = None
+        self._categories = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -74,7 +89,21 @@ class DateTimeFeaturizer(Transformer):
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return X_t
+        self._categories = {}
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
-                X_t[f"{col_name}_{feature}"] = self._function_mappings[feature](X_t[col_name])
+                name = f"{col_name}_{feature}"
+                features, categories = self._function_mappings[feature](X_t[col_name])
+                X_t[name] = features
+                if categories:
+                    self._categories[name] = categories
         return X_t.drop(self._date_time_col_names, axis=1)
+
+    def get_feature_names(self):
+        """Gets the categories of each datetime feature.
+
+        Returns:
+           Dict. Each key-value pair is a column name and a dictionary mapping the unique feature values to their
+           integer encoding.
+        """
+        return self._categories
