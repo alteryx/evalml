@@ -11,6 +11,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
 from evalml.automl import (
+    TimeSeriesSplit,
     TrainingValidationSplit,
     get_default_primary_search_objective
 )
@@ -41,7 +42,8 @@ from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -154,8 +156,9 @@ def test_pipeline_limits(mock_fit_binary, mock_score_binary,
     automl = AutoMLSearch(problem_type=automl_type)
     automl.search(X, y)
     out = caplog.text
-    assert "Using default limit of max_iterations=5." in out
-    assert len(automl.results['pipeline_results']) <= 5
+    assert "Using default limit of max_batches=1." in out
+    assert "Searching up to 1 batches for a total of" in out
+    assert len(automl.results['pipeline_results']) > 5
 
     caplog.clear()
     automl = AutoMLSearch(problem_type=automl_type, max_time=1e-16)
@@ -1322,7 +1325,7 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     ensemble_nth_batch = len(automl.allowed_pipelines) + 1
 
     if max_batches is None:
-        n_results = 5
+        n_results = len(automl.allowed_pipelines) + 1
         max_batches = 1
         # _automl_algorithm will include all allowed_pipelines in the first batch even
         # if they are not searched over. That is why n_automl_pipelines does not equal
@@ -1400,7 +1403,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     # Use the old default when all are None
     automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary")
     automl.search(X, y, data_checks=None)
-    assert len(automl.results["pipeline_results"]) == 5
+    assert len(automl.results["pipeline_results"]) == len(get_estimators(problem_type='binary')) + 1
 
     # Use max_iterations when both max_iterations and max_batches are set
     automl = AutoMLSearch(problem_type="binary", objective="Log Loss Binary", max_batches=10,
@@ -1414,11 +1417,21 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     assert len(automl.results["pipeline_results"]) == 4
 
 
-@pytest.mark.parametrize("max_batches", [0, -1, -10, -np.inf])
+@pytest.mark.parametrize("max_batches", [-1, -10, -np.inf])
 def test_max_batches_must_be_non_negative(max_batches):
-
-    with pytest.raises(ValueError, match=f"Parameter max batches must be None or non-negative. Received {max_batches}."):
+    with pytest.raises(ValueError, match=f"Parameter max_batches must be None or non-negative. Received {max_batches}."):
         AutoMLSearch(problem_type="binary", max_batches=max_batches)
+
+
+def test_stopping_criterion_bad():
+    with pytest.raises(TypeError, match=r"Parameter max_time must be a float, int, string or None. Received <class 'tuple'> with value \('test',\)."):
+        AutoMLSearch(problem_type="binary", max_time=('test',))
+    with pytest.raises(ValueError, match=f"Parameter max_batches must be None or non-negative. Received -1."):
+        AutoMLSearch(problem_type="binary", max_batches=-1)
+    with pytest.raises(ValueError, match=f"Parameter max_time must be None or non-negative. Received -1."):
+        AutoMLSearch(problem_type="binary", max_time=-1)
+    with pytest.raises(ValueError, match=f"Parameter max_iterations must be None or non-negative. Received -1."):
+        AutoMLSearch(problem_type="binary", max_iterations=-1)
 
 
 def test_data_split_binary(X_y_binary):
@@ -1702,7 +1715,8 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl.search(X, y)
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
-    assert len(automl._results['errors']) == 15  # 5 iterations, 3 folds each
+    # first automl batch, times 3 for 3-fold cross validation
+    assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
     for e in automl._results['errors']:
         assert str(e) == msg
 
@@ -1774,3 +1788,45 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.logical_types['num col'] == ww.logical_types.WholeNumber
             assert arg.semantic_tags['text col'] == set()
             assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+
+
+def test_automl_validates_problem_configuration():
+
+    assert AutoMLSearch(problem_type="binary").problem_configuration == {}
+    assert AutoMLSearch(problem_type="multiclass").problem_configuration == {}
+    assert AutoMLSearch(problem_type="regression").problem_configuration == {}
+    msg = "user_parameters must be a dict containing values for at least the gap and max_delay parameters"
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(problem_type="time series regression")
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(problem_type="time series regression", problem_configuration={"gap": 3})
+
+    problem_config = AutoMLSearch(problem_type="time series regression",
+                                  problem_configuration={"max_delay": 2, "gap": 3}).problem_configuration
+    assert problem_config == {"max_delay": 2, "gap": 3}
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
+    X, y = X_y_regression
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    class Pipeline1(TimeSeriesRegressionPipeline):
+        name = "Pipeline 1"
+        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+
+    class Pipeline2(TimeSeriesRegressionPipeline):
+        name = "Pipeline 2"
+        component_graph = ["Delayed Feature Transformer", "Elastic Net Regressor"]
+
+    automl = AutoMLSearch(problem_type="time series regression", problem_configuration=configuration,
+                          allowed_pipelines=[Pipeline1, Pipeline2], max_batches=2)
+    automl.search(X, y)
+    assert isinstance(automl.data_split, TimeSeriesSplit)
+    for result in automl.results['pipeline_results'].values():
+        if result["id"] == 0:
+            continue
+        assert result['parameters']['Delayed Feature Transformer'] == configuration
+        assert result['parameters']['pipeline'] == configuration

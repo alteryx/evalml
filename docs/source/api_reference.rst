@@ -488,6 +488,16 @@ Data Check Message Types
 
     DataCheckMessageType
 
+Data Check Message Codes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: enum_class.rst
+    :nosignatures:
+
+    DataCheckMessageCode
+
 
 .. currentmodule:: evalml.utils
 

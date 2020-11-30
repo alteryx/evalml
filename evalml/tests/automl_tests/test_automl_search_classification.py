@@ -297,7 +297,7 @@ def test_max_time_units():
     with pytest.raises(AssertionError, match="Invalid unit. Units must be hours, mins, or seconds. Received 'year'"):
         AutoMLSearch(problem_type='binary', objective='F1', max_time='30 years')
 
-    with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
+    with pytest.raises(TypeError, match="Parameter max_time must be a float, int, string or None. Received <class 'tuple'> with value \\(30, 'minutes'\\)."):
         AutoMLSearch(problem_type='binary', objective='F1', max_time=(30, 'minutes'))
 
 
