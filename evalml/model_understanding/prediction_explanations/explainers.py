@@ -4,6 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations._report_creator_factory import (
@@ -23,6 +24,7 @@ from evalml.utils import (
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
 _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
+
 
 
 def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
@@ -45,6 +47,8 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
         str or dict - A report explaining the most positive/negative contributing features to the predictions.
     """
     input_features = _convert_to_woodwork_structure(input_features)
+    if not (isinstance(training_data, ww.DataTable) and input_features.shape[0] == 1):
+        raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
     if training_data is not None:
         training_data = _convert_to_woodwork_structure(training_data)

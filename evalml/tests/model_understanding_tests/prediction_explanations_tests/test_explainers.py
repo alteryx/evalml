@@ -22,13 +22,13 @@ def compare_two_tables(table_1, table_2):
         assert row.strip().split() == row_answer.strip().split()
 
 
-test_features = [5, [1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
+test_features = [[1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
                  pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}), pd.DataFrame()]
 
 
 @pytest.mark.parametrize("test_features", test_features)
 def test_explain_prediction_value_error(test_features):
-    with pytest.raises(ValueError, match="features must be stored in a dataframe of one row."):
+    with pytest.raises(ValueError, match="features must be stored in a dataframe or datatable with exactly one row."):
         explain_prediction(None, input_features=test_features, training_data=None)
 
 
@@ -169,9 +169,8 @@ def test_error_metrics():
                                    pd.Series([-np.log(0.9), -np.log(0.2)]))
 
 
-input_features_and_y_true = [([1], None, "^Input features must be a dataframe with more than 10 rows!"),
-                             (pd.DataFrame({"a": [1]}), None, "^Input features must be a dataframe with more than 10 rows!"),
-                             (pd.DataFrame({"a": range(15)}), [1], "^Parameter y_true must be a pd.Series."),
+input_features_and_y_true = [([[1]], pd.Series([1]), "^Input features must be a dataframe with more than 10 rows!"),
+                             (pd.DataFrame({"a": [1]}), pd.Series([1]), "^Input features must be a dataframe with more than 10 rows!"),
                              (pd.DataFrame({"a": range(15)}), pd.Series(range(12)), "^Parameters y_true and input_features must have the same number of data points.")
                              ]
 
@@ -194,10 +193,9 @@ def test_explain_predictions_raises_pipeline_score_error():
         explain_predictions_best_worst(pipeline, pd.DataFrame({"a": range(15)}), pd.Series(range(15)))
 
 
-@pytest.mark.parametrize("input_features", [1, [1], "foo", pd.DataFrame()])
-def test_explain_predictions_value_errors(input_features):
+def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
-        explain_predictions(None, input_features)
+        explain_predictions(None, pd.DataFrame())
 
 
 def test_output_format_checked():
