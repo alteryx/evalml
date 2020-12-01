@@ -268,6 +268,7 @@ Graph Utils
     binary_objective_vs_threshold
     graph_binary_objective_vs_threshold
     graph_prediction_vs_actual
+    graph_prediction_vs_target_over_time
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
 

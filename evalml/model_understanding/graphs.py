@@ -569,8 +569,6 @@ def graph_prediction_vs_target_over_time(pipeline, X, y, dates):
         plotly.Figure showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    if jupyter_check():
-        import_or_raise("ipywidgets", warning=True)
 
     if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
         raise ValueError("graph_prediction_vs_target_over_time only supports time series regression pipelines! "
