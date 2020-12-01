@@ -62,7 +62,7 @@ class DateTimeFeaturizer(Transformer):
         parameters.update(kwargs)
 
         self._date_time_col_names = None
-        self._categories = None
+        self._categories = {}
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_state=random_state)
@@ -89,7 +89,6 @@ class DateTimeFeaturizer(Transformer):
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return X_t
-        self._categories = {}
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"

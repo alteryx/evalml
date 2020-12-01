@@ -40,6 +40,9 @@ def test_datetime_featurizer_encodes_as_ints():
     pd.testing.assert_frame_equal(X_transformed, answer)
     assert dt.get_feature_names() == {'date_month': {'April': 3, 'March': 2, 'August': 7},
                                       'date_day_of_week': {'Friday': 5, 'Wednesday': 3, 'Monday': 1}}
+    dt = DateTimeFeaturizer(features_to_extract=["year", "hour"])
+    dt.fit_transform(X)
+    assert dt.get_feature_names() == {}
 
 
 def test_datetime_featurizer_transform():
@@ -57,6 +60,7 @@ def test_datetime_featurizer_transform():
     assert list(transformed.columns) == ['Numerical 1', 'Numerical 2', 'Date Col 1_year', 'Date Col 2_year']
     assert transformed["Date Col 1_year"].equals(pd.Series([2020] * 20))
     assert transformed["Date Col 2_year"].equals(pd.Series([2020] * 20))
+    assert datetime_transformer.get_feature_names() == {}
 
 
 def test_datetime_featurizer_fit_transform():
@@ -69,6 +73,7 @@ def test_datetime_featurizer_fit_transform():
     assert list(transformed.columns) == ['Numerical 1', 'Numerical 2', 'Date Col 1_year', 'Date Col 2_year']
     assert transformed["Date Col 1_year"].equals(pd.Series([2020] * 20))
     assert transformed["Date Col 2_year"].equals(pd.Series([2020] * 20))
+    assert datetime_transformer.get_feature_names() == {}
 
 
 def test_datetime_featurizer_no_col_names():
@@ -76,6 +81,10 @@ def test_datetime_featurizer_no_col_names():
     X = pd.DataFrame(pd.Series(pd.date_range('2020-02-24', periods=10, freq='D')))
     datetime_transformer.fit(X)
     assert list(datetime_transformer.transform(X).columns) == ['0_year', '0_month', '0_day_of_week', '0_hour']
+    assert datetime_transformer.get_feature_names() == {'0_month': {'February': 1, 'March': 2},
+                                                        '0_day_of_week': {'Monday': 1, 'Tuesday': 2,
+                                                                          'Wednesday': 3, 'Thursday': 4, 'Friday': 5,
+                                                                          'Saturday': 6, 'Sunday': 0}}
 
 
 def test_datetime_featurizer_no_features_to_extract():
@@ -84,6 +93,7 @@ def test_datetime_featurizer_no_features_to_extract():
     X = pd.DataFrame({"date col": rng, "numerical": [0] * len(rng)})
     datetime_transformer.fit(X)
     assert datetime_transformer.transform(X).equals(X)
+    assert datetime_transformer.get_feature_names() == {}
 
 
 def test_datetime_featurizer_custom_features_to_extract():
@@ -92,6 +102,7 @@ def test_datetime_featurizer_custom_features_to_extract():
     X = pd.DataFrame({"date col": rng, "numerical": [0] * len(rng)})
     datetime_transformer.fit(X)
     assert list(datetime_transformer.transform(X).columns) == ["numerical", "date col_month", "date col_year"]
+    assert datetime_transformer.get_feature_names() == {"date col_month": {"February": 1, "March": 2}}
 
 
 def test_datetime_featurizer_no_datetime_cols():
@@ -99,6 +110,7 @@ def test_datetime_featurizer_no_datetime_cols():
     X = pd.DataFrame([[1, 3, 4], [2, 5, 2]])
     datetime_transformer.fit(X)
     assert datetime_transformer.transform(X).equals(X)
+    assert datetime_transformer.get_feature_names() == {}
 
 
 def test_datetime_featurizer_numpy_array_input():
@@ -106,3 +118,5 @@ def test_datetime_featurizer_numpy_array_input():
     X = np.array([['2007-02-03'], ['2016-06-07'], ['2020-05-19']], dtype='datetime64')
     datetime_transformer.fit(X)
     assert list(datetime_transformer.transform(X).columns) == ["0_year", "0_month", "0_day_of_week", "0_hour"]
+    assert datetime_transformer.get_feature_names() == {'0_month': {'February': 1, 'June': 5, 'May': 4},
+                                                        '0_day_of_week': {'Saturday': 6, 'Tuesday': 2}}
