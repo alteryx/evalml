@@ -18,11 +18,13 @@ If you'd like to create a development release, which won't be deployed to pypi a
 ## 1. Create release PR to update version and release notes
 Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
-Create a release PR with the following changes:
+Before creating the release PR, generate the [GitHub markdown](https://guides.github.com/features/mastering-markdown/) you'll use to populate the release PR and the GitHub release, like so: `tools/format_release_notes.sh X.X.X`, where the `X.X.X` argument is the new release version.
+
+Then, create a release PR with the following changes:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
 * Move all entries in `docs/source/release_notes.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
 * Make sure `**Future Releases**` is empty except for the sub-headings, so its ready for new entries.
-* Populate the release PR body with a copy of this release's release notes, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. This is currently done by hand and can be done faster with some clever text editor features.
+* Populate the release PR body with a copy of this release's release notes, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/).
 * Confirm that all release items are in the release notes under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
 
 An example can be found here: https://github.com/alteryx/evalml/pull/163
