@@ -1007,7 +1007,7 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
 
-    automl = AutoMLSearch(problem_type=automl_type, max_iterations=3)
+    automl = AutoMLSearch(problem_type=automl_type, max_iterations=3, n_jobs=1)
     automl.search(X, y)
     for pipeline_id, pipeline_result in automl.results['pipeline_results'].items():
         cv_data = pipeline_result['cv_data']
@@ -1016,6 +1016,7 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
             for score in all_objective_scores.values():
                 assert score is not None
 
+    breakpoint()
     assert len(automl.full_rankings) == 3
     assert not automl.full_rankings['score'].isnull().values.any()
 
