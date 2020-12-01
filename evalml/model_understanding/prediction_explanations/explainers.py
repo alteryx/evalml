@@ -13,6 +13,12 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
     _make_single_prediction_shap_table
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    import_or_raise,
+    jupyter_check
+)
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
 _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
@@ -38,6 +44,12 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     Returns:
         str or dict - A report explaining the most positive/negative contributing features to the predictions.
     """
+    input_features = _convert_to_woodwork_structure(input_features)
+    input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    if training_data is not None:
+        training_data = _convert_to_woodwork_structure(training_data)
+        training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
+
     if output_format not in {"text", "dict"}:
         raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
     return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values,
@@ -97,7 +109,13 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
         str or dict - A report explaining the top contributing features to each prediction for each row of input_features.
             The report will include the feature names, prediction contribution, and SHAP Value (optional).
     """
-    if not (isinstance(input_features, pd.DataFrame) and not input_features.empty):
+    input_features = _convert_to_woodwork_structure(input_features)
+    input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    if training_data is not None:
+        training_data = _convert_to_woodwork_structure(training_data)
+        training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
+
+    if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict"}:
         raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
@@ -135,12 +153,15 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
             feature names, prediction contribution, and SHAP Value (optional) will be listed.
     """
-    if not (isinstance(input_features, pd.DataFrame) and input_features.shape[0] >= num_to_explain * 2):
+    input_features = _convert_to_woodwork_structure(input_features)
+    y_true = _convert_to_woodwork_structure(y_true)
+    input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+
+    if not (input_features.shape[0] >= num_to_explain * 2):
         raise ValueError(f"Input features must be a dataframe with more than {num_to_explain * 2} rows! "
                          "Convert to a dataframe and select a smaller value for num_to_explain if you do not have "
                          "enough data.")
-    if not isinstance(y_true, pd.Series):
-        raise ValueError("Parameter y_true must be a pd.Series.")
     if y_true.shape[0] != input_features.shape[0]:
         raise ValueError("Parameters y_true and input_features must have the same number of data points. Received: "
                          f"true labels: {y_true.shape[0]} and {input_features.shape[0]}")

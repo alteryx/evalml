@@ -504,6 +504,11 @@ def _calculate_axis_range(arr):
 
 def _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold):
     """Helper method to help calculate the y_true and y_pred dataframe, with a column for outliers"""
+    y_true = _convert_to_woodwork_structure(y_true)
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    y_pred = _convert_to_woodwork_structure(y_pred)
+    y_pred = _convert_woodwork_types_wrapper(y_pred.to_series())
+
     predictions = y_pred.reset_index(drop=True)
     actual = y_true.reset_index(drop=True)
     data = pd.concat([pd.Series(predictions),
@@ -536,11 +541,6 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
 
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
-
-    if not isinstance(y_true, pd.Series):
-        y_true = pd.Series(y_true)
-    if not isinstance(y_pred, pd.Series):
-        y_pred = pd.Series(y_pred)
 
     df = _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
     data = []
