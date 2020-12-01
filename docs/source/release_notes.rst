@@ -3,7 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added a `ComponentGraph` class that will support future pipelines as directed acyclic graphs :pr:`1415`
     * Fixes
+        * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
+        * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
+        * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
@@ -19,7 +23,6 @@ Release Notes
         * Added callback for error handling in ``AutoMLSearch`` :pr:`1403`
         * Added the index id to the ``explain_predictions_best_worst`` output to help users identify which rows in their data are included :pr:`1365`
         * The top_k features displayed in ``explain_predictions_*`` functions are now determined by the magnitude of shap values as opposed to the ``top_k`` largest and smallest shap values. :pr:`1374`
-        * Added a `ComponentGraph` class that will support future pipelines as directed acyclic graphs :pr:`1415`
         * Added a problem type for time series regression :pr:`1386`
         * Added a ``is_defined_for_problem_type`` method to ``ObjectiveBase`` :pr:`1386`
         * Added a ``random_state`` parameter to ``make_pipeline_from_components`` function :pr:`1411`
