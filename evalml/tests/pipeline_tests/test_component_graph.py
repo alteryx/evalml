@@ -26,9 +26,6 @@ class DummyTransformer(Transformer):
     def fit(self, X, y):
         return self
 
-    def transform(self, X, y=None):
-        return pd.DataFrame(np.zeros(X.shape))
-
 
 class TransformerA(DummyTransformer):
     """copy class"""
@@ -52,9 +49,6 @@ class DummyEstimator(Estimator):
 
     def fit(self, X, y):
         return self
-
-    def predict(self, X):
-        return pd.Series(np.zeros(len(X)))
 
 
 class EstimatorA(DummyEstimator):
