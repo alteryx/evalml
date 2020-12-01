@@ -6,3 +6,4 @@ from .xgboost_regressor import XGBoostRegressor
 from .et_regressor import ExtraTreesRegressor
 from .baseline_regressor import BaselineRegressor
 from .decision_tree_regressor import DecisionTreeRegressor
+from .gam_regressor import GAMRegressor

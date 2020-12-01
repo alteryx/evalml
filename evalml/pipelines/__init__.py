@@ -26,7 +26,9 @@ from .components import (
     DecisionTreeRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
-    DelayedFeatureTransformer
+    DelayedFeatureTransformer,
+    GAMClassifier,
+    GAMRegressor
 )
 
 from .pipeline_base import PipelineBase

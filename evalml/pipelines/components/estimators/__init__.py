@@ -7,7 +7,8 @@ from .classifiers import (LogisticRegressionClassifier,
                           ElasticNetClassifier,
                           ExtraTreesClassifier,
                           BaselineClassifier,
-                          DecisionTreeClassifier)
+                          DecisionTreeClassifier,
+                          GAMClassifier)
 from .regressors import (LinearRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
@@ -15,4 +16,5 @@ from .regressors import (LinearRegressor,
                          ElasticNetRegressor,
                          ExtraTreesRegressor,
                          BaselineRegressor,
-                         DecisionTreeRegressor)
+                         DecisionTreeRegressor,
+                         GAMRegressor)

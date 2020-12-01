@@ -17,7 +17,9 @@ from .estimators import (
     BaselineClassifier,
     BaselineRegressor,
     DecisionTreeClassifier,
-    DecisionTreeRegressor
+    DecisionTreeRegressor,
+    GAMClassifier,
+    GAMRegressor
 )
 from .transformers import (
     Transformer,

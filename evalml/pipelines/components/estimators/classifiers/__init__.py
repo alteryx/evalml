@@ -7,3 +7,4 @@ from .et_classifier import ExtraTreesClassifier
 from .baseline_classifier import BaselineClassifier
 from .lightgbm_classifier import LightGBMClassifier
 from .decision_tree_classifier import DecisionTreeClassifier
+from .gam_classifier import GAMClassifier
