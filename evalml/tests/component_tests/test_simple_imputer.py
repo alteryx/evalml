@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import SimpleImputer
@@ -100,6 +101,52 @@ def test_simple_imputer_col_with_non_numeric():
     X_expected_arr = X_expected_arr.astype({0: 'category'})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
+
+
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_simple_imputer_all_bool_return_original(data_type):
+    X = pd.DataFrame([True, True, False, True, True], dtype=bool)
+    y = pd.Series([1, 0, 0, 1, 0])
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
+    if data_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+    imputer = SimpleImputer()
+    imputer.fit(X, y)
+    X_t = imputer.transform(X)
+    assert_frame_equal(X_expected_arr, X_t)
+
+
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_simple_imputer_bool_dtype_object(data_type):
+    X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
+    y = pd.Series([1, 0, 0, 1, 0])
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='category')
+    if data_type == 'ww':
+        X = ww.DataTable(X)
+    imputer = SimpleImputer()
+    imputer.fit(X, y)
+    X_t = imputer.transform(X)
+    assert_frame_equal(X_expected_arr, X_t)
+
+
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_simple_imputer_multitype_with_one_bool(data_type):
+    X_multi = pd.DataFrame({
+        "bool with nan": pd.Series([True, np.nan, False, np.nan, False], dtype=object),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+    })
+    y = pd.Series([1, 0, 0, 1, 0])
+    X_multi_expected_arr = pd.DataFrame({
+        "bool with nan": pd.Series([True, False, False, False, False], dtype='category'),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype=object),
+    })
+    if data_type == 'ww':
+        X_multi = ww.DataTable(X_multi)
+    imputer = SimpleImputer()
+    imputer.fit(X_multi, y)
+    X_multi_t = imputer.transform(X_multi)
+    assert_frame_equal(X_multi_expected_arr, X_multi_t)
 
 
 def test_simple_imputer_fit_transform_drop_all_nan_columns():
