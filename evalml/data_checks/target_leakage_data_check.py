@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,

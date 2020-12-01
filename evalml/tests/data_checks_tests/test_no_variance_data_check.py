@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckError,
@@ -65,7 +66,21 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
          (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError(message="Labels has 0 unique value.",
                                                                                                   data_check_name=no_variance_data_check_name,
                                                                                                   message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                                                                  details={"column": "Labels"}).to_dict()]})
+                                                                                                  details={"column": "Labels"}).to_dict()]}),
+         (ww.DataTable(two_distinct_with_nulls_X), ww.DataColumn(two_distinct_with_nulls_y), True,
+          {"warnings": [DataCheckWarning(message="feature has two unique values including nulls. Consider encoding the nulls for "
+                                         "this column to be useful for machine learning.",
+                                         data_check_name=no_variance_data_check_name,
+                                         message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                                         details={"column": "feature"}).to_dict(),
+                        DataCheckWarning(message="Y has two unique values including nulls. Consider encoding the nulls for "
+                                         "this column to be useful for machine learning.",
+                                         data_check_name=no_variance_data_check_name,
+                                         message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                                         details={"column": "Y"}).to_dict()],
+           "errors": []}),
+         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
+
          ]
 
 

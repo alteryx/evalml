@@ -108,6 +108,19 @@ def test_invalid_target_data_input_formats():
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": []}).to_dict()]
     }
+    #  test Woodwork
+    messages = invalid_targets_check.validate(X, pd.Series([None, None, None, 0]))
+    assert messages == {
+        "warnings": [],
+        "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 3, "pct_null_rows": 75}).to_dict(),
+                   DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                  details={"target_values": [0]}).to_dict()]
+    }
 
     #  test list
     messages = invalid_targets_check.validate(X, [None, None, None, 0])

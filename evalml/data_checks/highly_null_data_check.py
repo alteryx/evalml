@@ -1,5 +1,3 @@
-import pandas as pd
-import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
