@@ -277,8 +277,9 @@ jobs:
           command: |
             source test_python/bin/activate
             mkdir /tmp/dependencies_updated_artifacts
-            make dependenciesfile DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
-            diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+            export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
+            evalml/tests/dependency_update_check/make_deps_diff.sh
+            diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
             exit $?
       - run:
           name: "Display Dependency Diff"

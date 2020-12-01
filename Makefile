@@ -46,8 +46,3 @@ installdeps-test:
 installdeps-dev:
 	pip install -e . -q
 	pip install -r dev-requirements.txt -q
-
-.PHONY: dependenciesfile
-dependenciesfile:
-		$(eval allow_list='pandas|numpy|scikit|xgboost|catboost|cloudpickle|distributed|pyzmq|lightgbm')
-		pip freeze | grep -v "evalml.git" | grep -E $(allow_list) > $(DEPENDENCY_FILE_PATH)
