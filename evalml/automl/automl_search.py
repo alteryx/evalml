@@ -518,9 +518,6 @@ class AutoMLSearch:
             current_batch_size = len(current_batch_pipelines)
             current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, X, y, search_iteration_plot=search_iteration_plot)
 
-            if search_iteration_plot:
-                search_iteration_plot.update()
-
             # Different size indicates early stopping
             if len(current_batch_pipeline_scores) != current_batch_size:
                 break
