@@ -22,7 +22,7 @@ def compare_two_tables(table_1, table_2):
         assert row.strip().split() == row_answer.strip().split()
 
 
-test_features = [[1], np.ones((1, 15)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
+test_features = [[1], np.ones((15, 1)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
                  pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}), pd.DataFrame()]
 
 
@@ -102,7 +102,7 @@ explain_prediction_multiclass_dict_answer = {
 }
 
 
-@pytest.mark.parametrize("problem_type,output_format,shap_values,normalized_shap_values,answer",
+@pytest.mark.parametrize("problem_type, output_format, shap_values, normalized_shap_values, answer",
                          [(ProblemTypes.REGRESSION,
                            "text",
                            {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
@@ -199,15 +199,15 @@ def test_explain_predictions_value_errors():
 
 
 def test_output_format_checked():
-    input_features, y_true = pd.DataFrame({"a": range(15)}), pd.Series(range(15))
+    input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received bar"):
         explain_predictions(None, input_features, output_format="bar")
-
-    with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received foo"):
-        explain_predictions_best_worst(None, input_features, y_true=y_true, output_format="foo")
-
     with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received xml"):
         explain_prediction(None, input_features=input_features, training_data=None, output_format="xml")
+
+    input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
+    with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received foo"):
+        explain_predictions_best_worst(None, input_features, y_true=y_true, output_format="foo")
 
 
 regression_best_worst_answer = """Test Pipeline Name

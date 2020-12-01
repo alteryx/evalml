@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from scipy.optimize import minimize_scalar
 
 from .objective_base import ObjectiveBase
@@ -33,6 +32,11 @@ class BinaryClassificationObjective(ObjectiveBase):
         Returns:
             Optimal threshold for this objective
         """
+        ypred_proba = self._standardize_input_type(ypred_proba)
+        y_true = self._standardize_input_type(y_true)
+        if X is not None:
+            X = self._standardize_input_type(X)
+
         if not self.can_optimize_threshold:
             raise RuntimeError("Trying to optimize objective that can't be optimized!")
 
@@ -55,8 +59,7 @@ class BinaryClassificationObjective(ObjectiveBase):
         Returns:
             predictions
         """
-        if not isinstance(ypred_proba, pd.Series):
-            ypred_proba = pd.Series(ypred_proba)
+        ypred_proba = self._standardize_input_type(ypred_proba)
         return ypred_proba > threshold
 
     def validate_inputs(self, y_true, y_predicted):

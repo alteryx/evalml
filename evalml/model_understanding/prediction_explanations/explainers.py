@@ -17,14 +17,11 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    import_or_raise,
-    jupyter_check
 )
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
 _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
-
 
 
 def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
@@ -47,7 +44,7 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
         str or dict - A report explaining the most positive/negative contributing features to the predictions.
     """
     input_features = _convert_to_woodwork_structure(input_features)
-    if not (isinstance(training_data, ww.DataTable) and input_features.shape[0] == 1):
+    if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
         raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
     if training_data is not None:
