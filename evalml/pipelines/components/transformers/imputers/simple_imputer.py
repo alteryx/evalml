@@ -48,6 +48,7 @@ class SimpleImputer(Transformer):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
+        # Convert all bool dtypes to category for fitting
         if (X.dtypes == bool).all():
             X = X.astype('category')
 
