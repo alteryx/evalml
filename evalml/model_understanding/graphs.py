@@ -555,3 +555,29 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
                                 marker=_go.scatter.Marker(color=color),
                                 name=name))
     return _go.Figure(layout=layout, data=data)
+
+
+def graph_prediction_vs_target_over_time(pipeline, X, y, dates):
+    """Plot the target values and predictions against time on the x-axis.
+
+    Arguments:
+        pipeline (PipelineBase): Fitted time series regression pipeline.
+        X (pd.DataFrame): Features used to generate new predictions.
+        y (pd.Series): Target values to compare predictions against.
+
+    Returns:
+        plotly.Figure showing the prediction vs actual over time.
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    data = [_go.Scatter(x=dates, y=y, mode='lines+markers', name="Target", line=dict(color='#1f77b4')),
+            _go.Scatter(x=dates, y=pipeline.predict(X, y), mode='lines+markers', name='Prediction',
+                        line=dict(color='#d62728'))]
+    # Let plotly pick the best date format.
+    layout = _go.Layout(title={'text': "Prediction vs Target over time"},
+                        xaxis={'title': 'Time'},
+                        yaxis={'title': 'Target Values'})
+
+    return _go.Figure(data=data, layout=layout)
