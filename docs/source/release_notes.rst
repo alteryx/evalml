@@ -8,6 +8,7 @@ Release Notes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
+        * Added script to generate github markdown for releases :pr:`1487`
     * Documentation Changes
     * Testing Changes
 
