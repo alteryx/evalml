@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Update circleci badge to apply to ``main`` :pr:`1489`
     * Documentation Changes
     * Testing Changes
 
