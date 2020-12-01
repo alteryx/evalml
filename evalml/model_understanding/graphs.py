@@ -580,6 +580,6 @@ def graph_prediction_vs_target_over_time(pipeline, X, y, dates):
     # Let plotly pick the best date format.
     layout = _go.Layout(title={'text': "Prediction vs Target over time"},
                         xaxis={'title': 'Time'},
-                        yaxis={'title': 'Target Values'})
+                        yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)

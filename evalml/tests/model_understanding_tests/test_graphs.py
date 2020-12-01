@@ -977,7 +977,7 @@ def test_graph_prediction_vs_target_over_time():
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Prediction vs Target over time'
     assert fig_dict['layout']['xaxis']['title']['text'] == 'Time'
-    assert fig_dict['layout']['yaxis']['title']['text'] == 'Target Values'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Target Values and Predictions'
     assert len(fig_dict['data']) == 2
     assert fig_dict['data'][0]['line']['color'] == '#1f77b4'
     assert len(fig_dict['data'][0]['x']) == 61
