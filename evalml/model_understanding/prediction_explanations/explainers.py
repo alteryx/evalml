@@ -16,7 +16,7 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
+    _convert_woodwork_types_wrapper
 )
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.

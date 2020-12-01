@@ -153,7 +153,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     # By the time we call transform, we are looking at only one row of the input data.
     pipeline.compute_estimator_features.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
     features = pd.DataFrame({"a": [1], "b": [2]})
-    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2)
+    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=pd.DataFrame())
 
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
