@@ -988,6 +988,7 @@ def test_graph_prediction_vs_target_over_time():
 
 
 def test_graph_prediction_vs_target_over_time_value_error():
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class NotTSPipeline:
         problem_type = ProblemTypes.REGRESSION
