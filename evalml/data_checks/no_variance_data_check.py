@@ -58,8 +58,8 @@ class NoVarianceDataCheck(DataCheck):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Arguments:
-            X (pd.DataFrame): The input features.
-            y (pd.Series): The target data.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features.
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data.
 
         Returns:
             dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.

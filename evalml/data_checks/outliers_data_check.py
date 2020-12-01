@@ -29,8 +29,8 @@ class OutliersDataCheck(DataCheck):
         """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
         Arguments:
-            X (pd.DataFrame): Features
-            y: Ignored.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features
+            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
             dict: A set of columns that may have outlier data.

@@ -33,8 +33,8 @@ class TargetLeakageDataCheck(DataCheck):
         Currently only supports binary and numeric targets and features.
 
         Arguments:
-            X (pd.DataFrame): The input features to check
-            y (pd.Series): The target data
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data
 
         Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.

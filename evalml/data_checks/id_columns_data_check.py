@@ -32,7 +32,7 @@ class IDColumnsDataCheck(DataCheck):
             - column contains all unique values (and is not float / boolean)
 
         Arguments:
-            X (pd.DataFrame): The input features to check
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
             threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0
 
         Returns:

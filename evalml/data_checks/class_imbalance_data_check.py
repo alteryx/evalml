@@ -37,15 +37,15 @@ class ClassImbalanceDataCheck(DataCheck):
             Ignores NaN values in target labels if they appear.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, pd.Series, np.ndarray, list): Features. Ignored.
-            y (ww.DataColumn, pd.Series): Target labels to check for imbalanced data.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
+            y (ww.DataColumn, pd.Series, np.ndarray): Target labels to check for imbalanced data.
 
         Returns:
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold,
                   and DataCheckErrors if the number of values for each target is below 2 * num_cv_folds.
 
         Example:
-            >>> X = ww.DataTable()
+            >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)
         >>> assert target_check.validate(X, y) == {"errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",\

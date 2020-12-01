@@ -78,8 +78,8 @@ class DataChecks:
         Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
-            X (pd.DataFrame): The input data of shape [n_samples, n_features]
-            y (pd.Series): The target data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data of length [n_samples]
 
         Returns:
             dict: Dictionary containing DataCheckMessage objects
