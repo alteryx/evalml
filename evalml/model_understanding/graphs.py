@@ -572,6 +572,10 @@ def graph_prediction_vs_target_over_time(pipeline, X, y, dates):
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
 
+    if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
+        raise ValueError("graph_prediction_vs_target_over_time only supports time series regression pipelines! "
+                         f"Received {str(pipeline.problem_type)}.")
+
     data = [_go.Scatter(x=dates, y=y, mode='lines+markers', name="Target", line=dict(color='#1f77b4')),
             _go.Scatter(x=dates, y=pipeline.predict(X, y), mode='lines+markers', name='Prediction',
                         line=dict(color='#d62728'))]
