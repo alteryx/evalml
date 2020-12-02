@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
+        * Added baseline pipeline and components for time series regression problems :pr:`1496`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
     * Changes
