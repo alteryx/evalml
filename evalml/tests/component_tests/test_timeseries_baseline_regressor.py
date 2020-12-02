@@ -6,12 +6,12 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import TimeSeriesBaselineRegressor
 
 
-def test_baseline_init():
+def test_time_series_baseline_regressor_init():
     baseline = TimeSeriesBaselineRegressor()
     assert baseline.model_family == ModelFamily.BASELINE
 
 
-def test_baseline_y_is_None(X_y_regression):
+def test_time_series_baseline_y_is_None(X_y_regression):
     X, _ = X_y_regression
     clf = TimeSeriesBaselineRegressor()
     clf.fit(X, y=None)
@@ -19,10 +19,12 @@ def test_baseline_y_is_None(X_y_regression):
         clf.predict(X, y=None)
 
 
-def test_baseline_mean():
-    X = pd.DataFrame()
-    y = pd.Series([1, 2, 3, 4, 5, 6])
-    y_true = pd.Series([1, 1, 2, 3, 4, 5])
+def test_time_series_baseline(ts_data):
+    X, y = ts_data
+
+    first = y.iloc[0]
+    y_true = y.shift(periods=1)
+    y_true.iloc[0] = first
 
     clf = TimeSeriesBaselineRegressor()
     clf.fit(X, y=None)
