@@ -7,10 +7,12 @@ from evalml.pipelines.components import DateTimeFeaturizer
 
 def test_datetime_featurizer_init():
     datetime_transformer = DateTimeFeaturizer()
-    assert datetime_transformer.parameters == {"features_to_extract": ["year", "month", "day_of_week", "hour"]}
+    assert datetime_transformer.parameters == {"features_to_extract": ["year", "month", "day_of_week", "hour"],
+                                               "encode_as_categories": False}
 
-    datetime_transformer = DateTimeFeaturizer(features_to_extract=["year", "month"])
-    assert datetime_transformer.parameters == {"features_to_extract": ["year", "month"]}
+    datetime_transformer = DateTimeFeaturizer(features_to_extract=["year", "month"], encode_as_categories=True)
+    assert datetime_transformer.parameters == {"features_to_extract": ["year", "month"],
+                                               "encode_as_categories": True}
 
     with pytest.raises(ValueError, match="not valid options for features_to_extract"):
         DateTimeFeaturizer(features_to_extract=["invalid", "parameters"])
@@ -25,12 +27,20 @@ def test_datetime_featurizer_encodes_as_ints():
                            "date_month": [3, 2, 6, 7, 0],
                            "date_day_of_week": [0, 3, 2, 1, 5],
                            "date_hour": [16, 13, 7, 20, 6]})
+    feature_names = {'date_month': {'April': 3, 'March': 2, 'July': 6, 'August': 7, 'January': 0},
+                     'date_day_of_week': {'Sunday': 0, 'Wednesday': 3, 'Tuesday': 2, 'Monday': 1, 'Friday': 5}
+                     }
     pd.testing.assert_frame_equal(X_transformed, answer)
-    assert dt.get_feature_names() == {'date_month': {'April': 3, 'March': 2, 'July': 6, 'August': 7, 'January': 0},
-                                      'date_day_of_week': {'Sunday': 0, 'Wednesday': 3, 'Tuesday': 2, 'Monday': 1,
-                                                           'Friday': 5}
-                                      }
+    assert dt.get_feature_names() == feature_names
 
+    # Test that changing encode_as_categories to True only changes the dtypes but not the values
+    dt_with_cats = DateTimeFeaturizer(encode_as_categories=True)
+    X_transformed = dt_with_cats.fit_transform(X)
+    answer = answer.astype({"date_day_of_week": "category", "date_month": "category"})
+    pd.testing.assert_frame_equal(X_transformed, answer)
+    assert dt_with_cats.get_feature_names() == feature_names
+
+    # Test that sequential calls to the same DateTimeFeaturizer work as expected by using the first dt we defined
     X = pd.DataFrame({"date": ["2020-04-10", "2017-03-15", "2019-08-19"]})
     X_transformed = dt.fit_transform(X)
     answer = pd.DataFrame({"date_year": [2020, 2017, 2019],
@@ -40,6 +50,7 @@ def test_datetime_featurizer_encodes_as_ints():
     pd.testing.assert_frame_equal(X_transformed, answer)
     assert dt.get_feature_names() == {'date_month': {'April': 3, 'March': 2, 'August': 7},
                                       'date_day_of_week': {'Friday': 5, 'Wednesday': 3, 'Monday': 1}}
+
     dt = DateTimeFeaturizer(features_to_extract=["year", "hour"])
     dt.fit_transform(X)
     assert dt.get_feature_names() == {}
