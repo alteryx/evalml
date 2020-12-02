@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
     * Changes
     * Documentation Changes
     * Testing Changes
