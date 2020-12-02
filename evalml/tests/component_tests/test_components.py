@@ -47,6 +47,7 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler,
     TextFeaturizer,
+    TimeSeriesBaselineRegressor,
     Transformer,
     XGBoostClassifier,
     XGBoostRegressor
@@ -779,7 +780,7 @@ def test_all_transformers_check_fit(X_y_binary):
 
 def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
     X, y = X_y_binary
-    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor]] + [test_estimator_needs_fitting_false]
+    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineRegressor]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
