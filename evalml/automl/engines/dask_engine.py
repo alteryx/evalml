@@ -36,7 +36,7 @@ class DaskEngine(EngineBase):
                 self.log_pipeline(pipeline)
             if self.automl.start_iteration_callback:
                 self.automl.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
-            return self._compute_cv_scores(pipeline, self.automl, self.X, self.y)
+            return self.client.submit(self._compute_cv_scores, pipeline, automl=self.automl, X=self.X_future, y=self.y_future)
         except KeyboardInterrupt:
             pipeline_batch = self.automl._handle_keyboard_interrupt([], pipeline)
             if pipeline_batch == []:
