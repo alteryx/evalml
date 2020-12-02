@@ -587,7 +587,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
     if pipeline.problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
-        raise ValueError("graph_prediction_vs_target_over_time only supports time series regression pipelines! "
+        raise ValueError("graph_prediction_vs_actual_over_time only supports time series regression pipelines! "
                          f"Received {str(pipeline.problem_type)}.")
 
     data = get_prediction_vs_actual_over_time_data(pipeline, X, y, dates)

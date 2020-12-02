@@ -957,7 +957,7 @@ def test_graph_prediction_vs_actual():
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
 
 
-def test_graph_prediction_vs_target_over_time():
+def test_graph_prediction_vs_actual_over_time():
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class MockPipeline:
@@ -987,12 +987,12 @@ def test_graph_prediction_vs_target_over_time():
     assert len(fig_dict['data'][1]['y']) == 61
 
 
-def test_graph_prediction_vs_target_over_time_value_error():
+def test_graph_prediction_vs_actual_over_time_value_error():
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     class NotTSPipeline:
         problem_type = ProblemTypes.REGRESSION
 
-    error_msg = "graph_prediction_vs_target_over_time only supports time series regression pipelines! Received regression."
+    error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
     with pytest.raises(ValueError, match=error_msg):
         graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)
