@@ -8,6 +8,7 @@ Release Notes
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
+        * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
