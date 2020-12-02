@@ -21,6 +21,7 @@ from evalml.model_understanding.graphs import (
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_prediction_vs_actual,
+    graph_prediction_vs_actual_over_time,
     graph_roc_curve,
     normalize_confusion_matrix,
     partial_dependence,
@@ -954,3 +955,44 @@ def test_graph_prediction_vs_actual():
     assert len(fig_dict['data'][2]['x']) == 2
     assert len(fig_dict['data'][2]['y']) == 2
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
+
+
+def test_graph_prediction_vs_actual_over_time():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    class MockPipeline:
+        problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+
+        def predict(self, X, y):
+            return y + 10
+
+    y = np.arange(61)
+    dates = pd.date_range("2020-03-01", "2020-04-30")
+    pipeline = MockPipeline()
+
+    # For this test it doesn't matter what the features are
+    fig = graph_prediction_vs_actual_over_time(pipeline, X=pd.DataFrame(), y=y, dates=dates)
+
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Prediction vs Target over time'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Time'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Target Values and Predictions'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][0]['line']['color'] == '#1f77b4'
+    assert len(fig_dict['data'][0]['x']) == 61
+    assert len(fig_dict['data'][0]['y']) == 61
+    assert fig_dict['data'][1]['line']['color'] == '#d62728'
+    assert len(fig_dict['data'][1]['x']) == 61
+    assert len(fig_dict['data'][1]['y']) == 61
+
+
+def test_graph_prediction_vs_actual_over_time_value_error():
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    class NotTSPipeline:
+        problem_type = ProblemTypes.REGRESSION
+
+    error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
+    with pytest.raises(ValueError, match=error_msg):
+        graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)
