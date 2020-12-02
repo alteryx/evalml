@@ -1,3 +1,5 @@
+import inspect
+
 import pandas as pd
 
 from evalml.objectives import get_objective
@@ -86,7 +88,11 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         features = self.compute_estimator_features(X, y)
-        predictions = self.estimator.predict(features.dropna(axis=0, how="any"), y)
+
+        if 'y' in inspect.signature(self.estimator.predict).parameters:
+            predictions = self.estimator.predict(features.dropna(axis=0, how="any"), y)
+        else:
+            predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
         return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
     def score(self, X, y, objectives):
