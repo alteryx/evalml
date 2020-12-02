@@ -15,7 +15,7 @@ class TimeSeriesBaselineRegressor(Estimator):
 
     This is useful as a simple baseline regressor for time series problems
     """
-    name = "Baseline Time Series Regressor"
+    name = "Time Series Baseline Regressor"
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
@@ -57,9 +57,9 @@ class TimeSeriesBaselineRegressor(Estimator):
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        first = y.loc[0]
+        first = y.iloc[0]
         y_hat = y.shift(periods=1)
-        y_hat.loc[0] = first
+        y_hat.iloc[0] = first
 
         return y_hat
 

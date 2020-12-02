@@ -86,7 +86,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         features = self.compute_estimator_features(X, y)
-        predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
+        predictions = self.estimator.predict(features.dropna(axis=0, how="any"), y)
         return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
     def score(self, X, y, objectives):

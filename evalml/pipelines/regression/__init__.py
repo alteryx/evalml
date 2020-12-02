@@ -1,1 +1,2 @@
 from .baseline_regression import BaselineRegressionPipeline, MeanBaselineRegressionPipeline
+from .timeseries_baseline_regression import TimeSeriesBaselineRegressionPipeline
