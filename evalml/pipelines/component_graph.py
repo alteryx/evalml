@@ -17,6 +17,7 @@ class ComponentGraph:
             >>> component_graph = ComponentGraph(component_dict)
            """
         self.component_dict = component_dict or {}
+        self.component_instances = None
         for component_name, component_info in self.component_dict.items():
             if not isinstance(component_info, list):
                 raise ValueError('All component information should be passed in as a list')
@@ -52,11 +53,13 @@ class ComponentGraph:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                                An empty dictionary {} implies using all default values for component parameters.
         """
+        if self.component_instances is not None:
+            raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
+
+        self.component_instances = {}
         for component_name, component_info in self.component_dict.items():
             component_parameters = parameters.get(component_name, {})
             component_class = component_info[0]
-            if isinstance(component_class, ComponentBase):
-                raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
             try:
                 new_component = component_class(**component_parameters, random_state=self.random_state)
@@ -64,7 +67,7 @@ class ComponentGraph:
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
                 raise ValueError(err) from e
 
-            self.component_dict[component_name][0] = new_component
+            self.component_instances[component_name] = new_component
         return self
 
     def fit(self, X, y):
@@ -202,6 +205,8 @@ class ComponentGraph:
             ComponentBase object
         """
         try:
+            if self.component_instances is not None:
+                return self.component_instances[component_name]
             return self.component_dict[component_name][0]
         except KeyError:
             raise ValueError(f'Component {component_name} is not in the graph')
@@ -225,7 +230,7 @@ class ComponentGraph:
         """
         if not isinstance(self.get_last_component(), ComponentBase):
             raise ValueError('Cannot get estimators until the component graph is instantiated')
-        return [component_info[0] for component_info in self.component_dict.values() if isinstance(component_info[0], Estimator)]
+        return [component_class for component_class in self.component_instances.values() if isinstance(component_class, Estimator)]
 
     def get_parents(self, component_name):
         """Finds the names of all parent nodes of the given component
@@ -271,8 +276,9 @@ class ComponentGraph:
         graph = graphviz.Digraph(name=name, format=graph_format,
                                  graph_attr={'splines': 'ortho'})
         graph.attr(rankdir='LR')
-        for component_name, component_info in self.component_dict.items():
-            component_class = component_info[0]
+        iterator = self.component_dict.items() if self.component_instances is None else self.component_instances.items()
+        for component_name, component_info in iterator:
+            component_class = component_info[0] if self.component_instances is None else component_info
             label = '%s\l' % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
                 parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
