@@ -21,7 +21,7 @@ from evalml.model_understanding.graphs import (
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_prediction_vs_actual,
-    graph_prediction_vs_target_over_time,
+    graph_prediction_vs_actual_over_time,
     graph_roc_curve,
     normalize_confusion_matrix,
     partial_dependence,
@@ -971,7 +971,7 @@ def test_graph_prediction_vs_target_over_time():
     pipeline = MockPipeline()
 
     # For this test it doesn't matter what the features are
-    fig = graph_prediction_vs_target_over_time(pipeline, X=pd.DataFrame(), y=y, dates=dates)
+    fig = graph_prediction_vs_actual_over_time(pipeline, X=pd.DataFrame(), y=y, dates=dates)
 
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -995,4 +995,4 @@ def test_graph_prediction_vs_target_over_time_value_error():
 
     error_msg = "graph_prediction_vs_target_over_time only supports time series regression pipelines! Received regression."
     with pytest.raises(ValueError, match=error_msg):
-        graph_prediction_vs_target_over_time(NotTSPipeline(), None, None, None)
+        graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)

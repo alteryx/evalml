@@ -557,7 +557,23 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     return _go.Figure(layout=layout, data=data)
 
 
-def graph_prediction_vs_target_over_time(pipeline, X, y, dates):
+def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
+    """Get the data needed for the prediction_vs_actual_over_time plot.
+
+    Arguments:
+        pipeline (PipelineBase): Fitted time series regression pipeline.
+        X (pd.DataFrame): Features used to generate new predictions.
+        y (pd.Series): Target values to compare predictions against.
+
+    Returns:
+       pd.DataFrame
+    """
+    return pd.DataFrame({"dates": dates,
+                         "target": y,
+                         "prediction": pipeline.predict(X, y)})
+
+
+def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     """Plot the target values and predictions against time on the x-axis.
 
     Arguments:
@@ -574,8 +590,11 @@ def graph_prediction_vs_target_over_time(pipeline, X, y, dates):
         raise ValueError("graph_prediction_vs_target_over_time only supports time series regression pipelines! "
                          f"Received {str(pipeline.problem_type)}.")
 
-    data = [_go.Scatter(x=dates, y=y, mode='lines+markers', name="Target", line=dict(color='#1f77b4')),
-            _go.Scatter(x=dates, y=pipeline.predict(X, y), mode='lines+markers', name='Prediction',
+    data = get_prediction_vs_actual_over_time_data(pipeline, X, y, dates)
+
+    data = [_go.Scatter(x=data["dates"], y=data["target"], mode='lines+markers', name="Target",
+                        line=dict(color='#1f77b4')),
+            _go.Scatter(x=data["dates"], y=data["prediction"], mode='lines+markers', name='Prediction',
                         line=dict(color='#d62728'))]
     # Let plotly pick the best date format.
     layout = _go.Layout(title={'text': "Prediction vs Target over time"},

@@ -13,6 +13,7 @@ from .graphs import (
     partial_dependence,
     graph_partial_dependence,
     graph_prediction_vs_actual,
-    graph_prediction_vs_target_over_time
+    get_prediction_vs_actual_over_time_data,
+    graph_prediction_vs_actual_over_time,
 )
 from .prediction_explanations import explain_prediction, explain_predictions_best_worst, explain_predictions
