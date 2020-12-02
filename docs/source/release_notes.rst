@@ -3,7 +3,9 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
     * Fixes
+        * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
     * Documentation Changes
