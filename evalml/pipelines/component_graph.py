@@ -17,12 +17,13 @@ class ComponentGraph:
             >>> component_graph = ComponentGraph(component_dict)
            """
         self.component_dict = component_dict or {}
-        self.component_instances = None
+        self.component_instances = {}
+        self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
             if not isinstance(component_info, list):
                 raise ValueError('All component information should be passed in as a list')
             component_class = handle_component_class(component_info[0])
-            self.component_dict[component_name][0] = component_class
+            self.component_instances[component_name] = component_class
         self.compute_order = []
         self._recompute_order()
         self.random_state = random_state
@@ -53,13 +54,12 @@ class ComponentGraph:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                                An empty dictionary {} implies using all default values for component parameters.
         """
-        if self.component_instances is not None:
+        if self._is_instantiated:
             raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
-        self.component_instances = {}
-        for component_name, component_info in self.component_dict.items():
+        self._is_instantiated = True
+        for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-            component_class = component_info[0]
 
             try:
                 new_component = component_class(**component_parameters, random_state=self.random_state)
@@ -205,7 +205,7 @@ class ComponentGraph:
             ComponentBase object
         """
         try:
-            if self.component_instances is not None:
+            if self._is_instantiated:
                 return self.component_instances[component_name]
             return self.component_dict[component_name][0]
         except KeyError:
@@ -276,9 +276,7 @@ class ComponentGraph:
         graph = graphviz.Digraph(name=name, format=graph_format,
                                  graph_attr={'splines': 'ortho'})
         graph.attr(rankdir='LR')
-        iterator = self.component_dict.items() if self.component_instances is None else self.component_instances.items()
-        for component_name, component_info in iterator:
-            component_class = component_info[0] if self.component_instances is None else component_info
+        for component_name, component_class in self.component_instances.items():
             label = '%s\l' % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
                 parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
