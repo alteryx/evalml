@@ -5,6 +5,16 @@ Release Notes
     * Enhancements
         * Added ``LightGBM Regressor`` to regression components :pr:`1459`
     * Fixes
+        * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.16.1 Dec. 1, 2020**
+    * Enhancements
+        * Pin woodwork version to v0.0.6 to avoid breaking changes :pr:`1484`
+    * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
         * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
@@ -12,6 +22,7 @@ Release Notes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
     * Documentation Changes
     * Testing Changes
+        * Update dependency update checker to use everything from core and optional dependencies :pr:`1480`
 
 
 **v0.16.0 Nov. 24, 2020**
@@ -39,6 +50,7 @@ Release Notes
         * Updated calls to ``Woodwork``'s ``to_pandas()`` to ``to_series()`` and ``to_dataframe()`` :pr:`1428`
         * Fixed bug in OHE where column names were not guaranteed to be unique :pr:`1349`
         * Fixed bug with percent improvement of ``ExpVariance`` objective on data with highly skewed target :pr:`1467`
+        * Fix SimpleImputer error which occurs when all features are bool type :pr:`1215`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
