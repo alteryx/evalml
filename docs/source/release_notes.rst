@@ -3,6 +3,15 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+        * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.16.1 Dec. 1, 2020**
+    * Enhancements
         * Pin woodwork version to v0.0.6 to avoid breaking changes :pr:`1484`
     * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
