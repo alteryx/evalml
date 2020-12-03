@@ -1,7 +1,6 @@
 import networkx as nx
 import pandas as pd
 from networkx.algorithms.dag import topological_sort
-import woodwork as ww
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
@@ -137,8 +136,6 @@ class ComponentGraph:
         Returns:
             pd.DataFrame or pd.Series - Output of the last component
         """
-        if isinstance(X, ww.DataTable):
-            X = X.to_dataframe()
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 

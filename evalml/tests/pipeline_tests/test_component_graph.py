@@ -172,6 +172,19 @@ def test_from_list():
         ComponentGraph.from_list(bad_component_list)
 
 
+def test_from_list_repeat_component():
+    component_list = ['Imputer', 'One Hot Encoder', 'One Hot Encoder', RandomForestClassifier]
+    component_graph = ComponentGraph.from_list(component_list)
+
+    expected_order = ['Imputer', 'One Hot Encoder', 'One Hot Encoder_2', 'Random Forest Classifier']
+    assert component_graph.compute_order == expected_order
+
+    component_graph.instantiate({'One Hot Encoder': {'top_n': 2},
+                                 'One Hot Encoder_2': {'top_n': 11}})
+    assert component_graph.get_component('One Hot Encoder').parameters['top_n'] == 2
+    assert component_graph.get_component('One Hot Encoder_2').parameters['top_n'] == 11
+
+
 def test_instantiate_with_parameters(example_graph):
     graph = example_graph
     component_graph = ComponentGraph(graph)
@@ -397,6 +410,18 @@ def test_transform_features(mock_transform, mock_fit, mock_predict, example_grap
     assert mock_fit.call_count == 3
 
 
+@patch(f'{__name__}.DummyTransformer.transform')
+def test_transform_features_single_component(mock_transform, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    mock_transform.return_value = pd.DataFrame()
+    component_graph = ComponentGraph({'Dummy Component': [DummyTransformer]}).instantiate({})
+    component_graph.fit(X, y)
+
+    X_t = component_graph.transform_features(X)
+    pd.testing.assert_frame_equal(X_t, X)
+
+
 @patch('evalml.pipelines.components.Imputer.fit_transform')
 def test_fit_y_parent(mock_fit_transform, X_y_binary):
     X, y = X_y_binary
@@ -408,6 +433,17 @@ def test_fit_y_parent(mock_fit_transform, X_y_binary):
 
     component_graph.fit(X, y)
     mock_fit_transform.assert_called_once()
+
+
+def test_predict_empty_graph(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    component_graph = ComponentGraph()
+    component_graph.instantiate({})
+
+    component_graph.fit(X, y)
+    X_t = component_graph.predict(X)
+    pd.testing.assert_frame_equal(X_t, X)
 
 
 @patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
@@ -494,3 +530,16 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
     pd.testing.assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
     pd.testing.assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6), 'estimator a': [0, 0, 0, 1, 0, 0], 'feature b': np.ones(6) * 2, 'estimator b': [0, 0, 0, 0, 1, 0], 'feature c': np.ones(6) * 3}, columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
     pd.testing.assert_series_equal(predict_out, pd.Series([0, 0, 0, 0, 0, 1]))
+
+
+def test_iteration(example_graph):
+    component_graph = ComponentGraph(example_graph)
+
+    expected = [Imputer, OneHotEncoder, ElasticNetClassifier, OneHotEncoder, RandomForestClassifier, LogisticRegressionClassifier]
+    iteration = [component for component in component_graph]
+    assert iteration == expected
+
+    component_graph.instantiate({'OneHot_RandomForest': {'top_n': 32}})
+    expected = [Imputer(), OneHotEncoder(), ElasticNetClassifier(), OneHotEncoder(top_n=32), RandomForestClassifier(), LogisticRegressionClassifier()]
+    iteration = [component for component in component_graph]
+    assert iteration == expected
