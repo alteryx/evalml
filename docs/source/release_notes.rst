@@ -3,6 +3,18 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
+    * Fixes
+        * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
+    * Changes
+        * Update circleci badge to apply to ``main`` :pr:`1489`
+        * Added script to generate github markdown for releases :pr:`1487`
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.16.1 Dec. 1, 2020**
+    * Enhancements
         * Pin woodwork version to v0.0.6 to avoid breaking changes :pr:`1484`
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
         * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
