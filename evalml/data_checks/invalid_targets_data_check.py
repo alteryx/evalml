@@ -24,7 +24,7 @@ class InvalidTargetDataCheck(DataCheck):
                 incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
         """
         self.problem_type = handle_problem_types(problem_type)
-        if n_unique <= 0:
+        if n_unique is not None and n_unique <= 0:
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
 
