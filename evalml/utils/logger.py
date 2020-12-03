@@ -71,7 +71,7 @@ def time_elapsed(start_time):
         return '{0:02d}:{1:02d}'.format(m, s)
 
 
-def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time, current_batch=None):
+def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, start_time, current_batch=None, show_batch_output=False):
     """Adds the next pipeline to be evaluated to the log along with how much time has elapsed.
 
     Arguments:
@@ -86,9 +86,9 @@ def update_pipeline(logger, pipeline_name, current_iteration, max_iterations, st
         None: logs progress to logger at info level.
     """
     elapsed_time = time_elapsed(start_time)
-    if current_batch is not None:
-        logger.info(f"Batch {current_batch}: ({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
-    elif max_iterations is not None:
-        logger.info(f"{current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
-    else:
+    if not max_iterations:
         logger.info(f"{pipeline_name} Elapsed: {elapsed_time}")
+    elif show_batch_output:
+        logger.info(f"Batch {current_batch}: ({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
+    else:
+        logger.info(f"({current_iteration}/{max_iterations}) {pipeline_name} Elapsed:{elapsed_time}")
