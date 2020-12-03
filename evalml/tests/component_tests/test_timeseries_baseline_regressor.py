@@ -26,7 +26,21 @@ def test_time_series_baseline(ts_data):
     y_true.iloc[0] = first
 
     clf = TimeSeriesBaselineRegressor()
-    clf.fit(X, y=None)
+    clf.fit(X, y)
 
     np.testing.assert_allclose(clf.predict(X, y), y_true)
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
+
+
+def test_time_series_baseline_no_X(ts_data):
+    _, y = ts_data
+
+    first = y.iloc[0]
+    y_true = y.shift(periods=1)
+    y_true.iloc[0] = first
+
+    clf = TimeSeriesBaselineRegressor()
+    clf.fit(X=None, y=y)
+
+    np.testing.assert_allclose(clf.predict(X=None, y=y), y_true)
+    np.testing.assert_allclose(clf.feature_importance, np.array([]))
