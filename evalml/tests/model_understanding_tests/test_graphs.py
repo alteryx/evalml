@@ -964,10 +964,12 @@ def test_graph_prediction_vs_actual_over_time():
         problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
         def predict(self, X, y):
-            return y + 10
+            preds = y + 10
+            preds.index = range(100, 161)
+            return preds
 
-    y = np.arange(61)
-    dates = pd.date_range("2020-03-01", "2020-04-30")
+    y = pd.Series(np.arange(61), index=range(200, 261))
+    dates = pd.Series(pd.date_range("2020-03-01", "2020-04-30"))
     pipeline = MockPipeline()
 
     # For this test it doesn't matter what the features are
@@ -981,10 +983,12 @@ def test_graph_prediction_vs_actual_over_time():
     assert len(fig_dict['data']) == 2
     assert fig_dict['data'][0]['line']['color'] == '#1f77b4'
     assert len(fig_dict['data'][0]['x']) == 61
+    assert not np.isnan(fig_dict['data'][0]['y']).all()
     assert len(fig_dict['data'][0]['y']) == 61
     assert fig_dict['data'][1]['line']['color'] == '#d62728'
     assert len(fig_dict['data'][1]['x']) == 61
     assert len(fig_dict['data'][1]['y']) == 61
+    assert not np.isnan(fig_dict['data'][1]['y']).all()
 
 
 def test_graph_prediction_vs_actual_over_time_value_error():
