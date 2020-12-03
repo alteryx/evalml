@@ -46,18 +46,17 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Arguments:
-        X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-        y (pd.Series): Target data of length [n_samples]
+        X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+        y (ww.DataColumn, pd.Series, or np.ndarray): Target data of length [n_samples]
         regression (bool): If true, do not use stratified split
         test_size (float): Percent of train set to holdout for testing
         random_state (int, np.random.RandomState): Seed for the random number generator
 
     Returns:
-        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets
+        ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
-
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     y = _convert_woodwork_types_wrapper(y.to_series())
 

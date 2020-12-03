@@ -137,8 +137,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
-        y_true (pd.Series): True labels for the input data.
+        input_features (ww.DataColumn, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        y_true (ww.DataColumn, pd.Series): True labels for the input data.
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
@@ -155,8 +155,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             feature names, prediction contribution, and SHAP Value (optional) will be listed.
     """
     input_features = _convert_to_woodwork_structure(input_features)
-    y_true = _convert_to_woodwork_structure(y_true)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    y_true = _convert_to_woodwork_structure(y_true)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
 
     if not (input_features.shape[0] >= num_to_explain * 2):
