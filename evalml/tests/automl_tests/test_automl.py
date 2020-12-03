@@ -1128,10 +1128,11 @@ all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass
                          product(all_objectives + [CostBenefitMatrix],
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
                                  [0.1, np.nan],
-                                 [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION]))
+                                 [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]))
 def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, baseline_score, problem_type_value,
                                                   dummy_binary_pipeline_class, dummy_multiclass_pipeline_class,
                                                   dummy_regression_pipeline_class,
+                                                  dummy_time_series_regression_pipeline_class,
                                                   X_y_binary):
 
     if not objective.is_defined_for_problem_type(problem_type_value):
@@ -1142,10 +1143,12 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
     pipeline_class = {ProblemTypes.BINARY: dummy_binary_pipeline_class,
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
-                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class}[problem_type_value]
+                      ProblemTypes.REGRESSION: dummy_regression_pipeline_class,
+                      ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regression_pipeline_class}[problem_type_value]
     baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
                                ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
                                ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
+                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesBaselineRegressionPipeline"
                                }[problem_type_value]
 
     class DummyPipeline(pipeline_class):
@@ -1169,6 +1172,10 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
                               additional_objectives=[])
+    elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
+        automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
+                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
+                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0})
     else:
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
@@ -1185,17 +1192,20 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
 
 
-@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression", "time series regression"])
 @patch("evalml.pipelines.ModeBaselineBinaryPipeline.fit")
 @patch("evalml.pipelines.ModeBaselineMulticlassPipeline.fit")
 @patch("evalml.pipelines.MeanBaselineRegressionPipeline.fit")
-def test_percent_better_than_baseline_computed_for_all_objectives(mock_baseline_regression_fit,
+@patch("evalml.pipelines.TimeSeriesBaselineRegressionPipeline.fit")
+def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_series_baseline_regression_fit,
+                                                                  mock_baseline_regression_fit,
                                                                   mock_baseline_multiclass_fit,
                                                                   mock_baseline_binary_fit,
                                                                   problem_type,
                                                                   dummy_binary_pipeline_class,
                                                                   dummy_multiclass_pipeline_class,
                                                                   dummy_regression_pipeline_class,
+                                                                  dummy_time_series_regression_pipeline_class,
                                                                   X_y_binary):
 
     X, y = X_y_binary
@@ -1204,10 +1214,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_baseline_
 
     pipeline_class = {"binary": dummy_binary_pipeline_class,
                       "multiclass": dummy_multiclass_pipeline_class,
-                      "regression": dummy_regression_pipeline_class}[problem_type]
+                      "regression": dummy_regression_pipeline_class,
+                      "time series regression": dummy_time_series_regression_pipeline_class}[problem_type]
     baseline_pipeline_class = {"binary": "evalml.pipelines.ModeBaselineBinaryPipeline",
                                "multiclass": "evalml.pipelines.ModeBaselineMulticlassPipeline",
                                "regression": "evalml.pipelines.MeanBaselineRegressionPipeline",
+                               "time series regression": "evalml.pipelines.TimeSeriesBaselineRegressionPipeline"
                                }[problem_type]
 
     class DummyPipeline(pipeline_class):
@@ -1226,8 +1238,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_baseline_
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
 
-    automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="auto")
+    if problem_type == "time series regression":
+        automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
+                              allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 0, 'max_delay': 0})
+    else:
+        automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
+                              allowed_pipelines=[DummyPipeline], objective="auto")
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search(X, y, data_checks=None)
