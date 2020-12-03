@@ -7,10 +7,10 @@ from evalml.data_checks import (
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     categorical_dtypes,
-    numeric_and_boolean_dtypes,
-    woodwork_wrapper
+    numeric_and_boolean_dtypes
 )
 
 
@@ -20,7 +20,6 @@ class InvalidTargetDataCheck(DataCheck):
     def __init__(self, problem_type):
         self.problem_type = handle_problem_types(problem_type)
 
-    @woodwork_wrapper
     def validate(self, X, y):
         """Checks if the target data contains missing or invalid values.
 
@@ -48,7 +47,10 @@ class InvalidTargetDataCheck(DataCheck):
         }
         if y is None:
             raise ValueError("y cannot be None")
+
+        y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
+
         null_rows = y.isnull()
         if null_rows.any():
             num_null_rows = null_rows.sum()

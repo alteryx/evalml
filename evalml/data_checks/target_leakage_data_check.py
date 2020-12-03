@@ -4,9 +4,9 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    numeric_and_boolean_dtypes,
-    woodwork_wrapper
+    numeric_and_boolean_dtypes
 )
 
 
@@ -26,7 +26,6 @@ class TargetLeakageDataCheck(DataCheck):
             raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
         self.pct_corr_threshold = pct_corr_threshold
 
-    @woodwork_wrapper
     def validate(self, X, y):
         """Check if any of the features are highly correlated with the target.
 
@@ -59,6 +58,8 @@ class TargetLeakageDataCheck(DataCheck):
             "errors": []
         }
 
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 

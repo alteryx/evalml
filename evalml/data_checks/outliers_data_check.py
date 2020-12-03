@@ -7,9 +7,9 @@ from evalml.data_checks import (
 )
 from evalml.utils import get_random_state
 from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    numeric_dtypes,
-    woodwork_wrapper
+    numeric_dtypes
 )
 
 
@@ -24,7 +24,6 @@ class OutliersDataCheck(DataCheck):
         """
         self.random_state = get_random_state(random_state)
 
-    @woodwork_wrapper
     def validate(self, X, y=None):
         """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
@@ -54,9 +53,10 @@ class OutliersDataCheck(DataCheck):
             "errors": []
         }
 
+        X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X = X.select_dtypes(include=numeric_dtypes)
 
+        X = X.select_dtypes(include=numeric_dtypes)
         if len(X.columns) == 0:
             return messages
 
