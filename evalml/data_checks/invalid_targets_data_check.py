@@ -31,6 +31,7 @@ class InvalidTargetDataCheck(DataCheck):
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
         Example:
+            >>> import pandas as pd
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None, None])
             >>> target_check = InvalidTargetDataCheck('binary')

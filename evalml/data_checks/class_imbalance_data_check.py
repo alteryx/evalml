@@ -44,6 +44,7 @@ class ClassImbalanceDataCheck(DataCheck):
                   and DataCheckErrors if the number of values for each target is below 2 * num_cv_folds.
 
         Example:
+            >>> import pandas as pd
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)

@@ -39,6 +39,7 @@ class TargetLeakageDataCheck(DataCheck):
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
         Example:
+            >>> import pandas as pd
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],
             ...    'x': [42, 54, 12, 64, 12],

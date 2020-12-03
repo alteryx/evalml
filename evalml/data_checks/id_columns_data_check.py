@@ -38,6 +38,7 @@ class IDColumnsDataCheck(DataCheck):
             dict: A dictionary of features with column name or index and their probability of being ID columns
 
         Example:
+            >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...     'df_id': [0, 1, 2, 3, 4],
             ...     'x': [10, 42, 31, 51, 61],

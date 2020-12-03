@@ -1,4 +1,3 @@
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -36,6 +35,7 @@ class HighlyNullDataCheck(DataCheck):
             dict (DataCheckWarning): dict with a DataCheckWarning if there are any highly-null columns.
 
         Example:
+            >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...    'lots_of_null': [None, None, None, None, 5],
             ...    'no_null': [1, 2, 3, 4, 5]
