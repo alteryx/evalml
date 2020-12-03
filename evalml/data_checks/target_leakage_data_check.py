@@ -1,11 +1,13 @@
-import pandas as pd
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    numeric_and_boolean_dtypes
+)
 
 
 class TargetLeakageDataCheck(DataCheck):
@@ -30,13 +32,14 @@ class TargetLeakageDataCheck(DataCheck):
         Currently only supports binary and numeric targets and features.
 
         Arguments:
-            X (pd.DataFrame): The input features to check
-            y (pd.Series): The target data
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data
 
         Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
         Example:
+            >>> import pandas as pd
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],
             ...    'x': [42, 54, 12, 64, 12],
@@ -55,10 +58,11 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         if y.dtype not in numeric_and_boolean_dtypes:
             return messages

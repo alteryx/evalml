@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -95,6 +96,9 @@ def test_target_leakage_data_check_input_formats():
                                       details={"column": "d"}).to_dict()],
         "errors": []
     }
+
+    # test X as ww.DataTable, y as ww.DataColumn
+    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
 
     #  test y as list
     assert leakage_check.validate(X, y.values) == expected_messages
