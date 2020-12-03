@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
-def test_split_regression(problem_type, data_type, X_y_binary, X_y_multi, X_y_regression):
+def test_split_data(problem_type, data_type, X_y_binary, X_y_multi, X_y_regression):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_multi
     if problem_type == ProblemTypes.MULTICLASS:
