@@ -47,7 +47,8 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline
+    ModeBaselineMulticlassPipeline,
+    TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -613,9 +614,10 @@ class AutoMLSearch:
             baseline = ModeBaselineBinaryPipeline(parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = ModeBaselineMulticlassPipeline(parameters={})
-        else:
+        elif self.problem_type == ProblemTypes.REGRESSION:
             baseline = MeanBaselineRegressionPipeline(parameters={})
-
+        else:
+            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": 0, "max_delay": 0}})
         pipelines = [baseline]
         # Using a while loop so that we can retry the pipeline after the user hits ctr-c
         # but decides to not stop the search.
