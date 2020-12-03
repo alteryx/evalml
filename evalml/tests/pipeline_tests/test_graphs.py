@@ -95,6 +95,9 @@ def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
     comp.instantiate(parameters)
     graph = comp.graph('test', 'png')
     assert isinstance(graph, graphviz.Digraph)
+    assert 'top_n : 3' in graph.source
+    assert 'top_n : 5' in graph.source
+    assert 'max_iter : 100' in graph.source
 
 
 def test_missing_file_extension(tmpdir, test_pipeline):
