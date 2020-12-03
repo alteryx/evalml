@@ -48,7 +48,7 @@ from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    TimeSeriesBaselineRegressionPipeline,
     PipelineBase
 )
 from evalml.pipelines.components.utils import get_estimators
