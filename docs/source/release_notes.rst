@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
+        * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
     * Changes
@@ -17,7 +18,6 @@ Release Notes
 **v0.16.1 Dec. 1, 2020**
     * Enhancements
         * Pin woodwork version to v0.0.6 to avoid breaking changes :pr:`1484`
-    * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
         * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
