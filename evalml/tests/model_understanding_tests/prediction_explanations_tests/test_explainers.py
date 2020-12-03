@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
@@ -139,11 +140,13 @@ explain_prediction_multiclass_dict_answer = {
                             {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
                            explain_prediction_multiclass_dict_answer)
                           ])
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @patch("evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values")
 @patch("evalml.model_understanding.prediction_explanations._user_interface._normalize_shap_values")
 def test_explain_prediction(mock_normalize_shap_values,
                             mock_compute_shap_values,
-                            problem_type, output_format, shap_values, normalized_shap_values, answer):
+                            problem_type, output_format, shap_values, normalized_shap_values, answer,
+                            input_type):
     mock_compute_shap_values.return_value = shap_values
     mock_normalize_shap_values.return_value = normalized_shap_values
     pipeline = MagicMock()
@@ -153,7 +156,11 @@ def test_explain_prediction(mock_normalize_shap_values,
     # By the time we call transform, we are looking at only one row of the input data.
     pipeline.compute_estimator_features.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
     features = pd.DataFrame({"a": [1], "b": [2]})
-    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=pd.DataFrame())
+    training_data = pd.DataFrame()
+    if input_type == "ww":
+        features = ww.DataTable(features)
+        training_data = ww.DataTable(training_data)
+    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=training_data)
 
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)

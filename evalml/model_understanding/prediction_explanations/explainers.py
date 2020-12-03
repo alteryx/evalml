@@ -32,7 +32,7 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
+        input_features (ww.DataTable, pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
         top_k (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
@@ -98,8 +98,8 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
-        training_data (pd.DataFrame): Dataframe of data the pipeline was fit on. This can be omitted for pipelines
+        input_features (ww.DataTable, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        training_data (ww.DataTable, pd.DataFrame): Dataframe of data the pipeline was fit on. This can be omitted for pipelines
             with tree-based estimators.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
@@ -137,7 +137,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (ww.DataColumn, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        input_features (ww.DataTable, pd.DataFrame): Input data to evaluate the pipeline on.
         y_true (ww.DataColumn, pd.Series): True labels for the input data.
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
