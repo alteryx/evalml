@@ -1,11 +1,12 @@
 import networkx as nx
 import pandas as pd
 from networkx.algorithms.dag import topological_sort
+import woodwork as ww
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise
+from evalml.utils import get_random_state, import_or_raise
 
 
 class ComponentGraph:
@@ -26,7 +27,8 @@ class ComponentGraph:
             self.component_instances[component_name] = component_class
         self.compute_order = []
         self._recompute_order()
-        self.random_state = random_state
+        self.input_feature_names = {}
+        self.random_state = get_random_state(random_state)
 
     @classmethod
     def from_list(cls, component_list, random_state=0):
@@ -37,13 +39,18 @@ class ComponentGraph:
                                    an order that represents a valid linear graph
         """
         component_dict = {}
+        previous_component = None
         for idx, component in enumerate(component_list):
             component_class = handle_component_class(component)
             component_name = component_class.name
 
+            if component_name in component_dict.keys():
+                component_name = f'{component_name}_{idx}'
+
             component_dict[component_name] = [component_class]
-            if idx != 0:
-                component_dict[component_name].append(f"{handle_component_class(component_list[idx-1]).name}.x")
+            if previous_component is not None:
+                component_dict[component_name].append(f"{previous_component}.x")
+            previous_component = component_name
         return cls(component_dict, random_state=random_state)
 
     def instantiate(self, parameters):
@@ -102,7 +109,7 @@ class ComponentGraph:
         """
         return self._compute_features(self.compute_order, X)
 
-    def transform_features(self, X):
+    def transform_features(self, X, y=None):
         """ Transform all components save the final one, usually an estimator. Note that this
         is only useful where the final component has only one parent, otherwise there will be
         information missing.
@@ -113,7 +120,9 @@ class ComponentGraph:
         Returns:
             pd.DataFrame: Transformed values.
         """
-        return self._compute_features(self.compute_order[:-1], X)
+        if len(self.compute_order) <= 1:
+            return X
+        return self._compute_features(self.compute_order[:-1], X, y=y)
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -128,9 +137,15 @@ class ComponentGraph:
         Returns:
             pd.DataFrame or pd.Series - Output of the last component
         """
+        if isinstance(X, ww.DataTable):
+            X = X.to_dataframe()
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
         output_cache = {}
-        final_component = component_list[-1]
+        final_component = None
         for component_name in component_list:
+            final_component = component_name
             component_class = self.get_component(component_name)
             if not isinstance(component_class, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
@@ -150,6 +165,7 @@ class ComponentGraph:
                     except KeyError:
                         x_inputs.append(output_cache[f'{parent_input}.x'])
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
+            self.input_feature_names.update({component_name: list(input_x.columns)})
             if isinstance(component_class, Transformer):
                 if fit:
                     output = component_class.fit_transform(input_x, input_y)
@@ -165,8 +181,13 @@ class ComponentGraph:
             else:
                 if fit:
                     component_class = component_class.fit(input_x, input_y)
-                output = component_class.predict(input_x)
+                if not (fit and component_class.name == self.get_last_component().name):  # Don't call predict on the final component during fit
+                    output = component_class.predict(input_x)
+                else:
+                    output = None
                 output_cache[component_name] = output
+        if final_component is None:
+            return X
         final_component_class = self.get_component(final_component)
         if isinstance(final_component_class, Transformer):
             return output_cache[f"{final_component}.x"]
@@ -205,9 +226,7 @@ class ComponentGraph:
             ComponentBase object
         """
         try:
-            if self._is_instantiated:
-                return self.component_instances[component_name]
-            return self.component_dict[component_name][0]
+            return self.component_instances[component_name]
         except KeyError:
             raise ValueError(f'Component {component_name} is not in the graph')
 
@@ -315,3 +334,14 @@ class ComponentGraph:
             self.compute_order = list(topological_sort(digraph))
         except NetworkXUnfeasible:
             raise ValueError('The given graph contains a cycle')
+
+    def __iter__(self):
+        self._i = 0
+        return self
+
+    def __next__(self):
+        if self._i < len(self.compute_order):
+            self._i += 1
+            return self.get_component(self.compute_order[self._i - 1])
+        else:
+            raise StopIteration
