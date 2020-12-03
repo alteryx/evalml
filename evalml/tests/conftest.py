@@ -312,7 +312,7 @@ def helper_functions():
                 estimator = pipeline_class.component_graph[-1]
                 estimator_name = estimator if isinstance(estimator, str) else estimator.name
                 pl = pipeline_class({estimator_name: {'n_jobs': 1}})
-            except:
+            except ValueError:
                 pl = pipeline_class({})
             return pl
 

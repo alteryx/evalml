@@ -1016,7 +1016,6 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
             for score in all_objective_scores.values():
                 assert score is not None
 
-    breakpoint()
     assert len(automl.full_rankings) == 3
     assert not automl.full_rankings['score'].isnull().values.any()
 
