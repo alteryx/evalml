@@ -2,7 +2,7 @@
 <img width=50% src="https://evalml-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="Featuretools" />
 </p>
 
-[![CircleCI](https://circleci.com/gh/alteryx/evalml.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/alteryx/evalml)
+[![CircleCI](https://circleci.com/gh/alteryx/evalml/tree/main.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/alteryx/evalml/tree/main)
 [![codecov](https://codecov.io/gh/alteryx/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/alteryx/evalml)
 [![PyPI version](https://badge.fury.io/py/evalml.svg?maxAge=2592000)](https://badge.fury.io/py/evalml)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/evalml.svg)](https://pypistats.org/packages/evalml)

@@ -22,7 +22,7 @@ class DFSTransformer(Transformer):
         """
         parameters = {"index": index}
         if not isinstance(index, str):
-            raise ValueError("Index provided must be string")
+            raise TypeError(f"Index provided must be string, got {type(index)}")
 
         self.index = index
         self.features = None

@@ -9,10 +9,10 @@ from evalml.pipelines.components import DFSTransformer
 
 
 def test_index_errors(X_y_binary):
-    with pytest.raises(ValueError, match="Index provided must be string"):
+    with pytest.raises(TypeError, match="Index provided must be string"):
         DFSTransformer(index=0)
 
-    with pytest.raises(ValueError, match="Index provided must be string"):
+    with pytest.raises(TypeError, match="Index provided must be string"):
         DFSTransformer(index=None)
 
 

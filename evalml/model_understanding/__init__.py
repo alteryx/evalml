@@ -12,6 +12,8 @@ from .graphs import (
     graph_binary_objective_vs_threshold,
     partial_dependence,
     graph_partial_dependence,
-    graph_prediction_vs_actual
+    graph_prediction_vs_actual,
+    get_prediction_vs_actual_over_time_data,
+    graph_prediction_vs_actual_over_time,
 )
 from .prediction_explanations import explain_prediction, explain_predictions_best_worst, explain_predictions
