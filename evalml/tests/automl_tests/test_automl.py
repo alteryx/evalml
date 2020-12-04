@@ -41,10 +41,10 @@ from evalml.objectives import (
 from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    Estimator,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesRegressionPipeline,
-    Estimator
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
