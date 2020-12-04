@@ -1,4 +1,5 @@
 import copy
+import os
 import warnings
 
 import numpy as np
@@ -12,6 +13,7 @@ from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
@@ -555,3 +557,45 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
                                 marker=_go.scatter.Marker(color=color),
                                 name=name))
     return _go.Figure(layout=layout, data=data)
+
+
+def visualize_decision_tree(clf, filepath=None):
+    """Generate an image visualizing the decision tree
+
+    Arguments:
+        clf (ComponentBase): A fitted tree-based estimator.
+        filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+
+    Returns:
+        graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
+    """
+    if not clf.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree visualizations are not supported for non-Tree estimators")
+
+    graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
+
+    graph_format = None
+    if filepath:
+        # Cast to str in case a Path object was passed in
+        filepath = str(filepath)
+        try:
+            f = open(filepath, 'w')
+            f.close()
+        except (IOError, FileNotFoundError):
+            raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+        path_and_name, graph_format = os.path.splitext(filepath)
+        if graph_format:
+            graph_format = graph_format[1:].lower()  # ignore the dot
+            supported_filetypes = graphviz.backend.FORMATS
+            if graph_format not in supported_filetypes:
+                raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
+                                  "following: {}").format(graph_format, supported_filetypes))
+        else:
+            graph_format = 'pdf'  # If the filepath has no extension default to pdf
+
+    dot_data = export_graphviz(clf._component_obj)
+    source_data = graphviz.Source(source=dot_data, format=graph_format)
+    if filepath:
+        source_data.render(filename=path_and_name, cleanup=True)
+
+    return source_data
