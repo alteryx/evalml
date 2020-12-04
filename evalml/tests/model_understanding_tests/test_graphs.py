@@ -1,3 +1,4 @@
+import os
 import warnings
 from unittest.mock import patch
 
@@ -25,7 +26,8 @@ from evalml.model_understanding.graphs import (
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    visualize_decision_tree
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -954,3 +956,31 @@ def test_graph_prediction_vs_actual():
     assert len(fig_dict['data'][2]['x']) == 2
     assert len(fig_dict['data'][2]['y']) == 2
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
+
+
+def test_visualize_decision_trees(tree_estimators, logit_estimator, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, est_reg = tree_estimators
+    est_logit = logit_estimator
+
+    filepath = os.path.join(str(tmpdir), 'test_1.xyz')
+    with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: {graphviz.backend.FORMATS}"):
+        visualize_decision_tree(clf=est_class, filepath=filepath)
+
+    filepath = os.path.join(str(tmpdir), 'test_0.png')
+    with pytest.raises(ValueError, match="Tree visualizations are not supported for non-Tree estimators"):
+        visualize_decision_tree(clf=est_logit, filepath=filepath)
+
+    filepath = os.path.join(str(tmpdir), 'test_2')
+    src = visualize_decision_tree(clf=est_class, filepath=filepath)
+    assert src.format == 'pdf'  # Check that extension defaults to png
+    assert isinstance(src, graphviz.Source)
+
+    filepath = os.path.join(str(tmpdir), 'test_3.pdf')
+    src = visualize_decision_tree(clf=est_reg, filepath=filepath)
+    assert src.format == 'pdf'
+    assert isinstance(src, graphviz.Source)
+
+    src = visualize_decision_tree(clf=est_reg)
+    assert src.format == 'pdf'
+    assert isinstance(src, graphviz.Source)
