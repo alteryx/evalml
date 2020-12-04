@@ -22,7 +22,8 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
-    TextFeaturizer
+    TextFeaturizer,
+    DFSTransformer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -53,6 +54,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
         pp_components.append(DropNullColumns)
 
     pp_components.append(Imputer)
+    pp_components.append(DFSTransformer)
 
     if text_columns:
         pp_components.append(TextFeaturizer)
