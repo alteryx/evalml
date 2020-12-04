@@ -981,7 +981,6 @@ def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_re
         clf = dummy_regression_pipeline_class(parameters={})
         clf.fit(X, y)
         clf.score(X, y, ['precision', 'auc'])
-    # Why don't we use pytest.raises here?
     try:
         clf = dummy_regression_pipeline_class(parameters={})
         clf.fit(X, y)
