@@ -5,9 +5,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from collections import OrderedDict
+
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
     abs_error,
+    clean_format_tree,
     cross_entropy,
     explain_prediction,
     explain_predictions,
@@ -616,3 +619,21 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
 
     report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
     assert json.loads(json.dumps(report)) == report
+
+def test_clean_format_tree(tree_estimators):
+    est_class, est_reg = tree_estimators
+
+    formatted_ = clean_format_tree(est_class)
+    tree_ = est_class._component_obj.tree_
+
+    assert isinstance(formatted_, OrderedDict)
+    assert formatted_['Feature'] == tree_.feature[0]
+    assert formatted_['Threshold'] == tree_.threshold[0]
+    assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
+    assert formatted_['Left_Child']['Name'][-1:] == str(tree_.children_left[0])
+    assert formatted_['Right_Child']['Name'][-1:] == str(tree_.children_right[0])
+    assert formatted_['Left_Child']['Threshold'] == tree_.threshold[tree_.children_left[0]]
+    assert formatted_['Right_Child']['Threshold'] == tree_.threshold[tree_.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(formatted_['Left_Child']['Value'][0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(formatted_['Right_Child']['Value'][0], tree_.value[tree_.children_right[0]][0])])
