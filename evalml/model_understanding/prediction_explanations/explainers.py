@@ -1,11 +1,12 @@
 import sys
 import traceback
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._report_creator_factory import (
     _report_creator_factory
 )
@@ -173,3 +174,54 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
     return report_creator(data)
+
+def clean_format_tree(clf):
+    """Return data for a fitted tree in a restructured format
+
+    Arguments:
+        clf (ComponentBase): A fitted tree-based estimator.
+
+    Returns:
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+    """
+    if not clf.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree structure reformatting is not supported for non-Tree estimators")
+    try:
+        est = clf._component_obj
+    except:
+        raise ValueError("This estimator doesn't have a fitted model")
+
+    num_nodes = est.tree_.node_count
+    children_left = est.tree_.children_left
+    children_right = est.tree_.children_right
+    features = est.tree_.feature
+    thresholds = est.tree_.threshold
+    values = est.tree_.value
+
+    node_depth = np.zeros(shape=num_nodes, dtype=np.int64)
+    is_leaves = np.zeros(shape=num_nodes, dtype=bool)
+    stack = [(0, -1)]
+    # Using sklearn's "Understanding the decision tree structure"
+    while len(stack) > 0:
+        node_id, parent_depth = stack.pop()
+        node_depth[node_id] = parent_depth + 1
+
+        if children_left[node_id] != children_right[node_id]:
+            stack.append((children_left[node_id], parent_depth + 1))
+            stack.append((children_right[node_id], parent_depth + 1))
+        else:
+            is_leaves[node_id] = True
+
+    def recurse(i):
+        if is_leaves[i]:
+            return {'Name': f'Leaf_{i}'}
+        return OrderedDict({
+            'Name': f'Node_{i}',
+            'Feature': features[i],
+            'Threshold': thresholds[i],
+            'Value': values[i],
+            'Left_Child': recurse(children_left[i]),
+            'Right_Child': recurse(children_right[i])
+        })
+
+    return recurse(0)
