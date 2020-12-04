@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -45,8 +46,15 @@ def test_data_checks(X_y_binary):
     }
 
 
-def test_empty_data_checks(X_y_binary):
+@pytest.mark.parametrize("input_type", ["pd", "ww", "np"])
+def test_empty_data_checks(input_type, X_y_binary):
     X, y = X_y_binary
+    if input_type != "np":
+        X = pd.DataFrame(X)
+        y = pd.Series(y)
+    if input_type == "ww":
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
     data_checks = EmptyDataChecks()
     assert data_checks.validate(X, y) == {"warnings": [], "errors": []}
 
@@ -81,7 +89,8 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
                            details={"column": "also_all_null"}).to_dict()]
 
 
-def test_default_data_checks_classification():
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+def test_default_data_checks_classification(input_type):
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
@@ -89,6 +98,12 @@ def test_default_data_checks_classification():
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0, 1, np.nan, 1, 0])
+    y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
+    if input_type == "ww":
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+        y_multiclass = ww.DataColumn(y_multiclass)
+
     data_checks = DefaultDataChecks("binary")
 
     leakage = [DataCheckWarning(message="Column 'has_label_leakage' is 95.0% or more correlated with the target",
@@ -111,16 +126,16 @@ def test_default_data_checks_classification():
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                 details={"target_values": [0.0, 2.0, 1.0]}).to_dict()]
     # multiclass
-    y = pd.Series([0, 1, np.nan, 2, 0])
     data_checks = DefaultDataChecks("multiclass")
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
-def test_default_data_checks_regression():
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+def test_default_data_checks_regression(input_type):
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
@@ -128,16 +143,20 @@ def test_default_data_checks_regression():
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
-    y2 = pd.Series([5] * 4)
+    y_no_variance = pd.Series([5] * 4)
 
+    if input_type == "ww":
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+        y_no_variance = ww.DataColumn(y_no_variance)
     data_checks = DefaultDataChecks("regression")
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
     # Skip Invalid Target
-    assert data_checks.validate(X, y2) == {"warnings": messages[:3], "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
-                                                                                                              data_check_name="NoVarianceDataCheck",
-                                                                                                              message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                                                                              details={"column": "Y"}).to_dict()]}
+    assert data_checks.validate(X, y_no_variance) == {"warnings": messages[:3], "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
+                                                                                                                         data_check_name="NoVarianceDataCheck",
+                                                                                                                         message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                                                                                         details={"column": "Y"}).to_dict()]}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression"}})

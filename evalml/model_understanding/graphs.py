@@ -573,25 +573,28 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     """Get the data needed for the prediction_vs_actual_over_time plot.
 
     Arguments:
-        pipeline (PipelineBase): Fitted time series regression pipeline.
+        pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
         y (pd.Series): Target values to compare predictions against.
+        dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
        pd.DataFrame
     """
-    return pd.DataFrame({"dates": dates,
-                         "target": y,
-                         "prediction": pipeline.predict(X, y)})
+    prediction = pipeline.predict(X, y)
+    return pd.DataFrame({"dates": dates.reset_index(drop=True),
+                         "target": y.reset_index(drop=True),
+                         "prediction": prediction.reset_index(drop=True)})
 
 
 def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     """Plot the target values and predictions against time on the x-axis.
 
     Arguments:
-        pipeline (PipelineBase): Fitted time series regression pipeline.
+        pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
         y (pd.Series): Target values to compare predictions against.
+        dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
         plotly.Figure showing the prediction vs actual over time.
