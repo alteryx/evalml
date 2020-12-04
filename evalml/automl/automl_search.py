@@ -459,6 +459,11 @@ class AutoMLSearch:
             if run_ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    logger.warning("Not enough batches to run ensembling")
+                else:
+                    logger.info(f"Ensemble run every {ensemble_nth_batch} batches")
+                    
                 self.max_iterations = (1 + len(self.allowed_pipelines) +
                                        self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
                                        num_ensemble_batches)
