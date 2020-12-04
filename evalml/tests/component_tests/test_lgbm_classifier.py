@@ -28,9 +28,9 @@ def test_lightgbm_classifier_random_state_bounds_seed(X_y_binary):
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound, n_jobs=1)
     clf.fit(X, y)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound, n_jobs=1)
     clf.fit(X, y)
 
 
@@ -50,10 +50,10 @@ def test_lightgbm_classifier_random_state_bounds_rng(X_y_binary):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     rng = make_mock_random_state(LightGBMClassifier.SEED_MIN)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng, n_jobs=1)
     clf.fit(X, y)
     rng = make_mock_random_state(LightGBMClassifier.SEED_MAX)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng)
+    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng, n_jobs=1)
     clf.fit(X, y)
 
 
@@ -94,8 +94,8 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
-    clf = LightGBMClassifier()
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    clf = LightGBMClassifier(n_jobs=1)
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0, n_jobs=1)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 
@@ -114,12 +114,12 @@ def test_fit_string_features(X_y_binary):
     X_expected = X.copy()
     X_expected['string_col'] = 0.0
 
-    clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    clf = lgbm.sklearn.LGBMClassifier(random_state=0, n_jobs=1)
     clf.fit(X_expected, y, categorical_feature=['string_col'])
     y_pred_sk = clf.predict(X_expected)
     y_pred_proba_sk = clf.predict_proba(X_expected)
 
-    clf = LightGBMClassifier()
+    clf = LightGBMClassifier(n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
@@ -135,7 +135,7 @@ def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binar
     X, y = X_y_binary
     X2 = pd.DataFrame(X)
     X2.columns = np.arange(len(X2.columns))
-    clf = LightGBMClassifier()
+    clf = LightGBMClassifier(n_jobs=1)
     clf.fit(X, y)
     arg_X = mock_fit.call_args[0][0]
     np.testing.assert_array_equal(arg_X, X2)
@@ -291,7 +291,7 @@ def test_binary_rf(X_y_binary):
         clf = LightGBMClassifier(boosting_type="rf", bagging_freq=1, bagging_fraction=1.01)
         clf.fit(X, y)
 
-    clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0)
+    clf = LightGBMClassifier(boosting_type="rf", bagging_freq=0, n_jobs=1)
     clf.fit(X, y)
     assert clf.parameters['bagging_freq'] == 0
     assert clf.parameters['bagging_fraction'] == 0.9
