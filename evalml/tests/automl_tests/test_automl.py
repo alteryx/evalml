@@ -1235,7 +1235,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 0, 'max_delay': 0})
+                          allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 1, 'max_delay': 1})
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search(X, y, data_checks=None)

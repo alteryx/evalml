@@ -595,7 +595,9 @@ class AutoMLSearch:
         elif self.problem_type == ProblemTypes.REGRESSION:
             baseline = MeanBaselineRegressionPipeline(parameters={})
         else:
-            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": 0, "max_delay": 0}})
+            gap = self.problem_configuration['gap']
+            max_delay = self.problem_configuration['max_delay']
+            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay}})
         pipelines = [baseline]
         scores = self._evaluate_pipelines(pipelines, X, y, baseline=True)
         if scores == []:
