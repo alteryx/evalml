@@ -2,6 +2,7 @@ import string
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -60,6 +61,16 @@ def test_outliers_data_check_input_formats():
 
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(X.to_numpy()) == {
+        "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
+                                      data_check_name=outliers_data_check_name,
+                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                      details={"columns": [3, 25, 55, 72]}).to_dict()],
+        "errors": []
+    }
+
+    # test Woodwork
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(ww.DataTable(X)) == {
         "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
