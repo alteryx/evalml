@@ -576,8 +576,6 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
             component = helper_functions.safe_init_with_njobs_1(component_class)
-            # kwargs = {"n_jobs": 1} if "n_jobs" in component_class.default_parameters else {}
-            # component = component_class(**kwargs)
             component.fit(X, y=y)
             predict_output = component.predict(X)
             assert isinstance(predict_output, pd.Series)
