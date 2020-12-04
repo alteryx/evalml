@@ -575,7 +575,7 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
-            component = helper_functions.safe_init_with_njobs_1(component_class)
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
             component.fit(X, y=y)
             predict_output = component.predict(X)
             assert isinstance(predict_output, pd.Series)
@@ -784,7 +784,7 @@ def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false
         if not component_class.needs_fitting:
             continue
 
-        component = helper_functions.safe_init_with_njobs_1(component_class)
+        component = helper_functions.safe_init_component_with_njobs_1(component_class)
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
 
@@ -808,7 +808,7 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
     X, y = X_y_binary
     for component_class in all_components() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
-            component = helper_functions.safe_init_with_njobs_1(component_class)
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
             if issubclass(component_class, Estimator):
                 component.predict(X)
             else:
@@ -821,7 +821,7 @@ def test_serialization(X_y_binary, tmpdir, helper_functions):
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
         try:
-            component = helper_functions.safe_init_with_njobs_1(component_class)
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
         except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)])

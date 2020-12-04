@@ -279,7 +279,7 @@ def stackable_classifiers(helper_functions):
         if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_classifiers.append(helper_functions.safe_init_with_njobs_1(estimator_class))
+            stackable_classifiers.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
     return stackable_classifiers
 
 
@@ -291,7 +291,7 @@ def stackable_regressors(helper_functions):
         if (set(supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_regressors.append(helper_functions.safe_init_with_njobs_1(estimator_class))
+            stackable_regressors.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
     return stackable_regressors
 
 
@@ -299,7 +299,7 @@ def stackable_regressors(helper_functions):
 def helper_functions():
     class Helpers:
         @staticmethod
-        def safe_init_with_njobs_1(component_class):
+        def safe_init_component_with_njobs_1(component_class):
             try:
                 component = component_class(n_jobs=1)
             except TypeError:

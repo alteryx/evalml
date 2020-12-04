@@ -13,7 +13,7 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
     for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
-            clf = helper_functions.safe_init_with_njobs_1(estimator_class)
+            clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             if problem_type == ProblemTypes.BINARY:
                 X, y = X_y_binary
             elif problem_type == ProblemTypes.MULTICLASS:
@@ -39,7 +39,7 @@ def test_binary_classification_estimators_predict_proba_col_order(helper_functio
     for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         if ProblemTypes.BINARY in supported_problem_types:
-            estimator = helper_functions.safe_init_with_njobs_1(estimator_class)
+            estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             estimator.fit(X, y)
             predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
