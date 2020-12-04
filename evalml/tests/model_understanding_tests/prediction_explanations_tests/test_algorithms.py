@@ -72,10 +72,7 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
     with pytest.raises(exception, match=match):
-        if pipeline == TimeSeriesBaselineRegressionPipeline:
-            _ = _compute_shap_values(pipeline({"pipeline": {"gap": 0, "max_delay": 0}}), pd.DataFrame(np.random.random((2, 16))))
-        else:
-            _ = _compute_shap_values(pipeline({}), pd.DataFrame(np.random.random((2, 16))))
+        _ = _compute_shap_values(pipeline({"pipeline": {"gap": 0, "max_delay": 0}}), pd.DataFrame(np.random.random((2, 16))))
 
 
 def test_create_dictionary_exception():
