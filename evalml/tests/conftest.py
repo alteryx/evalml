@@ -14,7 +14,10 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.pipelines.components import (
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
     Estimator,
+    LogisticRegressionClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
@@ -293,3 +296,22 @@ def stackable_regressors():
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
             stackable_regressors.append(estimator_class())
     return stackable_regressors
+
+@pytest.fixture
+def tree_estimators(X_y_binary, X_y_regression):
+    X_b, y_b = X_y_binary
+    est_class = DecisionTreeClassifier()
+    est_class.fit(X_b, y_b)
+    X_r, y_r = X_y_regression
+    est_reg = DecisionTreeRegressor()
+    est_reg.fit(X_r, y_r)
+
+    return est_class, est_reg
+
+@pytest.fixture
+def logit_estimator(X_y_binary):
+    X_b, y_b = X_y_binary
+    est_class = LogisticRegressionClassifier()
+    est_class.fit(X_b, y_b)
+
+    return est_class
