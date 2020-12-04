@@ -20,7 +20,7 @@ class TimeSeriesBaselineRegressor(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, random_state=0, **kwargs):
+    def __init__(self, gap=1, random_state=0, **kwargs):
         """Baseline time series regressor that predicts using the naive forecasting approach.
 
         Arguments:
@@ -30,9 +30,9 @@ class TimeSeriesBaselineRegressor(Estimator):
 
         self._prediction_value = None
         self._num_features = None
-        self.y_hat = None
+        self.gap = gap
 
-        parameters = {}
+        parameters = {"gap": gap}
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -57,11 +57,10 @@ class TimeSeriesBaselineRegressor(Estimator):
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        first = y.iloc[0]
-        y_hat = y.shift(periods=1)
-        y_hat.iloc[0] = first
+        if self.gap == 0:
+            y = y.shift(periods=1)
 
-        return y_hat
+        return y
 
     @property
     def feature_importance(self):
