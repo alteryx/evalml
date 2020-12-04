@@ -43,7 +43,8 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesRegressionPipeline
+    TimeSeriesRegressionPipeline,
+    Estimator
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -1570,6 +1571,39 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
     automl.search(X, y)
 
     assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["most_frequent", "mean"]
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.6})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dummy_binary_pipeline_class,
+                                                       X_y_binary):
+    X, y = X_y_binary
+
+    class MockEstimatorWithNJobs(Estimator):
+        name = "Mock Classifier with njobs"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {}
+
+        def __init__(self, n_jobs=-1, random_state=0):
+            super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_state=random_state)
+
+    class Pipeline1(BinaryClassificationPipeline):
+        name = "Pipeline 1"
+        component_graph = [MockEstimatorWithNJobs]
+
+    class Pipeline2(BinaryClassificationPipeline):
+        name = "Pipeline 2"
+        component_graph = [MockEstimatorWithNJobs]
+
+    automl = AutoMLSearch(problem_type='binary', n_jobs=3, max_batches=2,
+                          allowed_pipelines=[Pipeline1, Pipeline2, dummy_binary_pipeline_class])
+    automl.search(X, y)
+    for parameters in automl.full_rankings.parameters:
+        if "Mock Classifier with njobs" in parameters:
+            assert parameters["Mock Classifier with njobs"]["n_jobs"] == 3
+        else:
+            assert all("n_jobs" not in component_params for component_params in parameters.values())
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
