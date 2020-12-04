@@ -559,18 +559,27 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     return _go.Figure(layout=layout, data=data)
 
 
-def visualize_decision_tree(clf, filepath=None):
+def visualize_decision_tree(clf, max_depth=None, rotate=False, filled=False, filepath=None):
     """Generate an image visualizing the decision tree
 
     Arguments:
         clf (ComponentBase): A fitted tree-based estimator.
-        filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
+        max_depth (int, optional): The depth to which the tree should be displayed.
+        rotate (bool, optional): Orient tree left to right rather than top-down.
+        filled (bool, optional): Paint nodes to indicate majority class for classification, extremity of values for
+        regression, or purity of node for multi-output.
+        filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph
+        will not be saved.
 
     Returns:
         graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
     """
     if not clf.model_family == ModelFamily.DECISION_TREE:
         raise ValueError("Tree visualizations are not supported for non-Tree estimators")
+    if max_depth and (not isinstance(max_depth, int) or not max_depth >= 0):
+        raise ValueError("Unknown value: '{}'. The parameter max_depth has to be a non-negative integer"
+                         .format(max_depth))
+    est = clf._component_obj
 
     graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
 
@@ -593,7 +602,7 @@ def visualize_decision_tree(clf, filepath=None):
         else:
             graph_format = 'pdf'  # If the filepath has no extension default to pdf
 
-    dot_data = export_graphviz(clf._component_obj)
+    dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled)
     source_data = graphviz.Source(source=dot_data, format=graph_format)
     if filepath:
         source_data.render(filename=path_and_name, cleanup=True)

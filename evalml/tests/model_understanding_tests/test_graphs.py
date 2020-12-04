@@ -963,21 +963,24 @@ def test_visualize_decision_trees(tree_estimators, logit_estimator, tmpdir):
     est_class, est_reg = tree_estimators
     est_logit = logit_estimator
 
-    filepath = os.path.join(str(tmpdir), 'test_1.xyz')
+    filepath = os.path.join(str(tmpdir), 'test_0.xyz')
     with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: {graphviz.backend.FORMATS}"):
         visualize_decision_tree(clf=est_class, filepath=filepath)
 
-    filepath = os.path.join(str(tmpdir), 'test_0.png')
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
     with pytest.raises(ValueError, match="Tree visualizations are not supported for non-Tree estimators"):
         visualize_decision_tree(clf=est_logit, filepath=filepath)
 
+    with pytest.raises(ValueError, match="Unknown value: '-1'. The parameter max_depth has to be a non-negative integer"):
+        visualize_decision_tree(clf=est_class, max_depth=-1, filepath=filepath)
+
     filepath = os.path.join(str(tmpdir), 'test_2')
-    src = visualize_decision_tree(clf=est_class, filepath=filepath)
+    src = visualize_decision_tree(clf=est_class, filled=True, max_depth=3, rotate=True, filepath=filepath)
     assert src.format == 'pdf'  # Check that extension defaults to png
     assert isinstance(src, graphviz.Source)
 
     filepath = os.path.join(str(tmpdir), 'test_3.pdf')
-    src = visualize_decision_tree(clf=est_reg, filepath=filepath)
+    src = visualize_decision_tree(clf=est_reg, filled=True, filepath=filepath)
     assert src.format == 'pdf'
     assert isinstance(src, graphviz.Source)
 
