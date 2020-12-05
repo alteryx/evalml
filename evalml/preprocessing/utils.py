@@ -57,8 +57,6 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
-    y = _convert_woodwork_types_wrapper(y.to_series())
 
     if regression:
         CV_method = ShuffleSplit(n_splits=1,
@@ -69,17 +67,12 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
             n_splits=1,
             test_size=test_size,
             random_state=random_state)
-    train, test = next(CV_method.split(X, y))
+    train, test = next(CV_method.split(X.to_dataframe(), y.to_series()))
+
     X_train = X.iloc[train]
     X_test = X.iloc[test]
     y_train = y.iloc[train]
     y_test = y.iloc[test]
-
-    X_train = _convert_to_woodwork_structure(X_train)
-    X_test = _convert_to_woodwork_structure(X_test)
-
-    y_train = _convert_to_woodwork_structure(y_train)
-    y_test = _convert_to_woodwork_structure(y_test)
 
     return X_train, X_test, y_train, y_test
 

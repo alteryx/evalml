@@ -14,7 +14,7 @@ def load_churn(n_rows=None, verbose=True, return_pandas=False):
         verbose (bool): Whether to print information about features and labels
 
     Returns:
-        pd.DataFrame, pd.Series: X, y
+        Union[ww.DataTable, pd.Dataframe], Union[ww.DataColumn, pd.Series]: X and y
     """
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
