@@ -52,7 +52,7 @@ def test_pipeline():
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
 
-    return TestPipeline(parameters={})
+    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
@@ -542,7 +542,8 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
     if data_type == 'ww':
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                         random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -553,7 +554,8 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
 def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
                                                multiclass_core_objectives):
     X, y = X_y_multi
-    pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                             random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -564,7 +566,8 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
 def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
                                                regression_core_objectives):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
+                                                random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in regression_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -710,15 +713,15 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
                                           linear_regression_pipeline_class):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-        pipeline = logistic_regression_binary_pipeline_class(parameters={})
+        pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
+        pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-        pipeline = linear_regression_pipeline_class(parameters={})
+        pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
 
     pipeline.fit(X, y)
 
@@ -740,7 +743,7 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
 @patch('evalml.model_understanding.graphs.sk_partial_dependence')
 def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     mock_part_dep.side_effect = Exception()
     with pytest.raises(Exception):
@@ -753,7 +756,7 @@ def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_bi
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -768,7 +771,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
     if data_type == "ww":
         X = ww.DataTable(X)
     y = [0, 0.2, 1.4, 1]
-    pipeline = linear_regression_pipeline_class(parameters={})
+    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature='numeric')
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -801,7 +804,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
 
         class CatBoostTestPipeline(BinaryClassificationPipeline):
             component_graph = ["CatBoost Classifier"]
-        pipeline = CatBoostTestPipeline({})
+        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
         assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -812,7 +815,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
         # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
         X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
         y = ['a', 'b', 'a']
-        pipeline = CatBoostTestPipeline({})
+        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, feature='string')
         assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -844,7 +847,7 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
 
     X = pd.DataFrame(X)
     X = X.rename(columns={0: '<[0]'})
-    pipeline = XGBoostPipeline({})
+    pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature="<[0]", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -861,7 +864,7 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
 
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     with pytest.raises(ValueError, match="Pipeline to calculate partial dependence for must be fitted"):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
@@ -869,7 +872,7 @@ def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pi
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
     X = pd.DataFrame({'a': [2, None, 2, 2], 'b': [1, 2, 2, 1]})
     y = pd.Series([0, 1, 0, 1])
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
