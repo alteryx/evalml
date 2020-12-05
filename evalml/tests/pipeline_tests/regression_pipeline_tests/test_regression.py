@@ -19,6 +19,6 @@ def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipel
 
 def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
     X, y = load_diabetes()
-    mock_regression_pipeline = linear_regression_pipeline_class(parameters={})
+    mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
     mock_regression_pipeline.fit(X, y)
     assert not pd.isnull(mock_regression_pipeline.predict(X)).any()
