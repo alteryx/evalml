@@ -51,3 +51,5 @@ from .regression import (
     MeanBaselineRegressionPipeline,
     TimeSeriesBaselineRegressionPipeline
 )
+from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
+from .time_series_classifcation_pipelines import TimeSeriesClassificationPipeline
