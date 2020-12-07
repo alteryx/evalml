@@ -108,10 +108,9 @@ class ComponentGraph:
         """
         return self._compute_features(self.compute_order, X)
 
-    def transform_features(self, X, y=None):
-        """ Transform all components save the final one, usually an estimator. Note that this
-        is only useful where the final component has only one parent, otherwise there will be
-        information missing.
+    def compute_final_component_features(self, X, y=None):
+        """ Transform all components save the final one, and gathers the data from any number of parents
+        to get all the information that should be fed to the final component
 
         Arguments:
             X (pd.DataFrame): Data of shape [n_samples, n_features]
@@ -121,7 +120,31 @@ class ComponentGraph:
         """
         if len(self.compute_order) <= 1:
             return X
-        return self._compute_features(self.compute_order[:-1], X, y=y)
+        x_inputs = []
+        for parent in self.get_parents(self.compute_order[-1]):
+            if parent[-2:] == '.x' or parent[-2] == '.y':
+                parent = parent[:-2]
+            parent_path = self._get_ancestors(parent)
+            parent_path.append(parent)
+            print('evaluating parent path', parent_path)
+            parent_input = self._compute_features(parent_path, X, y=y)
+            if isinstance(parent_input, pd.Series):
+                parent_input = pd.DataFrame(parent_input, columns=[parent])
+            x_inputs.append(parent_input)
+        X_t = pd.concat(x_inputs, axis=1)
+        return X_t
+
+    def _get_ancestors(self, component):
+        ancestors = []
+        parents = self.get_parents(component)
+        while len(parents) > 0:
+            parent = parents.pop()
+            if parent[-2:] == '.x' or parent[-2:] == '.y':
+                parent = parent[:-2]
+            ancestors.append(parent)
+            parents.extend(self.get_parents(parent))
+        ancestors.reverse()
+        return ancestors
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.

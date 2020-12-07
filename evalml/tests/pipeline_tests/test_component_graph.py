@@ -322,6 +322,13 @@ def test_get_last_component(example_graph):
         component_graph.get_last_component()
 
 
+def test_ancestors(example_graph):
+    component_graph = ComponentGraph(example_graph)
+    assert component_graph._get_ancestors('Imputer') == []
+    assert component_graph._get_ancestors('Random Forest') == ['Imputer', 'OneHot_RandomForest']
+    assert set(component_graph._get_ancestors('Logistic Regression')) == set(component_graph.compute_order[:-1])
+
+
 @patch('evalml.pipelines.components.Transformer.fit_transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -394,31 +401,55 @@ def test_predict(mock_transform, mock_fit, mock_predict, example_graph, X_y_bina
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
-@patch('evalml.pipelines.components.Transformer.transform')
-@patch('evalml.pipelines.components.Estimator.fit')
-@patch('evalml.pipelines.components.Estimator.predict')
-def test_transform_features(mock_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+@patch('evalml.pipelines.components.Imputer.transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+def test_compute_final_component_features_linear(mock_ohe, mock_imputer, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_transform.return_value = pd.DataFrame(X)
-    mock_fit.return_value = Estimator
-    mock_predict.return_value = pd.Series(y)
+    X = pd.DataFrame(X)
+    X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
+    mock_imputer.return_value = X
+    mock_ohe.return_value = X_expected
+
+    component_list = ['Imputer', 'One Hot Encoder', 'Random Forest Classifier']
+    component_graph = ComponentGraph().from_list(component_list)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    X_t = component_graph.compute_final_component_features(X)
+    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert mock_imputer.call_count == 2
+    assert mock_ohe.call_count == 2
+
+
+@patch('evalml.pipelines.components.Imputer.transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+@patch('evalml.pipelines.components.RandomForestClassifier.predict')
+@patch('evalml.pipelines.components.ElasticNetClassifier.predict')
+def test_compute_final_component_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, example_graph, X_y_binary):
+    X, y = X_y_binary
+    mock_imputer.return_value = pd.DataFrame(X)
+    mock_ohe.return_value = pd.DataFrame(X)
+    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+    X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
-    component_graph.transform_features(X)
-    assert mock_transform.call_count == 5
-    assert mock_fit.call_count == 3
+    X_t = component_graph.compute_final_component_features(X)
+    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert mock_imputer.call_count == 3  # Once during fit, twice for the two branches
+    assert mock_ohe.call_count == 4  # Twice during fit, once in each of the two branches
 
 
 @patch(f'{__name__}.DummyTransformer.transform')
-def test_transform_features_single_component(mock_transform, X_y_binary):
+def test_compute_final_component_features_single_component(mock_transform, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     mock_transform.return_value = pd.DataFrame()
     component_graph = ComponentGraph({'Dummy Component': [DummyTransformer]}).instantiate({})
     component_graph.fit(X, y)
 
-    X_t = component_graph.transform_features(X)
+    X_t = component_graph.compute_final_component_features(X)
     pd.testing.assert_frame_equal(X_t, X)
 
 
