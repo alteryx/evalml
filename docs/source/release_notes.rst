@@ -4,6 +4,9 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``visualize_decision_tree`` for tree visualization and ``clean_format_tree`` to reformat tree structure output :pr:`1511`
+        * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
+        * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
+        * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
     * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
         * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
