@@ -43,7 +43,7 @@ class MulticollinearityDataCheck(DataCheck):
         if mutual_info_df.empty:
             return messages
         above_threshold = mutual_info_df.loc[mutual_info_df['mutual_info'] >= self.threshold]
-        correlated_cols = [{col_1, col_2} for col_1, col_2 in zip(above_threshold['column_1'], above_threshold['column_2'])]
+        correlated_cols = [(col_1, col_2) for col_1, col_2 in zip(above_threshold['column_1'], above_threshold['column_2'])]
         if correlated_cols:
             warning_msg = "Columns are likely to be correlated: {}"
             messages["warnings"].append(DataCheckWarning(message=warning_msg.format(correlated_cols),

@@ -9,7 +9,7 @@ from evalml.data_checks import (
     MulticollinearityDataCheck
 )
 
-id_data_check_name = MulticollinearityDataCheck.name
+multi_data_check_name = MulticollinearityDataCheck.name
 
 
 def test_multicollinearity_data_check_init():
@@ -32,24 +32,22 @@ def test_multicollinearity_data_check_init():
 
 
 def test_multicollinearity_returns_warning():
-    X_dict = {'col_1_id': [0, 1, 2, 3],
-              'col_2': [2, 3, 4, 5],
-              'col_3_id': [1, 1, 2, 3],
-              'Id': [3, 1, 2, 0],
-              'col_5': [0, 0, 1, 2],
-              'col_6': [0.1, 0.2, 0.3, 0.4]
-              }
-    X = pd.DataFrame.from_dict(X_dict)
+    col = pd.Series([1, 0, 2, 3, 4])
+    X = pd.DataFrame({'col_1': col,
+                      'col_2': col * 3,
+                      'col_3': ~col,
+                      'col_4': col / 2,
+                      'col_5': col + 1,
+                      'not_collinear': [0, 1, 0, 0, 0]})
+
     multi_check = MulticollinearityDataCheck(threshold=0.95)
     assert multi_check.validate(X) == {
-        "warnings": [],
-        "errors": []
-    }
-
-    X = pd.DataFrame.from_dict(X_dict)
-    multi_check = MulticollinearityDataCheck(threshold=1.0)
-    assert multi_check.validate(X) == {
-        "warnings": [],
+        "warnings": [DataCheckWarning(message="Columns are likely to be correlated: [('col_1', 'col_2'), ('col_1', 'col_3'), ('col_1', 'col_4'), ('col_1', 'col_5'), ('col_2', 'col_3'), ('col_2', 'col_4'), ('col_2', 'col_5'), ('col_3', 'col_4'), ('col_3', 'col_5'), ('col_4', 'col_5')]",
+                                      data_check_name=multi_data_check_name,
+                                      message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
+                                      details={'columns': [('col_1', 'col_2'), ('col_1', 'col_3'), ('col_1', 'col_4'), ('col_1', 'col_5'),
+                                                           ('col_2', 'col_3'), ('col_2', 'col_4'), ('col_2', 'col_5'),
+                                                           ('col_3', 'col_4'), ('col_3', 'col_5'), ('col_4', 'col_5')]}).to_dict()],
         "errors": []
     }
 
