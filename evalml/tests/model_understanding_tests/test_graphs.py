@@ -1036,4 +1036,3 @@ def test_visualize_decision_trees(tree_estimators, logit_estimator, tmpdir):
     src = visualize_decision_tree(clf=est_reg)
     assert src.format == 'pdf'
     assert isinstance(src, graphviz.Source)
-

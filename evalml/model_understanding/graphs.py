@@ -658,4 +658,3 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
                         yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)
-
