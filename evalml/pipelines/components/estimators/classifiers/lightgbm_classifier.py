@@ -36,7 +36,7 @@ class LightGBMClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=6, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, bagging_fraction=0.9, bagging_freq=0, **kwargs):
+    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=8, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, bagging_fraction=0.9, bagging_freq=0, **kwargs):
         # lightGBM's current release doesn't currently support numpy.random.RandomState as the random_state value so we convert to int instead
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
 
