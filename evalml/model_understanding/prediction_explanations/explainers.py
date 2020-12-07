@@ -1,6 +1,6 @@
 import sys
 import traceback
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict, namedtuple
 
 import numpy as np
 import pandas as pd

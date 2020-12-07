@@ -1,11 +1,10 @@
 import json
+from collections import OrderedDict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
-
-from collections import OrderedDict
 
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
