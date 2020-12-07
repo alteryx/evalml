@@ -51,8 +51,8 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
-    clf = ExtraTreesClassifier()
-    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
+    clf = ExtraTreesClassifier(n_jobs=1)
+    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0, n_jobs=1)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 
