@@ -15,6 +15,7 @@ Release Notes
         * Added script to generate github markdown for releases :pr:`1487`
     * Documentation Changes
     * Testing Changes
+        * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
 
 **v0.16.1 Dec. 1, 2020**
