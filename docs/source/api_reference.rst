@@ -129,6 +129,7 @@ Regression Pipelines
 
     BaselineRegressionPipeline
     MeanBaselineRegressionPipeline
+    TimeSeriesBaselineRegressionPipeline
 
 
 .. currentmodule:: evalml.pipelines.utils
@@ -242,6 +243,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
+    TimeSeriesBaselineRegressor
     StackedEnsembleRegressor
     DecisionTreeRegressor
 
