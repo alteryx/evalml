@@ -620,6 +620,7 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
     report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
     assert json.loads(json.dumps(report)) == report
 
+
 def test_clean_format_tree(tree_estimators):
     est_class, est_reg = tree_estimators
 

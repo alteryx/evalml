@@ -297,6 +297,7 @@ def stackable_regressors():
             stackable_regressors.append(estimator_class())
     return stackable_regressors
 
+
 @pytest.fixture
 def tree_estimators(X_y_binary, X_y_regression):
     X_b, y_b = X_y_binary
@@ -307,6 +308,7 @@ def tree_estimators(X_y_binary, X_y_regression):
     est_reg.fit(X_r, y_r)
 
     return est_class, est_reg
+
 
 @pytest.fixture
 def logit_estimator(X_y_binary):

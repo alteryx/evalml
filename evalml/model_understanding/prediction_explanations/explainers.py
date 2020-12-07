@@ -175,6 +175,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
     return report_creator(data)
 
+
 def clean_format_tree(clf):
     """Return data for a fitted tree in a restructured format
 
@@ -186,10 +187,7 @@ def clean_format_tree(clf):
     """
     if not clf.model_family == ModelFamily.DECISION_TREE:
         raise ValueError("Tree structure reformatting is not supported for non-Tree estimators")
-    try:
-        est = clf._component_obj
-    except:
-        raise ValueError("This estimator doesn't have a fitted model")
+    est = clf._component_obj
 
     num_nodes = est.tree_.node_count
     children_left = est.tree_.children_left
