@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added ``visualize_decision_tree`` for tree visualization and ``clean_format_tree`` to reformat tree structure output :pr:`1239`
+        * Added ``visualize_decision_tree`` for tree visualization and ``clean_format_tree`` to reformat tree structure output :pr:`1511`
     * Fixes
         * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
         * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
