@@ -17,15 +17,15 @@ from evalml.problem_types import ProblemTypes
 def test_init(X_y_regression):
     X, y = X_y_regression
 
-    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=3, n_jobs=4)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=3, n_jobs=1)
     automl.search(X, y)
 
-    assert automl.n_jobs == 4
+    assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
 
     # test with dataframes
-    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=3, n_jobs=4)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=3, n_jobs=1)
     automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
@@ -36,10 +36,12 @@ def test_init(X_y_regression):
 
 def test_random_state(X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=5, random_state=0)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=5, random_state=0,
+                          n_jobs=1)
     automl.search(X, y)
 
-    automl_1 = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=5, random_state=0)
+    automl_1 = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=5, random_state=0,
+                            n_jobs=1)
     automl_1.search(X, y)
 
     # need to use assert_frame_equal as R2 could be different at the 10+ decimal
@@ -48,7 +50,8 @@ def test_random_state(X_y_regression):
 
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=5, random_state=0)
+    automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=5, random_state=0,
+                          n_jobs=1)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
 
@@ -70,7 +73,7 @@ def test_callback(X_y_regression):
     max_iterations = 3
     automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=max_iterations,
                           start_iteration_callback=start_iteration_callback,
-                          add_result_callback=add_result_callback)
+                          add_result_callback=add_result_callback, n_jobs=1)
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_iterations
@@ -81,7 +84,8 @@ def test_early_stopping(caplog, linear_regression_pipeline_class):
     tolerance = 0.005
     patience = 2
     automl = AutoMLSearch(problem_type='regression', objective='mse', max_time='60 seconds',
-                          patience=patience, tolerance=tolerance, allowed_model_families=['linear_model'], random_state=0)
+                          patience=patience, tolerance=tolerance,
+                          allowed_model_families=['linear_model'], random_state=0, n_jobs=1)
 
     mock_results = {
         'search_order': [0, 1, 2],
@@ -115,7 +119,7 @@ def test_plot_iterations_max_iterations(X_y_regression):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_regression
 
-    automl = AutoMLSearch(problem_type='regression', max_iterations=3)
+    automl = AutoMLSearch(problem_type='regression', max_iterations=3, n_jobs=1)
     automl.search(X, y)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -133,7 +137,7 @@ def test_plot_iterations_max_time(X_y_regression):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_regression
 
-    automl = AutoMLSearch(problem_type='regression', max_time=10, random_state=1)
+    automl = AutoMLSearch(problem_type='regression', max_time=10, random_state=1, n_jobs=1)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]

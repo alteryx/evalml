@@ -1,9 +1,11 @@
-import pandas as pd
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
     DataCheckWarning
+)
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
 )
 
 
@@ -26,13 +28,14 @@ class HighlyNullDataCheck(DataCheck):
         """Checks if there are any highly-null columns in the input.
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.ndarray, list): Features
-            y: Ignored.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features
+            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if there are any highly-null columns.
 
         Example:
+            >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...    'lots_of_null': [None, None, None, None, 5],
             ...    'no_null': [1, 2, 3, 4, 5]
@@ -49,8 +52,10 @@ class HighlyNullDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
         percent_null = (X.isnull().mean()).to_dict()
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}

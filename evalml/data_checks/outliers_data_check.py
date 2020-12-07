@@ -6,7 +6,11 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.utils import get_random_state
-from evalml.utils.gen_utils import numeric_dtypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    numeric_dtypes
+)
 
 
 class OutliersDataCheck(DataCheck):
@@ -24,8 +28,8 @@ class OutliersDataCheck(DataCheck):
         """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
         Arguments:
-            X (pd.DataFrame): Features
-            y: Ignored.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features
+            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
             dict: A set of columns that may have outlier data.
@@ -48,10 +52,11 @@ class OutliersDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        X = X.select_dtypes(include=numeric_dtypes)
 
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+        X = X.select_dtypes(include=numeric_dtypes)
         if len(X.columns) == 0:
             return messages
 

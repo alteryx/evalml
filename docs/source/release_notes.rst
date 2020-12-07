@@ -3,12 +3,32 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
+        * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
+        * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
     * Fixes
+        * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
+        * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
+    * Changes
+        * Update circleci badge to apply to ``main`` :pr:`1489`
+        * Added script to generate github markdown for releases :pr:`1487`
+    * Documentation Changes
+    * Testing Changes
+        * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
+
+
+**v0.16.1 Dec. 1, 2020**
+    * Enhancements
+        * Pin woodwork version to v0.0.6 to avoid breaking changes :pr:`1484`
+        * Updated ``Woodwork`` to >=0.0.5 in ``core-requirements.txt`` :pr:`1473`
+        * Removed ``copy_dataframe`` parameter for ``Woodwork``, updated ``Woodwork`` to >=0.0.6 in ``core-requirements.txt`` :pr:`1478`
+        * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
         * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
     * Testing Changes
+        * Update dependency update checker to use everything from core and optional dependencies :pr:`1480`
 
 
 **v0.16.0 Nov. 24, 2020**
@@ -36,6 +56,7 @@ Release Notes
         * Updated calls to ``Woodwork``'s ``to_pandas()`` to ``to_series()`` and ``to_dataframe()`` :pr:`1428`
         * Fixed bug in OHE where column names were not guaranteed to be unique :pr:`1349`
         * Fixed bug with percent improvement of ``ExpVariance`` objective on data with highly skewed target :pr:`1467`
+        * Fix SimpleImputer error which occurs when all features are bool type :pr:`1215`
     * Changes
         * Changed ``OutliersDataCheck`` to return the list of columns, rather than rows, that contain outliers :pr:`1377`
         * Simplified and cleaned output for Code Generation :pr:`1371`
@@ -43,6 +64,7 @@ Release Notes
         * Updated data checks to return dictionary of warnings and errors instead of a list :pr:`1448`
         * Updated ``AutoMLSearch`` to pass ``Woodwork`` data structures to every pipeline (instead of pandas DataFrames) :pr:`1450`
         * Update ``AutoMLSearch`` to default to ``max_batches=1`` instead of ``max_iterations=5`` :pr:`1452`
+        * Updated _evaluate_pipelines to consolidate side effects :pr:`1410`
     * Documentation Changes
         * Added description of CLA to contributing guide, updated description of draft PRs :pr:`1402`
         * Updated documentation to include all data checks, ``DataChecks``, and usage of data checks in AutoML :pr:`1412`

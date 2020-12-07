@@ -68,11 +68,11 @@ def test_feature_importance(X_y_binary):
                                     penalty="elasticnet",
                                     alpha=0.5,
                                     l1_ratio=0.5,
-                                    n_jobs=-1,
+                                    n_jobs=1,
                                     random_state=0)
     sk_clf.fit(X, y)
 
-    clf = ElasticNetClassifier()
+    clf = ElasticNetClassifier(n_jobs=1)
     clf.fit(X, y)
 
     np.testing.assert_almost_equal(sk_clf.coef_.flatten(), clf.feature_importance, decimal=5)
@@ -85,11 +85,11 @@ def test_feature_importance_multi(X_y_multi):
                                     penalty="elasticnet",
                                     alpha=0.5,
                                     l1_ratio=0.5,
-                                    n_jobs=-1,
+                                    n_jobs=1,
                                     random_state=0)
     sk_clf.fit(X, y)
 
-    clf = ElasticNetClassifier()
+    clf = ElasticNetClassifier(n_jobs=1)
     clf.fit(X, y)
 
     sk_features = np.linalg.norm(sk_clf.coef_, axis=0, ord=2)
