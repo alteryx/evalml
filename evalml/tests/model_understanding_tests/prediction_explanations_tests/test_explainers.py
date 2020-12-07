@@ -598,17 +598,15 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
         y = pd.Series(y)
-        pipeline_class = linear_regression_pipeline_class
+        pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     elif problem_type == problem_type.BINARY:
         X, y = X_y_binary
         y = pd.Series(y).astype("str")
-        pipeline_class = logistic_regression_binary_pipeline_class
+        pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     else:
         X, y = X_y_multi
         y = pd.Series(y).astype("str")
-        pipeline_class = logistic_regression_multiclass_pipeline_class
-
-    pipeline = pipeline_class({})
+        pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
     pipeline.fit(X, y)
 

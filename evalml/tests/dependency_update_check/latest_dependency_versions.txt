@@ -8,8 +8,8 @@ ipywidgets==7.5.1
 lightgbm==3.1.0
 nlp-primitives==1.1.0
 numpy==1.19.4
-pandas==1.1.4
-plotly==4.13.0
+pandas==1.1.5
+plotly==4.14.0
 psutil==5.7.3
 requirements-parser==0.2.0
 scikit-learn==0.23.2

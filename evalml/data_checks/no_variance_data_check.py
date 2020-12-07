@@ -1,9 +1,13 @@
-import pandas as pd
-
-from .data_check import DataCheck
-from .data_check_message import DataCheckError, DataCheckWarning
-from .data_check_message_code import DataCheckMessageCode
-
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckError,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -53,8 +57,8 @@ class NoVarianceDataCheck(DataCheck):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Arguments:
-            X (pd.DataFrame): The input features.
-            y (pd.Series): The target data.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features.
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data.
 
         Returns:
             dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
@@ -64,10 +68,10 @@ class NoVarianceDataCheck(DataCheck):
             "errors": []
         }
 
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()

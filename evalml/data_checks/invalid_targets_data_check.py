@@ -1,4 +1,3 @@
-import pandas as pd
 
 from evalml.data_checks import (
     DataCheck,
@@ -8,6 +7,8 @@ from evalml.data_checks import (
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
     categorical_dtypes,
     numeric_and_boolean_dtypes
 )
@@ -16,20 +17,30 @@ from evalml.utils.gen_utils import (
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
 
-    def __init__(self, problem_type):
+    def __init__(self, problem_type, n_unique=100):
+        """Check if the target is invalid for the specified problem type.
+
+        Arguments:
+            n_unique (int): Number of unique target values to store when problem type is binary and target
+                incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
+        """
         self.problem_type = handle_problem_types(problem_type)
+        if n_unique is not None and n_unique <= 0:
+            raise ValueError("`n_unique` must be a non-negative integer value.")
+        self.n_unique = n_unique
 
     def validate(self, X, y):
         """Checks if the target data contains missing or invalid values.
 
         Arguments:
-            X (pd.DataFrame, pd.Series, np.ndarray, list): Features. Ignored.
-            y: Target data to check for invalid values.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
+            y (ww.DataColumn, pd.Series, np.ndarray): Target data to check for invalid values.
 
         Returns:
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
         Example:
+            >>> import pandas as pd
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None, None])
             >>> target_check = InvalidTargetDataCheck('binary')
@@ -44,9 +55,12 @@ class InvalidTargetDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
+        if y is None:
+            raise ValueError("y cannot be None")
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
+
         null_rows = y.isnull()
         if null_rows.any():
             num_null_rows = null_rows.sum()
@@ -67,10 +81,14 @@ class InvalidTargetDataCheck(DataCheck):
         unique_values = value_counts.index.tolist()
 
         if self.problem_type == ProblemTypes.BINARY and len(value_counts) != 2:
+            if self.n_unique is None:
+                details = {"target_values": unique_values}
+            else:
+                details = {"target_values": unique_values[:min(self.n_unique, len(unique_values))]}
             messages["errors"].append(DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                                     details={"target_values": unique_values}).to_dict())
+                                                     details=details).to_dict())
 
         if len(value_counts) == 2 and y.dtype in numeric_and_boolean_dtypes:
             if set(unique_values) != set([0, 1]):
