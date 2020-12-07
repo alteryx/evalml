@@ -8,7 +8,7 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
-
+from woodwork import mutual_information
 
 class MulticollinearityDataCheck(DataCheck):
     """Check if any set features are likely to be multicollinear."""
@@ -36,4 +36,8 @@ class MulticollinearityDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
+        
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        mutual_info = X.mutual_information()
         return messages
