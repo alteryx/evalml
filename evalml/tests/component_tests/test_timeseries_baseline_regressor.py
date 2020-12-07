@@ -10,6 +10,11 @@ def test_time_series_baseline_regressor_init():
     assert baseline.model_family == ModelFamily.BASELINE
 
 
+def test_time_series_baseline_gap_negative():
+    with pytest.raises(ValueError, match='gap value must be a positive integer.'):
+        TimeSeriesBaselineRegressor(gap=-1)
+
+
 def test_time_series_baseline_y_is_None(X_y_regression):
     X, _ = X_y_regression
     clf = TimeSeriesBaselineRegressor()

@@ -24,6 +24,7 @@ class TimeSeriesBaselineRegressor(Estimator):
         """Baseline time series regressor that predicts using the naive forecasting approach.
 
         Arguments:
+            gap (int): gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
             random_state (int, np.random.RandomState): seed for the random number generator
 
         """
@@ -31,6 +32,9 @@ class TimeSeriesBaselineRegressor(Estimator):
         self._prediction_value = None
         self._num_features = None
         self.gap = gap
+
+        if gap < 0:
+            raise ValueError(f'gap value must be a positive integer. {gap} was provided.')
 
         parameters = {"gap": gap}
         parameters.update(kwargs)
