@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
 
@@ -317,3 +318,21 @@ def helper_functions():
             return pl
 
     return Helpers
+
+
+@pytest.fixture
+def make_data_type():
+    def _make_data_type(data_type, data):
+        if data_type != "np":
+            if len(data.shape) == 1:
+                data = pd.Series(data)
+            else:
+                data = pd.DataFrame(data)
+        if data_type == "ww":
+            if len(data.shape) == 1:
+                data = ww.DataColumn(data)
+            else:
+                data = ww.DataTable(data)
+        return data
+
+    return _make_data_type

@@ -1,10 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
