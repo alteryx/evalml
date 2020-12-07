@@ -126,7 +126,6 @@ class ComponentGraph:
                 parent = parent[:-2]
             parent_path = self._get_ancestors(parent)
             parent_path.append(parent)
-            print('evaluating parent path', parent_path)
             parent_input = self._compute_features(parent_path, X, y=y)
             if isinstance(parent_input, pd.Series):
                 parent_input = pd.DataFrame(parent_input, columns=[parent])
