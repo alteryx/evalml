@@ -70,8 +70,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return self
 
     def _predict(self, X, y):
-        features = self.compute_estimator_features(X, y).dropna(axis=0, how="any")
-        predictions = self.estimator.predict(features)
+        features = self.compute_estimator_features(X, y)
+        predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
         return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
     def predict(self, X, y=None, objective=None):
@@ -121,7 +121,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
 
 class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
-    problem_type = ProblemTypes.TimeSeriesBinaryClassification
+    problem_type = ProblemTypes.TIME_SERIES_BINARY
     _threshold = None
 
     @property
@@ -132,8 +132,9 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
     def threshold(self, value):
         self._threshold = value
 
-    def _predict(self, X, y, objective):
-        X_t = self.compute_estimator_features(X, y).dropna(axis=0, how="any")
+    def _predict(self, X, y, objective=None):
+        features = self.compute_estimator_features(X, y)
+        features_no_nan = features.dropna(axis=0, how="any")
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -141,17 +142,16 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(
                     "You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
-
         if self.threshold is None:
-            predictions = self.estimator.predict(X_t)
+            predictions = self.estimator.predict(features_no_nan)
         else:
-            ypred_proba = self.estimator.predict_proba(X_t)
-            ypred_proba = ypred_proba.iloc[:, 1]
+            ypred_proba = self.estimator.predict_proba(features_no_nan).iloc[:, 1]
             if objective is None:
-                return ypred_proba > self.threshold
-            predictions = objective.decision_function(ypred_proba, threshold=self.threshold, X=X_t)
-        return pad_with_nans(predictions, max(0, X_t.shape[0] - predictions.shape[0]))
+                predictions = ypred_proba > self.threshold
+            else:
+                predictions = objective.decision_function(ypred_proba, threshold=self.threshold, X=features_no_nan)
+        return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
 
 class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipeline):
-    problem_type = ProblemTypes.TimeSeriesMulticlassClassification
+    problem_type = ProblemTypes.TIME_SERIES_MULTICLASS

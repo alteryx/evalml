@@ -4,16 +4,18 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.pipelines import TimeSeriesRegressionPipeline
+from evalml.pipelines import TimeSeriesRegressionPipeline, TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline
 
 
-@pytest.mark.parametrize("pipeline_class", [TimeSeriesRegressionPipeline])
+@pytest.mark.parametrize("pipeline_class,estimator", [(TimeSeriesRegressionPipeline, "Linear Regressor"),
+                                                      (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+                                                      (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
 @pytest.mark.parametrize("components", [["One Hot Encoder"],
                                         ["Delayed Feature Transformer", "One Hot Encoder"]])
-def test_time_series_pipeline_init(pipeline_class, components):
+def test_time_series_pipeline_init(pipeline_class, estimator, components):
 
     class Pipeline(pipeline_class):
-        component_graph = components + ["Random Forest Regressor"]
+        component_graph = components + [estimator]
 
     if "Delayed Feature Transformer" not in components:
         pl = Pipeline({'pipeline': {"gap": 3, "max_delay": 5}})
@@ -36,9 +38,13 @@ def test_time_series_pipeline_init(pipeline_class, components):
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 2), (2, 2), (7, 3), (2, 4)])
-@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor")])
+@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                                                           (TimeSeriesBinaryClassificationPipeline, "Random Forest Classifier"),
+                                                           (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier")])
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
-def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
+@patch("evalml.pipelines.components.RandomForestClassifier.fit")
+@patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
+def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit, mock_regressor_fit, pipeline_class,
                                         estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
@@ -66,7 +72,10 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
     else:
         pl.fit(X, y)
 
-    df_passed_to_estimator, target_passed_to_estimator = mock_regressor_fit.call_args[0]
+    if isinstance(pl, TimeSeriesRegressionPipeline):
+        df_passed_to_estimator, target_passed_to_estimator = mock_regressor_fit.call_args[0]
+    else:
+        df_passed_to_estimator, target_passed_to_estimator = mock_classifier_fit.call_args[0]
 
     # NaNs introduced by shifting are dropped
     assert not df_passed_to_estimator.isna().any(axis=1).any()
@@ -77,7 +86,9 @@ def test_fit_drop_nans_before_estimator(mock_regressor_fit, pipeline_class,
     np.testing.assert_equal(target_passed_to_estimator.values, expected_target)
 
 
-@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor")])
+@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                                                           (TimeSeriesBinaryClassificationPipeline, "Extra Trees Classifier"),
+                                                           (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier")])
 def test_pipeline_fit_runtime_error(pipeline_class, estimator_name, ts_data):
 
     X, y = ts_data
@@ -143,11 +154,16 @@ def test_predict_pad_nans(mock_regressor_predict, mock_regressor_fit,
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 1), (1, 2), (2, 2), (7, 3), (2, 4)])
-@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor")])
+@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                                                           (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+                                                           (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
-@patch("evalml.pipelines.RegressionPipeline._score_all_objectives")
-def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit,
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
+@patch("evalml.pipelines.PipelineBase._score_all_objectives")
+def test_score_drops_nans(mock_score, mock_classifier_predict, mock_classifier_fit,
+                          mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
 
@@ -155,11 +171,6 @@ def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit
         pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
-
-    def mock_predict(df):
-        return pd.Series(range(200, 200 + df.shape[0]))
-
-    mock_regressor_predict.side_effect = mock_predict
 
     if include_delayed_features:
         expected_target = np.arange(1 + gap + max_delay, 32)
@@ -175,6 +186,14 @@ def test_score_drops_nans(mock_score, mock_regressor_predict, mock_regressor_fit
                                                    "delay_features": include_delayed_features,
                                                    "delay_target": include_delayed_features},
                    "pipeline": {"gap": gap, "max_delay": max_delay}})
+
+    def mock_predict(df):
+        return pd.Series(range(200, 200 + df.shape[0]))
+
+    if isinstance(pl, TimeSeriesRegressionPipeline):
+        mock_regressor_predict.side_effect = mock_predict
+    else:
+        mock_classifier_predict.side_effect = mock_predict
 
     if only_use_y:
         pl.fit(None, y)

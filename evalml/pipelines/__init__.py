@@ -52,4 +52,8 @@ from .regression import (
     TimeSeriesBaselineRegressionPipeline
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
-from .time_series_classifcation_pipelines import TimeSeriesClassificationPipeline
+from .time_series_classifcation_pipelines import (
+    TimeSeriesClassificationPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline
+)
