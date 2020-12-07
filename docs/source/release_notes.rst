@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added ``MAPE`` to the standard metrics for time series problems :pr:`1463`
+        * Added ``MAPE`` to the standard metrics for time series problems :pr:`1510`
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
