@@ -1,7 +1,7 @@
 numpy>=1.16.4
 pandas>=0.25.0
 scipy>=1.2.1
-scikit-learn>=0.23
+scikit-learn==0.24.0rc1
 scikit-optimize>=0.8
 colorama
 cloudpickle>=0.2.2
