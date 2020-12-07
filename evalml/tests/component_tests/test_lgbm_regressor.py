@@ -60,7 +60,7 @@ def test_lightgbm_regressor_random_state_bounds_rng(X_y_regression):
 def test_fit_predict_regression(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = lgbm.sklearn.LGBMRegressor(n_estimators=10, max_depth=8, random_state=0)
+    sk_clf = lgbm.sklearn.LGBMRegressor(n_estimators=20, random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
 
@@ -75,7 +75,7 @@ def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
     clf = LightGBMRegressor()
-    sk_clf = lgbm.sklearn.LGBMRegressor(n_estimators=10, max_depth=8, random_state=0)
+    sk_clf = lgbm.sklearn.LGBMRegressor(n_estimators=20, random_state=0)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 
@@ -94,7 +94,7 @@ def test_fit_string_features(X_y_regression):
     X_expected = X.copy()
     X_expected['string_col'] = 0.0
 
-    clf = lgbm.sklearn.LGBMRegressor(n_estimators=10, max_depth=8, random_state=0)
+    clf = lgbm.sklearn.LGBMRegressor(n_estimators=20, random_state=0)
     clf.fit(X_expected, y, categorical_feature=['string_col'])
     y_pred_sk = clf.predict(X_expected)
 
