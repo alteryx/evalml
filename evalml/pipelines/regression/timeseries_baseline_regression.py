@@ -13,12 +13,12 @@ class TimeSeriesBaselineRegressionPipeline(TimeSeriesRegressionPipeline):
     _name = "Time Series Baseline Regression Pipeline"
     component_graph = ["Time Series Baseline Regressor"]
 
-    def predict(self, X, y=None, objective=None):
+    def predict(self, X, y, objective=None):
         """Make predictions using selected features.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, None): The target training targets of length [n_samples]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target training targets of length [n_samples]. y is required for this pipeline.
             objective (Object or string): The objective to use to make predictions
 
         Returns:
@@ -31,6 +31,5 @@ class TimeSeriesBaselineRegressionPipeline(TimeSeriesRegressionPipeline):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        features = self.compute_estimator_features(X, y)
-        predictions = self.estimator.predict(features.dropna(axis=0, how="any"), y)
-        return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+        predictions = self.estimator.predict(None, y)
+        return pad_with_nans(predictions, max(0, X.shape[0] - predictions.shape[0]))
