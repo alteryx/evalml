@@ -48,6 +48,7 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler,
     TextFeaturizer,
+    TimeSeriesBaselineRegressor,
     Transformer,
     XGBoostClassifier,
     XGBoostRegressor
@@ -565,7 +566,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert (transform_output.columns == X_cols_expected).all()
 
 
-def test_estimator_predict_output_type(X_y_binary):
+def test_estimator_predict_output_type(X_y_binary, helper_functions):
     X_np, y_np = X_y_binary
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
@@ -586,7 +587,7 @@ def test_estimator_predict_output_type(X_y_binary):
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
-            component = component_class()
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
             component.fit(X, y=y)
             predict_output = component.predict(X)
             assert isinstance(predict_output, pd.Series)
@@ -788,14 +789,14 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X)
 
 
-def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
+def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
-    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor]] + [test_estimator_needs_fitting_false]
+    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineRegressor]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
-        component = component_class()
+        component = helper_functions.safe_init_component_with_njobs_1(component_class)
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
 
@@ -815,24 +816,24 @@ def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false
         component.feature_importance
 
 
-def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false):
+def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
     for component_class in all_components() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
-            component = component_class()
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
             if issubclass(component_class, Estimator):
                 component.predict(X)
             else:
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, tmpdir):
+def test_serialization(X_y_binary, tmpdir, helper_functions):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
         try:
-            component = component_class()
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
         except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)])

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -125,21 +126,17 @@ def test_id_cols_data_check_input_formats():
     # test empty pd.DataFrame
     assert id_cols_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
 
-    #  test list
-    assert id_cols_check.validate([1, 2, 3, 4, 5]) == {
+    #  test Woodwork
+    ww_input = ww.DataTable(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]))
+    assert id_cols_check.validate(ww_input) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": 0}).to_dict()],
-        "errors": []
-    }
-
-    #  test pd.Series
-    assert id_cols_check.validate(pd.Series([1, 2, 3, 4, 5])) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
+                                      details={"column": '0'}).to_dict(),
+                     DataCheckWarning(message="Column '1' is 80.0% or more likely to be an ID column",
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": 0}).to_dict()],
+                                      details={"column": '1'}).to_dict()],
         "errors": []
     }
 
