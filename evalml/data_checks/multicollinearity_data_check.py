@@ -28,7 +28,7 @@ class MulticollinearityDataCheck(DataCheck):
 
         Returns:
             dict: dict with a DataCheckWarning if there are any potentially multicollinear columns.
-            
+
         """
         messages = {
             "warnings": [],
