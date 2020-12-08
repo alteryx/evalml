@@ -571,7 +571,6 @@ class AutoMLSearch:
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
             baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay}})
-        pipelines = [baseline]
         scores = self._evaluate_pipelines(baseline, X, y, baseline=True, engine=engine)
         if scores == []:
             return True
