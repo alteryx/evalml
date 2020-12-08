@@ -41,13 +41,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """
     y_true = _convert_to_woodwork_structure(y_true)
     y_predicted = _convert_to_woodwork_structure(y_predicted)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
-    if isinstance(y_true, pd.Series):
-        y_true = y_true.to_numpy()
-    if isinstance(y_predicted, pd.Series):
-        y_predicted = y_predicted.to_numpy()
-
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
+    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series()).to_numpy()
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
@@ -373,6 +368,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
+    # todo
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
         raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
