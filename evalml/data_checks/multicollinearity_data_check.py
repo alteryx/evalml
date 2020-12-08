@@ -4,10 +4,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
 class MulticollinearityDataCheck(DataCheck):
