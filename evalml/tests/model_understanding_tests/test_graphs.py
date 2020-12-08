@@ -1050,7 +1050,7 @@ def test_visualize_decision_trees(tree_estimators, logit_estimator, tmpdir):
 
     filepath = os.path.join(str(tmpdir), 'test_2')
     src = visualize_decision_tree(clf=est_class, filled=True, max_depth=3, rotate=True, filepath=filepath)
-    assert src.format == 'pdf'  # Check that extension defaults to png
+    assert src.format == 'pdf'  # Check that extension defaults to pdf
     assert isinstance(src, graphviz.Source)
 
     filepath = os.path.join(str(tmpdir), 'test_3.pdf')

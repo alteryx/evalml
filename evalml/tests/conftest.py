@@ -373,6 +373,7 @@ def logit_estimator(X_y_binary):
     return est_class
 
 
+@pytest.fixture
 def helper_functions():
     class Helpers:
         @staticmethod
