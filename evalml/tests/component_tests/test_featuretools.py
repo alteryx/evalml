@@ -60,10 +60,10 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         X_pd = pd.DataFrame(X)
         X_pd.columns = X_pd.columns.astype(str)
         es = ft.EntitySet()
-        es = es.entity_from_dataframe(entity_id="X", dataframe=X_pd, index='index', make_index=True)
-        matrix, features = ft.dfs(entityset=es, target_entity="X")
+        es = es.entity_from_dataframe(entity_id="X_name", dataframe=X_pd, index='index', make_index=True)
+        matrix, features = ft.dfs(entityset=es, target_entity="X_name")
 
-        feature = DFSTransformer()
+        feature = DFSTransformer(target_entity="X_name")
         feature.fit(X)
         X_feature_matrix = feature.transform(X)
 
@@ -96,3 +96,64 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         X_feature_matrix = feature.transform(X_transform)
 
         pd.testing.assert_frame_equal(matrix, X_feature_matrix)
+
+
+def test_single_entityset(X_y_binary, X_y_multi, X_y_regression):
+    datasets = locals()
+    for dataset in datasets.values():
+        X, y = dataset
+        X_pd = pd.DataFrame(X)
+        X_pd.columns = X_pd.columns.astype(str)
+
+        es = ft.EntitySet()
+        es = es.entity_from_dataframe(entity_id="X", dataframe=X_pd, index='index', make_index=True)
+        matrix, features = ft.dfs(entityset=es, target_entity="X")
+
+        feature = DFSTransformer()
+        feature.fit(es)
+        transformed_es = feature.transform(es)
+
+        pd.testing.assert_frame_equal(matrix, transformed_es)
+
+
+def test_multiple_entityset(X_y_binary, X_y_multi, X_y_regression):
+    datasets = locals()
+    user_df = pd.DataFrame({"name": ["a", "b", "c", "d", "e"], "id": [0, 1, 2, 3, 4], "extra info": [True, False, False, True, True]})
+    for dataset in datasets.values():
+        X, y = dataset
+        X_pd = pd.DataFrame(X)
+        X_pd.columns = X_pd.columns.astype(str)
+        # add fake ids to the columns
+        X_pd['ids'] = [i % 5 for i in range(len(X))]
+
+        es = ft.EntitySet()
+        es = es.entity_from_dataframe(entity_id="X_initial", dataframe=X_pd, index='index', make_index=True)
+        es = es.entity_from_dataframe(entity_id="X_users", dataframe=user_df, index='id')
+        new_relationship = ft.Relationship(es['X_users']['id'], es['X_initial']['ids'])
+        es.add_relationship(new_relationship)
+        matrix, features = ft.dfs(entityset=es, target_entity="X_initial")
+
+        feature = DFSTransformer(target_entity="X_initial")
+        feature.fit(es)
+        transformed_es = feature.transform(es)
+
+        pd.testing.assert_frame_equal(matrix, transformed_es)
+
+
+def test_entity_name(X_y_binary):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+
+    feature = DFSTransformer(target_entity="X_initial")
+    feature.fit(X_pd)
+
+    es = ft.EntitySet()
+    es = es.entity_from_dataframe(entity_id="X_initial", dataframe=X_pd, index='index', make_index=True)
+
+    with pytest.raises(KeyError, match="Provided target entity X_name does not exist in entity"):
+        DFSTransformer(target_entity="X_name").fit(es)
+
+    feature = DFSTransformer(target_entity="X_initial")
+    feature.fit(es)
+    feature.transform(es)
