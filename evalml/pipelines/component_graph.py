@@ -64,16 +64,19 @@ class ComponentGraph:
             raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
         self._is_instantiated = True
+        component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
 
             try:
                 new_component = component_class(**component_parameters, random_state=self.random_state)
             except (ValueError, TypeError) as e:
+                self._is_instantiated = False
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
                 raise ValueError(err) from e
 
-            self.component_instances[component_name] = new_component
+            component_instances[component_name] = new_component
+        self.component_instances = component_instances
         return self
 
     def fit(self, X, y):
@@ -353,6 +356,9 @@ class ComponentGraph:
             self.compute_order = list(topological_sort(digraph))
         except NetworkXUnfeasible:
             raise ValueError('The given graph contains a cycle')
+        end_components = [component for component in self.compute_order if len(nx.descendants(digraph, component)) == 0]
+        if len(end_components) != 1:
+            raise ValueError('The given graph has more than one final (childless) component')
 
     def __iter__(self):
         self._i = 0

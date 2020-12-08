@@ -140,6 +140,15 @@ def test_init_bad_graphs():
     with pytest.raises(ValueError, match='graph is not completely connected'):
         ComponentGraph(graph)
 
+    graph = {'Imputer': ['Imputer'],
+             'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
+             'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
+             'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
+             'Elastic Net': ['Elastic Net Classifier'],
+             'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']}
+    with pytest.raises(ValueError, match='graph has more than one final'):
+        ComponentGraph(graph)
+
 
 def test_order_x_and_y():
     graph = {'Imputer': [Imputer],
@@ -238,10 +247,13 @@ def test_reinstantiate(example_graph):
         component_graph.instantiate({'OneHot': {'top_n': 7}})
 
 
-def test_bad_instantiate_parameter(example_graph):
+def test_bad_instantiate_can_reinstantiate(example_graph):
     component_graph = ComponentGraph(example_graph)
     with pytest.raises(ValueError, match='Error received when instantiating component'):
         component_graph.instantiate(parameters={'Elastic Net': {'max_iter': 100, 'fake_param': None}})
+
+    component_graph.instantiate({'Elastic Net': {'max_iter': 22}})
+    assert component_graph.get_component('Elastic Net').parameters['max_iter'] == 22
 
 
 def test_get_component(example_graph):
@@ -385,19 +397,17 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     pd.testing.assert_frame_equal(X_t, mock_X_t)
 
 
-@patch('evalml.pipelines.components.Transformer.transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_predict(mock_transform, mock_fit, mock_predict, example_graph, X_y_binary):
+def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_transform.return_value = pd.DataFrame(X)
     mock_fit.return_value = Estimator
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
     component_graph.predict(X)
-    assert mock_transform.call_count == 6  # Called thrice when fitting pipeline, thrice when predicting
+    assert mock_predict.call_count == 6  # Called thrice when fitting pipeline, thrice when predicting
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
