@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
+
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
     """Load features and target from file.
@@ -41,19 +43,17 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     """Splits data into train and test sets.
 
     Arguments:
-        X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-        y (pd.Series): Target data of length [n_samples]
+        X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+        y (ww.DataColumn, pd.Series, or np.ndarray): Target data of length [n_samples]
         regression (bool): If true, do not use stratified split
         test_size (float): Percent of train set to holdout for testing
         random_state (int, np.random.RandomState): Seed for the random number generator
 
     Returns:
-        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets
+        ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
-    if not isinstance(y, pd.Series):
-        y = pd.Series(y)
+    X = _convert_to_woodwork_structure(X)
+    y = _convert_to_woodwork_structure(y)
 
     if regression:
         CV_method = ShuffleSplit(n_splits=1,
@@ -64,11 +64,13 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
             n_splits=1,
             test_size=test_size,
             random_state=random_state)
-    train, test = next(CV_method.split(X, y))
+    train, test = next(CV_method.split(X.to_dataframe(), y.to_series()))
+
     X_train = X.iloc[train]
     X_test = X.iloc[test]
     y_train = y.iloc[train]
     y_test = y.iloc[test]
+
     return X_train, X_test, y_train, y_test
 
 
