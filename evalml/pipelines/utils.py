@@ -172,7 +172,7 @@ def _json_dict(dictionary):
         else:
             try:
                 json.dumps(v)
-            except:
+            except TypeError:
                 raise TypeError(f"Value {v} of type {type(v)} cannot be JSON-serialized")
 
 
