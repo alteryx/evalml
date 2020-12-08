@@ -444,15 +444,17 @@ def test_mape_time_series_model():
     s1_actual = np.array([0, 0, 1, 1, 1, 1, 2, 0, 2])
     s1_predicted = np.array([0, 1, 0, 1, 1, 2, 1, 2, 0])
 
-    s2_actual = np.array([1, 2, 3, 2, 1, 2, 1, 0])
-    s2_predicted = np.array([0, 2, 2, 1, 3, 2, 0, 1])
+    s2_actual = np.array([-1, -2, 1, 3])
+    s2_predicted = np.array([1, 2, -1, -3])
 
-    s3_actual = np.array([1.5, 2.5, -1.5, 0, 1, 3, 2.4, -3.2])
-    s3_predicted = np.array([1.5, 1.5, -1, 1, 1.1, -3, 2, -3])
+    s3_actual = np.array([1, 2, 4, 2, 1, 2])
+    s3_predicted = np.array([0, 2, 2, 1, 3, 2])
 
-    assert obj.score(s1_actual, s1_predicted) == pytest.approx(3.5 / 6 * 100)
-    assert obj.score(s2_actual, s2_predicted) == pytest.approx(4.83333333 / 7 * 100)
-    assert obj.score(s3_actual, s3_predicted) == pytest.approx(3.0625 / 7 * 100)
+    with pytest.raises(ValueError, match="Mean Absolute Percentage Error cannot be used when targets contain the value 0."):
+        obj.score(s1_actual, s1_predicted)
+    assert obj.score(s2_actual, s2_predicted) == pytest.approx(8 / 4 * 100)
+    assert obj.score(s3_actual, s3_predicted) == pytest.approx(4 / 6 * 100)
+
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
