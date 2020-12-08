@@ -15,6 +15,7 @@ Release Notes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
     * Documentation Changes
+        * Fix docs build on RTD by pinning numpy version in RTD builds :pr:`1522`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
