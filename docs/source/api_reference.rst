@@ -306,7 +306,6 @@ Objective Base Classes
     MulticlassClassificationObjective
     RegressionObjective
 
-
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -365,6 +364,7 @@ Regression Objectives
 
     R2
     MAE
+    MAPE
     MSE
     MeanSquaredLogError
     MedianAE
