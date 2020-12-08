@@ -20,7 +20,7 @@ def test_all_components(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(all_components()) == 31
     else:
-        assert len(all_components()) == 37
+        assert len(all_components()) == 38
 
 
 def test_handle_component_class_names():
