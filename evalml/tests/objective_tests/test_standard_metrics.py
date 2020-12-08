@@ -456,7 +456,6 @@ def test_mape_time_series_model():
     assert obj.score(s3_actual, s3_predicted) == pytest.approx(4 / 6 * 100)
 
 
-
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
 def test_calculate_percent_difference(objective_class):
     score = 5
