@@ -9,6 +9,7 @@ from .multiclass_classification_objective import (
     MulticlassClassificationObjective
 )
 from .regression_objective import RegressionObjective
+from .time_series_regression_objective import TimeSeriesRegressionObjective
 
 
 class AccuracyBinary(BinaryClassificationObjective):
@@ -343,6 +344,22 @@ class MAE(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_absolute_error(y_true, y_predicted)
+
+
+class MAPE(TimeSeriesRegressionObjective):
+    """Mean absolute percentage error for time series regression. Scaled by 100 to return a percentage.
+
+    Only valid for nonzero inputs. Otherwise, will throw a ValueError
+    """
+    name = "Mean Absolute Percentage Error"
+    greater_is_better = False
+    perfect_score = 0.0
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        if (y_true == 0).any():
+            raise ValueError("Mean Absolute Percentage Error cannot be used when "
+                             "targets contain the value 0.")
+        return (np.abs((y_true - y_predicted) / y_true)).mean() * 100
 
 
 class MSE(RegressionObjective):

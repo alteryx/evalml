@@ -9,11 +9,11 @@ from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
-def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression):
+def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
     for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
-            clf = estimator_class()
+            clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             if problem_type == ProblemTypes.BINARY:
                 X, y = X_y_binary
             elif problem_type == ProblemTypes.MULTICLASS:
@@ -32,14 +32,14 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             assert not np.isnan(predictions).all()
 
 
-def test_binary_classification_estimators_predict_proba_col_order():
+def test_binary_classification_estimators_predict_proba_col_order(helper_functions):
     X = pd.DataFrame({'input': np.concatenate([np.array([-1] * 100), np.array([1] * 100)])})
     data = np.concatenate([np.zeros(100), np.ones(100)])
     y = pd.Series(data)
     for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         if ProblemTypes.BINARY in supported_problem_types:
-            estimator = estimator_class()
+            estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             estimator.fit(X, y)
             predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
