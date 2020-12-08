@@ -630,17 +630,23 @@ def test_clean_format_tree(tree_estimators, logit_estimator):
     with pytest.raises(ValueError, match="Tree structure reformatting is not supported for non-Tree estimators"):
         clean_format_tree(est_logit)
 
-    formatted_ = clean_format_tree(est_class)
-    tree_ = est_class._component_obj.tree_
+    formatted_ = clean_format_tree(est_reg)
+    tree_ = est_reg._component_obj.tree_
 
     assert isinstance(formatted_, OrderedDict)
     assert formatted_['Feature'] == tree_.feature[0]
     assert formatted_['Threshold'] == tree_.threshold[0]
     assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
-    assert formatted_['Left_Child']['Name'][-1:] == str(tree_.children_left[0])
-    assert formatted_['Right_Child']['Name'][-1:] == str(tree_.children_right[0])
-    assert formatted_['Left_Child']['Threshold'] == tree_.threshold[tree_.children_left[0]]
-    assert formatted_['Right_Child']['Threshold'] == tree_.threshold[tree_.children_right[0]]
+    left_child_name_ = formatted_['Left_Child']['Name']
+    right_child_name_ = formatted_['Right_Child']['Name']
+    left_child_threshold_ = formatted_['Left_Child']['Threshold']
+    right_child_threshold_ = formatted_['Right_Child']['Threshold']
+    left_child_value_ = formatted_['Left_Child']['Value']
+    right_child_value_ = formatted_['Right_Child']['Value']
+    assert left_child_name_[left_child_name_.index('_') + 1:] == str(tree_.children_left[0])
+    assert right_child_name_[right_child_name_.index('_') + 1:] == str(tree_.children_right[0])
+    assert left_child_threshold_ == tree_.threshold[tree_.children_left[0]]
+    assert right_child_threshold_ == tree_.threshold[tree_.children_right[0]]
     # Check that the immediate left and right child of the root node have the correct values
-    assert all([a == b for a, b in zip(formatted_['Left_Child']['Value'][0], tree_.value[tree_.children_left[0]][0])])
-    assert all([a == b for a, b in zip(formatted_['Right_Child']['Value'][0], tree_.value[tree_.children_right[0]][0])])
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
