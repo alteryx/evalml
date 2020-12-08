@@ -27,7 +27,8 @@ class MulticollinearityDataCheck(DataCheck):
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
 
         Returns:
-            dict: A dictionary of features with column name or index and their probability of being ID columns
+            dict: dict with a DataCheckWarning if there are any potentially multicollinear columns.
+            
         """
         messages = {
             "warnings": [],
