@@ -1037,6 +1037,11 @@ def test_visualize_decision_trees(tree_estimators, logit_estimator, tmpdir):
     est_class, est_reg = tree_estimators
     est_logit = logit_estimator
 
+    filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'test.png')
+    assert not os.path.exists(filepath)
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
+        visualize_decision_tree(clf=est_class, filepath=filepath)
+
     filepath = os.path.join(str(tmpdir), 'test_0.xyz')
     with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: {graphviz.backend.FORMATS}"):
         visualize_decision_tree(clf=est_class, filepath=filepath)

@@ -623,8 +623,12 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
     assert json.loads(json.dumps(report)) == report
 
 
-def test_clean_format_tree(tree_estimators):
+def test_clean_format_tree(tree_estimators, logit_estimator):
     est_class, est_reg = tree_estimators
+    est_logit = logit_estimator
+
+    with pytest.raises(ValueError, match="Tree structure reformatting is not supported for non-Tree estimators"):
+        clean_format_tree(est_logit)
 
     formatted_ = clean_format_tree(est_class)
     tree_ = est_class._component_obj.tree_
