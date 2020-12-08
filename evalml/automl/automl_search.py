@@ -453,6 +453,16 @@ class AutoMLSearch:
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning("Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run.")
             run_ensembling = False
+        if run_ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
+            if self.max_iterations < (1 + self.allowed_pipelines + self.allowed_pipelines * self._pipelines_per_batch + 1):
+                run_ensembling = False
+                logger.warning("Ensembling was set to True, but not enough max iterations before first ensemble runs, so ensembling will not run.")
+        if run_ensembling and self.max_batches and self.max_iterations is None:
+            # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
+            if self.max_batches < len(self.allowed_pipelines) + 1:
+                run_ensembling = False
+                logger.warning("Ensembling was set to True, but not enough max batches before first ensemble runs, so ensembling will not run.")
 
         if self.max_batches and self.max_iterations is None:
             self.show_batch_output = True
