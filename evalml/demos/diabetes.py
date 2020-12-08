@@ -1,14 +1,17 @@
 import pandas as pd
+import woodwork as ww
 from sklearn.datasets import load_diabetes as load_diabetes_sk
 
 
-def load_diabetes():
+def load_diabetes(return_pandas=False):
     """Load diabetes dataset. Regression problem
 
     Returns:
-        pd.DataFrame, pd.Series: X, y
+        Union[(ww.DataTable, ww.DataColumn), (pd.Dataframe, pd.Series)]: X and y
     """
     data = load_diabetes_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)
     y = pd.Series(data.target)
-    return X, y
+    if return_pandas:
+        return X, y
+    return ww.DataTable(X), ww.DataColumn(y)
