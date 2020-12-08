@@ -70,7 +70,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return self
 
     def _predict(self, X, y):
-        features = self.compute_estimator_features(X, y)
+        y_encoded = self._encode_targets(y)
+        features = self.compute_estimator_features(X, y_encoded)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
         return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
@@ -133,7 +134,8 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
         self._threshold = value
 
     def _predict(self, X, y, objective=None):
-        features = self.compute_estimator_features(X, y)
+        y_encoded = self._encode_targets(y)
+        features = self.compute_estimator_features(X, y_encoded)
         features_no_nan = features.dropna(axis=0, how="any")
 
         if objective is not None:
