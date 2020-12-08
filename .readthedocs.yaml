@@ -24,3 +24,6 @@ python:
     - method: pip
       path: .
     - requirements: dev-requirements.txt
+    - method: pip
+      path: .
+    - requirements: docs/requirements.txt
