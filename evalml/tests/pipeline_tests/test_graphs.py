@@ -31,7 +31,7 @@ def test_pipeline():
             df = pd.DataFrame(f_i, columns=["feature", "importance"])
             return df
 
-    return TestPipeline(parameters={})
+    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
 def test_backend(test_pipeline):

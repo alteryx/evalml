@@ -129,6 +129,7 @@ Regression Pipelines
 
     BaselineRegressionPipeline
     MeanBaselineRegressionPipeline
+    TimeSeriesBaselineRegressionPipeline
 
 
 .. currentmodule:: evalml.pipelines.utils
@@ -243,6 +244,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
+    TimeSeriesBaselineRegressor
     StackedEnsembleRegressor
     DecisionTreeRegressor
     GAMRegressor
@@ -270,6 +272,8 @@ Graph Utils
     binary_objective_vs_threshold
     graph_binary_objective_vs_threshold
     graph_prediction_vs_actual
+    get_prediction_vs_actual_over_time_data
+    graph_prediction_vs_actual_over_time
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
 
@@ -303,7 +307,6 @@ Objective Base Classes
     BinaryClassificationObjective
     MulticlassClassificationObjective
     RegressionObjective
-
 
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -363,6 +366,7 @@ Regression Objectives
 
     R2
     MAE
+    MAPE
     MSE
     MeanSquaredLogError
     MedianAE
@@ -488,6 +492,16 @@ Data Check Message Types
     :nosignatures:
 
     DataCheckMessageType
+
+Data Check Message Codes
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autosummary::
+    :toctree: generated
+    :template: enum_class.rst
+    :nosignatures:
+
+    DataCheckMessageCode
 
 
 .. currentmodule:: evalml.utils

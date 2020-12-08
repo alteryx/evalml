@@ -1,8 +1,13 @@
-import pandas as pd
-
-from .data_check import DataCheck
-from .data_check_message import DataCheckError, DataCheckWarning
-
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckError,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -30,52 +35,55 @@ class NoVarianceDataCheck(DataCheck):
             any_nulls (bool): Whether this column has any missing data.
 
         Returns:
-            DataCheckError if the column has no variance.
+            DataCheckError if the column has no variance or DataCheckWarning if the column has two unique values including NaN.
         """
         message = f"{column_name} has {int(count_unique)} unique value."
 
         if count_unique <= 1:
-            return DataCheckError(message.format(name=column_name), self.name)
+            return DataCheckError(message=message.format(name=column_name),
+                                  data_check_name=self.name,
+                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                  details={"column": column_name})
 
         elif count_unique == 2 and not self._dropnan and any_nulls:
-            return DataCheckWarning(f"{column_name} has two unique values including nulls. "
-                                    "Consider encoding the nulls for "
-                                    "this column to be useful for machine learning.", self.name)
+            return DataCheckWarning(message=f"{column_name} has two unique values including nulls. "
+                                            "Consider encoding the nulls for "
+                                            "this column to be useful for machine learning.",
+                                    data_check_name=self.name,
+                                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                                    details={"column": column_name})
 
     def validate(self, X, y):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Arguments:
-            X (pd.DataFrame): The input features.
-            y (pd.Series): The target data.
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features.
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data.
 
         Returns:
-            list (DataCheckWarning or DataCheckError): List of warnings/errors corresponding to features or target with no variance.
+            dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
 
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
-
-        messages = []
-
         for name in unique_counts:
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
-
-            if message:
-                messages.append(message)
-
+            if not message:
+                continue
+            DataCheck._add_message(message, messages)
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
-
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
-
         if target_message:
-            messages.append(target_message)
-
+            DataCheck._add_message(target_message, messages)
         return messages

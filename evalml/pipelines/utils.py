@@ -1,7 +1,5 @@
 import json
 
-import woodwork as ww
-
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
@@ -59,7 +57,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if text_columns:
         pp_components.append(TextFeaturizer)
 
-    datetime_cols = X.select([ww.logical_types.Datetime])
+    datetime_cols = X.select(["Datetime"])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
     if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)

@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from scipy.optimize import minimize_scalar
 
 from .objective_base import ObjectiveBase
@@ -26,13 +25,18 @@ class BinaryClassificationObjective(ObjectiveBase):
         """Learn a binary classification threshold which optimizes the current objective.
 
         Arguments:
-            ypred_proba (list): The classifier's predicted probabilities
-            y_true (list): The ground truth for the predictions.
-            X (pd.DataFrame, optional): Any extra columns that are needed from training data.
+            ypred_proba (ww.DataColumn, pd.Series): The classifier's predicted probabilities
+            y_true (ww.DataColumn, pd.Series): The ground truth for the predictions.
+            X (ww.DataTable, pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
             Optimal threshold for this objective
         """
+        ypred_proba = self._standardize_input_type(ypred_proba)
+        y_true = self._standardize_input_type(y_true)
+        if X is not None:
+            X = self._standardize_input_type(X)
+
         if not self.can_optimize_threshold:
             raise RuntimeError("Trying to optimize objective that can't be optimized!")
 
@@ -48,15 +52,14 @@ class BinaryClassificationObjective(ObjectiveBase):
         """Apply a learned threshold to predicted probabilities to get predicted classes.
 
         Arguments:
-            ypred_proba (list): The classifier's predicted probabilities
+            ypred_proba (ww.DataColumn, pd.Series, np.ndarray): The classifier's predicted probabilities
             threshold (float, optional): Threshold used to make a prediction. Defaults to 0.5.
-            X (pd.DataFrame, optional): Any extra columns that are needed from training data.
+            X (ww.DataTable, pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
             predictions
         """
-        if not isinstance(ypred_proba, pd.Series):
-            ypred_proba = pd.Series(ypred_proba)
+        ypred_proba = self._standardize_input_type(ypred_proba)
         return ypred_proba > threshold
 
     def validate_inputs(self, y_true, y_predicted):

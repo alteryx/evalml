@@ -1,9 +1,13 @@
-import pandas as pd
-
-from .data_check import DataCheck
-from .data_check_message import DataCheckWarning
-
-from evalml.utils.gen_utils import numeric_and_boolean_dtypes
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning
+)
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    numeric_and_boolean_dtypes
+)
 
 
 class TargetLeakageDataCheck(DataCheck):
@@ -28,13 +32,14 @@ class TargetLeakageDataCheck(DataCheck):
         Currently only supports binary and numeric targets and features.
 
         Arguments:
-            X (pd.DataFrame): The input features to check
-            y (pd.Series): The target data
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data
 
         Returns:
-            list (DataCheckWarning): List with a DataCheckWarning if target leakage is detected.
+            dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
         Example:
+            >>> import pandas as pd
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],
             ...    'x': [42, 54, 12, 64, 12],
@@ -42,19 +47,34 @@ class TargetLeakageDataCheck(DataCheck):
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert target_leakage_check.validate(X, y) == [DataCheckWarning("Column 'leak' is 80.0% or more correlated with the target", "TargetLeakageDataCheck")]
+            >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 80.0% or more correlated with the target",\
+                                                                             "data_check_name": "TargetLeakageDataCheck",\
+                                                                             "level": "warning",\
+                                                                             "code": "TARGET_LEAKAGE",\
+                                                                             "details": {"column": "leak"}}],\
+                                                               "errors": []}
         """
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
+
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         if y.dtype not in numeric_and_boolean_dtypes:
-            return []
+            return messages
         X = X.select_dtypes(include=numeric_and_boolean_dtypes)
         if len(X.columns) == 0:
-            return []
+            return messages
 
         highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
-        return [DataCheckWarning(warning_msg.format(col_name, self.pct_corr_threshold * 100), self.name) for col_name in highly_corr_cols]
+        messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
+                                                      data_check_name=self.name,
+                                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                                      details={"column": col_name}).to_dict()
+                                     for col_name in highly_corr_cols])
+        return messages

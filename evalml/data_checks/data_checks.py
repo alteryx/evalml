@@ -1,8 +1,8 @@
 import inspect
 
-from .data_check import DataCheck
-
+from evalml.data_checks import DataCheck
 from evalml.exceptions import DataCheckInitError
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
 def _has_defaults_for_all_args(init):
@@ -77,17 +77,26 @@ class DataChecks:
         Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
-            X (pd.DataFrame): The input data of shape [n_samples, n_features]
-            y (pd.Series): The target data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray): The target data of length [n_samples]
 
         Returns:
-            list (DataCheckMessage): List containing DataCheckMessage objects
+            dict: Dictionary containing DataCheckMessage objects
 
         """
-        messages = []
+        messages = {
+            "warnings": [],
+            "errors": []
+        }
+
+        X = _convert_to_woodwork_structure(X)
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)
-            messages.extend(messages_new)
+            messages["warnings"].extend(messages_new["warnings"])
+            messages["errors"].extend(messages_new["errors"])
         return messages
 
 

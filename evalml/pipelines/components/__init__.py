@@ -18,8 +18,12 @@ from .estimators import (
     BaselineRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
+<<<<<<< HEAD
     GAMClassifier,
     GAMRegressor
+=======
+    TimeSeriesBaselineRegressor
+>>>>>>> main
 )
 from .transformers import (
     Transformer,

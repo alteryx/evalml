@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
+
+from evalml.utils import _convert_woodwork_types_wrapper
 
 
 class ObjectiveBase(ABC):
@@ -56,44 +59,54 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
+        if X is not None:
+            X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(y_true, y_predicted, X=X)
 
     @staticmethod
-    def _standardize_input_type(y_in):
-        """Standardize np or pd input to np for scoring
+    def _standardize_input_type(input_data):
+        """Standardize input to pandas for scoring.
 
         Arguments:
-            y_in (np.ndarray or pd.Series): A matrix of predictions or predicted probabilities
+            input_data (ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
-            np.ndarray: a 1d np array, or a 2d np array if predicted probabilities were provided.
+            pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
         """
-        if isinstance(y_in, (pd.Series, pd.DataFrame)):
-            return y_in.to_numpy()
-        return y_in
+        if isinstance(input_data, (pd.Series, pd.DataFrame)):
+            return input_data
+        if isinstance(input_data, ww.DataTable):
+            return _convert_woodwork_types_wrapper(input_data.to_dataframe())
+        if isinstance(input_data, ww.DataColumn):
+            return _convert_woodwork_types_wrapper(input_data.to_series())
+        if len(input_data.shape) == 1:
+            return pd.Series(input_data)
+        return pd.DataFrame(input_data)
 
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.
 
         Arguments:
-            y_predicted (pd.Series): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
+            y_predicted (ww.DataColumn, ww.DataTable, pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
+            y_true (ww.DataColumn, pd.Series): Actual class labels of length [n_samples]
 
         Returns:
             None
         """
-        if len(y_predicted) != len(y_true):
+        if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
         if np.isnan(y_true).any() or np.isinf(y_true).any():
             raise ValueError("y_true contains NaN or infinity")
-        if np.isnan(y_predicted).any() or np.isinf(y_predicted).any():
+        # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
+        y_pred_flat = y_predicted.to_numpy().flatten()
+        if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
             raise ValueError("y_predicted contains NaN or infinity")
-        if self.score_needs_proba and np.any([(y_predicted < 0) | (y_predicted > 1)]):
+        if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
 
     @classmethod
@@ -113,7 +126,7 @@ class ObjectiveBase(ABC):
         if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 
-        if baseline_score == 0:
+        if np.isclose(baseline_score, 0, atol=1e-10):
             return np.nan
 
         if baseline_score == score:
