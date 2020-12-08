@@ -37,7 +37,6 @@ class MulticollinearityDataCheck(DataCheck):
 
         X = _convert_to_woodwork_structure(X)
         mutual_info_df = X.mutual_information()
-        # zero or one case?
         if mutual_info_df.empty:
             return messages
         above_threshold = mutual_info_df.loc[mutual_info_df['mutual_info'] >= self.threshold]
