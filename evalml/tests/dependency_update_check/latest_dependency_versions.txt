@@ -5,8 +5,8 @@ colorama==0.4.4
 featuretools==0.22.0
 graphviz==0.15
 ipywidgets==7.5.1
-networkx==2.5
 lightgbm==3.1.1
+networkx==2.5
 nlp-primitives==1.1.0
 numpy==1.19.4
 pandas==1.1.5
