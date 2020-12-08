@@ -163,6 +163,19 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_state=random_state)
 
 
+def _json_dict(dictionary):
+    """Helper method to make sure all elements in the provided dictionary are JSON-serializable
+    """
+    for v in dictionary.values():
+        if isinstance(v, dict):
+            _json_dict(v)
+        else:
+            try:
+                json.dumps(v)
+            except TypeError:
+                raise TypeError(f"Value {v} of type {type(v)} cannot be JSON-serialized")
+
+
 def generate_pipeline_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
@@ -174,7 +187,7 @@ def generate_pipeline_code(element):
         Does not include code for custom component implementation.
     """
     # hold the imports needed and add code to end
-    code_strings = []
+    code_strings = ['import json']
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
 
@@ -188,17 +201,18 @@ def generate_pipeline_code(element):
         pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
+    _json_dict(element.parameters)
     # create the base string for the pipeline
     base_string = "\nclass {0}({1}):\n" \
                   "\tcomponent_graph = [\n\t\t{2}\n\t]\n" \
                   "{3}" \
-                  "\nparameters = {4}\n" \
+                  "\nparameters = json.loads(\"\"\"{4}\"\"\")\n" \
                   "pipeline = {0}(parameters)" \
                   .format(element.__class__.__name__,
                           element.__class__.__bases__[0].__name__,
                           component_graph_string,
                           pipeline_string,
-                          json.dumps(element.parameters, indent='\t').replace('null', 'None'))
+                          json.dumps(element.parameters, indent='\t'))
     code_strings.append(base_string)
     return "\n".join(code_strings)
 
