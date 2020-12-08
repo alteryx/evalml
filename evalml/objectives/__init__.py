@@ -11,6 +11,7 @@ from .standard_metrics import (
     AUC,
     F1,
     MAE,
+    MAPE,
     MSE,
     MeanSquaredLogError,
     R2,
