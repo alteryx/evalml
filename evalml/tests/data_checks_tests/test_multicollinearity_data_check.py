@@ -51,7 +51,8 @@ def test_multicollinearity_returns_warning():
     }
 
 
-def test_multicollinearity_nonnumeric_cols():
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_multicollinearity_nonnumeric_cols(data_type):
     X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "a"],
                       'col_2': ["w", "x", "y", "z", "b"],
                       'col_3': ["a", "a", "c", "d", "a"],
@@ -59,6 +60,8 @@ def test_multicollinearity_nonnumeric_cols():
                       'col_5': ["0", "0", "1", "2", "0"],
                       'col_6': [1, 1, 2, 3, 1]
                       })
+    if data_type == 'ww':
+        X = ww.DataTable(X)
     multi_check = MulticollinearityDataCheck(threshold=0.9)
     assert multi_check.validate(X) == {
         "warnings": [DataCheckWarning(message="Columns are likely to be correlated: [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6'), ('col_1', 'col_2'), ('col_2', 'col_4')]",
@@ -74,16 +77,3 @@ def test_multicollinearity_data_check_input_formats():
 
     # test empty pd.DataFrame
     assert multi_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
-
-    #  test Woodwork
-    ww_input = ww.DataTable(pd.DataFrame({'col_1': ["a", "b", "c", "d", "a"],
-                                          'col_2': ["w", "x", "y", "z", "b"],
-                                          'col_3': ["a", "a", "c", "d", "a"],
-                                          'col_4': ["a", "b", "c", "d", "a"],
-                                          'col_5': ["0", "0", "1", "2", "0"],
-                                          'col_6': [1, 1, 2, 3, 1]
-                                          }))
-    assert multi_check.validate(ww_input) == {
-        "warnings": [],
-        "errors": []
-    }
