@@ -1577,6 +1577,37 @@ def test_generate_code_pipeline_errors():
         generate_pipeline_code([Imputer(), LogisticRegressionClassifier()])
 
 
+def test_generate_code_pipeline_json_errors():
+    class CustomEstimator(Estimator):
+        name = "My Custom Estimator"
+        hyperparameter_ranges = {}
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        model_family = ModelFamily.NONE
+
+        def __init__(self, random_arg=False, numpy_arg=[], random_state=0):
+            parameters = {'random_arg': random_arg,
+                          'numpy_arg': numpy_arg}
+
+            super().__init__(parameters=parameters,
+                             component_obj=None,
+                             random_state=random_state)
+
+    class MockBinaryPipelineTransformer(BinaryClassificationPipeline):
+        name = "Mock Binary Pipeline with Transformer"
+        component_graph = ['Imputer', CustomEstimator]
+
+    pipeline = MockBinaryPipelineTransformer({})
+    generate_pipeline_code(pipeline)
+
+    pipeline = MockBinaryPipelineTransformer({'My Custom Estimator': {'numpy_arg': np.array([0])}})
+    with pytest.raises(TypeError, match="cannot be JSON-serialized"):
+        generate_pipeline_code(pipeline)
+
+    pipeline = MockBinaryPipelineTransformer({'My Custom Estimator': {'random_arg': pd.DataFrame()}})
+    with pytest.raises(TypeError, match="cannot be JSON-serialized"):
+        generate_pipeline_code(pipeline)
+
+
 def test_generate_code_pipeline():
     class MockBinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'Random Forest Classifier']

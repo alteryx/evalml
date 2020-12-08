@@ -163,6 +163,19 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_state=random_state)
 
 
+def _json_dict(dictionary):
+    """Helper method to make sure all elements in the provided dictionary are JSON-serializable
+    """
+    for v in dictionary.values():
+        if isinstance(v, dict):
+            _json_dict(v)
+        else:
+            try:
+                json.dumps(v)
+            except:
+                raise TypeError(f"Value {v} of type {type(v)} cannot be JSON-serialized")
+
+
 def generate_pipeline_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
@@ -188,6 +201,7 @@ def generate_pipeline_code(element):
         pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
+    _json_dict(element.parameters)
     # create the base string for the pipeline
     base_string = "\nclass {0}({1}):\n" \
                   "\tcomponent_graph = [\n\t\t{2}\n\t]\n" \
