@@ -17,7 +17,8 @@ from .estimators import (
     BaselineClassifier,
     BaselineRegressor,
     DecisionTreeClassifier,
-    DecisionTreeRegressor
+    DecisionTreeRegressor,
+    TimeSeriesBaselineRegressor
 )
 from .transformers import (
     Transformer,
@@ -37,7 +38,8 @@ from .transformers import (
     SelectColumns,
     TextFeaturizer,
     LSA,
-    PCA
+    PCA,
+    DFSTransformer
 )
 from .ensemble import (
     StackedEnsembleClassifier,

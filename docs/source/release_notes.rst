@@ -3,12 +3,16 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added `DFS Transformer` component into transformer components :pr:`1454`
+        * Added ``MAPE`` to the standard metrics for time series problems and update objectives :pr:`1510`
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
+        * Added baseline pipeline and components for time series regression problems :pr:`1496`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
+        * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524`
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
@@ -27,6 +31,7 @@ Release Notes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
         * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
+        * Updated pipeline and component documentation and demos to use ``Woodwork`` :pr:`1466`
     * Testing Changes
         * Update dependency update checker to use everything from core and optional dependencies :pr:`1480`
 
