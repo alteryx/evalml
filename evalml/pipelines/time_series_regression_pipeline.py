@@ -105,6 +105,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
             X = pd.DataFrame()
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         y_predicted = self.predict(X, y)
         y_shifted = y.shift(-self.gap)

@@ -7,14 +7,6 @@ import pytest
 from evalml.pipelines import TimeSeriesRegressionPipeline
 
 
-@pytest.fixture
-def ts_data():
-    X, y = pd.DataFrame({"features": range(101, 132)}), pd.Series(range(1, 32))
-    y.index = pd.date_range("2020-10-01", "2020-10-31")
-    X.index = pd.date_range("2020-10-01", "2020-10-31")
-    return X, y
-
-
 @pytest.mark.parametrize("pipeline_class", [TimeSeriesRegressionPipeline])
 @pytest.mark.parametrize("components", [["One Hot Encoder"],
                                         ["Delayed Feature Transformer", "One Hot Encoder"]])

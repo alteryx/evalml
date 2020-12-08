@@ -5,6 +5,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
@@ -206,9 +207,13 @@ def test_precision_recall_curve_return_type():
     assert isinstance(precision_recall_curve_data['auc_score'], float)
 
 
-def test_precision_recall_curve():
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_precision_recall_curve(data_type, make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    y_true = make_data_type(data_type, y_true)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+
     precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
 
     precision = precision_recall_curve_data.get('precision')
@@ -224,15 +229,14 @@ def test_precision_recall_curve():
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_precision_recall_curve(X_y_binary, data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    if data_type == 'pd':
-        X = pd.DataFrame(X)
-        y_true = pd.Series(y_true)
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
+    X = make_data_type(data_type, X)
+    y_true = make_data_type(data_type, y_true)
     fig = graph_precision_recall_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
 
@@ -257,13 +261,13 @@ def test_graph_precision_recall_curve_title_addition(X_y_binary):
     assert fig_dict['layout']['title']['text'] == 'Precision-Recall with added title text'
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_roc_curve_binary(data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_roc_curve_binary(data_type, make_data_type):
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
     tpr_rates = roc_curve_data.get('tpr_rates')
@@ -282,9 +286,13 @@ def test_roc_curve_binary(data_type):
 
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
-    if data_type == 'pd':
+    if data_type != 'np':
         y_true = pd.Series(y_true)
         y_predict_proba = pd.DataFrame(y_predict_proba)
+    if data_type == 'ww':
+        y_true = ww.DataColumn(y_true)
+        y_predict_proba = ww.DataTable(y_predict_proba)
+
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
     tpr_rates = roc_curve_data.get('tpr_rates')
@@ -302,8 +310,8 @@ def test_roc_curve_binary(data_type):
     assert isinstance(roc_curve_data['thresholds'], np.ndarray)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_roc_curve_multiclass(data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_roc_curve_multiclass(data_type, make_data_type):
     y_true = np.array([1, 2, 0, 0, 2, 1])
     y_predict_proba = np.array([[0.33, 0.33, 0.33],
                                 [0.05, 0.05, 0.90],
@@ -311,9 +319,9 @@ def test_roc_curve_multiclass(data_type):
                                 [0.8, 0.1, 0.1],
                                 [0.1, 0.1, 0.8],
                                 [0.3, 0.4, 0.3]])
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+
     roc_curve_data = roc_curve(y_true, y_predict_proba)
     fpr_expected = np.array([[0, 0, 0, 1],
                              [0, 0, 0, 0.25, 0.75, 1],
@@ -325,7 +333,11 @@ def test_roc_curve_multiclass(data_type):
                                     [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
                                     [1.9, 0.9, 0.8, 0.3, 0.1]])
     auc_expected = [1, 1, 1]
-    for i in np.unique(y_true):
+
+    y_true_unique = y_true
+    if data_type == 'ww':
+        y_true_unique = y_true.to_series()
+    for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
         tpr_rates = roc_curve_data[i].get('tpr_rates')
         thresholds = roc_curve_data[i].get('thresholds')
@@ -339,15 +351,15 @@ def test_roc_curve_multiclass(data_type):
         assert isinstance(roc_curve_data[i]['thresholds'], np.ndarray)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_roc_curve_binary(X_y_binary, data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_pred_proba = pd.DataFrame(y_pred_proba)
+    y_true = make_data_type(data_type, y_true)
+    y_pred_proba = make_data_type(data_type, y_pred_proba)
+
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -428,15 +440,15 @@ def test_graph_roc_curve_title_addition(X_y_binary):
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic with added title text'
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_confusion_matrix_default(X_y_binary, data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_pred = pd.Series(y_pred)
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
+
     fig = graph_confusion_matrix(y_true, y_pred)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -498,13 +510,13 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
         calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
-                                           binary_core_objectives):
+                                           binary_core_objectives, make_data_type):
     X, y = X_y_binary
-    if data_type == 'pd':
-        X = pd.DataFrame(X)
-        y = pd.Series(y)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
@@ -668,8 +680,9 @@ def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, log
     assert np.array_equal(data['y'], mock_cb_thresholds.return_value['score'])
 
 
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression,
+def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
                                           logistic_regression_multiclass_pipeline_class,
                                           linear_regression_pipeline_class):
@@ -684,6 +697,11 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+
+    if data_type != "np":
+        X = pd.DataFrame(X)
+    if data_type == "ww":
+        X = ww.DataTable(X)
 
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
@@ -722,8 +740,11 @@ def test_partial_dependence_string_feature_name(logistic_regression_binary_pipel
     assert not part_dep.isnull().any(axis=None)
 
 
-def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_partial_dependence_with_non_numeric_columns(data_type, linear_regression_pipeline_class):
     X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
+    if data_type == "ww":
+        X = ww.DataTable(X)
     y = [0, 0.2, 1.4, 1]
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     pipeline.fit(X, y)
@@ -926,7 +947,8 @@ def test_graph_prediction_vs_actual_default():
     assert fig_dict['data'][1]['name'] == "Values"
 
 
-def test_graph_prediction_vs_actual():
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_graph_prediction_vs_actual(data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
@@ -945,6 +967,9 @@ def test_graph_prediction_vs_actual():
 
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
+    if data_type == "ww":
+        y_true = ww.DataColumn(y_true)
+        y_pred = ww.DataColumn(y_pred)
     fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6.1)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()

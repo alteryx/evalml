@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
 
@@ -11,7 +12,8 @@ from evalml.objectives.utils import get_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
     DecisionTreeClassifier,
@@ -142,6 +144,14 @@ def X_y_categorical_classification():
 
 
 @pytest.fixture
+def ts_data():
+    X, y = pd.DataFrame({"features": range(101, 132)}), pd.Series(range(1, 32))
+    y.index = pd.date_range("2020-10-01", "2020-10-31")
+    X.index = pd.date_range("2020-10-01", "2020-10-31")
+    return X, y
+
+
+@pytest.fixture
 def dummy_pipeline_hyperparameters():
     return {'Mock Classifier': {
         'param a': Integer(0, 10),
@@ -234,6 +244,30 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor]
     return MockRegressionPipeline
+
+
+@pytest.fixture
+def dummy_time_series_regressor_estimator_class():
+    class MockTimeSeriesRegressor(Estimator):
+        name = "Mock Time Series Regressor"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
+        hyperparameter_ranges = {'a': Integer(0, 10),
+                                 'b': Real(0, 10)}
+
+        def __init__(self, a=1, b=0, random_state=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+
+    return MockTimeSeriesRegressor
+
+
+@pytest.fixture
+def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_estimator_class):
+    MockTimeSeriesRegressor = dummy_time_series_regressor_estimator_class
+
+    class MockTimeSeriesRegressionPipeline(TimeSeriesRegressionPipeline):
+        component_graph = [MockTimeSeriesRegressor]
+    return MockTimeSeriesRegressionPipeline
 
 
 @pytest.fixture
@@ -340,3 +374,21 @@ def helper_functions():
             return pl
 
     return Helpers
+
+
+@pytest.fixture
+def make_data_type():
+    def _make_data_type(data_type, data):
+        if data_type != "np":
+            if len(data.shape) == 1:
+                data = pd.Series(data)
+            else:
+                data = pd.DataFrame(data)
+        if data_type == "ww":
+            if len(data.shape) == 1:
+                data = ww.DataColumn(data)
+            else:
+                data = ww.DataTable(data)
+        return data
+
+    return _make_data_type

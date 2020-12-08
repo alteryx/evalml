@@ -45,6 +45,5 @@ def test_decision_function_neg():
     ypred_proba = np.arange(6) / 5.0
     y_true = pd.Series(np.array([0] * 3 + [1] * 3), dtype=bool)
     obj = F1()
-    pd.testing.assert_series_equal(obj.decision_function(ypred_proba.tolist()), y_true)
     pd.testing.assert_series_equal(obj.decision_function(ypred_proba), y_true)
     pd.testing.assert_series_equal(obj.decision_function(pd.Series(ypred_proba, dtype=float)), y_true)
