@@ -303,7 +303,7 @@ Objective Base Classes
     BinaryClassificationObjective
     MulticlassClassificationObjective
     RegressionObjective
-
+    TimeSeriesRegressionObjective
 
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -363,6 +363,7 @@ Regression Objectives
 
     R2
     MAE
+    MAPE
     MSE
     MeanSquaredLogError
     MedianAE
