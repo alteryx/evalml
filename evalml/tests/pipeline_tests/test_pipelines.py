@@ -1702,4 +1702,3 @@ def test_generate_code_pipeline_custom():
                     '\npipeline = MockAllCustom(parameters)'
     pipeline = generate_pipeline_code(mockAllCustom)
     assert pipeline == expected_code
-
