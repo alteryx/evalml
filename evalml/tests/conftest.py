@@ -8,7 +8,10 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
-from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
+from evalml.objectives.utils import (
+    get_core_objectives,
+    get_non_core_objectives
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -312,7 +315,8 @@ def time_series_core_objectives():
 
 @pytest.fixture
 def time_series_non_core_objectives():
-    non_core_time_series = [obj_() for obj_ in get_non_core_objectives() if ProblemTypes.TIME_SERIES_REGRESSION in obj_.problem_types]
+    non_core_time_series = [obj_() for obj_ in get_non_core_objectives()
+                            if ProblemTypes.TIME_SERIES_REGRESSION in obj_.problem_types]
     return non_core_time_series
 
 
