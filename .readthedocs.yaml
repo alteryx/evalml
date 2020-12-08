@@ -26,4 +26,4 @@ python:
     - requirements: dev-requirements.txt
     - method: pip
       path: .
-    - requirements: numpy==1.20.0rc1
+    - requirements: docs/requirements.txt
