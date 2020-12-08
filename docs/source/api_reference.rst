@@ -303,7 +303,6 @@ Objective Base Classes
     BinaryClassificationObjective
     MulticlassClassificationObjective
     RegressionObjective
-    TimeSeriesRegressionObjective
 
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
