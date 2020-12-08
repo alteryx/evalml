@@ -1373,6 +1373,20 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     assert "Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run." not in caplog.text
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_max_iterations_less_than_ensembling_disabled(mock_pipeline_fit, mock_score, X_y_binary, logistic_regression_binary_pipeline_class, caplog):
+    max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL])
+    # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
+    X, y = X_y_binary
+    automl = AutoMLSearch(problem_type="binary", max_iterations=max_iterations - 1, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
+    automl.search(X, y, data_checks=None)
+    assert "Ensembling was set to True, but not enough max iterations before first ensemble runs, so ensembling will not run." in caplog.text
+
+    pipeline_names = automl.rankings['pipeline_name']
+    assert not pipeline_names.str.contains('Ensemble').any()
+
+
 @pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')

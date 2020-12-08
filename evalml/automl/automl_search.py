@@ -453,16 +453,12 @@ class AutoMLSearch:
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning("Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run.")
             run_ensembling = False
+
         if run_ensembling and self.max_iterations is not None:
             # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
-            if self.max_iterations < (1 + self.allowed_pipelines + self.allowed_pipelines * self._pipelines_per_batch + 1):
+            if self.max_iterations < (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1):
                 run_ensembling = False
                 logger.warning("Ensembling was set to True, but not enough max iterations before first ensemble runs, so ensembling will not run.")
-        if run_ensembling and self.max_batches and self.max_iterations is None:
-            # Baseline + first batch + each pipeline iteration (5 is current default pipelines_per_batch) + 1
-            if self.max_batches < len(self.allowed_pipelines) + 1:
-                run_ensembling = False
-                logger.warning("Ensembling was set to True, but not enough max batches before first ensemble runs, so ensembling will not run.")
 
         if self.max_batches and self.max_iterations is None:
             self.show_batch_output = True
@@ -470,10 +466,10 @@ class AutoMLSearch:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
                 if num_ensemble_batches == 0:
-                    logger.warning("Not enough batches to run ensembling")
+                    logger.warning("Ensembling was set to True, but not enough max batches before first ensemble runs, so ensembling will not run.")
                 else:
                     logger.info(f"Ensemble run every {ensemble_nth_batch} batches")
-                    
+
                 self.max_iterations = (1 + len(self.allowed_pipelines) +
                                        self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
                                        num_ensemble_batches)
