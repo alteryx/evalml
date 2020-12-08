@@ -2,8 +2,6 @@ import pandas as pd
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
-from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
-from evalml.pipelines.multiclass_classification_pipeline import MulticlassClassificationPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,

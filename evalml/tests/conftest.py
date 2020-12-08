@@ -16,6 +16,8 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
@@ -50,7 +52,17 @@ def create_mock_pipeline(estimator, problem_type):
             component_graph = [estimator]
         return MockRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        class MockTSRegressionPipelineWithOnlyEstimator(RegressionPipeline):
+        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesRegressionPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
+            component_graph = [estimator]
+        return MockTSRegressionPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesBinaryClassificationPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
+            component_graph = [estimator]
+        return MockTSRegressionPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesMulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
         return MockTSRegressionPipelineWithOnlyEstimator
@@ -333,7 +345,8 @@ def stackable_classifiers(helper_functions):
     stackable_classifiers = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
-        if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS} and
+        if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                             ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
             stackable_classifiers.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))

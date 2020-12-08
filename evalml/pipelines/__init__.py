@@ -37,23 +37,20 @@ from .classification_pipeline import ClassificationPipeline
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .regression_pipeline import RegressionPipeline
-from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
-
+from .time_series_classifcation_pipelines import (
+    TimeSeriesClassificationPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline
+)
 from .classification import (
     BaselineBinaryPipeline,
     BaselineMulticlassPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline
 )
-
+from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 from .regression import (
     BaselineRegressionPipeline,
     MeanBaselineRegressionPipeline,
     TimeSeriesBaselineRegressionPipeline
-)
-from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
-from .time_series_classifcation_pipelines import (
-    TimeSeriesClassificationPipeline,
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline
 )
