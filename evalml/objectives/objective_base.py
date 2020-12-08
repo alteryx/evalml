@@ -90,8 +90,8 @@ class ObjectiveBase(ABC):
         """Validates the input based on a few simple checks.
 
         Arguments:
-            y_predicted (pd.Series, pd.DataFrame, ww.DataColumn, or ww.DataTable): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
+            y_predicted (ww.DataColumn, ww.DataTable, pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
+            y_true (ww.DataColumn, pd.Series): Actual class labels of length [n_samples]
 
         Returns:
             None
