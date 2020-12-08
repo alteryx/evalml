@@ -1,6 +1,7 @@
 import copy
 import os
 import warnings
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -569,6 +570,39 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
                                 marker=_go.scatter.Marker(color=color),
                                 name=name))
     return _go.Figure(layout=layout, data=data)
+
+
+def get_tree_data(clf):
+    """Return data for a fitted tree in a restructured format
+
+    Arguments:
+        clf (ComponentBase): A fitted tree-based estimator.
+
+    Returns:
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+    """
+    if not clf.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree structure reformatting is not supported for non-Tree estimators")
+    est = clf._component_obj
+
+    children_left = est.tree_.children_left
+    children_right = est.tree_.children_right
+    features = est.tree_.feature
+    thresholds = est.tree_.threshold
+    values = est.tree_.value
+
+    def recurse(i):
+        if children_left[i] == children_right[i]:
+            return {'Name': f'Leaf_{i}'}
+        return OrderedDict({
+            'Feature': features[i],
+            'Threshold': thresholds[i],
+            'Value': values[i],
+            'Left_Child': recurse(children_left[i]),
+            'Right_Child': recurse(children_right[i])
+        })
+
+    return recurse(0)
 
 
 def visualize_decision_tree(clf, max_depth=None, rotate=False, filled=False, filepath=None):

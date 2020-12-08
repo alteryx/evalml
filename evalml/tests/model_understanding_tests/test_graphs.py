@@ -1,5 +1,6 @@
 import os
 import warnings
+from collections import OrderedDict
 from unittest.mock import patch
 
 import numpy as np
@@ -17,6 +18,7 @@ from evalml.model_understanding.graphs import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
+    get_tree_data,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
     graph_partial_dependence,
@@ -1030,6 +1032,40 @@ def test_graph_prediction_vs_actual_over_time_value_error():
     error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
     with pytest.raises(ValueError, match=error_msg):
         graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)
+
+
+def test_get_tree_data(tree_estimators, logit_estimator):
+    est_class, est_reg = tree_estimators
+    est_logit = logit_estimator
+
+    with pytest.raises(ValueError, match="Tree structure reformatting is not supported for non-Tree estimators"):
+        get_tree_data(est_logit)
+
+    formatted_ = get_tree_data(est_reg)
+    tree_ = est_reg._component_obj.tree_
+
+    assert isinstance(formatted_, OrderedDict)
+    assert formatted_['Feature'] == tree_.feature[0]
+    assert formatted_['Threshold'] == tree_.threshold[0]
+    assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
+    left_child_name_ = formatted_['Left_Child']['Name']
+    right_child_name_ = formatted_['Right_Child']['Name']
+    left_child_threshold_ = formatted_['Left_Child']['Threshold']
+    right_child_threshold_ = formatted_['Right_Child']['Threshold']
+    left_child_value_ = formatted_['Left_Child']['Value']
+    right_child_value_ = formatted_['Right_Child']['Value']
+    assert left_child_name_[left_child_name_.index('_') + 1:] == str(tree_.children_left[0])
+    assert right_child_name_[right_child_name_.index('_') + 1:] == str(tree_.children_right[0])
+    assert left_child_threshold_ == tree_.threshold[tree_.children_left[0]]
+    assert right_child_threshold_ == tree_.threshold[tree_.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
+    print('--------------')
+    print(tree_.children_left)
+    print(tree_.children_right)
+    from pprint import pprint as pp
+    pp(formatted_)
 
 
 def test_visualize_decision_trees(tree_estimators, logit_estimator, tmpdir):
