@@ -189,7 +189,7 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
         """
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
-        return ClassificationPipeline._score(X, y, predictions, objective)
+        return TimeSeriesClassificationPipeline._score(X, y, predictions, objective)
 
 
 class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipeline):

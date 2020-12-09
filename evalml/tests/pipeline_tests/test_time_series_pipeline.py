@@ -9,6 +9,7 @@ from evalml.pipelines import (
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
+from evalml.problem_types import ProblemTypes
 
 
 @pytest.mark.parametrize("pipeline_class,estimator", [(TimeSeriesRegressionPipeline, "Linear Regressor"),
@@ -227,18 +228,11 @@ def test_score_drops_nans(mock_score, mock_encode_targets,
     np.testing.assert_equal(target.values, expected_target)
 
 
-@pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),
-                                                       (TimeSeriesBinaryClassificationPipeline, ["Log Loss Binary"]),
-                                                       (TimeSeriesBinaryClassificationPipeline, ["MCC Binary", "Log Loss Binary"]),
-                                                       (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass"]),
-                                                       (TimeSeriesMulticlassClassificationPipeline, ["Log Loss Multiclass"]),
-                                                       (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass", "Log Loss Multiclass"])])
+@pytest.mark.parametrize("pipeline_class", [TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline])
 @patch("evalml.pipelines.LogisticRegressionClassifier.fit")
 @patch("evalml.pipelines.LogisticRegressionClassifier.predict", side_effect=lambda X: pd.Series(range(X.shape[0])))
-@patch("evalml.pipelines.components.LogisticRegressionClassifier.predict_proba", side_effect=lambda X: pd.Series(range(X.shape[0])))
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._score_all_objectives")
-def test_classification_pipeline_encodes_targets(mock_score, mock_predict_proba, mock_predict, mock_fit, pipeline_class,
-                                                 objectives, X_y_binary):
+def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_fit, pipeline_class, X_y_binary):
     X, y = X_y_binary
     y_series = pd.Series(y)
     X = pd.DataFrame({"feature": range(len(y))})
@@ -270,6 +264,38 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict_proba,
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
 
     mock_predict.reset_mock()
-    pl.score(X, y_encoded, objectives=["MCC Binary"])
+    # Since we mock score_all_objectives, the objective doesn't matter
+    pl.score(X, y_encoded, objectives=['MCC Binary'])
     df_passed_to_predict = mock_predict.call_args[0][0]
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
+
+
+@pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),
+                                                       (TimeSeriesBinaryClassificationPipeline, ["Log Loss Binary"]),
+                                                       (TimeSeriesBinaryClassificationPipeline, ["MCC Binary", "Log Loss Binary"]),
+                                                       (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass"]),
+                                                       (TimeSeriesMulticlassClassificationPipeline, ["Log Loss Multiclass"]),
+                                                       (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass", "Log Loss Multiclass"]),
+                                                       (TimeSeriesRegressionPipeline, ['R2']),
+                                                       (TimeSeriesRegressionPipeline, ['R2', "Mean Absolute Percentage Error"])])
+def test_score_works(pipeline_class, objectives, X_y_binary, X_y_multi, X_y_regression):
+
+    preprocessing = ['Delayed Feature Transformer']
+    if pipeline_class == TimeSeriesRegressionPipeline:
+        components = preprocessing + ['Random Forest Regressor']
+    else:
+        components = preprocessing + ["Logistic Regression Classifier"]
+
+    class Pipeline(pipeline_class):
+        component_graph = components
+
+    pl = Pipeline({"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False},
+                   components[-1]: {'n_jobs': 1}})
+    if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+    elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+    pl.fit(X, y)
+    pl.score(X, y, objectives)
