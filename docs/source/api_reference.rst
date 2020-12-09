@@ -269,7 +269,7 @@ Utility Methods
     partial_dependence
 
 
-Graph Utilility Methods
+Graph Utility Methods
 ~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
