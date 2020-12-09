@@ -16,7 +16,7 @@ class DFSTransformer(Transformer):
         """Allows for featuretools to be used in EvalML
         Arguments:
             index (string): The name of the column that contains the indices. If no column with this name exists,
-                then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
+            then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
             target_entity (string): The string name of the target entity to calculate features for. Defaults to "X".
             random_state (int, np.random.RandomState): seed for the random number generator
         """
