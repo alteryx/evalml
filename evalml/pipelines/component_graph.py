@@ -16,6 +16,7 @@ class ComponentGraph:
             >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
            """
+        self.random_state = get_random_state(random_state)
         self.component_dict = component_dict or {}
         self.component_instances = {}
         self._is_instantiated = False
@@ -27,7 +28,6 @@ class ComponentGraph:
         self.compute_order = []
         self._recompute_order()
         self.input_feature_names = {}
-        self.random_state = get_random_state(random_state)
 
     @classmethod
     def from_list(cls, component_list, random_state=0):
@@ -161,6 +161,9 @@ class ComponentGraph:
         Returns:
             pd.DataFrame or pd.Series - Output of the last component
         """
+        if len(component_list) == 0:
+            return X
+
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
@@ -168,8 +171,8 @@ class ComponentGraph:
         final_component = None
         for component_name in component_list:
             final_component = component_name
-            component_class = self.get_component(component_name)
-            if not isinstance(component_class, ComponentBase):
+            component_instance = self.get_component(component_name)
+            if not isinstance(component_instance, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
             x_inputs = []
             y_input = None
@@ -179,20 +182,17 @@ class ComponentGraph:
                         raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
                     y_input = output_cache[parent_input]
                 else:
-                    try:
-                        parent_x = output_cache[parent_input]
-                        if isinstance(parent_x, pd.Series):
-                            parent_x = pd.DataFrame(parent_x, columns=[parent_input])
-                        x_inputs.append(parent_x)
-                    except KeyError:
-                        x_inputs.append(output_cache[f'{parent_input}.x'])
+                    parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
+                    if isinstance(parent_x, pd.Series):
+                        parent_x = pd.DataFrame(parent_x, columns=[parent_input])
+                    x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
-            if isinstance(component_class, Transformer):
+            if isinstance(component_instance, Transformer):
                 if fit:
-                    output = component_class.fit_transform(input_x, input_y)
+                    output = component_instance.fit_transform(input_x, input_y)
                 else:
-                    output = component_class.transform(input_x, input_y)
+                    output = component_instance.transform(input_x, input_y)
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
                 else:
@@ -202,16 +202,14 @@ class ComponentGraph:
                 output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
-                    component_class = component_class.fit(input_x, input_y)
-                if not (fit and component_class.name == self.get_last_component().name):  # Don't call predict on the final component during fit
-                    output = component_class.predict(input_x)
+                    component_instance = component_instance.fit(input_x, input_y)
+                if not (fit and component_instance.name == self.get_last_component().name):  # Don't call predict on the final component during fit
+                    output = component_instance.predict(input_x)
                 else:
                     output = None
                 output_cache[component_name] = output
-        if final_component is None:
-            return X
-        final_component_class = self.get_component(final_component)
-        if isinstance(final_component_class, Transformer):
+        final_component_instance = self.get_component(final_component)
+        if isinstance(final_component_instance, Transformer):
             return output_cache[f"{final_component}.x"]
         else:
             return output_cache[final_component]
