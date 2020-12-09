@@ -26,7 +26,8 @@ from .components import (
     DecisionTreeRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
-    DelayedFeatureTransformer
+    DelayedFeatureTransformer,
+    DFSTransformer
 )
 
 from .component_graph import ComponentGraph
