@@ -15,7 +15,7 @@ Release Notes
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
         * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524`
         * Set max value for plotly and xgboost versions while we debug CI failures with newer versions :pr:`1532`
-        * Set only XGBoost version :pr:`1533`
+        * Undo version pinning for plotly :pr:`1533`
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
