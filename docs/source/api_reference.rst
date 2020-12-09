@@ -253,8 +253,8 @@ Regressors are components that output a predicted target value.
 Model Understanding
 ===================
 
-Utils
-~~~~~
+Utility Methods
+~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
@@ -269,8 +269,8 @@ Utils
     partial_dependence
 
 
-Graph Utils
-~~~~~~~~~~~
+Graph Utilility Methods
+~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
