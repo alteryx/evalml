@@ -15,6 +15,13 @@ def test_index_errors(X_y_binary):
     with pytest.raises(TypeError, match="Index provided must be string"):
         DFSTransformer(index=None)
 
+    with pytest.raises(TypeError, match="Target entity provided must be string, got "):
+        DFSTransformer(target_entity=0)
+
+    X = pd.DataFrame()
+    with pytest.raises(TypeError, match="Target entity provided must be string, got "):
+        DFSTransformer(target_entity=X)
+
 
 def test_numeric_columns(X_y_multi):
     X, y = X_y_multi

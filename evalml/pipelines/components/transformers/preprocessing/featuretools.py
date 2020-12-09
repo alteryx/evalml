@@ -20,9 +20,12 @@ class DFSTransformer(Transformer):
             target_entity (string): The string name of the target entity to calculate features for. Defaults to "X".
             random_state (int, np.random.RandomState): seed for the random number generator
         """
-        parameters = {"index": index}
+        parameters = {"index": index,
+                      "target_entity": target_entity}
         if not isinstance(index, str):
             raise TypeError(f"Index provided must be string, got {type(index)}")
+        if not isinstance(target_entity, str):
+            raise TypeError(f"Target entity provided must be string, got {type(index)}")
 
         self.index = index
         self.features = None
