@@ -166,7 +166,9 @@ def test_describe_component():
     assert feature_selection_reg.describe(return_dict=True) == {'name': 'RF Regressor Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
     assert drop_col_transformer.describe(return_dict=True) == {'name': 'Drop Columns Transformer', 'parameters': {'columns': ['col_one', 'col_two']}}
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
-    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component', 'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour']}}
+    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
+                                                   'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
+                                                                  'encode_as_categories': False}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
