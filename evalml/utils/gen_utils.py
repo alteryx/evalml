@@ -1,6 +1,7 @@
 import importlib
 import warnings
 from collections import namedtuple
+from functools import reduce
 
 import numpy as np
 import pandas as pd
@@ -345,11 +346,15 @@ def pad_with_nans(pd_data, num_to_pad):
         pd.DataFrame or pd.Series
     """
     if isinstance(pd_data, pd.Series):
-        padding = pd.Series([None] * num_to_pad)
+        padding = pd.Series([np.nan] * num_to_pad)
     else:
-        padding = pd.DataFrame({col: [None] * num_to_pad
+        padding = pd.DataFrame({col: [np.nan] * num_to_pad
                                 for col in pd_data.columns})
-    return pd.concat([padding, pd_data], ignore_index=True).infer_objects()
+    padded = pd.concat([padding, pd_data], ignore_index=True)
+    # By default, pd.concat will convert all types to object if there are mixed numerics and objects
+    # The call to convert_dtypes ensures numerics stay numerics in the new dataframe.
+    return padded.convert_dtypes(infer_objects=True, convert_string=False,
+                                 convert_integer=False, convert_boolean=False)
 
 
 def drop_rows_with_nans(pd_data_1, pd_data_2):

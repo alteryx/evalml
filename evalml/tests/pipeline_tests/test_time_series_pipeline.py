@@ -174,8 +174,10 @@ def test_predict_pad_nans(mock_encode_targets,
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
+@patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
-def test_score_drops_nans(mock_score, mock_classifier_predict, mock_classifier_fit,
+def test_score_drops_nans(mock_score, mock_encode_targets,
+                          mock_classifier_predict, mock_classifier_fit,
                           mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
@@ -210,10 +212,10 @@ def test_score_drops_nans(mock_score, mock_classifier_predict, mock_classifier_f
 
     if only_use_y:
         pl.fit(None, y)
-        pl.score(X=None, y=y, objectives=[])
+        pl.score(X=None, y=y, objectives=['MCC Binary'])
     else:
         pl.fit(X, y)
-        pl.score(X, y, objectives=[])
+        pl.score(X, y, objectives=["MCC Binary"])
 
     # Verify that NaNs are dropped before passed to objectives
     _, target, preds = mock_score.call_args[0]
@@ -225,12 +227,18 @@ def test_score_drops_nans(mock_score, mock_classifier_predict, mock_classifier_f
     np.testing.assert_equal(target.values, expected_target)
 
 
-@pytest.mark.parametrize("pipeline_class", [TimeSeriesBinaryClassificationPipeline,
-                                            TimeSeriesMulticlassClassificationPipeline])
+@pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),
+                                                       (TimeSeriesBinaryClassificationPipeline, ["Log Loss Binary"]),
+                                                       (TimeSeriesBinaryClassificationPipeline, ["MCC Binary", "Log Loss Binary"]),
+                                                       (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass"]),
+                                                       (TimeSeriesMulticlassClassificationPipeline, ["Log Loss Multiclass"]),
+                                                       (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass", "Log Loss Multiclass"])])
 @patch("evalml.pipelines.LogisticRegressionClassifier.fit")
 @patch("evalml.pipelines.LogisticRegressionClassifier.predict", side_effect=lambda X: pd.Series(range(X.shape[0])))
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.predict_proba", side_effect=lambda X: pd.Series(range(X.shape[0])))
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._score_all_objectives")
-def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_fit, pipeline_class, X_y_binary):
+def test_classification_pipeline_encodes_targets(mock_score, mock_predict_proba, mock_predict, mock_fit, pipeline_class,
+                                                 objectives, X_y_binary):
     X, y = X_y_binary
     y_series = pd.Series(y)
     X = pd.DataFrame({"feature": range(len(y))})
@@ -262,6 +270,6 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
 
     mock_predict.reset_mock()
-    pl.score(X, y_encoded, objectives=[])
+    pl.score(X, y_encoded, objectives=["MCC Binary"])
     df_passed_to_predict = mock_predict.call_args[0][0]
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
