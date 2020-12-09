@@ -14,7 +14,7 @@ Release Notes
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
-        * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524`
+        * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
         * Set max value for plotly and xgboost versions while we debug CI failures with newer versions :pr:`1532`
         * Undo version pinning for plotly :pr:`1533`
     * Changes
