@@ -257,10 +257,11 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     pd.testing.assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
 
     pl.predict(X, y_encoded)
-    df_passed_to_predict = mock_predict.call_args.args[0]
+    # Best way to get the argument since the api changes between 3.6/3.7 and 3.8
+    df_passed_to_predict = mock_predict.call_args[0][0]
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
 
     mock_predict.reset_mock()
     pl.score(X, y_encoded, objectives=[])
-    df_passed_to_predict = mock_predict.call_args.args[0]
+    df_passed_to_predict = mock_predict.call_args[0][0]
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
