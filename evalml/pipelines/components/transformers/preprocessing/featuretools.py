@@ -7,9 +7,9 @@ from evalml.utils.gen_utils import (
 )
 
 
-class DFSTransformer(Transformer):
+class FeaturetoolsTransformer(Transformer):
     """Featuretools DFS component that generates features for ww.DataTables and pd.DataFrames"""
-    name = "DFS Transformer"
+    name = "Featuretools Transformer"
     hyperparameter_ranges = {}
 
     def __init__(self, index='index', target_entity='X', random_state=0, **kwargs):
@@ -44,7 +44,7 @@ class DFSTransformer(Transformer):
             self.es = self.es.entity_from_dataframe(entity_id=entity_id, dataframe=X, index=self.index)
 
     def fit(self, X, y=None):
-        """Fits the DFSTransformer Transformer component
+        """Fits the FeaturetoolsTransformer Transformer component
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.array, featuretools.EntitySet): The input data to transform, of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]

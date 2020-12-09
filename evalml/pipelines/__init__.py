@@ -27,7 +27,7 @@ from .components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
-    DFSTransformer
+    FeaturetoolsTransformer
 )
 
 from .pipeline_base import PipelineBase

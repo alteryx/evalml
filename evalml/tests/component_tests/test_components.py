@@ -26,7 +26,7 @@ from evalml.pipelines.components import (
     ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
-    DFSTransformer,
+    FeaturetoolsTransformer,
     DropColumns,
     DropNullColumns,
     ElasticNetClassifier,
@@ -148,7 +148,7 @@ def test_describe_component():
     text_featurizer = TextFeaturizer()
     lsa = LSA()
     pca = PCA()
-    ft = DFSTransformer()
+    ft = FeaturetoolsTransformer()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -172,7 +172,7 @@ def test_describe_component():
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
-    assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index", "target_entity": "X"}}
+    assert ft.describe(return_dict=True) == {'name': 'Featuretools Transformer', 'parameters': {"index": "index", "target_entity": "X"}}
 
     # testing estimators
     base_classifier = BaselineClassifier()
@@ -537,7 +537,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
-            elif isinstance(component, DFSTransformer):
+            elif isinstance(component, FeaturetoolsTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
@@ -559,7 +559,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
-            elif isinstance(component, DFSTransformer):
+            elif isinstance(component, FeaturetoolsTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)

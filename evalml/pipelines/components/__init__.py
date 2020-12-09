@@ -39,7 +39,7 @@ from .transformers import (
     TextFeaturizer,
     LSA,
     PCA,
-    DFSTransformer
+    FeaturetoolsTransformer
 )
 from .ensemble import (
     StackedEnsembleClassifier,
