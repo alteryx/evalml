@@ -45,7 +45,7 @@ class SequentialEngine(EngineBase):
         """ Evaluates a single pipeline.
 
         Arguments:
-            pipeline_batch (PipelineBase): A pipelines to be fitted and evaluated.
+            pipeline_batch (PipelineBase): A pipeline to be fitted and evaluated.
             result_callback (callable): Function called once the pipeline is finished evaluating to store the results. If None, results will only be returned.
             log_pipeline (bool): If True, log the pipeline and relevant information before evaluation.
 
