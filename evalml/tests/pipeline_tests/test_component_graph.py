@@ -334,13 +334,6 @@ def test_get_last_component(example_graph):
         component_graph.get_last_component()
 
 
-def test_ancestors(example_graph):
-    component_graph = ComponentGraph(example_graph)
-    assert component_graph._get_ancestors('Imputer') == []
-    assert component_graph._get_ancestors('Random Forest') == ['Imputer', 'OneHot_RandomForest']
-    assert set(component_graph._get_ancestors('Logistic Regression')) == set(component_graph.compute_order[:-1])
-
-
 @patch('evalml.pipelines.components.Transformer.fit_transform')
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -388,13 +381,11 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     mock_fit.return_value = Estimator
     mock_predict.return_value = pd.Series(y)
 
-    X_t = component_graph.fit_features(X, y)
+    component_graph.fit_features(X, y)
 
     assert mock_fit_transform.call_count == 2
     assert mock_fit.call_count == 0
     assert mock_predict.call_count == 0
-
-    pd.testing.assert_frame_equal(X_t, mock_X_t)
 
 
 @patch('evalml.pipelines.components.Estimator.fit')
@@ -447,8 +438,8 @@ def test_compute_final_component_features_nonlinear(mock_en_predict, mock_rf_pre
 
     X_t = component_graph.compute_final_component_features(X)
     pd.testing.assert_frame_equal(X_t, X_expected)
-    assert mock_imputer.call_count == 3  # Once during fit, twice for the two branches
-    assert mock_ohe.call_count == 4  # Twice during fit, once in each of the two branches
+    assert mock_imputer.call_count == 2
+    assert mock_ohe.call_count == 4
 
 
 @patch(f'{__name__}.DummyTransformer.transform')

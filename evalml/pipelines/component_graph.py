@@ -90,15 +90,14 @@ class ComponentGraph:
         return self
 
     def fit_features(self, X, y):
-        """ Fit all components save the final one, usually an estimator. Note that this is
-        only useful where the final component has only one parent, otherwise there will be
-        information missing.
+        """ Fit all components save the final one, usually an estimator
 
         Arguments:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (pd.Series): The target training data of length [n_samples]
         """
-        return self._compute_features(self.compute_order[:-1], X, y, fit=True)
+        self._compute_features(self.compute_order[:-1], X, y, fit=True)
+        return self
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -109,7 +108,11 @@ class ComponentGraph:
         Returns:
             pd.Series: Predicted values.
         """
-        return self._compute_features(self.compute_order, X)
+        if len(self.compute_order) == 0:
+            return X
+        final_component = self.compute_order[-1]
+        outputs = self._compute_features(self.compute_order, X)
+        return outputs.get(final_component, outputs.get(f'{final_component}.x'))
 
     def compute_final_component_features(self, X, y=None):
         """ Transform all components save the final one, and gathers the data from any number of parents
@@ -123,30 +126,15 @@ class ComponentGraph:
         """
         if len(self.compute_order) <= 1:
             return X
-        x_inputs = []
-        for parent in self.get_parents(self.compute_order[-1]):
-            if parent[-2:] == '.x' or parent[-2] == '.y':
-                parent = parent[:-2]
-            parent_path = self._get_ancestors(parent)
-            parent_path.append(parent)
-            parent_input = self._compute_features(parent_path, X, y=y)
-            if isinstance(parent_input, pd.Series):
-                parent_input = pd.DataFrame(parent_input, columns=[parent])
-            x_inputs.append(parent_input)
-        X_t = pd.concat(x_inputs, axis=1)
-        return X_t
 
-    def _get_ancestors(self, component):
-        ancestors = []
-        parents = self.get_parents(component)
-        while len(parents) > 0:
-            parent = parents.pop()
-            if parent[-2:] == '.x' or parent[-2:] == '.y':
-                parent = parent[:-2]
-            ancestors.append(parent)
-            parents.extend(self.get_parents(parent))
-        ancestors.reverse()
-        return ancestors
+        component_outputs = self._compute_features(self.compute_order, X, y=y, fit=False)
+        final_component_inputs = []
+        for parent in self.get_parents(self.compute_order[-1]):
+            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
+            if isinstance(parent_output, pd.Series):
+                parent_output = pd.DataFrame(parent_output, columns=[parent])
+            final_component_inputs.append(parent_output)
+        return pd.concat(final_component_inputs, axis=1)
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -159,7 +147,7 @@ class ComponentGraph:
                         Defaults to False.
 
         Returns:
-            pd.DataFrame or pd.Series - Output of the last component
+            dict - outputs from each component
         """
         if len(component_list) == 0:
             return X
@@ -168,9 +156,7 @@ class ComponentGraph:
             X = pd.DataFrame(X)
 
         output_cache = {}
-        final_component = None
         for component_name in component_list:
-            final_component = component_name
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
@@ -208,11 +194,7 @@ class ComponentGraph:
                 else:
                     output = None
                 output_cache[component_name] = output
-        final_component_instance = self.get_component(final_component)
-        if isinstance(final_component_instance, Transformer):
-            return output_cache[f"{final_component}.x"]
-        else:
-            return output_cache[final_component]
+        return output_cache
 
     @staticmethod
     def _consolidate_inputs(x_inputs, y_input, X, y):
