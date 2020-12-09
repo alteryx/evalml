@@ -253,8 +253,8 @@ Regressors are components that output a predicted target value.
 Model Understanding
 ===================
 
-Graph Utils
-~~~~~~~~~~~
+Utils
+~~~~~
 .. autosummary::
     :toctree: generated
     :nosignatures:
@@ -262,17 +262,29 @@ Graph Utils
     confusion_matrix
     normalize_confusion_matrix
     precision_recall_curve
-    graph_precision_recall_curve
     roc_curve
+    calculate_permutation_importance
+    binary_objective_vs_threshold
+    get_prediction_vs_actual_over_time_data
+    partial_dependence
+
+
+Graph Utils
+~~~~~~~~~~~
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+
+
+    graph_precision_recall_curve
     graph_roc_curve
     graph_confusion_matrix
-    calculate_permutation_importance
     graph_permutation_importance
-    binary_objective_vs_threshold
     graph_binary_objective_vs_threshold
     graph_prediction_vs_actual
-    get_prediction_vs_actual_over_time_data
     graph_prediction_vs_actual_over_time
+    graph_partial_dependence
+
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
 
