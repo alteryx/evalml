@@ -188,7 +188,7 @@ class ComponentGraph:
                 output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
-                    component_instance = component_instance.fit(input_x, input_y)
+                    component_instance.fit(input_x, input_y)
                 if not (fit and component_instance.name == self.get_last_component().name):  # Don't call predict on the final component during fit
                     output = component_instance.predict(input_x)
                 else:
@@ -345,6 +345,11 @@ class ComponentGraph:
         return self
 
     def __next__(self):
+        """Iterator for graphs, prints the components in the graph in order
+
+        Returns:
+            ComponentBase - the next component class or instance in the graph
+        """
         if self._i < len(self.compute_order):
             self._i += 1
             return self.get_component(self.compute_order[self._i - 1])
