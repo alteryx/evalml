@@ -1,5 +1,6 @@
 
 
+import inspect
 from functools import wraps
 
 from evalml.exceptions import PipelineNotYetFittedError
@@ -15,7 +16,7 @@ class PipelineBaseMeta(BaseMeta):
             It raises an exception if `False` and calls and returns the wrapped method if `True`.
         """
         @wraps(method)
-        def _check_for_fit(self, X=None, y=None):
+        def _check_for_fit(self, X=None, y=None, objective=None):
             klass = type(self).__name__
             if not self._is_fitted:
                 raise PipelineNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
@@ -24,5 +25,9 @@ class PipelineBaseMeta(BaseMeta):
             elif y is None:
                 return method(self, X)
             else:
+                # For time series classification pipelines, predict will take X, y, objective
+                if len(inspect.getfullargspec(method).args) == 4:
+                    return method(self, X, y, objective)
+                # For other pipelines, predict will take X, y or X, objective
                 return method(self, X, y)
         return _check_for_fit

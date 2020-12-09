@@ -125,7 +125,8 @@ def test_pipeline_fit_runtime_error(pipeline_class, estimator_name, ts_data):
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
-def test_predict_pad_nans(mock_encode_targets,
+@patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets", side_effect=lambda y: y)
+def test_predict_pad_nans(mock_decode_targets, mock_encode_targets,
                           mock_regressor_predict, mock_regressor_fit, mock_classifier_predict, mock_classifier_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
@@ -230,11 +231,12 @@ def test_score_drops_nans(mock_score, mock_encode_targets,
 
 @pytest.mark.parametrize("pipeline_class", [TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline])
 @patch("evalml.pipelines.LogisticRegressionClassifier.fit")
-@patch("evalml.pipelines.LogisticRegressionClassifier.predict", side_effect=lambda X: pd.Series(range(X.shape[0])))
+@patch("evalml.pipelines.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._score_all_objectives")
 def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_fit, pipeline_class, X_y_binary):
     X, y = X_y_binary
     y_series = pd.Series(y)
+    mock_predict.return_value = y_series
     X = pd.DataFrame({"feature": range(len(y))})
     y_encoded = y_series.map(lambda label: "positive" if label == 1 else "negative")
 
@@ -299,3 +301,70 @@ def test_score_works(pipeline_class, objectives, X_y_binary, X_y_multi, X_y_regr
         X, y = X_y_regression
     pl.fit(X, y)
     pl.score(X, y, objectives)
+
+
+@patch('evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets')
+@patch('evalml.objectives.BinaryClassificationObjective.decision_function')
+@patch('evalml.pipelines.components.Estimator.predict_proba', return_value=pd.DataFrame({0: [1.]}))
+@patch('evalml.pipelines.components.Estimator.predict', return_value=pd.Series([1.]))
+def test_binary_classification_pipeline_predict(mock_predict, mock_predict_proba,
+                                                mock_obj_decision, mock_decode,
+                                                X_y_binary, dummy_ts_binary_pipeline_class):
+    mock_objs = [mock_decode, mock_predict]
+    mock_decode.return_value = pd.Series([0, 1])
+    X, y = X_y_binary
+    binary_pipeline = dummy_ts_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                 "pipeline": {"gap": 0, "max_delay": 0}})
+    # test no objective passed and no custom threshold uses underlying estimator's predict method
+    binary_pipeline.fit(X, y)
+    binary_pipeline.predict(X, y)
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+
+    # test objective passed but no custom threshold uses underlying estimator's predict method
+    binary_pipeline.predict(X, y, 'precision')
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+
+    mock_objs = [mock_decode, mock_predict_proba]
+    # test custom threshold set but no objective passed
+    mock_predict_proba.return_value = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
+    binary_pipeline.threshold = 0.6
+    binary_pipeline._encoder.classes_ = [0, 1]
+    binary_pipeline.predict(X, y)
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+    mock_obj_decision.assert_not_called()
+    mock_predict.assert_not_called()
+
+    # test custom threshold set but no objective passed
+    binary_pipeline.threshold = 0.6
+    binary_pipeline.predict(X, y)
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+    mock_obj_decision.assert_not_called()
+    mock_predict.assert_not_called()
+
+    # test custom threshold set and objective passed
+    binary_pipeline.threshold = 0.6
+    binary_pipeline.predict(X, y, 'precision')
+    for mock_obj in mock_objs:
+        mock_obj.assert_called()
+        mock_obj.reset_mock()
+    mock_predict.assert_not_called()
+    mock_obj_decision.assert_called()
+
+
+@patch('evalml.pipelines.PipelineBase.compute_estimator_features')
+def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, dummy_ts_binary_pipeline_class):
+    X, y = X_y_binary
+    binary_pipeline = dummy_ts_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                 "pipeline": {"gap": 0, "max_delay": 0}})
+    binary_pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+        binary_pipeline.predict(X, y, "precision micro")
+    mock_transform.assert_called()

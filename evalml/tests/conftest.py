@@ -199,7 +199,8 @@ def dummy_classifier_estimator_class():
     class MockEstimator(Estimator):
         name = "Mock Classifier"
         model_family = ModelFamily.NONE
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                   ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY]
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
@@ -283,6 +284,17 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
     class MockTimeSeriesRegressionPipeline(TimeSeriesRegressionPipeline):
         component_graph = [MockTimeSeriesRegressor]
     return MockTimeSeriesRegressionPipeline
+
+
+@pytest.fixture
+def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+    return MockBinaryClassificationPipeline
 
 
 @pytest.fixture

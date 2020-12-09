@@ -67,11 +67,13 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         self.estimator.fit(X_t, y_shifted)
         return self
 
-    def _predict(self, X, y):
+    def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
         predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
-        return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+        if pad:
+            return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+        return predictions
 
     def predict(self, X, y=None, objective=None):
         """Make predictions using selected features.
@@ -90,7 +92,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        return self._predict(X, y)
+        n_features = max(len(y), X.shape[0])
+        predictions = self._predict(X, y, objective=objective, pad=False)
+        predictions = pd.Series(self._decode_targets(predictions))
+        return pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
 
     def predict_proba(self, X, y=None):
         """Make probability estimates for labels.
@@ -115,7 +120,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
             if objective.score_needs_proba and y_predicted_proba is None:
                 y_predicted_proba = self.predict_proba(X, y)
             if not objective.score_needs_proba and y_predicted is None:
-                y_predicted = self._predict(X, y)
+                y_predicted = self._predict(X, y, pad=True)
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives):
@@ -162,7 +167,7 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
     def threshold(self, value):
         self._threshold = value
 
-    def _predict(self, X, y, objective=None):
+    def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
         features_no_nan = features.dropna(axis=0, how="any")
@@ -181,7 +186,9 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 predictions = ypred_proba > self.threshold
             else:
                 predictions = objective.decision_function(ypred_proba, threshold=self.threshold, X=features_no_nan)
-        return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+        if pad:
+            return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+        return predictions
 
     @staticmethod
     def _score(X, y, predictions, objective):
