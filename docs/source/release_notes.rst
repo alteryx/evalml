@@ -16,6 +16,7 @@ Release Notes
         * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
         * Set max value for plotly and xgboost versions while we debug CI failures with newer versions :pr:`1532`
         * Undo version pinning for plotly :pr:`1533`
+        * Use newest version of XGBoost following 1.3.0 patch :pr:``
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
