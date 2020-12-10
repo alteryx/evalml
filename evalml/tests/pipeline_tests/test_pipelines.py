@@ -1881,6 +1881,57 @@ def test_nonlinear_pipeline_equality(pipeline_class):
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
+        }
+    }
+
+    different_parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "constant",
+            "numeric_impute_strategy": "mean",
+        }
+    }
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_pipeline = MockPipeline(parameters={})
+    assert mock_pipeline == mock_pipeline
+
+    # Test defaults
+    assert MockPipeline(parameters={}) == MockPipeline(parameters={})
+
+    # Test random_state
+    assert MockPipeline(parameters={}, random_state=10) == MockPipeline(parameters={}, random_state=10)
+    assert MockPipeline(parameters={}, random_state=10) != MockPipeline(parameters={}, random_state=0)
+
+    # Test parameters
+    assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
+
+    # Test fitted equality
+    X = pd.DataFrame({})
+    mock_pipeline.fit(X)
+    assert mock_pipeline != MockPipeline(parameters={})
+
+    mock_pipeline_equal = MockPipeline(parameters={})
+    mock_pipeline_equal.fit(X)
+    assert mock_pipeline == mock_pipeline_equal
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_nonlinear_pipeline_equality(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
         },
         'OHE_1': {
             'top_n': 5
