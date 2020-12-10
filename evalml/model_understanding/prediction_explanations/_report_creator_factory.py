@@ -10,7 +10,9 @@ from evalml.problem_types import ProblemTypes
 
 def _best_worst_predicted_values_section(data, regression, classification):
     """Get and initialize the predicted values section maker given the data."""
-    predicted_values_class = regression if data.pipeline.problem_type == ProblemTypes.REGRESSION else classification
+    predicted_values_class = classification
+    if data.pipeline.problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
+        predicted_values_class = regression
     return predicted_values_class(data.metric.__name__, data.y_pred_values)
 
 

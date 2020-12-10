@@ -11,12 +11,14 @@ from evalml.model_understanding.prediction_explanations._report_creator_factory 
     _report_creator_factory
 )
 from evalml.model_understanding.prediction_explanations._user_interface import (
+    _compute_features,
     _make_single_prediction_shap_table
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    drop_rows_with_nans
 )
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
@@ -24,18 +26,15 @@ _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
-def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
-                       output_format="text"):
+def explain_prediction(pipeline, input_features, top_k=3, include_shap_values=False, output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (ww.DataTable, pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
+        input_features (ww.DataTable, pd.DataFrame): Dataframe of features to explain predictions on.
         top_k (int): How many of the highest/lowest features to include in the table.
-        training_data (pd.DataFrame): Training data the pipeline was fit on.
-            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
         output_format (str): Either "text" or "dict". Default is "text".
@@ -47,14 +46,13 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
         raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
-    if training_data is not None:
-        training_data = _convert_to_woodwork_structure(training_data)
-        training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
 
     if output_format not in {"text", "dict"}:
         raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
-    return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values,
-                                              output_format=output_format)
+    pipeline_features = pipeline.compute_estimator_features(input_features)
+    return _make_single_prediction_shap_table(pipeline, pipeline_features, background_features=pipeline_features,
+                                              top_k=top_k, output_format=output_format,
+                                              include_shap_values=include_shap_values)
 
 
 def abs_error(y_true, y_pred):
@@ -68,6 +66,27 @@ def abs_error(y_true, y_pred):
        pd.Series
     """
     return np.abs(y_true - y_pred)
+
+
+def abs_error_for_time_series(y_true, y_pred, gap):
+    """Computes the absolute error per data point for time series regression problems.
+
+    Arguments:
+        y_true (pd.Series): True labels.
+        y_pred (pd.Series): Predicted values.
+
+    Returns:
+       pd.Series. The output will have the same length and y_true and y_pred. There will be NaNs in the beginning
+       and end depending on the values of gap and max_delay in the pipeline.
+    """
+    y_true_no_nan, y_pred_no_nan = drop_rows_with_nans(y_true.shift(-gap), y_pred)
+    original_length = len(y_true)
+    errors = np.array([np.nan] * original_length)
+    num_nans_in_preds = y_pred.isna().sum()
+
+    # Pad to make sure output length matches input length
+    errors[num_nans_in_preds:(original_length - gap)] = abs_error(y_true_no_nan.values, y_pred_no_nan.values)
+    return pd.Series(errors)
 
 
 def cross_entropy(y_true, y_pred_proba):
@@ -87,11 +106,11 @@ def cross_entropy(y_true, y_pred_proba):
 
 DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
                    ProblemTypes.MULTICLASS: cross_entropy,
-                   ProblemTypes.REGRESSION: abs_error}
+                   ProblemTypes.REGRESSION: abs_error,
+                   ProblemTypes.TIME_SERIES_REGRESSION: abs_error_for_time_series}
 
 
-def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False,
-                        output_format="text"):
+def explain_predictions(pipeline, input_features, top_k_features=3, include_shap_values=False, output_format="text"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -99,8 +118,6 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
-        training_data (ww.DataTable, pd.DataFrame): Dataframe of data the pipeline was fit on. This can be omitted for pipelines
-            with tree-based estimators.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
@@ -112,9 +129,6 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     """
     input_features = _convert_to_woodwork_structure(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
-    if training_data is not None:
-        training_data = _convert_to_woodwork_structure(training_data)
-        training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
 
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
@@ -176,6 +190,10 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             y_pred = pipeline.predict(input_features)
             y_pred_values = None
             errors = metric(y_true, y_pred)
+        elif pipeline.problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+            y_pred = pipeline.predict(input_features, y_true)
+            y_pred_values = None
+            errors = metric(y_true, y_pred, pipeline.gap)
         else:
             y_pred = pipeline.predict_proba(input_features)
             y_pred_values = pipeline.predict(input_features)
@@ -184,7 +202,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         tb = traceback.format_tb(sys.exc_info()[2])
         raise PipelineScoreError(exceptions={metric.__name__: (e, tb)}, scored_successfully={})
 
-    sorted_scores = errors.sort_values()
+    sorted_scores = errors.sort_values().dropna()
     best = sorted_scores.index[:num_to_explain]
     worst = sorted_scores.index[-num_to_explain:]
     index_list = best.tolist() + worst.tolist()

@@ -22,7 +22,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     CatBoostClassifier,
-    LinearRegressor,
     RandomForestClassifier,
     XGBoostClassifier,
     XGBoostRegressor
@@ -50,7 +49,6 @@ baseline_message = "You passed in a baseline pipeline. These are simple enough t
 xg_boost_message = "SHAP values cannot currently be computed for xgboost models."
 catboost_message = "SHAP values cannot currently be computed for catboost models for multiclass problems."
 datatype_message = "^Unknown shap_values datatype"
-data_message = "You must pass in a value for parameter 'training_data' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
 
 @pytest.mark.parametrize("pipeline,exception,match", [(MeanBaselineRegressionPipeline, ValueError, baseline_message),
@@ -62,7 +60,7 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(XGBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(XGBoostRegressor, RegressionPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
-                                                      (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
+                                                      ])
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
@@ -72,7 +70,8 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
     with pytest.raises(exception, match=match):
-        _ = _compute_shap_values(pipeline({"pipeline": {"gap": 1, "max_delay": 1}}), pd.DataFrame(np.random.random((2, 16))))
+        _ = _compute_shap_values(pipeline({"pipeline": {"gap": 1, "max_delay": 1}}),
+                                 pd.DataFrame(np.random.random((2, 16))))
 
 
 def test_create_dictionary_exception():
@@ -89,11 +88,13 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     """Helper function to compute the SHAP values for n_points_to_explain for a given pipeline."""
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
-    return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
+    features = pd.DataFrame(points_to_explain)
+    return _compute_shap_values(pipeline, features, features)
 
 
 interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family not in {ModelFamily.XGBOOST, ModelFamily.BASELINE}]
-all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                ProblemTypes.TIME_SERIES_REGRESSION]
 all_n_points_to_explain = [1, 5]
 
 
@@ -118,7 +119,7 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         training_data, y = X_y_regression
 
     pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-    pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
+    pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class, {'gap': 0, 'max_delay': 2})
     shap_values = calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:

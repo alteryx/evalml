@@ -14,6 +14,7 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions,
     explain_predictions_best_worst
 )
+from evalml.pipelines import TimeSeriesRegressionPipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -30,7 +31,7 @@ test_features = [[1], np.ones((15, 1)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2
 @pytest.mark.parametrize("test_features", test_features)
 def test_explain_prediction_value_error(test_features):
     with pytest.raises(ValueError, match="features must be stored in a dataframe or datatable with exactly one row."):
-        explain_prediction(None, input_features=test_features, training_data=None)
+        explain_prediction(None, input_features=test_features)
 
 
 explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
@@ -156,11 +157,9 @@ def test_explain_prediction(mock_normalize_shap_values,
     # By the time we call transform, we are looking at only one row of the input data.
     pipeline.compute_estimator_features.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
     features = pd.DataFrame({"a": [1], "b": [2]})
-    training_data = pd.DataFrame()
     if input_type == "ww":
         features = ww.DataTable(features)
-        training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=training_data)
+    table = explain_prediction(pipeline, features, top_k=2, output_format=output_format)
 
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
@@ -210,7 +209,7 @@ def test_output_format_checked():
     with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received bar"):
         explain_predictions(None, input_features, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received xml"):
-        explain_prediction(None, input_features=input_features, training_data=None, output_format="xml")
+        explain_prediction(None, input_features=input_features, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text or dict. Received foo"):
@@ -485,6 +484,33 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         assert report == explain_predictions_answer
 
 
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("estimator", ['Linear Regressor', 'Random Forest Regressor'])
+def test_explain_predictions_best_worst_time_series(problem_type, estimator, ts_data, helper_functions):
+
+    if problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        class ShapPipeline(TimeSeriesRegressionPipeline):
+            component_graph = ['Delayed Feature Transformer', estimator]
+        X, y = ts_data
+
+        pipeline = helper_functions.safe_init_pipeline_with_njobs_1(ShapPipeline, {'gap': 0, 'max_delay': 2})
+
+        pipeline.fit(X, y)
+        preds = pipeline.predict(X, y)
+        features = pipeline.compute_estimator_features(X, y)
+        output = explain_predictions_best_worst(pipeline, X, y, num_to_explain=5, output_format='dict')
+        for explanation in output['explanations']:
+            predicted_values = explanation['predicted_values']
+            index = predicted_values['index_id']
+            int_index = np.argwhere(y.index == index)[0][0]
+            assert predicted_values['target_value'] == y.loc[index]
+            assert np.isclose(predicted_values['predicted_value'], preds.iloc[int_index])
+            explanations = explanation['explanations']
+            for table in explanations:
+                for feature_name, feature_value in zip(table['feature_names'], table['feature_values']):
+                    assert features.loc[index][feature_name] == feature_value
+
+
 @pytest.mark.parametrize("problem_type,output_format,answer",
                          [(ProblemTypes.REGRESSION, "text", no_best_worst_answer),
                           (ProblemTypes.REGRESSION, "dict", no_best_worst_answer_dict),
@@ -516,7 +542,7 @@ def test_explain_predictions_custom_index(mock_make_table, problem_type, output_
         pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
                                                             "virginica": [0.1, 0.05]})
 
-    report = explain_predictions(pipeline, input_features, training_data=input_features, output_format=output_format)
+    report = explain_predictions(pipeline, input_features, output_format=output_format)
     if output_format == "text":
         compare_two_tables(report.splitlines(), answer.splitlines())
     else:
@@ -593,15 +619,27 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
         assert best_worst_report == answer
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                          ProblemTypes.TIME_SERIES_REGRESSION])
 def test_json_serialization(problem_type, X_y_regression, linear_regression_pipeline_class,
                             X_y_binary, logistic_regression_binary_pipeline_class,
-                            X_y_multi, logistic_regression_multiclass_pipeline_class):
+                            X_y_multi, logistic_regression_multiclass_pipeline_class,
+                            ts_data):
 
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
         y = pd.Series(y)
         pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+    elif problem_type == problem_type.TIME_SERIES_REGRESSION:
+        X, y = X_y_regression
+        X = pd.DataFrame(X)
+        X = X.iloc[:, 0:2]
+        X.columns = ["0", "1"]
+
+        class TsPipeline(TimeSeriesRegressionPipeline):
+            component_graph = ['Delayed Feature Transformer', 'Linear Regressor']
+        pipeline = TsPipeline({"Linear Regressor": {"n_jobs": 1}, "pipeline": {"gap": 2, "max_delay": 2}})
+
     elif problem_type == problem_type.BINARY:
         X, y = X_y_binary
         y = pd.Series(y).astype("str")
@@ -612,10 +650,9 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
         pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
     pipeline.fit(X, y)
-
     best_worst = explain_predictions_best_worst(pipeline, pd.DataFrame(X), y,
                                                 num_to_explain=1, output_format="dict")
     assert json.loads(json.dumps(best_worst)) == best_worst
-
-    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
-    assert json.loads(json.dumps(report)) == report
+    if problem_type not in [ProblemTypes.TIME_SERIES_REGRESSION]:
+        report = explain_predictions(pipeline, pd.DataFrame(X[5:10]), output_format="dict")
+        assert json.loads(json.dumps(report)) == report

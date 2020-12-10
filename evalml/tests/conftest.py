@@ -387,13 +387,18 @@ def helper_functions():
             return component
 
         @staticmethod
-        def safe_init_pipeline_with_njobs_1(pipeline_class):
+        def safe_init_pipeline_with_njobs_1(pipeline_class, pipeline_parameters=None):
+            params = {}
+            if pipeline_parameters:
+                params['pipeline'] = pipeline_parameters
             try:
                 estimator = pipeline_class.component_graph[-1]
                 estimator_name = estimator if isinstance(estimator, str) else estimator.name
-                pl = pipeline_class({estimator_name: {'n_jobs': 1}})
+                n_jobs_params = params.copy()
+                n_jobs_params[estimator_name] = {'n_jobs': 1}
+                pl = pipeline_class(n_jobs_params)
             except ValueError:
-                pl = pipeline_class({})
+                pl = pipeline_class(params)
             return pl
 
     return Helpers

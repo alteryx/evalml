@@ -30,15 +30,14 @@ def _create_dictionary(shap_values, feature_names):
     return mapping
 
 
-def _compute_shap_values(pipeline, features, training_data=None):
+def _compute_shap_values(pipeline, features, background_dataset=None):
     """Computes SHAP values for each feature.
 
     Arguments:
         pipeline (PipelineBase): Trained pipeline whose predictions we want to explain with SHAP.
         features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
-        training_data (pd.DataFrame): Training data the pipeline was fit on.
-            For non-tree estimators, we need a sample of training data for the KernelSHAP algorithm.
-
+        background_features (pd.DataFrame): Features from dataset. Used as "background" points in SHAP algorithm for non-tree
+            estimators.
     Returns:
         dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
             For classification problems, returns a list of dictionaries. One for each class.
@@ -75,17 +74,16 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
-        if training_data is None:
+        if background_dataset is None:
             raise ValueError("You must pass in a value for parameter 'training_data' when the pipeline "
                              "does not have a tree-based estimator. "
                              f"Current estimator model family is {estimator.model_family}.")
-
         # More than 100 datapoints can negatively impact runtime according to SHAP
         # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
-        sampled_training_data_features = pipeline.compute_estimator_features(shap.sample(training_data, 100))
+        sampled_training_data_features = shap.sample(background_dataset, 100)
         sampled_training_data_features = check_array(sampled_training_data_features)
 
-        if pipeline.problem_type == ProblemTypes.REGRESSION:
+        if pipeline.problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             link_function = "identity"
             decision_function = estimator._component_obj.predict
         else:

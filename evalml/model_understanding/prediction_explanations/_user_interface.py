@@ -195,25 +195,23 @@ class _MultiClassSHAPTable(_TableMaker):
         return {"explanations": json_output}
 
 
-def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, training_data=None,
-                                       include_shap_values=False, output_format="text"):
+def _make_single_prediction_shap_table(pipeline, input_features, background_features=None, top_k=3, include_shap_values=False,
+                                       output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
+        input_features (pd.DataFrame): Features for the prediction we want to explain.
+        background_features (pd.DataFrame): Features from dataset. Used as "background" points in SHAP algorithm for non-tree
+            estimators.
         top_k (int): How many of the highest/lowest features to include in the table.
-        training_data (pd.DataFrame): Training data the pipeline was fit on.
-            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
 
     Returns:
         str: Table
     """
-    pipeline_features = pipeline.compute_estimator_features(input_features)
-
-    shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
+    shap_values = _compute_shap_values(pipeline, input_features, background_features)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
     class_names = None
@@ -221,6 +219,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
         class_names = pipeline.classes_
 
     table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(),
+                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(),
                     ProblemTypes.BINARY: _BinarySHAPTable(class_names),
                     ProblemTypes.MULTICLASS: _MultiClassSHAPTable(class_names)}
 
@@ -228,7 +227,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
 
     table_maker = table_maker_class.make_text if output_format == "text" else table_maker_class.make_dict
 
-    return table_maker(shap_values, normalized_shap_values, pipeline_features, top_k, include_shap_values)
+    return table_maker(shap_values, normalized_shap_values, input_features, top_k, include_shap_values)
 
 
 class _SectionMaker(abc.ABC):
@@ -328,13 +327,33 @@ class _RegressionPredictedValues(_SectionMaker):
                 "index_id": _make_json_serializable(dataframe_index.iloc[index])}
 
 
+def _compute_features(pipeline, input_features, y_true):
+    """Compute features for the pipeline."""
+    if pipeline.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+        pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
+    else:
+        pipeline_features = pipeline.compute_estimator_features(input_features)
+    return pipeline_features
+
+
 class _SHAPTable(_SectionMaker):
     def __init__(self, top_k_features, include_shap_values, training_data):
         self.top_k_features = top_k_features
         self.include_shap_values = include_shap_values
         self.training_data = training_data
+        self._precomputed_features = None
+        self._background_features = None
 
-    def make_text(self, index, pipeline, input_features):
+    def _get_features(self, pipeline, input_features, y_true):
+        """Pre-compute-features"""
+        if self._precomputed_features is None:
+            self._precomputed_features = _compute_features(pipeline, input_features, y_true)
+            self._background_features = self._precomputed_features
+            if pipeline.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                self._background_features = self._precomputed_features.dropna(axis=0, how="any")
+        return self._precomputed_features, self._background_features
+
+    def make_text(self, index, pipeline, input_features, y_true):
         """Makes the SHAP table section for reports formatted as text.
 
         The table is the same whether the user requests a best/worst report or they manually specified the
@@ -343,17 +362,22 @@ class _SHAPTable(_SectionMaker):
         Handling the differences in how the table is formatted between regression and classification problems
         is delegated to the _make_single_prediction_shap_table
         """
-        table = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
-                                                   training_data=self.training_data, top_k=self.top_k_features,
+
+        pipeline_features, background_feaures = self._get_features(pipeline, input_features, y_true)
+        table = _make_single_prediction_shap_table(pipeline, pipeline_features.iloc[index:(index + 1)],
+                                                   background_features=background_feaures,
+                                                   top_k=self.top_k_features,
                                                    include_shap_values=self.include_shap_values, output_format="text")
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
 
-    def make_dict(self, index, pipeline, input_features):
+    def make_dict(self, index, pipeline, input_features, y_true):
         """Makes the SHAP table section formatted as a dictionary."""
-        json_output = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
-                                                         training_data=self.training_data, top_k=self.top_k_features,
+        pipeline_features, background_features = self._get_features(pipeline, input_features, y_true)
+        json_output = _make_single_prediction_shap_table(pipeline, pipeline_features.iloc[index:(index + 1)],
+                                                         background_features=background_features,
+                                                         top_k=self.top_k_features,
                                                          include_shap_values=self.include_shap_values,
                                                          output_format="dict")
         return json_output
@@ -398,7 +422,7 @@ class _ReportMaker:
                                                                          pd.Series(data.input_features.index)))
             else:
                 report.extend([""])
-            report.extend(self.table_maker.make_text(index, data.pipeline, data.input_features))
+            report.extend(self.table_maker.make_text(index, data.pipeline, data.input_features, data.y_true))
         return "".join(report)
 
     def make_dict(self, data):
@@ -421,6 +445,6 @@ class _ReportMaker:
                                                                                          data.y_true, data.errors,
                                                                                          pd.Series(data.input_features.index))
             section["explanations"] = self.table_maker.make_dict(index, data.pipeline,
-                                                                 data.input_features)["explanations"]
+                                                                 data.input_features, data.y_true)["explanations"]
             report.append(section)
         return {"explanations": report}
