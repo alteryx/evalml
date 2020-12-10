@@ -6,6 +6,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
@@ -572,19 +573,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     return _go.Figure(layout=layout, data=data)
 
 
-def get_tree_data(clf):
-    """Return data for a fitted tree in a restructured format
-
-    Arguments:
-        clf (ComponentBase): A fitted tree-based estimator.
-
-    Returns:
-        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
-    """
-    if not clf.model_family == ModelFamily.DECISION_TREE:
-        raise ValueError("Tree structure reformatting is not supported for non-Tree estimators")
-    est = clf._component_obj
-
+def _tree_parse(est, feature_names):
     children_left = est.tree_.children_left
     children_right = est.tree_.children_right
     features = est.tree_.feature
@@ -593,9 +582,9 @@ def get_tree_data(clf):
 
     def recurse(i):
         if children_left[i] == children_right[i]:
-            return {'Name': f'Leaf_{i}'}
+            return {'Feature': feature_names[features[i]]}
         return OrderedDict({
-            'Feature': features[i],
+            'Feature': feature_names[features[i]],
             'Threshold': thresholds[i],
             'Value': values[i],
             'Left_Child': recurse(children_left[i]),
@@ -605,12 +594,60 @@ def get_tree_data(clf):
     return recurse(0)
 
 
-def visualize_decision_tree(clf, max_depth=None, rotate=False, filled=False, filepath=None):
+def decision_tree_data_from_estimator(estimator, feature_names=None):
+    """Return data for a fitted tree in a restructured format
+
+    Arguments:
+        estimator (ComponentBase): A fitted DecisionTree-based estimator.
+        feature_names (List): A list of feature names to replace column index values.
+
+    Returns:
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+    """
+    if not estimator.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree structure reformatting is not supported for non-DecisionTree estimators")
+    if not estimator._is_fitted:
+        raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    est = estimator._component_obj
+
+    if feature_names:
+        if not isinstance(feature_names, list):
+            feature_names = list(feature_names)
+        if len(feature_names) != est.n_features_:
+            raise ValueError("Length mismatch: Expected features has length {} but got list with length {}"
+                             .format(est.n_features_, len(feature_names)))
+
+    return _tree_parse(est, feature_names)
+
+
+def decision_tree_data_from_pipeline(pipeline_):
+    """Return data for a fitted pipeline with  in a restructured format
+
+    Arguments:
+        pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
+
+    Returns:
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+    """
+    if not pipeline_.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree structure reformatting is not supported for non-Tree estimators")
+    if not pipeline_._is_fitted:
+        raise NotFittedError("The DecisionTree estimator associated with this pipeline is not fitted yet. Call 'fit' "
+                             "with appropriate arguments before using this estimator.")
+    est = pipeline_.estimator._component_obj
+    feature_names = pipeline_.input_feature_names[pipeline_.estimator.name]
+
+    return _tree_parse(est, feature_names)
+
+
+def visualize_decision_tree(estimator, max_depth=None, rotate=False, filled=False, filepath=None):
     """Generate an image visualizing the decision tree
 
     Arguments:
-        clf (ComponentBase): A fitted tree-based estimator.
-        max_depth (int, optional): The depth to which the tree should be displayed.
+        estimator (ComponentBase): A fitted DecisionTree-based estimator.
+        max_depth (int, optional): The depth to which the tree should be displayed. If set to None (as by default),
+        tree is fully generated.
         rotate (bool, optional): Orient tree left to right rather than top-down.
         filled (bool, optional): Paint nodes to indicate majority class for classification, extremity of values for
         regression, or purity of node for multi-output.
@@ -620,12 +657,15 @@ def visualize_decision_tree(clf, max_depth=None, rotate=False, filled=False, fil
     Returns:
         graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
     """
-    if not clf.model_family == ModelFamily.DECISION_TREE:
-        raise ValueError("Tree visualizations are not supported for non-Tree estimators")
+    if not estimator.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree visualizations are not supported for non-DecisionTree estimators")
     if max_depth and (not isinstance(max_depth, int) or not max_depth >= 0):
         raise ValueError("Unknown value: '{}'. The parameter max_depth has to be a non-negative integer"
                          .format(max_depth))
-    est = clf._component_obj
+    if not estimator._is_fitted:
+        raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments before using this estimator.")
+
+    est = estimator._component_obj
 
     graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
 
@@ -649,11 +689,11 @@ def visualize_decision_tree(clf, max_depth=None, rotate=False, filled=False, fil
             graph_format = 'pdf'  # If the filepath has no extension default to pdf
 
     dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled)
-    source_data = graphviz.Source(source=dot_data, format=graph_format)
+    source_obj = graphviz.Source(source=dot_data, format=graph_format)
     if filepath:
-        source_data.render(filename=path_and_name, cleanup=True)
+        source_obj.render(filename=path_and_name, cleanup=True)
 
-    return source_data
+    return source_obj
 
 
 def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):

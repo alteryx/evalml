@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added ``visualize_decision_tree`` for tree visualization and ``clean_format_tree`` to reformat tree structure output :pr:`1511`
+        * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
         * Added ``MAPE`` to the standard metrics for time series problems and update objectives :pr:`1510`
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`

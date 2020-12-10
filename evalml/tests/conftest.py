@@ -353,24 +353,33 @@ def stackable_regressors(helper_functions):
 
 
 @pytest.fixture
-def tree_estimators(X_y_binary, X_y_regression):
-    X_b, y_b = X_y_binary
-    est_class = DecisionTreeClassifier()
-    est_class.fit(X_b, y_b)
-    X_r, y_r = X_y_regression
-    est_reg = DecisionTreeRegressor()
-    est_reg.fit(X_r, y_r)
-
-    return est_class, est_reg
+def tree_estimators():
+    est_classifier_class = DecisionTreeClassifier()
+    est_regressor_class = DecisionTreeRegressor()
+    return est_classifier_class, est_regressor_class
 
 
 @pytest.fixture
-def logit_estimator(X_y_binary):
+def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
+    est_clf, est_reg = tree_estimators
     X_b, y_b = X_y_binary
-    est_class = LogisticRegressionClassifier()
-    est_class.fit(X_b, y_b)
+    X_r, y_r = X_y_regression
+    est_clf.fit(X_b, y_b)
+    est_reg.fit(X_r, y_r)
+    return est_clf, est_reg
 
+
+@pytest.fixture
+def logit_estimator():
+    est_class = LogisticRegressionClassifier()
     return est_class
+
+
+@pytest.fixture
+def fitted_logit_estimator(logit_estimator, X_y_binary):
+    X_b, y_b = X_y_binary
+    logit_estimator.fit(X_b, y_b)
+    return logit_estimator
 
 
 @pytest.fixture
