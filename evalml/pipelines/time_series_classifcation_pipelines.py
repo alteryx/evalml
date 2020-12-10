@@ -6,8 +6,8 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    drop_rows_with_nans,
     _get_rows_without_nans,
+    drop_rows_with_nans,
     pad_with_nans
 )
 
@@ -38,6 +38,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
     @staticmethod
     def _convert_to_woodwork(X, y):
+        if X is None:
+            X = pd.DataFrame()
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         return X, y
@@ -52,8 +54,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         Returns:
             self
         """
-        if X is None:
-            X = pd.DataFrame()
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
@@ -91,8 +91,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         Returns:
             pd.Series: Predicted values.
         """
-        if X is None:
-            X = pd.DataFrame()
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
@@ -140,9 +138,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        # Only converting X for the call to _score_all_objectives
-        if X is None:
-            X = pd.DataFrame()
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
