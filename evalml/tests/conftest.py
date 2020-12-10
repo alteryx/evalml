@@ -21,7 +21,10 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
     Estimator,
+    LogisticRegressionClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
