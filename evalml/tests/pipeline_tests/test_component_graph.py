@@ -387,6 +387,26 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     assert mock_predict.call_count == 0
 
 
+@patch('evalml.pipelines.components.Transformer.fit_transform')
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_fit_features_nonlinear(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
+    X, y = X_y_binary
+    component_graph = ComponentGraph(example_graph)
+    component_graph.instantiate({})
+
+    mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_fit_transform.return_value = mock_X_t
+    mock_fit.return_value = Estimator
+    mock_predict.return_value = pd.Series(y)
+
+    component_graph.fit_features(X, y)
+
+    assert mock_fit_transform.call_count == 3
+    assert mock_fit.call_count == 2
+    assert mock_predict.call_count == 2
+
+
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
