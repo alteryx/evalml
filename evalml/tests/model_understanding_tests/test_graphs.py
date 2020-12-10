@@ -1054,6 +1054,10 @@ def test_decision_tree_data_from_estimator_feature_length(fitted_tree_estimators
                                          .format(est_class._component_obj.n_features_, 3)):
         decision_tree_data_from_estimator(est_class, feature_names=["First", "Second", "Third"])
 
+    features_array = np.array([f'Testing_{col_}' for col_ in range(est_class._component_obj.n_features_)])
+    formatted_ = decision_tree_data_from_estimator(est_class, feature_names=list(features_array))
+    assert isinstance(formatted_, OrderedDict)
+
 
 def test_decision_tree_data_from_estimator(fitted_tree_estimators):
     est_class, est_reg = fitted_tree_estimators

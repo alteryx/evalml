@@ -376,13 +376,6 @@ def logit_estimator():
 
 
 @pytest.fixture
-def fitted_logit_estimator(logit_estimator, X_y_binary):
-    X_b, y_b = X_y_binary
-    logit_estimator.fit(X_b, y_b)
-    return logit_estimator
-
-
-@pytest.fixture
 def helper_functions():
     class Helpers:
         @staticmethod

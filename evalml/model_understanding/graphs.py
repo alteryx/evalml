@@ -582,7 +582,7 @@ def _tree_parse(est, feature_names):
 
     def recurse(i):
         if children_left[i] == children_right[i]:
-            return {'Feature': feature_names[features[i]]}
+            return {'Value': values[i]}
         return OrderedDict({
             'Feature': feature_names[features[i]],
             'Threshold': thresholds[i],
