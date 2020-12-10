@@ -287,7 +287,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         else:
             for component_name, component_info in component_graph.items():
                 component_class = handle_component_class(component_info[0])
-                print(component_class, component_class.hyperparameter_ranges)
                 component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
                 if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
                     component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
