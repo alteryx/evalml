@@ -87,14 +87,14 @@ def test_confusion_matrix(data_type):
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_normalize_confusion_matrix(data_type):
+@pytest.mark.parametrize("data_type", ['ww', 'np', 'pd'])
+def test_normalize_confusion_matrix(data_type, make_data_type):
     conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
-    if data_type == 'pd':
-        conf_mat = pd.DataFrame(conf_mat)
+    conf_mat = make_data_type(data_type, conf_mat)
+
     conf_mat_normalized = normalize_confusion_matrix(conf_mat)
     assert all(conf_mat_normalized.sum(axis=1) == 1.0)
-    assert isinstance(conf_mat_normalized, type(conf_mat))
+    assert isinstance(conf_mat_normalized, pd.DataFrame)
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'pred')
     for col_sum in conf_mat_normalized.sum(axis=0):
@@ -103,7 +103,7 @@ def test_normalize_confusion_matrix(data_type):
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
     assert conf_mat_normalized.sum().sum() == 1.0
 
-    # testing with pd.DataFrames
+    # testing with named pd.DataFrames
     conf_mat_df = pd.DataFrame()
     conf_mat_df["col_1"] = [0, 1, 2]
     conf_mat_df["col_2"] = [0, 0, 3]
@@ -120,8 +120,11 @@ def test_normalize_confusion_matrix(data_type):
     assert conf_mat_normalized.sum().sum() == 1.0
 
 
-def test_normalize_confusion_matrix_error():
+@pytest.mark.parametrize("data_type", ['ww', 'np', 'pd'])
+def test_normalize_confusion_matrix_error(data_type, make_data_type):
     conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    conf_mat = make_data_type(data_type, conf_mat)
+
     warnings.simplefilter('default', category=RuntimeWarning)
 
     with pytest.raises(ValueError, match='Invalid value provided'):
@@ -137,49 +140,49 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'all')
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_confusion_matrix_labels(data_type):
-    def convert_pd(y_true, y_pred):
-        if data_type == 'pd':
-            y_true = pd.Series(y_true)
-            y_pred = pd.Series(y_pred)
-        return y_true, y_pred
+@pytest.mark.parametrize("data_type", ['ww', 'pd', 'np'])
+def test_confusion_matrix_labels(data_type, make_data_type):
+    y_true = np.array([True, False, True, True, False, False])
+    y_pred = np.array([False, False, True, True, False, False])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
 
-    y_true = [True, False, True, True, False, False]
-    y_pred = [False, False, True, True, False, False]
-    y_true, y_pred = convert_pd(y_true, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = [False, True]
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = [0, 1, 0, 1, 0, 1]
-    y_pred = [0, 1, 1, 1, 1, 1]
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array([0, 1, 0, 1, 0, 1])
+    y_pred = np.array([0, 1, 1, 1, 1, 1])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = [0, 1]
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = ['blue', 'red', 'blue', 'red']
-    y_pred = ['blue', 'red', 'red', 'red']
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array(['blue', 'red', 'blue', 'red'])
+    y_pred = np.array(['blue', 'red', 'red', 'red'])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = ['blue', 'red']
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = ['blue', 'red', 'red', 'red', 'orange', 'orange']
-    y_pred = ['red', 'blue', 'blue', 'red', 'orange', 'orange']
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array(['blue', 'red', 'red', 'red', 'orange', 'orange'])
+    y_pred = np.array(['red', 'blue', 'blue', 'red', 'orange', 'orange'])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = ['blue', 'orange', 'red']
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = [0, 1, 2, 1, 2, 1, 2, 3]
-    y_pred = [0, 1, 1, 1, 1, 1, 3, 3]
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array([0, 1, 2, 1, 2, 1, 2, 3])
+    y_pred = np.array([0, 1, 1, 1, 1, 1, 3, 3])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = [0, 1, 2, 3]
     assert np.array_equal(conf_mat.index, labels)
@@ -623,8 +626,12 @@ def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary
     assert pipeline.threshold == original_pipeline_threshold
 
 
-def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_binary_objective_vs_threshold(data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type):
     X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
 
@@ -658,10 +665,14 @@ def test_binary_objective_vs_threshold_steps(mock_score,
     assert cost_benefit_df.shape == (235, 2)
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @patch('evalml.model_understanding.graphs.binary_objective_vs_threshold')
-def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, logistic_regression_binary_pipeline_class):
+def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
                             false_positive=-7, false_negative=-2)

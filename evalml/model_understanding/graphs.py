@@ -55,12 +55,17 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
+        conf_mat (ww.DataTable, pd.DataFrame or np.ndarray): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
+    conf_mat = _convert_to_woodwork_structure(conf_mat)
+    conf_mat = _convert_woodwork_types_wrapper(conf_mat.to_dataframe())
+    col_names = conf_mat.columns
+
+    conf_mat = conf_mat.to_numpy()
     with warnings.catch_warnings(record=True) as w:
         if normalize_method == 'true':
             conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
@@ -72,7 +77,51 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
             raise ValueError('Invalid value provided for "normalize_method": %s'.format(normalize_method))
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError("Sum of given axis is 0 and normalization is not possible. Please select another option.")
+    conf_mat = pd.DataFrame(conf_mat, index=col_names, columns=col_names)
     return conf_mat
+
+
+def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
+    """Generate and display a confusion matrix plot.
+
+    If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
+
+    Arguments:
+        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
+        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
+        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
+        title_addition (str or None): if not None, append to plot title. Default None.
+
+    Returns:
+        plotly.Figure representing the confusion matrix plot generated
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
+    conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
+    labels = conf_mat.columns
+
+    title = 'Confusion matrix{}{}'.format(
+        '' if title_addition is None else (' ' + title_addition),
+        '' if normalize_method is None else (', normalized using method "' + normalize_method + '"'))
+    z_data, custom_data = (conf_mat, conf_mat_normalized) if normalize_method is None else (conf_mat_normalized, conf_mat)
+    primary_heading, secondary_heading = ('Raw', 'Normalized') if normalize_method is None else ('Normalized', 'Raw')
+    hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata} <br>'
+    # the "<extra> tags at the end are necessary to remove unwanted trace info
+    hover_template = '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}' + hover_text + '<extra></extra>'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                        yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
+    fig = _go.Figure(data=_go.Heatmap(x=labels, y=labels, z=z_data,
+                                      customdata=custom_data,
+                                      hovertemplate=hover_template,
+                                      colorscale='Blues'),
+                     layout=layout)
+    # plotly Heatmap y axis defaults to the reverse of what we want: https://community.plotly.com/t/heatmap-y-axis-is-reversed-by-default-going-against-standard-convention-for-matrices/32180
+    fig.update_yaxes(autorange="reversed")
+    return fig
 
 
 def precision_recall_curve(y_true, y_pred_proba):
@@ -222,49 +271,6 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     return _go.Figure(layout=layout, data=graph_data)
 
 
-def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
-    """Generate and display a confusion matrix plot.
-
-    If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
-
-    Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
-        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
-        title_addition (str or None): if not None, append to plot title. Default None.
-
-    Returns:
-        plotly.Figure representing the confusion matrix plot generated
-    """
-    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    if jupyter_check():
-        import_or_raise("ipywidgets", warning=True)
-
-    conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
-    conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
-    labels = conf_mat.columns
-
-    title = 'Confusion matrix{}{}'.format(
-        '' if title_addition is None else (' ' + title_addition),
-        '' if normalize_method is None else (', normalized using method "' + normalize_method + '"'))
-    z_data, custom_data = (conf_mat, conf_mat_normalized) if normalize_method is None else (conf_mat_normalized, conf_mat)
-    primary_heading, secondary_heading = ('Raw', 'Normalized') if normalize_method is None else ('Normalized', 'Raw')
-    hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata} <br>'
-    # the "<extra> tags at the end are necessary to remove unwanted trace info
-    hover_template = '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}' + hover_text + '<extra></extra>'
-    layout = _go.Layout(title={'text': title},
-                        xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
-                        yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
-    fig = _go.Figure(data=_go.Heatmap(x=labels, y=labels, z=z_data,
-                                      customdata=custom_data,
-                                      hovertemplate=hover_template,
-                                      colorscale='Blues'),
-                     layout=layout)
-    # plotly Heatmap y axis defaults to the reverse of what we want: https://community.plotly.com/t/heatmap-y-axis-is-reversed-by-default-going-against-standard-convention-for-matrices/32180
-    fig.update_yaxes(autorange="reversed")
-    return fig
-
-
 def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
     """Calculates permutation importance for features.
 
@@ -359,8 +365,8 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
-        X (pd.DataFrame): The input data used to compute objective score
-        y (pd.Series): The target labels
+        X (ww.DataTable, pd.DataFrame): The input data used to score and compute scores
+        y (ww.DataColumn, pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score
         steps (int): Number of intervals to divide and calculate objective score at
 
@@ -368,7 +374,11 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
-    # todo
+    X = _convert_to_woodwork_structure(X)
+    y = _convert_to_woodwork_structure(y)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    y = _convert_woodwork_types_wrapper(y.to_series())
+
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
         raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
@@ -391,8 +401,8 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute scores
-        y (pd.Series): The target labels
+        X (ww.DataTable, pd.DataFrame): The input data used to score and compute scores
+        y (ww.DataColumn, pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
         steps (int): Number of intervals to divide and calculate objective score at
 
@@ -522,8 +532,8 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
 
     Arguments:
-        y_true (pd.Series): The real target values of the data
-        y_pred (pd.Series): The predicted values outputted by the regression model.
+        y_true (ww.DataColumn, pd.Series): The real target values of the data
+        y_pred (ww.DataColumn, pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to None
@@ -570,9 +580,9 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (pd.DataFrame): Features used to generate new predictions.
-        y (pd.Series): Target values to compare predictions against.
-        dates (pd.Series): Dates corresponding to target values and predictions.
+        X (ww.DataTable, pd.DataFrame): Features used to generate new predictions.
+        y (ww.DataColumn, pd.Series): Target values to compare predictions against.
+        dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
        pd.DataFrame
@@ -589,8 +599,8 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
-        y (pd.Series): Target values to compare predictions against.
-        dates (pd.Series): Dates corresponding to target values and predictions.
+        y (ww.DataColumn, pd.Series): Target values to compare predictions against.
+        dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
         plotly.Figure showing the prediction vs actual over time.
