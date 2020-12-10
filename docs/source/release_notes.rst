@@ -3,9 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
         * Added `DFS Transformer` component into transformer components :pr:`1454`
         * Added ``MAPE`` to the standard metrics for time series problems and update objectives :pr:`1510`
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
+        * Added a ``ComponentGraph`` class that will support future pipelines as directed acyclic graphs :pr:`1415`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
         * Added baseline pipeline and components for time series regression problems :pr:`1496`
