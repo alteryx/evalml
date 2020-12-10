@@ -21,6 +21,7 @@ from evalml.pipelines import (
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components import (
+    LinearRegressor,
     CatBoostClassifier,
     RandomForestClassifier,
     XGBoostClassifier,
@@ -49,6 +50,7 @@ baseline_message = "You passed in a baseline pipeline. These are simple enough t
 xg_boost_message = "SHAP values cannot currently be computed for xgboost models."
 catboost_message = "SHAP values cannot currently be computed for catboost models for multiclass problems."
 datatype_message = "^Unknown shap_values datatype"
+data_message = "You must pass in a value for parameter 'background_dataset' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
 
 @pytest.mark.parametrize("pipeline,exception,match", [(MeanBaselineRegressionPipeline, ValueError, baseline_message),
@@ -60,6 +62,7 @@ datatype_message = "^Unknown shap_values datatype"
                                                       (make_test_pipeline(XGBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(XGBoostRegressor, RegressionPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
+                                                      (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)
                                                       ])
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):

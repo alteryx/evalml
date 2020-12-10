@@ -75,7 +75,7 @@ def _compute_shap_values(pipeline, features, background_dataset=None):
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if background_dataset is None:
-            raise ValueError("You must pass in a value for parameter 'training_data' when the pipeline "
+            raise ValueError("You must pass in a value for parameter 'background_dataset' when the pipeline "
                              "does not have a tree-based estimator. "
                              f"Current estimator model family is {estimator.model_family}.")
         # More than 100 datapoints can negatively impact runtime according to SHAP
