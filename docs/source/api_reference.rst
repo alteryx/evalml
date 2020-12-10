@@ -201,7 +201,7 @@ Transformers are components that take in data as input and output transformed da
     DateTimeFeaturizer
     TextFeaturizer
     DelayedFeatureTransformer
-    DFSTransformer
+    FeaturetoolsTransformer
 
 Estimators
 ~~~~~~~~~~
