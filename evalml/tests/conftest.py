@@ -19,10 +19,7 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
-    DecisionTreeClassifier,
-    DecisionTreeRegressor,
     Estimator,
-    LogisticRegressionClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
@@ -297,6 +294,47 @@ def linear_regression_pipeline_class():
 
 
 @pytest.fixture
+def nonlinear_binary_pipeline_class():
+    class NonLinearBinaryPipeline(BinaryClassificationPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
+            'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
+            'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
+            'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
+        }
+    return NonLinearBinaryPipeline
+
+
+@pytest.fixture
+def nonlinear_multiclass_pipeline_class():
+    class NonLinearMulticlassPipeline(MulticlassClassificationPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
+            'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
+            'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
+            'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
+        }
+    return NonLinearMulticlassPipeline
+
+
+@pytest.fixture
+def nonlinear_regression_pipeline_class():
+    class NonLinearRegressionPipeline(RegressionPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Regressor', 'OneHot.x'],
+            'Elastic Net': ['Elastic Net Regressor', 'OneHot.x'],
+            'Linear Regressor': ['Linear Regressor', 'Random Forest', 'Elastic Net']
+        }
+    return NonLinearRegressionPipeline
+
+
+@pytest.fixture
 def binary_core_objectives():
     return get_core_objectives(ProblemTypes.BINARY)
 
@@ -350,29 +388,6 @@ def stackable_regressors(helper_functions):
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
             stackable_regressors.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
     return stackable_regressors
-
-
-@pytest.fixture
-def tree_estimators():
-    est_classifier_class = DecisionTreeClassifier()
-    est_regressor_class = DecisionTreeRegressor()
-    return est_classifier_class, est_regressor_class
-
-
-@pytest.fixture
-def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
-    est_clf, est_reg = tree_estimators
-    X_b, y_b = X_y_binary
-    X_r, y_r = X_y_regression
-    est_clf.fit(X_b, y_b)
-    est_reg.fit(X_r, y_r)
-    return est_clf, est_reg
-
-
-@pytest.fixture
-def logit_estimator():
-    est_class = LogisticRegressionClassifier()
-    return est_class
 
 
 @pytest.fixture
