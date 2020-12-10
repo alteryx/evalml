@@ -31,6 +31,7 @@ from .components import (
     DFSTransformer
 )
 
+from .component_graph import ComponentGraph
 from .pipeline_base import PipelineBase
 from .classification_pipeline import ClassificationPipeline
 from .binary_classification_pipeline import BinaryClassificationPipeline
