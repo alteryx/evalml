@@ -23,6 +23,7 @@ Release Notes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
     * Documentation Changes
+        * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
