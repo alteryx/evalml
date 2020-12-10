@@ -20,6 +20,7 @@ Release Notes
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
+        * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
     * Documentation Changes
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
