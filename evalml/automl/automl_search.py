@@ -500,7 +500,7 @@ class AutoMLSearch:
             current_batch_size = len(current_batch_pipelines)
             current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, X, y, engine=engine)
 
-            if current_batch_pipeline_scores is False:
+            if len(current_batch_pipeline_scores) != current_batch_size:
                 break
 
         self.search_duration = time.time() - self._start
