@@ -1,5 +1,6 @@
 import networkx as nx
 import pandas as pd
+import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
@@ -96,8 +97,17 @@ class ComponentGraph:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (pd.Series): The target training data of length [n_samples]
         """
-        self._compute_features(self.compute_order[:-1], X, y, fit=True)
-        return self
+        if len(self.compute_order) <= 1:
+            return X
+
+        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=True)
+        final_component_inputs = []
+        for parent in self.get_parents(self.compute_order[-1]):
+            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
+            if isinstance(parent_output, pd.Series):
+                parent_output = pd.DataFrame(parent_output, columns=[parent])
+            final_component_inputs.append(parent_output)
+        return pd.concat(final_component_inputs, axis=1)
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -151,7 +161,8 @@ class ComponentGraph:
         """
         if len(component_list) == 0:
             return X
-
+        if isinstance(X, ww.DataTable):
+            X = X.to_dataframe()
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
 
