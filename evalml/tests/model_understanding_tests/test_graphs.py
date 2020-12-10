@@ -1044,7 +1044,7 @@ def test_decision_tree_data_from_estimator_not_fitted(tree_estimators):
 
 def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
     est_logit = logit_estimator
-    with pytest.raises(ValueError, match="Tree structure reformatting is not supported for non-DecisionTree estimators"):
+    with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
         decision_tree_data_from_estimator(est_logit)
 
 
@@ -1095,7 +1095,7 @@ def test_decision_tree_data_from_pipeline_wrong_type():
         component_graph = ['Logistic Regression Classifier']
 
     mock_pipeline = MockPipeline({})
-    with pytest.raises(ValueError, match="Tree structure reformatting is not supported for non-Tree estimators"):
+    with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
         decision_tree_data_from_pipeline(mock_pipeline)
 
 
@@ -1169,7 +1169,7 @@ def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
 def test_visualize_decision_trees_est_wrong_type(logit_estimator, tmpdir):
     est_logit = logit_estimator
     filepath = os.path.join(str(tmpdir), 'test_1.png')
-    with pytest.raises(ValueError, match="Tree visualizations are not supported for non-DecisionTree estimators"):
+    with pytest.raises(ValueError, match="Tree visualizations are only supported for decision tree estimators"):
         visualize_decision_tree(estimator=est_logit, filepath=filepath)
 
 

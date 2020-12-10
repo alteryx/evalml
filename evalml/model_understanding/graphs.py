@@ -605,7 +605,7 @@ def decision_tree_data_from_estimator(estimator, feature_names=None):
         OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
-        raise ValueError("Tree structure reformatting is not supported for non-DecisionTree estimators")
+        raise ValueError("Tree structure reformatting is only supported for decision tree estimators")
     if not estimator._is_fitted:
         raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
                              "before using this estimator.")
@@ -631,7 +631,7 @@ def decision_tree_data_from_pipeline(pipeline_):
         OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
     """
     if not pipeline_.model_family == ModelFamily.DECISION_TREE:
-        raise ValueError("Tree structure reformatting is not supported for non-Tree estimators")
+        raise ValueError("Tree structure reformatting is only supported for decision tree estimators")
     if not pipeline_._is_fitted:
         raise NotFittedError("The DecisionTree estimator associated with this pipeline is not fitted yet. Call 'fit' "
                              "with appropriate arguments before using this estimator.")
@@ -658,7 +658,7 @@ def visualize_decision_tree(estimator, max_depth=None, rotate=False, filled=Fals
         graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
-        raise ValueError("Tree visualizations are not supported for non-DecisionTree estimators")
+        raise ValueError("Tree visualizations are only supported for decision tree estimators")
     if max_depth and (not isinstance(max_depth, int) or not max_depth >= 0):
         raise ValueError("Unknown value: '{}'. The parameter max_depth has to be a non-negative integer"
                          .format(max_depth))
