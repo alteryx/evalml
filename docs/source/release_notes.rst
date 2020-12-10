@@ -4,14 +4,20 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
+        * Added `DFS Transformer` component into transformer components :pr:`1454`
         * Added ``MAPE`` to the standard metrics for time series problems and update objectives :pr:`1510`
         * Added ``graph_prediction_vs_actual_over_time`` and ``get_prediction_vs_actual_over_time_data`` to the model understanding module for time series problems :pr:`1483`
+        * Added a ``ComponentGraph`` class that will support future pipelines as directed acyclic graphs :pr:`1415`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
         * Added baseline pipeline and components for time series regression problems :pr:`1496`
+        * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
+        * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
+        * Set max value for plotly and xgboost versions while we debug CI failures with newer versions :pr:`1532`
+        * Undo version pinning for plotly :pr:`1533`
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`

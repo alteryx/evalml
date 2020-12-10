@@ -26,6 +26,7 @@ from evalml.pipelines.components import (
     ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
+    DFSTransformer,
     DropColumns,
     DropNullColumns,
     ElasticNetClassifier,
@@ -147,6 +148,7 @@ def test_describe_component():
     text_featurizer = TextFeaturizer()
     lsa = LSA()
     pca = PCA()
+    ft = DFSTransformer()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -164,10 +166,13 @@ def test_describe_component():
     assert feature_selection_reg.describe(return_dict=True) == {'name': 'RF Regressor Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
     assert drop_col_transformer.describe(return_dict=True) == {'name': 'Drop Columns Transformer', 'parameters': {'columns': ['col_one', 'col_two']}}
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
-    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component', 'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour']}}
+    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
+                                                   'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
+                                                                  'encode_as_categories': False}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
+    assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
 
     # testing estimators
     base_classifier = BaselineClassifier()
@@ -532,6 +537,10 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, DFSTransformer):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] >= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, DelayedFeatureTransformer):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
@@ -549,6 +558,10 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, PCA):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, DFSTransformer):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] >= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
