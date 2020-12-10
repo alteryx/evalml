@@ -1,6 +1,7 @@
 import importlib
 import warnings
 from collections import namedtuple
+from functools import reduce
 
 import numpy as np
 import pandas as pd
@@ -356,6 +357,30 @@ def pad_with_nans(pd_data, num_to_pad):
                                  convert_integer=False, convert_boolean=False)
 
 
+def _get_rows_without_nans(*data):
+    """Compute a boolean array marking where all entries in the data are non-nan.
+
+    Arguments:
+        *data (sequence of pd.Series or pd.DataFrame)
+
+    Returns:
+        np.ndarray: mask where each entry is True if and only if all corresponding entries in data
+            are non-nan.
+    """
+    def _not_nan(pd_data):
+        if pd_data is None:
+            return np.array([True])
+        if isinstance(pd_data, pd.Series):
+            return ~pd_data.isna().values
+        elif isinstance(pd_data, pd.DataFrame):
+            return ~pd_data.isna().any(axis=1).values
+        else:
+            return pd_data
+
+    mask = reduce(lambda a, b: np.logical_and(_not_nan(a), _not_nan(b)), data)
+    return mask
+
+
 def drop_rows_with_nans(pd_data_1, pd_data_2):
     """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
 
@@ -367,11 +392,5 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
         tuple of pd.DataFrame or pd.Series
     """
 
-    def _not_nan(pd_data):
-        if isinstance(pd_data, pd.Series):
-            return ~pd_data.isna().values
-        else:
-            return ~pd_data.isna().any(axis=1).values
-
-    mask = np.logical_and(_not_nan(pd_data_1), _not_nan(pd_data_2))
+    mask = _get_rows_without_nans(pd_data_1, pd_data_2)
     return pd_data_1.iloc[mask], pd_data_2.iloc[mask]

@@ -7,6 +7,7 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     drop_rows_with_nans,
+    _get_rows_without_nans,
     pad_with_nans
 )
 
@@ -35,6 +36,12 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         self.max_delay = pipeline_params['max_delay']
         super().__init__(parameters, random_state)
 
+    @staticmethod
+    def _convert_to_woodwork(X, y):
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+        return X, y
+
     def fit(self, X, y):
         """Fit a time series regression pipeline.
 
@@ -47,9 +54,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         """
         if X is None:
             X = pd.DataFrame()
-
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         self._encoder.fit(y)
@@ -88,8 +93,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         """
         if X is None:
             X = pd.DataFrame()
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         n_features = max(len(y), X.shape[0])
@@ -106,6 +110,9 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         Returns:
             pd.DataFrame: Probability estimates
         """
+        X, y = self._convert_to_woodwork(X, y)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
         proba = self.estimator.predict_proba(features.dropna(axis=0, how="any"))
@@ -113,14 +120,13 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
 
     def _compute_predictions(self, X, y, objectives):
-        """Scan through the objectives list and precompute"""
+        """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
-        for objective in objectives:
-            if objective.score_needs_proba and y_predicted_proba is None:
-                y_predicted_proba = self.predict_proba(X, y)
-            if not objective.score_needs_proba and y_predicted is None:
-                y_predicted = self._predict(X, y, pad=True)
+        if any(o.score_needs_proba for o in objectives):
+            y_predicted_proba = self.predict_proba(X, y)
+        if any(not o.score_needs_proba for o in objectives):
+            y_predicted = self._predict(X, y, pad=True)
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives):
@@ -137,19 +143,20 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         # Only converting X for the call to _score_all_objectives
         if X is None:
             X = pd.DataFrame()
-        X = _convert_to_woodwork_structure(X)
+        X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        y_pred, y_pred_proba = self._compute_predictions(X, y, objectives)
+
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
+        y_pred, y_pred_proba = self._compute_predictions(X, y, objectives)
+        non_nan_mask = _get_rows_without_nans(y_shifted, y_pred, y_pred_proba)
         if y_pred is not None:
-            y_labels, y_pred = drop_rows_with_nans(y_shifted, y_pred)
+            y_pred = y_pred.iloc[non_nan_mask]
         if y_pred_proba is not None:
-            y_labels, y_pred_proba = drop_rows_with_nans(y_shifted, y_pred_proba)
-
+           y_pred_proba = y_pred_proba.iloc[non_nan_mask]
+        y_labels = y_shifted.iloc[non_nan_mask]
         return self._score_all_objectives(X, y_labels, y_pred,
                                           y_pred_proba=y_pred_proba,
                                           objectives=objectives)
@@ -174,9 +181,8 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
-            if not any(p in objective.problem_types for p in [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]):
-                raise ValueError(
-                    "You can only use a binary classification objective to make predictions for a binary classification pipeline.")
+            if not objective.is_defined_for_problem_type(self.problem_type):
+                raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
             predictions = self.estimator.predict(features_no_nan)

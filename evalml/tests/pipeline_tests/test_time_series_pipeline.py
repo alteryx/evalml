@@ -3,6 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -280,7 +281,8 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
                                                        (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass", "Log Loss Multiclass"]),
                                                        (TimeSeriesRegressionPipeline, ['R2']),
                                                        (TimeSeriesRegressionPipeline, ['R2', "Mean Absolute Percentage Error"])])
-def test_score_works(pipeline_class, objectives, X_y_binary, X_y_multi, X_y_regression):
+@pytest.mark.parametrize("use_ww", [True, False])
+def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, X_y_regression):
 
     preprocessing = ['Delayed Feature Transformer']
     if pipeline_class == TimeSeriesRegressionPipeline:
@@ -295,11 +297,25 @@ def test_score_works(pipeline_class, objectives, X_y_binary, X_y_multi, X_y_regr
                    components[-1]: {'n_jobs': 1}})
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
+        y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")
+        expected_unique_values = {"good", "bad"}
     elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = X_y_multi
+        label_map = {0: "good", 1: "bad", 2: "best"}
+        y = pd.Series(y).map(lambda label: label_map[label])
+        expected_unique_values = {"good", "bad", "best"}
     else:
         X, y = X_y_regression
+        y = pd.Series(y)
+        expected_unique_values = None
+    if use_ww:
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
     pl.fit(X, y)
+    if expected_unique_values:
+        # NaNs are expected because of padding due to max_delay
+        assert set(pl.predict(X, y).dropna().unique()) == expected_unique_values
     pl.score(X, y, objectives)
 
 
@@ -307,9 +323,9 @@ def test_score_works(pipeline_class, objectives, X_y_binary, X_y_multi, X_y_regr
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
 @patch('evalml.pipelines.components.Estimator.predict_proba', return_value=pd.DataFrame({0: [1.]}))
 @patch('evalml.pipelines.components.Estimator.predict', return_value=pd.Series([1.]))
-def test_binary_classification_pipeline_predict(mock_predict, mock_predict_proba,
-                                                mock_obj_decision, mock_decode,
-                                                X_y_binary, dummy_ts_binary_pipeline_class):
+def test_binary_classification_predictions_thresholded_properly(mock_predict, mock_predict_proba,
+                                                                mock_obj_decision, mock_decode,
+                                                                X_y_binary, dummy_ts_binary_pipeline_class):
     mock_objs = [mock_decode, mock_predict]
     mock_decode.return_value = pd.Series([0, 1])
     X, y = X_y_binary
@@ -365,6 +381,6 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     binary_pipeline = dummy_ts_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
                                                                  "pipeline": {"gap": 0, "max_delay": 0}})
     binary_pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
+    with pytest.raises(ValueError, match="Objective Precision Micro is not defined for time series binary classification."):
         binary_pipeline.predict(X, y, "precision micro")
     mock_transform.assert_called()
