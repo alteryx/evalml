@@ -155,7 +155,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         if y_pred is not None:
             y_pred = y_pred.iloc[non_nan_mask]
         if y_pred_proba is not None:
-           y_pred_proba = y_pred_proba.iloc[non_nan_mask]
+            y_pred_proba = y_pred_proba.iloc[non_nan_mask]
         y_labels = y_shifted.iloc[non_nan_mask]
         return self._score_all_objectives(X, y_labels, y_pred,
                                           y_pred_proba=y_pred_proba,
