@@ -1,4 +1,5 @@
 import inspect
+import os
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -6,6 +7,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
@@ -21,7 +23,8 @@ from evalml.utils.gen_utils import (
     get_random_state,
     import_or_raise,
     jupyter_check,
-    pad_with_nans
+    pad_with_nans,
+    save_plot
 )
 
 
@@ -391,3 +394,38 @@ def test_convert_to_woodwork_structure():
     X_expected = ww.DataTable(pd.DataFrame(X_np))
     pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
+
+
+def test_save_plot_static_no_path(decision_tree_classification_pipeline_class):
+    pipeline = decision_tree_classification_pipeline_class
+    fig_ = pipeline.graph_feature_importance()
+    save_plot(fig_, interactive=False)
+    assert os.path.exists(os.path.join(os.getcwd(), 'test_plot.png'))
+
+
+def test_save_plot_interactive_no_path(decision_tree_classification_pipeline_class):
+    pipeline = decision_tree_classification_pipeline_class
+    fig_ = pipeline.graph_feature_importance()
+    save_plot(fig_, interactive=True)
+    assert os.path.exists(os.path.join(os.getcwd(), 'test_plot.html'))
+
+
+def test_save_plot_static_with_path(decision_tree_classification_pipeline_class, tmpdir):
+    pipeline = decision_tree_classification_pipeline_class
+    fig_ = pipeline.graph_feature_importance()
+    save_plot(fig_, filepath=f'{tmpdir}/test_plot.png', interactive=False)
+    assert os.path.exists(os.path.join(os.getcwd(), f'{tmpdir}/test_plot.png'))
+
+
+def test_save_plot_interactive_with_path(decision_tree_classification_pipeline_class, tmpdir):
+    pipeline = decision_tree_classification_pipeline_class
+    fig_ = pipeline.graph_feature_importance()
+    save_plot(fig_, filepath=f'{tmpdir}/test_plot.html', interactive=True)
+    assert os.path.exists(os.path.join(os.getcwd(), f'{tmpdir}/test_plot.html'))
+
+
+def test_save_plot_non_plotly(decision_tree_classification_pipeline_class, tmpdir):
+    pipeline = decision_tree_classification_pipeline_class
+    fig_ = pipeline.graph_feature_importance()
+    save_plot(fig_, filepath=f'{tmpdir}/test_plot.html', interactive=True)
+    assert os.path.exists(os.path.join(os.getcwd(), f'{tmpdir}/test_plot.html'))
