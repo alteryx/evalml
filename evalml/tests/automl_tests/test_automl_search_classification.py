@@ -37,6 +37,7 @@ def test_init(X_y_binary):
     assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
+    assert automl.best_pipeline._is_fitted
 
     # test with dataframes
     automl = AutoMLSearch(problem_type='binary', max_iterations=1, n_jobs=1)
@@ -47,6 +48,7 @@ def test_init(X_y_binary):
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
     assert automl.objective.name == 'Log Loss Binary'
+    assert automl.best_pipeline._is_fitted
 
 
 def test_init_objective():
@@ -110,7 +112,8 @@ def test_binary_auto(X_y_binary):
     automl.search(X, y)
 
     best_pipeline = automl.best_pipeline
-    best_pipeline.fit(X, y)
+    assert best_pipeline._is_fitted
+    # best_pipeline.fit(X, y)
     y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 2
 
@@ -121,7 +124,8 @@ def test_multi_auto(X_y_multi, multiclass_core_objectives):
     automl = AutoMLSearch(problem_type='multiclass', objective=objective, max_iterations=5, n_jobs=1)
     automl.search(X, y)
     best_pipeline = automl.best_pipeline
-    best_pipeline.fit(X, y)
+    assert best_pipeline._is_fitted
+    # best_pipeline.fit(X, y)
     y_pred = best_pipeline.predict(X)
     assert len(np.unique(y_pred)) == 3
 
@@ -224,7 +228,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
     mock_score.assert_called()
     mock_predict_proba.assert_called()
     mock_optimize_threshold.assert_called()
-    assert automl.best_pipeline.threshold is None
+    assert automl.best_pipeline.threshold is not None
     assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.8
     assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.8
     assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.8
@@ -248,7 +252,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
     mock_score.assert_called()
     assert not mock_predict_proba.called
     assert not mock_optimize_threshold.called
-    assert automl.best_pipeline.threshold is None
+    assert automl.best_pipeline.threshold is not None
     assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5
@@ -263,7 +267,7 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     automl.search(X, y)
     mock_fit.assert_called()
     mock_score.assert_called()
-    assert automl.best_pipeline.threshold is None
+    assert automl.best_pipeline.threshold is not None
     assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5

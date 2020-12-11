@@ -256,6 +256,7 @@ class AutoMLSearch:
 
         self._validate_problem_type()
         self.problem_configuration = self._validate_problem_configuration(problem_configuration)
+        self._best_pipe = None
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -530,6 +531,7 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
+        self._compute_cv_scores(self.get_pipeline(best_pipeline['id']), X, y, save_pipeline=True)
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
@@ -615,7 +617,7 @@ class AutoMLSearch:
                     scores[field] += value
         return {objective_name: float(score) / n_folds for objective_name, score in scores.items()}
 
-    def _compute_cv_scores(self, pipeline, X, y):
+    def _compute_cv_scores(self, pipeline, X, y, save_pipeline=False):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
@@ -662,6 +664,9 @@ class AutoMLSearch:
                             y_predict_proba = y_predict_proba[:, 1]
                         cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
                         logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+                if save_pipeline and cv_pipeline._is_fitted:
+                    self._best_pipe = cv_pipeline
+                    break
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
@@ -933,16 +938,15 @@ class AutoMLSearch:
 
     @property
     def best_pipeline(self):
-        """Returns an untrained instance of the best pipeline and parameters found during automl search.
+        """Returns a trained instance of the best pipeline and parameters found during automl search.
 
         Returns:
-            PipelineBase: untrained pipeline instance associated with the best automl search result.
+            PipelineBase: Trained pipeline instance associated with the best automl search result.
         """
-        if not self.has_searched:
-            raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
+        if not (self.has_searched and self._best_pipe):
+            raise PipelineNotFoundError("automl search must be completely run before selecting `best_pipeline`.")
 
-        best = self.rankings.iloc[0]
-        return self.get_pipeline(best["id"])
+        return self._best_pipe
 
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
         """Saves AutoML object at file path

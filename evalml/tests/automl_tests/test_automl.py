@@ -1078,6 +1078,11 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     automl.search(X, y)
 
     assert len(automl._results['pipeline_results']) == number_results
+    # if number_results != 5 and when_to_interrupt == 1:
+    with pytest.raises(PipelineNotFoundError):
+        automl.best_pipeline
+    # else:
+        # assert not automl.best_pipeline._is_fitted
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
