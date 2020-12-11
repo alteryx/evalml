@@ -369,7 +369,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
-        X (ww.DataTable, pd.DataFrame): The input data used to score and compute scores
+        X (ww.DataTable, pd.DataFrame): The input data used to compute objective score
         y (ww.DataColumn, pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score
         steps (int): Number of intervals to divide and calculate objective score at
