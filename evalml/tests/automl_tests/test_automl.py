@@ -1078,11 +1078,11 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     automl.search(X, y)
 
     assert len(automl._results['pipeline_results']) == number_results
-    # if number_results != 5 and when_to_interrupt == 1:
-    with pytest.raises(PipelineNotFoundError):
-        automl.best_pipeline
-    # else:
-        # assert not automl.best_pipeline._is_fitted
+    if number_results != 5 and when_to_interrupt == 1:
+        with pytest.raises(PipelineNotFoundError):
+            automl.best_pipeline
+    else:
+        assert automl.best_pipeline._is_fitted
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
@@ -1766,8 +1766,9 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl.search(X, y)
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
-    # first automl batch, times 3 for 3-fold cross validation
-    assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
+    # first automl batch, times 3 for 3-fold cross validation, plus 3 for best_pipelines
+    print(len(automl._results['errors']))
+    assert len(automl._results['errors']) == (2 + len(get_estimators(problem_type='binary'))) * 3
     for e in automl._results['errors']:
         assert str(e) == msg
 

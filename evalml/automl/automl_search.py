@@ -531,7 +531,7 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
-        self._compute_cv_scores(self.get_pipeline(best_pipeline['id']), X, y, save_pipeline=True)
+        self._compute_cv_scores(self.get_pipeline(best_pipeline['id']), X, y, True)
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
@@ -626,6 +626,7 @@ class AutoMLSearch:
 
         X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
+
         for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
@@ -650,6 +651,9 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone(pipeline.random_state)
+                if save_pipeline:
+                    self._best_pipe = cv_pipeline.fit(X, y)
+                    return
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
@@ -664,9 +668,6 @@ class AutoMLSearch:
                             y_predict_proba = y_predict_proba[:, 1]
                         cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
                         logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
-                if save_pipeline and cv_pipeline._is_fitted:
-                    self._best_pipe = cv_pipeline
-                    break
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
