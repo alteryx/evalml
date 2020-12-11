@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 class DecisionTreeRegressor(Estimator):
     """Decision Tree Regressor."""
-    name = "Decision Tree Regressor."
+    name = "Decision Tree Regressor"
     hyperparameter_ranges = {
         "criterion": ["mse", "friedman_mse", "mae"],
         "max_features": ["auto", "sqrt", "log2"],
