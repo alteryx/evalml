@@ -462,8 +462,19 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
         # Delete scikit-learn attributes that were temporarily set
         del pipeline._estimator_type
         del pipeline.feature_importances_
-    return pd.DataFrame({"feature_values": values[0],
-                         "partial_dependence": avg_pred[0]})
+    classes = None
+    if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+        classes = [pipeline.classes_[1]]
+    elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+        classes = pipeline.classes_
+
+    data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
+                         "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    if classes is not None:
+        data['class_label'] = np.repeat(classes, len(values[0]))
+
+    return data
+
 
 
 def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
