@@ -40,7 +40,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @classmethod
     @abstractmethod
     def component_graph(cls):
-        """Returns list of components representing pipeline graph structure
+        """Returns list or dictionary of components representing pipeline graph structure
 
         Returns:
             list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline

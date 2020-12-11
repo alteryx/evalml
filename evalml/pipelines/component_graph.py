@@ -200,7 +200,7 @@ class ComponentGraph:
             else:
                 if fit:
                     component_instance.fit(input_x, input_y)
-                if not (fit and component_instance.name == self.get_last_component().name):  # Don't call predict on the final component during fit
+                if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
                     output = component_instance.predict(input_x)
                 else:
                     output = None

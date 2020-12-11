@@ -420,6 +420,29 @@ def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
+    X, y = X_y_binary
+    mock_predict.return_value = pd.Series(y)
+
+    graph = {'Imputer': [Imputer],
+             'OneHot_RandomForest': [OneHotEncoder, 'Imputer.x'],
+             'OneHot_Logistic': [OneHotEncoder, 'Imputer.x'],
+             'Random Forest': [RandomForestClassifier, 'OneHot_RandomForest.x'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'OneHot_Logistic.x'],
+             'Final Estimator': [LogisticRegressionClassifier, 'Random Forest', 'Logistic Regression']}
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    assert not component_graph.get_component('Logistic Regression')._component_obj == component_graph.get_component('Final Estimator')._component_obj
+
+    component_graph.predict(X)
+    assert mock_predict.call_count == 5
+    assert mock_fit.call_count == 3
+
+
 @patch('evalml.pipelines.components.Imputer.transform')
 @patch('evalml.pipelines.components.OneHotEncoder.transform')
 def test_compute_final_component_features_linear(mock_ohe, mock_imputer, example_graph, X_y_binary):
