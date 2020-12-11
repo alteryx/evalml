@@ -1,4 +1,5 @@
 import importlib
+import os
 import warnings
 from collections import namedtuple
 
@@ -379,3 +380,45 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
 
     mask = np.logical_and(_not_nan(pd_data_1), _not_nan(pd_data_2))
     return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
+
+
+def _file_path_check(filepath=None):
+    if filepath:
+        filepath = str(filepath)
+        try:
+            saving_folder = os.path.dirname(filepath)
+            if not os.path.exists(saving_folder):   # Creates folder if one is specified
+                os.makedirs(saving_folder)
+            f = open(filepath, 'w')
+            f.close()
+        except (IOError, FileNotFoundError):
+            raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+    return filepath
+
+
+def save_plot(fig, filepath=None, interactive=False):
+    """Saves fig to filepath if specified, or to a default location if not.
+
+    Arguments:
+        fig (Figure): Figure to be saved
+        filepath (str or Path, optional): Location to save file
+        interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
+        instead of static.
+    """
+    plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
+    plt_ = import_or_raise("matplotlib.pyplot", error_msg="Cannot find dependency matplotlib.pyplot")
+    is_plotly_ = False
+
+    if not isinstance(fig, plotly_.graph_objects.Figure):
+        raise TypeError("Figure to save must be a Plotly object")
+
+    if not filepath:
+        extension = 'html' if interactive else 'png'
+        filepath = os.path.join(os.getcwd(), f'test_plot.{extension}')
+
+    filepath = _file_path_check(filepath)
+
+    if is_plotly_ and interactive:
+        plotly_.offline.plot(fig, filename=filepath)
+    elif is_plotly_ and not interactive:
+        fig.write_image(file=filepath, engine="kaleido")
