@@ -1882,3 +1882,17 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
             continue
         assert result['parameters']['Delayed Feature Transformer'] == configuration
         assert result['parameters']['pipeline'] == configuration
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+def test_automl_best_pipeline_false(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(problem_type='binary', train_best_pipeline=False)
+    automl.search(X, y)
+    assert not automl.best_pipeline._is_fitted
+
+    automl = AutoMLSearch(problem_type='binary')
+    automl.search(X, y)
+    assert automl.best_pipeline._is_fitted

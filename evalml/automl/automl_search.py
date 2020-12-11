@@ -102,6 +102,7 @@ class AutoMLSearch:
                  ensembling=False,
                  max_batches=None,
                  problem_configuration=None,
+                 train_best_pipeline=True,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -171,6 +172,8 @@ class AutoMLSearch:
 
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
                 in time series problems, values should be passed in for the gap and max_delay variables.
+
+            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -256,6 +259,7 @@ class AutoMLSearch:
 
         self._validate_problem_type()
         self.problem_configuration = self._validate_problem_configuration(problem_configuration)
+        self._train_best_pipe = train_best_pipeline
         self._best_pipe = None
 
     def _validate_objective(self, objective):
@@ -531,7 +535,11 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
-        self._compute_cv_scores(self.get_pipeline(best_pipeline['id']), X, y, True)
+        best_pipe = self.get_pipeline(best_pipeline['id'])
+        if self._train_best_pipe:
+            self._compute_cv_scores(best_pipe, X, y, True)
+        else:
+            self._best_pipe = best_pipe
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
