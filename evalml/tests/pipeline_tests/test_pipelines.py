@@ -1196,10 +1196,10 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
 def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
                                                      all_multiclass_pipeline_classes, helper_functions):
-    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+    if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if problem_type == ProblemTypes.BINARY:

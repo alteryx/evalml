@@ -6,7 +6,8 @@ from evalml.data_checks import (
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    numeric_and_boolean_dtypes
+    numeric_and_boolean_dtypes,
+    numeric_and_boolean_ww
 )
 
 
@@ -58,19 +59,20 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
+        import pdb; pdb.set_trace()
 
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        if y.logical_type not in numeric_and_boolean_ww:
+            return messages
+        X_num = X.select(include=numeric_and_boolean_ww)
+        X_num = _convert_woodwork_types_wrapper(X_num.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        if y.dtype not in numeric_and_boolean_dtypes:
-            return messages
-        X = X.select_dtypes(include=numeric_and_boolean_dtypes)
-        if len(X.columns) == 0:
+        if len(X_num.columns) == 0:
             return messages
 
-        highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
+        highly_corr_cols = {label: abs(y.corr(col)) for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
                                                       data_check_name=self.name,

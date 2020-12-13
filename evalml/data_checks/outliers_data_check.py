@@ -9,7 +9,7 @@ from evalml.utils import get_random_state
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    numeric_dtypes
+    numeric_ww_types
 )
 
 
@@ -54,9 +54,9 @@ class OutliersDataCheck(DataCheck):
         }
 
         X = _convert_to_woodwork_structure(X)
+        X = X.select(include=numeric_ww_types)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-        X = X.select_dtypes(include=numeric_dtypes)
         if len(X.columns) == 0:
             return messages
 
