@@ -1311,7 +1311,7 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
         assert not pipeline_names.str.contains('Ensemble').any()
     elif use_ensembling:
         assert pipeline_names.str.contains('Ensemble').any()
-        assert "Ensembling will run at the" in caplog.text
+        assert f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration" in caplog.text
 
     else:
         assert not pipeline_names.str.contains('Ensemble').any()
