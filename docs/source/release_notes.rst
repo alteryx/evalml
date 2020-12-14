@@ -27,6 +27,12 @@ Release Notes
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
+.. warning::
+
+    **Breaking Changes**
+        * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+
+
 
 **v0.16.1 Dec. 1, 2020**
     * Enhancements
