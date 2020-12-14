@@ -516,8 +516,7 @@ def test_save_graphviz_default_format(file_name, format, interactive, fitted_tre
 
 @pytest.mark.parametrize("file_name,format,interactive",
                          [
-                             ('test_plot', 'jpeg', False),
-                             (None, 'jpeg', False)
+                             ('test_plot', 'jpeg', False)
                          ])
 def test_save_graphviz_different_format(file_name, format, interactive, fitted_tree_estimators, tmpdir):
     est_class, est_reg = fitted_tree_estimators
@@ -531,8 +530,6 @@ def test_save_graphviz_different_format(file_name, format, interactive, fitted_t
     assert os.path.exists(output_)
     assert isinstance(output_, str)
     assert os.path.basename(output_) == 'test_plot.jpeg'
-    if not file_name:
-        os.remove('test_plot.jpeg')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
