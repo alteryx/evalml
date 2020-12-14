@@ -13,6 +13,7 @@ Release Notes
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
         * Added baseline pipeline and components for time series regression problems :pr:`1496`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
+        * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
@@ -22,10 +23,17 @@ Release Notes
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
+        * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
+
+.. warning::
+
+    **Breaking Changes**
+        * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+
 
 
 **v0.16.1 Dec. 1, 2020**
