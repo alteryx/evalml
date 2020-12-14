@@ -11,6 +11,7 @@ Release Notes
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
         * Added baseline pipeline and components for time series regression problems :pr:`1496`
+        * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
         * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
     * Fixes
