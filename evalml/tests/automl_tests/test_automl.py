@@ -1767,7 +1767,6 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
     # first automl batch, times 3 for 3-fold cross validation, plus 3 for best_pipelines
-    print(len(automl._results['errors']))
     assert len(automl._results['errors']) == (2 + len(get_estimators(problem_type='binary'))) * 3
     for e in automl._results['errors']:
         assert str(e) == msg
