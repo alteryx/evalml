@@ -284,19 +284,21 @@ def is_all_numeric(df):
     return True
 
 
-def infer_feature_types(data, feature_types):
+def infer_feature_types(data, feature_types=None):
     """Create a Woodwork structure from the given pandas or numpy input, with specified types for columns.
         If a column's type is not specified, it will be inferred by Woodwork.
 
     Arguments:
-        data:
-        feature_types:
+        data (pd.DataFrame): Input data to convert to a Woodwork data structure.
+        feature_types (dict, optional): Dictionary mapping column names to the type of data represented in the column
 
     Returns:
         A Woodwork data structure where the data type of each column was either specified or inferred.
     """
     ww_data = _convert_to_woodwork_structure(data)
-    return ww_data.set_types(logical_types=feature_types)
+    if feature_types is not None:
+        ww_data = ww_data.set_types(logical_types=feature_types)
+    return ww_data
 
 
 def _convert_to_woodwork_structure(data):
