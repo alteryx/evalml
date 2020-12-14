@@ -40,7 +40,7 @@ def test_outliers_data_check_warnings():
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                       details={"columns": [3, 25, 55, 72]}).to_dict()],
         "errors": []
-     }
+    }
 
 
 def test_outliers_data_check_input_formats():
