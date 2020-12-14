@@ -303,19 +303,6 @@ def _convert_to_woodwork_structure(data):
         return ww.DataColumn(ww_data)
     return ww.DataTable(ww_data)
 
-    # ww_data = data.copy()
-    # if isinstance(ww_data, pd.api.extensions.ExtensionArray) or (isinstance(ww_data, np.ndarray) and len(ww_data.shape) == 1):
-    #     ww_data = pd.Series(ww_data)
-    # elif isinstance(ww_data, np.ndarray):
-    #     ww_data = pd.DataFrame(ww_data)
-
-    # Convert pandas data structures to Woodwork data structures
-    # ww_data = ww_data.copy()
-    # # if isinstance(ww_data, pd.Series):
-    #     return ww.DataColumn(ww_data)
-
-    # return ww.DataTable(ww_data)
-
 
 def _convert_woodwork_types_wrapper(pd_data):
     """

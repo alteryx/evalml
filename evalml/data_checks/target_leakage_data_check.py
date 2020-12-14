@@ -6,7 +6,6 @@ from evalml.data_checks import (
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    numeric_and_boolean_dtypes,
     numeric_and_boolean_ww
 )
 
@@ -59,7 +58,7 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)

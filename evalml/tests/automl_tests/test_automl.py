@@ -53,8 +53,7 @@ from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     check_random_state_equality,
-    get_random_state,
-    numeric_and_boolean_dtypes
+    get_random_state
 )
 
 

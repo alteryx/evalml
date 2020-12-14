@@ -51,9 +51,7 @@ from evalml.pipelines.utils import (
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
-    categorical_dtypes,
-    check_random_state_equality,
-    numeric_and_boolean_dtypes
+    check_random_state_equality
 )
 
 
@@ -1317,8 +1315,7 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         objective = 'R2'
     parameters = {
         stacking_component_name: {
-            "input_pipelines": input_pipelines,
-            "n_jobs": 1
+            "input_pipelines": input_pipelines
         }
     }
     graph = ['Simple Imputer', stacking_component_name]

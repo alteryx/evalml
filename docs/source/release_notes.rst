@@ -21,6 +21,8 @@ Release Notes
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
+        * Updated selection using pandas ``dtype``s to selecting using Woodwork logical types :pr:`1551`
+
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
@@ -35,7 +37,6 @@ Release Notes
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
-        * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
         * Updated pipeline and component documentation and demos to use ``Woodwork`` :pr:`1466`
     * Testing Changes
