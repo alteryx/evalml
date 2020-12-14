@@ -12,6 +12,7 @@ from .graphs import (
     graph_binary_objective_vs_threshold,
     partial_dependence,
     graph_partial_dependence,
+    get_prediction_vs_actual_data,
     graph_prediction_vs_actual,
     get_prediction_vs_actual_over_time_data,
     graph_prediction_vs_actual_over_time,

@@ -20,6 +20,7 @@ from evalml.model_understanding.graphs import (
     confusion_matrix,
     decision_tree_data_from_estimator,
     decision_tree_data_from_pipeline,
+    get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
@@ -948,6 +949,31 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         graph_prediction_vs_actual(yr, y_preds)
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
+
+
+def test_get_prediction_vs_actual_data():
+    y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
+
+    with pytest.raises(ValueError, match="Threshold must be positive!"):
+        get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=-1)
+
+    outlier_loc = [2, 11]
+    results = get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=2000)
+    assert isinstance(results, pd.DataFrame)
+    assert np.array_equal(results['prediction'], y_pred)
+    assert np.array_equal(results['actual'], y_true)
+    for i, value in enumerate(results['outlier']):
+        if i in outlier_loc:
+            assert value == "#ffff00"
+        else:
+            assert value == '#0000ff'
+
+    results = get_prediction_vs_actual_data(y_true, y_pred)
+    assert isinstance(results, pd.DataFrame)
+    assert np.array_equal(results['prediction'], y_pred)
+    assert np.array_equal(results['actual'], y_true)
+    assert (results['outlier'] == '#0000ff').all()
 
 
 def test_graph_prediction_vs_actual_default():
