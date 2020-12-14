@@ -588,7 +588,7 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
     def setup_plt():
         data_ = [0, 1, 2, 3, 4]
         fig = sns.scatterplot(data=data_)
-        #fig_ = fig.figure
+        # fig_ = fig.figure
         return fig
 
     fig = setup_plt()
