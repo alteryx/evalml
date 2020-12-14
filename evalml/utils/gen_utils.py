@@ -383,6 +383,17 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
 
 
 def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):
+    """ Helper function to check the filepath being passed.
+
+    Arguments:
+        filepath (str or Path, optional): Location to save file.
+        format (str): Extension for figure to be saved as. Defaults to 'png'.
+        interactive (bool, optional): If True and fig is of type plotly.Figure, sets the format to 'html'.
+        is_plotly (bool, optional): Check to see if the fig being passed is of type plotly.Figure.
+
+    Returns:
+        String representing the final filepath the image will be saved to.
+    """
     if filepath:
         filepath = str(filepath)
         path_and_name, extension = os.path.splitext(filepath)
@@ -409,12 +420,17 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
     """Saves fig to filepath if specified, or to a default location if not.
 
     Arguments:
-        fig (Figure): Figure to be saved
-        filepath (str or Path, optional): Location to save file
-        format (str): Extension for figure to be saved as. Defaults to 'png'. Ignored if interactive is True.
+        fig (Figure): Figure to be saved.
+        filepath (str or Path, optional): Location to save file.
+        format (str): Extension for figure to be saved as. Ignored if interactive is True and fig
+        is of type plotly.Figure. Defaults to 'png'.
         interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
-        instead of static.
-        return_filepath (bool, optional):
+        instead of static. Defaults to False.
+        return_filepath (bool, optional): Whether to return the final filepath the image is saved to. Defaults to False.
+
+    Returns:
+        String representing the final filepath the image was saved to if return_filepath is set to True.
+        Defaults to None.
     """
     plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
     graphviz_ = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
