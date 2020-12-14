@@ -23,6 +23,7 @@ Release Notes
         * Added script to generate github markdown for releases :pr:`1487`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
     * Documentation Changes
+        * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
