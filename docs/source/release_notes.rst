@@ -15,6 +15,7 @@ Release Notes
         * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
         * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
+        * Added utility method so that users can set feature types without having to learn about Woodwork directly :pr:`1555`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
