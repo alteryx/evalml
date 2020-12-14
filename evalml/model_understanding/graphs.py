@@ -476,8 +476,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     return data
 
 
-
-def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
+def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolution=100):
     """Create an one-way partial dependence plot.
 
     Arguments:
@@ -487,6 +486,10 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
+        class_label (string, None): Name of class to plot for multiclass problems. If None, will plot
+            the partial dependence for each class. This argument does change behavior for regression or binary
+            classification pipelines. For binary classification, the partial dependence for the positive label will
+            always be displayed.
 
     Returns:
         pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
@@ -496,19 +499,38 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
+    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline) and class_label is not None:
+        if class_label not in pipeline.classes_:
+            msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
+            raise ValueError(msg)
 
     part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
     title = f"Partial Dependence of '{feature_name}'"
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
-                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])})
-    data = []
-    data.append(_go.Scatter(x=part_dep['feature_values'],
+                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])},
+                        showlegend=False)
+    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+        class_labels = [class_label] if class_label is not None else pipeline.classes_
+        _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")
+        fig = _subplots.make_subplots(rows=1, cols=len(class_labels), subplot_titles=class_labels,
+                                      shared_xaxes=True, shared_yaxes=True)
+        for i, label in enumerate(class_labels):
+            # Plotly trace indexing begins at 1 so we add 1 to i
+            fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
+                                      y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
+                                      line=dict(width=3)),
+                          row=1, col=i + 1)
+        fig.update_layout(layout)
+    else:
+        trace = _go.Scatter(x=part_dep['feature_values'],
                             y=part_dep['partial_dependence'],
                             name='Partial Dependence',
-                            line=dict(width=3)))
-    return _go.Figure(layout=layout, data=data)
+                            line=dict(width=3))
+        fig = _go.Figure(layout=layout, data=[trace])
+
+    return fig
 
 
 def _calculate_axis_range(arr):
