@@ -523,6 +523,7 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
                                       line=dict(width=3)),
                           row=1, col=i + 1)
         fig.update_layout(layout)
+        fig.update_xaxes(title=f'{feature_name}')
     else:
         trace = _go.Scatter(x=part_dep['feature_values'],
                             y=part_dep['partial_dependence'],
