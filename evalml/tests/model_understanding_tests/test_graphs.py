@@ -42,6 +42,10 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 @pytest.fixture
@@ -1022,10 +1026,12 @@ def test_get_prediction_vs_actual_over_time_data(mock_predict, data_type, logist
 def test_graph_prediction_vs_actual_over_time():
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
-    class MockPipeline:
+    class MockPipeline():
         problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
         def predict(self, X, y):
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
             preds = y + 10
             preds.index = range(100, 161)
             return preds
