@@ -51,7 +51,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
-    categorical_dtypes,
     check_random_state_equality,
     get_random_state
 )
@@ -989,7 +988,7 @@ def test_targets_pandas_data_types_classification(data_type, automl_type, target
         X, y = load_wine(return_pandas=True)
     unique_vals = y.unique()
     # Update target types as necessary
-    if target_type in categorical_dtypes:
+    if target_type in ['category', 'object']:
         if target_type == "category":
             y = pd.Categorical(y)
     elif "int" in target_type.lower():

@@ -50,9 +50,7 @@ from evalml.pipelines.utils import (
     make_pipeline_from_components
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    check_random_state_equality
-)
+from evalml.utils.gen_utils import check_random_state_equality
 
 
 def test_allowed_model_families(has_minimal_dependencies):

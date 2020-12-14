@@ -14,15 +14,10 @@ from evalml.exceptions import (
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
-numeric_ww_types = [ww.logical_types.Integer, ww.logical_types.Double]
 
-numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-boolean = ['bool']
+numeric_ww_types = [ww.logical_types.Integer, ww.logical_types.Double]
 boolean_ww = [ww.logical_types.Boolean]
 numeric_and_boolean_ww = numeric_ww_types + boolean_ww
-
-numeric_and_boolean_dtypes = numeric_dtypes + boolean
-categorical_dtypes = ['object', 'category']
 categorical_ww_types = [ww.logical_types.Categorical]
 
 
@@ -271,20 +266,21 @@ def safe_repr(value):
     return repr(value)
 
 
-def is_all_numeric(df):
-    """Checks if the given DataFrame contains only numeric values
+def is_all_numeric(dt):
+    """Checks if the given DataTable contains only numeric values
 
     Arguments:
-        df (DataFrame): The DataFrame to check datatypes of
+        dt (ww.DataTable): The DataTable to check data types of
 
     Returns:
-        True if all the DataFrame columns are numeric and are not missing any values, False otherwise
+        True if all the DataTable columns are numeric and are not missing any values, False otherwise
     """
-    if df.isnull().any().any():
-        return False
-    for dtype in df.dtypes:
-        if dtype not in numeric_and_boolean_dtypes:
+    for ltype in dt.logical_types.values():
+        if ltype not in numeric_and_boolean_ww:
             return False
+
+    if dt.to_dataframe().isnull().any().any():
+        return False
     return True
 
 
@@ -310,6 +306,7 @@ def _convert_to_woodwork_structure(data):
         return ww.DataColumn(ww_data)
 
     return ww.DataTable(ww_data)
+
 
 def _convert_woodwork_types_wrapper(pd_data):
     """
