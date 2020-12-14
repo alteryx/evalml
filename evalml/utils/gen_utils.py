@@ -382,9 +382,18 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
     return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
 
 
-def _file_path_check(filepath=None):
+def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):
     if filepath:
         filepath = str(filepath)
+        path_and_name, extension = os.path.splitext(filepath)
+        extension = extension[1:].lower() if extension else None
+        if is_plotly and interactive:
+            format_ = 'html'
+        elif not extension and not interactive:
+            format_ = format
+        else:
+            format_ = extension
+        filepath = f'{path_and_name}.{format_}'
         try:
             saving_folder = os.path.dirname(filepath)
             if not os.path.exists(saving_folder):   # Creates folder if one is specified
@@ -396,29 +405,57 @@ def _file_path_check(filepath=None):
     return filepath
 
 
-def save_plot(fig, filepath=None, interactive=False):
+def save_plot(fig, filepath=None, format='png', interactive=False, return_filepath=False):
     """Saves fig to filepath if specified, or to a default location if not.
 
     Arguments:
         fig (Figure): Figure to be saved
         filepath (str or Path, optional): Location to save file
+        format (str): Extension for figure to be saved as. Defaults to 'png'. Ignored if interactive is True.
         interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
         instead of static.
+        return_filepath (bool, optional):
     """
     plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
-    plt_ = import_or_raise("matplotlib.pyplot", error_msg="Cannot find dependency matplotlib.pyplot")
-    is_plotly_ = False
+    graphviz_ = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
+    matplotlib = import_or_raise("matplotlib", error_msg="Cannot find dependency matplotlib")
+    plt_ = matplotlib.pyplot
+    axes_ = matplotlib.axes
 
-    if not isinstance(fig, plotly_.graph_objects.Figure):
-        raise TypeError("Figure to save must be a Plotly object")
+    is_plotly = False
+    is_graphviz = False
+    is_plt = False
+    is_seaborn = False
+
+    format = format if format else 'png'
+    if isinstance(fig, plotly_.graph_objects.Figure):
+        is_plotly = True
+    elif isinstance(fig, graphviz_.Source):
+        is_graphviz = True
+    elif isinstance(fig, plt_.Figure):
+        is_plt = True
+    elif isinstance(fig, axes_.SubplotBase):
+        is_seaborn = True
 
     if not filepath:
-        extension = 'html' if interactive else 'png'
+        extension = 'html' if interactive and is_plotly else format
         filepath = os.path.join(os.getcwd(), f'test_plot.{extension}')
 
-    filepath = _file_path_check(filepath)
+    filepath = _file_path_check(filepath, format=format, interactive=interactive, is_plotly=is_plotly)
 
-    if is_plotly_ and interactive:
-        plotly_.offline.plot(fig, filename=filepath)
-    elif is_plotly_ and not interactive:
+    if is_plotly and interactive:
+        fig.write_html(file=filepath)
+    elif is_plotly and not interactive:
         fig.write_image(file=filepath, engine="kaleido")
+    elif is_graphviz:
+        filepath_, format_ = os.path.splitext(filepath)
+        fig.format = format_[1:]
+        fig.render(filename=filepath_, view=False, cleanup=True)
+    elif is_plt:
+        fig.savefig(fname=filepath)
+    elif is_seaborn:
+        fig = fig.figure
+        fig.savefig(fname=filepath)
+
+    if return_filepath:
+        return filepath
