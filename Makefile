@@ -4,6 +4,7 @@ clean:
 	find . -name '*.pyc' -delete
 	find . -name __pycache__ -delete
 	find . -name '*~' -delete
+	find . -name '.coverage.*' -delete
 
 .PHONY: lint
 lint:
@@ -29,7 +30,7 @@ circleci-test-minimal-deps:
 
 .PHONY: win-circleci-test
 win-circleci-test:
-	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
+	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
 
 .PHONY: installdeps
 installdeps:
@@ -45,8 +46,3 @@ installdeps-test:
 installdeps-dev:
 	pip install -e . -q
 	pip install -r dev-requirements.txt -q
-
-.PHONY: dependenciesfile
-dependenciesfile:
-		$(eval allow_list='pandas|numpy|scikit|xgboost|catboost|cloudpickle|distributed|pyzmq|lightgbm')
-		pip freeze | grep -v "evalml.git" | grep -E $(allow_list) > $(DEPENDENCY_FILE_PATH)

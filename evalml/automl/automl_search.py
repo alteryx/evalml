@@ -19,7 +19,10 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.data_splitters import TrainingValidationSplit
+from evalml.automl.data_splitters import (
+    TimeSeriesSplit,
+    TrainingValidationSplit
+)
 from evalml.automl.utils import get_default_primary_search_objective
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -28,7 +31,6 @@ from evalml.data_checks import (
     EmptyDataChecks,
     HighVarianceCVDataCheck
 )
-from evalml.data_checks.data_check_message_type import DataCheckMessageType
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -45,7 +47,9 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline
+    ModeBaselineMulticlassPipeline,
+    PipelineBase,
+    TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -97,6 +101,7 @@ class AutoMLSearch:
                  optimize_thresholds=False,
                  ensembling=False,
                  max_batches=None,
+                 problem_configuration=None,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -164,6 +169,9 @@ class AutoMLSearch:
             max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
                 max_iterations have precedence over stopping the search.
 
+            problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
+                in time series problems, values should be passed in for the gap and max_delay variables.
+
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
         """
@@ -199,22 +207,21 @@ class AutoMLSearch:
         additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
 
-        if max_time is None or isinstance(max_time, (int, float)):
-            self.max_time = max_time
-        elif isinstance(max_time, str):
-            self.max_time = convert_to_seconds(max_time)
-        else:
-            raise TypeError("max_time must be a float, int, or string. Received a {}.".format(type(max_time)))
-
-        if max_batches is not None and max_batches <= 0:
-            raise ValueError(f"Parameter max batches must be None or non-negative. Received {max_batches}.")
+        if not isinstance(max_time, (int, float, str, type(None))):
+            raise TypeError(f"Parameter max_time must be a float, int, string or None. Received {type(max_time)} with value {str(max_time)}..")
+        if isinstance(max_time, (int, float)) and max_time < 0:
+            raise ValueError(f"Parameter max_time must be None or non-negative. Received {max_time}.")
+        if max_batches is not None and max_batches < 0:
+            raise ValueError(f"Parameter max_batches must be None or non-negative. Received {max_batches}.")
+        if max_iterations is not None and max_iterations < 0:
+            raise ValueError(f"Parameter max_iterations must be None or non-negative. Received {max_iterations}.")
+        self.max_time = convert_to_seconds(max_time) if isinstance(max_time, str) else max_time
+        self.max_iterations = max_iterations
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
-
-        self.max_iterations = max_iterations
         if not self.max_iterations and not self.max_time and not self.max_batches:
-            self.max_iterations = 5
-            logger.info("Using default limit of max_iterations=5.\n")
+            self.max_batches = 1
+            logger.info("Using default limit of max_batches=1.\n")
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
@@ -245,8 +252,10 @@ class AutoMLSearch:
         self._automl_algorithm = None
         self._start = None
         self._baseline_cv_scores = {}
+        self.show_batch_output = False
 
         self._validate_problem_type()
+        self.problem_configuration = self._validate_problem_configuration(problem_configuration)
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -280,6 +289,7 @@ class AutoMLSearch:
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Iterations: {self.max_iterations}\n"
+            f"Max Batches: {self.max_batches}\n"
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
@@ -300,6 +310,14 @@ class AutoMLSearch:
             rankings_desc = f"\nSearch Results: \n{'='*20}\n{rankings_str}"
 
         return search_desc + rankings_desc
+
+    def _validate_problem_configuration(self, problem_configuration=None):
+        if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            required_parameters = {'gap', 'max_delay'}
+            if not problem_configuration or not all(p in problem_configuration for p in required_parameters):
+                raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
+                                 f"parameters. Received {problem_configuration}.")
+        return problem_configuration or {}
 
     def _validate_data_checks(self, data_checks):
         """Validate data_checks parameter.
@@ -364,6 +382,9 @@ class AutoMLSearch:
             default_data_split = KFold(n_splits=3, random_state=self.random_state, shuffle=True)
         elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
             default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
+        elif self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            default_data_split = TimeSeriesSplit(n_splits=3, gap=self.problem_configuration['gap'],
+                                                 max_delay=self.problem_configuration['max_delay'])
 
         if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
             default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
@@ -378,16 +399,16 @@ class AutoMLSearch:
 
             y (pd.Series, ww.DataColumn): The target training data of length [n_samples]
 
-            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
-                Disabled by default in non-Jupyter enviroments.
-
             data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
                 automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, no data checks will be done.
+                search begins. If "disabled" or None, `no` data checks will be done.
                 If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
-        Returns:
-            self
+            feature_types (list, optional): list of feature types, either numerical or categorical.
+                Categorical features will automatically be encoded
+
+            show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
+                Disabled by default in non-Jupyter enviroments.
         """
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot:
@@ -410,23 +431,16 @@ class AutoMLSearch:
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
 
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
-
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
-        data_check_results = data_checks.validate(X, y)
-        if data_check_results:
-            self._data_check_results = data_check_results
-            for message in self._data_check_results:
-                if message.message_type == DataCheckMessageType.WARNING:
-                    logger.warning(message)
-                elif message.message_type == DataCheckMessageType.ERROR:
-                    logger.error(message)
-            if any([message.message_type == DataCheckMessageType.ERROR for message in self._data_check_results]):
-                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
-
+        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()))
+        for message in self._data_check_results["warnings"]:
+            logger.warning(message)
+        for message in self._data_check_results["errors"]:
+            logger.error(message)
+        if self._data_check_results["errors"]:
+            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
@@ -442,6 +456,7 @@ class AutoMLSearch:
             run_ensembling = False
 
         if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
             if run_ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
@@ -464,7 +479,8 @@ class AutoMLSearch:
             n_jobs=self.n_jobs,
             number_features=X.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling
+            ensembling=run_ensembling,
+            pipeline_params=self.problem_configuration
         )
 
         log_title(logger, "Beginning pipeline search")
@@ -492,45 +508,20 @@ class AutoMLSearch:
         current_batch_pipeline_scores = []
         while self._check_stopping_condition(self._start):
             try:
-                if len(current_batch_pipelines) == 0:
-                    try:
-                        if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
-                            raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
-                        current_batch_pipelines = self._automl_algorithm.next_batch()
-                        current_batch_pipeline_scores = []
-                    except StopIteration:
-                        logger.info('AutoML Algorithm out of recommendations, ending')
-                        break
-                pipeline = current_batch_pipelines.pop(0)
-                parameters = pipeline.parameters
-                logger.debug('Evaluating pipeline {}'.format(pipeline.name))
-                logger.debug('Pipeline parameters: {}'.format(parameters))
+                if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
+                    raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
+                current_batch_pipelines = self._automl_algorithm.next_batch()
+                current_batch_pipeline_scores = []
+            except StopIteration:
+                logger.info('AutoML Algorithm out of recommendations, ending')
+                break
 
-                if self.start_iteration_callback:
-                    self.start_iteration_callback(pipeline.__class__, parameters, self)
-                desc = f"{pipeline.name}"
-                if len(desc) > self._MAX_NAME_LEN:
-                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-                desc = desc.ljust(self._MAX_NAME_LEN)
+            current_batch_size = len(current_batch_pipelines)
+            current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, X, y, search_iteration_plot=search_iteration_plot)
 
-                if self.max_batches:
-                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start, self._automl_algorithm.batch_number)
-                else:
-                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations, self._start)
-
-                evaluation_results = self._evaluate(pipeline, X, y)
-                score = evaluation_results['cv_score_mean']
-                score_to_minimize = -score if self.objective.greater_is_better else score
-                current_batch_pipeline_scores.append(score_to_minimize)
-                self._automl_algorithm.add_result(score_to_minimize, pipeline)
-
-                if search_iteration_plot:
-                    search_iteration_plot.update()
-
-            except KeyboardInterrupt:
-                current_batch_pipelines = self._handle_keyboard_interrupt(pipeline, current_batch_pipelines)
-                if not current_batch_pipelines:
-                    return
+            # Different size indicates early stopping
+            if len(current_batch_pipeline_scores) != current_batch_size:
+                break
 
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
@@ -603,35 +594,14 @@ class AutoMLSearch:
             baseline = ModeBaselineMulticlassPipeline(parameters={})
         elif self.problem_type == ProblemTypes.REGRESSION:
             baseline = MeanBaselineRegressionPipeline(parameters={})
-
+        else:
+            gap = self.problem_configuration['gap']
+            max_delay = self.problem_configuration['max_delay']
+            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay}})
         pipelines = [baseline]
-        # Using a while loop so that we can retry the pipeline after the user hits ctr-c
-        # but decides to not stop the search.
-        while pipelines:
-            try:
-                if self.start_iteration_callback:
-                    self.start_iteration_callback(baseline.__class__, baseline.parameters, self)
-                baseline = pipelines.pop()
-                desc = f"{baseline.name}"
-                if len(desc) > self._MAX_NAME_LEN:
-                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-                desc = desc.ljust(self._MAX_NAME_LEN)
-
-                update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
-                                self._start, 1)
-
-                baseline_results = self._compute_cv_scores(baseline, X, y)
-                self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(baseline_results["cv_data"])
-                self._add_result(trained_pipeline=baseline,
-                                 parameters=baseline.parameters,
-                                 training_time=baseline_results['training_time'],
-                                 cv_data=baseline_results['cv_data'],
-                                 cv_scores=baseline_results['cv_scores'])
-            except KeyboardInterrupt:
-                pipelines = self._handle_keyboard_interrupt(baseline, pipelines)
-                if not pipelines:
-                    return True
-
+        scores = self._evaluate_pipelines(pipelines, X, y, baseline=True)
+        if scores == []:
+            return True
         return False
 
     @staticmethod
@@ -649,7 +619,13 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
-        for i, (train, test) in enumerate(self.data_split.split(X, y)):
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
+
+        X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y_pd = _convert_woodwork_types_wrapper(y.to_series())
+        for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
+
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
@@ -658,8 +634,8 @@ class AutoMLSearch:
             X_train, X_test = X.iloc[train], X.iloc[test]
             y_train, y_test = y.iloc[train], y.iloc[test]
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                diff_train = set(np.setdiff1d(y, y_train))
-                diff_test = set(np.setdiff1d(y, y_test))
+                diff_train = set(np.setdiff1d(y.to_series(), y_train.to_series()))
+                diff_test = set(np.setdiff1d(y.to_series(), y_test.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the test set after data split: {diff_test}." if diff_test else ""
                 if diff_string:
@@ -691,6 +667,7 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
+
                 if self.error_callback is not None:
                     self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
                                         fold_num=i, pipeline=pipeline)
@@ -706,8 +683,8 @@ class AutoMLSearch:
             ordered_scores = OrderedDict()
             ordered_scores.update({self.objective.name: score})
             ordered_scores.update(scores)
-            ordered_scores.update({"# Training": len(y_train)})
-            ordered_scores.update({"# Testing": len(y_test)})
+            ordered_scores.update({"# Training": y_train.shape[0]})
+            ordered_scores.update({"# Testing": y_test.shape[0]})
 
             evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
             if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
@@ -740,8 +717,8 @@ class AutoMLSearch:
         high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
         high_variance_cv = False
 
-        if high_variance_cv_check_results:
-            logger.warning(high_variance_cv_check_results[0])
+        if high_variance_cv_check_results["warnings"]:
+            logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
             high_variance_cv = True
 
         self._results['pipeline_results'][pipeline_id] = {
@@ -763,18 +740,64 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline, self)
 
-    def _evaluate(self, pipeline, X, y):
-        parameters = pipeline.parameters
-        evaluation_results = self._compute_cv_scores(pipeline, X, y)
-        logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+    def _evaluate_pipelines(self, current_pipeline_batch, X, y, baseline=False, search_iteration_plot=None):
+        current_batch_pipeline_scores = []
+        add_single_pipeline = False
+        if isinstance(current_pipeline_batch, PipelineBase):
+            current_pipeline_batch = [current_pipeline_batch]
+            add_single_pipeline = True
 
-        self._add_result(trained_pipeline=pipeline,
-                         parameters=parameters,
-                         training_time=evaluation_results['training_time'],
-                         cv_data=evaluation_results['cv_data'],
-                         cv_scores=evaluation_results['cv_scores'])
-        logger.debug('Adding results complete')
-        return evaluation_results
+        while len(current_pipeline_batch) > 0 and (add_single_pipeline or baseline or self._check_stopping_condition(self._start)):
+            pipeline = current_pipeline_batch.pop()
+            try:
+                parameters = pipeline.parameters
+                logger.debug('Evaluating pipeline {}'.format(pipeline.name))
+                logger.debug('Pipeline parameters: {}'.format(parameters))
+
+                if self.start_iteration_callback:
+                    self.start_iteration_callback(pipeline.__class__, parameters, self)
+                desc = f"{pipeline.name}"
+                if len(desc) > self._MAX_NAME_LEN:
+                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
+                desc = desc.ljust(self._MAX_NAME_LEN)
+
+                if not add_single_pipeline:
+                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
+                                    self._start, 1 if baseline else self._automl_algorithm.batch_number, self.show_batch_output)
+
+                evaluation_results = self._compute_cv_scores(pipeline, X, y)
+                parameters = pipeline.parameters
+
+                if baseline:
+                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results["cv_data"])
+
+                logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
+                self._add_result(trained_pipeline=pipeline,
+                                 parameters=parameters,
+                                 training_time=evaluation_results['training_time'],
+                                 cv_data=evaluation_results['cv_data'],
+                                 cv_scores=evaluation_results['cv_scores'])
+                logger.debug('Adding results complete')
+
+                score = evaluation_results['cv_score_mean']
+                score_to_minimize = -score if self.objective.greater_is_better else score
+                current_batch_pipeline_scores.append(score_to_minimize)
+
+                if not baseline and not add_single_pipeline:
+                    self._automl_algorithm.add_result(score_to_minimize, pipeline)
+
+                if search_iteration_plot:
+                    search_iteration_plot.update()
+
+                if add_single_pipeline:
+                    add_single_pipeline = False
+
+            except KeyboardInterrupt:
+                current_pipeline_batch = self._handle_keyboard_interrupt(pipeline, current_pipeline_batch)
+                if current_pipeline_batch == []:
+                    return current_batch_pipeline_scores
+
+        return current_batch_pipeline_scores
 
     def get_pipeline(self, pipeline_id, random_state=0):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
@@ -868,7 +891,7 @@ class AutoMLSearch:
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-        self._evaluate(pipeline, X, y)
+        self._evaluate_pipelines(pipeline, X, y)
 
     @property
     def results(self):

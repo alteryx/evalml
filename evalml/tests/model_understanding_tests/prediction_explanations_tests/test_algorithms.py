@@ -17,7 +17,8 @@ from evalml.pipelines import (
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
+    TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components import (
     CatBoostClassifier,
@@ -55,6 +56,7 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 @pytest.mark.parametrize("pipeline,exception,match", [(MeanBaselineRegressionPipeline, ValueError, baseline_message),
                                                       (ModeBaselineBinaryPipeline, ValueError, baseline_message),
                                                       (ModeBaselineMulticlassPipeline, ValueError, baseline_message),
+                                                      (TimeSeriesBaselineRegressionPipeline, ValueError, baseline_message),
                                                       (make_test_pipeline(CatBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, catboost_message),
                                                       (make_test_pipeline(XGBoostClassifier, BinaryClassificationPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(XGBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, xg_boost_message),
@@ -70,7 +72,7 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
     with pytest.raises(exception, match=match):
-        _ = _compute_shap_values(pipeline({}), pd.DataFrame(np.random.random((2, 16))))
+        _ = _compute_shap_values(pipeline({"pipeline": {"gap": 1, "max_delay": 1}}), pd.DataFrame(np.random.random((2, 16))))
 
 
 def test_create_dictionary_exception():
@@ -83,9 +85,8 @@ N_CLASSES_MULTICLASS = 3
 N_FEATURES = 20
 
 
-def calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain):
+def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     """Helper function to compute the SHAP values for n_points_to_explain for a given pipeline."""
-    pipeline = pipeline_class({}, random_state=0)
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
     return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
@@ -98,7 +99,8 @@ all_n_points_to_explain = [1, 5]
 
 @pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
                          product(interpretable_estimators, all_problems, all_n_points_to_explain))
-def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_multi, X_y_regression):
+def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_multi, X_y_regression,
+              helper_functions):
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
@@ -116,7 +118,8 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         training_data, y = X_y_regression
 
     pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-    shap_values = calculate_shap_for_test(training_data, y, pipeline_class, n_points_to_explain)
+    pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
+    shap_values = calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(shap_values, list), "For binary classification, returned values must be a list"

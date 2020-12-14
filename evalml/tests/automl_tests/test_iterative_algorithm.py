@@ -42,8 +42,10 @@ def dummy_binary_pipeline_classes():
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
 
-        def __init__(self, dummy_parameter='default', random_state=0):
-            super().__init__(parameters={'dummy_parameter': dummy_parameter}, component_obj=None, random_state=random_state)
+        def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
+            super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
+                                         'n_jobs': n_jobs},
+                             component_obj=None, random_state=random_state)
 
     class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
         estimator = MockEstimator
@@ -111,6 +113,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             num_pipelines_classes = (len(dummy_binary_pipeline_classes) + 1) if ensembling_value else len(dummy_binary_pipeline_classes)
             cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
+            assert all([p.parameters['Mock Classifier']['n_jobs'] == -1 for p in next_batch])
             assert all(check_random_state_equality(p.random_state, algo.random_state) for p in next_batch)
             assert algo.pipeline_number == last_pipeline_number + len(next_batch)
             last_pipeline_number = algo.pipeline_number
@@ -142,6 +145,55 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             random_states_the_same = [check_random_state_equality(estimator.pipeline.random_state, algo.random_state)
                                       for estimator in estimators_used_in_ensemble]
             assert all(random_states_the_same)
+
+
+@pytest.mark.parametrize("ensembling_value", [True, False])
+@patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
+def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value, dummy_binary_pipeline_classes):
+
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value,
+                              pipeline_params={"gap": 2, "max_delay": 10})
+
+    next_batch = algo.next_batch()
+    assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
+
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+    for i in range(1, 5):
+        for _ in range(len(dummy_binary_pipeline_classes)):
+            next_batch = algo.next_batch()
+            assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
+            scores = -np.arange(0, len(next_batch))
+            for score, pipeline in zip(scores, next_batch):
+                algo.add_result(score, pipeline)
+
+        if ensembling_value:
+            next_batch = algo.next_batch()
+            input_pipelines = next_batch[0].parameters['Stacked Ensemble Classifier']['input_pipelines']
+            assert all([pl.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for pl in input_pipelines])
+
+
+def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
+
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, n_jobs=2, ensembling=False)
+
+    next_batch = algo.next_batch()
+
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+    for i in range(1, 3):
+        for _ in range(len(dummy_binary_pipeline_classes)):
+            next_batch = algo.next_batch()
+            assert all([p.parameters['Mock Classifier']['n_jobs'] == 2 for p in next_batch])
+            scores = -np.arange(0, len(next_batch))
+            for score, pipeline in zip(scores, next_batch):
+                algo.add_result(score, pipeline)
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])

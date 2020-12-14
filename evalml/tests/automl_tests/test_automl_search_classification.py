@@ -31,15 +31,15 @@ from evalml.problem_types import ProblemTypes
 def test_init(X_y_binary):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type='binary', max_iterations=1, n_jobs=4)
+    automl = AutoMLSearch(problem_type='binary', max_iterations=1, n_jobs=1)
     automl.search(X, y)
 
-    assert automl.n_jobs == 4
+    assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
 
     # test with dataframes
-    automl = AutoMLSearch(problem_type='binary', max_iterations=1, n_jobs=4)
+    automl = AutoMLSearch(problem_type='binary', max_iterations=1, n_jobs=1)
     automl.search(pd.DataFrame(X), pd.Series(y))
 
     assert isinstance(automl.rankings, pd.DataFrame)
@@ -65,13 +65,15 @@ def test_get_pipeline_none():
 def test_data_split(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(problem_type='binary', data_split=StratifiedKFold(cv_folds), max_iterations=1)
+    automl = AutoMLSearch(problem_type='binary', data_split=StratifiedKFold(cv_folds), max_iterations=1,
+                          n_jobs=1)
     automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
-    automl = AutoMLSearch(problem_type='binary', data_split=TimeSeriesSplit(cv_folds), max_iterations=1)
+    automl = AutoMLSearch(problem_type='binary', data_split=TimeSeriesSplit(cv_folds), max_iterations=1,
+                          n_jobs=1)
     automl.search(X, y)
 
     assert isinstance(automl.rankings, pd.DataFrame)
@@ -81,7 +83,7 @@ def test_data_split(X_y_binary):
 def test_max_iterations(X_y_binary):
     X, y = X_y_binary
     max_iterations = 5
-    automl = AutoMLSearch(problem_type='binary', max_iterations=max_iterations)
+    automl = AutoMLSearch(problem_type='binary', max_iterations=max_iterations, n_jobs=1)
     automl.search(X, y)
     assert len(automl.full_rankings) == max_iterations
 
@@ -96,7 +98,7 @@ def test_recall_error(X_y_binary):
 
 def test_recall_object(X_y_binary):
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', objective=Recall(), max_iterations=1)
+    automl = AutoMLSearch(problem_type='binary', objective=Recall(), max_iterations=1, n_jobs=1)
     automl.search(X, y)
     assert len(automl.full_rankings) > 0
     assert automl.objective.name == 'Recall'
@@ -104,7 +106,7 @@ def test_recall_object(X_y_binary):
 
 def test_binary_auto(X_y_binary):
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', objective="Log Loss Binary", max_iterations=5)
+    automl = AutoMLSearch(problem_type='binary', objective="Log Loss Binary", max_iterations=5, n_jobs=1)
     automl.search(X, y)
 
     best_pipeline = automl.best_pipeline
@@ -116,7 +118,7 @@ def test_binary_auto(X_y_binary):
 def test_multi_auto(X_y_multi, multiclass_core_objectives):
     X, y = X_y_multi
     objective = PrecisionMicro()
-    automl = AutoMLSearch(problem_type='multiclass', objective=objective, max_iterations=5)
+    automl = AutoMLSearch(problem_type='multiclass', objective=objective, max_iterations=5, n_jobs=1)
     automl.search(X, y)
     best_pipeline = automl.best_pipeline
     best_pipeline.fit(X, y)
@@ -152,7 +154,7 @@ def test_multi_objective(X_y_multi):
 
 def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
-    automl = AutoMLSearch(problem_type='binary', objective="precision", max_iterations=5)
+    automl = AutoMLSearch(problem_type='binary', objective="precision", max_iterations=5, n_jobs=1)
     automl.search(X, y)
     assert not automl.rankings['score'].isnull().all()
 
@@ -160,10 +162,10 @@ def test_categorical_classification(X_y_categorical_classification):
 def test_random_state(X_y_binary):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_iterations=5, random_state=0)
+    automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_iterations=5, random_state=0, n_jobs=1)
     automl.search(X, y)
 
-    automl_1 = AutoMLSearch(problem_type='binary', objective=Precision(), max_iterations=5, random_state=0)
+    automl_1 = AutoMLSearch(problem_type='binary', objective=Precision(), max_iterations=5, random_state=0, n_jobs=1)
     automl_1.search(X, y)
     assert automl.rankings.equals(automl_1.rankings)
 
@@ -185,7 +187,8 @@ def test_callback(X_y_binary):
     max_iterations = 3
     automl = AutoMLSearch(problem_type='binary', objective=Precision(), max_iterations=max_iterations,
                           start_iteration_callback=start_iteration_callback,
-                          add_result_callback=add_result_callback)
+                          add_result_callback=add_result_callback,
+                          n_jobs=1)
     automl.search(X, y)
 
     assert counts["start_iteration_callback"] == max_iterations
@@ -199,7 +202,8 @@ def test_additional_objectives(X_y_binary):
                           interchange_fee=.02,
                           fraud_payout_percentage=.75,
                           amount_col=10)
-    automl = AutoMLSearch(problem_type='binary', objective='F1', max_iterations=2, additional_objectives=[objective])
+    automl = AutoMLSearch(problem_type='binary', objective='F1', max_iterations=2, additional_objectives=[objective],
+                          n_jobs=1)
     automl.search(X, y)
 
     results = automl.describe_pipeline(0, return_dict=True)
@@ -267,7 +271,7 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
 
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
     X, y = X_y_binary
-    automl = AutoMLSearch(problem_type='binary', objective='AUC', max_iterations=2)
+    automl = AutoMLSearch(problem_type='binary', objective='AUC', max_iterations=2, n_jobs=1)
     automl.search(X, y)
 
     automl.describe_pipeline(0)
@@ -297,7 +301,7 @@ def test_max_time_units():
     with pytest.raises(AssertionError, match="Invalid unit. Units must be hours, mins, or seconds. Received 'year'"):
         AutoMLSearch(problem_type='binary', objective='F1', max_time='30 years')
 
-    with pytest.raises(TypeError, match="max_time must be a float, int, or string. Received a <class 'tuple'>."):
+    with pytest.raises(TypeError, match="Parameter max_time must be a float, int, string or None. Received <class 'tuple'> with value \\(30, 'minutes'\\)."):
         AutoMLSearch(problem_type='binary', objective='F1', max_time=(30, 'minutes'))
 
 
@@ -308,7 +312,9 @@ def test_early_stopping(caplog, logistic_regression_binary_pipeline_class):
     with pytest.raises(ValueError, match='tolerance value must be'):
         automl = AutoMLSearch(problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
 
-    automl = AutoMLSearch(problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=2, tolerance=0.05, random_state=0)
+    automl = AutoMLSearch(problem_type='binary', objective='AUC', max_iterations=5,
+                          allowed_model_families=['linear_model'], patience=2, tolerance=0.05,
+                          random_state=0, n_jobs=1)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
@@ -341,7 +347,7 @@ def test_plot_iterations_max_iterations(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type='binary', objective="f1", max_iterations=3)
+    automl = AutoMLSearch(problem_type='binary', objective="f1", max_iterations=3, n_jobs=1)
     automl.search(X, y)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -359,7 +365,7 @@ def test_plot_iterations_max_time(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type='binary', objective="f1", max_time=10)
+    automl = AutoMLSearch(problem_type='binary', objective="f1", max_time=10, n_jobs=1)
     automl.search(X, y, show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
@@ -379,7 +385,7 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type='binary', objective="f1", max_iterations=3)
+    automl = AutoMLSearch(problem_type='binary', objective="f1", max_iterations=3, n_jobs=1)
     automl.search(X, y)
     plot = automl.plot.search_iteration_plot(interactive_plot=True)
     assert isinstance(plot, SearchIterationPlot)
@@ -393,7 +399,7 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_b
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
 
-    automl = AutoMLSearch(problem_type='binary', objective="f1", max_iterations=3)
+    automl = AutoMLSearch(problem_type='binary', objective="f1", max_iterations=3, n_jobs=1)
     automl.search(X, y)
 
     mock_ipython_display.side_effect = ImportError('KABOOOOOOMMMM')
@@ -413,7 +419,7 @@ def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_b
 
 def test_max_time(X_y_binary):
     X, y = X_y_binary
-    clf = AutoMLSearch(problem_type='binary', max_time=1e-16)
+    clf = AutoMLSearch(problem_type='binary', max_time=1e-16, n_jobs=1)
     clf.search(X, y)
     # search will always run at least one pipeline
     assert len(clf.results['pipeline_results']) == 1
@@ -612,5 +618,5 @@ def test_categorical_hyperparam(X_y_multi):
             }
         }
 
-    automl = AutoMLSearch(problem_type="multiclass", allowed_pipelines=[CustomPipeline])
+    automl = AutoMLSearch(problem_type="multiclass", allowed_pipelines=[CustomPipeline], n_jobs=1)
     automl.search(X, y)

@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  windows: circleci/windows@2.2.0
+  windows: circleci/windows@2.4.0
   shellcheck: circleci/shellcheck@2.0.0
 
 executors:
@@ -151,6 +151,13 @@ jobs:
               conda activate curr_py
               conda install python-graphviz -q -y
       - run:
+          name: Install numba (for shap)
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda config --add channels conda-forge
+              conda activate curr_py
+              conda install numba -q -y
+      - run:
           name: Install EvalML
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
@@ -277,8 +284,9 @@ jobs:
           command: |
             source test_python/bin/activate
             mkdir /tmp/dependencies_updated_artifacts
-            make dependenciesfile DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
-            diff evalml/tests/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+            export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
+            evalml/tests/dependency_update_check/make_deps_diff.sh
+            diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
             exit $?
       - run:
           name: "Display Dependency Diff"

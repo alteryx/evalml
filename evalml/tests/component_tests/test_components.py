@@ -26,6 +26,7 @@ from evalml.pipelines.components import (
     ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
+    DFSTransformer,
     DropColumns,
     DropNullColumns,
     ElasticNetClassifier,
@@ -48,6 +49,7 @@ from evalml.pipelines.components import (
     SimpleImputer,
     StandardScaler,
     TextFeaturizer,
+    TimeSeriesBaselineRegressor,
     Transformer,
     XGBoostClassifier,
     XGBoostRegressor
@@ -148,6 +150,7 @@ def test_describe_component():
     lsa = LSA()
     pca = PCA()
     lda = LinearDiscriminantAnalysis()
+    ft = DFSTransformer()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -165,11 +168,14 @@ def test_describe_component():
     assert feature_selection_reg.describe(return_dict=True) == {'name': 'RF Regressor Select From Model', 'parameters': {'number_features': 5, 'n_estimators': 10, 'max_depth': None, 'percent_features': 0.3, 'threshold': -np.inf, 'n_jobs': -1}}
     assert drop_col_transformer.describe(return_dict=True) == {'name': 'Drop Columns Transformer', 'parameters': {'columns': ['col_one', 'col_two']}}
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
-    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component', 'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour']}}
+    assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
+                                                   'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
+                                                                  'encode_as_categories': False}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
+    assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
 
     # testing estimators
     base_classifier = BaselineClassifier()
@@ -534,6 +540,10 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, DFSTransformer):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] >= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, DelayedFeatureTransformer):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
@@ -552,12 +562,16 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
                 assert isinstance(transform_output.columns, pd.Index)
+            elif isinstance(component, DFSTransformer):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] >= X.shape[1]
+                assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
                 assert (transform_output.columns == X_cols_expected).all()
 
 
-def test_estimator_predict_output_type(X_y_binary):
+def test_estimator_predict_output_type(X_y_binary, helper_functions):
     X_np, y_np = X_y_binary
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
@@ -578,7 +592,7 @@ def test_estimator_predict_output_type(X_y_binary):
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
-            component = component_class()
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
             component.fit(X, y=y)
             predict_output = component.predict(X)
             assert isinstance(predict_output, pd.Series)
@@ -780,14 +794,14 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X)
 
 
-def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false):
+def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
-    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor]] + [test_estimator_needs_fitting_false]
+    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineRegressor]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
-        component = component_class()
+        component = helper_functions.safe_init_component_with_njobs_1(component_class)
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
 
@@ -807,24 +821,24 @@ def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false
         component.feature_importance
 
 
-def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false):
+def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
     for component_class in all_components() + [test_estimator_needs_fitting_false]:
         if not component_class.needs_fitting:
-            component = component_class()
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
             if issubclass(component_class, Estimator):
                 component.predict(X)
             else:
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, tmpdir):
+def test_serialization(X_y_binary, tmpdir, helper_functions):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
         try:
-            component = component_class()
+            component = helper_functions.safe_init_component_with_njobs_1(component_class)
         except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)])

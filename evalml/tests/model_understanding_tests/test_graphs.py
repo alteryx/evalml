@@ -1,10 +1,13 @@
+import os
 import warnings
+from collections import OrderedDict
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.exceptions import UndefinedMetricWarning
+import woodwork as ww
+from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
@@ -15,17 +18,21 @@ from evalml.model_understanding.graphs import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
+    decision_tree_data_from_estimator,
+    decision_tree_data_from_pipeline,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
     graph_partial_dependence,
     graph_permutation_importance,
     graph_precision_recall_curve,
     graph_prediction_vs_actual,
+    graph_prediction_vs_actual_over_time,
     graph_roc_curve,
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    visualize_decision_tree
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -50,7 +57,7 @@ def test_pipeline():
         def __init__(self, parameters):
             super().__init__(parameters=parameters)
 
-    return TestPipeline(parameters={})
+    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd'])
@@ -203,9 +210,13 @@ def test_precision_recall_curve_return_type():
     assert isinstance(precision_recall_curve_data['auc_score'], float)
 
 
-def test_precision_recall_curve():
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_precision_recall_curve(data_type, make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    y_true = make_data_type(data_type, y_true)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+
     precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
 
     precision = precision_recall_curve_data.get('precision')
@@ -221,15 +232,14 @@ def test_precision_recall_curve():
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_precision_recall_curve(X_y_binary, data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    if data_type == 'pd':
-        X = pd.DataFrame(X)
-        y_true = pd.Series(y_true)
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
+    X = make_data_type(data_type, X)
+    y_true = make_data_type(data_type, y_true)
     fig = graph_precision_recall_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
 
@@ -254,13 +264,13 @@ def test_graph_precision_recall_curve_title_addition(X_y_binary):
     assert fig_dict['layout']['title']['text'] == 'Precision-Recall with added title text'
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_roc_curve_binary(data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_roc_curve_binary(data_type, make_data_type):
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
     tpr_rates = roc_curve_data.get('tpr_rates')
@@ -279,9 +289,13 @@ def test_roc_curve_binary(data_type):
 
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
-    if data_type == 'pd':
+    if data_type != 'np':
         y_true = pd.Series(y_true)
         y_predict_proba = pd.DataFrame(y_predict_proba)
+    if data_type == 'ww':
+        y_true = ww.DataColumn(y_true)
+        y_predict_proba = ww.DataTable(y_predict_proba)
+
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
     tpr_rates = roc_curve_data.get('tpr_rates')
@@ -299,8 +313,8 @@ def test_roc_curve_binary(data_type):
     assert isinstance(roc_curve_data['thresholds'], np.ndarray)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_roc_curve_multiclass(data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_roc_curve_multiclass(data_type, make_data_type):
     y_true = np.array([1, 2, 0, 0, 2, 1])
     y_predict_proba = np.array([[0.33, 0.33, 0.33],
                                 [0.05, 0.05, 0.90],
@@ -308,9 +322,9 @@ def test_roc_curve_multiclass(data_type):
                                 [0.8, 0.1, 0.1],
                                 [0.1, 0.1, 0.8],
                                 [0.3, 0.4, 0.3]])
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+
     roc_curve_data = roc_curve(y_true, y_predict_proba)
     fpr_expected = np.array([[0, 0, 0, 1],
                              [0, 0, 0, 0.25, 0.75, 1],
@@ -322,7 +336,11 @@ def test_roc_curve_multiclass(data_type):
                                     [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
                                     [1.9, 0.9, 0.8, 0.3, 0.1]])
     auc_expected = [1, 1, 1]
-    for i in np.unique(y_true):
+
+    y_true_unique = y_true
+    if data_type == 'ww':
+        y_true_unique = y_true.to_series()
+    for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
         tpr_rates = roc_curve_data[i].get('tpr_rates')
         thresholds = roc_curve_data[i].get('thresholds')
@@ -336,15 +354,15 @@ def test_roc_curve_multiclass(data_type):
         assert isinstance(roc_curve_data[i]['thresholds'], np.ndarray)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_roc_curve_binary(X_y_binary, data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
     rs = np.random.RandomState(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_pred_proba = pd.DataFrame(y_pred_proba)
+    y_true = make_data_type(data_type, y_true)
+    y_pred_proba = make_data_type(data_type, y_pred_proba)
+
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -425,15 +443,15 @@ def test_graph_roc_curve_title_addition(X_y_binary):
     assert fig_dict['layout']['title']['text'] == 'Receiver Operating Characteristic with added title text'
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_graph_confusion_matrix_default(X_y_binary, data_type):
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
     rs = np.random.RandomState(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_pred = pd.Series(y_pred)
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
+
     fig = graph_confusion_matrix(y_true, y_pred)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -495,14 +513,15 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
         calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
-                                           binary_core_objectives):
+                                           binary_core_objectives, make_data_type):
     X, y = X_y_binary
-    if data_type == 'pd':
-        X = pd.DataFrame(X)
-        y = pd.Series(y)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                         random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -513,7 +532,8 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
 def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
                                                multiclass_core_objectives):
     X, y = X_y_multi
-    pipeline = logistic_regression_multiclass_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                             random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -524,7 +544,8 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
 def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
                                                regression_core_objectives):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
+                                                random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
     for objective in regression_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -662,22 +683,28 @@ def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, log
     assert np.array_equal(data['y'], mock_cb_thresholds.return_value['score'])
 
 
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X_y_regression,
+def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
                                           logistic_regression_multiclass_pipeline_class,
                                           linear_regression_pipeline_class):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-        pipeline = logistic_regression_binary_pipeline_class(parameters={})
+        pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        pipeline = logistic_regression_multiclass_pipeline_class(parameters={})
+        pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-        pipeline = linear_regression_pipeline_class(parameters={})
+        pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+
+    if data_type != "np":
+        X = pd.DataFrame(X)
+    if data_type == "ww":
+        X = ww.DataTable(X)
 
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
@@ -694,7 +721,7 @@ def test_partial_dependence_problem_types(problem_type, X_y_binary, X_y_multi, X
 @patch('evalml.model_understanding.graphs.sk_partial_dependence')
 def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     mock_part_dep.side_effect = Exception()
     with pytest.raises(Exception):
@@ -707,7 +734,7 @@ def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_bi
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -716,10 +743,13 @@ def test_partial_dependence_string_feature_name(logistic_regression_binary_pipel
     assert not part_dep.isnull().any(axis=None)
 
 
-def test_partial_dependence_with_non_numeric_columns(linear_regression_pipeline_class):
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_partial_dependence_with_non_numeric_columns(data_type, linear_regression_pipeline_class):
     X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
+    if data_type == "ww":
+        X = ww.DataTable(X)
     y = [0, 0.2, 1.4, 1]
-    pipeline = linear_regression_pipeline_class(parameters={})
+    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature='numeric')
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -752,7 +782,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
 
         class CatBoostTestPipeline(BinaryClassificationPipeline):
             component_graph = ["CatBoost Classifier"]
-        pipeline = CatBoostTestPipeline({})
+        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
         assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -763,7 +793,7 @@ def test_partial_dependence_catboost(X_y_binary, has_minimal_dependencies):
         # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
         X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
         y = ['a', 'b', 'a']
-        pipeline = CatBoostTestPipeline({})
+        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, feature='string')
         assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -795,7 +825,7 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
 
     X = pd.DataFrame(X)
     X = X.rename(columns={0: '<[0]'})
-    pipeline = XGBoostPipeline({})
+    pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature="<[0]", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
@@ -812,7 +842,7 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
 
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     with pytest.raises(ValueError, match="Pipeline to calculate partial dependence for must be fitted"):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
 
@@ -820,7 +850,7 @@ def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pi
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
     X = pd.DataFrame({'a': [2, None, 2, 2], 'b': [1, 2, 2, 1]})
     y = pd.Series([0, 1, 0, 1])
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, feature=0, grid_resolution=20)
@@ -920,7 +950,8 @@ def test_graph_prediction_vs_actual_default():
     assert fig_dict['data'][1]['name'] == "Values"
 
 
-def test_graph_prediction_vs_actual():
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_graph_prediction_vs_actual(data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
@@ -939,6 +970,9 @@ def test_graph_prediction_vs_actual():
 
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
+    if data_type == "ww":
+        y_true = ww.DataColumn(y_true)
+        y_pred = ww.DataColumn(y_pred)
     fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6.1)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -954,3 +988,224 @@ def test_graph_prediction_vs_actual():
     assert len(fig_dict['data'][2]['x']) == 2
     assert len(fig_dict['data'][2]['y']) == 2
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
+
+
+def test_graph_prediction_vs_actual_over_time():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    class MockPipeline:
+        problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+
+        def predict(self, X, y):
+            preds = y + 10
+            preds.index = range(100, 161)
+            return preds
+
+    y = pd.Series(np.arange(61), index=range(200, 261))
+    dates = pd.Series(pd.date_range("2020-03-01", "2020-04-30"))
+    pipeline = MockPipeline()
+
+    # For this test it doesn't matter what the features are
+    fig = graph_prediction_vs_actual_over_time(pipeline, X=pd.DataFrame(), y=y, dates=dates)
+
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == 'Prediction vs Target over time'
+    assert fig_dict['layout']['xaxis']['title']['text'] == 'Time'
+    assert fig_dict['layout']['yaxis']['title']['text'] == 'Target Values and Predictions'
+    assert len(fig_dict['data']) == 2
+    assert fig_dict['data'][0]['line']['color'] == '#1f77b4'
+    assert len(fig_dict['data'][0]['x']) == 61
+    assert not np.isnan(fig_dict['data'][0]['y']).all()
+    assert len(fig_dict['data'][0]['y']) == 61
+    assert fig_dict['data'][1]['line']['color'] == '#d62728'
+    assert len(fig_dict['data'][1]['x']) == 61
+    assert len(fig_dict['data'][1]['y']) == 61
+    assert not np.isnan(fig_dict['data'][1]['y']).all()
+
+
+def test_graph_prediction_vs_actual_over_time_value_error():
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    class NotTSPipeline:
+        problem_type = ProblemTypes.REGRESSION
+
+    error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
+    with pytest.raises(ValueError, match=error_msg):
+        graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)
+
+
+def test_decision_tree_data_from_estimator_not_fitted(tree_estimators):
+    est_class, _ = tree_estimators
+    with pytest.raises(NotFittedError, match="This DecisionTree estimator is not fitted yet. Call 'fit' with "
+                                             "appropriate arguments before using this estimator."):
+        decision_tree_data_from_estimator(est_class)
+
+
+def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
+    est_logit = logit_estimator
+    with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
+        decision_tree_data_from_estimator(est_logit)
+
+
+def test_decision_tree_data_from_estimator_feature_length(fitted_tree_estimators):
+    est_class, _ = fitted_tree_estimators
+    with pytest.raises(ValueError, match="Length mismatch: Expected features has length {} but got list with length {}"
+                                         .format(est_class._component_obj.n_features_, 3)):
+        decision_tree_data_from_estimator(est_class, feature_names=["First", "Second", "Third"])
+
+    features_array = tuple([f'Testing_{col_}' for col_ in range(est_class._component_obj.n_features_)])
+    formatted_ = decision_tree_data_from_estimator(est_class, feature_names=features_array)
+    assert isinstance(formatted_, OrderedDict)
+
+
+def test_decision_tree_data_from_estimator(fitted_tree_estimators):
+    est_class, est_reg = fitted_tree_estimators
+
+    formatted_ = decision_tree_data_from_estimator(est_reg, feature_names=[f'Testing_{col_}' for col_ in range(est_reg._component_obj.n_features_)])
+    tree_ = est_reg._component_obj.tree_
+
+    assert isinstance(formatted_, OrderedDict)
+    assert formatted_['Feature'] == f'Testing_{tree_.feature[0]}'
+    assert formatted_['Threshold'] == tree_.threshold[0]
+    assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
+    left_child_feature_ = formatted_['Left_Child']['Feature']
+    right_child_feature_ = formatted_['Right_Child']['Feature']
+    left_child_threshold_ = formatted_['Left_Child']['Threshold']
+    right_child_threshold_ = formatted_['Right_Child']['Threshold']
+    left_child_value_ = formatted_['Left_Child']['Value']
+    right_child_value_ = formatted_['Right_Child']['Value']
+    assert left_child_feature_ == f'Testing_{tree_.feature[tree_.children_left[0]]}'
+    assert right_child_feature_ == f'Testing_{tree_.feature[tree_.children_right[0]]}'
+    assert left_child_threshold_ == tree_.threshold[tree_.children_left[0]]
+    assert right_child_threshold_ == tree_.threshold[tree_.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
+
+
+def test_decision_tree_data_from_pipeline_not_fitted():
+    class MockPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Decision Tree Classifier']
+
+    mock_pipeline = MockPipeline({})
+    with pytest.raises(NotFittedError, match="The DecisionTree estimator associated with this pipeline is not fitted yet. "
+                                             "Call 'fit' with appropriate arguments before using this estimator."):
+        decision_tree_data_from_pipeline(mock_pipeline)
+
+
+def test_decision_tree_data_from_pipeline_wrong_type():
+    class MockPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Logistic Regression Classifier']
+
+    mock_pipeline = MockPipeline({})
+    with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
+        decision_tree_data_from_pipeline(mock_pipeline)
+
+
+def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regression):
+    class MockPipeline(RegressionPipeline):
+        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
+
+    mock_pipeline = MockPipeline({})
+
+    X, y = X_y_categorical_regression
+    mock_pipeline.fit(X, y)
+    assert len(mock_pipeline.input_feature_names[mock_pipeline.estimator.name]) == mock_pipeline.estimator._component_obj.n_features_
+
+
+def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
+    class MockPipeline(RegressionPipeline):
+        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
+
+    mock_pipeline = MockPipeline({})
+
+    X, y = X_y_categorical_regression
+    mock_pipeline.fit(X, y)
+    formatted_ = decision_tree_data_from_pipeline(mock_pipeline)
+    tree_ = mock_pipeline.estimator._component_obj.tree_
+    feature_names = mock_pipeline.input_feature_names[mock_pipeline.estimator.name]
+
+    assert isinstance(formatted_, OrderedDict)
+    assert formatted_['Feature'] == feature_names[tree_.feature[0]]
+    assert formatted_['Threshold'] == tree_.threshold[0]
+    assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
+    left_child_feature_ = formatted_['Left_Child']['Feature']
+    right_child_feature_ = formatted_['Right_Child']['Feature']
+    left_child_threshold_ = formatted_['Left_Child']['Threshold']
+    right_child_threshold_ = formatted_['Right_Child']['Threshold']
+    left_child_value_ = formatted_['Left_Child']['Value']
+    right_child_value_ = formatted_['Right_Child']['Value']
+    assert left_child_feature_ == feature_names[tree_.feature[tree_.children_left[0]]]
+    assert right_child_feature_ == feature_names[tree_.feature[tree_.children_right[0]]]
+    assert left_child_threshold_ == tree_.threshold[tree_.children_left[0]]
+    assert right_child_threshold_ == tree_.threshold[tree_.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
+
+
+def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, _ = fitted_tree_estimators
+    filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'test.png')
+
+    assert not os.path.exists(filepath)
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
+        visualize_decision_tree(estimator=est_class, filepath=filepath)
+
+    filepath = os.path.join(str(tmpdir), 'test_0.png')
+    src = visualize_decision_tree(estimator=est_class, filepath=filepath)
+    assert os.path.exists(filepath)
+    assert src.format == 'png'
+    assert isinstance(src, graphviz.Source)
+
+
+def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, _ = fitted_tree_estimators
+    filepath = os.path.join(str(tmpdir), 'test_0.xyz')
+    with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: "
+                                         f"{graphviz.backend.FORMATS}"):
+        visualize_decision_tree(estimator=est_class, filepath=filepath)
+
+
+def test_visualize_decision_trees_est_wrong_type(logit_estimator, tmpdir):
+    est_logit = logit_estimator
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
+    with pytest.raises(ValueError, match="Tree visualizations are only supported for decision tree estimators"):
+        visualize_decision_tree(estimator=est_logit, filepath=filepath)
+
+
+def test_visualize_decision_trees_max_depth(tree_estimators, tmpdir):
+    est_class, _ = tree_estimators
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
+    with pytest.raises(ValueError, match="Unknown value: '-1'. The parameter max_depth has to be a non-negative integer"):
+        visualize_decision_tree(estimator=est_class, max_depth=-1, filepath=filepath)
+
+
+def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir):
+    est_class, _ = tree_estimators
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
+    with pytest.raises(NotFittedError, match="This DecisionTree estimator is not fitted yet. Call 'fit' with "
+                                             "appropriate arguments before using this estimator."):
+        visualize_decision_tree(estimator=est_class, max_depth=3, filepath=filepath)
+
+
+def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, est_reg = fitted_tree_estimators
+
+    filepath = os.path.join(str(tmpdir), 'test_2')
+    src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3, rotate=True, filepath=filepath)
+    assert src.format == 'pdf'  # Check that extension defaults to pdf
+    assert isinstance(src, graphviz.Source)
+
+    filepath = os.path.join(str(tmpdir), 'test_3.pdf')
+    src = visualize_decision_tree(estimator=est_reg, filled=True, filepath=filepath)
+    assert src.format == 'pdf'
+    assert isinstance(src, graphviz.Source)
+
+    src = visualize_decision_tree(estimator=est_reg, filled=True, max_depth=2)
+    assert src.format == 'pdf'
+    assert isinstance(src, graphviz.Source)

@@ -169,10 +169,11 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineRegressor',
                        'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline'}
+                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
+                       'TimeSeriesBaselineRegressionPipeline'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
@@ -300,9 +301,11 @@ def _convert_to_woodwork_structure(data):
         ww_data = pd.DataFrame(ww_data)
 
     # Convert pandas data structures to Woodwork data structures
+    ww_data = ww_data.copy()
     if isinstance(ww_data, pd.Series):
         return ww.DataColumn(ww_data)
-    return ww.DataTable(ww_data, copy_dataframe=True)
+
+    return ww.DataTable(ww_data)
 
 
 def _convert_woodwork_types_wrapper(pd_data):

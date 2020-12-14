@@ -7,6 +7,7 @@ from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
 from evalml.objectives import (
     F1,
+    MAPE,
     MSE,
     AccuracyBinary,
     AccuracyMulticlass,
@@ -14,6 +15,7 @@ from evalml.objectives import (
     BalancedAccuracyMulticlass,
     BinaryClassificationObjective,
     CostBenefitMatrix,
+    ExpVariance,
     F1Macro,
     F1Micro,
     F1Weighted,
@@ -55,6 +57,13 @@ def test_input_contains_nan():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
 
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, np.nan], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+                objective.score(y_true, y_predicted_proba)
+
 
 def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
@@ -68,6 +77,13 @@ def test_input_contains_inf():
     for objective in all_automl_objectives.values():
         with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
             objective.score(y_true, y_predicted)
+
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, np.inf], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+                objective.score(y_true, y_predicted_proba)
 
 
 def test_different_input_lengths():
@@ -106,6 +122,13 @@ def test_probabilities_not_in_0_1_range():
         if objective.score_needs_proba:
             with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
                 objective.score(y_true, y_predicted)
+
+    y_true = np.array([1, 0])
+    y_predicted_proba = np.array([[1, 3], [0.1, 0]])
+    for objective in all_automl_objectives.values():
+        if objective.score_needs_proba:
+            with pytest.raises(ValueError, match="y_predicted contains probability estimates"):
+                objective.score(y_true, y_predicted_proba)
 
 
 def test_negative_with_log():
@@ -415,6 +438,24 @@ def test_mcc_catches_warnings():
         assert len(record) == 0
 
 
+def test_mape_time_series_model():
+    obj = MAPE()
+
+    s1_actual = np.array([0, 0, 1, 1, 1, 1, 2, 0, 2])
+    s1_predicted = np.array([0, 1, 0, 1, 1, 2, 1, 2, 0])
+
+    s2_actual = np.array([-1, -2, 1, 3])
+    s2_predicted = np.array([1, 2, -1, -3])
+
+    s3_actual = np.array([1, 2, 4, 2, 1, 2])
+    s3_predicted = np.array([0, 2, 2, 1, 3, 2])
+
+    with pytest.raises(ValueError, match="Mean Absolute Percentage Error cannot be used when targets contain the value 0."):
+        obj.score(s1_actual, s1_predicted)
+    assert obj.score(s2_actual, s2_predicted) == pytest.approx(8 / 4 * 100)
+    assert obj.score(s3_actual, s3_predicted) == pytest.approx(4 / 6 * 100)
+
+
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
 def test_calculate_percent_difference(objective_class):
     score = 5
@@ -452,3 +493,11 @@ def test_calculate_percent_difference_negative_and_equal_numbers():
     assert LogLossBinary.calculate_percent_difference(score=-10, baseline_score=-5) == 100
     assert LogLossBinary.calculate_percent_difference(score=-5, baseline_score=10) == 150
     assert LogLossBinary.calculate_percent_difference(score=10, baseline_score=-5) == -300
+
+
+def test_calculate_percent_difference_small():
+    expected_value = 100 * -1 * np.abs(1e-9 / (1e-9))
+    assert np.isclose(ExpVariance.calculate_percent_difference(score=0, baseline_score=1e-9), expected_value, atol=1e-8)
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=0, baseline_score=1e-10))
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=1e-9, baseline_score=0))
+    assert pd.isna(ExpVariance.calculate_percent_difference(score=0, baseline_score=0))

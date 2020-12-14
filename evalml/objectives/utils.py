@@ -18,7 +18,7 @@ def get_non_core_objectives():
     """
     return [objectives.CostBenefitMatrix, objectives.FraudCost, objectives.LeadScoring,
             objectives.MeanSquaredLogError, objectives.Recall, objectives.RecallMacro, objectives.RecallMicro,
-            objectives.RecallWeighted, objectives.RootMeanSquaredLogError]
+            objectives.RecallWeighted, objectives.RootMeanSquaredLogError, objectives.MAPE]
 
 
 def _all_objectives_dict():

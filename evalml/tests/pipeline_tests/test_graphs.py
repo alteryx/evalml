@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from skopt.space import Real
 
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
 
 
 @pytest.fixture
@@ -31,7 +31,19 @@ def test_pipeline():
             df = pd.DataFrame(f_i, columns=["feature", "importance"])
             return df
 
-    return TestPipeline(parameters={})
+    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+
+@pytest.fixture
+def test_component_graph():
+    graph = {'Imputer': ['Imputer'],
+             'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
+             'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
+             'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
+             'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
+             'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']}
+    component_graph = ComponentGraph(graph)
+    return component_graph
 
 
 def test_backend(test_pipeline):
@@ -50,12 +62,42 @@ def test_returns_digraph_object(test_pipeline):
     assert isinstance(graph, graphviz.Digraph)
 
 
+def test_backend_comp_graph(test_component_graph):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
+    with patch('graphviz.Digraph.pipe') as mock_func:
+        mock_func.side_effect = graphviz.backend.ExecutableNotFound('Not Found')
+        comp = test_component_graph
+        with pytest.raises(RuntimeError):
+            comp.graph()
+
+
 def test_saving_png_file(tmpdir, test_pipeline):
     pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
     filepath = os.path.join(str(tmpdir), 'pipeline.png')
     pipeline = test_pipeline
     pipeline.graph(filepath=filepath)
     assert os.path.isfile(filepath)
+
+
+def test_returns_digraph_object_comp_graph(test_component_graph):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
+    comp = test_component_graph
+    graph = comp.graph('test', 'png')
+    assert isinstance(graph, graphviz.Digraph)
+
+
+def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping plotting test because graphviz not installed')
+    comp = test_component_graph
+    parameters = {'OneHot_RandomForest': {'top_n': 3},
+                  'OneHot_ElasticNet': {'top_n': 5},
+                  'Elastic Net': {'max_iter': 100}}
+    comp.instantiate(parameters)
+    graph = comp.graph('test', 'png')
+    assert isinstance(graph, graphviz.Digraph)
+    assert 'top_n : 3' in graph.source
+    assert 'top_n : 5' in graph.source
+    assert 'max_iter : 100' in graph.source
 
 
 def test_missing_file_extension(tmpdir, test_pipeline):
