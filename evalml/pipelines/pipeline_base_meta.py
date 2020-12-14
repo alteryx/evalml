@@ -26,7 +26,7 @@ class PipelineBaseMeta(BaseMeta):
                 return method(self, X)
             # For time series classification pipelines, predict will take X, y, objective
             elif len(inspect.getfullargspec(method).args) == 4:
-                    return method(self, X, y, objective)
+                return method(self, X, y, objective)
             # For other pipelines, predict will take X, y or X, objective
             else:
                 return method(self, X, y)
