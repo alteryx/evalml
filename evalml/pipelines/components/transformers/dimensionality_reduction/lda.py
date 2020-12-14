@@ -16,6 +16,8 @@ class LinearDiscriminantAnalysis(Transformer):
         Arguments:
             n_components (int): the number of features to maintain after computation. Defaults to None.
         """
+        if n_components and n_components < 1:
+            raise ValueError("Invalid number of compponents for Linear Discriminant Analysis")
         parameters = {"n_components": n_components}
         parameters.update(kwargs)
         lda = SkLDA(n_components=n_components, **kwargs)
@@ -28,6 +30,13 @@ class LinearDiscriminantAnalysis(Transformer):
             X = pd.DataFrame(X)
         if not is_all_numeric(X):
             raise ValueError("LDA input must be all numeric")
+        if not isinstance(y, pd.Series):
+            y = pd.Series(y)
+        n_features = X.shape[1]
+        n_classes = y.nunique()
+        n_components = self.parameters['n_components']
+        if n_components is not None and n_components > min(n_classes, n_features):
+            raise ValueError(f"n_components value {n_components} is too large")
 
         self._component_obj.fit(X, y)
         return self

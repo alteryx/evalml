@@ -6,6 +6,11 @@ from pandas.testing import assert_frame_equal
 from evalml.pipelines.components import LinearDiscriminantAnalysis
 
 
+def test_lda_invalid_init():
+    with pytest.raises(ValueError, match="Invalid number of compponents for Linear Discriminant Analysis"):
+        LinearDiscriminantAnalysis(n_components=-1)
+
+
 def test_lda_numeric():
     X = pd.DataFrame([[3, 0, 1, 6],
                       [1, 2, 1, 6],
@@ -91,3 +96,29 @@ def test_n_components():
     lda = LinearDiscriminantAnalysis(n_components=1)
     X_t = pd.DataFrame(lda.fit_transform(X, y))
     assert X_t.shape[1] == 1
+
+
+def test_invalid_n_components():
+    X = pd.DataFrame([[3, 0, 1, 6, 5, 10],
+                      [1, 3, 1, 3, 11, 4],
+                      [10, 2, 3, 12, 5, 6],
+                      [10, 6, 4, 3, 0, 1],
+                      [6, 8, 9, 3, 3, 5],
+                      [3, 2, 1, 2, 1, 3],
+                      [12, 11, 1, 1, 3, 3]])
+    y = [0, 1, 2, 1, 2, 0, 2]
+    lda_invalid = LinearDiscriminantAnalysis(n_components=4)
+    with pytest.raises(ValueError, match="is too large"):
+        lda_invalid.fit(X, y)
+
+    X = pd.DataFrame([[3, 0, 1],
+                      [1, 3, 1],
+                      [10, 2, 3],
+                      [10, 6, 4],
+                      [6, 8, 9],
+                      [3, 2, 1],
+                      [12, 11, 1]])
+    y = [0, 1, 2, 3, 4, 3, 4, 5]
+    lda_invalid = LinearDiscriminantAnalysis(n_components=4)
+    with pytest.raises(ValueError, match="is too large"):
+        lda_invalid.fit(X, y)
