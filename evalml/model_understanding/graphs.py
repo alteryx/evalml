@@ -378,11 +378,6 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
 
     """
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
-    y = _convert_woodwork_types_wrapper(y.to_series())
-
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
         raise ValueError("`binary_objective_vs_threshold` can only be calculated for binary classification objectives")
@@ -714,7 +709,13 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     Returns:
        pd.DataFrame
     """
+
+    dates = _convert_to_woodwork_structure(dates)
+    y = _convert_to_woodwork_structure(y)
     prediction = pipeline.predict(X, y)
+
+    dates = _convert_woodwork_types_wrapper(dates.to_series())
+    y = _convert_woodwork_types_wrapper(y.to_series())
     return pd.DataFrame({"dates": dates.reset_index(drop=True),
                          "target": y.reset_index(drop=True),
                          "prediction": prediction.reset_index(drop=True)})
@@ -725,7 +726,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (pd.DataFrame): Features used to generate new predictions.
+        X (ww.DataTable, pd.DataFrame): Features used to generate new predictions.
         y (ww.DataColumn, pd.Series): Target values to compare predictions against.
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 

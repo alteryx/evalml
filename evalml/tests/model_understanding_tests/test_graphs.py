@@ -20,6 +20,7 @@ from evalml.model_understanding.graphs import (
     confusion_matrix,
     decision_tree_data_from_estimator,
     decision_tree_data_from_pipeline,
+    get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
     graph_partial_dependence,
@@ -616,8 +617,12 @@ def test_graph_permutation_importance_threshold(mock_perm_importance):
     assert (np.all(data['x'] >= 0.5))
 
 
-def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_cost_benefit_matrix_vs_threshold(data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type):
     X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
@@ -998,6 +1003,20 @@ def test_graph_prediction_vs_actual(data_type):
     assert len(fig_dict['data'][2]['x']) == 2
     assert len(fig_dict['data'][2]['y']) == 2
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
+
+
+@patch('evalml.pipelines.ClassificationPipeline.predict')
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_get_prediction_vs_actual_over_time_data(mock_predict, data_type, logistic_regression_binary_pipeline_class, make_data_type):
+    mock_predict.return_value = pd.Series([0] * 20)
+    X = make_data_type(data_type, pd.DataFrame())
+    y = make_data_type(data_type, pd.Series([0] * 20))
+    dates = make_data_type(data_type, pd.Series(pd.date_range('2000-05-19', periods=20, freq='D')))
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    results = get_prediction_vs_actual_over_time_data(pipeline, X, y, dates)
+    assert isinstance(results, pd.DataFrame)
+    assert list(results.columns) == ["dates", "target", "prediction"]
 
 
 def test_graph_prediction_vs_actual_over_time():
