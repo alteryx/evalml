@@ -58,8 +58,6 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        # import pdb; pdb.set_trace()
-
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         if y.logical_type not in numeric_and_boolean_ww:
