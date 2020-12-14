@@ -1607,6 +1607,22 @@ def test_generate_code_pipeline_json_errors():
     with pytest.raises(TypeError, match="cannot be JSON-serialized"):
         generate_pipeline_code(pipeline)
 
+    pipeline = MockBinaryPipelineTransformer({'My Custom Estimator': {'random_arg': ProblemTypes.BINARY}})
+    with pytest.raises(TypeError, match="cannot be JSON-serialized"):
+        generate_pipeline_code(pipeline)
+
+    pipeline = MockBinaryPipelineTransformer({'My Custom Estimator': {'random_arg': BinaryClassificationPipeline}})
+    with pytest.raises(TypeError, match="cannot be JSON-serialized"):
+        generate_pipeline_code(pipeline)
+
+    pipeline = MockBinaryPipelineTransformer({'My Custom Estimator': {'random_arg': Estimator}})
+    with pytest.raises(TypeError, match="cannot be JSON-serialized"):
+        generate_pipeline_code(pipeline)
+
+    pipeline = MockBinaryPipelineTransformer({'My Custom Estimator': {'random_arg': Imputer()}})
+    with pytest.raises(TypeError, match="cannot be JSON-serialized"):
+        generate_pipeline_code(pipeline)
+
 
 def test_generate_code_pipeline():
     class MockBinaryPipeline(BinaryClassificationPipeline):
