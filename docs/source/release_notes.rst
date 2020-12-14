@@ -22,10 +22,17 @@ Release Notes
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
+        * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
+
+.. warning::
+
+    **Breaking Changes**
+        * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+
 
 
 **v0.16.1 Dec. 1, 2020**
