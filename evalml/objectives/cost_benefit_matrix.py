@@ -36,9 +36,9 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         """Calculates cost-benefit of the using the predicted and true values.
 
         Arguments:
-            y_predicted (pd.Series): Predicted labels
-            y_true (pd.Series): True labels
-            X (pd.DataFrame): Ignored.
+            y_predicted (pd.Series, ww.DataColumn): Predicted labels
+            y_true (pd.Series, ww.DataColumn): True labels
+            X (pd.DataFrame, ww.DataTable): Ignored.
 
         Returns:
             float: Cost-benefit matrix score
