@@ -951,15 +951,19 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         import_check.assert_called_with('ipywidgets', warning=True)
 
 
-def test_get_prediction_vs_actual_data():
-    y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_get_prediction_vs_actual_data(data_type, make_data_type):
+    y_true = np.array([1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    y_pred = np.array([5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000])
+
+    y_true_in = make_data_type(data_type, y_true)
+    y_pred_in = make_data_type(data_type, y_pred)
 
     with pytest.raises(ValueError, match="Threshold must be positive!"):
-        get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=-1)
+        get_prediction_vs_actual_data(y_true_in, y_pred_in, outlier_threshold=-1)
 
     outlier_loc = [2, 11]
-    results = get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=2000)
+    results = get_prediction_vs_actual_data(y_true_in, y_pred_in, outlier_threshold=2000)
     assert isinstance(results, pd.DataFrame)
     assert np.array_equal(results['prediction'], y_pred)
     assert np.array_equal(results['actual'], y_true)
@@ -969,7 +973,7 @@ def test_get_prediction_vs_actual_data():
         else:
             assert value == '#0000ff'
 
-    results = get_prediction_vs_actual_data(y_true, y_pred)
+    results = get_prediction_vs_actual_data(y_true_in, y_pred_in)
     assert isinstance(results, pd.DataFrame)
     assert np.array_equal(results['prediction'], y_pred)
     assert np.array_equal(results['actual'], y_true)

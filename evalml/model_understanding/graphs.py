@@ -512,8 +512,8 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
     """Combines y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
 
     Arguments:
-        y_true (pd.Series): The real target values of the data
-        y_pred (pd.Series): The predicted values outputted by the regression model.
+        y_true (pd.Series, ww.DataColumn, or np.ndarray): The real target values of the data
+        y_pred (pd.Series, ww.DataColumn, or np.ndarray): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to None
