@@ -13,7 +13,7 @@ def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipel
         X, y = load_breast_cancer(return_pandas=True)
         y = y.map({"malignant": False, "benign": True})
     mock_regression_pipeline = dummy_regression_pipeline_class(parameters={})
-    with pytest.raises(ValueError, match="Regression pipeline cannot handle targets with dtype"):
+    with pytest.raises(ValueError, match="Regression pipeline cannot handle targets with logical type"):
         mock_regression_pipeline.fit(X, y)
 
 

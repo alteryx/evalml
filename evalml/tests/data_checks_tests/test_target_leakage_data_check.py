@@ -107,7 +107,7 @@ def test_target_leakage_data_check_input_formats():
     assert leakage_check.validate(X, y.values) == expected_messages
 
     # test X as np.array
-    assert leakage_check.validate(X.to_numpy().astype(int), y) == {
+    assert leakage_check.validate(X.to_numpy().astype(float), y) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
