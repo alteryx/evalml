@@ -1311,8 +1311,8 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
         assert not pipeline_names.str.contains('Ensemble').any()
     elif use_ensembling:
         assert pipeline_names.str.contains('Ensemble').any()
-        ensemble_nth_batch = len(automl.allowed_pipelines) + 1
-        assert f"Ensembling will run every {ensemble_nth_batch} batches."
+        assert "Ensembling will run at the" in caplog.text
+
     else:
         assert not pipeline_names.str.contains('Ensemble').any()
 

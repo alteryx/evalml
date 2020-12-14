@@ -461,6 +461,8 @@ class AutoMLSearch:
             if self.max_iterations < first_ensembling_iteration:
                 run_ensembling = False
                 logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
+            else:
+                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
 
         if self.max_batches and self.max_iterations is None:
             self.show_batch_output = True
