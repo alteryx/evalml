@@ -395,9 +395,9 @@ def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=F
             format_ = extension
         filepath = f'{path_and_name}.{format_}'
         try:
-            saving_folder = os.path.dirname(filepath)
-            if not os.path.exists(saving_folder):   # Creates folder if one is specified
-                os.makedirs(saving_folder)
+            # saving_folder = os.path.dirname(filepath)
+            # if not os.path.exists(saving_folder):   # Creates folder if one is specified
+            #    os.makedirs(saving_folder)
             f = open(filepath, 'w')
             f.close()
         except (IOError, FileNotFoundError):
