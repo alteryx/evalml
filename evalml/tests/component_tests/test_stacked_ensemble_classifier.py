@@ -56,7 +56,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logisti
         "input_pipelines": input_pipelines,
         "final_estimator": None,
         'cv': None,
-        'n_jobs': -1
+        'n_jobs': 1
     }
     assert clf.parameters == expected_parameters
     clf.fit(X, y)
