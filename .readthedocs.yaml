@@ -22,4 +22,6 @@ python:
   version: 3.8
   install:
     - requirements: docs/readthedocs-setuptools-45.1.0.txt
-    - requirements: docs/readthedocs-requirements.txt
+    - requirements: docs-requirements.txt
+    - method: pip
+      path: .
