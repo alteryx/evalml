@@ -46,3 +46,8 @@ installdeps-test:
 installdeps-dev:
 	pip install -e . -q
 	pip install -r dev-requirements.txt -q
+
+.PHONY: installdeps-docs
+installdeps-docs:
+	pip install -e . -q
+	pip install -r docs-requirements.txt -q
