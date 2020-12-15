@@ -508,8 +508,26 @@ def _calculate_axis_range(arr):
     return [min_value - margins, max_value + margins]
 
 
-def _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold):
-    """Helper method to help calculate the y_true and y_pred dataframe, with a column for outliers"""
+def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
+    """Combines y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
+
+    Arguments:
+        y_true (pd.Series, ww.DataColumn, or np.ndarray): The real target values of the data
+        y_pred (pd.Series, ww.DataColumn, or np.ndarray): The predicted values outputted by the regression model.
+        outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
+                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
+                                 Defaults to None
+
+    Returns:
+        pd.DataFrame with the following columns:
+                * `prediction`: Predicted values from regression model.
+                * `actual`: Real target values.
+                * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
+
+    """
+    if outlier_threshold and outlier_threshold <= 0:
+        raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
+
     y_true = _convert_to_woodwork_structure(y_true)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     y_pred = _convert_to_woodwork_structure(y_pred)
@@ -548,7 +566,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
-    df = _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
+    df = get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
     data = []
 
     x_axis = _calculate_axis_range(df['prediction'])
