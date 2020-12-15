@@ -13,7 +13,7 @@ multi_data_check_name = MulticollinearityDataCheck.name
 
 def test_multicollinearity_data_check_init():
     multi_check = MulticollinearityDataCheck()
-    assert multi_check.threshold == 1.0
+    assert multi_check.threshold == 0.9
 
     multi_check = MulticollinearityDataCheck(threshold=0.0)
     assert multi_check.threshold == 0

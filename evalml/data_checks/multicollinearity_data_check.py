@@ -10,7 +10,7 @@ from evalml.utils.gen_utils import _convert_to_woodwork_structure
 class MulticollinearityDataCheck(DataCheck):
     """Check if any set features are likely to be multicollinear."""
 
-    def __init__(self, threshold=1.0):
+    def __init__(self, threshold=0.9):
         """Check if any set of features are likely to be multicollinear.
 
         Arguments:
