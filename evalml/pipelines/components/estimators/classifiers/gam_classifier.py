@@ -1,10 +1,4 @@
-import copy
-
-import numpy as np
-import pandas as pd
-from pandas.api.types import is_integer_dtype
-from sklearn.preprocessing import LabelEncoder
-from skopt.space import Integer, Real
+from skopt.space import Real
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
@@ -34,12 +28,12 @@ class GAMClassifier(Estimator):
     def __init__(self, family='AUTO', solver="AUTO", stopping_metric="logloss", keep_cross_validation_models=False, random_state=0, **kwargs):
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
 
-        self.parameters = {"family": family,
-                           "solver": solver,
-                           "stopping_metric": stopping_metric,
-                           "keep_cross_validation_models": keep_cross_validation_models,
-                           "seed": random_seed}
-        self.parameters.update(kwargs)
+        self._parameters = {"family": family,
+                            "solver": solver,
+                            "stopping_metric": stopping_metric,
+                            "keep_cross_validation_models": keep_cross_validation_models,
+                            "seed": random_seed}
+        self._parameters.update(kwargs)
 
         h2o_error_msg = "H2O is not installed. please install using `pip install h2o`."
         self.h2o = import_or_raise("h2o", error_msg=h2o_error_msg)
@@ -47,7 +41,7 @@ class GAMClassifier(Estimator):
 
         self.h2o_model = self.h2o.estimators.gam.H2OGeneralizedAdditiveEstimator
 
-        super().__init__(parameters=self.parameters,
+        super().__init__(parameters=self._parameters,
                          random_state=random_seed)
 
     def _update_params(self, X, y):
@@ -79,8 +73,8 @@ class GAMClassifier(Estimator):
             training_frame[y.name] = training_frame[y.name].asfactor()
 
             new_params = self._update_params(X, y)
-            self.parameters.update(new_params)
-            self.h2o_model(**self.parameters)
+            self._parameters.update(new_params)
+            self.h2o_model(**self._parameters)
 
             self.h2o_model.train(x=list(X.columns), y=y.name, training_frame=training_frame)
             return self.h2o_model

@@ -16,10 +16,7 @@ from .regressors import (LinearRegressor,
                          ElasticNetRegressor,
                          ExtraTreesRegressor,
                          BaselineRegressor,
-<<<<<<< HEAD
                          DecisionTreeRegressor,
-                         GAMRegressor)
-=======
+                         GAMRegressor,
                          TimeSeriesBaselineRegressor,
                          DecisionTreeRegressor)
->>>>>>> main

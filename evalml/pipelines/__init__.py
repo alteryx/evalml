@@ -27,12 +27,9 @@ from .components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
-<<<<<<< HEAD
     GAMClassifier,
-    GAMRegressor
-=======
+    GAMRegressor,
     DFSTransformer
->>>>>>> main
 )
 
 from .component_graph import ComponentGraph
