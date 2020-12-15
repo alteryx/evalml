@@ -23,7 +23,7 @@ def test_init(X_y_regression):
     assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
-    assert automl.best_pipeline._is_fitted
+    automl.best_pipeline.predict(X)
 
     # test with dataframes
     automl = AutoMLSearch(problem_type='regression', objective="R2", max_iterations=3, n_jobs=1)
@@ -32,7 +32,7 @@ def test_init(X_y_regression):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
-    assert automl.best_pipeline._is_fitted
+    automl.best_pipeline.predict(X)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
 

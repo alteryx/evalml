@@ -37,7 +37,7 @@ def test_init(X_y_binary):
     assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
-    assert automl.best_pipeline._is_fitted
+    automl.best_pipeline.predict(X)
 
     # test with dataframes
     automl = AutoMLSearch(problem_type='binary', max_iterations=1, n_jobs=1)
@@ -48,7 +48,7 @@ def test_init(X_y_binary):
     assert isinstance(automl.best_pipeline, PipelineBase)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
     assert automl.objective.name == 'Log Loss Binary'
-    assert automl.best_pipeline._is_fitted
+    automl.best_pipeline.predict(X)
 
 
 def test_init_objective():

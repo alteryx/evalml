@@ -29,7 +29,11 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.demos import load_breast_cancer, load_wine
-from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
+from evalml.exceptions import (
+    AutoMLSearchException,
+    PipelineNotFoundError,
+    PipelineNotYetFittedError
+)
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     R2,
@@ -637,8 +641,8 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['score'] == automl.results['pipeline_results'][pipeline_id]['validation_score']
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_large_dataset_split_size(mock_fit, mock_score):
     def generate_fake_dataset(rows):
         X = pd.DataFrame({'col_0': [i for i in range(rows)]})
@@ -652,7 +656,8 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           additional_objectives=['auc', 'f1', 'precision'],
                           max_time=1,
                           max_iterations=1,
-                          optimize_thresholds=True)
+                          optimize_thresholds=True,
+                          train_best_pipeline=False)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
 
@@ -1082,7 +1087,7 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
         with pytest.raises(PipelineNotFoundError):
             automl.best_pipeline
     else:
-        assert automl.best_pipeline._is_fitted
+        automl.best_pipeline.predict(X)
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
@@ -1120,7 +1125,7 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_spl
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_train_test_split.side_effect = RuntimeError()
-    automl = AutoMLSearch(problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True)
+    automl = AutoMLSearch(problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True, train_best_pipeline=False)
     automl.search(X, y)
     for pipeline in automl.results['pipeline_results'].values():
         assert np.isnan(pipeline['score'])
@@ -1911,15 +1916,25 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
         assert result['parameters']['pipeline'] == configuration
 
 
-@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
-@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
-def test_automl_best_pipeline_false(mock_fit, mock_score, X_y_binary):
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_best_pipeline_false(mock_fit, mock_score, mock_optimize, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type='binary', train_best_pipeline=False)
     automl.search(X, y)
-    assert not automl.best_pipeline._is_fitted
+    with pytest.raises(PipelineNotYetFittedError, match="not fitted"):
+        automl.best_pipeline.predict(X)
 
-    automl = AutoMLSearch(problem_type='binary')
+    mock_optimize.return_value = 0.62
+
+    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=False)
     automl.search(X, y)
-    assert automl.best_pipeline._is_fitted
+    automl.best_pipeline.predict(X)
+    assert automl.best_pipeline.threshold != 0.62
+
+    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=True)
+    automl.search(X, y)
+    automl.best_pipeline.predict(X)
+    assert automl.best_pipeline.threshold == 0.62
