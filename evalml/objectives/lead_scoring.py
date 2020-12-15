@@ -24,9 +24,9 @@ class LeadScoring(BinaryClassificationObjective):
         """Calculate the profit per lead.
 
             Arguments:
-                y_predicted (pd.Series, ww.DataColumn): Predicted labels
-                y_true (pd.Series, ww.DataColumn): True labels
-                X (pd.DataFrame, ww.DataTable): Ignored.
+                y_predicted (ww.DataColumn, pd.Series): Predicted labels
+                y_true (ww.DataColumn, pd.Series): True labels
+                X (ww.DataTable, pd.DataFrame): Ignored.
 
             Returns:
                 float: Profit per lead

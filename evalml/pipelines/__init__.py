@@ -27,10 +27,15 @@ from .components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
+<<<<<<< HEAD
     GAMClassifier,
     GAMRegressor
+=======
+    DFSTransformer
+>>>>>>> main
 )
 
+from .component_graph import ComponentGraph
 from .pipeline_base import PipelineBase
 from .classification_pipeline import ClassificationPipeline
 from .binary_classification_pipeline import BinaryClassificationPipeline

@@ -1,11 +1,13 @@
+import os
 import warnings
+from collections import OrderedDict
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn.exceptions import UndefinedMetricWarning
+from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
@@ -16,6 +18,9 @@ from evalml.model_understanding.graphs import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
+    decision_tree_data_from_estimator,
+    decision_tree_data_from_pipeline,
+    get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
     graph_confusion_matrix,
     graph_partial_dependence,
@@ -27,7 +32,8 @@ from evalml.model_understanding.graphs import (
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    visualize_decision_tree
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -36,6 +42,10 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 @pytest.fixture
@@ -55,46 +65,45 @@ def test_pipeline():
     return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_confusion_matrix(data_type):
-    y_true = [2, 0, 2, 2, 0, 1]
-    y_predicted = [0, 0, 2, 2, 0, 2]
-    if data_type == 'pd':
-        y_true = pd.Series(y_true)
-        y_predicted = pd.Series(y_predicted)
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_confusion_matrix(data_type, make_data_type):
+    y_true = np.array([2, 0, 2, 2, 0, 1, 1, 0, 2])
+    y_predicted = np.array([0, 0, 2, 2, 0, 2, 1, 1, 1])
+    y_true = make_data_type(data_type, y_true)
+    y_predicted = make_data_type(data_type, y_predicted)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
-    conf_mat_expected = np.array([[2, 0, 0], [0, 0, 1], [1, 0, 2]])
-    assert np.array_equal(conf_mat_expected, conf_mat)
-    assert isinstance(conf_mat, pd.DataFrame)
-
-    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
-    conf_mat_expected = np.array([[1, 0, 0], [0, 0, 1], [1 / 3.0, 0, 2 / 3.0]])
-    assert np.array_equal(conf_mat_expected, conf_mat)
-    assert isinstance(conf_mat, pd.DataFrame)
-
-    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
-    conf_mat_expected = np.array([[2 / 3.0, np.nan, 0], [0, np.nan, 1 / 3.0], [1 / 3.0, np.nan, 2 / 3.0]])
-    assert np.allclose(conf_mat_expected, conf_mat, equal_nan=True)
+    conf_mat_expected = np.array([[2, 1, 0], [0, 1, 1], [1, 1, 2]])
+    assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
     assert isinstance(conf_mat, pd.DataFrame)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
-    conf_mat_expected = np.array([[1 / 3.0, 0, 0], [0, 0, 1 / 6.0], [1 / 6.0, 0, 1 / 3.0]])
-    assert np.array_equal(conf_mat_expected, conf_mat)
+    conf_mat_expected = conf_mat_expected / 9.0
+    assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
+    assert isinstance(conf_mat, pd.DataFrame)
+
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='true')
+    conf_mat_expected = np.array([[2 / 3.0, 1 / 3.0, 0], [0, 0.5, 0.5], [0.25, 0.25, 0.5]])
+    assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
+    assert isinstance(conf_mat, pd.DataFrame)
+
+    conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='pred')
+    conf_mat_expected = np.array([[2 / 3.0, 1 / 3.0, 0], [0, 1 / 3.0, 1 / 3.0], [1 / 3.0, 1 / 3.0, 2 / 3.0]])
+    assert np.allclose(conf_mat_expected, conf_mat.to_numpy(), equal_nan=True)
     assert isinstance(conf_mat, pd.DataFrame)
 
     with pytest.raises(ValueError, match='Invalid value provided'):
         conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='Invalid Option')
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_normalize_confusion_matrix(data_type):
+@pytest.mark.parametrize("data_type", ['ww', 'np', 'pd'])
+def test_normalize_confusion_matrix(data_type, make_data_type):
     conf_mat = np.array([[2, 3, 0], [0, 1, 1], [1, 0, 2]])
-    if data_type == 'pd':
-        conf_mat = pd.DataFrame(conf_mat)
+    conf_mat = make_data_type(data_type, conf_mat)
+
     conf_mat_normalized = normalize_confusion_matrix(conf_mat)
     assert all(conf_mat_normalized.sum(axis=1) == 1.0)
-    assert isinstance(conf_mat_normalized, type(conf_mat))
+    assert isinstance(conf_mat_normalized, pd.DataFrame)
 
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'pred')
     for col_sum in conf_mat_normalized.sum(axis=0):
@@ -103,7 +112,7 @@ def test_normalize_confusion_matrix(data_type):
     conf_mat_normalized = normalize_confusion_matrix(conf_mat, 'all')
     assert conf_mat_normalized.sum().sum() == 1.0
 
-    # testing with pd.DataFrames
+    # testing with named pd.DataFrames
     conf_mat_df = pd.DataFrame()
     conf_mat_df["col_1"] = [0, 1, 2]
     conf_mat_df["col_2"] = [0, 0, 3]
@@ -120,8 +129,11 @@ def test_normalize_confusion_matrix(data_type):
     assert conf_mat_normalized.sum().sum() == 1.0
 
 
-def test_normalize_confusion_matrix_error():
+@pytest.mark.parametrize("data_type", ['ww', 'np', 'pd'])
+def test_normalize_confusion_matrix_error(data_type, make_data_type):
     conf_mat = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    conf_mat = make_data_type(data_type, conf_mat)
+
     warnings.simplefilter('default', category=RuntimeWarning)
 
     with pytest.raises(ValueError, match='Invalid value provided'):
@@ -137,49 +149,49 @@ def test_normalize_confusion_matrix_error():
         normalize_confusion_matrix(conf_mat, 'all')
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd'])
-def test_confusion_matrix_labels(data_type):
-    def convert_pd(y_true, y_pred):
-        if data_type == 'pd':
-            y_true = pd.Series(y_true)
-            y_pred = pd.Series(y_pred)
-        return y_true, y_pred
+@pytest.mark.parametrize("data_type", ['ww', 'pd', 'np'])
+def test_confusion_matrix_labels(data_type, make_data_type):
+    y_true = np.array([True, False, True, True, False, False])
+    y_pred = np.array([False, False, True, True, False, False])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
 
-    y_true = [True, False, True, True, False, False]
-    y_pred = [False, False, True, True, False, False]
-    y_true, y_pred = convert_pd(y_true, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = [False, True]
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = [0, 1, 0, 1, 0, 1]
-    y_pred = [0, 1, 1, 1, 1, 1]
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array([0, 1, 0, 1, 0, 1])
+    y_pred = np.array([0, 1, 1, 1, 1, 1])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = [0, 1]
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = ['blue', 'red', 'blue', 'red']
-    y_pred = ['blue', 'red', 'red', 'red']
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array(['blue', 'red', 'blue', 'red'])
+    y_pred = np.array(['blue', 'red', 'red', 'red'])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = ['blue', 'red']
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = ['blue', 'red', 'red', 'red', 'orange', 'orange']
-    y_pred = ['red', 'blue', 'blue', 'red', 'orange', 'orange']
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array(['blue', 'red', 'red', 'red', 'orange', 'orange'])
+    y_pred = np.array(['red', 'blue', 'blue', 'red', 'orange', 'orange'])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = ['blue', 'orange', 'red']
     assert np.array_equal(conf_mat.index, labels)
     assert np.array_equal(conf_mat.columns, labels)
 
-    y_true = [0, 1, 2, 1, 2, 1, 2, 3]
-    y_pred = [0, 1, 1, 1, 1, 1, 3, 3]
-    y_true, y_pred = convert_pd(y_true, y_pred)
+    y_true = np.array([0, 1, 2, 1, 2, 1, 2, 3])
+    y_pred = np.array([0, 1, 1, 1, 1, 1, 3, 3])
+    y_true = make_data_type(data_type, y_true)
+    y_pred = make_data_type(data_type, y_pred)
     conf_mat = confusion_matrix(y_true=y_true, y_predicted=y_pred)
     labels = [0, 1, 2, 3]
     assert np.array_equal(conf_mat.index, labels)
@@ -609,8 +621,12 @@ def test_graph_permutation_importance_threshold(mock_perm_importance):
     assert (np.all(data['x'] >= 0.5))
 
 
-def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_cost_benefit_matrix_vs_threshold(data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type):
     X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
@@ -623,8 +639,12 @@ def test_cost_benefit_matrix_vs_threshold(X_y_binary, logistic_regression_binary
     assert pipeline.threshold == original_pipeline_threshold
 
 
-def test_binary_objective_vs_threshold(X_y_binary, logistic_regression_binary_pipeline_class):
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_binary_objective_vs_threshold(data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type):
     X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
 
@@ -658,10 +678,14 @@ def test_binary_objective_vs_threshold_steps(mock_score,
     assert cost_benefit_df.shape == (235, 2)
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @patch('evalml.model_understanding.graphs.binary_objective_vs_threshold')
-def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, X_y_binary, logistic_regression_binary_pipeline_class):
+def test_graph_binary_objective_vs_threshold(mock_cb_thresholds, data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     cbm = CostBenefitMatrix(true_positive=1, true_negative=-1,
                             false_positive=-7, false_negative=-2)
@@ -985,13 +1009,29 @@ def test_graph_prediction_vs_actual(data_type):
     assert fig_dict['data'][2]['name'] == ">= outlier_threshold"
 
 
+@patch('evalml.pipelines.ClassificationPipeline.predict')
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_get_prediction_vs_actual_over_time_data(mock_predict, data_type, logistic_regression_binary_pipeline_class, make_data_type):
+    mock_predict.return_value = pd.Series([0] * 20)
+    X = make_data_type(data_type, pd.DataFrame())
+    y = make_data_type(data_type, pd.Series([0] * 20))
+    dates = make_data_type(data_type, pd.Series(pd.date_range('2000-05-19', periods=20, freq='D')))
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    results = get_prediction_vs_actual_over_time_data(pipeline, X, y, dates)
+    assert isinstance(results, pd.DataFrame)
+    assert list(results.columns) == ["dates", "target", "prediction"]
+
+
 def test_graph_prediction_vs_actual_over_time():
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
-    class MockPipeline:
+    class MockPipeline():
         problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
         def predict(self, X, y):
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
             preds = y + 10
             preds.index = range(100, 161)
             return preds
@@ -1028,3 +1068,179 @@ def test_graph_prediction_vs_actual_over_time_value_error():
     error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
     with pytest.raises(ValueError, match=error_msg):
         graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)
+
+
+def test_decision_tree_data_from_estimator_not_fitted(tree_estimators):
+    est_class, _ = tree_estimators
+    with pytest.raises(NotFittedError, match="This DecisionTree estimator is not fitted yet. Call 'fit' with "
+                                             "appropriate arguments before using this estimator."):
+        decision_tree_data_from_estimator(est_class)
+
+
+def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
+    est_logit = logit_estimator
+    with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
+        decision_tree_data_from_estimator(est_logit)
+
+
+def test_decision_tree_data_from_estimator_feature_length(fitted_tree_estimators):
+    est_class, _ = fitted_tree_estimators
+    with pytest.raises(ValueError, match="Length mismatch: Expected features has length {} but got list with length {}"
+                                         .format(est_class._component_obj.n_features_, 3)):
+        decision_tree_data_from_estimator(est_class, feature_names=["First", "Second", "Third"])
+
+    features_array = tuple([f'Testing_{col_}' for col_ in range(est_class._component_obj.n_features_)])
+    formatted_ = decision_tree_data_from_estimator(est_class, feature_names=features_array)
+    assert isinstance(formatted_, OrderedDict)
+
+
+def test_decision_tree_data_from_estimator(fitted_tree_estimators):
+    est_class, est_reg = fitted_tree_estimators
+
+    formatted_ = decision_tree_data_from_estimator(est_reg, feature_names=[f'Testing_{col_}' for col_ in range(est_reg._component_obj.n_features_)])
+    tree_ = est_reg._component_obj.tree_
+
+    assert isinstance(formatted_, OrderedDict)
+    assert formatted_['Feature'] == f'Testing_{tree_.feature[0]}'
+    assert formatted_['Threshold'] == tree_.threshold[0]
+    assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
+    left_child_feature_ = formatted_['Left_Child']['Feature']
+    right_child_feature_ = formatted_['Right_Child']['Feature']
+    left_child_threshold_ = formatted_['Left_Child']['Threshold']
+    right_child_threshold_ = formatted_['Right_Child']['Threshold']
+    left_child_value_ = formatted_['Left_Child']['Value']
+    right_child_value_ = formatted_['Right_Child']['Value']
+    assert left_child_feature_ == f'Testing_{tree_.feature[tree_.children_left[0]]}'
+    assert right_child_feature_ == f'Testing_{tree_.feature[tree_.children_right[0]]}'
+    assert left_child_threshold_ == tree_.threshold[tree_.children_left[0]]
+    assert right_child_threshold_ == tree_.threshold[tree_.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
+
+
+def test_decision_tree_data_from_pipeline_not_fitted():
+    class MockPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Decision Tree Classifier']
+
+    mock_pipeline = MockPipeline({})
+    with pytest.raises(NotFittedError, match="The DecisionTree estimator associated with this pipeline is not fitted yet. "
+                                             "Call 'fit' with appropriate arguments before using this estimator."):
+        decision_tree_data_from_pipeline(mock_pipeline)
+
+
+def test_decision_tree_data_from_pipeline_wrong_type():
+    class MockPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Logistic Regression Classifier']
+
+    mock_pipeline = MockPipeline({})
+    with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
+        decision_tree_data_from_pipeline(mock_pipeline)
+
+
+def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regression):
+    class MockPipeline(RegressionPipeline):
+        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
+
+    mock_pipeline = MockPipeline({})
+
+    X, y = X_y_categorical_regression
+    mock_pipeline.fit(X, y)
+    assert len(mock_pipeline.input_feature_names[mock_pipeline.estimator.name]) == mock_pipeline.estimator._component_obj.n_features_
+
+
+def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
+    class MockPipeline(RegressionPipeline):
+        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
+
+    mock_pipeline = MockPipeline({})
+
+    X, y = X_y_categorical_regression
+    mock_pipeline.fit(X, y)
+    formatted_ = decision_tree_data_from_pipeline(mock_pipeline)
+    tree_ = mock_pipeline.estimator._component_obj.tree_
+    feature_names = mock_pipeline.input_feature_names[mock_pipeline.estimator.name]
+
+    assert isinstance(formatted_, OrderedDict)
+    assert formatted_['Feature'] == feature_names[tree_.feature[0]]
+    assert formatted_['Threshold'] == tree_.threshold[0]
+    assert all([a == b for a, b in zip(formatted_['Value'][0], tree_.value[0][0])])
+    left_child_feature_ = formatted_['Left_Child']['Feature']
+    right_child_feature_ = formatted_['Right_Child']['Feature']
+    left_child_threshold_ = formatted_['Left_Child']['Threshold']
+    right_child_threshold_ = formatted_['Right_Child']['Threshold']
+    left_child_value_ = formatted_['Left_Child']['Value']
+    right_child_value_ = formatted_['Right_Child']['Value']
+    assert left_child_feature_ == feature_names[tree_.feature[tree_.children_left[0]]]
+    assert right_child_feature_ == feature_names[tree_.feature[tree_.children_right[0]]]
+    assert left_child_threshold_ == tree_.threshold[tree_.children_left[0]]
+    assert right_child_threshold_ == tree_.threshold[tree_.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
+
+
+def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, _ = fitted_tree_estimators
+    filepath = os.path.join(str(tmpdir), 'invalid', 'path', 'test.png')
+
+    assert not os.path.exists(filepath)
+    with pytest.raises(ValueError, match="Specified filepath is not writeable"):
+        visualize_decision_tree(estimator=est_class, filepath=filepath)
+
+    filepath = os.path.join(str(tmpdir), 'test_0.png')
+    src = visualize_decision_tree(estimator=est_class, filepath=filepath)
+    assert os.path.exists(filepath)
+    assert src.format == 'png'
+    assert isinstance(src, graphviz.Source)
+
+
+def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, _ = fitted_tree_estimators
+    filepath = os.path.join(str(tmpdir), 'test_0.xyz')
+    with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: "
+                                         f"{graphviz.backend.FORMATS}"):
+        visualize_decision_tree(estimator=est_class, filepath=filepath)
+
+
+def test_visualize_decision_trees_est_wrong_type(logit_estimator, tmpdir):
+    est_logit = logit_estimator
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
+    with pytest.raises(ValueError, match="Tree visualizations are only supported for decision tree estimators"):
+        visualize_decision_tree(estimator=est_logit, filepath=filepath)
+
+
+def test_visualize_decision_trees_max_depth(tree_estimators, tmpdir):
+    est_class, _ = tree_estimators
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
+    with pytest.raises(ValueError, match="Unknown value: '-1'. The parameter max_depth has to be a non-negative integer"):
+        visualize_decision_tree(estimator=est_class, max_depth=-1, filepath=filepath)
+
+
+def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir):
+    est_class, _ = tree_estimators
+    filepath = os.path.join(str(tmpdir), 'test_1.png')
+    with pytest.raises(NotFittedError, match="This DecisionTree estimator is not fitted yet. Call 'fit' with "
+                                             "appropriate arguments before using this estimator."):
+        visualize_decision_tree(estimator=est_class, max_depth=3, filepath=filepath)
+
+
+def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
+    graphviz = pytest.importorskip('graphviz', reason='Skipping visualizing test because graphviz not installed')
+    est_class, est_reg = fitted_tree_estimators
+
+    filepath = os.path.join(str(tmpdir), 'test_2')
+    src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3, rotate=True, filepath=filepath)
+    assert src.format == 'pdf'  # Check that extension defaults to pdf
+    assert isinstance(src, graphviz.Source)
+
+    filepath = os.path.join(str(tmpdir), 'test_3.pdf')
+    src = visualize_decision_tree(estimator=est_reg, filled=True, filepath=filepath)
+    assert src.format == 'pdf'
+    assert isinstance(src, graphviz.Source)
+
+    src = visualize_decision_tree(estimator=est_reg, filled=True, max_depth=2)
+    assert src.format == 'pdf'
+    assert isinstance(src, graphviz.Source)

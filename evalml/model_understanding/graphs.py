@@ -1,9 +1,12 @@
 import copy
+import os
 import warnings
+from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
@@ -13,6 +16,7 @@ from sklearn.metrics import \
     precision_recall_curve as sklearn_precision_recall_curve
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
@@ -41,13 +45,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """
     y_true = _convert_to_woodwork_structure(y_true)
     y_predicted = _convert_to_woodwork_structure(y_predicted)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
-    if isinstance(y_true, pd.Series):
-        y_true = y_true.to_numpy()
-    if isinstance(y_predicted, pd.Series):
-        y_predicted = y_predicted.to_numpy()
-
+    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
+    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series()).to_numpy()
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
@@ -60,12 +59,17 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
+        conf_mat (ww.DataTable, pd.DataFrame or np.ndarray): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
+    conf_mat = _convert_to_woodwork_structure(conf_mat)
+    conf_mat = _convert_woodwork_types_wrapper(conf_mat.to_dataframe())
+    col_names = conf_mat.columns
+
+    conf_mat = conf_mat.to_numpy()
     with warnings.catch_warnings(record=True) as w:
         if normalize_method == 'true':
             conf_mat = conf_mat.astype('float') / conf_mat.sum(axis=1)[:, np.newaxis]
@@ -77,7 +81,51 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
             raise ValueError('Invalid value provided for "normalize_method": %s'.format(normalize_method))
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError("Sum of given axis is 0 and normalization is not possible. Please select another option.")
+    conf_mat = pd.DataFrame(conf_mat, index=col_names, columns=col_names)
     return conf_mat
+
+
+def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
+    """Generate and display a confusion matrix plot.
+
+    If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
+
+    Arguments:
+        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
+        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
+        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
+        title_addition (str or None): if not None, append to plot title. Default None.
+
+    Returns:
+        plotly.Figure representing the confusion matrix plot generated
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
+    conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
+    labels = conf_mat.columns
+
+    title = 'Confusion matrix{}{}'.format(
+        '' if title_addition is None else (' ' + title_addition),
+        '' if normalize_method is None else (', normalized using method "' + normalize_method + '"'))
+    z_data, custom_data = (conf_mat, conf_mat_normalized) if normalize_method is None else (conf_mat_normalized, conf_mat)
+    primary_heading, secondary_heading = ('Raw', 'Normalized') if normalize_method is None else ('Normalized', 'Raw')
+    hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata} <br>'
+    # the "<extra> tags at the end are necessary to remove unwanted trace info
+    hover_template = '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}' + hover_text + '<extra></extra>'
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
+                        yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
+    fig = _go.Figure(data=_go.Heatmap(x=labels, y=labels, z=z_data,
+                                      customdata=custom_data,
+                                      hovertemplate=hover_template,
+                                      colorscale='Blues'),
+                     layout=layout)
+    # plotly Heatmap y axis defaults to the reverse of what we want: https://community.plotly.com/t/heatmap-y-axis-is-reversed-by-default-going-against-standard-convention-for-matrices/32180
+    fig.update_yaxes(autorange="reversed")
+    return fig
 
 
 def precision_recall_curve(y_true, y_pred_proba):
@@ -227,49 +275,6 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     return _go.Figure(layout=layout, data=graph_data)
 
 
-def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_addition=None):
-    """Generate and display a confusion matrix plot.
-
-    If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
-
-    Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
-        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
-        title_addition (str or None): if not None, append to plot title. Default None.
-
-    Returns:
-        plotly.Figure representing the confusion matrix plot generated
-    """
-    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    if jupyter_check():
-        import_or_raise("ipywidgets", warning=True)
-
-    conf_mat = confusion_matrix(y_true, y_pred, normalize_method=None)
-    conf_mat_normalized = confusion_matrix(y_true, y_pred, normalize_method=normalize_method or 'true')
-    labels = conf_mat.columns
-
-    title = 'Confusion matrix{}{}'.format(
-        '' if title_addition is None else (' ' + title_addition),
-        '' if normalize_method is None else (', normalized using method "' + normalize_method + '"'))
-    z_data, custom_data = (conf_mat, conf_mat_normalized) if normalize_method is None else (conf_mat_normalized, conf_mat)
-    primary_heading, secondary_heading = ('Raw', 'Normalized') if normalize_method is None else ('Normalized', 'Raw')
-    hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata} <br>'
-    # the "<extra> tags at the end are necessary to remove unwanted trace info
-    hover_template = '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}' + hover_text + '<extra></extra>'
-    layout = _go.Layout(title={'text': title},
-                        xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
-                        yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
-    fig = _go.Figure(data=_go.Heatmap(x=labels, y=labels, z=z_data,
-                                      customdata=custom_data,
-                                      hovertemplate=hover_template,
-                                      colorscale='Blues'),
-                     layout=layout)
-    # plotly Heatmap y axis defaults to the reverse of what we want: https://community.plotly.com/t/heatmap-y-axis-is-reversed-by-default-going-against-standard-convention-for-matrices/32180
-    fig.update_yaxes(autorange="reversed")
-    return fig
-
-
 def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
     """Calculates permutation importance for features.
 
@@ -364,8 +369,8 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
-        X (pd.DataFrame): The input data used to compute objective score
-        y (pd.Series): The target labels
+        X (ww.DataTable, pd.DataFrame): The input data used to compute objective score
+        y (ww.DataColumn, pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score
         steps (int): Number of intervals to divide and calculate objective score at
 
@@ -395,8 +400,8 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute scores
-        y (pd.Series): The target labels
+        X (ww.DataTable, pd.DataFrame): The input data used to score and compute scores
+        y (ww.DataColumn, pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
         steps (int): Number of intervals to divide and calculate objective score at
 
@@ -526,8 +531,8 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
 
     Arguments:
-        y_true (pd.Series): The real target values of the data
-        y_pred (pd.Series): The predicted values outputted by the regression model.
+        y_true (ww.DataColumn, pd.Series): The real target values of the data
+        y_pred (ww.DataColumn, pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to None
@@ -569,19 +574,148 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     return _go.Figure(layout=layout, data=data)
 
 
+def _tree_parse(est, feature_names):
+    children_left = est.tree_.children_left
+    children_right = est.tree_.children_right
+    features = est.tree_.feature
+    thresholds = est.tree_.threshold
+    values = est.tree_.value
+
+    def recurse(i):
+        if children_left[i] == children_right[i]:
+            return {'Value': values[i]}
+        return OrderedDict({
+            'Feature': feature_names[features[i]],
+            'Threshold': thresholds[i],
+            'Value': values[i],
+            'Left_Child': recurse(children_left[i]),
+            'Right_Child': recurse(children_right[i])
+        })
+
+    return recurse(0)
+
+
+def decision_tree_data_from_estimator(estimator, feature_names=None):
+    """Return data for a fitted tree in a restructured format
+
+    Arguments:
+        estimator (ComponentBase): A fitted DecisionTree-based estimator.
+        feature_names (List): A list of feature names to replace column index values.
+
+    Returns:
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+    """
+    if not estimator.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree structure reformatting is only supported for decision tree estimators")
+    if not estimator._is_fitted:
+        raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    est = estimator._component_obj
+
+    if feature_names:
+        if not isinstance(feature_names, list):
+            feature_names = list(feature_names)
+        if len(feature_names) != est.n_features_:
+            raise ValueError("Length mismatch: Expected features has length {} but got list with length {}"
+                             .format(est.n_features_, len(feature_names)))
+
+    return _tree_parse(est, feature_names)
+
+
+def decision_tree_data_from_pipeline(pipeline_):
+    """Return data for a fitted pipeline with  in a restructured format
+
+    Arguments:
+        pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
+
+    Returns:
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+    """
+    if not pipeline_.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree structure reformatting is only supported for decision tree estimators")
+    if not pipeline_._is_fitted:
+        raise NotFittedError("The DecisionTree estimator associated with this pipeline is not fitted yet. Call 'fit' "
+                             "with appropriate arguments before using this estimator.")
+    est = pipeline_.estimator._component_obj
+    feature_names = pipeline_.input_feature_names[pipeline_.estimator.name]
+
+    return _tree_parse(est, feature_names)
+
+
+def visualize_decision_tree(estimator, max_depth=None, rotate=False, filled=False, filepath=None):
+    """Generate an image visualizing the decision tree
+
+    Arguments:
+        estimator (ComponentBase): A fitted DecisionTree-based estimator.
+        max_depth (int, optional): The depth to which the tree should be displayed. If set to None (as by default),
+        tree is fully generated.
+        rotate (bool, optional): Orient tree left to right rather than top-down.
+        filled (bool, optional): Paint nodes to indicate majority class for classification, extremity of values for
+        regression, or purity of node for multi-output.
+        filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph
+        will not be saved.
+
+    Returns:
+        graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
+    """
+    if not estimator.model_family == ModelFamily.DECISION_TREE:
+        raise ValueError("Tree visualizations are only supported for decision tree estimators")
+    if max_depth and (not isinstance(max_depth, int) or not max_depth >= 0):
+        raise ValueError("Unknown value: '{}'. The parameter max_depth has to be a non-negative integer"
+                         .format(max_depth))
+    if not estimator._is_fitted:
+        raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments before using this estimator.")
+
+    est = estimator._component_obj
+
+    graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
+
+    graph_format = None
+    if filepath:
+        # Cast to str in case a Path object was passed in
+        filepath = str(filepath)
+        try:
+            f = open(filepath, 'w')
+            f.close()
+        except (IOError, FileNotFoundError):
+            raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+        path_and_name, graph_format = os.path.splitext(filepath)
+        if graph_format:
+            graph_format = graph_format[1:].lower()  # ignore the dot
+            supported_filetypes = graphviz.backend.FORMATS
+            if graph_format not in supported_filetypes:
+                raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
+                                  "following: {}").format(graph_format, supported_filetypes))
+        else:
+            graph_format = 'pdf'  # If the filepath has no extension default to pdf
+
+    dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled)
+    source_obj = graphviz.Source(source=dot_data, format=graph_format)
+    if filepath:
+        source_obj.render(filename=path_and_name, cleanup=True)
+
+    return source_obj
+
+
 def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     """Get the data needed for the prediction_vs_actual_over_time plot.
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (pd.DataFrame): Features used to generate new predictions.
-        y (pd.Series): Target values to compare predictions against.
-        dates (pd.Series): Dates corresponding to target values and predictions.
+        X (ww.DataTable, pd.DataFrame): Features used to generate new predictions.
+        y (ww.DataColumn, pd.Series): Target values to compare predictions against.
+        dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
        pd.DataFrame
     """
+
+    dates = _convert_to_woodwork_structure(dates)
+    y = _convert_to_woodwork_structure(y)
     prediction = pipeline.predict(X, y)
+
+    dates = _convert_woodwork_types_wrapper(dates.to_series())
+    y = _convert_woodwork_types_wrapper(y.to_series())
     return pd.DataFrame({"dates": dates.reset_index(drop=True),
                          "target": y.reset_index(drop=True),
                          "prediction": prediction.reset_index(drop=True)})
@@ -592,9 +726,9 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (pd.DataFrame): Features used to generate new predictions.
-        y (pd.Series): Target values to compare predictions against.
-        dates (pd.Series): Dates corresponding to target values and predictions.
+        X (ww.DataTable, pd.DataFrame): Features used to generate new predictions.
+        y (ww.DataColumn, pd.Series): Target values to compare predictions against.
+        dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
         plotly.Figure showing the prediction vs actual over time.
