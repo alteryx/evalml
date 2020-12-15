@@ -637,7 +637,7 @@ class AutoMLSearch:
                     scores[field] += value
         return {objective_name: float(score) / n_folds for objective_name, score in scores.items()}
 
-    def _compute_cv_scores(self, pipeline, X, y, save_pipeline=False):
+    def _compute_cv_scores(self, pipeline, X, y):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
@@ -671,9 +671,6 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
                 cv_pipeline = pipeline.clone(pipeline.random_state)
-                if save_pipeline:
-                    self._best_pipe = cv_pipeline.fit(X, y)
-                    return
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
