@@ -423,8 +423,7 @@ def test_save_plotly_static_default_format(file_name, format, interactive, decis
 
 @pytest.mark.parametrize("file_name,format,interactive",
                          [
-                             ('test_plot', 'jpeg', False),
-                             (None, 'jpeg', False)
+                             ('test_plot', 'jpeg', False)
                          ])
 def test_save_plotly_static_different_format(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
     if not has_minimal_dependencies:
@@ -439,8 +438,6 @@ def test_save_plotly_static_different_format(file_name, format, interactive, dec
         assert os.path.exists(output_)
         assert isinstance(output_, str)
         assert os.path.basename(output_) == 'test_plot.jpeg'
-        if not file_name:
-            os.remove('test_plot.jpeg')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
@@ -450,8 +447,7 @@ def test_save_plotly_static_different_format(file_name, format, interactive, dec
                              ('test_plot.', 'html', True),
                              ('test_plot.png', 'jpeg', True),
                              ('test_plot', None, True),
-                             ('test_plot.html', None, True),
-                             (None, None, True)
+                             ('test_plot.html', None, True)
                          ])
 def test_save_plotly_interactive(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
     if not has_minimal_dependencies:
@@ -466,8 +462,6 @@ def test_save_plotly_interactive(file_name, format, interactive, decision_tree_c
         assert os.path.exists(output_)
         assert isinstance(output_, str)
         assert os.path.basename(output_) == 'test_plot.html'
-        if not file_name:
-            os.remove('test_plot.html')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
@@ -475,8 +469,7 @@ def test_save_plotly_interactive(file_name, format, interactive, decision_tree_c
                              ('test_plot', 'png', False),
                              ('test_plot.png', 'png', False),
                              ('test_plot.', 'png', False),
-                             ('test_plot.png', 'jpeg', False),
-                             (None, None, False)
+                             ('test_plot.png', 'jpeg', False)
                          ])
 def test_save_graphviz_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
     if not has_minimal_dependencies:
@@ -491,8 +484,6 @@ def test_save_graphviz_default_format(file_name, format, interactive, fitted_tre
         assert os.path.exists(output_)
         assert isinstance(output_, str)
         assert os.path.basename(output_) == 'test_plot.png'
-        if not file_name:
-            os.remove('test_plot.png')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
@@ -554,8 +545,7 @@ def test_save_graphviz_different_filename_output(file_name, format, interactive,
                              ('test_plot', 'png', False),
                              ('test_plot.png', 'png', False),
                              ('test_plot.', 'png', False),
-                             ('test_plot.png', 'jpeg', False),
-                             (None, None, False)
+                             ('test_plot.png', 'jpeg', False)
                          ])
 def test_save_matplotlib_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir):
     plt = pytest.importorskip("matplotlib.pyplot")
@@ -574,8 +564,6 @@ def test_save_matplotlib_default_format(file_name, format, interactive, fitted_t
     assert os.path.exists(output_)
     assert isinstance(output_, str)
     assert os.path.basename(output_) == 'test_plot.png'
-    if not file_name:
-        os.remove('test_plot.png')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
