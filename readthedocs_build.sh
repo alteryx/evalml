@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash -ex
 cd /home/docs/
 git clone https://github.com/alteryx/evalml.git
 cd evalml/
-git checkout --force origin/main
+git checkout --force origin/ds_1520_rtd_build
 git clean -d -f -f
 
 python3.8 -m virtualenv /home/docs/checkouts/readthedocs.org/user_builds/feature-labs-inc-evalml/envs/main
