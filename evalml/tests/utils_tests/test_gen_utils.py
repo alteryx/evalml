@@ -401,8 +401,7 @@ def test_convert_to_woodwork_structure():
                              ('test_plot', 'png', False),
                              ('test_plot.png', 'png', False),
                              ('test_plot.', 'png', False),
-                             ('test_plot.png', 'jpeg', False),
-                             (None, None, False)
+                             ('test_plot.png', 'jpeg', False)
                          ])
 def test_save_plotly_static_default_format(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
     if not has_minimal_dependencies:
@@ -417,8 +416,6 @@ def test_save_plotly_static_default_format(file_name, format, interactive, decis
         assert os.path.exists(output_)
         assert isinstance(output_, str)
         assert os.path.basename(output_) == 'test_plot.png'
-        if not file_name:   # Necessary because file_name of None will default to saving to the current working directory
-            os.remove('test_plot.png')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
@@ -571,8 +568,7 @@ def test_save_matplotlib_default_format(file_name, format, interactive, fitted_t
                              ('test_plot', 'png', False),
                              ('test_plot.png', 'png', False),
                              ('test_plot.', 'png', False),
-                             ('test_plot.png', 'jpeg', False),
-                             (None, None, False)
+                             ('test_plot.png', 'jpeg', False)
                          ])
 def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
     sns = pytest.importorskip("seaborn")
@@ -592,5 +588,3 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
     assert os.path.exists(output_)
     assert isinstance(output_, str)
     assert os.path.basename(output_) == 'test_plot.png'
-    if not file_name:
-        os.remove('test_plot.png')
