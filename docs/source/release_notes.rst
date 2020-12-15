@@ -12,6 +12,8 @@ Release Notes
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
         * Added baseline pipeline and components for time series regression problems :pr:`1496`
+        * Added more information to users about ensembling behavior in ``AutoMLSearch`` :pr:`1527`
+        * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
         * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
     * Fixes
@@ -24,6 +26,7 @@ Release Notes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
+        * Made ``get_prediction_vs_actual_data()`` a public method :pr:`1553`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
