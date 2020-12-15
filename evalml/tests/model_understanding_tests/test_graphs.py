@@ -34,7 +34,7 @@ from evalml.model_understanding.graphs import (
     partial_dependence,
     precision_recall_curve,
     roc_curve,
-    visualize_decision_tree,
+    visualize_decision_tree
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (

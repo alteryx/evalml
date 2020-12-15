@@ -527,7 +527,7 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
             fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
                                       y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
                                       line=dict(width=3)),
-                          row=(i+2)//2, col=(i % 2) + 1)
+                          row=(i + 2) // 2, col=(i % 2) + 1)
         fig.update_layout(layout)
         fig.update_xaxes(title=f'{feature_name}', range=_calculate_axis_range(part_dep['feature_values']))
         fig.update_yaxes(range=_calculate_axis_range(part_dep['partial_dependence']))
