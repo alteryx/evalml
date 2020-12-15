@@ -457,14 +457,28 @@ class AutoMLSearch:
 
         run_ensembling = self.ensembling
         if run_ensembling and len(self.allowed_pipelines) == 1:
-            logger.warning("Ensembling was set to True, but the number of unique pipelines is one, so ensembling will not run.")
+            logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
             run_ensembling = False
+
+        if run_ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
+            if self.max_iterations < first_ensembling_iteration:
+                run_ensembling = False
+                logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
+            else:
+                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
 
         if self.max_batches and self.max_iterations is None:
             self.show_batch_output = True
             if run_ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
+                else:
+                    logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
+
                 self.max_iterations = (1 + len(self.allowed_pipelines) +
                                        self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
                                        num_ensemble_batches)
@@ -535,11 +549,9 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
-        best_pipe = self.get_pipeline(best_pipeline['id'])
+        self._best_pipe = self.get_pipeline(best_pipeline['id'])
         if self._train_best_pipe:
-            self._compute_cv_scores(best_pipe, X, y, True)
-        else:
-            self._best_pipe = best_pipe
+            self._best_pipe = self._best_pipe.fit(_convert_to_woodwork_structure(X), _convert_to_woodwork_structure(y))
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
