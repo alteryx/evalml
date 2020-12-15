@@ -21,8 +21,7 @@ Release Notes
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
-        * Updated selection using pandas ``dtype``s to selecting using Woodwork logical types :pr:`1551`
-
+        * Updated selection using pandas ``dtypes`` to selecting using Woodwork logical types :pr:`1551`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
