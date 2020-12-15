@@ -34,7 +34,7 @@ from evalml.model_understanding.graphs import (
     partial_dependence,
     precision_recall_curve,
     roc_curve,
-    visualize_decision_tree
+    visualize_decision_tree,
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -922,6 +922,11 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     for data in fig_dict['data']:
         assert len(data['x']) == 20
         assert len(data['y']) == 20
+
+    # Check that all the subplots axes have the same range
+    for suplot_1_axis, suplot_2_axis in [('axis2', 'axis3'), ('axis2', 'axis4'), ('axis3', 'axis4')]:
+        for axis_type in ['x', 'y']:
+            assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
     fig = graph_partial_dependence(pipeline, X, feature='magnesium', class_label='class_1', grid_resolution=20)
 

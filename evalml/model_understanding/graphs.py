@@ -508,22 +508,29 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
     feature_name = str(feature)
     title = f"Partial Dependence of '{feature_name}'"
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
-                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])},
+                        xaxis={'title': f'{feature_name}'},
+                        yaxis={'title': 'Partial Dependence'},
                         showlegend=False)
     if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")
-        fig = _subplots.make_subplots(rows=1, cols=len(class_labels), subplot_titles=class_labels,
-                                      shared_xaxes=True, shared_yaxes=True)
+
+        # If the user passes in a value for class_label, we want to create a 1 x 1 subplot or else there would
+        # be an empty column in the plot and it would look awkward
+        rows, cols = ((len(class_labels) + 1) // 2, 2) if len(class_labels) > 1 else (1, len(class_labels))
+
+        # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
+        fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
+
             # Plotly trace indexing begins at 1 so we add 1 to i
             fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
                                       y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
                                       line=dict(width=3)),
-                          row=1, col=i + 1)
+                          row=(i+2)//2, col=(i % 2) + 1)
         fig.update_layout(layout)
-        fig.update_xaxes(title=f'{feature_name}')
+        fig.update_xaxes(title=f'{feature_name}', range=_calculate_axis_range(part_dep['feature_values']))
+        fig.update_yaxes(range=_calculate_axis_range(part_dep['partial_dependence']))
     else:
         trace = _go.Scatter(x=part_dep['feature_values'],
                             y=part_dep['partial_dependence'],
