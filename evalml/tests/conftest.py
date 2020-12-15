@@ -19,7 +19,10 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
+    DecisionTreeClassifier,
+    DecisionTreeRegressor,
     Estimator,
+    LogisticRegressionClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
@@ -350,6 +353,29 @@ def stackable_regressors(helper_functions):
 
 
 @pytest.fixture
+def tree_estimators():
+    est_classifier_class = DecisionTreeClassifier()
+    est_regressor_class = DecisionTreeRegressor()
+    return est_classifier_class, est_regressor_class
+
+
+@pytest.fixture
+def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
+    est_clf, est_reg = tree_estimators
+    X_b, y_b = X_y_binary
+    X_r, y_r = X_y_regression
+    est_clf.fit(X_b, y_b)
+    est_reg.fit(X_r, y_r)
+    return est_clf, est_reg
+
+
+@pytest.fixture
+def logit_estimator():
+    est_class = LogisticRegressionClassifier()
+    return est_class
+
+
+@pytest.fixture
 def helper_functions():
     class Helpers:
         @staticmethod
@@ -375,6 +401,7 @@ def helper_functions():
 
 @pytest.fixture
 def make_data_type():
+    """Helper function to convert numpy or pandas input to the appropriate type for tests."""
     def _make_data_type(data_type, data):
         if data_type != "np":
             if len(data.shape) == 1:

@@ -37,8 +37,10 @@ from .transformers import (
     DateTimeFeaturizer,
     SelectColumns,
     TextFeaturizer,
+    LinearDiscriminantAnalysis,
     LSA,
-    PCA
+    PCA,
+    DFSTransformer
 )
 from .ensemble import (
     StackedEnsembleClassifier,
