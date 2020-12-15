@@ -299,7 +299,7 @@ def linear_regression_pipeline_class():
 @pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
     class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'Target Encoder', 'Standard Scaler', 'Decision Tree Classifier']
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
     pipeline = DTBinaryClassificationPipeline({})
     X, y = X_y_categorical_classification
     pipeline.fit(X, y)
