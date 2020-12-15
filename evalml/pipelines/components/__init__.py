@@ -38,6 +38,7 @@ from .transformers import (
     DateTimeFeaturizer,
     SelectColumns,
     TextFeaturizer,
+    LinearDiscriminantAnalysis,
     LSA,
     PCA,
     DFSTransformer

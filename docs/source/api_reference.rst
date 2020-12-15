@@ -268,6 +268,7 @@ Utility Methods
     binary_objective_vs_threshold
     get_prediction_vs_actual_over_time_data
     partial_dependence
+    get_prediction_vs_actual_data
 
 
 Graph Utility Methods
