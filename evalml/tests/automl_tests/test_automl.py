@@ -38,7 +38,7 @@ from evalml.objectives import (
     LogLossBinary,
     LogLossMulticlass
 )
-from evalml.objectives.utils import get_core_objectives, get_objective
+from evalml.objectives.utils import get_core_objectives, get_objective, get_all_objective_names
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
@@ -107,6 +107,22 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
     assert np.all(automl.full_rankings.dtypes == pd.Series(
         [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
         index=['id', 'pipeline_name', 'score', "validation_score", 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
+
+
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_data_check(mock_score_regression, X_y_regression):
+    #X, y = X_y_regression
+    X = np.array([[1, 2, 1, 1],
+                  [2, 1, 4, 2],
+                  [3, 1, 1, 4],
+                  [3, 2, 1, 2]])
+    y = np.array([1, -1, 2, 2])
+
+    #mock_score_regression.return_value = {'R2': 1.0}
+    #print(get_all_objective_names())
+    automl = AutoMLSearch(problem_type=ProblemTypes.REGRESSION, max_iterations=1, objective='mean squared log error')
+    automl.search(X, y)
+    print(automl.results)
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])

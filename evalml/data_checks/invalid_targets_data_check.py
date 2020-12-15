@@ -29,12 +29,13 @@ class InvalidTargetDataCheck(DataCheck):
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
 
-    def validate(self, X, y):
+    def validate(self, X, y, positive_target=False):
         """Checks if the target data contains missing or invalid values.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
             y (ww.DataColumn, pd.Series, np.ndarray): Target data to check for invalid values.
+            positive_target (bool): Whether or not the target column can only contain positive values. Default is False.
 
         Returns:
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
