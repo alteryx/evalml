@@ -26,6 +26,7 @@ Release Notes
         * Added script to generate github markdown for releases :pr:`1487`
         * Updated selection using pandas ``dtypes`` to selecting using Woodwork logical types :pr:`1551`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
+        * Made ``get_prediction_vs_actual_data()`` a public method :pr:`1553`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
