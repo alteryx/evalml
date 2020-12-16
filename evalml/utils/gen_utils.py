@@ -297,7 +297,10 @@ def infer_feature_types(data, feature_types=None):
     """
     ww_data = _convert_to_woodwork_structure(data)
     if feature_types is not None:
-        ww_data = ww_data.set_types(logical_types=feature_types)
+        if len(ww_data.shape) == 1:
+            ww_data = ww_data.set_logical_type(feature_types[ww_data.name])
+        else:
+            ww_data = ww_data.set_types(logical_types=feature_types)
     return ww_data
 
 

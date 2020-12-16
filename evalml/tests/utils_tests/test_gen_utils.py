@@ -20,6 +20,7 @@ from evalml.utils.gen_utils import (
     get_random_seed,
     get_random_state,
     import_or_raise,
+    infer_feature_types,
     jupyter_check,
     pad_with_nans
 )
@@ -391,3 +392,26 @@ def test_convert_to_woodwork_structure():
     X_expected = ww.DataTable(pd.DataFrame(X_np))
     pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
+
+
+def test_infer_feature_types():
+    X_pd = pd.DataFrame({0: pd.Series([1, 2]),
+                         1: pd.Series([3, 4])})
+    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
+                         1: pd.Series([3, 4], dtype="Int64")})
+    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe())
+
+    X_expected = X_pd.copy()
+    X_expected[0] = X_expected[0].astype("category")
+    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: "categorical"}).to_dataframe())
+
+    X_pd = pd.Series([1, 2, 3, 4])
+    X_expected = X_pd.astype("Int64")
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd).to_series())
+
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
+    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd).to_series())
+
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64", name="test")
+    X_expected = X_pd.astype("category")
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, {"test": "categorical"}).to_series())
