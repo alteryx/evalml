@@ -58,14 +58,13 @@ class IDColumnsDataCheck(DataCheck):
         }
 
         X = _convert_to_woodwork_structure(X)
+        X = X.select(include=['Integer', 'Categorical', 'NaturalLanguage'])
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         col_names = [col for col in X.columns.tolist()]
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        non_id_types = ['float16', 'float32', 'float64', 'bool']
-        X = X.select_dtypes(exclude=non_id_types)
         check_all_unique = (X.nunique() == len(X))
         cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique
         id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in cols_with_all_unique])
