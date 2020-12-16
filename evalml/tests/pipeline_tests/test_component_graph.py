@@ -585,7 +585,7 @@ def test_computation_input_custom_index(index):
     component_graph.fit(X, y)
 
     X_t = component_graph.predict(X)
-    pd.testing.assert_index_equal( X_t.index, pd.RangeIndex(start=0, stop=5, step=1))
+    pd.testing.assert_index_equal(X_t.index, pd.RangeIndex(start=0, stop=5, step=1))
     assert not X_t.isna().any(axis=None)
 
 
