@@ -560,7 +560,7 @@ class AutoMLSearch:
                                                                                             y_train,
                                                                                             test_size=0.2,
                                                                                             random_state=self.random_state)
-            self._best_pipeline = self._best_pipeline.fit(X_train, y_train)
+            self._best_pipeline.fit(X_train, y_train)
             if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
                 self._best_pipeline.threshold = 0.5
                 if X_threshold_tuning:
@@ -709,7 +709,6 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-
                 if self.error_callback is not None:
                     self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
                                         fold_num=i, pipeline=pipeline)

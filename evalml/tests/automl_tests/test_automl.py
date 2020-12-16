@@ -1084,8 +1084,6 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     if number_results != 5 and when_to_interrupt == 1:
         with pytest.raises(PipelineNotFoundError):
             automl.best_pipeline
-    else:
-        automl.best_pipeline.predict(X)
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
@@ -1179,16 +1177,15 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
-                              additional_objectives=[], train_best_pipeline=False, n_jobs=1)
+                              additional_objectives=[], n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0},
-                              train_best_pipeline=False, n_jobs=1)
+                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, n_jobs=1)
     else:
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], train_best_pipeline=False, n_jobs=1)
+                              additional_objectives=[], n_jobs=1)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
         automl.search(X, y, data_checks=None)
@@ -1249,7 +1246,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 1, 'max_delay': 1}, train_best_pipeline=False)
+                          allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 1, 'max_delay': 1})
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search(X, y, data_checks=None)
@@ -1916,9 +1913,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_best_pipeline(mock_fit, mock_score, mock_optimize, X_y_binary):
+def test_automl_best_pipeline(mock_optimize, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type='binary', train_best_pipeline=False)
