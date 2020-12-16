@@ -13,13 +13,14 @@ class DataCheck(ABC):
         return str(cls.__name__)
 
     @abstractmethod
-    def validate(self, X, y=None):
+    def validate(self, X, y=None, objective=None):
         """
         Inspects and validates the input data, runs any necessary calculations or algorithms, and returns a list of warnings and errors if applicable.
 
         Arguments:
-            X (pd.DataFrame): the input data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target data of length [n_samples]
+            X (pd.DataFrame): The input data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target data of length [n_samples]
+            objective (str): The objective associated with the check.
 
         Returns:
             dict (DataCheckMessage): Dictionary of DataCheckError and DataCheckWarning messages

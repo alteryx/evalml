@@ -31,13 +31,14 @@ class ClassImbalanceDataCheck(DataCheck):
             raise ValueError("Provided number of CV folds {} is less than 0".format(num_cv_folds))
         self.cv_folds = num_cv_folds * 2
 
-    def validate(self, X, y):
+    def validate(self, X, y, objective=None):
         """Checks if any target labels are imbalanced beyond a threshold for binary and multiclass problems
             Ignores NaN values in target labels if they appear.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
             y (ww.DataColumn, pd.Series, np.ndarray): Target labels to check for imbalanced data.
+            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold,

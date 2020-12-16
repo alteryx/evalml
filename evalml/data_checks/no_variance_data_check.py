@@ -53,12 +53,13 @@ class NoVarianceDataCheck(DataCheck):
                                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                                     details={"column": column_name})
 
-    def validate(self, X, y):
+    def validate(self, X, y, objective=None):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features.
             y (ww.DataColumn, pd.Series, np.ndarray): The target data.
+            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.

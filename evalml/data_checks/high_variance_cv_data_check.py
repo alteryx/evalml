@@ -21,12 +21,13 @@ class HighVarianceCVDataCheck(DataCheck):
             raise ValueError(f"Provided threshold {threshold} needs to be greater than 0.")
         self.threshold = threshold
 
-    def validate(self, pipeline_name, cv_scores):
+    def validate(self, pipeline_name, cv_scores, objective=None):
         """Checks cross-validation scores and issues an warning if variance is higher than specified threshhold.
 
         Arguments:
             pipeline_name (str): name of pipeline that produced cv_scores
             cv_scores (pd.Series, np.ndarray, list): list of scores of each cross-validation fold
+            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold.

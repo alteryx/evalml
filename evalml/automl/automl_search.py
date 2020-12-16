@@ -434,7 +434,7 @@ class AutoMLSearch:
         self._set_data_split(X)
 
         data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()))
+        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()), self.objective)
         for message in self._data_check_results["warnings"]:
             logger.warning(message)
         for message in self._data_check_results["errors"]:
