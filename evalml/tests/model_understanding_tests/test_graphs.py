@@ -36,7 +36,7 @@ from evalml.model_understanding.graphs import (
     roc_curve,
     visualize_decision_tree
 )
-from evalml.objectives import CostBenefitMatrix
+from evalml.objectives import CostBenefitMatrix, get_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -555,10 +555,12 @@ def test_get_permutation_importance_regression(X_y_regression, linear_regression
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
                                                 random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
+
     for objective in regression_core_objectives:
-        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
-        assert list(permutation_importance.columns) == ["feature", "importance"]
-        assert not permutation_importance.isnull().all().all()
+        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
+            permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+            assert list(permutation_importance.columns) == ["feature", "importance"]
+            assert not permutation_importance.isnull().all().all()
 
 
 def test_get_permutation_importance_correlated_features(logistic_regression_binary_pipeline_class):
