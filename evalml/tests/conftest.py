@@ -442,6 +442,7 @@ def helper_functions():
 
 @pytest.fixture
 def make_data_type():
+    """Helper function to convert numpy or pandas input to the appropriate type for tests."""
     def _make_data_type(data_type, data):
         if data_type != "np":
             if len(data.shape) == 1:
