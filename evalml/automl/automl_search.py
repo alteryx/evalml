@@ -485,6 +485,9 @@ class AutoMLSearch:
         if should_terminate:
             return
 
+        if self.search_iteration_plot:
+            self.search_iteration_plot.update()
+
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
         while self._check_stopping_condition(self._start):
