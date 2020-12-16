@@ -1919,7 +1919,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_best_pipeline_false(mock_fit, mock_score, mock_optimize, X_y_binary):
+def test_automl_best_pipeline(mock_fit, mock_score, mock_optimize, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(problem_type='binary', train_best_pipeline=False)
@@ -1929,12 +1929,17 @@ def test_automl_best_pipeline_false(mock_fit, mock_score, mock_optimize, X_y_bin
 
     mock_optimize.return_value = 0.62
 
-    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=False)
+    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=False, objective="Accuracy Binary")
     automl.search(X, y)
     automl.best_pipeline.predict(X)
     assert automl.best_pipeline.threshold != 0.62
 
-    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=True)
+    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=True, objective="Log Loss Binary")
+    automl.search(X, y)
+    automl.best_pipeline.predict(X)
+    assert automl.best_pipeline.threshold != 0.62
+
+    automl = AutoMLSearch(problem_type='binary', optimize_thresholds=True, objective="Accuracy Binary")
     automl.search(X, y)
     automl.best_pipeline.predict(X)
     assert automl.best_pipeline.threshold == 0.62
