@@ -49,7 +49,7 @@ class SimpleImputer(Transformer):
         X = _convert_to_woodwork_structure(X)
         # Convert all bool dtypes to category for fitting
         if set(X.logical_types.values()) == {ww.logical_types.Boolean}:
-            X.set_types(logical_types={col: ww.logical_types.Categorical for col in X.columns})
+            X = X.set_types(logical_types={col: ww.logical_types.Categorical for col in X.columns})
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         # Convert None to np.nan, since None cannot be properly handled
