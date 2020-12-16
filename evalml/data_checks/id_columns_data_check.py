@@ -32,7 +32,6 @@ class IDColumnsDataCheck(DataCheck):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
-            threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0
 
         Returns:
             dict: A dictionary of features with column name or index and their probability of being ID columns
