@@ -57,21 +57,6 @@ class EngineBase(ABC):
         if self.automl is None:
             raise ValueError("Search info has not been loaded into the engine. Call `load_search` with search context.")
 
-    @abstractmethod
-    def evaluate_pipeline(self, pipeline_batch=None):
-        """Evaluate a single pipeline using the current dataset and AutoML state.
-
-        The abstract method includes checks to make sure that the dataset and an AutoML search object is loaded into the engine object. It is recommended that any implementation calls `super.evaluate_pipeline()` once before evaluating the pipeline.
-
-        Arguments:
-            pipeline (list(class)): A pipeline to be fitted and evalauted
-        """
-        if self.X is None or self.y is None:
-            raise ValueError("Dataset has not been loaded into the engine. Call `load_data` with training data.")
-
-        if self.automl is None:
-            raise ValueError("Search info has not been loaded into the engine. Call `load_search` with search context.")
-
     def log_pipeline(self, pipeline):
         desc = f"{pipeline.name}"
         if len(desc) > self.automl._MAX_NAME_LEN:

@@ -23,32 +23,6 @@ def test_load_new_engine(mock_score, X_y_binary, caplog):
 
 
 @patch('evalml.automl.engines.EngineBase._compute_cv_scores')
-def test_evaluate_pipeline(mock_cv, X_y_binary, caplog):
-    X, y = X_y_binary
-    seq_engine = SequentialEngine()
-    seq_engine.load_data(X, y)
-    automl = AutoMLSearch(problem_type='binary', max_time=1, max_iterations=1)
-    automl._start = 0
-    automl._automl_algorithm = DummyAlgorithm()
-    seq_engine.load_search(automl)
-    pipeline = LogisticRegressionClassifier()
-    score_dict = {
-        'cv_data': [
-            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 1},
-            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 0},
-        ],
-        'training_time': 1.0,
-        'cv_scores': [1, 0],
-        'cv_score_mean': 0.5
-    }
-    mock_cv.return_value = (pipeline, score_dict)
-    result = seq_engine.evaluate_pipeline(pipeline, log_pipeline=True)
-    out = caplog.text
-    assert pipeline.name in out
-    assert result == (pipeline, score_dict)
-
-
-@patch('evalml.automl.engines.EngineBase._compute_cv_scores')
 def test_evaluate_batch(mock_cv, X_y_binary):
     X, y = X_y_binary
     seq_engine = SequentialEngine()
