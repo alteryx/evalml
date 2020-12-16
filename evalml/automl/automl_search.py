@@ -561,7 +561,7 @@ class AutoMLSearch:
                                                                                             test_size=0.2,
                                                                                             random_state=self.random_state)
             self._best_pipeline = self._best_pipeline.fit(X_train, y_train)
-            if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.optimize_thresholds:
+            if X_threshold_tuning:
                 self._best_pipeline.threshold = 0.5
                 y_predict_proba = self._best_pipeline.predict_proba(X_threshold_tuning)
                 if isinstance(y_predict_proba, pd.DataFrame):
