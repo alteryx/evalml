@@ -291,16 +291,12 @@ def _convert_to_woodwork_structure(data):
     ww_data = data
     if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
         return ww_data
-    # Convert numpy data structures to pandas data structures
     if isinstance(data, list):
         ww_data = np.array(data)
-    # if isinstance(ww_data, pd.api.extensions.ExtensionArray):
-    #     ww_data = pd.Series(ww_data)
     # Convert pandas and numpy data structures to Woodwork data structures
     ww_data = ww_data.copy()
     if len(ww_data.shape) == 1:
         return ww.DataColumn(ww_data)
-
     return ww.DataTable(ww_data)
 
 
