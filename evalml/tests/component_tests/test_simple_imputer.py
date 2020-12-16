@@ -104,13 +104,12 @@ def test_simple_imputer_col_with_non_numeric():
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_simple_imputer_all_bool_return_original(data_type):
+def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
     X = pd.DataFrame([True, True, False, True, True], dtype=bool)
     y = pd.Series([1, 0, 0, 1, 0])
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
-    if data_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
     imputer = SimpleImputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)

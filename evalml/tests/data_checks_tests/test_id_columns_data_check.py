@@ -116,11 +116,7 @@ def test_id_columns_strings():
                      DataCheckWarning(message="Column 'col_1_id' is 100.0% or more likely to be an ID column",
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": "col_1_id"}).to_dict(),
-                     DataCheckWarning(message="Column 'col_3_id' is 100.0% or more likely to be an ID column",
-                                      data_check_name=id_data_check_name,
-                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": "col_3_id"}).to_dict()],
+                                      details={"column": "col_1_id"}).to_dict()],
         "errors": []
     }
 

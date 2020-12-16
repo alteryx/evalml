@@ -75,20 +75,17 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     @staticmethod
     def _get_cat_cols(X):
-        """Get names of 'object' or 'categorical' columns in the DataFrame."""
-        obj_cols = []
-        for idx, dtype in enumerate(X.dtypes):
-            if dtype == np.object or pd.api.types.is_categorical_dtype(dtype):
-                obj_cols.append(X.columns.values[idx])
-        return obj_cols
+        """Get names of categorical columns in the input Woodwork DataTable."""
+        return list(X.select(include=['category']).columns.keys())
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
         X = _convert_to_woodwork_structure(X)
+        if self.features_to_encode is None:
+            self.features_to_encode = self._get_cat_cols(X)
+
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X
-        if self.features_to_encode is None:
-            self.features_to_encode = self._get_cat_cols(X_t)
         invalid_features = [col for col in self.features_to_encode if col not in list(X.columns)]
         if len(invalid_features) > 0:
             raise ValueError("Could not find and encode {} in input data.".format(', '.join(invalid_features)))
