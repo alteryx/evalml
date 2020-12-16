@@ -364,7 +364,7 @@ class AutoMLSearch:
                 Disabled by default in non-Jupyter enviroments.
 
             engine (EngineBase): The pipeline processing engine to use during AutoML search.
-                If not specified, uses `SequentialEngine` by default.  
+                If not specified, uses `SequentialEngine` by default.
         """
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot:
@@ -744,7 +744,7 @@ class AutoMLSearch:
         if return_dict:
             return pipeline_results
 
-    def add_to_rankings(self, pipeline, X, y, engine=engine):
+    def add_to_rankings(self, pipeline, X, y, engine=None):
         """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
         Please use the same data as previous runs of automl search. If pipeline already exists in rankings this method will return `None`.
 
@@ -766,7 +766,7 @@ class AutoMLSearch:
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-        
+  
         if engine is None:
             engine = SequentialEngine()
         self._evaluate_pipelines(pipeline, X, y, engine=engine)
