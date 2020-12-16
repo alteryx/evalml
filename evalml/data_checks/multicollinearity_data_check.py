@@ -14,7 +14,7 @@ class MulticollinearityDataCheck(DataCheck):
         """Check if any set of features are likely to be multicollinear.
 
         Arguments:
-            threshold (float): The threshold to be considered. Defaults to 1.0.
+            threshold (float): The threshold to be considered. Defaults to 0.9.
         """
         if threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1, inclusive.")
