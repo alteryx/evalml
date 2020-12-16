@@ -362,6 +362,9 @@ class AutoMLSearch:
 
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+            engine (EngineBase): The pipeline processing engine to use during AutoML search.
+                If not specified, uses `SequentialEngine` by default.  
         """
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot:
@@ -395,7 +398,7 @@ class AutoMLSearch:
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
         if self.allowed_pipelines is None:
-            logger.debug("Generating pipelines to search over...")
+            logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
             self.allowed_pipelines = [make_pipeline(X, y, estimator, self.problem_type, text_columns=text_columns) for estimator in allowed_estimators]
@@ -450,6 +453,9 @@ class AutoMLSearch:
             pipeline_params=self.problem_configuration
         )
 
+        if engine is None:
+            engine = SequentialEngine()
+
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
         logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
@@ -468,7 +474,7 @@ class AutoMLSearch:
 
         self._start = time.time()
 
-        should_terminate = self._add_baseline_pipelines(X, y)
+        should_terminate = self._add_baseline_pipelines(X, y, engine=engine)
         if should_terminate:
             return
 
@@ -738,7 +744,7 @@ class AutoMLSearch:
         if return_dict:
             return pipeline_results
 
-    def add_to_rankings(self, pipeline, X, y):
+    def add_to_rankings(self, pipeline, X, y, engine=engine):
         """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
         Please use the same data as previous runs of automl search. If pipeline already exists in rankings this method will return `None`.
 
@@ -760,7 +766,10 @@ class AutoMLSearch:
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-        self._evaluate_pipelines(pipeline, X, y)
+        
+        if engine is None:
+            engine = SequentialEngine()
+        self._evaluate_pipelines(pipeline, X, y, engine=engine)
 
     @property
     def results(self):
