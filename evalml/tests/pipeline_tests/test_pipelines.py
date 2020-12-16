@@ -45,9 +45,9 @@ from evalml.pipelines.components.utils import (
     allowed_model_families
 )
 from evalml.pipelines.utils import (
+    _get_pipeline_base_class,
     generate_pipeline_code,
     get_estimators,
-    _get_pipeline_base_class,
     make_pipeline,
     make_pipeline_from_components
 )
