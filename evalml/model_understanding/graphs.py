@@ -531,7 +531,8 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
             # Plotly trace indexing begins at 1 so we add 1 to i
             fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
                                       y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
-                                      line=dict(width=3)),
+                                      line=dict(width=3),
+                                      name=label),
                           row=(i + 2) // 2, col=(i % 2) + 1)
         fig.update_layout(layout)
         fig.update_xaxes(title=f'{feature_name}', range=_calculate_axis_range(part_dep['feature_values']))

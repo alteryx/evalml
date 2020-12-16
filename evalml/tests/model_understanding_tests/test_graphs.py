@@ -904,6 +904,7 @@ def test_graph_partial_dependence(test_pipeline):
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius'"
     assert len(fig_dict['data']) == 1
+    assert fig_dict['data'][0]['name'] == "Partial Dependence"
 
     part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
@@ -919,9 +920,10 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert len(fig_dict['data']) == len(pipeline.classes_)
-    for data in fig_dict['data']:
+    for data, label in zip(fig_dict['data'], pipeline.classes_):
         assert len(data['x']) == 20
         assert len(data['y']) == 20
+        assert data['name'] == label
 
     # Check that all the subplots axes have the same range
     for suplot_1_axis, suplot_2_axis in [('axis2', 'axis3'), ('axis2', 'axis4'), ('axis3', 'axis4')]:
@@ -933,9 +935,9 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert len(fig_dict['data']) == 1
-    for data in fig_dict['data']:
-        assert len(data['x']) == 20
-        assert len(data['y']) == 20
+    assert len(fig_dict['data'][0]['x']) == 20
+    assert len(fig_dict['data'][0]['y']) == 20
+    assert fig_dict['data'][0]['name'] == 'class_1'
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
     with pytest.raises(ValueError, match=msg):
