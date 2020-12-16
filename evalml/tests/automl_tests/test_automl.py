@@ -642,8 +642,7 @@ def test_large_dataset_regression(mock_score):
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_large_dataset_split_size(mock_fit, mock_score):
+def test_large_dataset_split_size(mock_score):
     def generate_fake_dataset(rows):
         X = pd.DataFrame({'col_0': [i for i in range(rows)]})
         y = pd.Series([i % 2 for i in range(rows)])
@@ -656,8 +655,7 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           additional_objectives=['auc', 'f1', 'precision'],
                           max_time=1,
                           max_iterations=1,
-                          optimize_thresholds=True,
-                          train_best_pipeline=False)
+                          optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
 
