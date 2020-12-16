@@ -439,7 +439,12 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions.
+            over all samples of X and the values used to calculate those predictions. The dataframe will
+            contain two columns: "feature_values" (grid points at which the partial dependence was calculated) and
+            "partial_dependence" (the partial dependence at that feature value). For classification problems, there
+            will be a third column called "class_label" (the class label for which the partial
+            dependence was calculated). For binary classification, the partial dependence is only calculated for the
+            "positive" class.
 
     """
     X = _convert_to_woodwork_structure(X)
@@ -486,10 +491,10 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
-        class_label (string, None): Name of class to plot for multiclass problems. If None, will plot
-            the partial dependence for each class. This argument does change behavior for regression or binary
+        class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
+            the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
-            always be displayed.
+            always be displayed. Defaults to None.
 
     Returns:
         pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
