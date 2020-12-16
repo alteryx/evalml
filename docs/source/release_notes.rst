@@ -11,6 +11,7 @@ Release Notes
         * Added a ``ComponentGraph`` class that will support future pipelines as directed acyclic graphs :pr:`1415`
         * Updated data checks to accept ``Woodwork`` data structures :pr:`1481`
         * Added parameter to ``InvalidTargetDataCheck`` to show only top unique values rather than all unique values :pr:`1485`
+        * Added multicollinearity data check :pr:`1515`
         * Added baseline pipeline and components for time series regression problems :pr:`1496`
         * Added more information to users about ensembling behavior in ``AutoMLSearch`` :pr:`1527`
         * Add woodwork support for more utility and graph methods :pr:`1544`
