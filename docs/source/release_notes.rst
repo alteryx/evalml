@@ -17,6 +17,7 @@ Release Notes
         * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
         * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
+        * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
@@ -29,6 +30,7 @@ Release Notes
         * Added script to generate github markdown for releases :pr:`1487`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
         * Made ``get_prediction_vs_actual_data()`` a public method :pr:`1553`
+        * Updated ``Woodwork`` version requirement to v0.0.7 :pr:`1560`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
     * Testing Changes
