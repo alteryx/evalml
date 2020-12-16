@@ -16,7 +16,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
     """Pipeline base class for time series classifcation problems."""
 
     def __init__(self, parameters, random_state=0):
-        """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
+        """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
         Required Class Variables:
             component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
@@ -45,7 +45,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return X, y
 
     def fit(self, X, y):
-        """Fit a time series regression pipeline.
+        """Fit a time series classification pipeline.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
