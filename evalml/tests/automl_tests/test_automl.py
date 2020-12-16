@@ -1179,15 +1179,16 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
-                              additional_objectives=[], n_jobs=1)
+                              additional_objectives=[], train_best_pipeline=False, n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, n_jobs=1)
+                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0},
+                              train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], n_jobs=1)
+                              additional_objectives=[], train_best_pipeline=False, n_jobs=1)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
         automl.search(X, y, data_checks=None)
@@ -1248,7 +1249,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 1, 'max_delay': 1})
+                          allowed_pipelines=[DummyPipeline], objective="auto", problem_configuration={'gap': 1, 'max_delay': 1}, train_best_pipeline=False)
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search(X, y, data_checks=None)
@@ -1930,12 +1931,12 @@ def test_automl_best_pipeline(mock_fit, mock_score, mock_optimize, X_y_binary):
     automl = AutoMLSearch(problem_type='binary', optimize_thresholds=False, objective="Accuracy Binary")
     automl.search(X, y)
     automl.best_pipeline.predict(X)
-    assert automl.best_pipeline.threshold != 0.62
+    assert automl.best_pipeline.threshold == 0.5
 
     automl = AutoMLSearch(problem_type='binary', optimize_thresholds=True, objective="Log Loss Binary")
     automl.search(X, y)
     automl.best_pipeline.predict(X)
-    assert automl.best_pipeline.threshold != 0.62
+    assert automl.best_pipeline.threshold == 0.5
 
     automl = AutoMLSearch(problem_type='binary', optimize_thresholds=True, objective="Accuracy Binary")
     automl.search(X, y)

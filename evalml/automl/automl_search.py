@@ -561,14 +561,15 @@ class AutoMLSearch:
                                                                                             test_size=0.2,
                                                                                             random_state=self.random_state)
             self._best_pipeline = self._best_pipeline.fit(X_train, y_train)
-            if X_threshold_tuning:
+            if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
                 self._best_pipeline.threshold = 0.5
-                y_predict_proba = self._best_pipeline.predict_proba(X_threshold_tuning)
-                if isinstance(y_predict_proba, pd.DataFrame):
-                    y_predict_proba = y_predict_proba.iloc[:, 1]
-                else:
-                    y_predict_proba = y_predict_proba[:, 1]
-                self._best_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                if X_threshold_tuning:
+                    y_predict_proba = self._best_pipeline.predict_proba(X_threshold_tuning)
+                    if isinstance(y_predict_proba, pd.DataFrame):
+                        y_predict_proba = y_predict_proba.iloc[:, 1]
+                    else:
+                        y_predict_proba = y_predict_proba[:, 1]
+                    self._best_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
 
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
