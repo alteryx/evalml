@@ -567,6 +567,28 @@ def test_component_graph_order(example_graph):
     assert expected_order == component_graph.compute_order
 
 
+@pytest.mark.parametrize("index", [list(range(-5, 0)),
+                                   list(range(100, 105)),
+                                   [f"row_{i}" for i in range(5)],
+                                   pd.date_range("2020-09-08", periods=5)])
+def test_computation_input_custom_index(index):
+    graph = {'OneHot': [OneHotEncoder],
+             'Random Forest': [RandomForestClassifier, 'OneHot.x'],
+             'Elastic Net': [ElasticNetClassifier, 'OneHot.x'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net']}
+
+    X = pd.DataFrame({"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+                     index=index)
+    y = pd.Series([1, 2, 1, 2, 1])
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    X_t = component_graph.predict(X)
+    pd.testing.assert_index_equal( X_t.index, pd.RangeIndex(start=0, stop=5, step=1))
+    assert not X_t.isna().any(axis=None)
+
+
 @patch(f'{__name__}.EstimatorC.predict')
 @patch(f'{__name__}.EstimatorB.predict')
 @patch(f'{__name__}.EstimatorA.predict')
