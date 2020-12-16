@@ -987,6 +987,50 @@ def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective
         assert "F1 Micro" in e.exceptions
 
 
+@patch('evalml.pipelines.components.Imputer.transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+@patch('evalml.pipelines.components.StandardScaler.transform')
+def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
+    mock_imputer.return_value = X
+    mock_ohe.return_value = X
+    mock_scaler.return_value = X_expected
+
+    pipeline = logistic_regression_binary_pipeline_class({})
+    pipeline.fit(X, y)
+
+    X_t = pipeline.compute_estimator_features(X)
+    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert mock_imputer.call_count == 2
+    assert mock_ohe.call_count == 2
+    assert mock_scaler.call_count == 1
+
+
+@patch('evalml.pipelines.components.Imputer.transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+@patch('evalml.pipelines.components.RandomForestClassifier.predict')
+@patch('evalml.pipelines.components.ElasticNetClassifier.predict')
+def test_compute_estimator_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, X_y_binary, nonlinear_binary_pipeline_class):
+    X, y = X_y_binary
+    mock_imputer.return_value = pd.DataFrame(X)
+    mock_ohe.return_value = pd.DataFrame(X)
+    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+    X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
+
+    pipeline = nonlinear_binary_pipeline_class({})
+    pipeline.fit(X, y)
+
+    X_t = pipeline.compute_estimator_features(X)
+    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert mock_imputer.call_count == 2
+    assert mock_ohe.call_count == 4
+    assert mock_en_predict.call_count == 2
+    assert mock_rf_predict.call_count == 2
+
+
 def test_no_default_parameters():
     class MockComponent(Transformer):
         name = "Mock Component"

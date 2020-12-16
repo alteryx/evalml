@@ -137,7 +137,7 @@ class ComponentGraph:
         if len(self.compute_order) <= 1:
             return X
 
-        component_outputs = self._compute_features(self.compute_order, X, y=y, fit=False)
+        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=False)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))

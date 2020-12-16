@@ -445,7 +445,7 @@ def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
 
 @patch('evalml.pipelines.components.Imputer.transform')
 @patch('evalml.pipelines.components.OneHotEncoder.transform')
-def test_compute_final_component_features_linear(mock_ohe, mock_imputer, example_graph, X_y_binary):
+def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
@@ -603,6 +603,26 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
     pd.testing.assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
     pd.testing.assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6), 'estimator a': [0, 0, 0, 1, 0, 0], 'feature b': np.ones(6) * 2, 'estimator b': [0, 0, 0, 0, 1, 0], 'feature c': np.ones(6) * 3}, columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
     pd.testing.assert_series_equal(predict_out, pd.Series([0, 0, 0, 0, 0, 1]))
+
+
+def test_input_feature_names(example_graph):
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+
+    component_graph = ComponentGraph(example_graph)
+    component_graph.instantiate({'OneHot_RandomForest': {'top_n': 2},
+                                 'OneHot_ElasticNet': {'top_n': 3}})
+    assert component_graph.input_feature_names == {}
+    component_graph.fit(X, y)
+
+    input_feature_names = component_graph.input_feature_names
+    assert input_feature_names['Imputer'] == ['column_1', 'column_2']
+    assert input_feature_names['OneHot_RandomForest'] == ['column_1', 'column_2']
+    assert input_feature_names['OneHot_ElasticNet'] == ['column_1', 'column_2']
+    assert input_feature_names['Random Forest'] == ['column_2', 'column_1_a', 'column_1_b']
+    assert input_feature_names['Elastic Net'] == ['column_2', 'column_1_a', 'column_1_b', 'column_1_c']
+    assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
 
 
 def test_iteration(example_graph):
