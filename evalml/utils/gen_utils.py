@@ -364,7 +364,7 @@ def _get_rows_without_nans(*data):
         *data (sequence of pd.Series or pd.DataFrame)
 
     Returns:
-        np.ndarray: mask where each entry is True if and only if all corresponding entries in data
+        np.ndarray: mask where each entry is True if and only if all corresponding entries in that index in data
             are non-nan.
     """
     def _not_nan(pd_data):
