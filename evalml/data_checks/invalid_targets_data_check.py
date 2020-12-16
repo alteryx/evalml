@@ -10,7 +10,8 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     categorical_dtypes,
-    numeric_and_boolean_dtypes
+    numeric_and_boolean_dtypes,
+    numeric_dtypes
 )
 
 
@@ -29,13 +30,13 @@ class InvalidTargetDataCheck(DataCheck):
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
 
-    def validate(self, X, y, positive_target=False):
+    def validate(self, X, y, objective=None):
         """Checks if the target data contains missing or invalid values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
-            y (ww.DataColumn, pd.Series, np.ndarray): Target data to check for invalid values.
-            positive_target (bool): Whether or not the target column can only contain positive values. Default is False.
+            X (pd.DataFrame): The input data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target data of length [n_samples]
+            objective (ObjectiveBase): The objective associated with the check.
 
         Returns:
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
@@ -97,5 +98,13 @@ class InvalidTargetDataCheck(DataCheck):
                                                              data_check_name=self.name,
                                                              message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
                                                              details={"target_values": unique_values}).to_dict())
+
+        all_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
+        if all_neg and (objective.name in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
+            details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
+            messages["errors"].append(DataCheckError(message=f"Target does not have only positive values which is not supported for {objective.name}",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+                                                     details=details).to_dict())
 
         return messages
