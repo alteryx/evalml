@@ -10,8 +10,6 @@ import pandas as pd
 import woodwork as ww
 from sklearn.model_selection import (
     BaseCrossValidator,
-    KFold,
-    StratifiedKFold,
     train_test_split
 )
 
@@ -19,10 +17,6 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit
-)
 from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter
