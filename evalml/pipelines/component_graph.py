@@ -26,8 +26,7 @@ class ComponentGraph:
                 raise ValueError('All component information should be passed in as a list')
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
-        self.compute_order = []
-        self._recompute_order()
+        self.compute_order = self.generate_order(self.component_dict)
         self.input_feature_names = {}
 
     @classmethod
@@ -316,13 +315,14 @@ class ComponentGraph:
                                         for key, val in component_class.parameters.items()])  # noqa: W605
                 label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape='record', label=label)
-        edges = self._get_edges()
+        edges = self._get_edges(self.component_dict)
         graph.edges(edges)
         return graph
 
-    def _get_edges(self):
+    @staticmethod
+    def _get_edges(component_dict):
         edges = []
-        for component_name, component_info in self.component_dict.items():
+        for component_name, component_info in component_dict.items():
             if len(component_info) > 1:
                 for parent in component_info[1:]:
                     if parent[-2:] == '.x' or parent[-2:] == '.y':
@@ -330,26 +330,26 @@ class ComponentGraph:
                     edges.append((parent, component_name))
         return edges
 
-    def _recompute_order(self):
+    @classmethod
+    def generate_order(cls, component_dict):
         """Regenerated the topologically sorted order of the graph"""
-        edges = self._get_edges()
-        if len(self.component_dict) == 1:
-            self.compute_order = list(self.component_dict.keys())
-            return
+        edges = cls._get_edges(component_dict)
+        if len(component_dict) == 1:
+            return list(component_dict.keys())
         if len(edges) == 0:
-            self.compute_order = []
-            return
+            return []
         digraph = nx.DiGraph()
         digraph.add_edges_from(edges)
         if not nx.is_weakly_connected(digraph):
             raise ValueError('The given graph is not completely connected')
         try:
-            self.compute_order = list(topological_sort(digraph))
+            compute_order = list(topological_sort(digraph))
         except NetworkXUnfeasible:
             raise ValueError('The given graph contains a cycle')
-        end_components = [component for component in self.compute_order if len(nx.descendants(digraph, component)) == 0]
+        end_components = [component for component in compute_order if len(nx.descendants(digraph, component)) == 0]
         if len(end_components) != 1:
             raise ValueError('The given graph has more than one final (childless) component')
+        return compute_order
 
     def __iter__(self):
         self._i = 0
