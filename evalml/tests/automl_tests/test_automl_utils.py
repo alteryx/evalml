@@ -34,17 +34,20 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
         assert data_splitter.stratify == (problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+        assert data_splitter.random_state == 0
         return
 
     if problem_type == ProblemTypes.REGRESSION:
         assert isinstance(data_splitter, KFold)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
+        assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(data_splitter, StratifiedKFold)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
+        assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
         assert isinstance(data_splitter, TimeSeriesSplit)
@@ -58,21 +61,25 @@ def test_make_data_splitter_parameters():
     X = pd.DataFrame({'col_0': list(range(n)),
                       'target': list(range(n))})
     y = X.pop('target')
+    random_state = 42
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.REGRESSION, n_splits=5, shuffle=False)
+    data_splitter = make_data_splitter(X, y, ProblemTypes.REGRESSION, n_splits=5, shuffle=False, random_state=random_state)
     assert isinstance(data_splitter, KFold)
     assert data_splitter.n_splits == 5
     assert not data_splitter.shuffle
+    assert data_splitter.random_state == random_state
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.BINARY, n_splits=5, shuffle=False)
+    data_splitter = make_data_splitter(X, y, ProblemTypes.BINARY, n_splits=5, shuffle=False, random_state=random_state)
     assert isinstance(data_splitter, StratifiedKFold)
     assert data_splitter.n_splits == 5
     assert not data_splitter.shuffle
+    assert data_splitter.random_state == random_state
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.MULTICLASS, n_splits=5, shuffle=False)
+    data_splitter = make_data_splitter(X, y, ProblemTypes.MULTICLASS, n_splits=5, shuffle=False, random_state=random_state)
     assert isinstance(data_splitter, StratifiedKFold)
     assert data_splitter.n_splits == 5
     assert not data_splitter.shuffle
+    assert data_splitter.random_state == random_state
 
     data_splitter = make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
     assert isinstance(data_splitter, TimeSeriesSplit)
