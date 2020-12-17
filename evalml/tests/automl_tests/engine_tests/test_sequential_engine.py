@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engines import SequentialEngine
-from evalml.pipelines import LogisticRegressionClassifier
+from evalml.pipelines import PipelineBase
 
 
 class DummyAlgorithm:
@@ -23,7 +23,7 @@ def test_load_new_engine(mock_score, X_y_binary, caplog):
 
 
 @patch('evalml.automl.engines.EngineBase._compute_cv_scores')
-def test_evaluate_batch(mock_cv, X_y_binary):
+def test_evaluate_batch(mock_cv, X_y_binary, linear_regression_pipeline_class):
     X, y = X_y_binary
     seq_engine = SequentialEngine()
     seq_engine.load_data(X, y)
@@ -32,7 +32,8 @@ def test_evaluate_batch(mock_cv, X_y_binary):
     automl._automl_algorithm = DummyAlgorithm()
     automl._automl_algorithm.batch_number = 0
     seq_engine.load_search(automl)
-    pipeline_batch = [LogisticRegressionClassifier(), LogisticRegressionClassifier(), LogisticRegressionClassifier()]
+    mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
+    pipeline_batch = [mock_regression_pipeline, mock_regression_pipeline, mock_regression_pipeline]
     score_dict = {
         'cv_data': [
             {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 1},
@@ -42,8 +43,11 @@ def test_evaluate_batch(mock_cv, X_y_binary):
         'cv_scores': [1, 0],
         'cv_score_mean': 0.5
     }
-    mock_cv.return_value = (LogisticRegressionClassifier(), score_dict)
-    fitted_pipelines, evaluation_results, pipeline_batch = seq_engine.evaluate_batch(pipeline_batch)
+    mock_cv.return_value = (mock_regression_pipeline, score_dict)
+    engine_result = seq_engine.evaluate_batch(pipeline_batch)
+    fitted_pipelines = engine_result.completed_pipelines
+    evaluation_results = engine_result.pipeline_results
+    unprocessed_pipelines = engine_result.unprocessed_pipelines
     assert len(evaluation_results) == 3
     assert len(fitted_pipelines) == 3
-    assert len(pipeline_batch) == 0
+    assert len(unprocessed_pipelines) == 0

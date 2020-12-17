@@ -639,7 +639,7 @@ class AutoMLSearch:
 
     def _evaluate_pipelines(self, current_pipeline_batch, X, y, engine=None, baseline=False, add_single_pipeline=False):
         current_batch_pipeline_scores = []
-        current_pipeline_batch_size = 1 if isinstance(current_pipeline_batch, PipelineBase) else len(current_pipeline_batch)
+        
         if engine is None:
             engine = SequentialEngine()
         engine.load_data(X, y)
@@ -654,17 +654,19 @@ class AutoMLSearch:
         evaluation_results = []
 
         while len(current_pipeline_batch) != 0:
-            completed_pipelines, evaluation_results, current_pipeline_batch = engine.evaluate_batch(current_pipeline_batch, log_pipeline=log_pipeline, result_callback=result_callback, ignore_stopping_condition=ignore_stopping_condition)
+            engine_result = engine.evaluate_batch(current_pipeline_batch, log_pipeline=log_pipeline, result_callback=result_callback, ignore_stopping_condition=ignore_stopping_condition)
+            completed_pipelines = engine_result.completed_pipelines
+            evaluation_results = engine_result.pipeline_results
             for pipeline, result in zip(completed_pipelines, evaluation_results):
                 if baseline:
-                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results[0]["cv_data"])
-                    engine._add_result_callback(self._add_result, completed_pipelines[0], evaluation_results[0])
+                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(result["cv_data"])
+                    engine._add_result_callback(self._add_result, pipeline, result)
                 score = result['cv_score_mean']
                 score_to_minimize = -score if self.objective.greater_is_better else score
                 current_batch_pipeline_scores.append(score_to_minimize)
                 if not baseline and not add_single_pipeline:
                     self._automl_algorithm.add_result(score_to_minimize, pipeline)
-            if len(evaluation_results) != current_pipeline_batch_size:
+            if engine_result.early_stop:
                 return current_batch_pipeline_scores
         return current_batch_pipeline_scores
 

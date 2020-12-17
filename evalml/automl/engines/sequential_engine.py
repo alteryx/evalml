@@ -1,4 +1,5 @@
 from evalml.automl.engines import EngineBase
+from evalml.automl.engines import EngineResult
 
 
 class SequentialEngine(EngineBase):
@@ -18,16 +19,16 @@ class SequentialEngine(EngineBase):
                 If False, calls `_check_stopping_condition` to determine if additional pipelines should be evaluated. Default is False.
 
         Returns:
-            list(PipelineBase), list(dict), list(PipelineBase): A list of evaluated pipelines, the results of the evaluated pipelines, and the remaining pipelines in the batch that were not evaluated.
+            EngineResult: An engine result object with completed pipelines, results, and unprocessed pipelines.
         """
         super().evaluate_batch()
-        completed_pipelines = []
-        evaluation_results = []
+        result = EngineResult()
         while len(pipeline_batch) > 0:
             pipeline = pipeline_batch.pop()
             try:
                 if not ignore_stopping_condition and not self.automl._check_stopping_condition(self.automl._start):
-                    return completed_pipelines, evaluation_results, []
+                    result.set_early_stop(pipeline, pipeline_batch)
+                    return result
                 if log_pipeline:
                     self.log_pipeline(pipeline)
                 if self.automl.start_iteration_callback:
@@ -35,10 +36,10 @@ class SequentialEngine(EngineBase):
                 pipeline, evaluation_result = self._compute_cv_scores(pipeline, self.automl, self.X, self.y)
                 if result_callback:
                     self._add_result_callback(result_callback, pipeline, evaluation_result)
-                completed_pipelines.append(pipeline)
-                evaluation_results.append(evaluation_result)
+                result.add_result(pipeline, evaluation_result)
             except KeyboardInterrupt:
                 pipeline_batch = self._handle_keyboard_interrupt(pipeline_batch, pipeline)
                 if pipeline_batch == []:
-                    return completed_pipelines, evaluation_results, pipeline_batch
-        return completed_pipelines, evaluation_results, pipeline_batch
+                    result.set_early_stop(pipeline, pipeline_batch)
+                    return result
+        return result
