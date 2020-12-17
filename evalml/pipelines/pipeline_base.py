@@ -66,6 +66,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_state = get_random_state(random_state)
         self.component_graph = [self._instantiate_component(component_class, parameters) for component_class in self.component_graph]
         self.input_feature_names = {}
+        self.input_target_name = None
         self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
         if self.estimator is None:
             raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
@@ -197,6 +198,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self.input_feature_names.update({component.name: list(X_t.columns)})
             X_t = component.fit_transform(X_t, y=y)
         self.input_feature_names.update({self.estimator.name: list(X_t.columns)})
+        self.input_target_name = y.name
         return X_t
 
     def _fit(self, X, y):
@@ -487,7 +489,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         random_state_eq = check_random_state_equality(self.random_state, other.random_state)
         if not random_state_eq:
             return False
-        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names']
+        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
