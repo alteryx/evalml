@@ -29,7 +29,8 @@ class CatBoostClassifier(Estimator):
         "max_depth": Integer(4, 10),
     }
     model_family = ModelFamily.CATBOOST
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound

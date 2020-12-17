@@ -259,7 +259,9 @@ def _check_equality(data, expected, check_index_type=True):
                           (pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]}), 0,
                            pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]})),
                           (pd.DataFrame({"a": [4, 5, 6], "b": ["a", "b", "c"]}), 1,
-                           pd.DataFrame({"a": [np.nan, 4, 5, 6], "b": [np.nan, "a", "b", "c"]}))])
+                           pd.DataFrame({"a": [np.nan, 4, 5, 6], "b": [np.nan, "a", "b", "c"]})),
+                          (pd.DataFrame({"a": [1, 0, 1]}), 2,
+                           pd.DataFrame({"a": [np.nan, np.nan, 1, 0, 1]}))])
 def test_pad_with_nans(data, num_to_pad, expected):
     padded = pad_with_nans(data, num_to_pad)
     _check_equality(padded, expected)

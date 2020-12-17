@@ -31,7 +31,8 @@ class LightGBMClassifier(Estimator):
         "bagging_freq": Integer(0, 1)
     }
     model_family = ModelFamily.LIGHTGBM
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
