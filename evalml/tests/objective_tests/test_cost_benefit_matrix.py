@@ -37,9 +37,12 @@ def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
     assert not np.isnan(list(pipeline.predict(X, cbm))).any()
 
 
-def test_cbm_objective_function():
+@pytest.mark.parametrize("data_type", ['ww', 'pd'])
+def test_cbm_objective_function(data_type, make_data_type):
     y_true = pd.Series([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
     y_predicted = pd.Series([0, 0, 1, 0, 0, 0, 0, 1, 1, 1])
+    y_true = make_data_type(data_type, y_true)
+    y_predicted = make_data_type(data_type, y_predicted)
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
     assert np.isclose(cbm.objective_function(y_true, y_predicted), ((3 * 10) + (-1 * 2) + (1 * -7) + (4 * -2)) / 10)

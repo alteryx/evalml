@@ -32,7 +32,7 @@ class OutliersDataCheck(DataCheck):
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
-            dict: A set of columns that may have outlier data.
+            dict: A dictionary with warnings if any columns have outliers.
 
         Example:
             >>> df = pd.DataFrame({

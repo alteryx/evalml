@@ -3,6 +3,7 @@ from .estimators import (
     Estimator,
     LinearRegressor,
     LightGBMClassifier,
+    LightGBMRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
     RandomForestRegressor,
@@ -37,6 +38,7 @@ from .transformers import (
     DateTimeFeaturizer,
     SelectColumns,
     TextFeaturizer,
+    LinearDiscriminantAnalysis,
     LSA,
     PCA,
     DFSTransformer
