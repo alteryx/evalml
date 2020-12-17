@@ -51,3 +51,43 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
+
+
+def test_make_data_splitter_parameters():
+    n = 10
+    X = pd.DataFrame({'col_0': list(range(n)),
+                      'target': list(range(n))})
+    y = X.pop('target')
+
+    data_splitter = make_data_splitter(X, y, ProblemTypes.REGRESSION, n_splits=5, shuffle=False)
+    assert isinstance(data_splitter, KFold)
+    assert data_splitter.n_splits == 5
+    assert not data_splitter.shuffle
+
+    data_splitter = make_data_splitter(X, y, ProblemTypes.BINARY, n_splits=5, shuffle=False)
+    assert isinstance(data_splitter, StratifiedKFold)
+    assert data_splitter.n_splits == 5
+    assert not data_splitter.shuffle
+
+    data_splitter = make_data_splitter(X, y, ProblemTypes.MULTICLASS, n_splits=5, shuffle=False)
+    assert isinstance(data_splitter, StratifiedKFold)
+    assert data_splitter.n_splits == 5
+    assert not data_splitter.shuffle
+
+    data_splitter = make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
+    assert isinstance(data_splitter, TimeSeriesSplit)
+    assert data_splitter.n_splits == 5
+    assert data_splitter.gap == 1
+    assert data_splitter.max_delay == 7
+
+
+def test_make_data_splitter_error():
+    n = 10
+    X = pd.DataFrame({'col_0': list(range(n)),
+                      'target': list(range(n))})
+    y = X.pop('target')
+
+    with pytest.raises(ValueError, match="problem_configuration is required for time series problem types"):
+        make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION, n_splits=5, shuffle=False)
+    with pytest.raises(KeyError, match="Problem type 'XYZ' does not exist"):
+        make_data_splitter(X, y, 'XYZ', n_splits=5, shuffle=False)
