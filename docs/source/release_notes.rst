@@ -50,6 +50,8 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
+        * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
+
 
 **v0.17.0 Dec. 29, 2020**
     * Enhancements
