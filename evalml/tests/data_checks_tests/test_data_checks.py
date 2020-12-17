@@ -20,19 +20,19 @@ def test_data_checks(X_y_binary):
     X, y = X_y_binary
 
     class MockDataCheck(DataCheck):
-        def validate(self, X, y):
+        def validate(self, X, y, objective=None):
             return {"warnings": [], "errors": []}
 
     class MockDataCheckWarning(DataCheck):
-        def validate(self, X, y):
+        def validate(self, X, y, objective=None):
             return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()], "errors": []}
 
     class MockDataCheckError(DataCheck):
-        def validate(self, X, y):
+        def validate(self, X, y, objective=None):
             return {"warnings": [], "errors": [DataCheckError(message="error one", data_check_name=self.name, message_code=None).to_dict()]}
 
     class MockDataCheckErrorAndWarning(DataCheck):
-        def validate(self, X, y):
+        def validate(self, X, y, objective=None):
             return {"warnings": [DataCheckWarning(message="warning two", data_check_name=self.name, message_code=None).to_dict()],
                     "errors": [DataCheckError(message="error two", data_check_name=self.name, message_code=None).to_dict()]}
 

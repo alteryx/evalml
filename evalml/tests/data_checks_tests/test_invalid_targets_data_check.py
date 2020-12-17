@@ -2,14 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml import AutoMLSearch
 from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
+    DataChecks,
     DataCheckWarning,
-    InvalidTargetDataCheck, DataChecks
+    InvalidTargetDataCheck
 )
-from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes

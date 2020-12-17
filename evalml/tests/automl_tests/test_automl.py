@@ -26,7 +26,8 @@ from evalml.data_checks import (
     DataCheck,
     DataCheckError,
     DataChecks,
-    DataCheckWarning, InvalidTargetDataCheck
+    DataCheckWarning,
+    InvalidTargetDataCheck
 )
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
@@ -38,7 +39,7 @@ from evalml.objectives import (
     LogLossBinary,
     LogLossMulticlass
 )
-from evalml.objectives.utils import get_core_objectives, get_objective, get_all_objective_names
+from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
@@ -420,7 +421,7 @@ def test_automl_invalid_target_data_check_invalid_objectives(objective):
                   [3, 2, 1, 2]])
     y = np.array([1, -1, 2, 2])
 
-    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION, problem_configuration={'gap': 1, 'max_delay':2}, max_iterations=1, objective=objective)
+    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION, problem_configuration={'gap': 1, 'max_delay': 2}, max_iterations=1, objective=objective)
     with pytest.raises(ValueError, match="Data checks raised some warnings"):
         automl.search(X, y, data_checks=[InvalidTargetDataCheck(ProblemTypes.TIME_SERIES_REGRESSION)])
 
@@ -428,7 +429,7 @@ def test_automl_invalid_target_data_check_invalid_objectives(objective):
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_automl_invalid_objectives_for_mape(problem_type):
     with pytest.raises(ValueError, match="Given objective Mean Absolute Percentage Error is not compatible"):
-        automl = AutoMLSearch(problem_type=problem_type, max_iterations=1, objective='Mean Absolute Percentage Error')
+        AutoMLSearch(problem_type=problem_type, max_iterations=1, objective='Mean Absolute Percentage Error')
 
 
 def test_automl_str_no_param_search():

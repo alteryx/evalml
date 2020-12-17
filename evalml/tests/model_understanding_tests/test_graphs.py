@@ -36,7 +36,7 @@ from evalml.model_understanding.graphs import (
     roc_curve,
     visualize_decision_tree
 )
-from evalml.objectives import CostBenefitMatrix, get_core_objectives
+from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ClassificationPipeline,
