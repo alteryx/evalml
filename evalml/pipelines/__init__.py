@@ -7,6 +7,7 @@ from .components import (
     StandardScaler,
     Transformer,
     LightGBMClassifier,
+    LightGBMRegressor,
     LinearRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,

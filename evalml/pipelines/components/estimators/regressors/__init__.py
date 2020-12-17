@@ -1,5 +1,6 @@
 from .elasticnet_regressor import ElasticNetRegressor
 from .linear_regressor import LinearRegressor
+from .lightgbm_regressor import LightGBMRegressor
 from .rf_regressor import RandomForestRegressor
 from .catboost_regressor import CatBoostRegressor
 from .xgboost_regressor import XGBoostRegressor
