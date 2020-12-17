@@ -28,7 +28,6 @@ class ComponentGraph:
         self.compute_order = []
         self._recompute_order()
         self.input_feature_names = {}
-        self.input_target_name = None
 
     @classmethod
     def from_list(cls, component_list, random_state=0):
@@ -175,7 +174,6 @@ class ComponentGraph:
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
-            self.input_target_name = input_y.name
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(input_x, input_y)
