@@ -8,10 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from sklearn.model_selection import (
-    BaseCrossValidator,
-    train_test_split
-)
+from sklearn.model_selection import BaseCrossValidator, train_test_split
 
 from .pipeline_search_plots import PipelineSearchPlots
 

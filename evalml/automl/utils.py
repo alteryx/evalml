@@ -7,7 +7,6 @@ from evalml.automl.data_splitters import (
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
-
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 
 _LARGE_DATA_PERCENT_VALIDATION = 0.75
