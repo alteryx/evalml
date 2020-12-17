@@ -1,4 +1,6 @@
 
+import woodwork as ww
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -11,7 +13,6 @@ from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper,
     numeric_and_boolean_ww
 )
-import woodwork as ww
 
 
 class InvalidTargetDataCheck(DataCheck):
