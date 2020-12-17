@@ -102,8 +102,7 @@ def test_get_estimators(has_minimal_dependencies):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
     # testing that all_null column is not considered categorical
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
@@ -137,8 +136,7 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline(input_type, problem_type):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -172,8 +170,7 @@ def test_make_pipeline(input_type, problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_nulls(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -207,8 +204,7 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_datetimes(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -242,8 +238,7 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_column_names(input_type, problem_type):
     X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
     y = pd.Series([0, 0, 1])
@@ -274,8 +269,7 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_text_columns(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -308,8 +302,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             assert pipeline.component_graph == [Imputer, TextFeaturizer] + delayed_features + estimator_components
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_numpy_input(problem_type):
     X = np.array([[1, 2, 0, np.nan], [2, 2, 1, np.nan], [5, 1, np.nan, np.nan]])
     y = np.array([0, 0, 1, 0])
@@ -335,8 +328,7 @@ def test_make_pipeline_numpy_input(problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
