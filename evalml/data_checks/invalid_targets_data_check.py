@@ -99,12 +99,12 @@ class InvalidTargetDataCheck(DataCheck):
                                                              message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
                                                              details={"target_values": unique_values}).to_dict())
 
-        objective = objective if isinstance(objective, str) else objective.name
         if objective:
+            obj_ = objective if isinstance(objective, str) else objective.name
             all_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
-            if all_neg and (objective in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
+            if all_neg and (obj_ in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
                 details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
-                messages["errors"].append(DataCheckError(message=f"Target does not have only positive values which is not supported for {objective}",
+                messages["errors"].append(DataCheckError(message=f"Target does not have only positive values which is not supported for {obj_}",
                                                          data_check_name=self.name,
                                                          message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                                                          details=details).to_dict())
