@@ -45,3 +45,6 @@ class DataCheckMessageCode(Enum):
 
     NO_VARIANCE_WITH_NULL = "no_variance_with_null"
     """Message code for when data has one unique value and NaN values."""
+
+    IS_MULTICOLLINEAR = "is_multicollinear"
+    """Message code for when data is potentially multicollinear."""

@@ -38,6 +38,12 @@ commands:
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps-dev
+  install_dependencies_docs:
+    steps:
+      - run: |
+            virtualenv test_python -q
+            source test_python/bin/activate
+            make installdeps-docs
   install_dependencies_core:
     steps:
       - run: |
@@ -262,7 +268,7 @@ jobs:
       python_version: "3.8"
     steps:
       - checkout
-      - install_dependencies_dev
+      - install_dependencies_docs
       - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
       - run: |
           source test_python/bin/activate

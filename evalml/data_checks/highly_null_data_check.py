@@ -33,7 +33,7 @@ class HighlyNullDataCheck(DataCheck):
             objective (ObjectiveBase): Ignored.
 
         Returns:
-            dict (DataCheckWarning): dict with a DataCheckWarning if there are any highly-null columns.
+            dict: dict with a DataCheckWarning if there are any highly-null columns.
 
         Example:
             >>> import pandas as pd

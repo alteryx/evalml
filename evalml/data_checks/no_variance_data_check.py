@@ -62,7 +62,7 @@ class NoVarianceDataCheck(DataCheck):
             objective (ObjectiveBase): Ignored.
 
         Returns:
-            dict (DataCheckWarning or DataCheckError): dict of warnings/errors corresponding to features or target with no variance.
+            dict: dict of warnings/errors corresponding to features or target with no variance.
         """
         messages = {
             "warnings": [],

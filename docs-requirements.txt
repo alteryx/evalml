@@ -1,0 +1,4 @@
+pydata-sphinx-theme>=0.3.1
+Sphinx>=2.0.1
+nbconvert>=5.5.0
+nbsphinx>=0.4.2

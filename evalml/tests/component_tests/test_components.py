@@ -36,6 +36,7 @@ from evalml.pipelines.components import (
     ExtraTreesRegressor,
     Imputer,
     LightGBMClassifier,
+    LightGBMRegressor,
     LinearDiscriminantAnalysis,
     LinearRegressor,
     LogisticRegressionClassifier,
@@ -214,8 +215,11 @@ def test_describe_component():
         pass
     try:
         lg_classifier = LightGBMClassifier()
+        lg_regressor = LightGBMRegressor()
         assert lg_classifier.describe(return_dict=True) == {'name': 'LightGBM Classifier', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 0, 'num_leaves': 31,
                                                                                                           'min_child_samples': 20, 'n_jobs': -1, 'bagging_fraction': 0.9, 'bagging_freq': 0}}
+        assert lg_regressor.describe(return_dict=True) == {'name': 'LightGBM Regressor', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 20, 'max_depth': 0, 'num_leaves': 31,
+                                                                                                        'min_child_samples': 20, 'n_jobs': -1, 'bagging_fraction': 0.9, 'bagging_freq': 0}}
     except ImportError:
         pass
 

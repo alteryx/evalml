@@ -33,7 +33,7 @@ class OutliersDataCheck(DataCheck):
             objective (ObjectiveBase): Ignored.
 
         Returns:
-            dict: A set of columns that may have outlier data.
+            dict: A dictionary with warnings if any columns have outliers.
 
         Example:
             >>> df = pd.DataFrame({
