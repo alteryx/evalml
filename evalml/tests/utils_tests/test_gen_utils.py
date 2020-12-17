@@ -427,7 +427,7 @@ def test_save_plotly_static_different_format(file_name, format, interactive, dec
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
         no_output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
         output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
 
@@ -435,6 +435,24 @@ def test_save_plotly_static_different_format(file_name, format, interactive, dec
         assert os.path.exists(output_)
         assert isinstance(output_, str)
         assert os.path.basename(output_) == 'test_plot.jpeg'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             (None, 'jpeg', False)
+                         ])
+def test_save_plotly_static_no_filepath(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        pipeline = decision_tree_classification_pipeline_class
+        feat_fig_ = pipeline.graph_feature_importance()
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.jpeg'
+        os.remove('test_plot.jpeg')
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
@@ -492,7 +510,7 @@ def test_save_graphviz_different_format(file_name, format, interactive, fitted_t
         est_class, _ = fitted_tree_estimators
         src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
         no_output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
         output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
 
@@ -527,7 +545,7 @@ def test_save_graphviz_different_filename_output(file_name, format, interactive,
         est_class, _ = fitted_tree_estimators
         src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
         no_output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
         output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
 
@@ -553,7 +571,7 @@ def test_save_matplotlib_default_format(file_name, format, interactive, fitted_t
         return fig_
 
     fig = setup_plt()
-    filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+    filepath = os.path.join(str(tmpdir), f'{file_name}')
     no_output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
     output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
 
@@ -579,7 +597,7 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
         return fig
 
     fig = setup_plt()
-    filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+    filepath = os.path.join(str(tmpdir), f'{file_name}')
     no_output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
     output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
 
