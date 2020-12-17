@@ -28,7 +28,7 @@ class IDColumnsDataCheck(DataCheck):
 
             - column name is "id"
             - column name ends in "_id"
-            - column contains all unique values (and is not float / boolean)
+            - column contains all unique values (and is categorical / integer type)
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check

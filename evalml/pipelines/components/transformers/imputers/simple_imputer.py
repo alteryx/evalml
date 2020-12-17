@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
@@ -47,10 +46,11 @@ class SimpleImputer(Transformer):
             self
         """
         X = _convert_to_woodwork_structure(X)
-        # Convert all bool dtypes to category for fitting
-        if set(X.logical_types.values()) == {ww.logical_types.Boolean}:
-            X = X.set_types(logical_types={col: ww.logical_types.Categorical for col in X.columns})
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+        # Convert all bool dtypes to category for fitting
+        if (X.dtypes == bool).all():
+            X = X.astype('category')
 
         # Convert None to np.nan, since None cannot be properly handled
         X = X.fillna(value=np.nan)
@@ -70,10 +70,13 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        ww_X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(ww_X.to_dataframe())
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        # Convert None to np.nan, since None cannot be properly handled
+        X = X.fillna(value=np.nan)
+
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if set(ww_X.logical_types.values()) == {ww.logical_types.Boolean} and X.isnull().sum().sum() == 0:
+        if (X.dtypes == bool).all():
             return X
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)

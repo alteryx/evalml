@@ -9,7 +9,6 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    categorical_ww_types,
     numeric_and_boolean_ww
 )
 
@@ -59,10 +58,10 @@ class InvalidTargetDataCheck(DataCheck):
             raise ValueError("y cannot be None")
 
         y = _convert_to_woodwork_structure(y)
-        valid_target_types = numeric_and_boolean_ww + categorical_ww_types
-        if y.logical_type not in numeric_and_boolean_ww + categorical_ww_types:
-            messages["errors"].append(DataCheckError(message="Target is unsupported {} Woodwork type. Valid Woodwork logical types include: {}"
-                                                     .format(y.logical_type, ", ".join([ltype.type_string for ltype in valid_target_types])),
+        is_supported_type = y.logical_type in numeric_and_boolean_ww
+        if not is_supported_type:
+            messages["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
+                                                     .format(y.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                                                      details={"unsupported_type": y.logical_type.type_string}).to_dict())
@@ -89,7 +88,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                      details=details).to_dict())
 
-        if len(value_counts) == 2 and y.logical_type in numeric_and_boolean_ww:
+        if len(value_counts) == 2 and is_supported_type:
             if set(unique_values) != set([0, 1]):
                 messages["warnings"].append(DataCheckWarning(message="Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])),
                                                              data_check_name=self.name,

@@ -8,7 +8,7 @@ from evalml.data_checks import (
     DataCheckWarning,
     InvalidTargetDataCheck
 )
-from evalml.utils.gen_utils import categorical_ww_types, numeric_and_boolean_ww
+from evalml.utils.gen_utils import numeric_and_boolean_ww
 
 invalid_targets_data_check_name = InvalidTargetDataCheck.name
 
@@ -79,8 +79,8 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
     unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
-        "errors": [DataCheckError(message="Target is unsupported {} Woodwork type. Valid Woodwork logical types include: {}"
-                                  .format("Datetime", ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww + categorical_ww_types])),
+        "errors": [DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
+                                  .format("Datetime", ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                                   details={"unsupported_type": "datetime"}).to_dict(),

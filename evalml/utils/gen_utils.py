@@ -15,10 +15,7 @@ from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
-numeric_ww_types = [ww.logical_types.Integer, ww.logical_types.Double]
-boolean_ww = [ww.logical_types.Boolean]
-numeric_and_boolean_ww = numeric_ww_types + boolean_ww
-categorical_ww_types = [ww.logical_types.Categorical]
+numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean, ww.logical_types.Categorical]
 
 
 def import_or_raise(library, error_msg=None, warning=False):
@@ -270,13 +267,13 @@ def is_all_numeric(dt):
     """Checks if the given DataTable contains only numeric values
 
     Arguments:
-        dt (ww.DataTable): The DataTable to check data types of
+        dt (ww.DataTable): The DataTable to check data types of.
 
     Returns:
-        True if all the DataTable columns are numeric and are not missing any values, False otherwise
+        True if all the DataTable columns are numeric and are not missing any values, False otherwise.
     """
-    for ltype in dt.logical_types.values():
-        if ltype not in numeric_and_boolean_ww:
+    for col_tags in dt.semantic_tags.values():
+        if "numeric" not in col_tags:
             return False
 
     if dt.to_dataframe().isnull().any().any():

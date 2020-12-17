@@ -4,8 +4,7 @@ from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    numeric_ww_types
+    _convert_woodwork_types_wrapper
 )
 
 
@@ -26,8 +25,8 @@ class RegressionPipeline(PipelineBase):
         """
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
-        if y.logical_type not in numeric_ww_types:
-            raise ValueError(f"Regression pipeline cannot handle targets with logical type: {y.logical_type}")
+        if "numeric" not in y.semantic_tags:
+            raise ValueError(f"Regression pipeline can only handle numeric target data")
         y = _convert_woodwork_types_wrapper(y.to_series())
         self._fit(X, y)
         return self
