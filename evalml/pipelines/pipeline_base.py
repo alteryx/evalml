@@ -230,7 +230,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         X = _convert_to_woodwork_structure(X)
         X_t = self.compute_estimator_features(X, y=None)
-        return self.estimator.predict(X_t)
+        predictions = self.estimator.predict(X_t)
+        return predictions.rename(self.input_target_name)
 
     @abstractmethod
     def score(self, X, y, objectives):
