@@ -406,9 +406,6 @@ def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=F
             format_ = extension
         filepath = f'{path_and_name}.{format_}'
         try:
-            # saving_folder = os.path.dirname(filepath)
-            # if not os.path.exists(saving_folder):   # Creates folder if one is specified
-            #    os.makedirs(saving_folder)
             f = open(filepath, 'w')
             f.close()
         except (IOError, FileNotFoundError):
@@ -421,11 +418,11 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
 
     Arguments:
         fig (Figure): Figure to be saved.
-        filepath (str or Path, optional): Location to save file.
+        filepath (str or Path, optional): Location to save file. Default is with filename "test_plot".
         format (str): Extension for figure to be saved as. Ignored if interactive is True and fig
         is of type plotly.Figure. Defaults to 'png'.
         interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
-        instead of static. Defaults to False.
+        instead of static, and format will be set to 'html'. Defaults to False.
         return_filepath (bool, optional): Whether to return the final filepath the image is saved to. Defaults to False.
 
     Returns:

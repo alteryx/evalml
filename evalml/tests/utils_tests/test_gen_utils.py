@@ -408,7 +408,7 @@ def test_save_plotly_static_default_format(file_name, format, interactive, decis
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
         no_output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
         output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
 
@@ -576,7 +576,6 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
     def setup_plt():
         data_ = [0, 1, 2, 3, 4]
         fig = sns.scatterplot(data=data_)
-        # fig_ = fig.figure
         return fig
 
     fig = setup_plt()
