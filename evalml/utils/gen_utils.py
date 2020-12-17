@@ -1,6 +1,7 @@
 import importlib
 import warnings
 from collections import namedtuple
+from functools import reduce
 
 import numpy as np
 import pandas as pd
@@ -342,11 +343,39 @@ def pad_with_nans(pd_data, num_to_pad):
         pd.DataFrame or pd.Series
     """
     if isinstance(pd_data, pd.Series):
-        padding = pd.Series([None] * num_to_pad)
+        padding = pd.Series([np.nan] * num_to_pad)
     else:
-        padding = pd.DataFrame({col: [None] * num_to_pad
+        padding = pd.DataFrame({col: [np.nan] * num_to_pad
                                 for col in pd_data.columns})
-    return pd.concat([padding, pd_data], ignore_index=True).infer_objects()
+    padded = pd.concat([padding, pd_data], ignore_index=True)
+    # By default, pd.concat will convert all types to object if there are mixed numerics and objects
+    # The call to convert_dtypes ensures numerics stay numerics in the new dataframe.
+    return padded.convert_dtypes(infer_objects=True, convert_string=False,
+                                 convert_integer=False, convert_boolean=False)
+
+
+def _get_rows_without_nans(*data):
+    """Compute a boolean array marking where all entries in the data are non-nan.
+
+    Arguments:
+        *data (sequence of pd.Series or pd.DataFrame)
+
+    Returns:
+        np.ndarray: mask where each entry is True if and only if all corresponding entries in that index in data
+            are non-nan.
+    """
+    def _not_nan(pd_data):
+        if pd_data is None:
+            return np.array([True])
+        if isinstance(pd_data, pd.Series):
+            return ~pd_data.isna().values
+        elif isinstance(pd_data, pd.DataFrame):
+            return ~pd_data.isna().any(axis=1).values
+        else:
+            return pd_data
+
+    mask = reduce(lambda a, b: np.logical_and(_not_nan(a), _not_nan(b)), data)
+    return mask
 
 
 def drop_rows_with_nans(pd_data_1, pd_data_2):
@@ -360,11 +389,5 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
         tuple of pd.DataFrame or pd.Series
     """
 
-    def _not_nan(pd_data):
-        if isinstance(pd_data, pd.Series):
-            return ~pd_data.isna().values
-        else:
-            return ~pd_data.isna().any(axis=1).values
-
-    mask = np.logical_and(_not_nan(pd_data_1), _not_nan(pd_data_2))
+    mask = _get_rows_without_nans(pd_data_1, pd_data_2)
     return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
