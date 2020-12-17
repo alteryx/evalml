@@ -53,8 +53,8 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
 
-    pp_components.append(FeaturetoolsTransformer)
     pp_components.append(Imputer)
+    pp_components.append(FeaturetoolsTransformer)
 
     if text_columns:
         pp_components.append(TextFeaturizer)
