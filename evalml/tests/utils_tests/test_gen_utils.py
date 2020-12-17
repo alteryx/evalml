@@ -394,9 +394,11 @@ def test_convert_to_woodwork_structure():
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
 
 
-def test_infer_feature_types():
+def test_infer_feature_types_dataframe():
     X_pd = pd.DataFrame({0: pd.Series([1, 2]),
                          1: pd.Series([3, 4])})
+    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe(), check_dtype=False)
+
     X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
                          1: pd.Series([3, 4], dtype="Int64")})
     pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe())
@@ -404,7 +406,10 @@ def test_infer_feature_types():
     X_expected = X_pd.copy()
     X_expected[0] = X_expected[0].astype("category")
     pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: "categorical"}).to_dataframe())
+    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: ww.logical_types.Categorical}).to_dataframe())
 
+
+def test_infer_feature_types_series():
     X_pd = pd.Series([1, 2, 3, 4])
     X_expected = X_pd.astype("Int64")
     pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd).to_series())
@@ -412,6 +417,10 @@ def test_infer_feature_types():
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
     pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd).to_series())
 
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64", name="test")
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
     X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, {"test": "categorical"}).to_series())
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, "categorical").to_series())
+
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
+    X_expected = X_pd.astype("category")
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical).to_series())
