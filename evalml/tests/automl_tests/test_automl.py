@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn import metrics
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -1164,7 +1163,7 @@ class CustomClassificationObjective(ObjectiveBase):
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.accuracy_score(y_true, y_predicted)
+        """Not implementing since mocked in our tests."""
 
 
 class CustomRegressionObjective(ObjectiveBase):
@@ -1176,7 +1175,7 @@ class CustomRegressionObjective(ObjectiveBase):
     problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def objective_function(self, y_true, y_predicted, X=None):
-        return R2().objective_function(y_true, y_predicted, X=X)
+        """Not implementing since mocked in our tests."""
 
 
 @pytest.mark.parametrize("objective,pipeline_scores,baseline_score,problem_type_value",
