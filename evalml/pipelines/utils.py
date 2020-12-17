@@ -5,7 +5,7 @@ from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
 from .regression_pipeline import RegressionPipeline
-from .time_series_classifcation_pipelines import (
+from .time_series_classification_pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline
 )
