@@ -705,7 +705,30 @@ class AutoMLSearch:
             cv_pipeline = None
             try:
                 cv_pipeline = pipeline.clone(pipeline.random_state)
-                cv_pipeline = self._fit_pipeline(cv_pipeline, X_train, y_train, fold=i)
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+                # if fold is not None:
+                logger.debug(f"\t\t\tFold {fold}: starting training")
+                cv_pipeline.fit(X_train, y_train)
+                # if fold is not None:
+                logger.debug(f"\t\t\tFold {fold}: finished training")
+                if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
+                    cv_pipeline.threshold = 0.5
+                    if X_threshold_tuning:
+                        # if fold is not None:
+                        logger.debug(f"\t\t\tFold {fold}: Optimizing threshold for {self.objective.name}")
+                        y_predict_proba = cv_pipeline.predict_proba(X_threshold_tuning)
+                        if isinstance(y_predict_proba, pd.DataFrame):
+                            y_predict_proba = y_predict_proba.iloc[:, 1]
+                        else:
+                            y_predict_proba = y_predict_proba[:, 1]
+                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+                        # if fold is not None:
+                        logger.debug(f"\t\t\tFold {fold}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+
+                # cv_pipeline = self._fit_pipeline(cv_pipeline, X_train, y_train, fold=i)
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
