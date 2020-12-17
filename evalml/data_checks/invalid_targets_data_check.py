@@ -11,6 +11,7 @@ from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper,
     numeric_and_boolean_ww
 )
+import woodwork as ww
 
 
 class InvalidTargetDataCheck(DataCheck):
@@ -58,7 +59,7 @@ class InvalidTargetDataCheck(DataCheck):
             raise ValueError("y cannot be None")
 
         y = _convert_to_woodwork_structure(y)
-        is_supported_type = y.logical_type in numeric_and_boolean_ww
+        is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
         if not is_supported_type:
             messages["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
                                                      .format(y.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
