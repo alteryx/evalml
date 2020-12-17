@@ -211,7 +211,8 @@ def scikit_learn_wrapped_estimator(evalml_obj):
         # EvalML Estimator
         if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             return WrappedSKRegressor(evalml_obj)
-        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                                    ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
             return WrappedSKClassifier(evalml_obj)
     raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")
 
