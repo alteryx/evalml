@@ -518,7 +518,7 @@ def test_describe_nonlinear(caplog, nonlinear_binary_pipeline_class):
     out = caplog.text
     assert "Non Linear Binary Pipeline" in out
     assert "Problem Type: binary" in out
-    assert "Model Family: Ensemble" in out
+    assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
     for component in nbpl._component_graph:
@@ -554,7 +554,7 @@ def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline
     out = caplog.text
     assert "Non Linear Binary Pipeline" in out
     assert "Problem Type: binary" in out
-    assert "Model Family: Ensemble" in out
+    assert "Model Family: Linear" in out
     assert "Number of features: 2" in out
 
     for component in nbpl._component_graph:
@@ -562,6 +562,31 @@ def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
         assert component.name in out
+
+
+def test_nonlinear_model_family():
+    class DummyNonlinearPipeline(BinaryClassificationPipeline):
+        component_graph = {'Imputer': ['Imputer'],
+                           'OneHot': ['One Hot Encoder', 'Imputer.x'],
+                           'Elastic Net': ['Elastic Net Classifier', 'OneHot.x'],
+                           'Logistic Regression': ['Logistic Regression Classifier', 'OneHot.x'],
+                           'Random Forest': ['Random Forest Classifier', 'Logistic Regression', 'Elastic Net']}
+
+    class DummyTransformerEndPipeline(BinaryClassificationPipeline):
+        component_graph = {'Imputer': ['Imputer'],
+                           'OneHot': ['One Hot Encoder', 'Imputer.x'],
+                           'Random Forest': ['Random Forest Classifier', 'OneHot.x'],
+                           'Logistic Regression': ['Logistic Regression Classifier', 'OneHot.x'],
+                           'Scaler': ['Standard Scaler', 'Random Forest', 'Logistic Regression']}
+
+    assert DummyNonlinearPipeline.model_family == ModelFamily.RANDOM_FOREST
+    assert DummyTransformerEndPipeline.model_family == ModelFamily.NONE
+
+    nlbp = DummyNonlinearPipeline({})
+    nltp = DummyTransformerEndPipeline({})
+
+    assert DummyNonlinearPipeline.model_family == ModelFamily.RANDOM_FOREST
+    assert DummyTransformerEndPipeline.model_family == ModelFamily.NONE
 
 
 def test_parameters(logistic_regression_binary_pipeline_class):

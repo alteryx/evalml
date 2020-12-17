@@ -115,6 +115,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
+        if self.estimator is None:  # Allow for pipelines that do not end with an estimator
+            return
         estimator_problem_types = self.estimator.supported_problem_types
         if self.problem_type not in estimator_problem_types:
             raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
@@ -266,11 +268,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def model_family(cls):
         "Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
-        if isinstance(cls.component_graph, list):
+        if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
         else:
-            # TODO: Does this make sense
-            return ModelFamily.ENSEMBLE
+            order = ComponentGraph.generate_order(component_graph)
+            final_component = order[-1]
+            return handle_component_class(component_graph[final_component][0]).model_family
 
     @classproperty
     def hyperparameters(cls):
