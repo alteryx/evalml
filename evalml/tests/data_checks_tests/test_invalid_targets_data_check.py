@@ -2,12 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml import AutoMLSearch
 from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
-    InvalidTargetDataCheck
+    InvalidTargetDataCheck, DataChecks
 )
+from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
@@ -192,4 +194,20 @@ def test_invalid_target_data_check_n_unique():
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": unique_values}).to_dict()]
+    }
+
+
+@pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
+def test_invalid_target_data_check_invalid_objectives_validate(objective):
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, -1, 1, 1])
+
+    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
+    assert data_checks.validate(X, y, objective=objective) == {
+        "warnings": [],
+        "errors": [DataCheckError(
+            message=f"Target does not have only positive values which is not supported for {objective}",
+            data_check_name=invalid_targets_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
     }
