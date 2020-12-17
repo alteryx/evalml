@@ -86,7 +86,6 @@ def test_id_columns_strings():
               }
     X = pd.DataFrame.from_dict(X_dict)
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
-    # print (id_cols_check.validate(X))
     assert id_cols_check.validate(X) == {
         "warnings": [DataCheckWarning(message="Column 'Id' is 95.0% or more likely to be an ID column",
                                       data_check_name=id_data_check_name,
