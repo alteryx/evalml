@@ -11,7 +11,8 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     """Stacked Ensemble Classifier."""
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY,
+                               ProblemTypes.TIME_SERIES_MULTICLASS]
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingClassifier
     _default_final_estimator = LogisticRegressionClassifier
