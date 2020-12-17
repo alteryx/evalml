@@ -9,9 +9,22 @@ from evalml.automl.data_splitters import (
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
+    get_default_primary_search_objective,
     make_data_splitter
 )
+from evalml.objectives import R2, LogLossBinary, LogLossMulticlass
 from evalml.problem_types import ProblemTypes
+
+
+def test_get_default_primary_search_objective():
+    assert isinstance(get_default_primary_search_objective("binary"), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.BINARY), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective("multiclass"), LogLossMulticlass)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass)
+    assert isinstance(get_default_primary_search_objective("regression"), R2)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
+    with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
+        get_default_primary_search_objective("auto")
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
