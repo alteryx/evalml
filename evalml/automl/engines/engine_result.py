@@ -11,7 +11,7 @@ class EngineResult:
     def set_early_stop(self, current_pipeline, unprocessed_pipelines):
         self.early_stop = True
         self.unprocessed_pipelines.append(current_pipeline)
-        self.unprocessed_pipelines.append(unprocessed_pipelines)
+        self.unprocessed_pipelines = self.unprocessed_pipelines + unprocessed_pipelines
 
     def add_result(self, completed_pipelines, pipeline_results):
         if isinstance(completed_pipelines, PipelineBase) and isinstance(pipeline_results, dict):

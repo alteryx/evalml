@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engines import SequentialEngine
-from evalml.pipelines import PipelineBase
 
 
 class DummyAlgorithm:

@@ -15,7 +15,7 @@ class SequentialEngine(EngineBase):
             pipeline_batch (list(PipelineBase)): A batch of pipelines to be fitted and evaluated.
             result_callback (callable): Function called once the pipeline is finished evaluating to store the results. If None, results will only be returned.
             log_pipeline (bool): If True, log the pipeline and relevant information before evaluation.
-            ignore_stopping_condition (bool): If True, will add pipelines regardless of stopping condition. 
+            ignore_stopping_condition (bool): If True, will add pipelines regardless of stopping condition.
                 If False, calls `_check_stopping_condition` to determine if additional pipelines should be evaluated. Default is False.
 
         Returns:
@@ -23,6 +23,7 @@ class SequentialEngine(EngineBase):
         """
         super().evaluate_batch()
         result = EngineResult()
+        pipeline = None
         while len(pipeline_batch) > 0:
             pipeline = pipeline_batch.pop()
             try:
@@ -38,8 +39,10 @@ class SequentialEngine(EngineBase):
                     self._add_result_callback(result_callback, pipeline, evaluation_result)
                 result.add_result(pipeline, evaluation_result)
             except KeyboardInterrupt:
-                pipeline_batch = self._handle_keyboard_interrupt(pipeline_batch, pipeline)
-                if pipeline_batch == []:
+                terminate_early = self._handle_keyboard_interrupt()
+                if terminate_early:
                     result.set_early_stop(pipeline, pipeline_batch)
                     return result
+                else:
+                    pipeline_batch = [pipeline] + pipeline_batch
         return result

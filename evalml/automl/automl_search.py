@@ -639,7 +639,7 @@ class AutoMLSearch:
 
     def _evaluate_pipelines(self, current_pipeline_batch, X, y, engine=None, baseline=False, add_single_pipeline=False):
         current_batch_pipeline_scores = []
-        
+
         if engine is None:
             engine = SequentialEngine()
         engine.load_data(X, y)
@@ -762,7 +762,7 @@ class AutoMLSearch:
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-  
+
         if engine is None:
             engine = SequentialEngine()
         self._evaluate_pipelines(pipeline, X, y, engine=engine, add_single_pipeline=True)
