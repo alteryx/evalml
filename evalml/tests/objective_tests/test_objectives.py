@@ -15,8 +15,8 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.objectives.objective_base import ObjectiveBase
-from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import _get_subclasses
 
 
 def test_create_custom_objective():
@@ -34,7 +34,7 @@ def test_create_custom_objective():
         MockNoObjectiveFunctionObjective()
 
 
-@pytest.mark.parametrize("obj", _all_objectives_dict().values())
+@pytest.mark.parametrize("obj", _get_subclasses(ObjectiveBase))
 def test_get_objective_works_for_names_of_defined_objectives(obj):
     assert get_objective(obj.name) == obj
     assert get_objective(obj.name.lower()) == obj
