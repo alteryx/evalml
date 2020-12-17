@@ -14,7 +14,6 @@ from .components import Estimator
 from .components.utils import handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
-from evalml.model_family import ModelFamily
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (

@@ -63,7 +63,7 @@ def test_allowed_model_families(has_minimal_dependencies):
     expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
         expected_model_families_binary.update([ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM])
-        expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST])
+        expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST, ModelFamily.LIGHTGBM])
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
     assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
@@ -72,7 +72,7 @@ def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 10
     else:
-        assert len(_all_estimators_used_in_search()) == 15
+        assert len(_all_estimators_used_in_search()) == 16
 
 
 def test_get_estimators(has_minimal_dependencies):
@@ -85,7 +85,7 @@ def test_get_estimators(has_minimal_dependencies):
         assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 8
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 8
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 8
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0
@@ -585,8 +585,8 @@ def test_nonlinear_model_family():
     nlbp = DummyNonlinearPipeline({})
     nltp = DummyTransformerEndPipeline({})
 
-    assert DummyNonlinearPipeline.model_family == ModelFamily.RANDOM_FOREST
-    assert DummyTransformerEndPipeline.model_family == ModelFamily.NONE
+    assert nlbp.model_family == ModelFamily.RANDOM_FOREST
+    assert nltp.model_family == ModelFamily.NONE
 
 
 def test_parameters(logistic_regression_binary_pipeline_class):
