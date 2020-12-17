@@ -45,12 +45,10 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     Returns:
         sklearn.model_selection.BaseCrossValidator: data splitting method.
     """
-    classification = False
     problem_type = handle_problem_types(problem_type)
     if problem_type == ProblemTypes.REGRESSION:
         data_split = KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        classification = True
         data_split = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
     elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
         if not problem_configuration:
@@ -58,5 +56,5 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         data_split = TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
                                      max_delay=problem_configuration.get('max_delay'))
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-        data_split = TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, stratify=classification, shuffle=True)
+        data_split = TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
     return data_split

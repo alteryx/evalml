@@ -18,6 +18,10 @@ from evalml.automl.callbacks import (
     raise_error_callback,
     silent_error_callback
 )
+from evalml.automl.utils import (
+    _LARGE_DATA_PERCENT_VALIDATION,
+    _LARGE_DATA_ROW_THRESHOLD
+)
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -646,17 +650,17 @@ def test_large_dataset_split_size(mock_fit, mock_score):
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
 
-    under_max_rows = automl._LARGE_DATA_ROW_THRESHOLD - 1
+    under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, StratifiedKFold)
 
     automl.data_split = None
-    over_max_rows = automl._LARGE_DATA_ROW_THRESHOLD + 1
+    over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_VALIDATION)
+    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
 def test_data_split_shuffle():

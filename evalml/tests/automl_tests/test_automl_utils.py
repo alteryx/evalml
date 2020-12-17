@@ -46,7 +46,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert isinstance(data_splitter, TrainingValidationSplit)
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
-        assert data_splitter.stratify == (problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+        assert data_splitter.stratify is None
         assert data_splitter.random_state == 0
         return
 
