@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in invalid target data check :pr:`1574`
         * Added ``LightGBM Regressor`` to regression components :pr:`1459`
         * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
         * Added `DFS Transformer` component into transformer components :pr:`1454`
