@@ -29,4 +29,7 @@ def load_fraud(n_rows=None, verbose=True, return_pandas=False):
     if return_pandas:
         return X, y
 
-    return ww.DataTable(X), ww.DataColumn(y)
+    X = ww.DataTable(X)
+    X = X.set_types({"provider": "Categorical", "region": "Categorical"})
+    y = ww.DataColumn(y)
+    return X, y
