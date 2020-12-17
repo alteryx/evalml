@@ -1,6 +1,5 @@
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from evalml.automl import AutoMLSearch
 from evalml.automl.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
@@ -8,6 +7,9 @@ from evalml.automl.data_splitters import (
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
+
+_LARGE_DATA_ROW_THRESHOLD = int(1e5)
+_LARGE_DATA_PERCENT_VALIDATION = 0.75
 
 def get_default_primary_search_objective(problem_type):
     """Get the default primary search objective for a problem type.
@@ -53,6 +55,6 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
                                      max_delay=problem_configuration.get('max_delay'))
     else:
         raise ValueError(f"Unsupported problem_type {problem_type}")
-    if X.shape[0] > AutoMLSearch._LARGE_DATA_ROW_THRESHOLD:
-        data_split = TrainingValidationSplit(test_size=AutoMLSearch._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
+    if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
+        data_split = TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
     return data_split

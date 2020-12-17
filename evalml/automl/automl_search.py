@@ -77,8 +77,6 @@ logger = get_logger(__file__)
 class AutoMLSearch:
     """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
-    _LARGE_DATA_ROW_THRESHOLD = int(1e5)
-    _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
