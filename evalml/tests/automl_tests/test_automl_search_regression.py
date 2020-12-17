@@ -270,7 +270,7 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
     allowed_pipelines = [nonlinear_regression_pipeline_class]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines)
+                          allowed_pipelines=allowed_pipelines, n_jobs=1)
     automl.search(X, y)
 
     assert start_iteration_callback.call_count == 2
