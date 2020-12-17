@@ -1289,15 +1289,18 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         if CustomClassificationObjective.is_defined_for_problem_type(problem_type_enum):
             additional_objectives = [CustomClassificationObjective()]
         else:
-            additional_objectives = [CustomRegressionObjective()]
+            additional_objectives = [CustomRegressionObjective(), "Root Mean Squared Error"]
 
     core_objectives = get_core_objectives(problem_type)
     if additional_objectives:
         core_objectives = [get_default_primary_search_objective(problem_type_enum)] + additional_objectives
-    mock_scores = {obj.name: i for i, obj in enumerate(core_objectives)}
-    mock_baseline_scores = {obj.name: i + 1 for i, obj in enumerate(core_objectives)}
-    answer = {obj.name: obj.calculate_percent_difference(mock_scores[obj.name],
-                                                         mock_baseline_scores[obj.name]) for obj in core_objectives}
+    mock_scores = {get_objective(obj).name: i for i, obj in enumerate(core_objectives)}
+    mock_baseline_scores = {get_objective(obj).name: i + 1 for i, obj in enumerate(core_objectives)}
+    answer = {}
+    for obj in core_objectives:
+        obj_class = get_objective(obj)
+        answer[obj_class.name] = obj_class.calculate_percent_difference(mock_scores[obj_class.name],
+                                                                        mock_baseline_scores[obj_class.name])
 
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
