@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from sklearn import metrics
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -19,7 +20,8 @@ from evalml.automl.callbacks import (
 )
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
-    _LARGE_DATA_ROW_THRESHOLD
+    _LARGE_DATA_ROW_THRESHOLD,
+    get_default_primary_search_objective
 )
 from evalml.data_checks import (
     DataCheck,
@@ -34,7 +36,7 @@ from evalml.exceptions import (
     PipelineNotYetFittedError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost
+from evalml.objectives import R2, CostBenefitMatrix, FraudCost, ObjectiveBase
 from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -1153,8 +1155,32 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_
 all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
 
 
+class CustomClassificationObjective(ObjectiveBase):
+    """Accuracy score for binary and multiclass classification."""
+    name = "Classification Accuracy"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        return metrics.accuracy_score(y_true, y_predicted)
+
+
+class CustomRegressionObjective(ObjectiveBase):
+    """Accuracy score for binary and multiclass classification."""
+    name = "Custom Regression Objective"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        return R2().objective_function(y_true, y_predicted, X=X)
+
+
 @pytest.mark.parametrize("objective,pipeline_scores,baseline_score,problem_type_value",
-                         product(all_objectives + [CostBenefitMatrix],
+                         product(all_objectives + [CostBenefitMatrix, CustomClassificationObjective()],
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
                                  [0.1, np.nan],
                                  [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]))
@@ -1220,6 +1246,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
 
 
+@pytest.mark.parametrize("custom_additional_objective", [True, False])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression", "time series regression"])
 @patch("evalml.pipelines.ModeBaselineBinaryPipeline.fit")
 @patch("evalml.pipelines.ModeBaselineMulticlassPipeline.fit")
@@ -1230,6 +1257,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
                                                                   mock_baseline_multiclass_fit,
                                                                   mock_baseline_binary_fit,
                                                                   problem_type,
+                                                                  custom_additional_objective,
                                                                   dummy_binary_pipeline_class,
                                                                   dummy_multiclass_pipeline_class,
                                                                   dummy_regression_pipeline_class,
@@ -1256,7 +1284,16 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
+    additional_objectives = None
+    if custom_additional_objective:
+        if CustomClassificationObjective.is_defined_for_problem_type(problem_type_enum):
+            additional_objectives = [CustomClassificationObjective()]
+        else:
+            additional_objectives = [CustomRegressionObjective()]
+
     core_objectives = get_core_objectives(problem_type)
+    if additional_objectives:
+        core_objectives = [get_default_primary_search_objective(problem_type_enum)] + additional_objectives
     mock_scores = {obj.name: i for i, obj in enumerate(core_objectives)}
     mock_baseline_scores = {obj.name: i + 1 for i, obj in enumerate(core_objectives)}
     answer = {obj.name: obj.calculate_percent_difference(mock_scores[obj.name],
@@ -1266,9 +1303,10 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
     DummyPipeline.score = mock_score_1
 
     # specifying problem_configuration for all problem types for conciseness
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="auto",
-                          problem_configuration={'gap': 1, 'max_delay': 1})
+    automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
+                          allowed_pipelines=[DummyPipeline],
+                          objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
+                          additional_objectives=additional_objectives)
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search(data_checks=None)
