@@ -96,10 +96,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        if isinstance(cls.component_graph, list):
-            component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.component_graph)]
-        else:
-            component_graph = [handle_component_class(component_info[0]) for component_info in copy.copy(cls.component_graph).values()]
+        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.linearized_component_graph)]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -112,6 +109,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return summary
         component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
+
+    @classproperty
+    def linearized_component_graph(cls):
+        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order
+        """
+        if isinstance(cls.component_graph, list):
+            return cls.component_graph
+        else:
+            return [component_info[0] for component_info in cls.component_graph.values()]
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
