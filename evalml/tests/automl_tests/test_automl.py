@@ -179,7 +179,8 @@ def test_pipeline_fit_raises(mock_fit, X_y_binary, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     X, y = X_y_binary
-
+    # Don't train the best pipeline, since this test mocks the pipeline.fit() method and causes it to raise an exception,
+    # which we don't want to raise while fitting the best pipeline.
     automl = AutoMLSearch(problem_type='binary', max_iterations=1, train_best_pipeline=False)
     automl.search(X, y)
     out = caplog.text
@@ -1081,7 +1082,7 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     automl.search(X, y)
 
     assert len(automl._results['pipeline_results']) == number_results
-    if number_results != 5 and when_to_interrupt == 1:
+    if number_results == 0:
         with pytest.raises(PipelineNotFoundError):
             automl.best_pipeline
 
