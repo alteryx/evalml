@@ -92,29 +92,6 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
     np.testing.assert_equal(target_passed_to_estimator.values, expected_target)
 
 
-@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
-                                                           (TimeSeriesBinaryClassificationPipeline, "Extra Trees Classifier"),
-                                                           (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier")])
-def test_pipeline_fit_runtime_error(pipeline_class, estimator_name, ts_data):
-
-    X, y = ts_data
-
-    class Pipeline(pipeline_class):
-        component_graph = ["Delayed Feature Transformer", estimator_name]
-
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": 0, "max_delay": 0},
-                   "pipeline": {"gap": 0, "max_delay": 0}})
-    with pytest.raises(RuntimeError, match="Pipeline computed empty features during call to .fit."):
-        pl.fit(None, y)
-
-    class Pipeline2(pipeline_class):
-        component_graph = [estimator_name]
-
-    pl = Pipeline2({"pipeline": {"gap": 5, "max_delay": 7}})
-    with pytest.raises(RuntimeError, match="Pipeline computed empty features during call to .fit."):
-        pl.fit(None, y)
-
-
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 1), (1, 2), (2, 2), (7, 3), (2, 4)])

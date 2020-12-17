@@ -61,11 +61,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = self._encode_targets(y)
 
         X_t = self._compute_features_during_fit(X, y)
-        if X_t.empty:
-            raise RuntimeError("Pipeline computed empty features during call to .fit. This means "
-                               "that either 1) you passed in X=None to fit and don't have a DelayFeatureTransformer "
-                               "in your pipeline or 2) you do have a DelayFeatureTransformer but gap=0 and max_delay=0. "
-                               "Please add a DelayFeatureTransformer or change the values of gap and max_delay")
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)

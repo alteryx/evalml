@@ -21,6 +21,7 @@ class Estimator(ComponentBase):
 
     To see some examples, check out the definitions of any Estimator component.
     """
+    predict_uses_y = False
 
     @property
     @classmethod

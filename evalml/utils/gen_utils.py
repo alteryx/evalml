@@ -389,7 +389,7 @@ def _get_rows_without_nans(*data):
             are non-nan.
     """
     def _not_nan(pd_data):
-        if pd_data is None:
+        if pd_data is None or len(pd_data) == 0:
             return np.array([True])
         if isinstance(pd_data, pd.Series):
             return ~pd_data.isna().values
@@ -414,7 +414,11 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
     """
 
     mask = _get_rows_without_nans(pd_data_1, pd_data_2)
-    return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
+    if not pd_data_1.empty:
+        pd_data_1 = pd_data_1.iloc[mask]
+    if not pd_data_2.empty:
+        pd_data_2 = pd_data_2.iloc[mask]
+    return pd_data_1, pd_data_2
 
 
 def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):

@@ -19,6 +19,7 @@ class TimeSeriesBaselineRegressor(Estimator):
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
+    predict_uses_y = True
 
     def __init__(self, gap=1, random_state=0, **kwargs):
         """Baseline time series regressor that predicts using the naive forecasting approach.
