@@ -14,5 +14,6 @@ from .gen_utils import (
     drop_rows_with_nans,
     pad_with_nans,
     infer_feature_types
+    _get_rows_without_nans
 )
 from .cli_utils import print_info, get_evalml_root, get_installed_packages, get_sys_info, print_sys_info, print_deps
