@@ -55,7 +55,7 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -237,6 +237,7 @@ class AutoMLSearch:
             'errors': []
         }
         self.random_state = get_random_state(random_state)
+        self.random_seed = get_random_seed(self.random_state)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -379,9 +380,9 @@ class AutoMLSearch:
             X (DataFrame): Input dataframe to split
         """
         if self.problem_type == ProblemTypes.REGRESSION:
-            default_data_split = KFold(n_splits=3, random_state=self.random_state, shuffle=True)
+            default_data_split = KFold(n_splits=3, random_state=self.random_seed, shuffle=True)
         elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
+            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_seed, shuffle=True)
         elif self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
             default_data_split = TimeSeriesSplit(n_splits=3, gap=self.problem_configuration['gap'],
                                                  max_delay=self.problem_configuration['max_delay'])

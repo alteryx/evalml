@@ -26,6 +26,7 @@ Release Notes
         * Set max value for plotly and xgboost versions while we debug CI failures with newer versions :pr:`1532`
         * Undo version pinning for plotly :pr:`1533`
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
+        * Set ``random_state`` of data splitter in AutoMLSearch to take int to keep consistency in the resulting splits :pr:``
     * Changes
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
