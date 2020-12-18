@@ -16,6 +16,8 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
@@ -50,7 +52,17 @@ def create_mock_pipeline(estimator, problem_type):
             component_graph = [estimator]
         return MockRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        class MockTSRegressionPipelineWithOnlyEstimator(RegressionPipeline):
+        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesRegressionPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
+            component_graph = [estimator]
+        return MockTSRegressionPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesBinaryClassificationPipeline):
+            custom_name = f"Pipeline with {estimator.name}"
+            component_graph = [estimator]
+        return MockTSRegressionPipelineWithOnlyEstimator
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesMulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
         return MockTSRegressionPipelineWithOnlyEstimator
@@ -187,7 +199,8 @@ def dummy_classifier_estimator_class():
     class MockEstimator(Estimator):
         name = "Mock Classifier"
         model_family = ModelFamily.NONE
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                   ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY]
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
@@ -274,6 +287,17 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
 
 
 @pytest.fixture
+def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+    return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
 def logistic_regression_multiclass_pipeline_class():
     class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
         """Logistic Regression Pipeline for binary classification."""
@@ -343,7 +367,8 @@ def stackable_classifiers(helper_functions):
     stackable_classifiers = []
     for estimator_class in _all_estimators():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
-        if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS} and
+        if (set(supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                             ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
             stackable_classifiers.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))

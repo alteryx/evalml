@@ -105,6 +105,9 @@ Pipeline Base Classes
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
+    TimeSeriesClassificationPipeline
+    TimeSeriesBinaryClassificationPipeline
+    TimeSeriesMulticlassClassificationPipeline
     TimeSeriesRegressionPipeline
 
 Classification Pipelines
@@ -247,6 +250,7 @@ Regressors are components that output a predicted target value.
     TimeSeriesBaselineRegressor
     StackedEnsembleRegressor
     DecisionTreeRegressor
+    LightGBMRegressor
 
 .. currentmodule:: evalml.model_understanding
 

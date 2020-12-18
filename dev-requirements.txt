@@ -1,10 +1,6 @@
 -r requirements.txt
 -r test-requirements.txt
+-r docs-requirements.txt
 flake8==3.7.0
 autopep8==1.4.3
 isort==4.3.4
-pydata-sphinx-theme==0.3.1
-Sphinx==2.0.1; python_version>'3.4'
-nbconvert==5.5.0
-nbsphinx==0.4.2
-
