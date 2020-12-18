@@ -680,7 +680,6 @@ class AutoMLSearch:
 
         X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
-
         for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
@@ -700,11 +699,11 @@ class AutoMLSearch:
             objectives_to_score = [self.objective] + self.additional_objectives
             cv_pipeline = None
             try:
-                cv_pipeline = pipeline.clone(pipeline.random_state)
                 X_threshold_tuning = None
                 y_threshold_tuning = None
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+                cv_pipeline = pipeline.clone(pipeline.random_state)
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
