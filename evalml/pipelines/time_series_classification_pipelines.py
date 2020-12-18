@@ -6,7 +6,6 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _get_rows_without_nans,
     drop_rows_with_nans,
     pad_with_nans
 )
@@ -70,7 +69,11 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
     def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
-        predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
+        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
+        if self.estimator.predict_uses_y:
+            predictions = self.estimator.predict(features_no_nan, y_encoded)
+        else:
+            predictions = self.estimator.predict(features_no_nan)
         if pad:
             return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return predictions
@@ -108,14 +111,18 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
-        proba = self.estimator.predict_proba(features.dropna(axis=0, how="any"))
+        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
+        if self.estimator.predict_uses_y:
+            proba = self.estimator.predict_proba(features_no_nan, y_encoded)
+        else:
+            proba = self.estimator.predict_proba(features_no_nan)
         proba.columns = self._encoder.classes_
         return pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
 
     def _compute_predictions(self, X, y, objectives):
         """Compute predictions/probabilities based on objectives."""
-        y_predicted = None
-        y_predicted_proba = None
+        y_predicted = pd.Series([])
+        y_predicted_proba = pd.DataFrame([])
         if any(o.score_needs_proba for o in objectives):
             y_predicted_proba = self.predict_proba(X, y)
         if any(not o.score_needs_proba for o in objectives):
@@ -141,13 +148,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
         y_pred, y_pred_proba = self._compute_predictions(X, y, objectives)
-        non_nan_mask = _get_rows_without_nans(y_shifted, y_pred, y_pred_proba)
-        if y_pred is not None:
-            y_pred = y_pred.iloc[non_nan_mask]
-        if y_pred_proba is not None:
-            y_pred_proba = y_pred_proba.iloc[non_nan_mask]
-        y_labels = y_shifted.iloc[non_nan_mask]
-        return self._score_all_objectives(X, y_labels, y_pred,
+        y_shifted, y_pred, y_pred_proba = drop_rows_with_nans(y_shifted, y_pred, y_pred_proba)
+        return self._score_all_objectives(X, y_shifted, y_pred,
                                           y_pred_proba=y_pred_proba,
                                           objectives=objectives)
 

@@ -402,7 +402,7 @@ def _get_rows_without_nans(*data):
     return mask
 
 
-def drop_rows_with_nans(pd_data_1, pd_data_2):
+def drop_rows_with_nans(*pd_data):
     """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
 
     Arguments:
@@ -413,12 +413,14 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
         tuple of pd.DataFrame or pd.Series
     """
 
-    mask = _get_rows_without_nans(pd_data_1, pd_data_2)
-    if not pd_data_1.empty:
-        pd_data_1 = pd_data_1.iloc[mask]
-    if not pd_data_2.empty:
-        pd_data_2 = pd_data_2.iloc[mask]
-    return pd_data_1, pd_data_2
+    mask = _get_rows_without_nans(*pd_data)
+
+    def _subset(pd_data):
+        if not pd_data.empty:
+            return pd_data.iloc[mask]
+        return pd_data
+
+    return [_subset(data) for data in pd_data]
 
 
 def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):
