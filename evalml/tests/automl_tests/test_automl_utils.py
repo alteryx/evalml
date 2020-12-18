@@ -38,7 +38,9 @@ def test_make_data_splitter_default(problem_type, large_data):
     y = X.pop('target')
 
     problem_configuration = None
-    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
+                        ProblemTypes.TIME_SERIES_BINARY,
+                        ProblemTypes.TIME_SERIES_MULTICLASS]:
         problem_configuration = {'gap': 1, 'max_delay': 7}
 
     data_splitter = make_data_splitter(X, y, problem_type, problem_configuration=problem_configuration)
@@ -62,7 +64,9 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.shuffle
         assert data_splitter.random_state == 0
 
-    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
+                        ProblemTypes.TIME_SERIES_BINARY,
+                        ProblemTypes.TIME_SERIES_MULTICLASS]:
         assert isinstance(data_splitter, TimeSeriesSplit)
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
@@ -94,11 +98,12 @@ def test_make_data_splitter_parameters():
     assert not data_splitter.shuffle
     assert data_splitter.random_state == random_state
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
-    assert isinstance(data_splitter, TimeSeriesSplit)
-    assert data_splitter.n_splits == 5
-    assert data_splitter.gap == 1
-    assert data_splitter.max_delay == 7
+    for problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
+        data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
+        assert isinstance(data_splitter, TimeSeriesSplit)
+        assert data_splitter.n_splits == 5
+        assert data_splitter.gap == 1
+        assert data_splitter.max_delay == 7
 
 
 def test_make_data_splitter_error():

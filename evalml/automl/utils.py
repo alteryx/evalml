@@ -46,11 +46,14 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         sklearn.model_selection.BaseCrossValidator: data splitting method.
     """
     problem_type = handle_problem_types(problem_type)
+    data_split = None
     if problem_type == ProblemTypes.REGRESSION:
         data_split = KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         data_split = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
-    elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+    elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
+                          ProblemTypes.TIME_SERIES_BINARY,
+                          ProblemTypes.TIME_SERIES_MULTICLASS]:
         if not problem_configuration:
             raise ValueError("problem_configuration is required for time series problem types")
         data_split = TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
