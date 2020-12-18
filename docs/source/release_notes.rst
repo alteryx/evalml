@@ -21,6 +21,7 @@ Release Notes
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
+        * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
@@ -43,6 +44,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+        * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
 
 
 

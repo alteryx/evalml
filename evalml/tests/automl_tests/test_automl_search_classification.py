@@ -20,6 +20,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import (
     ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline,
     MulticlassClassificationPipeline,
     PipelineBase
 )
@@ -620,3 +621,32 @@ def test_categorical_hyperparam(X_y_multi):
 
     automl = AutoMLSearch(problem_type="multiclass", allowed_pipelines=[CustomPipeline], n_jobs=1)
     automl.search(X, y)
+
+
+def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+
+    allowed_pipelines = [nonlinear_binary_pipeline_class]
+    start_iteration_callback = MagicMock()
+    automl = AutoMLSearch(problem_type='binary', max_iterations=2, start_iteration_callback=start_iteration_callback,
+                          allowed_pipelines=allowed_pipelines, n_jobs=1)
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 2
+    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_binary_pipeline_class
+
+
+def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_multiclass_pipeline_class, X_y_multi):
+    X, y = X_y_multi
+
+    allowed_pipelines = [nonlinear_multiclass_pipeline_class]
+    start_iteration_callback = MagicMock()
+    automl = AutoMLSearch(problem_type='multiclass', max_iterations=5, start_iteration_callback=start_iteration_callback,
+                          allowed_pipelines=allowed_pipelines, n_jobs=1)
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 5
+    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineMulticlassPipeline
+    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
+    assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class
