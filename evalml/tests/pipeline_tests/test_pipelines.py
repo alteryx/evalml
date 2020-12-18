@@ -2447,3 +2447,21 @@ def test_nonlinear_getitem(nonlinear_binary_pipeline_class):
     assert pipeline['OneHot_RandomForest'] == OneHotEncoder(top_n=4)
     assert pipeline['Random Forest'] == RandomForestClassifier()
     assert pipeline['Logistic Regression'] == LogisticRegressionClassifier()
+
+
+def test_get_component(logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
+    pipeline = logistic_regression_binary_pipeline_class({'One Hot Encoder': {'top_n': 4}})
+
+    assert pipeline.get_component('Imputer') == Imputer()
+    assert pipeline.get_component('One Hot Encoder') == OneHotEncoder(top_n=4)
+    assert pipeline.get_component('Standard Scaler') == StandardScaler()
+    assert pipeline.get_component('Logistic Regression Classifier') == LogisticRegressionClassifier()
+
+    pipeline = nonlinear_binary_pipeline_class({'OneHot_RandomForest': {'top_n': 4}})
+
+    assert pipeline.get_component('Imputer') == Imputer()
+    assert pipeline.get_component('OneHot_ElasticNet') == OneHotEncoder()
+    assert pipeline.get_component('Elastic Net') == ElasticNetClassifier()
+    assert pipeline.get_component('OneHot_RandomForest') == OneHotEncoder(top_n=4)
+    assert pipeline.get_component('Random Forest') == RandomForestClassifier()
+    assert pipeline.get_component('Logistic Regression') == LogisticRegressionClassifier()
