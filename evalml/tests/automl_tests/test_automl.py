@@ -10,17 +10,17 @@ import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
-from evalml.automl import (
-    TimeSeriesSplit,
-    TrainingValidationSplit,
-    get_default_primary_search_objective
-)
+from evalml.automl import TimeSeriesSplit, TrainingValidationSplit
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
     log_error_callback,
     raise_and_save_error_callback,
     raise_error_callback,
     silent_error_callback
+)
+from evalml.automl.utils import (
+    _LARGE_DATA_PERCENT_VALIDATION,
+    _LARGE_DATA_ROW_THRESHOLD
 )
 from evalml.data_checks import (
     DataCheck,
@@ -31,13 +31,7 @@ from evalml.data_checks import (
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
-from evalml.objectives import (
-    R2,
-    CostBenefitMatrix,
-    FraudCost,
-    LogLossBinary,
-    LogLossMulticlass
-)
+from evalml.objectives import CostBenefitMatrix, FraudCost
 from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -654,17 +648,17 @@ def test_large_dataset_split_size(mock_fit, mock_score):
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
 
-    under_max_rows = automl._LARGE_DATA_ROW_THRESHOLD - 1
+    under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, StratifiedKFold)
 
     automl.data_split = None
-    over_max_rows = automl._LARGE_DATA_ROW_THRESHOLD + 1
+    over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_VALIDATION)
+    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
 def test_data_split_shuffle():
@@ -1516,17 +1510,6 @@ def test_data_split_multi(X_y_multi):
 
     y[5] = 0
     automl.search(X, y, data_checks="disabled")
-
-
-def test_get_default_primary_search_objective():
-    assert isinstance(get_default_primary_search_objective("binary"), LogLossBinary)
-    assert isinstance(get_default_primary_search_objective(ProblemTypes.BINARY), LogLossBinary)
-    assert isinstance(get_default_primary_search_objective("multiclass"), LogLossMulticlass)
-    assert isinstance(get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass)
-    assert isinstance(get_default_primary_search_objective("regression"), R2)
-    assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
-    with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
-        get_default_primary_search_objective("auto")
 
 
 @patch('evalml.tuners.skopt_tuner.SKOptTuner.add')
