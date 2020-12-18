@@ -1,8 +1,11 @@
 -r core-requirements.txt
-plotly>=4.2.1
+plotly>=4.14.0
+kaleido>=0.1.0
 ipywidgets>=7.5
 xgboost>=0.82,<1.3.0
 catboost>=0.20
 lightgbm>=2.3.1
+matplotlib>=3.3.3
 graphviz>=0.13
+seaborn>=0.11.0
 category_encoders>=2.0.0
