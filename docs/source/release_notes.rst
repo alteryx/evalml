@@ -21,6 +21,7 @@ Release Notes
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
     * Fixes
+        * Fixed ``save_plot`` to default to png extension for graphviz. Overcomes version difference with conda :pr:`1584`
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
         * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
