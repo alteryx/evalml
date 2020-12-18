@@ -29,6 +29,7 @@ Release Notes
         * Undo version pinning for plotly :pr:`1533`
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
     * Changes
+        * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
