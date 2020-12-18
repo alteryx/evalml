@@ -1305,7 +1305,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
     DummyPipeline.score = mock_score_1
 
     # specifying problem_configuration for all problem types for conciseness
-    automl = AutoMLSearch(problem_type=problem_type, max_iterations=2,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
                           allowed_pipelines=[DummyPipeline],
                           objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
                           additional_objectives=additional_objectives)
