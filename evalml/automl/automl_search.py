@@ -333,7 +333,7 @@ class AutoMLSearch:
         else:
             return DataChecks(data_checks)
 
-    def _set_data_split(self, X):
+    def _set_data_split(self, X, y):
         """Sets the data split method for AutoMLSearch
 
         Arguments:

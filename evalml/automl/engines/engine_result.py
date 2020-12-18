@@ -19,9 +19,9 @@ class EngineResult:
             self.pipeline_results.append(pipeline_results)
         else:
             if not isinstance(completed_pipelines, list) or all(isinstance(pl, PipelineBase) for pl in completed_pipelines):
-                raise ValueError(f"`completed_pipelines` must be PipelineBase or list(PipelineBase). Recieved {type(completed_pipelines)}")
+                raise ValueError(f"`completed_pipelines` must be PipelineBase or list(PipelineBase). Recieved {type(completed_pipelines)}.")
             if not isinstance(pipeline_results, list) or all(isinstance(res, dict) for res in pipeline_results):
-                raise ValueError(f"`pipeline_results` must be dict or list(dict). Recieved {type(pipeline_results)}")
+                raise ValueError(f"`pipeline_results` must be dict or list(dict). Recieved {(pipeline_results)}.")
             self.completed_pipelines = self.completed_pipelines + completed_pipelines
             self.pipeline_results = self.pipeline_results + pipeline_results
 
