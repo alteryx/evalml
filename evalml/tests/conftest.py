@@ -320,6 +320,7 @@ def linear_regression_pipeline_class():
     return LinearRegressionPipeline
 
 
+@pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
     class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
