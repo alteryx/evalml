@@ -386,8 +386,8 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     est = RandomForestClassifier(random_state=7)
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
                                              random_state=15)
-    assert [c.__class__ for c in pipeline._component_graph] == [Imputer, RandomForestClassifier]
-    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline._component_graph]
+    assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
+    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {
@@ -411,7 +411,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
         parameters = {'bar': 'baz'}
     random_state = np.random.RandomState(42)
     pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
-    components_list = [c for c in pipeline._component_graph]
+    components_list = [c for c in pipeline]
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
     assert check_random_state_equality(components_list[0].random_state, random_state)
@@ -422,7 +422,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=np.random.RandomState(42))
-    component_instances = [c for c in pipeline._component_graph]
+    component_instances = [c for c in pipeline]
     new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
     pipeline.fit(X, y)
     predictions = pipeline.predict(X)
