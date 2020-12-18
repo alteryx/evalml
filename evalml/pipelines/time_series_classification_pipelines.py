@@ -169,7 +169,7 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
     def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
-        features_no_nan = features.dropna(axis=0, how="any")
+        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -177,9 +177,16 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
-            predictions = self.estimator.predict(features_no_nan)
+            if self.estimator.predict_uses_y:
+                predictions = self.estimator.predict(features_no_nan, y_encoded)
+            else:
+                predictions = self.estimator.predict(features_no_nan)
         else:
-            ypred_proba = self.estimator.predict_proba(features_no_nan).iloc[:, 1]
+            if self.estimator.predict_uses_y:
+                y_pred_proba = self.estimator.predict_proba(features_no_nan, y_encoded)
+            else:
+                y_pred_proba = self.estimator.predict_proba(features_no_nan).u
+            ypred_proba = y_pred_proba.iloc[:, 1]
             if objective is None:
                 predictions = ypred_proba > self.threshold
             else:
