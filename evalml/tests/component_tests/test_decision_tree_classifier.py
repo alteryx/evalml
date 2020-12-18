@@ -11,7 +11,9 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(DecisionTreeClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS}
+    assert set(DecisionTreeClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                                                   ProblemTypes.TIME_SERIES_MULTICLASS,
+                                                                   ProblemTypes.TIME_SERIES_BINARY}
 
 
 def test_fit_predict_binary(X_y_binary):

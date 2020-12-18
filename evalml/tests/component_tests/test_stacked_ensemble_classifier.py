@@ -93,7 +93,9 @@ def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
 def test_stacked_problem_types():
     assert ProblemTypes.BINARY in StackedEnsembleClassifier.supported_problem_types
     assert ProblemTypes.MULTICLASS in StackedEnsembleClassifier.supported_problem_types
-    assert StackedEnsembleClassifier.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    assert StackedEnsembleClassifier.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                                                 ProblemTypes.TIME_SERIES_BINARY,
+                                                                 ProblemTypes.TIME_SERIES_MULTICLASS]
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
