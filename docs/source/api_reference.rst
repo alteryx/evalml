@@ -58,7 +58,7 @@ AutoML Utils
     :nosignatures:
 
     get_default_primary_search_objective
-
+    make_data_splitter
 
 .. currentmodule:: evalml.automl.automl_algorithm
 
