@@ -975,7 +975,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = np.array([1] * 100)
+    mock_predict.return_value = pd.Series([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         clf = dummy_regression_pipeline_class(parameters={})
