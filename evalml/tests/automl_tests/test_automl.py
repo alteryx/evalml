@@ -1955,4 +1955,3 @@ def test_automl_data_split_consistent(mock_binary_score, mock_binary_fit, mock_m
     assert data_splits[0] == data_splits[1]
     assert data_splits[1] != data_splits[2]
     assert data_splits[2] == data_splits[3]
-
