@@ -518,7 +518,7 @@ def test_save_graphviz_different_format(file_name, format, interactive, fitted_t
         assert not no_output_
         assert os.path.exists(output_)
         assert isinstance(output_, str)
-        assert os.path.basename(output_) == 'test_plot.jpeg'
+        assert os.path.basename(output_) == 'test_plot.png'
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
