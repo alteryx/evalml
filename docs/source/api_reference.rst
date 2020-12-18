@@ -535,4 +535,4 @@ General Utils
     get_random_seed
     pad_with_nans
     drop_rows_with_nans
-
+    infer_feature_types

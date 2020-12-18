@@ -7,7 +7,6 @@ from collections import OrderedDict, defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.model_selection import (
     BaseCrossValidator,
     KFold,
@@ -417,19 +416,13 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        # make everything ww objects
-        if not isinstance(X, ww.DataTable):
-            logger.warning("`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            X = _convert_to_woodwork_structure(X)
+        X = _convert_to_woodwork_structure(X)
+        y = _convert_to_woodwork_structure(y)
 
         text_column_vals = X.select('natural_language')
         text_columns = list(text_column_vals.to_dataframe().columns)
         if len(text_columns) == 0:
             text_columns = None
-
-        if not isinstance(y, ww.DataColumn):
-            logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
-            y = _convert_to_woodwork_structure(y)
 
         self._set_data_split(X)
 
