@@ -1660,27 +1660,6 @@ def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binary):
-    X, y = X_y_binary
-    assert isinstance(X, np.ndarray)
-    assert isinstance(y, np.ndarray)
-
-    automl = AutoMLSearch(problem_type='binary')
-    automl.search(X, y)
-    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-
-    caplog.clear()
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-    automl = AutoMLSearch(problem_type='binary')
-    automl.search(X, y)
-    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_search_with_text(mock_fit, mock_score):
     X = pd.DataFrame(
         {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
