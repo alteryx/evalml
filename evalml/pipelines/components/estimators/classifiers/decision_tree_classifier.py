@@ -15,7 +15,8 @@ class DecisionTreeClassifier(Estimator):
         "max_depth": Integer(4, 10)
     }
     model_family = ModelFamily.DECISION_TREE
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     def __init__(self,
                  criterion="gini",

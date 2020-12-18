@@ -10,4 +10,4 @@ class MulticlassClassificationObjective(ObjectiveBase):
         Set to [ProblemTypes.MULTICLASS].
     """
 
-    problem_types = [ProblemTypes.MULTICLASS]
+    problem_types = [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]

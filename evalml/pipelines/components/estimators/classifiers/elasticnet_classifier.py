@@ -17,7 +17,8 @@ class ElasticNetClassifier(Estimator):
         "l1_ratio": Real(0, 1),
     }
     model_family = ModelFamily.LINEAR_MODEL
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000, random_state=0, penalty='elasticnet',
                  **kwargs):

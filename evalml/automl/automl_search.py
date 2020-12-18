@@ -8,22 +8,16 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from sklearn.model_selection import (
-    BaseCrossValidator,
-    KFold,
-    StratifiedKFold,
-    train_test_split
-)
+from sklearn.model_selection import BaseCrossValidator, train_test_split
 
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit
+from evalml.automl.utils import (
+    get_default_primary_search_objective,
+    make_data_splitter
 )
-from evalml.automl.utils import get_default_primary_search_objective
 from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
@@ -74,8 +68,6 @@ logger = get_logger(__file__)
 class AutoMLSearch:
     """Automated Pipeline search."""
     _MAX_NAME_LEN = 40
-    _LARGE_DATA_ROW_THRESHOLD = int(1e5)
-    _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
     # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
     plot = PipelineSearchPlots
@@ -377,23 +369,15 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def _set_data_split(self, X):
+    def _set_data_split(self, X, y):
         """Sets the data split method for AutoMLSearch
 
         Arguments:
-            X (DataFrame): Input dataframe to split
+            X (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features].
+            y (pd.Series, ww.DataColumn): The target training data of length [n_samples].
         """
-        if self.problem_type == ProblemTypes.REGRESSION:
-            default_data_split = KFold(n_splits=3, random_state=self.random_state, shuffle=True)
-        elif self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            default_data_split = StratifiedKFold(n_splits=3, random_state=self.random_state, shuffle=True)
-        elif self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
-            default_data_split = TimeSeriesSplit(n_splits=3, gap=self.problem_configuration['gap'],
-                                                 max_delay=self.problem_configuration['max_delay'])
-
-        if X.shape[0] > self._LARGE_DATA_ROW_THRESHOLD:
-            default_data_split = TrainingValidationSplit(test_size=self._LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
-
+        default_data_split = make_data_splitter(X, y, self.problem_type, self.problem_configuration,
+                                                n_splits=3, shuffle=True, random_state=self.random_state)
         self.data_split = self.data_split or default_data_split
 
     def search(self, X, y, data_checks="auto", show_iteration_plot=True):
@@ -436,7 +420,7 @@ class AutoMLSearch:
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
 
-        self._set_data_split(X)
+        self._set_data_split(X, y)
 
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()))
@@ -932,7 +916,7 @@ class AutoMLSearch:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self._set_data_split(X)
+        self._set_data_split(X, y)
 
         pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
         for parameter in pipeline_rows['parameters']:

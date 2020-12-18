@@ -60,7 +60,8 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
                 num_classes = 3
             elif problem_type == ProblemTypes.REGRESSION:
                 X, y = X_y_regression
-            elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+            elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_MULTICLASS,
+                                  ProblemTypes.TIME_SERIES_BINARY]:
                 # Skipping because make_pipeline_from_components does not yet work for time series.
                 continue
 

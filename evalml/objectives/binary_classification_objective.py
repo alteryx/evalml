@@ -13,7 +13,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     can_optimize_threshold (bool): Determines if threshold used by objective can be optimized or not.
     """
 
-    problem_types = [ProblemTypes.BINARY]
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
 
     @property
     def can_optimize_threshold(cls):
