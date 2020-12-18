@@ -58,7 +58,7 @@ AutoML Utils
     :nosignatures:
 
     get_default_primary_search_objective
-
+    make_data_splitter
 
 .. currentmodule:: evalml.automl.automl_algorithm
 
@@ -105,6 +105,9 @@ Pipeline Base Classes
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
+    TimeSeriesClassificationPipeline
+    TimeSeriesBinaryClassificationPipeline
+    TimeSeriesMulticlassClassificationPipeline
     TimeSeriesRegressionPipeline
 
 Classification Pipelines
