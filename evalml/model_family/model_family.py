@@ -22,7 +22,7 @@ class ModelFamily(Enum):
     EXTRA_TREES = 'extra_trees'
     """Extra Trees model family."""
 
-    ENSEMBLE = 'ensemble',
+    ENSEMBLE = 'ensemble'
     """Ensemble model family."""
 
     DECISION_TREE = 'decision_tree'
