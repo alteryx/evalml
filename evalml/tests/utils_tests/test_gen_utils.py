@@ -1,4 +1,5 @@
 import inspect
+import os
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -6,6 +7,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
+from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
@@ -21,7 +23,8 @@ from evalml.utils.gen_utils import (
     get_random_state,
     import_or_raise,
     jupyter_check,
-    pad_with_nans
+    pad_with_nans,
+    save_plot
 )
 
 
@@ -393,3 +396,214 @@ def test_convert_to_woodwork_structure():
     X_expected = ww.DataTable(pd.DataFrame(X_np))
     pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'png', False),
+                             ('test_plot.png', 'png', False),
+                             ('test_plot.', 'png', False),
+                             ('test_plot.png', 'jpeg', False)
+                         ])
+def test_save_plotly_static_default_format(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        pipeline = decision_tree_classification_pipeline_class
+        feat_fig_ = pipeline.graph_feature_importance()
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
+        no_output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+        output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert not no_output_
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.png'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'jpeg', False)
+                         ])
+def test_save_plotly_static_different_format(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        pipeline = decision_tree_classification_pipeline_class
+        feat_fig_ = pipeline.graph_feature_importance()
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
+        no_output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+        output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert not no_output_
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.jpeg'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             (None, 'jpeg', False)
+                         ])
+def test_save_plotly_static_no_filepath(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        pipeline = decision_tree_classification_pipeline_class
+        feat_fig_ = pipeline.graph_feature_importance()
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.jpeg'
+        os.remove('test_plot.jpeg')
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'html', True),
+                             ('test_plot.png', 'html', True),
+                             ('test_plot.', 'html', True),
+                             ('test_plot.png', 'jpeg', True),
+                             ('test_plot', None, True),
+                             ('test_plot.html', None, True)
+                         ])
+def test_save_plotly_interactive(file_name, format, interactive, decision_tree_classification_pipeline_class, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        pipeline = decision_tree_classification_pipeline_class
+        feat_fig_ = pipeline.graph_feature_importance()
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        no_output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+        output_ = save_plot(fig=feat_fig_, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert not no_output_
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.html'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'png', False),
+                             ('test_plot.png', 'png', False),
+                             ('test_plot.', 'png', False),
+                             ('test_plot.png', 'jpeg', False)
+                         ])
+def test_save_graphviz_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        est_class, _ = fitted_tree_estimators
+        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}') if file_name else None
+        no_output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+        output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert not no_output_
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.png'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'jpeg', False)
+                         ])
+def test_save_graphviz_different_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        est_class, _ = fitted_tree_estimators
+        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
+        no_output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+        output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert not no_output_
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'test_plot.jpeg'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('Output/in_folder_plot', 'jpeg', True)
+                         ])
+def test_save_graphviz_invalid_filepath(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        est_class, _ = fitted_tree_estimators
+        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+
+        filepath = f'{file_name}.{format}'
+
+        with pytest.raises(ValueError, match="Specified filepath is not writeable"):
+            save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('example_plot', None, False),
+                             ('example_plot', 'png', False)
+                         ])
+def test_save_graphviz_different_filename_output(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
+    if not has_minimal_dependencies:
+        est_class, _ = fitted_tree_estimators
+        src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
+
+        filepath = os.path.join(str(tmpdir), f'{file_name}')
+        no_output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+        output_ = save_plot(fig=src, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+        assert not no_output_
+        assert os.path.exists(output_)
+        assert isinstance(output_, str)
+        assert os.path.basename(output_) == 'example_plot.png'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'png', False),
+                             ('test_plot.png', 'png', False),
+                             ('test_plot.', 'png', False),
+                             ('test_plot.png', 'jpeg', False)
+                         ])
+def test_save_matplotlib_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir):
+    plt = pytest.importorskip("matplotlib.pyplot")
+
+    def setup_plt():
+        fig_ = plt.figure(figsize=(4.5, 4.5))
+        plt.plot(range(5))
+        return fig_
+
+    fig = setup_plt()
+    filepath = os.path.join(str(tmpdir), f'{file_name}')
+    no_output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+    output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == 'test_plot.png'
+
+
+@pytest.mark.parametrize("file_name,format,interactive",
+                         [
+                             ('test_plot', 'png', False),
+                             ('test_plot.png', 'png', False),
+                             ('test_plot.', 'png', False),
+                             ('test_plot.png', 'jpeg', False)
+                         ])
+def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
+    sns = pytest.importorskip("seaborn")
+
+    def setup_plt():
+        data_ = [0, 1, 2, 3, 4]
+        fig = sns.scatterplot(data=data_)
+        return fig
+
+    fig = setup_plt()
+    filepath = os.path.join(str(tmpdir), f'{file_name}')
+    no_output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=False)
+    output_ = save_plot(fig=fig, filepath=filepath, format=format, interactive=interactive, return_filepath=True)
+
+    assert not no_output_
+    assert os.path.exists(output_)
+    assert isinstance(output_, str)
+    assert os.path.basename(output_) == 'test_plot.png'
