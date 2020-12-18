@@ -19,7 +19,7 @@ from evalml.automl.callbacks import (
 )
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
-    _LARGE_DATA_ROW_THRESHOLD,
+    _LARGE_DATA_ROW_THRESHOLD
 )
 from evalml.data_checks import (
     DataCheck,
