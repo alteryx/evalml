@@ -485,8 +485,7 @@ def test_save_plotly_interactive(file_name, format, interactive, decision_tree_c
                          [
                              ('test_plot', 'png', False),
                              ('test_plot.png', 'png', False),
-                             ('test_plot.', 'png', False),
-                             ('test_plot.png', 'jpeg', False)
+                             ('test_plot.', 'png', False)
                          ])
 def test_save_graphviz_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
     if not has_minimal_dependencies:

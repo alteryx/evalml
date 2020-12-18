@@ -435,7 +435,7 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         fig (Figure): Figure to be saved.
         filepath (str or Path, optional): Location to save file. Default is with filename "test_plot".
         format (str): Extension for figure to be saved as. Ignored if interactive is True and fig
-        is of type plotly.Figure. Defaults to 'png'.
+        is of type plotly.Figure. Defaults to 'pdf' for graphviz.Source and 'png' otherwise.
         interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
         instead of static, and format will be set to 'html'. Defaults to False.
         return_filepath (bool, optional): Whether to return the final filepath the image is saved to. Defaults to False.
@@ -477,7 +477,14 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         fig.write_image(file=filepath, engine="kaleido")
     elif is_graphviz:
         filepath_, format_ = os.path.splitext(filepath)
-        fig.format = format_[1:]
+        print('*****************************')
+        print(graphviz_.backend.FORMATS)
+        if format_[1:] not in graphviz_.backend.FORMATS:
+            fig.format = 'pdf'
+            filepath = f'{filepath_}.pdf'
+        else:
+            fig.format = format_[1:]
+            filepath = f'{filepath_}{format_}'
         fig.render(filename=filepath_, view=False, cleanup=True)
     elif is_plt:
         fig.savefig(fname=filepath)
