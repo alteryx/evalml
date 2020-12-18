@@ -352,6 +352,12 @@ class ComponentGraph:
             raise ValueError('The given graph has more than one final (childless) component')
         return compute_order
 
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self.get_component(self.compute_order[index])
+        else:
+            return self.get_component(index)
+
     def __iter__(self):
         self._i = 0
         return self

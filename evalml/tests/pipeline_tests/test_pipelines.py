@@ -2415,3 +2415,35 @@ def test_nonlinear_pipeline_iteration(nonlinear_binary_pipeline_class):
 
     assert order_params == expected_order_params
     assert order_again_params == expected_order_params
+
+
+def test_linear_getitem(logistic_regression_binary_pipeline_class):
+    pipeline = logistic_regression_binary_pipeline_class({'One Hot Encoder': {'top_n': 4}})
+
+    assert pipeline[0] == Imputer()
+    assert pipeline[1] == OneHotEncoder(top_n=4)
+    assert pipeline[2] == StandardScaler()
+    assert pipeline[3] == LogisticRegressionClassifier()
+
+    assert pipeline['Imputer'] == Imputer()
+    assert pipeline['One Hot Encoder'] == OneHotEncoder(top_n=4)
+    assert pipeline['Standard Scaler'] == StandardScaler()
+    assert pipeline['Logistic Regression Classifier'] == LogisticRegressionClassifier()
+
+
+def test_nonlinear_getitem(nonlinear_binary_pipeline_class):
+    pipeline = nonlinear_binary_pipeline_class({'OneHot_RandomForest': {'top_n': 4}})
+
+    assert pipeline[0] == Imputer()
+    assert pipeline[1] == OneHotEncoder()
+    assert pipeline[2] == ElasticNetClassifier()
+    assert pipeline[3] == OneHotEncoder(top_n=4)
+    assert pipeline[4] == RandomForestClassifier()
+    assert pipeline[5] == LogisticRegressionClassifier()
+
+    assert pipeline['Imputer'] == Imputer()
+    assert pipeline['OneHot_ElasticNet'] == OneHotEncoder()
+    assert pipeline['Elastic Net'] == ElasticNetClassifier()
+    assert pipeline['OneHot_RandomForest'] == OneHotEncoder(top_n=4)
+    assert pipeline['Random Forest'] == RandomForestClassifier()
+    assert pipeline['Logistic Regression'] == LogisticRegressionClassifier()
