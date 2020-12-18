@@ -553,31 +553,27 @@ class AutoMLSearch:
         if self._train_best_pipeline:
             X_train = _convert_to_woodwork_structure(X)
             y_train = _convert_to_woodwork_structure(y)
-            self._best_pipeline = self._fit_pipeline(self._best_pipeline, X_train, y_train)
+            X_threshold_tuning = None
+            y_threshold_tuning = None
+            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
+                X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+            self._best_pipeline.fit(X_train, y_train)
+            self._best_pipeline = self._threshold_pipeline(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
-    def _fit_pipeline(self, pipeline, X_train, y_train, fold=None):
-        """Fits the input pipeline to the X and y data and thresholds the pipeline if it is for binary classification
+    def _threshold_pipeline(self, pipeline, X_threshold_tuning, y_threshold_tuning, fold=None):
+        """Tunes the threshold of a binary pipeline to the X and y thresholding data
 
         Arguments:
-            pipeline (Pipeline): Pipeline instance to fit
-            X_train (ww DataTable): X data to fit pipeline to
-            y_train (ww DataColumn): Target data to fit pipeline to
+            pipeline (Pipeline): Pipeline instance to threshold
+            X_threshold_tuning (ww DataTable): X data to tune pipeline to
+            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
             fold (None, int): The fold of training this belongs to in AutoMLSearch. Defaults to None
 
         Returns:
             Trained pipeline instance
         """
-        X_threshold_tuning = None
-        y_threshold_tuning = None
-        if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
-            X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
-        if fold is not None:
-            logger.debug(f"\t\t\tFold {fold}: starting training")
-        pipeline.fit(X_train, y_train)
-        if fold is not None:
-            logger.debug(f"\t\t\tFold {fold}: finished training")
         if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
             pipeline.threshold = 0.5
             if X_threshold_tuning:
@@ -709,26 +705,11 @@ class AutoMLSearch:
                 y_threshold_tuning = None
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
-                # if fold is not None:
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
-                # if fold is not None:
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
-                    cv_pipeline.threshold = 0.5
-                    if X_threshold_tuning:
-                        # if fold is not None:
-                        logger.debug(f"\t\t\tFold {i}: Optimizing threshold for {self.objective.name}")
-                        y_predict_proba = cv_pipeline.predict_proba(X_threshold_tuning)
-                        if isinstance(y_predict_proba, pd.DataFrame):
-                            y_predict_proba = y_predict_proba.iloc[:, 1]
-                        else:
-                            y_predict_proba = y_predict_proba[:, 1]
-                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-                        # if fold is not None:
-                        logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+                cv_pipeline = self._threshold_pipeline(cv_pipeline, X_threshold_tuning, y_threshold_tuning, fold=i)
 
-                # cv_pipeline = self._fit_pipeline(cv_pipeline, X_train, y_train, fold=i)
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_test, y_test, objectives=objectives_to_score)
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
