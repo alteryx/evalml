@@ -19,7 +19,9 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(LightGBMClassifier.supported_problem_types) == {ProblemTypes.MULTICLASS, ProblemTypes.BINARY}
+    assert set(LightGBMClassifier.supported_problem_types) == {ProblemTypes.MULTICLASS, ProblemTypes.BINARY,
+                                                               ProblemTypes.TIME_SERIES_MULTICLASS,
+                                                               ProblemTypes.TIME_SERIES_BINARY}
 
 
 def test_lightgbm_classifier_random_state_bounds_seed(X_y_binary):

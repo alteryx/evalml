@@ -50,7 +50,7 @@ class ClassificationPipeline(PipelineBase):
     def _encode_targets(self, y):
         """Converts target values from their original values to integer values that can be processed."""
         try:
-            return pd.Series(self._encoder.transform(y))
+            return pd.Series(self._encoder.transform(y), index=y.index)
         except ValueError as e:
             raise ValueError(str(e))
 

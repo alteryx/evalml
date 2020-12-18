@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``save_plot`` that allows for saving of figures from different backends :pr:`1550`
         * Added ``LightGBM Regressor`` to regression components :pr:`1459`
         * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
         * Added `DFS Transformer` component into transformer components :pr:`1454`
@@ -19,6 +20,7 @@ Release Notes
         * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
         * Added `Linear Discriminant Analysis Transformer` component for dimensionality reduction :pr:`1331`
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
+        * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
