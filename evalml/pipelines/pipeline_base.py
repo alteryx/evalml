@@ -498,3 +498,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
         return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self._component_graph)
