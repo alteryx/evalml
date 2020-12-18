@@ -14,7 +14,7 @@ Release Notes
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
-        * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
+        * Added direct iteration through components in pipelines :pr:`1583`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
@@ -50,7 +50,6 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
-        * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
 
 
 **v0.17.0 Dec. 29, 2020**
@@ -113,6 +112,7 @@ Release Notes
     **Breaking Changes**
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
         * Updated ``AutoMLSearch.best_pipeline`` to return a trained pipeline. Pass in ``train_best_pipeline=False`` to AutoMLSearch in order to return an untrained pipeline.
+        * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
         * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
         * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
         * Update ``split_data`` helper args :pr:`1597`
