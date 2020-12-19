@@ -1885,3 +1885,36 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
             continue
         assert result['parameters']['Delayed Feature Transformer'] == configuration
         assert result['parameters']['pipeline'] == configuration
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_automl_data_split_consistent(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
+                                      mock_regression_score, mock_regression_fit, problem_type,
+                                      X_y_binary, X_y_multi, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+
+    data_splits = []
+    random_state = [0, 0, 1]
+    for state in random_state:
+        a = AutoMLSearch(problem_type=problem_type, random_state=state, max_iterations=1)
+        a.search(X, y)
+        data_splits.append([[set(train), set(test)] for train, test in a.data_split.split(X, y)])
+    # append split from last random state again, should be referencing same datasplit object
+    data_splits.append([[set(train), set(test)] for train, test in a.data_split.split(X, y)])
+
+    assert data_splits[0] == data_splits[1]
+    assert data_splits[1] != data_splits[2]
+    assert data_splits[2] == data_splits[3]
