@@ -22,7 +22,7 @@ Release Notes
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
         * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
     * Fixes
-        * Fixed ``save_plot`` to default to png extension for graphviz. Overcomes version difference with conda :pr:`1584`
+        * Fixed ``save_plot`` to default to png extension for graphviz. Overcomes version difference with conda :pr:`1588`
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
         * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
