@@ -1,5 +1,6 @@
 -r core-requirements.txt
 plotly>=4.14.0
+python-kaleido>=0.1.0
 ipywidgets>=7.5
 xgboost>=0.82,<1.3.0
 catboost>=0.20
