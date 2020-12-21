@@ -7,6 +7,7 @@ graphviz==0.15
 ipywidgets==7.5.1
 kaleido==0.1.0
 lightgbm==3.1.1
+matplotlib==3.3.3
 networkx==2.5
 nlp-primitives==1.1.0
 numpy==1.19.4
@@ -14,6 +15,7 @@ pandas==1.1.5
 plotly==4.14.1
 psutil==5.8.0
 requirements-parser==0.2.0
+seaborn==0.11.0
 scikit-learn==0.23.2
 scikit-optimize==0.8.1
 scipy==1.5.4
