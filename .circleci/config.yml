@@ -66,7 +66,7 @@ commands:
             python .circleci/conda_config.py "$(python setup.py --version)"
             cd evalml-core-feedstock
             echo "$DOCKERHUB_PASSWORD" | docker login -u $DOCKERHUB_USERNAME --password-stdin
-            export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-comp7)"
+            export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-cos7-x86_64)"
             echo "Created container ${DOCKER_CONTAINERID}"
             chmod -R 777 ./
             docker cp . ${DOCKER_CONTAINERID}:/home/conda/feedstock_root/
