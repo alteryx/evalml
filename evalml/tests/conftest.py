@@ -331,6 +331,47 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 
 
 @pytest.fixture
+def nonlinear_binary_pipeline_class():
+    class NonLinearBinaryPipeline(BinaryClassificationPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
+            'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
+            'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
+            'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
+        }
+    return NonLinearBinaryPipeline
+
+
+@pytest.fixture
+def nonlinear_multiclass_pipeline_class():
+    class NonLinearMulticlassPipeline(MulticlassClassificationPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
+            'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'],
+            'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
+            'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
+        }
+    return NonLinearMulticlassPipeline
+
+
+@pytest.fixture
+def nonlinear_regression_pipeline_class():
+    class NonLinearRegressionPipeline(RegressionPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Regressor', 'OneHot.x'],
+            'Elastic Net': ['Elastic Net Regressor', 'OneHot.x'],
+            'Linear Regressor': ['Linear Regressor', 'Random Forest', 'Elastic Net']
+        }
+    return NonLinearRegressionPipeline
+
+
+@pytest.fixture
 def binary_core_objectives():
     return get_core_objectives(ProblemTypes.BINARY)
 
