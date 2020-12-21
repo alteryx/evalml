@@ -45,5 +45,6 @@ from .transformers import (
 )
 from .ensemble import (
     StackedEnsembleClassifier,
-    StackedEnsembleRegressor
+    StackedEnsembleRegressor,
+    AdaBoostClassifier
 )

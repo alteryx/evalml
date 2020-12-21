@@ -28,7 +28,8 @@ from .components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
-    DFSTransformer
+    DFSTransformer,
+    AdaBoostClassifier
 )
 
 from .component_graph import ComponentGraph
