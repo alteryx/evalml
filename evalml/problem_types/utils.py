@@ -50,6 +50,7 @@ def detect_problem_type(y):
             return ProblemTypes.REGRESSION
     return ProblemTypes.MULTICLASS
 
+
 def is_regression(problem_type):
     """Determines if the provided problem_type is a regression problem type
 
@@ -60,6 +61,7 @@ def is_regression(problem_type):
         bool: Whether or not the provided problem_type is a regression problem type.
 """
     return handle_problem_types(problem_type) in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+
 
 def is_classification(problem_type):
     """Determines if the provided problem_type is a classification problem type
@@ -72,6 +74,7 @@ def is_classification(problem_type):
 """
     return handle_problem_types(problem_type) in [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY,
                                                   ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+
 
 def is_time_series(problem_type):
     """Determines if the provided problem_type is a time series problem type

@@ -1,6 +1,12 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
+from evalml.automl.data_splitters import TimeSeriesSplit
+from evalml.problem_types import (
+    is_classification,
+    is_regression,
+    is_time_series
+)
 from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
@@ -39,11 +45,11 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     return X, y
 
 
-def split_data(x, y, problem_type, problem_configuration=None, shuffle=True, test_size=.2, random_state=0):
+def split_data(X, y, problem_type, problem_configuration=None, shuffle=True, test_size=.2, random_state=0):
     """splits data into train and test sets.
 
     Arguments:
-        x (ww.datatable, pd.dataframe or np.ndarray): data of shape [n_samples, n_features]
+        X (ww.datatable, pd.dataframe or np.ndarray): data of shape [n_samples, n_features]
         y (ww.datacolumn, pd.series, or np.ndarray): target data of length [n_samples]
         problem_type (str or problemtypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
@@ -59,14 +65,14 @@ def split_data(x, y, problem_type, problem_configuration=None, shuffle=True, tes
     y = _convert_to_woodwork_structure(y)
 
     data_splitter = None
-    if is_timeseries(problem_type):
+    if is_time_series(problem_type):
         data_splitter = TimeSeriesSplit(n_splits=1, gap=problem_configuration.get('gap'),
                                         max_delay=problem_configuration.get('max_delay'),
                                         test_size=test_size)
     elif is_regression(problem_type):
-        data_splitter = KFold(n_splits=1, random_state=random_state, shuffle=shuffle)
+        data_splitter = ShuffleSplit(n_splits=1, random_state=random_state, shuffle=shuffle)
     elif is_classification(problem_type):
-        data_splitter = StratifiedKFold(n_splits=1, random_state=random_state, shuffle=shuffle)
+        data_splitter = StratifiedShuffleSplit(n_splits=1, random_state=random_state, shuffle=shuffle)
 
     train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 

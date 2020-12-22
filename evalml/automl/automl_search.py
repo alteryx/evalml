@@ -7,8 +7,7 @@ from collections import OrderedDict, defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
-import woodwork as ww
-from sklearn.model_selection import BaseCrossValidator, train_test_split
+from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots
 
@@ -47,6 +46,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
+from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
@@ -633,8 +633,8 @@ class AutoMLSearch:
             X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
             y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                diff_train = set(np.setdiff1d(y.to_series(), y_train.to_series()))
-                diff_valid = set(np.setdiff1d(y.to_series(), y_valid.to_series()))
+                diff_train = set(np.setdiff1d(self.y_train.to_series(), y_train.to_series()))
+                diff_valid = set(np.setdiff1d(self.y_train.to_series(), y_valid.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
                 if diff_string:
@@ -645,7 +645,10 @@ class AutoMLSearch:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_valid_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                          shuffle=True,
+                                                                                          test_size=0.2,
+                                                                                          random_state=self.random_seed)
                 cv_pipeline = pipeline.clone(pipeline.random_state)
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
