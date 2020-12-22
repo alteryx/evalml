@@ -6,7 +6,7 @@ from sklearn.model_selection._split import BaseCrossValidator
 class TimeSeriesSplit(BaseCrossValidator):
     """Rolling Origin Cross Validation for time series problems."""
 
-    def __init__(self, max_delay=0, gap=0, n_splits=3):
+    def __init__(self, max_delay=0, gap=0, n_splits=3, test_size=None):
         """Create a TimeSeriesSplit.
 
         This class uses max_delay and gap values to take into account that evalml time series pipelines perform
@@ -21,11 +21,16 @@ class TimeSeriesSplit(BaseCrossValidator):
                 of rows of the current split to avoid "throwing out" more data than in necessary.
             gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows
                 since we are interested in
+            n_splits (int): number of data splits to make.
+            test_size (float): What percentage of data points should be included in the test set. Defaults to None.
             """
         self.max_delay = max_delay
         self.gap = gap
         self.n_splits = n_splits
-        self._splitter = SkTimeSeriesSplit(n_splits=n_splits)
+        self.test_size = test_size
+        # TODO should we set `gap` here?
+        # https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.TimeSeriesSplit.html#sklearn-model-selection-timeseriessplit
+        self._splitter = SkTimeSeriesSplit(n_splits=n_splits, test_size=test_size)
 
     def get_n_splits(self, X=None, y=None, groups=None):
         """Get the number of data splits."""
