@@ -359,7 +359,7 @@ class MAPE(TimeSeriesRegressionObjective):
         if (y_true == 0).any():
             raise ValueError("Mean Absolute Percentage Error cannot be used when "
                              "targets contain the value 0.")
-        return (np.abs((y_true - y_predicted) / y_true)).mean() * 100
+        return (np.abs((y_true.values - y_predicted.values) / y_true.values)).mean() * 100
 
 
 class MSE(RegressionObjective):
