@@ -39,14 +39,17 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     return X, y
 
 
-def split_data(X, y, regression=False, test_size=.2, random_state=None):
-    """Splits data into train and test sets.
+def split_data(x, y, problem_type, problem_configuration=None, shuffle=True, test_size=.2, random_state=0):
+    """splits data into train and test sets.
 
     Arguments:
-        X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-        y (ww.DataColumn, pd.Series, or np.ndarray): Target data of length [n_samples]
-        regression (bool): If true, do not use stratified split
-        test_size (float): Percent of train set to holdout for testing
+        x (ww.datatable, pd.dataframe or np.ndarray): data of shape [n_samples, n_features]
+        y (ww.datacolumn, pd.series, or np.ndarray): target data of length [n_samples]
+        problem_type (str or problemtypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
+        problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
+            in time series problems, values should be passed in for the gap and max_delay variables.
+        shuffle (bool): whether or not to shuffle the data before splitting, if applicable. Default True.
+        test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
         random_state (int, np.random.RandomState): Seed for the random number generator
 
     Returns:
@@ -55,16 +58,17 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
 
-    if regression:
-        CV_method = ShuffleSplit(n_splits=1,
-                                 test_size=test_size,
-                                 random_state=random_state)
-    else:
-        CV_method = StratifiedShuffleSplit(
-            n_splits=1,
-            test_size=test_size,
-            random_state=random_state)
-    train, test = next(CV_method.split(X.to_dataframe(), y.to_series()))
+    data_splitter = None
+    if is_timeseries(problem_type):
+        data_splitter = TimeSeriesSplit(n_splits=1, gap=problem_configuration.get('gap'),
+                                        max_delay=problem_configuration.get('max_delay'),
+                                        test_size=test_size)
+    elif is_regression(problem_type):
+        data_splitter = KFold(n_splits=1, random_state=random_state, shuffle=shuffle)
+    elif is_classification(problem_type):
+        data_splitter = StratifiedKFold(n_splits=1, random_state=random_state, shuffle=shuffle)
+
+    train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 
     X_train = X.iloc[train]
     X_test = X.iloc[test]
