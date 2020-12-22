@@ -29,6 +29,7 @@ Release Notes
         * Undo version pinning for plotly :pr:`1533`
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
         * Set ``random_state`` of data splitter in AutoMLSearch to take int to keep consistency in the resulting splits :pr:`1579`
+        * Pin sklearn version while we work on adding support :pr:`1594`
     * Changes
         * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
