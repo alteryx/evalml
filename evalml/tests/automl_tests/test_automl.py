@@ -633,9 +633,7 @@ def test_large_dataset_regression(mock_score):
         assert automl.results['pipeline_results'][pipeline_id]['score'] == automl.results['pipeline_results'][pipeline_id]['validation_score']
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-def test_large_dataset_split_size(mock_fit, mock_score, X_y_binary):
+def test_large_dataset_split_size(X_y_binary):
     X, y = X_y_binary
 
     def generate_fake_dataset(rows):
@@ -652,19 +650,29 @@ def test_large_dataset_split_size(mock_fit, mock_score, X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    mock_score.return_value = {automl.objective.name: 1.234}
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
+    assert isinstance(automl.data_split, StratifiedKFold)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
-    automl.search()
+    automl = AutoMLSearch(X, y,
+                          problem_type='binary',
+                          objective=fraud_objective,
+                          additional_objectives=['auc', 'f1', 'precision'],
+                          max_time=1,
+                          max_iterations=1,
+                          optimize_thresholds=True)
     assert isinstance(automl.data_split, StratifiedKFold)
 
     automl.data_split = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
-    automl.search()
+    automl = AutoMLSearch(X, y,
+                          problem_type='binary',
+                          objective=fraud_objective,
+                          additional_objectives=['auc', 'f1', 'precision'],
+                          max_time=1,
+                          max_iterations=1,
+                          optimize_thresholds=True)
     assert isinstance(automl.data_split, TrainingValidationSplit)
     assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
@@ -949,12 +957,12 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
-    assert "0                      1.000     66.000    34.000" in out
-    assert "1                      1.000     67.000    33.000" in out
-    assert "2                      1.000     67.000    33.000" in out
-    assert "mean                   1.000          -         -" in out
-    assert "std                    0.000          -         -" in out
-    assert "coef of var            0.000          -         -" in out
+    assert "0                      1.000     66.000       34.000" in out
+    assert "1                      1.000     67.000       33.000" in out
+    assert "2                      1.000     67.000       33.000" in out
+    assert "mean                   1.000          -            -" in out
+    assert "std                    0.000          -            -" in out
+    assert "coef of var            0.000          -            -" in out
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
