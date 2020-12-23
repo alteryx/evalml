@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.automl import TrainingValidationSplit
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
 
 
 def test_tvsplit_nsplits():
