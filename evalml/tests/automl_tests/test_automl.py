@@ -806,9 +806,9 @@ def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_
     y = pd.Series([i for i in range(101000)])
 
     automl = AutoMLSearch(X, y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
+    assert isinstance(automl.data_split, TrainingValidationSplit)
     test_pipeline = dummy_regression_pipeline_class(parameters={})
     mock_score.return_value = {automl.objective.name: 0.1234}
-    assert automl.data_split is None
 
     automl.add_to_rankings(test_pipeline)
     assert isinstance(automl.data_split, TrainingValidationSplit)
