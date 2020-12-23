@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
-from evalml.preprocessing.data_splitters import TimeSeriesSplit
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import (
     is_classification,
     is_regression,
@@ -65,9 +65,7 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
 
     data_splitter = None
     if is_time_series(problem_type):
-        data_splitter = TimeSeriesSplit(n_splits=1, gap=problem_configuration.get('gap'),
-                                        max_delay=problem_configuration.get('max_delay'),
-                                        test_size=test_size)
+        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_state)
     elif is_regression(problem_type):
         data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
     elif is_classification(problem_type):
