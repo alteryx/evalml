@@ -2,7 +2,13 @@ import pytest
 import woodwork as ww
 
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_regression, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_regression,
+    is_time_series
+)
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
