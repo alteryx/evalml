@@ -50,14 +50,16 @@ def test_init(X_y_binary):
     assert automl.objective.name == 'Log Loss Binary'
 
 
-def test_init_objective():
+def test_init_objective(X_y_binary):
+    X, y = X_y_binary
     automl = AutoMLSearch(X, y, problem_type='binary', objective=Precision(), max_iterations=1)
     assert isinstance(automl.objective, Precision)
     automl = AutoMLSearch(X, y, problem_type='binary', objective='Precision', max_iterations=1)
     assert isinstance(automl.objective, Precision)
 
 
-def test_get_pipeline_none():
+def test_get_pipeline_none(X_y_binary):
+    X, y = X_y_binary
     automl = AutoMLSearch(X, y, problem_type='binary')
     with pytest.raises(PipelineNotFoundError, match="Pipeline not found"):
         automl.describe_pipeline(0)
@@ -134,6 +136,7 @@ def test_multi_auto(X_y_multi, multiclass_core_objectives):
 
 
 def test_multi_objective(X_y_multi):
+    X, y = X_y_multi
     automl = AutoMLSearch(X, y, problem_type='binary', objective="Log Loss Binary")
     assert automl.problem_type == ProblemTypes.BINARY
 
@@ -286,7 +289,8 @@ def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
     assert expected_objective_order in out_stripped
 
 
-def test_max_time_units():
+def test_max_time_units(X_y_binary):
+    X, y = X_y_binary
     str_max_time = AutoMLSearch(X, y, problem_type='binary', objective='F1', max_time='60 seconds')
     assert str_max_time.max_time == 60
 
@@ -306,7 +310,8 @@ def test_max_time_units():
         AutoMLSearch(X, y, problem_type='binary', objective='F1', max_time=(30, 'minutes'))
 
 
-def test_early_stopping(caplog, logistic_regression_binary_pipeline_class):
+def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
         automl = AutoMLSearch(X, y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
 
@@ -423,7 +428,7 @@ def test_max_time(X_y_binary):
     automl = AutoMLSearch(X, y, problem_type='binary', max_time=1e-16, n_jobs=1)
     automl.search()
     # search will always run at least one pipeline
-    assert len(clf.results['pipeline_results']) == 1
+    assert len(automl.results['pipeline_results']) == 1
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

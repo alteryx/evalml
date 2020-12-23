@@ -29,7 +29,7 @@ def get_default_primary_search_objective(problem_type):
     return get_objective(objective_name, return_instance=True)
 
 
-def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, time_series_test_size=None, random_state=0):
+def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, time_series_test_size=0.2, random_state=0):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:

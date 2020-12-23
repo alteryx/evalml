@@ -80,7 +80,8 @@ def test_callback(X_y_regression):
     assert counts["add_result_callback"] == max_iterations
 
 
-def test_early_stopping(caplog, linear_regression_pipeline_class):
+def test_early_stopping(caplog, linear_regression_pipeline_class, X_y_regression):
+    X, y = X_y_regression
     tolerance = 0.005
     patience = 2
     automl = AutoMLSearch(X, y, problem_type='regression', objective='mse', max_time='60 seconds',
@@ -151,7 +152,8 @@ def test_plot_iterations_max_time(X_y_regression):
     assert len(y) > 0
 
 
-def test_log_metrics_only_passed_directly():
+def test_log_metrics_only_passed_directly(X_y_regression):
+    X, y = X_y_regression
     with pytest.raises(ObjectiveNotFoundError, match="RootMeanSquaredLogError is not a valid Objective!"):
         AutoMLSearch(X, y, problem_type='regression', additional_objectives=['RootMeanSquaredLogError', 'MeanSquaredLogError'])
 

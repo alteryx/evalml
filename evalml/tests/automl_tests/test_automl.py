@@ -10,7 +10,6 @@ import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
-from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
     log_error_callback,
@@ -42,6 +41,10 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
+from evalml.preprocessing.data_splitters import (
+    TimeSeriesSplit,
+    TrainingValidationSplit
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (

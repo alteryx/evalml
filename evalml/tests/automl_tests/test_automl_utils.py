@@ -2,10 +2,6 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit
-)
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
@@ -13,6 +9,10 @@ from evalml.automl.utils import (
     make_data_splitter
 )
 from evalml.objectives import R2, LogLossBinary, LogLossMulticlass
+from evalml.preprocessing.data_splitters import (
+    TimeSeriesSplit,
+    TrainingValidationSplit
+)
 from evalml.problem_types import ProblemTypes
 
 
