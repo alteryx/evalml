@@ -19,7 +19,7 @@ def test_split_data(problem_type, data_type, X_y_binary, X_y_multi, X_y_regressi
     y = make_data_type(data_type, y)
 
     test_pct = 0.25
-    X_train, X_test, y_train, y_test = split_data(X, y, test_size=test_pct, regression=True)
+    X_train, X_test, y_train, y_test = split_data(X, y, test_size=test_pct, problem_type=problem_type)
     test_size = len(X) * test_pct
     train_size = len(X) - test_size
     assert len(X_train) == train_size
