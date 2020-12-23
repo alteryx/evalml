@@ -45,7 +45,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     return X, y
 
 
-def split_data(X, y, problem_type, problem_configuration=None, shuffle=True, test_size=.2, random_state=0):
+def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_state=0):
     """splits data into train and test sets.
 
     Arguments:
@@ -54,7 +54,6 @@ def split_data(X, y, problem_type, problem_configuration=None, shuffle=True, tes
         problem_type (str or problemtypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the gap and max_delay variables.
-        shuffle (bool): whether or not to shuffle the data before splitting, if applicable. Default True.
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
         random_state (int, np.random.RandomState): Seed for the random number generator
 
@@ -70,9 +69,9 @@ def split_data(X, y, problem_type, problem_configuration=None, shuffle=True, tes
                                         max_delay=problem_configuration.get('max_delay'),
                                         test_size=test_size)
     elif is_regression(problem_type):
-        data_splitter = ShuffleSplit(n_splits=1, random_state=random_state, shuffle=shuffle)
+        data_splitter = ShuffleSplit(n_splits=1, random_state=random_state)
     elif is_classification(problem_type):
-        data_splitter = StratifiedShuffleSplit(n_splits=1, random_state=random_state, shuffle=shuffle)
+        data_splitter = StratifiedShuffleSplit(n_splits=1, random_state=random_state)
 
     train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 
