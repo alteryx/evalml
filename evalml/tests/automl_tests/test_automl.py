@@ -183,7 +183,7 @@ def test_pipeline_fit_raises(mock_fit, X_y_binary, caplog):
     cv_scores_all = pipeline_results[0].get('cv_data', {})
     for cv_scores in cv_scores_all:
         for name, score in cv_scores['all_objective_scores'].items():
-            if name in ['# Training', '# Testing']:
+            if name in ['# Training', '# Validation']:
                 assert score > 0
             else:
                 assert np.isnan(score)
@@ -952,7 +952,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "Model Family: Baseline" in out
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
-    assert "Log Loss Binary # Training # Testing" in out
+    assert "Log Loss Binary # Training # Validation" in out
     assert "0                      1.000     66.000    34.000" in out
     assert "1                      1.000     67.000    33.000" in out
     assert "2                      1.000     67.000    33.000" in out
