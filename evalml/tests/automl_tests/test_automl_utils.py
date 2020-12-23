@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from evalml.automl.data_splitters import (
+from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
 )

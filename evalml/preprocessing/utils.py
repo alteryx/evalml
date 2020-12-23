@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
-from evalml.automl.data_splitters import TimeSeriesSplit
+from evalml.preprocessing.data_splitters import TimeSeriesSplit
 from evalml.problem_types import (
     is_classification,
     is_regression,
