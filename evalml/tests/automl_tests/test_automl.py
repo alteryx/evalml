@@ -590,7 +590,6 @@ def test_large_dataset_binary(mock_score):
                           optimize_thresholds=True,
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
     automl.search()
     assert isinstance(automl.data_split, TrainingValidationSplit)
     assert automl.data_split.get_n_splits() == 1
@@ -607,7 +606,6 @@ def test_large_dataset_multiclass(mock_score):
 
     automl = AutoMLSearch(X, y, problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
     automl.search()
     assert isinstance(automl.data_split, TrainingValidationSplit)
     assert automl.data_split.get_n_splits() == 1
@@ -625,7 +623,6 @@ def test_large_dataset_regression(mock_score):
 
     automl = AutoMLSearch(X, y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
     automl.search()
     assert isinstance(automl.data_split, TrainingValidationSplit)
     assert automl.data_split.get_n_splits() == 1
@@ -656,7 +653,8 @@ def test_large_dataset_split_size(mock_fit, mock_score, X_y_binary):
                           max_iterations=1,
                           optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
+    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
@@ -788,7 +786,6 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
-    assert automl.data_split is None
 
     automl.add_to_rankings(test_pipeline)
     assert isinstance(automl.data_split, StratifiedKFold)
@@ -823,7 +820,6 @@ def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class,
     automl = AutoMLSearch(X, y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     test_pipeline = dummy_regression_pipeline_class(parameters={})
     mock_score.return_value = {automl.objective.name: 0.1234}
-    assert automl.data_split is None
 
     automl.add_to_rankings(test_pipeline)
     assert isinstance(automl.data_split, KFold)
@@ -1652,27 +1648,6 @@ def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
     automl = AutoMLSearch(X, y, problem_type='binary', max_time='60 seconds', max_batches=20, ensembling=False)
     automl.search()
     assert not automl.rankings['pipeline_name'].str.contains('Ensemble').any()
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_input_not_woodwork_logs_warning(mock_fit, mock_score, caplog, X_y_binary):
-    X, y = X_y_binary
-    assert isinstance(X, np.ndarray)
-    assert isinstance(y, np.ndarray)
-
-    automl = AutoMLSearch(X, y, problem_type='binary')
-    automl.search()
-    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-
-    caplog.clear()
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-    automl = AutoMLSearch(X, y, problem_type='binary')
-    automl.search()
-    assert "`X` passed was not a DataTable. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
-    assert "`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead." in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
