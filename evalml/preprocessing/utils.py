@@ -69,9 +69,9 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
                                         max_delay=problem_configuration.get('max_delay'),
                                         test_size=test_size)
     elif is_regression(problem_type):
-        data_splitter = ShuffleSplit(n_splits=1, random_state=random_state)
+        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
     elif is_classification(problem_type):
-        data_splitter = StratifiedShuffleSplit(n_splits=1, random_state=random_state)
+        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
 
     train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 
