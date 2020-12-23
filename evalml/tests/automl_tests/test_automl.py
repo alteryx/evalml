@@ -1120,13 +1120,13 @@ def test_pipelines_in_batch_return_none(mock_evaluate_pipelines, mock_next_batch
         automl.search()
 
 
-@patch('evalml.automl.automl_search.train_test_split')
+@patch('evalml.automl.automl_search.split_data')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_error_during_train_test_split(mock_fit, mock_score, mock_train_test_split, X_y_binary):
+def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
-    mock_train_test_split.side_effect = RuntimeError()
+    mock_split_data.side_effect = RuntimeError()
     automl = AutoMLSearch(X, y, problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True)
     automl.search()
     for pipeline in automl.results['pipeline_results'].values():
