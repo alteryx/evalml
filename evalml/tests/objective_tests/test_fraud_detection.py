@@ -15,8 +15,8 @@ def test_fraud_objective(X_y_binary):
                           fraud_payout_percentage=.75,
                           amount_col=10)
 
-    automl = AutoMLSearch(problem_type='binary', objective=objective, max_iterations=1)
-    automl.search(X, y)
+    automl = AutoMLSearch(X, y, problem_type='binary', objective=objective, max_iterations=1)
+    automl.search()
 
     pipeline = automl.best_pipeline
     pipeline.fit(X, y)
