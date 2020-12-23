@@ -1486,48 +1486,64 @@ def test_stopping_criterion_bad(X_y_binary):
         AutoMLSearch(X, y, problem_type="binary", max_iterations=-1)
 
 
-def test_data_split_binary(X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_data_split_binary(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     y[:] = 0
     y[0] = 1
     automl = AutoMLSearch(X, y, problem_type="binary", n_jobs=1)
     with pytest.raises(Exception, match="Missing target values in the"):
-        automl.search(data_checks="disabled")
+        with pytest.warns(UserWarning):
+            automl.search(data_checks="disabled")
 
     y[1] = 1
+    automl = AutoMLSearch(X, y, problem_type="binary", n_jobs=1)
     with pytest.raises(Exception, match="Missing target values in the"):
-        automl.search(data_checks="disabled")
+        with pytest.warns(UserWarning):
+            automl.search(data_checks="disabled")
 
     y[2] = 1
+    automl = AutoMLSearch(X, y, problem_type="binary", n_jobs=1)
     automl.search(data_checks="disabled")
 
 
-def test_data_split_multi(X_y_multi):
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_data_split_multi(mock_fit, mock_score, X_y_multi):
     X, y = X_y_multi
     y[:] = 1
     y[0] = 0
 
     automl = AutoMLSearch(X, y, problem_type='multiclass', n_jobs=1)
     with pytest.raises(Exception, match="Missing target values"):
-        automl.search(data_checks="disabled")
+        with pytest.warns(UserWarning):
+            automl.search(data_checks="disabled")
 
     y[1] = 2
     # match based on regex, since data split doesn't have a random seed for reproducibility
     # regex matches the set {} and expects either 2 sets (missing in both train and test)
     #   or 1 set of multiple elements (both missing in train or both in test)
+    automl = AutoMLSearch(X, y, problem_type='multiclass', n_jobs=1)
     with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
-        automl.search(data_checks="disabled")
+        with pytest.warns(UserWarning):
+            automl.search(data_checks="disabled")
 
     y[1] = 0
     y[2:4] = 2
+    automl = AutoMLSearch(X, y, problem_type='multiclass', n_jobs=1)
     with pytest.raises(Exception, match="Missing target values"):
-        automl.search(data_checks="disabled")
+        with pytest.warns(UserWarning):
+            automl.search(data_checks="disabled")
 
     y[4] = 2
+    automl = AutoMLSearch(X, y, problem_type='multiclass', n_jobs=1)
     with pytest.raises(Exception, match="Missing target values"):
-        automl.search(data_checks="disabled")
+        with pytest.warns(UserWarning):
+            automl.search(data_checks="disabled")
 
     y[5] = 0
+    automl = AutoMLSearch(X, y, problem_type='multiclass', n_jobs=1)
     automl.search(data_checks="disabled")
 
 
