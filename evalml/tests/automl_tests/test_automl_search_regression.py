@@ -25,8 +25,8 @@ def test_init(X_y_regression):
     assert isinstance(automl.best_pipeline, PipelineBase)
 
     # test with dataframes
-    automl = AutoMLSearch(X, y, problem_type='regression', objective="R2", max_iterations=3, n_jobs=1)
-    automl.search(pd.DataFrame(X), pd.Series(y))
+    automl = AutoMLSearch(pd.DataFrame(X), pd.Series(y), problem_type='regression', objective="R2", max_iterations=3, n_jobs=1)
+    automl.search()
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
