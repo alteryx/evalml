@@ -75,9 +75,6 @@ class AutoMLSearch:
     def __init__(self,
                  X_train,
                  y_train,
-                 X_holdout=None,
-                 y_holdout=None,
-                 holdout_percentage=None,
                  problem_type=None,
                  objective='auto',
                  max_iterations=None,
@@ -106,12 +103,6 @@ class AutoMLSearch:
             X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
 
             y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]
-
-            X_holdout (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
-
-            y_holdout (pd.Series, ww.DataColumn): The target training data of length [n_samples]
-
-            holdout_percentage (float): if X_holdout and y_holdout were not provided, and this percentage is set, a holdout split will be created from the inputted training data using this percentage.
 
             problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
@@ -268,15 +259,6 @@ class AutoMLSearch:
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
         self.y_train = _convert_to_woodwork_structure(y_train)
-
-        if X_holdout and y_holdout:
-            self.X_holdout = _convert_to_woodwork_structure(X_holdout)
-            self.y_holdout = _convert_to_woodwork_structure(y_holdout)
-        elif holdout_percentage:
-            self.X_train, self.y_train, self.X_holdout, self.y_holdout = split_data(self.X_train, self.y_train,
-                                                                                    problem_type=self.problem_type,
-                                                                                    problem_configuration=self.problem_configuration,
-                                                                                    random_state=self.random_seed)
 
         default_data_split = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                 n_splits=3, shuffle=True, random_state=self.random_seed)
