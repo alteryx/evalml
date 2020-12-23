@@ -29,7 +29,7 @@ def get_default_primary_search_objective(problem_type):
     return get_objective(objective_name, return_instance=True)
 
 
-def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, time_series_test_size=0.2, random_state=0):
+def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, random_state=0):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
@@ -40,8 +40,6 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             in time series problems, values should be passed in for the gap and max_delay variables.
         n_splits (int, None): the number of CV splits, if applicable. Default 3.
         shuffle (bool): whether or not to shuffle the data before splitting, if applicable. Default True.
-        time_series_test_size (float): For timeseries, what percentage of data points should be included in the test set.
-            Defaults to 0.2 (20%).
         random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
     Returns:
@@ -59,8 +57,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         if not problem_configuration:
             raise ValueError("problem_configuration is required for time series problem types")
         data_split = TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                                     max_delay=problem_configuration.get('max_delay'),
-                                     test_size=time_series_test_size)
+                                     max_delay=problem_configuration.get('max_delay'))
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         data_split = TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
     return data_split
