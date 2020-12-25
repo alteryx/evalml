@@ -5,6 +5,10 @@ from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
 from .regression_pipeline import RegressionPipeline
+from .time_series_classification_pipelines import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline
+)
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
 from evalml.model_family import ModelFamily
@@ -82,6 +86,10 @@ def _get_pipeline_base_class(problem_type):
         return RegressionPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         return TimeSeriesRegressionPipeline
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        return TimeSeriesBinaryClassificationPipeline
+    else:
+        return TimeSeriesMulticlassClassificationPipeline
 
 
 def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, text_columns=None):
@@ -177,8 +185,10 @@ def generate_pipeline_code(element):
     code_strings = ['import json']
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
+    if isinstance(element.component_graph, dict):
+        raise ValueError("Code generation for nonlinear pipelines is not supported yet")
 
-    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element.component_graph])
+    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element._component_graph])
     code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []

@@ -5,7 +5,7 @@
 .. autoclass:: {{ objname }}
    {% set class_attributes = ['name', 'custom_name', 'summary', 'component_graph', 'problem_type',
                               'model_family', 'hyperparameters', 'custom_hyperparameters',
-                              'default_parameters'] %}
+                              'linearized_component_graph', 'default_parameters'] %}
 
 
    {% block attributes %}

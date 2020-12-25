@@ -50,7 +50,7 @@ class ClassificationPipeline(PipelineBase):
     def _encode_targets(self, y):
         """Converts target values from their original values to integer values that can be processed."""
         try:
-            return pd.Series(self._encoder.transform(y))
+            return pd.Series(self._encoder.transform(y), index=y.index)
         except ValueError as e:
             raise ValueError(str(e))
 
@@ -78,8 +78,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series: Estimated labels
         """
-        X_t = self.compute_estimator_features(X)
-        return self.estimator.predict(X_t)
+        return self._component_graph.predict(X)
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
