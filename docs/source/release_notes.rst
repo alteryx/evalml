@@ -21,6 +21,7 @@ Release Notes
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
+        * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
     * Fixes
         * Fixed ``save_plot`` to default to png extension for graphviz. Overcomes version difference with conda :pr:`1584`
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
@@ -44,6 +45,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+        * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
 
 
 

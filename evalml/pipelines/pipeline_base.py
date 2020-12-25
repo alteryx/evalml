@@ -13,11 +13,8 @@ import pandas as pd
 from .components import Estimator
 from .components.utils import handle_component_class
 
-from evalml.exceptions import (
-    IllFormattedClassNameError,
-    MissingComponentError,
-    PipelineScoreError
-)
+from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
+from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
     _convert_to_woodwork_structure,
@@ -42,7 +39,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @classmethod
     @abstractmethod
     def component_graph(cls):
-        """Returns list of components representing pipeline graph structure
+        """Returns list or dictionary of components representing pipeline graph structure
 
         Returns:
             list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline
@@ -64,11 +61,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
-        self.component_graph = [self._instantiate_component(component_class, parameters) for component_class in self.component_graph]
+        if isinstance(self.component_graph, list):  # Backwards compatibility
+            self._component_graph = ComponentGraph().from_list(self.component_graph, random_state=self.random_state)
+        else:
+            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_state=self.random_state)
+        self._component_graph.instantiate(parameters)
+
         self.input_feature_names = {}
-        self.estimator = self.component_graph[-1] if isinstance(self.component_graph[-1], Estimator) else None
-        if self.estimator is None:
-            raise ValueError("A pipeline must have an Estimator as the last component in component_graph.")
+        final_component = self._component_graph.get_last_component()
+        self.estimator = final_component if isinstance(final_component, Estimator) else None
+        self._estimator_name = self._component_graph.compute_order[-1] if self.estimator is not None else None
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
@@ -93,7 +95,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.component_graph)]
+        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.linearized_component_graph)]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -107,35 +109,32 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
+    @classproperty
+    def linearized_component_graph(cls):
+        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order
+        """
+        if isinstance(cls.component_graph, list):
+            return cls.component_graph
+        else:
+            return [component_info[0] for component_info in cls.component_graph.values()]
+
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
+        if self.estimator is None:  # Allow for pipelines that do not end with an estimator
+            return
         estimator_problem_types = self.estimator.supported_problem_types
         if self.problem_type not in estimator_problem_types:
             raise ValueError("Problem type {} not valid for this component graph. Valid problem types include {}."
                              .format(self.problem_type, estimator_problem_types))
 
-    def _instantiate_component(self, component_class, parameters):
-        """Instantiates components with parameters in `parameters`"""
-        try:
-            component_class = handle_component_class(component_class)
-        except MissingComponentError as e:
-            err = "Error recieved when retrieving class for component '{}'".format(component_class)
-            raise MissingComponentError(err) from e
-
-        component_name = component_class.name
-        try:
-            component_parameters = parameters.get(component_name, {})
-            new_component = component_class(**component_parameters, random_state=self.random_state)
-        except (ValueError, TypeError) as e:
-            err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
-            raise ValueError(err) from e
-        return new_component
-
     def __getitem__(self, index):
         if isinstance(index, slice):
             raise NotImplementedError('Slicing pipelines is currently not supported.')
         elif isinstance(index, int):
-            return self.component_graph[index]
+            component_name = self.component_graph[index]
+            if not isinstance(component_name, str):
+                component_name = component_name.name
+            return self.get_component(component_name)
         else:
             return self.get_component(index)
 
@@ -152,7 +151,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             Component: Component to return
 
         """
-        return next((component for component in self.component_graph if component.name == name), None)
+        return self._component_graph.get_component(name)
 
     def describe(self):
         """Outputs pipeline details including component parameters
@@ -167,12 +166,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         logger.info("Problem Type: {}".format(self.problem_type))
         logger.info("Model Family: {}".format(str(self.model_family)))
 
-        if self.estimator.name in self.input_feature_names:
-            logger.info("Number of features: {}".format(len(self.input_feature_names[self.estimator.name])))
+        if self._estimator_name in self.input_feature_names:
+            logger.info("Number of features: {}".format(len(self.input_feature_names[self._estimator_name])))
 
         # Summary of steps
         log_subtitle(logger, "Pipeline Steps")
-        for number, component in enumerate(self.component_graph, 1):
+        for number, component in enumerate(self._component_graph, 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
             component.describe(print_name=False)
@@ -186,22 +185,17 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame - New transformed features.
         """
-        X_t = X
-        for component in self.component_graph[:-1]:
-            X_t = component.transform(X_t, y=y)
+        X_t = self._component_graph.compute_final_component_features(X, y=y)
         return X_t
 
     def _compute_features_during_fit(self, X, y):
-        X_t = X
-        for component in self.component_graph[:-1]:
-            self.input_feature_names.update({component.name: list(X_t.columns)})
-            X_t = component.fit_transform(X_t, y=y)
-        self.input_feature_names.update({self.estimator.name: list(X_t.columns)})
+        X_t = self._component_graph.fit_features(X, y)
+        self.input_feature_names = self._component_graph.input_feature_names
         return X_t
 
     def _fit(self, X, y):
-        X_t = self._compute_features_during_fit(X, y)
-        self.estimator.fit(X_t, y)
+        self._component_graph.fit(X, y)
+        self.input_feature_names = self._component_graph.input_feature_names
 
     @abstractmethod
     def fit(self, X, y):
@@ -227,8 +221,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pd.Series: Predicted values.
         """
         X = _convert_to_woodwork_structure(X)
-        X_t = self.compute_estimator_features(X, y=None)
-        return self.estimator.predict(X_t)
+        return self._component_graph.predict(X)
 
     @abstractmethod
     def score(self, X, y, objectives):
@@ -280,19 +273,32 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def model_family(cls):
         "Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
-        return handle_component_class(component_graph[-1]).model_family
+        if isinstance(component_graph, list):
+            return handle_component_class(component_graph[-1]).model_family
+        else:
+            order = ComponentGraph.generate_order(component_graph)
+            final_component = order[-1]
+            return handle_component_class(component_graph[final_component][0]).model_family
 
     @classproperty
     def hyperparameters(cls):
         "Returns hyperparameter ranges from all components as a dictionary"
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
-        for component_class in component_graph:
-            component_class = handle_component_class(component_class)
-            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-            if cls.custom_hyperparameters and component_class.name in cls.custom_hyperparameters:
-                component_hyperparameters.update(cls.custom_hyperparameters.get(component_class.name, {}))
-            hyperparameter_ranges[component_class.name] = component_hyperparameters
+        if isinstance(component_graph, list):
+            for component_class in component_graph:
+                component_class = handle_component_class(component_class)
+                component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+                if cls.custom_hyperparameters and component_class.name in cls.custom_hyperparameters:
+                    component_hyperparameters.update(cls.custom_hyperparameters.get(component_class.name, {}))
+                hyperparameter_ranges[component_class.name] = component_hyperparameters
+        else:
+            for component_name, component_info in component_graph.items():
+                component_class = handle_component_class(component_info[0])
+                component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+                if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
+                    component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
+                hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
     @property
@@ -302,7 +308,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of all component parameters
         """
-        component_parameters = {c.name: copy.copy(c.parameters) for c in self.component_graph if c.parameters}
+        components = [(component_name, component_class) for component_name, component_class in self._component_graph.component_instances.items()]
+        component_parameters = {c_name: copy.copy(c.parameters) for c_name, c in components if c.parameters}
         if self._pipeline_params:
             component_parameters['pipeline'] = self._pipeline_params
         return component_parameters
@@ -328,7 +335,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame including feature names and their corresponding importance
         """
-        feature_names = self.input_feature_names[self.estimator.name]
+        feature_names = self.input_feature_names[self._estimator_name]
         importance = list(zip(feature_names, self.estimator.feature_importance))  # note: this only works for binary
         importance.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importance, columns=["feature", "importance"])
@@ -374,24 +381,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 raise ValueError(("Unknown format '{}'. Make sure your format is one of the " +
                                   "following: {}").format(graph_format, supported_filetypes))
 
-        # Initialize a new directed graph
-        graph = graphviz.Digraph(name=self.name, format=graph_format,
-                                 graph_attr={'splines': 'ortho'})
-        graph.attr(rankdir='LR')
-
-        # Draw components
-        for component in self.component_graph:
-            label = '%s\l' % (component.name)  # noqa: W605
-            if len(component.parameters) > 0:
-                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
-                                        else key + ' : ' + str(val)
-                                        for key, val in component.parameters.items()])  # noqa: W605
-                label = '%s |%s\l' % (component.name, parameters)  # noqa: W605
-            graph.node(component.name, shape='record', label=label)
-
-        # Draw edges
-        for i in range(len(self.component_graph[:-1])):
-            graph.edge(self.component_graph[i].name, self.component_graph[i + 1].name)
+        graph = self._component_graph.graph(path_and_name, graph_format)
 
         if filepath:
             graph.render(path_and_name, cleanup=True)
