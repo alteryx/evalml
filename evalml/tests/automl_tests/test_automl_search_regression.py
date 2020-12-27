@@ -262,3 +262,17 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_regression_pipeline_class
+
+
+def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeline_class, X_y_regression):
+    X, y = X_y_regression
+
+    allowed_pipelines = [nonlinear_regression_pipeline_class]
+    start_iteration_callback = MagicMock()
+    automl = AutoMLSearch(problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
+                          allowed_pipelines=allowed_pipelines, n_jobs=1)
+    automl.search(X, y)
+
+    assert start_iteration_callback.call_count == 2
+    assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
+    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class

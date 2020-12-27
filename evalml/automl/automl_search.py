@@ -49,7 +49,7 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, get_random_state
+from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -229,6 +229,7 @@ class AutoMLSearch:
             'errors': []
         }
         self.random_state = get_random_state(random_state)
+        self.random_seed = get_random_seed(self.random_state)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -372,7 +373,7 @@ class AutoMLSearch:
             y (pd.Series, ww.DataColumn): The target training data of length [n_samples].
         """
         default_data_split = make_data_splitter(X, y, self.problem_type, self.problem_configuration,
-                                                n_splits=3, shuffle=True, random_state=self.random_state)
+                                                n_splits=3, shuffle=True, random_state=self.random_seed)
         self.data_split = self.data_split or default_data_split
 
     def search(self, X, y, data_checks="auto", show_iteration_plot=True):

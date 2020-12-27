@@ -485,8 +485,7 @@ def test_save_plotly_interactive(file_name, format, interactive, decision_tree_c
                          [
                              ('test_plot', 'png', False),
                              ('test_plot.png', 'png', False),
-                             ('test_plot.', 'png', False),
-                             ('test_plot.png', 'jpeg', False)
+                             ('test_plot.', 'png', False)
                          ])
 def test_save_graphviz_default_format(file_name, format, interactive, fitted_tree_estimators, tmpdir, has_minimal_dependencies):
     if not has_minimal_dependencies:
@@ -519,7 +518,7 @@ def test_save_graphviz_different_format(file_name, format, interactive, fitted_t
         assert not no_output_
         assert os.path.exists(output_)
         assert isinstance(output_, str)
-        assert os.path.basename(output_) == 'test_plot.jpeg'
+        assert os.path.basename(output_) == 'test_plot.png'
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
