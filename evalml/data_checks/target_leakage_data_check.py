@@ -42,7 +42,7 @@ class TargetLeakageDataCheck(DataCheck):
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],
             ...    'x': [42, 54, 12, 64, 12],
-            ...    'y': [12, 5, 13, 74, 24],
+            ...    'y': [13, 5, 13, 74, 24],
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
