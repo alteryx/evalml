@@ -24,13 +24,12 @@ class OutliersDataCheck(DataCheck):
         """
         self.random_state = get_random_state(random_state)
 
-    def validate(self, X, y=None, objective=None):
+    def validate(self, X, y=None):
         """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): Features
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
-            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict: A dictionary with warnings if any columns have outliers.

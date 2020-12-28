@@ -47,7 +47,6 @@ class DataChecks:
     @staticmethod
     def _init_data_checks(data_check_classes, params):
         data_check_instances = []
-
         for data_check_class in data_check_classes:
             class_params = params.get(data_check_class.name, {})
             if not isinstance(class_params, dict):
@@ -72,14 +71,13 @@ class DataChecks:
         data_check_instances = self._init_data_checks(data_checks, data_check_params)
         self.data_checks = data_check_instances
 
-    def validate(self, X, y=None, objective=None):
+    def validate(self, X, y=None):
         """
         Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series, np.ndarray): The target data of length [n_samples]
-            objective (ObjectiveBase): The objective associated with the check.
 
         Returns:
             dict: Dictionary containing DataCheckMessage objects
@@ -89,15 +87,16 @@ class DataChecks:
             "warnings": [],
             "errors": []
         }
-
         X = _convert_to_woodwork_structure(X)
         if y is not None:
             y = _convert_to_woodwork_structure(y)
 
         for data_check in self.data_checks:
-            messages_new = data_check.validate(X, y, objective)
+            print(data_check)
+            messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
+        print(messages)
         return messages
 
 

@@ -25,7 +25,7 @@ class DefaultDataChecks(DataChecks):
     _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
                                    TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
 
-    def __init__(self, problem_type):
+    def __init__(self, problem_type, objective=None):
         """
         A collection of basic data checks.
 
@@ -34,7 +34,9 @@ class DefaultDataChecks(DataChecks):
         """
         if handle_problem_types(problem_type) in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
-                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
+                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type,
+                                                                           "objective": objective}})
         else:
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES + [ClassImbalanceDataCheck],
-                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
+                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type,
+                                                                           "objective": objective}})

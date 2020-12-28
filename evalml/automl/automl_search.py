@@ -328,7 +328,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type)
+                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective)
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -415,11 +415,9 @@ class AutoMLSearch:
         if not isinstance(y, ww.DataColumn):
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
-
         self._set_data_split(X, y)
-
         data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()), self.objective)
+        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()))
         for message in self._data_check_results["warnings"]:
             logger.warning(message)
         for message in self._data_check_results["errors"]:

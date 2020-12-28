@@ -26,7 +26,7 @@ class TargetLeakageDataCheck(DataCheck):
             raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
         self.pct_corr_threshold = pct_corr_threshold
 
-    def validate(self, X, y, objective=None):
+    def validate(self, X, y):
         """Check if any of the features are highly correlated with the target.
 
         Currently only supports binary and numeric targets and features.
@@ -34,7 +34,6 @@ class TargetLeakageDataCheck(DataCheck):
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
             y (ww.DataColumn, pd.Series, np.ndarray): The target data
-            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.

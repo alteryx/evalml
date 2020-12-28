@@ -23,7 +23,7 @@ class IDColumnsDataCheck(DataCheck):
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
         self.id_threshold = id_threshold
 
-    def validate(self, X, y=None, objective=None):
+    def validate(self, X, y=None):
         """Check if any of the features are likely to be ID columns. Currently performs these simple checks:
 
             - column name is "id"
@@ -33,7 +33,6 @@ class IDColumnsDataCheck(DataCheck):
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
             threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0
-            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict: A dictionary of features with column name or index and their probability of being ID columns

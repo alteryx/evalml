@@ -558,7 +558,7 @@ def test_get_permutation_importance_regression(X_y_regression, linear_regression
     pipeline.fit(X, y)
 
     for objective in regression_core_objectives:
-        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
+        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error']:
             permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
             assert list(permutation_importance.columns) == ["feature", "importance"]
             assert not permutation_importance.isnull().all().all()

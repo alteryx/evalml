@@ -24,13 +24,12 @@ class HighlyNullDataCheck(DataCheck):
             raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
         self.pct_null_threshold = pct_null_threshold
 
-    def validate(self, X, y=None, objective=None):
+    def validate(self, X, y=None):
         """Checks if there are any highly-null columns in the input.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): Features
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
-            objective (ObjectiveBase): Ignored.
 
         Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns.

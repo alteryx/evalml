@@ -9,6 +9,7 @@ from evalml.data_checks import (
     DataCheckWarning,
     InvalidTargetDataCheck
 )
+from evalml.pipelines.components import utils
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
@@ -197,16 +198,69 @@ def test_invalid_target_data_check_n_unique():
 
 
 @pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
-def test_invalid_target_data_check_invalid_objectives_validate(objective):
+def test_invalid_target_data_check_invalid_labels_for_nonnegative_objectives(objective):
     X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
     y = pd.Series([2, 3, -1, 1, 1])
 
-    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
-    assert data_checks.validate(X, y, objective=objective) == {
+    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                                                   "objective": objective}})
+    assert data_checks.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(
-            message=f"Target does not have only positive values which is not supported for {objective}",
+            message=f"Target has negative values which is not supported for {objective}",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
             details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
+    }
+
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, 0, 1, 1])
+
+    invalid_targets_check = InvalidTargetDataCheck(problem_type="regression", objective=objective)
+
+    assert invalid_targets_check.validate(X, y) == {
+        "warnings": [],
+        "errors": [DataCheckError(
+            message=f"Target has negative values which is not supported for {objective}",
+            data_check_name=invalid_targets_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
+    }
+
+
+def test_invalid_target_data_check_invalid_labels_for_objectives(regression_core_objectives):
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, -1, 1, 1])
+
+    for objective in regression_core_objectives:
+        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error']:
+            data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                                                           "objective": objective}})
+            assert data_checks.validate(X, y) == {
+                "warnings": [],
+                "errors": []
+            }
+
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, 0, 1, 1])
+
+    for objective in regression_core_objectives:
+        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error']:
+            invalid_targets_check = InvalidTargetDataCheck(problem_type="regression", objective=objective)
+            assert invalid_targets_check.validate(X, y) == {
+                "warnings": [],
+                "errors": []
+            }
+
+
+@pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
+def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objective):
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, 1, 1, 1])
+
+    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                                                   "objective": objective}})
+    assert data_checks.validate(X, y) == {
+        "warnings": [],
+        "errors": []
     }

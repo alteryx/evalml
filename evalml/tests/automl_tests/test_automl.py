@@ -361,7 +361,7 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
 
 
 class MockDataCheckErrorAndWarning(DataCheck):
-    def validate(self, X, y, objective=None):
+    def validate(self, X, y):
         return {
             "warnings": [],
             "errors": [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
@@ -408,16 +408,41 @@ def test_automl_bad_data_check_parameter_type():
 
 
 @pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
-def test_automl_invalid_target_data_check_invalid_objectives(objective):
-    X = np.array([[1, 2, 1, 1],
-                  [2, 1, 4, 2],
-                  [3, 1, 1, 4],
-                  [3, 2, 1, 2]])
-    y = np.array([1, -1, 2, 2])
+def test_automl_invalid_target_data_check_invalid_labels_for_objectives(objective, ts_data):
+    X_ts, y_ts = ts_data
+    y_ts[0] = -1
 
-    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION, problem_configuration={'gap': 1, 'max_delay': 2}, max_iterations=1, objective=objective)
-    with pytest.raises(ValueError, match="Data checks raised some warnings"):
-        automl.search(X, y, data_checks=[InvalidTargetDataCheck(ProblemTypes.TIME_SERIES_REGRESSION)])
+    prob = {
+        'gap': 2,
+        'max_delay': 4
+    }
+
+    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                          max_iterations=1,
+                          objective=objective,
+                          problem_configuration=prob)
+    with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors"):
+        automl.search(X_ts, y_ts, data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                                                                      objective=objective)])
+
+
+@pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
+def test_automl_invalid_target_data_check_valid_labels_for_objectives(objective, ts_data):
+    X_ts, y_ts = ts_data
+
+    prob = {
+        'gap': 2,
+        'max_delay': 4
+    }
+
+    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                          max_iterations=1,
+                          objective=objective,
+                          problem_configuration=prob)
+
+    automl.search(X_ts, y_ts, data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                                                                  objective=objective)])
+    assert automl.data_check_results == {"warnings": [], "errors": []}
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
