@@ -298,7 +298,7 @@ def _convert_to_woodwork_structure(data):
 
     ww_data = ww_data.copy()
     if len(ww_data.shape) == 1:
-        name = ww_data.name if not isinstance(ww_data, np.ndarray) else None
+        name = ww_data.name if isinstance(ww_data, pd.Series) else None
         return ww.DataColumn(ww_data, name=name)
     return ww.DataTable(ww_data)
 
