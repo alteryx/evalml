@@ -5,8 +5,7 @@ from evalml.data_checks import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    numeric_and_boolean_dtypes
+    _convert_woodwork_types_wrapper
 )
 
 
@@ -80,5 +79,5 @@ class TargetLeakageDataCheck(DataCheck):
                                                       data_check_name=self.name,
                                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                                       details={"column": col_name}).to_dict()
-                                    for col_name in highly_corr_cols])
+                                     for col_name in highly_corr_cols])
         return messages
