@@ -445,6 +445,23 @@ def test_automl_invalid_target_data_check_valid_labels_for_objectives(objective,
     assert automl.data_check_results == {"warnings": [], "errors": []}
 
 
+def test_automl_invalid_target_data_check_valid_labels_for_none_objective(ts_data):
+    X_ts, y_ts = ts_data
+
+    prob = {
+        'gap': 2,
+        'max_delay': 4
+    }
+
+    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                          max_iterations=1,
+                          problem_configuration=prob)
+
+    automl.search(X_ts, y_ts, data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                                                                  objective=None)])
+    assert automl.data_check_results == {"warnings": [], "errors": []}
+
+
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_automl_invalid_objectives_for_mape(problem_type):
     with pytest.raises(ValueError, match="Given objective Mean Absolute Percentage Error is not compatible"):

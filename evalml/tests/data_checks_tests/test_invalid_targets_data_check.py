@@ -227,12 +227,12 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objectives(obj
     }
 
 
-def test_invalid_target_data_check_invalid_labels_for_objectives(regression_core_objectives):
+def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_core_objectives):
     X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
     y = pd.Series([2, 3, -1, 1, 1])
 
-    for objective in regression_core_objectives:
-        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error']:
+    for objective in time_series_core_objectives:
+        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
             data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                            "objective": objective}})
             assert data_checks.validate(X, y) == {
@@ -243,8 +243,8 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(regression_core
     X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
     y = pd.Series([2, 3, 0, 1, 1])
 
-    for objective in regression_core_objectives:
-        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error']:
+    for objective in time_series_core_objectives:
+        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
             invalid_targets_check = InvalidTargetDataCheck(problem_type="regression", objective=objective)
             assert invalid_targets_check.validate(X, y) == {
                 "warnings": [],
@@ -259,6 +259,18 @@ def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objec
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
+    assert data_checks.validate(X, y) == {
+        "warnings": [],
+        "errors": []
+    }
+
+
+def test_invalid_target_data_check_valid_labels_for_none_objective():
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, -1, 1, 1])
+
+    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                                                   "objective": None}})
     assert data_checks.validate(X, y) == {
         "warnings": [],
         "errors": []
