@@ -27,7 +27,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         Returns:
             pd.Series: Estimated labels
         """
-        X_t = self.compute_estimator_features(X)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -35,7 +34,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                 raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
 
         if self.threshold is None:
-            return self.estimator.predict(X_t)
+            return self._component_graph.predict(X)
         ypred_proba = self.predict_proba(X)
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
