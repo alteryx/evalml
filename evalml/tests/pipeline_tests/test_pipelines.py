@@ -1749,3 +1749,12 @@ def test_generate_code_pipeline_custom():
                     '\npipeline = MockAllCustom(parameters)'
     pipeline = generate_pipeline_code(mockAllCustom)
     assert pipeline == expected_code
+
+
+def test_predict_has_input_target_name(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    y = pd.Series(y, name="test target name")
+    lrp = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    lrp.fit(X, y)
+    predictions = lrp.predict(X)
+    assert predictions.name == "test target name"

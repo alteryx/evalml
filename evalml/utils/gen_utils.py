@@ -297,7 +297,8 @@ def _convert_to_woodwork_structure(data):
 
     ww_data = ww_data.copy()
     if len(ww_data.shape) == 1:
-        return ww.DataColumn(ww_data)
+        name = ww_data.name if not isinstance(ww_data, np.ndarray) else None
+        return ww.DataColumn(ww_data, name=name)
     return ww.DataTable(ww_data)
 
 
@@ -324,8 +325,8 @@ def _convert_woodwork_types_wrapper(pd_data):
         return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)])
     if (isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping):
         if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index)
-        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index)
+            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
+        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
