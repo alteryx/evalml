@@ -1,7 +1,5 @@
 import os
 
-import woodwork as ww
-
 from evalml.preprocessing import load_data
 
 
