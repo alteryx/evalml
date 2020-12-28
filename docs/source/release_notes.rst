@@ -31,7 +31,8 @@ Release Notes
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
         * Set ``random_state`` of data splitter in AutoMLSearch to take int to keep consistency in the resulting splits :pr:`1579`
         * Pin sklearn version while we work on adding support :pr:`1594`
-        * Pin pandas version while we work on adding support :pr:`1609`
+        * Pin pandas at <1.2.0 while we work on adding support :pr:`1609`
+        * Pin graphviz at < 0.16 while we work on adding support :pr:`1609`
     * Changes
         * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
