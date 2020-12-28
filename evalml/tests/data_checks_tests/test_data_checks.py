@@ -147,20 +147,20 @@ def test_default_data_checks_regression(input_type):
         y_no_variance = ww.DataColumn(y_no_variance)
     data_checks = DefaultDataChecks("regression")
     id_leakage = [DataCheckWarning(message="Column 'id' is 95.0% or more correlated with the target",
-                                data_check_name="TargetLeakageDataCheck",
-                                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                details={"column": "id"}).to_dict()]
+                                   data_check_name="TargetLeakageDataCheck",
+                                   message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                   details={"column": "id"}).to_dict()]
     null_leakage = [DataCheckWarning(message="Column 'lots_of_null' is 95.0% or more correlated with the target",
-                                data_check_name="TargetLeakageDataCheck",
-                                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                details={"column": "lots_of_null"}).to_dict()]
+                                     data_check_name="TargetLeakageDataCheck",
+                                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                     details={"column": "lots_of_null"}).to_dict()]
     assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {"warnings": messages[:3] + null_leakage, "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
-                                                                                                                         data_check_name="NoVarianceDataCheck",
-                                                                                                                         message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                                                                                         details={"column": "Y"}).to_dict()]}
+                                                                                                                                        data_check_name="NoVarianceDataCheck",
+                                                                                                                                        message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                                                                                                        details={"column": "Y"}).to_dict()]}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression"}})
