@@ -65,10 +65,9 @@ class TargetLeakageDataCheck(DataCheck):
         combined = X.copy()
         combined['target'] = y
         combined = _convert_to_woodwork_structure(combined)
-        if len(combined) == 0:
-            return messages
-
         mutual_info = combined.mutual_information()
+        if len(mutual_info) == 0:
+            return messages
         corr_df = mutual_info[(mutual_info['mutual_info'] >= self.pct_corr_threshold) & ((mutual_info['column_1'] == 'target') | (mutual_info['column_2'] == 'target'))]
         if len(corr_df) == 0:
             return messages
