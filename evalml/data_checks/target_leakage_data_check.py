@@ -16,7 +16,7 @@ class TargetLeakageDataCheck(DataCheck):
     def __init__(self, pct_corr_threshold=0.95):
         """Check if any of the features are highly correlated with the target.
 
-        Currently only supports binary and numeric targets and features.
+        Supports all target and feature types.
 
         Arguments:
             pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
@@ -29,7 +29,7 @@ class TargetLeakageDataCheck(DataCheck):
     def validate(self, X, y):
         """Check if any of the features are highly correlated with the target.
 
-        Currently only supports binary and numeric targets and features.
+        Supports all target and feature types.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
@@ -63,18 +63,22 @@ class TargetLeakageDataCheck(DataCheck):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-
-        if y.dtype not in numeric_and_boolean_dtypes:
+        combined = X.copy()
+        combined['target'] = y
+        combined = _convert_to_woodwork_structure(combined)
+        if len(combined) == 0:
             return messages
-        X = X.select_dtypes(include=numeric_and_boolean_dtypes)
-        if len(X.columns) == 0:
+
+        mutual_info = combined.mutual_information()
+        corr_df = mutual_info[(mutual_info['mutual_info'] >= self.pct_corr_threshold) & ((mutual_info['column_1'] == 'target') | (mutual_info['column_2'] == 'target'))]
+        if len(corr_df) == 0:
             return messages
 
-        highly_corr_cols = {label: abs(y.corr(col)) for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold}
+        highly_corr_cols = [row['column_1'] if row['column_1'] != 'target' else row['column_2'] for i, row in corr_df.iterrows()]
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
                                                       data_check_name=self.name,
                                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                                       details={"column": col_name}).to_dict()
-                                     for col_name in highly_corr_cols])
+                                    for col_name in highly_corr_cols])
         return messages
