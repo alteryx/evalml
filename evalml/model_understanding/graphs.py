@@ -38,7 +38,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Arguments:
         y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
         y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
-        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
+        normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
@@ -78,7 +78,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
         elif normalize_method == 'all':
             conf_mat = conf_mat.astype('float') / conf_mat.sum().sum()
         else:
-            raise ValueError('Invalid value provided for "normalize_method": %s'.format(normalize_method))
+            raise ValueError('Invalid value provided for "normalize_method": {}'.format(normalize_method))
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError("Sum of given axis is 0 and normalization is not possible. Please select another option.")
     conf_mat = pd.DataFrame(conf_mat, index=col_names, columns=col_names)
@@ -93,8 +93,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     Arguments:
         y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
         y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
-        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
-        title_addition (str or None): if not None, append to plot title. Default None.
+        normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
+        title_addition (str or None): if not None, append to plot title. Defaults to None.
 
     Returns:
         plotly.Figure representing the confusion matrix plot generated
