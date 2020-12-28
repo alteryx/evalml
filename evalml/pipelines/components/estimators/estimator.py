@@ -43,8 +43,7 @@ class Estimator(ComponentBase):
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
-        if not isinstance(predictions, pd.Series):
-            predictions = pd.Series(predictions)
+        predictions = _convert_to_woodwork_structure(predictions)
         return predictions
 
     def predict_proba(self, X):
@@ -62,8 +61,7 @@ class Estimator(ComponentBase):
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
-        if not isinstance(pred_proba, pd.DataFrame):
-            pred_proba = pd.DataFrame(pred_proba)
+        pred_proba = _convert_to_woodwork_structure(pred_proba)
         return pred_proba
 
     @property

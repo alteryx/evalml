@@ -4,6 +4,7 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 class Transformer(ComponentBase):
     """A component that may or may not need fitting that transforms data.
@@ -34,8 +35,8 @@ class Transformer(ComponentBase):
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            return pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return pd.DataFrame(X_t)
+            return _convert_to_woodwork_structure(pd.DataFrame(X_t, columns=X.columns, index=X.index))
+        return _convert_to_woodwork_structure(X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -56,5 +57,5 @@ class Transformer(ComponentBase):
                 raise e
 
         if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            return pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return pd.DataFrame(X_t)
+            return _convert_to_woodwork_structure(pd.DataFrame(X_t, columns=X.columns, index=X.index))
+        return _convert_to_woodwork_structure(X_t)
