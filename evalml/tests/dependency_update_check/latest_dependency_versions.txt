@@ -1,10 +1,10 @@
-catboost==0.24.3
+catboost==0.24.4
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
 featuretools==0.22.0
 graphviz==0.16
-ipywidgets==7.6.0
+ipywidgets==7.6.2
 kaleido==0.1.0
 lightgbm==3.1.1
 matplotlib==3.3.3
