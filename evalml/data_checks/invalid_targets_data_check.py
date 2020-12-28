@@ -40,8 +40,8 @@ class InvalidTargetDataCheck(DataCheck):
         """Checks if the target data contains missing or invalid values.
 
         Arguments:
-            X (pd.DataFrame): The input data of shape [n_samples, n_features]
-            y (pd.Series, optional): The target data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
+            y (ww.DataColumn, pd.Series, np.ndarray): Target data to check for invalid values.
 
         Returns:
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.

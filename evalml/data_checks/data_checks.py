@@ -92,11 +92,10 @@ class DataChecks:
             y = _convert_to_woodwork_structure(y)
 
         for data_check in self.data_checks:
-            print(data_check)
             messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
-        print(messages)
+
         return messages
 
 
