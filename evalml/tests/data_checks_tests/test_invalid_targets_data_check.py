@@ -9,7 +9,6 @@ from evalml.data_checks import (
     DataCheckWarning,
     InvalidTargetDataCheck
 )
-from evalml.pipelines.components import utils
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
