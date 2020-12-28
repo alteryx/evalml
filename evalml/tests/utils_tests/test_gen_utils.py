@@ -430,7 +430,7 @@ def test_infer_feature_types_series():
     X_expected = X_pd.astype("category")
     pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical).to_series())
 
-    
+
 @pytest.mark.parametrize("file_name,format,interactive",
                          [
                              ('test_plot', 'png', False),
