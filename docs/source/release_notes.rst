@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added ``save_plot`` that allows for saving of figures from different backends :pr:`1550`
+        * Added ``save_plot`` that allows for saving figures from different backends :pr:`1588`
         * Added ``LightGBM Regressor`` to regression components :pr:`1459`
         * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
         * Added `DFS Transformer` component into transformer components :pr:`1454`
@@ -31,7 +31,9 @@ Release Notes
         * Undo version pinning for plotly :pr:`1533`
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
         * Set ``random_state`` of data splitter in AutoMLSearch to take int to keep consistency in the resulting splits :pr:`1579`
+        * Pin sklearn version while we work on adding support :pr:`1594`
     * Changes
+        * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`

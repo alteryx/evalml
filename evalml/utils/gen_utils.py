@@ -477,7 +477,8 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         fig.write_image(file=filepath, engine="kaleido")
     elif is_graphviz:
         filepath_, format_ = os.path.splitext(filepath)
-        fig.format = format_[1:]
+        fig.format = 'png'
+        filepath = f'{filepath_}.png'
         fig.render(filename=filepath_, view=False, cleanup=True)
     elif is_plt:
         fig.savefig(fname=filepath)
