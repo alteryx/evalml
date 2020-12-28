@@ -10,17 +10,17 @@ import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
-from evalml.automl import (
-    TimeSeriesSplit,
-    TrainingValidationSplit,
-    get_default_primary_search_objective
-)
+from evalml.automl import TimeSeriesSplit, TrainingValidationSplit
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
     log_error_callback,
     raise_and_save_error_callback,
     raise_error_callback,
     silent_error_callback
+)
+from evalml.automl.utils import (
+    _LARGE_DATA_PERCENT_VALIDATION,
+    _LARGE_DATA_ROW_THRESHOLD
 )
 from evalml.data_checks import (
     DataCheck,
@@ -31,13 +31,7 @@ from evalml.data_checks import (
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
-from evalml.objectives import (
-    R2,
-    CostBenefitMatrix,
-    FraudCost,
-    LogLossBinary,
-    LogLossMulticlass
-)
+from evalml.objectives import CostBenefitMatrix, FraudCost
 from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -656,17 +650,17 @@ def test_large_dataset_split_size(mock_fit, mock_score):
     mock_score.return_value = {automl.objective.name: 1.234}
     assert automl.data_split is None
 
-    under_max_rows = automl._LARGE_DATA_ROW_THRESHOLD - 1
+    under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, StratifiedKFold)
 
     automl.data_split = None
-    over_max_rows = automl._LARGE_DATA_ROW_THRESHOLD + 1
+    over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
     automl.search(X, y)
     assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (automl._LARGE_DATA_PERCENT_VALIDATION)
+    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
 def test_data_split_shuffle():
@@ -1520,17 +1514,6 @@ def test_data_split_multi(X_y_multi):
     automl.search(X, y, data_checks="disabled")
 
 
-def test_get_default_primary_search_objective():
-    assert isinstance(get_default_primary_search_objective("binary"), LogLossBinary)
-    assert isinstance(get_default_primary_search_objective(ProblemTypes.BINARY), LogLossBinary)
-    assert isinstance(get_default_primary_search_objective("multiclass"), LogLossMulticlass)
-    assert isinstance(get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass)
-    assert isinstance(get_default_primary_search_objective("regression"), R2)
-    assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
-    with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
-        get_default_primary_search_objective("auto")
-
-
 @patch('evalml.tuners.skopt_tuner.SKOptTuner.add')
 def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors(mock_add, X_y_multi):
     X, y = X_y_multi
@@ -1904,3 +1887,36 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
             continue
         assert result['parameters']['Delayed Feature Transformer'] == configuration
         assert result['parameters']['pipeline'] == configuration
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_automl_data_split_consistent(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
+                                      mock_regression_score, mock_regression_fit, problem_type,
+                                      X_y_binary, X_y_multi, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+
+    data_splits = []
+    random_state = [0, 0, 1]
+    for state in random_state:
+        a = AutoMLSearch(problem_type=problem_type, random_state=state, max_iterations=1)
+        a.search(X, y)
+        data_splits.append([[set(train), set(test)] for train, test in a.data_split.split(X, y)])
+    # append split from last random state again, should be referencing same datasplit object
+    data_splits.append([[set(train), set(test)] for train, test in a.data_split.split(X, y)])
+
+    assert data_splits[0] == data_splits[1]
+    assert data_splits[1] != data_splits[2]
+    assert data_splits[2] == data_splits[3]

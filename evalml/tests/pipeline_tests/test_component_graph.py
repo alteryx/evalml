@@ -387,6 +387,26 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     assert mock_predict.call_count == 0
 
 
+@patch('evalml.pipelines.components.Transformer.fit_transform')
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_fit_features_nonlinear(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
+    X, y = X_y_binary
+    component_graph = ComponentGraph(example_graph)
+    component_graph.instantiate({})
+
+    mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
+    mock_fit_transform.return_value = mock_X_t
+    mock_fit.return_value = Estimator
+    mock_predict.return_value = pd.Series(y)
+
+    component_graph.fit_features(X, y)
+
+    assert mock_fit_transform.call_count == 3
+    assert mock_fit.call_count == 2
+    assert mock_predict.call_count == 2
+
+
 @patch('evalml.pipelines.components.Estimator.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
@@ -400,9 +420,32 @@ def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
+    X, y = X_y_binary
+    mock_predict.return_value = pd.Series(y)
+
+    graph = {'Imputer': [Imputer],
+             'OneHot_RandomForest': [OneHotEncoder, 'Imputer.x'],
+             'OneHot_Logistic': [OneHotEncoder, 'Imputer.x'],
+             'Random Forest': [RandomForestClassifier, 'OneHot_RandomForest.x'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'OneHot_Logistic.x'],
+             'Final Estimator': [LogisticRegressionClassifier, 'Random Forest', 'Logistic Regression']}
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    assert not component_graph.get_component('Logistic Regression')._component_obj == component_graph.get_component('Final Estimator')._component_obj
+
+    component_graph.predict(X)
+    assert mock_predict.call_count == 5
+    assert mock_fit.call_count == 3
+
+
 @patch('evalml.pipelines.components.Imputer.transform')
 @patch('evalml.pipelines.components.OneHotEncoder.transform')
-def test_compute_final_component_features_linear(mock_ohe, mock_imputer, example_graph, X_y_binary):
+def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
@@ -524,6 +567,28 @@ def test_component_graph_order(example_graph):
     assert expected_order == component_graph.compute_order
 
 
+@pytest.mark.parametrize("index", [list(range(-5, 0)),
+                                   list(range(100, 105)),
+                                   [f"row_{i}" for i in range(5)],
+                                   pd.date_range("2020-09-08", periods=5)])
+def test_computation_input_custom_index(index):
+    graph = {'OneHot': [OneHotEncoder],
+             'Random Forest': [RandomForestClassifier, 'OneHot.x'],
+             'Elastic Net': [ElasticNetClassifier, 'OneHot.x'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net']}
+
+    X = pd.DataFrame({"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+                     index=index)
+    y = pd.Series([1, 2, 1, 2, 1])
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    X_t = component_graph.predict(X)
+    pd.testing.assert_index_equal(X_t.index, pd.RangeIndex(start=0, stop=5, step=1))
+    assert not X_t.isna().any(axis=None)
+
+
 @patch(f'{__name__}.EstimatorC.predict')
 @patch(f'{__name__}.EstimatorB.predict')
 @patch(f'{__name__}.EstimatorA.predict')
@@ -560,6 +625,26 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
     pd.testing.assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
     pd.testing.assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6), 'estimator a': [0, 0, 0, 1, 0, 0], 'feature b': np.ones(6) * 2, 'estimator b': [0, 0, 0, 0, 1, 0], 'feature c': np.ones(6) * 3}, columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
     pd.testing.assert_series_equal(predict_out, pd.Series([0, 0, 0, 0, 0, 1]))
+
+
+def test_input_feature_names(example_graph):
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+
+    component_graph = ComponentGraph(example_graph)
+    component_graph.instantiate({'OneHot_RandomForest': {'top_n': 2},
+                                 'OneHot_ElasticNet': {'top_n': 3}})
+    assert component_graph.input_feature_names == {}
+    component_graph.fit(X, y)
+
+    input_feature_names = component_graph.input_feature_names
+    assert input_feature_names['Imputer'] == ['column_1', 'column_2']
+    assert input_feature_names['OneHot_RandomForest'] == ['column_1', 'column_2']
+    assert input_feature_names['OneHot_ElasticNet'] == ['column_1', 'column_2']
+    assert input_feature_names['Random Forest'] == ['column_2', 'column_1_a', 'column_1_b']
+    assert input_feature_names['Elastic Net'] == ['column_2', 'column_1_a', 'column_1_b', 'column_1_c']
+    assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
 
 
 def test_iteration(example_graph):

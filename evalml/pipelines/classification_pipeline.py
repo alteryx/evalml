@@ -79,8 +79,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series: Estimated labels
         """
-        X_t = self.compute_estimator_features(X)
-        return self.estimator.predict(X_t)
+        return self._component_graph.predict(X)
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.
