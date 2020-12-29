@@ -1,10 +1,10 @@
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from evalml.automl.data_splitters import (
+from evalml.objectives import get_objective
+from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
 )
-from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
@@ -46,18 +46,18 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         sklearn.model_selection.BaseCrossValidator: data splitting method.
     """
     problem_type = handle_problem_types(problem_type)
-    data_split = None
+    data_splitter = None
     if problem_type == ProblemTypes.REGRESSION:
-        data_split = KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
+        data_splitter = KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        data_split = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
+        data_splitter = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
     elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                           ProblemTypes.TIME_SERIES_BINARY,
                           ProblemTypes.TIME_SERIES_MULTICLASS]:
         if not problem_configuration:
             raise ValueError("problem_configuration is required for time series problem types")
-        data_split = TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                                     max_delay=problem_configuration.get('max_delay'))
+        data_splitter = TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
+                                        max_delay=problem_configuration.get('max_delay'))
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-        data_split = TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
-    return data_split
+        data_splitter = TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
+    return data_splitter

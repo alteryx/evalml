@@ -166,7 +166,7 @@ def test_custom_indices():
     X = pd.DataFrame({"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]})
     y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0], index=[7, 2, 1, 4, 5, 3, 6, 8])
 
-    x1, x2, y1, y2 = split_data(X, y, regression=False)
+    x1, x2, y1, y2 = split_data(X, y, problem_type='binary')
     tp = MyTargetPipeline({})
     tp.fit(x2, y2)
 
