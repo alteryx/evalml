@@ -23,6 +23,10 @@ Release Notes
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
         * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
+        * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
+        * Update ``split_data`` helper args :pr:`1597`
+        * Add problem type utils ``is_regression``, ``is_classification``, ``is_timeseries`` :pr:`1597`
+        * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
@@ -41,8 +45,11 @@ Release Notes
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
         * Made ``get_prediction_vs_actual_data()`` a public method :pr:`1553`
         * Updated ``Woodwork`` version requirement to v0.0.7 :pr:`1560`
+        * Move data splitters from ``evalml.automl.data_splitters`` to ``evalml.preprocessing.data_splitters`` :pr:`1597`
+        * Rename "# Testing" in automl log output to "# Validation" :pr:`1597`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
+        * Updated documentation for confusion matrix methods :pr:`1611`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
@@ -51,6 +58,10 @@ Release Notes
     **Breaking Changes**
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
         * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
+        * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
+        * Update ``split_data`` helper args :pr:`1597`
+        * Move data splitters from ``evalml.automl.data_splitters`` to ``evalml.preprocessing.data_splitters`` :pr:`1597`
+        * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
 
 
 
