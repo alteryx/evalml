@@ -22,7 +22,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         verbose (bool): If True, prints information about features and target
 
     Returns:
-        Union[ww.DataTable, ww.DataColumn]: Features matrix and target
+        ww.DataTable, ww.DataColumn: Features matrix and target
     """
 
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
