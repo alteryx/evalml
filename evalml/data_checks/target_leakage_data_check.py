@@ -77,7 +77,7 @@ class TargetLeakageDataCheck(DataCheck):
             for col in X.columns:
                 sample = combined[[col, target]]
                 mutual_info = sample.mutual_information()
-                if mutual_info.iloc[0]['mutual_info'] > self.pct_corr_threshold:
+                if len(mutual_info) > 0 and mutual_info['mutual_info'].iloc[0] > self.pct_corr_threshold:
                     highly_corr_cols.append(col)
 
         else:
