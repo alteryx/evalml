@@ -23,7 +23,6 @@ from evalml.automl.utils import (
     make_data_splitter
 )
 from evalml.data_checks import (
-    ClassImbalanceDataCheck,
     DataCheck,
     DataCheckError,
     DataChecks,
