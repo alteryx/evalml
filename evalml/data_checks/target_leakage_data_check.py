@@ -45,8 +45,8 @@ class TargetLeakageDataCheck(DataCheck):
             ...    'y': [13, 5, 13, 74, 24],
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
-            >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
-            >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 80.0% or more correlated with the target",\
+            >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
+            >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 95.0% or more correlated with the target",\
                                                                              "data_check_name": "TargetLeakageDataCheck",\
                                                                              "level": "warning",\
                                                                              "code": "TARGET_LEAKAGE",\
@@ -65,7 +65,7 @@ class TargetLeakageDataCheck(DataCheck):
         combined = X.copy()
         combined['target'] = y
         combined = _convert_to_woodwork_structure(combined)
-        mutual_info = combined.mutual_information()
+        mutual_info = combined.mutual_information(num_bins=0)
         if len(mutual_info) == 0:
             return messages
         corr_df = mutual_info[(mutual_info['mutual_info'] >= self.pct_corr_threshold) & ((mutual_info['column_1'] == 'target') | (mutual_info['column_2'] == 'target'))]
