@@ -418,13 +418,13 @@ def test_automl_invalid_target_data_check_invalid_labels_for_objectives(objectiv
         'max_delay': 4
     }
 
-    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+    automl = AutoMLSearch(X_ts, y_ts, problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
                           max_iterations=1,
                           objective=objective,
                           problem_configuration=prob)
     with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors"):
-        automl.search(X_ts, y_ts, data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                                                                      objective=objective)])
+        automl.search(data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                                                          objective=objective)])
 
 
 @pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
@@ -436,13 +436,13 @@ def test_automl_invalid_target_data_check_valid_labels_for_objectives(objective,
         'max_delay': 4
     }
 
-    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+    automl = AutoMLSearch(X_ts, y_ts, problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
                           max_iterations=1,
                           objective=objective,
                           problem_configuration=prob)
 
-    automl.search(X_ts, y_ts, data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                                                                  objective=objective)])
+    automl.search(data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                                                      objective=objective)])
     assert automl.data_check_results == {"warnings": [], "errors": []}
 
 
@@ -454,19 +454,21 @@ def test_automl_invalid_target_data_check_valid_labels_for_none_objective(ts_dat
         'max_delay': 4
     }
 
-    automl = AutoMLSearch(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+    automl = AutoMLSearch(X_ts, y_ts, problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
                           max_iterations=1,
                           problem_configuration=prob)
 
-    automl.search(X_ts, y_ts, data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                                                                  objective=None)])
+    automl.search(data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
+                                                      objective=None)])
     assert automl.data_check_results == {"warnings": [], "errors": []}
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_automl_invalid_objectives_for_mape(problem_type):
+    X = pd.DataFrame([1, 2, 3], [2, 3, 4])
+    y = pd.Series([1, 2, 3])
     with pytest.raises(ValueError, match="Given objective Mean Absolute Percentage Error is not compatible"):
-        AutoMLSearch(problem_type=problem_type, max_iterations=1, objective='Mean Absolute Percentage Error')
+        AutoMLSearch(X, y, problem_type=problem_type, max_iterations=1, objective='Mean Absolute Percentage Error')
 
 
 def test_automl_str_no_param_search(X_y_binary):
