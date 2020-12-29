@@ -1918,8 +1918,8 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
-                                      mock_regression_score, mock_regression_fit, problem_type,
-                                      X_y_binary, X_y_multi, X_y_regression):
+                                         mock_regression_score, mock_regression_fit, problem_type,
+                                         X_y_binary, X_y_multi, X_y_regression):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
 
