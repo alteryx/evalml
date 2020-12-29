@@ -529,12 +529,10 @@ class AutoMLSearch:
         best_pipeline_name = best_pipeline["pipeline_name"]
         self._best_pipeline = self.get_pipeline(best_pipeline['id'])
         if self._train_best_pipeline:
-            X_train = _convert_to_woodwork_structure(X)
-            y_train = _convert_to_woodwork_structure(y)
             X_threshold_tuning = None
             y_threshold_tuning = None
             if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
-                X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(X_train, y_train, test_size=0.2, random_state=self.random_state)
+                X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(self.X_train, self.y_train, test_size=0.2, random_state=self.random_state)
             self._best_pipeline.fit(X_train, y_train)
             self._best_pipeline = self._threshold_pipeline(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
         logger.info(f"Best pipeline: {best_pipeline_name}")
