@@ -81,7 +81,7 @@ class AutoMLSearch:
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 data_split=None,
+                 data_splitter=None,
                  allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
@@ -136,7 +136,7 @@ class AutoMLSearch:
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
-            data_split (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
+            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
@@ -186,7 +186,7 @@ class AutoMLSearch:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.error_callback = error_callback or log_error_callback
-        self.data_split = data_split
+        self.data_splitter = data_splitter
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
@@ -194,7 +194,7 @@ class AutoMLSearch:
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
-        if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
+        if self.data_splitter is not None and not issubclass(self.data_splitter.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
         if not objective.is_defined_for_problem_type(self.problem_type):
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
@@ -264,9 +264,9 @@ class AutoMLSearch:
         self.X_train = _convert_to_woodwork_structure(X_train)
         self.y_train = _convert_to_woodwork_structure(y_train)
 
-        default_data_split = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
-                                                n_splits=3, shuffle=True, random_state=self.random_seed)
-        self.data_split = self.data_split or default_data_split
+        default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
+                                                   n_splits=3, shuffle=True, random_state=self.random_seed)
+        self.data_splitter = self.data_splitter or default_data_splitter
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -304,7 +304,7 @@ class AutoMLSearch:
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
-            f"Data Splitting: {self.data_split}\n"
+            f"Data Splitting: {self.data_splitter}\n"
             f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
@@ -609,7 +609,7 @@ class AutoMLSearch:
         logger.info("\tStarting cross validation")
         X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
-        for i, (train, valid) in enumerate(self.data_split.split(X_pd, y_pd)):
+        for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.

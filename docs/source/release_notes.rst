@@ -25,6 +25,7 @@ Release Notes
         * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
         * Update ``split_data`` helper args :pr:`1597`
         * Add problem type utils ``is_regression``, ``is_classification``, ``is_timeseries`` :pr:`1597`
+        * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
@@ -59,6 +60,7 @@ Release Notes
         * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
         * Update ``split_data`` helper args :pr:`1597`
         * Move data splitters from ``evalml.automl.data_splitters`` to ``evalml.preprocessing.data_splitters`` :pr:`1597`
+        * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
 
 
 
