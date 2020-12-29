@@ -266,7 +266,7 @@ def test_target_leakage_data_check_name():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, pearson_corr=True)
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
     assert leakage_check.validate(X, y) == {
         "warnings": [DataCheckWarning(message="Column 'target' is 50.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
@@ -319,6 +319,12 @@ def test_target_leakage_data_check_warnings_pearson():
         "errors": []
     }
 
+    y = ["a", "b", "a", "a"]
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, pearson_corr=True)
+    assert leakage_check.validate(X, y) == {
+        "warnings": [],
+        "errors": []
+    }
 
 def test_target_leakage_data_check_input_formats_pearson():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, pearson_corr=True)
