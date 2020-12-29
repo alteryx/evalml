@@ -326,6 +326,7 @@ def test_target_leakage_data_check_warnings_pearson():
         "errors": []
     }
 
+
 def test_target_leakage_data_check_input_formats_pearson():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, pearson_corr=True)
 
