@@ -275,6 +275,26 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5
 
 
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_non_optimizable_threshold_multi(mock_fit, mock_score, X_y_multi):
+    mock_score.return_value = {"Log Loss Multiclass": 0.5}
+    X, y = X_y_multi
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Log Loss Multiclass', max_iterations=1)
+    automl.search()
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    with pytest.raises(AttributeError):
+        automl.best_pipeline.threshold
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Log Loss Multiclass', max_iterations=1, optimize_thresholds=True)
+    automl.search()
+    mock_fit.assert_called()
+    mock_score.assert_called()
+    with pytest.raises(AttributeError):
+        automl.best_pipeline.threshold
+
+
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=2, n_jobs=1)
