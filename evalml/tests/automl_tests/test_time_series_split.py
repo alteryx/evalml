@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from evalml.automl.data_splitters import TimeSeriesSplit
+from evalml.preprocessing.data_splitters import TimeSeriesSplit
 
 
 def test_time_series_split_init():
