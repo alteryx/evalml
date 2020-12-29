@@ -676,7 +676,7 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                cv_pipeline = self._tune_binary_threshold(cv_pipeline, X_threshold_tuning, y_threshold_tuning, fold=i)
+                cv_pipeline = self._tune_binary_threshold(cv_pipeline, X_threshold_tuning, y_threshold_tuning)
                 if cv_pipeline.threshold is not None and self.optimize_thresholds:
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
