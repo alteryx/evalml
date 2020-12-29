@@ -1,3 +1,4 @@
+import pandas as pd
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -5,30 +6,33 @@ from evalml.data_checks import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    numeric_and_boolean_dtypes
 )
 
 
 class TargetLeakageDataCheck(DataCheck):
     """Check if any of the features are highly correlated with the target."""
 
-    def __init__(self, pct_corr_threshold=0.95):
+    def __init__(self, pct_corr_threshold=0.95, pearson_corr=False):
         """Check if any of the features are highly correlated with the target.
 
-        Supports all target and feature types.
+        If `pearson_corr=False`, supports all target and feature types. Otherwise, only supports binary with numeric and boolean dtypes.
 
         Arguments:
             pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
+            pearson_corr (bool): Whether or not to use the Pearson Correlation versus mutual information. Defaults to False, which uses mutual info.
 
         """
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
         self.pct_corr_threshold = pct_corr_threshold
+        self.pearson = pearson_corr
 
     def validate(self, X, y):
         """Check if any of the features are highly correlated with the target.
 
-        Supports all target and feature types.
+        If `pearson_corr=False`, supports all target and feature types. Otherwise, only supports binary with numeric and boolean dtypes.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
@@ -62,17 +66,28 @@ class TargetLeakageDataCheck(DataCheck):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        combined = X.copy()
-        combined['target'] = y
-        combined = _convert_to_woodwork_structure(combined)
-        mutual_info = combined.mutual_information()
-        if len(mutual_info) == 0:
-            return messages
-        corr_df = mutual_info[(mutual_info['mutual_info'] >= self.pct_corr_threshold) & ((mutual_info['column_1'] == 'target') | (mutual_info['column_2'] == 'target'))]
-        if len(corr_df) == 0:
-            return messages
+        if not self.pearson:
+            highly_corr_cols = []
+            target = 'target'
+            while target in X.columns:
+                target += '0'
+            combined = X.copy()
+            combined[target] = y
+            combined = _convert_to_woodwork_structure(combined)
+            for col in X.columns:
+                sample = combined[[col, target]]
+                mutual_info = sample.mutual_information()
+                if mutual_info.iloc[0]['mutual_info'] > self.pct_corr_threshold:
+                    highly_corr_cols.append(col)
 
-        highly_corr_cols = [row['column_1'] if row['column_1'] != 'target' else row['column_2'] for i, row in corr_df.iterrows()]
+        else:
+            if y.dtype not in numeric_and_boolean_dtypes:
+                return messages
+            X = X.select_dtypes(include=numeric_and_boolean_dtypes)
+            if len(X.columns) == 0:
+                return messages
+            highly_corr_cols = [label for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
+
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
                                                       data_check_name=self.name,
