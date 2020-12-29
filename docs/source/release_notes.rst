@@ -43,6 +43,7 @@ Release Notes
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Updated documentation for confusion matrix methods :pr:`1611`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
