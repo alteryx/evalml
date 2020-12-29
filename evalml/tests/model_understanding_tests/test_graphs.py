@@ -138,7 +138,7 @@ def test_normalize_confusion_matrix_error(data_type, make_data_type):
 
     warnings.simplefilter('default', category=RuntimeWarning)
 
-    with pytest.raises(ValueError, match='Invalid value provided'):
+    with pytest.raises(ValueError, match='Invalid value provided for "normalize_method": invalid option'):
         normalize_confusion_matrix(conf_mat, normalize_method='invalid option')
     with pytest.raises(ValueError, match='Invalid value provided'):
         normalize_confusion_matrix(conf_mat, normalize_method=None)
