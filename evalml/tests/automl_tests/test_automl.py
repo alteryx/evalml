@@ -260,7 +260,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'data_split': StratifiedKFold(5),
+        'data_splitter': StratifiedKFold(5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
@@ -571,7 +571,7 @@ def test_invalid_data_splitter(X_y_binary):
     X, y = X_y_binary
     data_splitter = pd.DataFrame()
     with pytest.raises(ValueError, match='Not a valid data splitter'):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_split=data_splitter)
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=data_splitter)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -591,8 +591,8 @@ def test_large_dataset_binary(mock_score):
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.get_n_splits() == 1
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.get_n_splits() == 1
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
@@ -607,8 +607,8 @@ def test_large_dataset_multiclass(mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.get_n_splits() == 1
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
@@ -624,8 +624,8 @@ def test_large_dataset_regression(mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.get_n_splits() == 1
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
@@ -650,7 +650,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_split, StratifiedKFold)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
@@ -661,9 +661,9 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_split, StratifiedKFold)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
-    automl.data_split = None
+    automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
     automl = AutoMLSearch(X_train=X, y_train=y,
@@ -673,11 +673,11 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
-def test_data_split_shuffle():
+def test_data_splitter_shuffle():
     # this test checks that the default data split strategy should shuffle data. it creates a target which
     # increases monotonically from 0 to n-1.
     #
@@ -805,7 +805,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     test_pipeline = dummy_binary_pipeline_class(parameters={})
 
     automl.add_to_rankings(test_pipeline)
-    assert isinstance(automl.data_split, StratifiedKFold)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings['score'].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
@@ -820,12 +820,12 @@ def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_
     y = pd.Series([i for i in range(101000)])
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     test_pipeline = dummy_regression_pipeline_class(parameters={})
     mock_score.return_value = {automl.objective.name: 0.1234}
 
     automl.add_to_rankings(test_pipeline)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings['score'].values
 
@@ -839,7 +839,7 @@ def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class,
     mock_score.return_value = {automl.objective.name: 0.1234}
 
     automl.add_to_rankings(test_pipeline)
-    assert isinstance(automl.data_split, KFold)
+    assert isinstance(automl.data_splitter, KFold)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings['score'].values
 
@@ -1497,7 +1497,7 @@ def test_stopping_criterion_bad(X_y_binary):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_data_split_binary(mock_fit, mock_score, X_y_binary):
+def test_data_splitter_binary(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     y[:] = 0
     y[0] = 1
@@ -1519,7 +1519,7 @@ def test_data_split_binary(mock_fit, mock_score, X_y_binary):
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_data_split_multi(mock_fit, mock_score, X_y_multi):
+def test_data_splitter_multi(mock_fit, mock_score, X_y_multi):
     X, y = X_y_multi
     y[:] = 1
     y[0] = 0
@@ -1902,7 +1902,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration,
                           allowed_pipelines=[Pipeline1, Pipeline2], max_batches=2)
     automl.search()
-    assert isinstance(automl.data_split, TimeSeriesSplit)
+    assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:
             continue
@@ -1917,7 +1917,7 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
-def test_automl_data_split_consistent(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
+def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
                                       mock_regression_score, mock_regression_fit, problem_type,
                                       X_y_binary, X_y_multi, X_y_regression):
     if problem_type == ProblemTypes.BINARY:
@@ -1929,15 +1929,15 @@ def test_automl_data_split_consistent(mock_binary_score, mock_binary_fit, mock_m
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
 
-    data_splits = []
+    data_splitters = []
     random_state = [0, 0, 1]
     for state in random_state:
         a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, random_state=state, max_iterations=1)
         a.search()
-        data_splits.append([[set(train), set(test)] for train, test in a.data_split.split(X, y)])
+        data_splitters.append([[set(train), set(test)] for train, test in a.data_splitter.split(X, y)])
     # append split from last random state again, should be referencing same datasplit object
-    data_splits.append([[set(train), set(test)] for train, test in a.data_split.split(X, y)])
+    data_splitters.append([[set(train), set(test)] for train, test in a.data_splitter.split(X, y)])
 
-    assert data_splits[0] == data_splits[1]
-    assert data_splits[1] != data_splits[2]
-    assert data_splits[2] == data_splits[3]
+    assert data_splitters[0] == data_splitters[1]
+    assert data_splitters[1] != data_splitters[2]
+    assert data_splitters[2] == data_splitters[3]
