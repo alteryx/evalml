@@ -264,9 +264,9 @@ class AutoMLSearch:
         self.X_train = _convert_to_woodwork_structure(X_train)
         self.y_train = _convert_to_woodwork_structure(y_train)
 
-        default_data_split = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
+        default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                 n_splits=3, shuffle=True, random_state=self.random_seed)
-        self.data_split = self.data_split or default_data_split
+        self.data_splitter = self.data_splitter or default_data_splitter
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -610,7 +610,7 @@ class AutoMLSearch:
 
         X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
-        for i, (train, valid) in enumerate(self.data_split.split(X_pd, y_pd)):
+        for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
