@@ -531,21 +531,21 @@ class AutoMLSearch:
         if self._train_best_pipeline:
             X_threshold_tuning = None
             y_threshold_tuning = None
+            X_train, y_train = self.X_train, self.y_train
             if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
                 X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(self.X_train, self.y_train, test_size=0.2, random_state=self.random_state)
             self._best_pipeline.fit(X_train, y_train)
-            self._best_pipeline = self._threshold_pipeline(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
+            self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
 
-    def _threshold_pipeline(self, pipeline, X_threshold_tuning, y_threshold_tuning, fold=None):
+    def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
         """Tunes the threshold of a binary pipeline to the X and y thresholding data
 
         Arguments:
             pipeline (Pipeline): Pipeline instance to threshold
             X_threshold_tuning (ww DataTable): X data to tune pipeline to
             y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
-            fold (None, int): The fold of training this belongs to in AutoMLSearch. Defaults to None
 
         Returns:
             Trained pipeline instance
@@ -553,16 +553,12 @@ class AutoMLSearch:
         if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
             pipeline.threshold = 0.5
             if X_threshold_tuning:
-                if fold is not None:
-                    logger.debug(f"\t\t\tFold {fold}: Optimizing threshold for {self.objective.name}")
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
                 if isinstance(y_predict_proba, pd.DataFrame):
                     y_predict_proba = y_predict_proba.iloc[:, 1]
                 else:
                     y_predict_proba = y_predict_proba[:, 1]
                 pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-                if fold is not None:
-                    logger.debug(f"\t\t\tFold {fold}: Optimal threshold found ({pipeline.threshold:.3f})")
         return pipeline
 
     def _check_stopping_condition(self, start):
@@ -678,8 +674,9 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                cv_pipeline = self._threshold_pipeline(cv_pipeline, X_threshold_tuning, y_threshold_tuning, fold=i)
-
+                cv_pipeline = self._tune_binary_threshold(cv_pipeline, X_threshold_tuning, y_threshold_tuning, fold=i)
+                if cv_pipeline.threshold is not none and self.optimize_thresholds:
+                    logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
@@ -938,10 +935,10 @@ class AutoMLSearch:
 
     @property
     def best_pipeline(self):
-        """If `train_best_pipeline`, returns a trained instance of the best pipeline and parameters found during automl search. Otherwise, returns an untrained pipeline instance.
+        """Returns a trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
 
         Returns:
-            PipelineBase: If `train_best_pipeline`, trained pipeline instance associated with the best automl search result. Otherwise, untrained pipeline instance.
+            PipelineBase: A trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
         """
         if not (self.has_searched and self._best_pipeline):
             raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
