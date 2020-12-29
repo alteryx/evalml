@@ -18,6 +18,7 @@ Release Notes
         * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
         * Return trained pipelines from ``AutoMLSearch.best_pipeline`` :pr:`1547`
+        * Added utility method so that users can set feature types without having to learn about Woodwork directly :pr:`1555`
         * Added Linear Discriminant Analysis transformer for dimensionality reduction :pr:`1331`
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
