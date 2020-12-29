@@ -79,7 +79,7 @@ class AutoMLSearch:
                  max_time=None,
                  patience=None,
                  tolerance=None,
-                 data_split=None,
+                 data_splitter=None,
                  allowed_pipelines=None,
                  allowed_model_families=None,
                  start_iteration_callback=None,
@@ -130,7 +130,7 @@ class AutoMLSearch:
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
-            data_split (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
+            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
@@ -176,7 +176,7 @@ class AutoMLSearch:
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
         self.error_callback = error_callback or log_error_callback
-        self.data_split = data_split
+        self.data_splitter = data_splitter
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
@@ -184,7 +184,7 @@ class AutoMLSearch:
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
-        if self.data_split is not None and not issubclass(self.data_split.__class__, BaseCrossValidator):
+        if self.data_splitter is not None and not issubclass(self.data_splitter.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
         if not objective.is_defined_for_problem_type(self.problem_type):
             raise ValueError("Given objective {} is not compatible with a {} problem.".format(self.objective.name, self.problem_type.value))
@@ -286,7 +286,7 @@ class AutoMLSearch:
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
-            f"Data Splitting: {self.data_split}\n"
+            f"Data Splitting: {self.data_splitter}\n"
             f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
@@ -328,7 +328,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type)
+                return DefaultDataChecks(problem_type=self.problem_type, n_splits=self.data_splitter.get_n_splits())
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -365,16 +365,16 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def _set_data_split(self, X, y):
+    def _set_data_splitter(self, X, y):
         """Sets the data split method for AutoMLSearch
 
         Arguments:
             X (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features].
             y (pd.Series, ww.DataColumn): The target training data of length [n_samples].
         """
-        default_data_split = make_data_splitter(X, y, self.problem_type, self.problem_configuration,
-                                                n_splits=3, shuffle=True, random_state=self.random_seed)
-        self.data_split = self.data_split or default_data_split
+        default_data_splitter = make_data_splitter(X, y, self.problem_type, self.problem_configuration,
+                                                   n_splits=3, shuffle=True, random_state=self.random_seed)
+        self.data_splitter = self.data_splitter or default_data_splitter
 
     def search(self, X, y, data_checks="auto", show_iteration_plot=True):
         """Find the best pipeline for the data set.
@@ -416,7 +416,7 @@ class AutoMLSearch:
             logger.warning("`y` passed was not a DataColumn. EvalML will try to convert the input as a Woodwork DataTable and types will be inferred. To control this behavior, please pass in a Woodwork DataTable instead.")
             y = _convert_to_woodwork_structure(y)
 
-        self._set_data_split(X, y)
+        self._set_data_splitter(X, y)
 
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(X.to_dataframe()), _convert_woodwork_types_wrapper(y.to_series()))
@@ -623,7 +623,7 @@ class AutoMLSearch:
 
         X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
-        for i, (train, test) in enumerate(self.data_split.split(X_pd, y_pd)):
+        for i, (train, test) in enumerate(self.data_splitter.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
@@ -884,7 +884,7 @@ class AutoMLSearch:
         if not isinstance(y, pd.Series):
             y = pd.Series(y)
 
-        self._set_data_split(X, y)
+        self._set_data_splitter(X, y)
 
         pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
         for parameter in pipeline_rows['parameters']:
