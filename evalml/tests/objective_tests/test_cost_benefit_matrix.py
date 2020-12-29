@@ -26,7 +26,7 @@ def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(true_positive=10, true_negative=-1,
                             false_positive=-7, false_negative=-2)
-    automl = AutoMLSearch(X, y, problem_type='binary', objective=cbm, max_iterations=2, optimize_thresholds=optimize_thresholds)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=cbm, max_iterations=2, optimize_thresholds=optimize_thresholds)
     automl.search()
 
     pipeline = automl.best_pipeline

@@ -12,7 +12,7 @@ def test_lead_scoring_objective(X_y_binary):
     objective = LeadScoring(true_positives=1,
                             false_positives=-1)
 
-    automl = AutoMLSearch(X, y, problem_type='binary', objective=objective, max_iterations=1, random_state=0)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=objective, max_iterations=1, random_state=0)
     automl.search()
     pipeline = automl.best_pipeline
     pipeline.fit(X, y)
