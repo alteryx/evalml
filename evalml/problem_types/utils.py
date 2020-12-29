@@ -49,3 +49,65 @@ def detect_problem_type(y):
         if (num_classes > 10):
             return ProblemTypes.REGRESSION
     return ProblemTypes.MULTICLASS
+
+
+def is_regression(problem_type):
+    """Determines if the provided problem_type is a regression problem type
+
+    Arguments:
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+    Returns:
+        bool: Whether or not the provided problem_type is a regression problem type.
+"""
+    return handle_problem_types(problem_type) in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+
+
+def is_binary(problem_type):
+    """Determines if the provided problem_type is a binary classification problem type
+
+    Arguments:
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+    Returns:
+        bool: Whether or not the provided problem_type is a binary classification problem type.
+"""
+    return handle_problem_types(problem_type) in [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+
+
+def is_multiclass(problem_type):
+    """Determines if the provided problem_type is a multiclass classification problem type
+
+    Arguments:
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+    Returns:
+        bool: Whether or not the provided problem_type is a multiclass classification problem type.
+"""
+    return handle_problem_types(problem_type) in [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+
+
+def is_classification(problem_type):
+    """Determines if the provided problem_type is a classification problem type
+
+    Arguments:
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+    Returns:
+        bool: Whether or not the provided problem_type is a classification problem type.
+"""
+    return is_binary(problem_type) or is_multiclass(problem_type)
+
+
+def is_time_series(problem_type):
+    """Determines if the provided problem_type is a time series problem type
+
+    Arguments:
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+    Returns:
+        bool: Whether or not the provided problem_type is a time series problem type.
+"""
+    return handle_problem_types(problem_type) in [ProblemTypes.TIME_SERIES_BINARY,
+                                                  ProblemTypes.TIME_SERIES_MULTICLASS,
+                                                  ProblemTypes.TIME_SERIES_REGRESSION]
