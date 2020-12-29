@@ -533,7 +533,9 @@ class AutoMLSearch:
             y_threshold_tuning = None
             X_train, y_train = self.X_train, self.y_train
             if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
-                X_train, X_threshold_tuning, y_train, y_threshold_tuning = train_test_split(self.X_train, self.y_train, test_size=0.2, random_state=self.random_state)
+                X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                      test_size=0.2,
+                                                                                      random_state=self.random_seed)
             self._best_pipeline.fit(X_train, y_train)
             self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
         logger.info(f"Best pipeline: {best_pipeline_name}")
@@ -675,7 +677,7 @@ class AutoMLSearch:
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
                 cv_pipeline = self._tune_binary_threshold(cv_pipeline, X_threshold_tuning, y_threshold_tuning, fold=i)
-                if cv_pipeline.threshold is not none and self.optimize_thresholds:
+                if cv_pipeline.threshold is not None and self.optimize_thresholds:
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)

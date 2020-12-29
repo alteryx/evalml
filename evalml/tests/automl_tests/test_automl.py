@@ -640,6 +640,7 @@ def test_large_dataset_regression(mock_score):
 
 def test_large_dataset_split_size(X_y_binary):
     X, y = X_y_binary
+
     def generate_fake_dataset(rows):
         X = pd.DataFrame({'col_0': [i for i in range(rows)]})
         y = pd.Series([i % 2 for i in range(rows)])
@@ -1142,7 +1143,7 @@ def test_pipelines_in_batch_return_none(mock_evaluate_pipelines, mock_next_batch
 def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
-    mock_train_test_split.side_effect = RuntimeError()
+    mock_split_data.side_effect = RuntimeError()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True, train_best_pipeline=False)
     automl.search()
     for pipeline in automl.results['pipeline_results'].values():
