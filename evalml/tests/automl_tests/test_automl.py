@@ -720,6 +720,15 @@ def test_main_objective_problem_type_mismatch(X_y_binary):
         AutoMLSearch(X, y, problem_type='binary', objective='R2')
 
 
+def test_init_missing_data(X_y_binary):
+    X, y = X_y_binary
+    with pytest.raises(ValueError, match=r"Must specify training data as a 2d array using the X_train argument"):
+        AutoMLSearch(y_train=y, problem_type='binary')
+
+    with pytest.raises(ValueError, match=r"Must specify training data target values as a 1d vector using the y_train argument"):
+        AutoMLSearch(X_train=X, problem_type='binary')
+
+
 def test_init_problem_type_error(X_y_binary):
     X, y = X_y_binary
     with pytest.raises(ValueError, match=r"choose one of \(binary, multiclass, regression\) as problem_type"):

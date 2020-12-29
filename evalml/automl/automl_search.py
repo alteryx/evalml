@@ -73,8 +73,8 @@ class AutoMLSearch:
     plot = PipelineSearchPlots
 
     def __init__(self,
-                 X_train,
-                 y_train,
+                 X_train=None,
+                 y_train=None,
                  problem_type=None,
                  objective='auto',
                  max_iterations=None,
@@ -100,9 +100,9 @@ class AutoMLSearch:
         """Automated pipeline search
 
         Arguments:
-            X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]
+            X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
 
-            y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]
+            y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
 
             problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
@@ -173,6 +173,10 @@ class AutoMLSearch:
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
         """
+        if X_train is None:
+            raise ValueError('Must specify training data as a 2d array using the X_train argument')
+        if y_train is None:
+            raise ValueError('Must specify training data target values as a 1d vector using the y_train argument')
         try:
             self.problem_type = handle_problem_types(problem_type)
         except ValueError:
