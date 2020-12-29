@@ -31,6 +31,8 @@ Release Notes
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
         * Set ``random_state`` of data splitter in AutoMLSearch to take int to keep consistency in the resulting splits :pr:`1579`
         * Pin sklearn version while we work on adding support :pr:`1594`
+        * Pin pandas at <1.2.0 while we work on adding support :pr:`1609`
+        * Pin graphviz at < 0.16 while we work on adding support :pr:`1609`
     * Changes
         * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
@@ -40,6 +42,7 @@ Release Notes
         * Updated ``Woodwork`` version requirement to v0.0.7 :pr:`1560`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
+        * Updated documentation for confusion matrix methods :pr:`1611`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
 
