@@ -20,13 +20,14 @@ from evalml.automl.callbacks import (
 )
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
-    _LARGE_DATA_ROW_THRESHOLD
+    _LARGE_DATA_ROW_THRESHOLD, make_data_splitter
 )
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
     DataChecks,
-    DataCheckWarning
+    DataCheckWarning, ClassImbalanceDataCheck, HighlyNullDataCheck, NoVarianceDataCheck, IDColumnsDataCheck,
+    TargetLeakageDataCheck, InvalidTargetDataCheck
 )
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
@@ -406,6 +407,17 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(X, y, data_checks=[MockDataCheckErrorAndWarning])
 
 
+def test_validate_data_check_n_splits(X_y_multi):
+    X, y = X_y_multi
+    data_checks = DataChecks([ClassImbalanceDataCheck], {"ClassImbalanceDataCheck": {"num_cv_folds": 4}})
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+
+    automl = AutoMLSearch(problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
+    automl.search(X, y, data_checks=data_checks)
+
+    assert automl.data_splitter.get_n_splits() == 4
+
+
 def test_automl_str_no_param_search():
     automl = AutoMLSearch(problem_type='binary')
 
@@ -585,10 +597,10 @@ def test_large_dataset_binary(mock_score):
                           optimize_thresholds=True,
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
+    assert automl.data_splitter is None
     automl.search(X, y)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.get_n_splits() == 1
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.get_n_splits() == 1
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
@@ -602,10 +614,10 @@ def test_large_dataset_multiclass(mock_score):
 
     automl = AutoMLSearch(problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
+    assert automl.data_splitter is None
     automl.search(X, y)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.get_n_splits() == 1
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
@@ -620,10 +632,10 @@ def test_large_dataset_regression(mock_score):
 
     automl = AutoMLSearch(problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
+    assert automl.data_splitter is None
     automl.search(X, y)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.get_n_splits() == 1
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
@@ -648,19 +660,19 @@ def test_large_dataset_split_size(mock_fit, mock_score):
                           max_iterations=1,
                           optimize_thresholds=True)
     mock_score.return_value = {automl.objective.name: 1.234}
-    assert automl.data_split is None
+    assert automl.data_splitter is None
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
     automl.search(X, y)
-    assert isinstance(automl.data_split, StratifiedKFold)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
-    automl.data_split = None
+    automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
     automl.search(X, y)
-    assert isinstance(automl.data_split, TrainingValidationSplit)
-    assert automl.data_split.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert automl.data_splitter.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
 def test_data_split_shuffle():

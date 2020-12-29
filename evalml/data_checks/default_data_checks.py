@@ -25,7 +25,7 @@ class DefaultDataChecks(DataChecks):
     _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
                                    TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
 
-    def __init__(self, problem_type):
+    def __init__(self, problem_type, n_splits=3):
         """
         A collection of basic data checks.
 
@@ -37,4 +37,5 @@ class DefaultDataChecks(DataChecks):
                              data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
         else:
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES + [ClassImbalanceDataCheck],
-                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type}})
+                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type},
+                                                "ClassImbalanceDataCheck": {"num_cv_folds": n_splits}})
