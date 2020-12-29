@@ -265,7 +265,7 @@ class AutoMLSearch:
         self.y_train = _convert_to_woodwork_structure(y_train)
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
-                                                n_splits=3, shuffle=True, random_state=self.random_seed)
+                                                   n_splits=3, shuffle=True, random_state=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
 
     def _validate_objective(self, objective):

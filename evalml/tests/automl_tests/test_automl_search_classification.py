@@ -65,17 +65,17 @@ def test_get_pipeline_none(X_y_binary):
         automl.describe_pipeline(0)
 
 
-def test_data_split(X_y_binary):
+def test_data_splitter(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_split=StratifiedKFold(cv_folds), max_iterations=1,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=StratifiedKFold(cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_split=TimeSeriesSplit(cv_folds), max_iterations=1,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=TimeSeriesSplit(cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 
