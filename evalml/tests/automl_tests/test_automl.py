@@ -410,11 +410,10 @@ def test_automl_bad_data_check_parameter_type():
 
 def test_validate_data_check_n_splits(X_y_multi):
     X, y = X_y_multi
-    data_checks = DataChecks([ClassImbalanceDataCheck], {"ClassImbalanceDataCheck": {"num_cv_folds": 4}})
     data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
 
     automl = AutoMLSearch(problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
-    automl.search(X, y, data_checks=data_checks)
+    automl.search(X, y, data_checks='auto')
 
     assert automl.data_splitter.get_n_splits() == 4
 
