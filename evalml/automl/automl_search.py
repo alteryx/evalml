@@ -47,7 +47,7 @@ from evalml.pipelines import (
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
 from evalml.utils.gen_utils import (
@@ -532,7 +532,7 @@ class AutoMLSearch:
             X_threshold_tuning = None
             y_threshold_tuning = None
             X_train, y_train = self.X_train, self.y_train
-            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and self.problem_type == ProblemTypes.BINARY:
+            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                 X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                       test_size=0.2,
                                                                                       random_state=self.random_seed)
@@ -552,7 +552,7 @@ class AutoMLSearch:
         Returns:
             Trained pipeline instance
         """
-        if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.problem_type == ProblemTypes.BINARY:
+        if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and is_binary(self.problem_type):
             pipeline.threshold = 0.5
             if X_threshold_tuning:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
@@ -668,7 +668,7 @@ class AutoMLSearch:
             try:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
-                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and self.problem_type == ProblemTypes.BINARY:
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_state=self.random_seed)
