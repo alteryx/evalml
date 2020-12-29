@@ -1,10 +1,10 @@
 from sklearn.model_selection import KFold, StratifiedKFold
 
-from evalml.automl.data_splitters import (
+from evalml.objectives import get_objective
+from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
 )
-from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
