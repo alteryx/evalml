@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
+        * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -33,7 +34,6 @@ Release Notes
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
         * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
-        * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
         * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
         * Update ``split_data`` helper args :pr:`1597`
         * Add problem type utils ``is_regression``, ``is_classification``, ``is_timeseries`` :pr:`1597`
