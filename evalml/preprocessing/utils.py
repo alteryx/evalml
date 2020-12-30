@@ -22,7 +22,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         verbose (bool): If True, prints information about features and target
 
     Returns:
-        pd.DataFrame, pd.Series: features and target
+        ww.DataTable, ww.DataColumn: Features matrix and target
     """
 
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
@@ -42,6 +42,8 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
+    X = _convert_to_woodwork_structure(X)
+    y = _convert_to_woodwork_structure(y)
     return X, y
 
 
