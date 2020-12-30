@@ -17,6 +17,8 @@ Release Notes
         * Added more information to users about ensembling behavior in ``AutoMLSearch`` :pr:`1527`
         * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
+        * Return trained pipelines from ``AutoMLSearch.best_pipeline`` :pr:`1547`
+        * Added utility method so that users can set feature types without having to learn about Woodwork directly :pr:`1555`
         * Added Linear Discriminant Analysis transformer for dimensionality reduction :pr:`1331`
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
@@ -57,6 +59,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+        * Updated ``AutoMLSearch.best_pipeline`` to return a trained pipeline. Pass in ``train_best_pipeline=False`` to AutoMLSearch in order to return an untrained pipeline.
         * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
         * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
         * Update ``split_data`` helper args :pr:`1597`
