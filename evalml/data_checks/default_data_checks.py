@@ -25,7 +25,7 @@ class DefaultDataChecks(DataChecks):
     _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
                                    TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
 
-    def __init__(self, problem_type, objective=None):
+    def __init__(self, problem_type, objective):
         """
         A collection of basic data checks.
 

@@ -18,7 +18,7 @@ from evalml.utils.gen_utils import (
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
 
-    def __init__(self, problem_type, objective=None, n_unique=100):
+    def __init__(self, problem_type, objective, n_unique=100):
         """Check if the target is invalid for the specified problem type.
 
         Arguments:
@@ -26,12 +26,7 @@ class InvalidTargetDataCheck(DataCheck):
                 incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
         """
         self.problem_type = handle_problem_types(problem_type)
-        objective_name = {'binary': 'Log Loss Binary',
-                          'multiclass': 'Log Loss Multiclass',
-                          'regression': 'R2',
-                          'time series regression': 'R2'}[self.problem_type.value]
-        self.objective = get_objective(objective_name, return_instance=True) if not objective else objective
-        self.objective = self.objective if isinstance(self.objective, str) else self.objective.name
+        self.objective_name = get_objective(objective).name
         if n_unique is not None and n_unique <= 0:
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
@@ -104,13 +99,15 @@ class InvalidTargetDataCheck(DataCheck):
                                                              message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
                                                              details={"target_values": unique_values}).to_dict())
 
-        if self.objective:
-            any_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
-            if any_neg and (self.objective in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
-                details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
-                messages["errors"].append(DataCheckError(message=f"Target has negative values which is not supported for {self.objective}",
-                                                         data_check_name=self.name,
-                                                         message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
-                                                         details=details).to_dict())
+        if not self.objective_name:
+            return messages
+
+        any_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
+        if any_neg and (self.objective_name in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
+            details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
+            messages["errors"].append(DataCheckError(message=f"Target has negative values which is not supported for {self.objective_name}",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+                                                     details=details).to_dict())
 
         return messages
