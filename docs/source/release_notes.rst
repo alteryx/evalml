@@ -47,6 +47,7 @@ Release Notes
         * Pin sklearn version while we work on adding support :pr:`1594`
         * Pin pandas at <1.2.0 while we work on adding support :pr:`1609`
         * Pin graphviz at < 0.16 while we work on adding support :pr:`1609`
+        * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622`
     * Changes
         * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
