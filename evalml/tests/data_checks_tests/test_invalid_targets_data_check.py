@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from evalml.automl import get_default_primary_search_objective
 
+from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
@@ -270,4 +270,4 @@ def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objec
 def test_invalid_target_data_check_initialize_with_none_objective():
     with pytest.raises(DataCheckInitError, match="Encountered the following error"):
         DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
-                                                                                       "objective": None}})
+                                                                         "objective": None}})
