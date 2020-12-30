@@ -45,7 +45,7 @@ class InvalidTargetDataCheck(DataCheck):
             >>> import pandas as pd
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None, None])
-            >>> target_check = InvalidTargetDataCheck('binary')
+            >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
             >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
                                                                    "data_check_name": "InvalidTargetDataCheck",\
                                                                    "level": "error",\
