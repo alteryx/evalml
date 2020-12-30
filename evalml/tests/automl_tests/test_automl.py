@@ -25,8 +25,7 @@ from evalml.data_checks import (
     DataCheck,
     DataCheckError,
     DataChecks,
-    DataCheckWarning,
-    InvalidTargetDataCheck
+    DataCheckWarning
 )
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
@@ -384,6 +383,7 @@ def test_automl_data_checks_raises_error(mock_fit, mock_score, data_checks, capl
         automl.search(data_checks=data_checks)
 
     out = caplog.text
+    print(out)
     assert "error one" in out
     assert "warning one" in out
     assert automl.data_check_results == MockDataCheckErrorAndWarning().validate(X, y)
@@ -408,67 +408,21 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
 
 
-@pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
-def test_automl_invalid_target_data_check_invalid_labels_for_objectives(objective, ts_data):
-    X_ts, y_ts = ts_data
-    y_ts[0] = -1
+class MockDataCheckObjective(DataCheck):
+    def __init__(self, objective):
+        self.objective_name = get_objective(objective).name
 
-    prob = {
-        'gap': 2,
-        'max_delay': 4
-    }
-
-    automl = AutoMLSearch(X_ts, y_ts, problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                          max_iterations=1,
-                          objective=objective,
-                          problem_configuration=prob)
-    with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors"):
-        automl.search(data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                                                          objective=objective)])
+    def validate(self, X, y):
+        return {"warnings": [], "errors": []}
 
 
-@pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
-def test_automl_invalid_target_data_check_valid_labels_for_objectives(objective, ts_data):
-    X_ts, y_ts = ts_data
-
-    prob = {
-        'gap': 2,
-        'max_delay': 4
-    }
-
-    automl = AutoMLSearch(X_ts, y_ts, problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                          max_iterations=1,
-                          objective=objective,
-                          problem_configuration=prob)
-
-    automl.search(data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                                                      objective=objective)])
-    assert automl.data_check_results == {"warnings": [], "errors": []}
-
-
-def test_automl_invalid_target_data_check_valid_labels_for_none_objective(ts_data):
-    X_ts, y_ts = ts_data
-
-    prob = {
-        'gap': 2,
-        'max_delay': 4
-    }
-
-    automl = AutoMLSearch(X_ts, y_ts, problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                          max_iterations=1,
-                          problem_configuration=prob)
-
-    automl.search(data_checks=[InvalidTargetDataCheck(problem_type=ProblemTypes.TIME_SERIES_REGRESSION,
-                                                      objective=None)])
-    assert automl.data_check_results == {"warnings": [], "errors": []}
-
-
-@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_automl_invalid_objectives_for_mape(problem_type):
-    X = pd.DataFrame([1, 2, 3], [2, 3, 4])
-    y = pd.Series([1, 2, 3])
-    with pytest.raises(ValueError, match="Given objective Mean Absolute Percentage Error is not compatible"):
-        AutoMLSearch(X, y, problem_type=problem_type, max_iterations=1, objective='Mean Absolute Percentage Error')
+@pytest.mark.parametrize("data_checks", [DataChecks([MockDataCheckObjective],
+                                                    data_check_params={"MockDataCheckObjective": {"objective": 'R2'}})])
+def test_automl_passes_correct_objective_name_to_data_check(data_checks, X_y_regression):
+    X, y = X_y_regression
+    automl = AutoMLSearch(X, y, problem_type=ProblemTypes.REGRESSION)
+    automl.search(data_checks=data_checks)
+    assert automl._validate_data_checks(data_checks).data_checks[0].objective_name == MockDataCheckObjective("R2").objective_name
 
 
 def test_automl_str_no_param_search(X_y_binary):
@@ -782,6 +736,12 @@ def test_main_objective_problem_type_mismatch(X_y_binary):
     X, y = X_y_binary
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='R2')
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='Mean Absolute Percentage Error')
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Mean Absolute Percentage Error')
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Mean Absolute Percentage Error')
 
 
 def test_init_missing_data(X_y_binary):
