@@ -28,7 +28,11 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.demos import load_breast_cancer, load_wine
-from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
+from evalml.exceptions import (
+    AutoMLSearchException,
+    PipelineNotFoundError,
+    PipelineNotYetFittedError
+)
 from evalml.model_family import ModelFamily
 from evalml.objectives import CostBenefitMatrix, FraudCost
 from evalml.objectives.utils import get_core_objectives, get_objective
@@ -172,8 +176,9 @@ def test_pipeline_fit_raises(mock_fit, X_y_binary, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     X, y = X_y_binary
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    # Don't train the best pipeline, since this test mocks the pipeline.fit() method and causes it to raise an exception,
+    # which we don't want to raise while fitting the best pipeline.
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, train_best_pipeline=False)
     automl.search()
     out = caplog.text
     assert 'Exception during automl search' in out
@@ -1123,6 +1128,9 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5, start_iteration_callback=callback, objective="f1")
     automl.search()
     assert len(automl._results['pipeline_results']) == number_results
+    if number_results == 0:
+        with pytest.raises(PipelineNotFoundError):
+            automl.best_pipeline
 
 
 @patch('evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch')
@@ -1160,7 +1168,7 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_split_data.side_effect = RuntimeError()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True, train_best_pipeline=False)
     automl.search()
     for pipeline in automl.results['pipeline_results'].values():
         assert np.isnan(pipeline['score'])
@@ -1791,29 +1799,29 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     X, y = X_y_binary
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=None)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=None, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg in caplog.text
 
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=silent_error_callback)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=silent_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg not in caplog.text
 
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg in caplog.text
 
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_error_callback)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_error_callback, train_best_pipeline=False, n_jobs=1)
     with pytest.raises(Exception, match="all your model are belong to us"):
         automl.search()
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
 
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
@@ -1823,7 +1831,7 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
         assert str(e) == msg
 
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_and_save_error_callback)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
     with pytest.raises(Exception, match="all your model are belong to us"):
         automl.search()
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
@@ -1932,6 +1940,33 @@ def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
             continue
         assert result['parameters']['Delayed Feature Transformer'] == configuration
         assert result['parameters']['pipeline'] == configuration
+
+
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+def test_automl_best_pipeline(mock_optimize, X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', train_best_pipeline=False, n_jobs=1)
+    automl.search()
+    with pytest.raises(PipelineNotYetFittedError, match="not fitted"):
+        automl.best_pipeline.predict(X)
+
+    mock_optimize.return_value = 0.62
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, objective="Accuracy Binary", n_jobs=1)
+    automl.search()
+    automl.best_pipeline.predict(X)
+    assert automl.best_pipeline.threshold == 0.5
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=True, objective="Log Loss Binary", n_jobs=1)
+    automl.search()
+    automl.best_pipeline.predict(X)
+    assert automl.best_pipeline.threshold == 0.5
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=True, objective="Accuracy Binary", n_jobs=1)
+    automl.search()
+    automl.best_pipeline.predict(X)
+    assert automl.best_pipeline.threshold == 0.62
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])

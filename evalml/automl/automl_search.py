@@ -47,7 +47,7 @@ from evalml.pipelines import (
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
 from evalml.utils.gen_utils import (
@@ -96,6 +96,7 @@ class AutoMLSearch:
                  ensembling=False,
                  max_batches=None,
                  problem_configuration=None,
+                 train_best_pipeline=True,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -169,6 +170,8 @@ class AutoMLSearch:
 
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
                 in time series problems, values should be passed in for the gap and max_delay variables.
+
+            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -259,6 +262,8 @@ class AutoMLSearch:
 
         self._validate_problem_type()
         self.problem_configuration = self._validate_problem_configuration(problem_configuration)
+        self._train_best_pipeline = train_best_pipeline
+        self._best_pipeline = None
 
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
@@ -522,8 +527,41 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
+        self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+        if self._train_best_pipeline:
+            X_threshold_tuning = None
+            y_threshold_tuning = None
+            X_train, y_train = self.X_train, self.y_train
+            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
+                X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                      test_size=0.2,
+                                                                                      random_state=self.random_seed)
+            self._best_pipeline.fit(X_train, y_train)
+            self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+
+    def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
+        """Tunes the threshold of a binary pipeline to the X and y thresholding data
+
+        Arguments:
+            pipeline (Pipeline): Pipeline instance to threshold
+            X_threshold_tuning (ww DataTable): X data to tune pipeline to
+            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
+
+        Returns:
+            Trained pipeline instance
+        """
+        if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and is_binary(self.problem_type):
+            pipeline.threshold = 0.5
+            if X_threshold_tuning:
+                y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+                if isinstance(y_predict_proba, pd.DataFrame):
+                    y_predict_proba = y_predict_proba.iloc[:, 1]
+                else:
+                    y_predict_proba = y_predict_proba[:, 1]
+                pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+        return pipeline
 
     def _check_stopping_condition(self, start):
         should_continue = True
@@ -630,7 +668,7 @@ class AutoMLSearch:
             try:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
-                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold:
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_state=self.random_seed)
@@ -638,23 +676,14 @@ class AutoMLSearch:
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY):
-                    cv_pipeline.threshold = 0.5
-                    if self.optimize_thresholds and self.objective.can_optimize_threshold:
-                        logger.debug(f"\t\t\tFold {i}: Optimizing threshold for {self.objective.name}")
-                        y_predict_proba = cv_pipeline.predict_proba(X_threshold_tuning)
-                        if isinstance(y_predict_proba, pd.DataFrame):
-                            y_predict_proba = y_predict_proba.iloc[:, 1]
-                        else:
-                            y_predict_proba = y_predict_proba[:, 1]
-                        cv_pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-                        logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+                cv_pipeline = self._tune_binary_threshold(cv_pipeline, X_threshold_tuning, y_threshold_tuning)
+                if X_threshold_tuning:
+                    logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
                 logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
                 score = scores[self.objective.name]
             except Exception as e:
-
                 if self.error_callback is not None:
                     self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
                                         fold_num=i, pipeline=pipeline)
@@ -908,16 +937,15 @@ class AutoMLSearch:
 
     @property
     def best_pipeline(self):
-        """Returns an untrained instance of the best pipeline and parameters found during automl search.
+        """Returns a trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
 
         Returns:
-            PipelineBase: untrained pipeline instance associated with the best automl search result.
+            PipelineBase: A trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
         """
-        if not self.has_searched:
+        if not (self.has_searched and self._best_pipeline):
             raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
 
-        best = self.rankings.iloc[0]
-        return self.get_pipeline(best["id"])
+        return self._best_pipeline
 
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
         """Saves AutoML object at file path
