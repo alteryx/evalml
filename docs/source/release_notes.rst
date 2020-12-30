@@ -46,7 +46,6 @@ Release Notes
         * Fix ReadTheDocs build by updating the version of ``setuptools`` :pr:`1561`
         * Set ``random_state`` of data splitter in AutoMLSearch to take int to keep consistency in the resulting splits :pr:`1579`
         * Pin sklearn version while we work on adding support :pr:`1594`
-        * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
         * Pin pandas at <1.2.0 while we work on adding support :pr:`1609`
         * Pin graphviz at < 0.16 while we work on adding support :pr:`1609`
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622`
