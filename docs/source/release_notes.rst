@@ -4,7 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:``
+        * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
     * Changes
     * Documentation Changes
     * Testing Changes
