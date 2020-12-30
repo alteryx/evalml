@@ -5,7 +5,12 @@ import pytest
 from evalml.problem_types import (
     ProblemTypes,
     detect_problem_type,
-    handle_problem_types
+    handle_problem_types,
+    is_binary,
+    is_classification,
+    is_multiclass,
+    is_regression,
+    is_time_series
 )
 
 
@@ -137,3 +142,19 @@ def test_all_problem_types():
         ProblemTypes.TIME_SERIES_MULTICLASS
     ]
     assert ProblemTypes.all_problem_types == expected
+
+
+@pytest.mark.parametrize('problem_type', ProblemTypes.all_problem_types)
+def test_type_checks(problem_type):
+    assert is_regression(problem_type) == (problem_type in
+                                           [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION])
+    assert is_binary(problem_type) == (problem_type in
+                                       [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY])
+    assert is_multiclass(problem_type) == (problem_type in
+                                           [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS])
+    assert is_classification(problem_type) == (problem_type in
+                                               [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
+    assert is_time_series(problem_type) == (problem_type in
+                                            [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS,
+                                             ProblemTypes.TIME_SERIES_REGRESSION])

@@ -34,8 +34,8 @@ X_train, X_test, y_train, y_test = evalml.preprocessing.split_data(X, y)
 #### Run AutoML
 ```python
 from evalml.automl import AutoMLSearch
-automl = AutoMLSearch(problem_type='binary')
-automl.search(X_train, y_train)
+automl = AutoMLSearch(X_train=X_train, y_train=y_train, problem_type='binary')
+automl.search()
 ```
 
 #### View pipeline rankings
