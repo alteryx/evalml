@@ -99,9 +99,6 @@ class InvalidTargetDataCheck(DataCheck):
                                                              message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
                                                              details={"target_values": unique_values}).to_dict())
 
-        if not self.objective_name:
-            return messages
-
         any_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
         if any_neg and (self.objective_name in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
             details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
