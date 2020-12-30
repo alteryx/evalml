@@ -145,7 +145,7 @@ class AutoMLSearch:
                 Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
 
             add_result_callback (callable): Function called after each pipeline training iteration.
-                Callback function takes three positional parameters:: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
+                Callback function takes three positional parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
             error_callback (callable): Function called when `search()` errors and raises an Exception.
                 Callback function takes three positional parameters: the Exception raised, the traceback, and the AutoMLSearch object.
