@@ -1,11 +1,13 @@
-catboost==0.24.3
+catboost==0.24.4
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
 featuretools==0.22.0
 graphviz==0.15
-ipywidgets==7.5.1
+ipywidgets==7.6.2
+kaleido==0.1.0
 lightgbm==3.1.1
+matplotlib==3.3.3
 networkx==2.5
 nlp-primitives==1.1.0
 numpy==1.19.4
@@ -16,6 +18,7 @@ requirements-parser==0.2.0
 scikit-learn==0.23.2
 scikit-optimize==0.8.1
 scipy==1.5.4
+seaborn==0.11.1
 shap==0.37.0
 texttable==1.6.3
 woodwork==0.0.7
