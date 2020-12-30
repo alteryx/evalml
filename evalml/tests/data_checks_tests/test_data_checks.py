@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from evalml.automl import get_default_primary_search_objective
 
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -104,7 +105,7 @@ def test_default_data_checks_classification(input_type):
         y = ww.DataColumn(y)
         y_multiclass = ww.DataColumn(y_multiclass)
 
-    data_checks = DefaultDataChecks("binary")
+    data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
 
     leakage = [DataCheckWarning(message="Column 'has_label_leakage' is 95.0% or more correlated with the target",
                                 data_check_name="TargetLeakageDataCheck",
@@ -118,7 +119,8 @@ def test_default_data_checks_classification(input_type):
     assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
-                             {"InvalidTargetDataCheck": {"problem_type": "binary"}})
+                             {"InvalidTargetDataCheck": {"problem_type": "binary",
+                                                         "objective": get_default_primary_search_objective("binary")}})
     assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:]}
 
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]",
@@ -126,11 +128,12 @@ def test_default_data_checks_classification(input_type):
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                 details={"target_values": [0.0, 2.0, 1.0]}).to_dict()]
     # multiclass
-    data_checks = DefaultDataChecks("multiclass")
+    data_checks = DefaultDataChecks("multiclass", get_default_primary_search_objective("multiclass"))
     assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
-                             {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
+                             {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                         "objective": get_default_primary_search_objective("multiclass")}})
     assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
@@ -149,7 +152,7 @@ def test_default_data_checks_regression(input_type):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
         y_no_variance = ww.DataColumn(y_no_variance)
-    data_checks = DefaultDataChecks("regression")
+    data_checks = DefaultDataChecks("regression", get_default_primary_search_objective("regression"))
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
     # Skip Invalid Target
@@ -159,13 +162,14 @@ def test_default_data_checks_regression(input_type):
                                                                                                                          details={"column": "Y"}).to_dict()]}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
-                             {"InvalidTargetDataCheck": {"problem_type": "regression"}})
+                             {"InvalidTargetDataCheck": {"problem_type": "regression",
+                                                         "objective": get_default_primary_search_objective("regression")}})
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
 def test_default_data_checks_time_series_regression():
-    regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("regression").data_checks]
-    ts_regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("time series regression").data_checks]
+    regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("regression", get_default_primary_search_objective("regression")).data_checks]
+    ts_regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("time series regression", get_default_primary_search_objective("time series regression")).data_checks]
     assert regression_data_check_classes == ts_regression_data_check_classes
 
 
@@ -233,7 +237,6 @@ class MockCheck2(DataCheck):
                                                    "data_check_params dictionary.")),
                           ([MockCheck], [1], ValueError, r"Params must be a dictionary. Received \[1\]")])
 def test_data_checks_raises_value_errors_on_init(classes, params, expected_exception, expected_message):
-
     with pytest.raises(expected_exception, match=expected_message):
         DataChecks(classes, params)
 
@@ -241,3 +244,20 @@ def test_data_checks_raises_value_errors_on_init(classes, params, expected_excep
 def test_automl_data_checks_raises_value_error():
     with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
         AutoMLDataChecks([1, MockCheck])
+
+
+@pytest.mark.parametrize("objective", ["Root Mean Squared Log Error", "Mean Squared Log Error", "Mean Absolute Percentage Error"])
+def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
+    X, y = ts_data
+    y[0] = -1
+    y = pd.Series(y)
+    details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
+    data_check_error = DataCheckError(message=f"Target has negative values which is not supported for {objective}",
+                                      data_check_name="InvalidTargetDataCheck",
+                                      message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+                                      details=details).to_dict()
+
+    default_data_check = DefaultDataChecks(problem_type="time series regression", objective=objective).data_checks
+    for check in default_data_check:
+        if check.name == "InvalidTargetDataCheck":
+            assert check.validate(X, y) == {"warnings": [], "errors": [data_check_error]}
