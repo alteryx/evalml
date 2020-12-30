@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from evalml.automl import get_default_primary_search_objective
 
 from evalml.data_checks import (
     DataCheckError,
@@ -9,6 +10,7 @@ from evalml.data_checks import (
     DataCheckWarning,
     InvalidTargetDataCheck
 )
+from evalml.exceptions import DataCheckInitError
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
@@ -19,12 +21,12 @@ invalid_targets_data_check_name = InvalidTargetDataCheck.name
 
 def test_invalid_target_data_check_invalid_n_unique():
     with pytest.raises(ValueError, match="`n_unique` must be a non-negative integer value."):
-        InvalidTargetDataCheck("regression", n_unique=-1)
+        InvalidTargetDataCheck("regression", get_default_primary_search_objective("regression"), n_unique=-1)
 
 
 def test_invalid_target_data_check_nan_error():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("regression")
+    invalid_targets_check = InvalidTargetDataCheck("regression", get_default_primary_search_objective("regression"))
 
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": []}
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == {
@@ -38,13 +40,13 @@ def test_invalid_target_data_check_nan_error():
 
 def test_invalid_target_data_check_numeric_binary_classification_valid_float():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("binary")
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     assert invalid_targets_check.validate(X, y=pd.Series([0.0, 1.0, 0.0, 1.0])) == {"warnings": [], "errors": []}
 
 
 def test_invalid_target_data_check_numeric_binary_classification_error():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("binary")
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     assert invalid_targets_check.validate(X, y=pd.Series([1, 5, 1, 5, 1, 1])) == {
         "warnings": [DataCheckWarning(message="Numerical binary classification target classes must be [0, 1], got [1, 5] instead",
                                       data_check_name=invalid_targets_data_check_name,
@@ -73,7 +75,7 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
 
 def test_invalid_target_data_check_invalid_data_types_error():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("binary")
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     valid_data_types = numeric_and_boolean_dtypes + categorical_dtypes
     y = pd.Series([0, 1, 0, 0, 1, 0, 1, 0])
     for data_type in valid_data_types:
@@ -96,13 +98,13 @@ def test_invalid_target_data_check_invalid_data_types_error():
 
 
 def test_invalid_target_y_none():
-    invalid_targets_check = InvalidTargetDataCheck("binary")
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     with pytest.raises(ValueError, match="y cannot be None"):
         invalid_targets_check.validate(pd.DataFrame(), y=None)
 
 
 def test_invalid_target_data_input_formats():
-    invalid_targets_check = InvalidTargetDataCheck("binary")
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     X = pd.DataFrame()
 
     # test empty pd.Series
@@ -159,7 +161,7 @@ def test_invalid_target_data_input_formats():
 
 def test_invalid_target_data_check_n_unique():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("binary")
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
 
     # Test default value of n_unique
     y = pd.Series(list(range(100, 200)) + list(range(200)))
@@ -184,7 +186,7 @@ def test_invalid_target_data_check_n_unique():
     }
 
     # Test n_unique is None
-    invalid_targets_check = InvalidTargetDataCheck("binary", n_unique=None)
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"), n_unique=None)
     y = pd.Series(range(150))
     unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
@@ -265,13 +267,7 @@ def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objec
     }
 
 
-def test_invalid_target_data_check_valid_labels_for_none_objective():
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
-    y = pd.Series([2, 3, -1, 1, 1])
-
-    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
-                                                                                   "objective": None}})
-    assert data_checks.validate(X, y) == {
-        "warnings": [],
-        "errors": []
-    }
+def test_invalid_target_data_check_initialize_with_none_objective():
+    with pytest.raises(DataCheckInitError, match="Encountered the following error"):
+        DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                                                       "objective": None}})
