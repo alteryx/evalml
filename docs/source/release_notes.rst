@@ -7,6 +7,7 @@ Release Notes
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
     * Changes
     * Documentation Changes
+        * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
     * Testing Changes
 
 
@@ -59,7 +60,6 @@ Release Notes
         * Rename "# Testing" in automl log output to "# Validation" :pr:`1597`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
-        * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated documentation for confusion matrix methods :pr:`1611`
     * Testing Changes
         * Set ``n_jobs=1`` in most unit tests to reduce memory :pr:`1505`
