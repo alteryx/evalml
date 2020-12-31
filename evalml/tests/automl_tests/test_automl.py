@@ -418,9 +418,8 @@ def test_validate_data_check_n_splits(X_y_multi):
     data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
 
     automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
-    automl.search(data_checks='auto')
 
-    assert automl.data_splitter.get_n_splits() == 4
+    assert automl._validate_data_checks("auto").data_checks[-1].cv_folds == 8
 
 
 def test_automl_str_no_param_search(X_y_binary):
