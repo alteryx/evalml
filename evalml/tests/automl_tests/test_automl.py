@@ -388,7 +388,6 @@ def test_automl_data_checks_raises_error(mock_fit, mock_score, data_checks, capl
         automl.search(data_checks=data_checks)
 
     out = caplog.text
-    print(out)
     assert "error one" in out
     assert "warning one" in out
     assert automl.data_check_results == MockDataCheckErrorAndWarning().validate(X, y)
