@@ -58,7 +58,7 @@ AutoML Utils
     :nosignatures:
 
     get_default_primary_search_objective
-
+    make_data_splitter
 
 .. currentmodule:: evalml.automl.automl_algorithm
 
@@ -105,6 +105,9 @@ Pipeline Base Classes
     BinaryClassificationPipeline
     MulticlassClassificationPipeline
     RegressionPipeline
+    TimeSeriesClassificationPipeline
+    TimeSeriesBinaryClassificationPipeline
+    TimeSeriesMulticlassClassificationPipeline
     TimeSeriesRegressionPipeline
 
 Classification Pipelines
@@ -249,6 +252,7 @@ Regressors are components that output a predicted target value.
     StackedEnsembleRegressor
     DecisionTreeRegressor
     GAMRegressor
+    LightGBMRegressor
 
 .. currentmodule:: evalml.model_understanding
 
@@ -269,6 +273,7 @@ Utility Methods
     binary_objective_vs_threshold
     get_prediction_vs_actual_over_time_data
     partial_dependence
+    get_prediction_vs_actual_data
 
 
 Graph Utility Methods
@@ -535,4 +540,4 @@ General Utils
     get_random_seed
     pad_with_nans
     drop_rows_with_nans
-
+    infer_feature_types

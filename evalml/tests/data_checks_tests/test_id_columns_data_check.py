@@ -132,11 +132,11 @@ def test_id_cols_data_check_input_formats():
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more likely to be an ID column",
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": '0'}).to_dict(),
+                                      details={"column": 0}).to_dict(),
                      DataCheckWarning(message="Column '1' is 80.0% or more likely to be an ID column",
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                      details={"column": '1'}).to_dict()],
+                                      details={"column": 1}).to_dict()],
         "errors": []
     }
 

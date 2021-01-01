@@ -1,6 +1,8 @@
 import importlib
+import os
 import warnings
 from collections import namedtuple
+from functools import reduce
 
 import numpy as np
 import pandas as pd
@@ -284,6 +286,28 @@ def is_all_numeric(df):
     return True
 
 
+def infer_feature_types(data, feature_types=None):
+    """Create a Woodwork structure from the given pandas or numpy input, with specified types for columns.
+        If a column's type is not specified, it will be inferred by Woodwork.
+
+    Arguments:
+        data (pd.DataFrame): Input data to convert to a Woodwork data structure.
+        feature_types (string, ww.logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
+            mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
+            a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
+
+    Returns:
+        A Woodwork data structure where the data type of each column was either specified or inferred.
+    """
+    ww_data = _convert_to_woodwork_structure(data)
+    if feature_types is not None:
+        if len(ww_data.shape) == 1:
+            ww_data = ww_data.set_logical_type(feature_types)
+        else:
+            ww_data = ww_data.set_types(logical_types=feature_types)
+    return ww_data
+
+
 def _convert_to_woodwork_structure(data):
     """
     Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
@@ -291,20 +315,12 @@ def _convert_to_woodwork_structure(data):
     ww_data = data
     if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
         return ww_data
-    # Convert numpy data structures to pandas data structures
     if isinstance(data, list):
         ww_data = np.array(data)
 
-    if isinstance(ww_data, pd.api.extensions.ExtensionArray) or (isinstance(ww_data, np.ndarray) and len(ww_data.shape) == 1):
-        ww_data = pd.Series(ww_data)
-    elif isinstance(ww_data, np.ndarray):
-        ww_data = pd.DataFrame(ww_data)
-
-    # Convert pandas data structures to Woodwork data structures
     ww_data = ww_data.copy()
-    if isinstance(ww_data, pd.Series):
+    if len(ww_data.shape) == 1:
         return ww.DataColumn(ww_data)
-
     return ww.DataTable(ww_data)
 
 
@@ -353,11 +369,39 @@ def pad_with_nans(pd_data, num_to_pad):
         pd.DataFrame or pd.Series
     """
     if isinstance(pd_data, pd.Series):
-        padding = pd.Series([None] * num_to_pad)
+        padding = pd.Series([np.nan] * num_to_pad)
     else:
-        padding = pd.DataFrame({col: [None] * num_to_pad
+        padding = pd.DataFrame({col: [np.nan] * num_to_pad
                                 for col in pd_data.columns})
-    return pd.concat([padding, pd_data], ignore_index=True).infer_objects()
+    padded = pd.concat([padding, pd_data], ignore_index=True)
+    # By default, pd.concat will convert all types to object if there are mixed numerics and objects
+    # The call to convert_dtypes ensures numerics stay numerics in the new dataframe.
+    return padded.convert_dtypes(infer_objects=True, convert_string=False,
+                                 convert_integer=False, convert_boolean=False)
+
+
+def _get_rows_without_nans(*data):
+    """Compute a boolean array marking where all entries in the data are non-nan.
+
+    Arguments:
+        *data (sequence of pd.Series or pd.DataFrame)
+
+    Returns:
+        np.ndarray: mask where each entry is True if and only if all corresponding entries in that index in data
+            are non-nan.
+    """
+    def _not_nan(pd_data):
+        if pd_data is None:
+            return np.array([True])
+        if isinstance(pd_data, pd.Series):
+            return ~pd_data.isna().values
+        elif isinstance(pd_data, pd.DataFrame):
+            return ~pd_data.isna().any(axis=1).values
+        else:
+            return pd_data
+
+    mask = reduce(lambda a, b: np.logical_and(_not_nan(a), _not_nan(b)), data)
+    return mask
 
 
 def drop_rows_with_nans(pd_data_1, pd_data_2):
@@ -371,11 +415,98 @@ def drop_rows_with_nans(pd_data_1, pd_data_2):
         tuple of pd.DataFrame or pd.Series
     """
 
-    def _not_nan(pd_data):
-        if isinstance(pd_data, pd.Series):
-            return ~pd_data.isna().values
-        else:
-            return ~pd_data.isna().any(axis=1).values
-
-    mask = np.logical_and(_not_nan(pd_data_1), _not_nan(pd_data_2))
+    mask = _get_rows_without_nans(pd_data_1, pd_data_2)
     return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
+
+
+def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):
+    """ Helper function to check the filepath being passed.
+
+    Arguments:
+        filepath (str or Path, optional): Location to save file.
+        format (str): Extension for figure to be saved as. Defaults to 'png'.
+        interactive (bool, optional): If True and fig is of type plotly.Figure, sets the format to 'html'.
+        is_plotly (bool, optional): Check to see if the fig being passed is of type plotly.Figure.
+
+    Returns:
+        String representing the final filepath the image will be saved to.
+    """
+    if filepath:
+        filepath = str(filepath)
+        path_and_name, extension = os.path.splitext(filepath)
+        extension = extension[1:].lower() if extension else None
+        if is_plotly and interactive:
+            format_ = 'html'
+        elif not extension and not interactive:
+            format_ = format
+        else:
+            format_ = extension
+        filepath = f'{path_and_name}.{format_}'
+        try:
+            f = open(filepath, 'w')
+            f.close()
+        except (IOError, FileNotFoundError):
+            raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+    return filepath
+
+
+def save_plot(fig, filepath=None, format='png', interactive=False, return_filepath=False):
+    """Saves fig to filepath if specified, or to a default location if not.
+
+    Arguments:
+        fig (Figure): Figure to be saved.
+        filepath (str or Path, optional): Location to save file. Default is with filename "test_plot".
+        format (str): Extension for figure to be saved as. Ignored if interactive is True and fig
+        is of type plotly.Figure. Defaults to 'png'.
+        interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
+        instead of static, and format will be set to 'html'. Defaults to False.
+        return_filepath (bool, optional): Whether to return the final filepath the image is saved to. Defaults to False.
+
+    Returns:
+        String representing the final filepath the image was saved to if return_filepath is set to True.
+        Defaults to None.
+    """
+    plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
+    graphviz_ = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
+    matplotlib = import_or_raise("matplotlib", error_msg="Cannot find dependency matplotlib")
+    plt_ = matplotlib.pyplot
+    axes_ = matplotlib.axes
+
+    is_plotly = False
+    is_graphviz = False
+    is_plt = False
+    is_seaborn = False
+
+    format = format if format else 'png'
+    if isinstance(fig, plotly_.graph_objects.Figure):
+        is_plotly = True
+    elif isinstance(fig, graphviz_.Source):
+        is_graphviz = True
+    elif isinstance(fig, plt_.Figure):
+        is_plt = True
+    elif isinstance(fig, axes_.SubplotBase):
+        is_seaborn = True
+
+    if not filepath:
+        extension = 'html' if interactive and is_plotly else format
+        filepath = os.path.join(os.getcwd(), f'test_plot.{extension}')
+
+    filepath = _file_path_check(filepath, format=format, interactive=interactive, is_plotly=is_plotly)
+
+    if is_plotly and interactive:
+        fig.write_html(file=filepath)
+    elif is_plotly and not interactive:
+        fig.write_image(file=filepath, engine="kaleido")
+    elif is_graphviz:
+        filepath_, format_ = os.path.splitext(filepath)
+        fig.format = 'png'
+        filepath = f'{filepath_}.png'
+        fig.render(filename=filepath_, view=False, cleanup=True)
+    elif is_plt:
+        fig.savefig(fname=filepath)
+    elif is_seaborn:
+        fig = fig.figure
+        fig.savefig(fname=filepath)
+
+    if return_filepath:
+        return filepath

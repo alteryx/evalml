@@ -38,7 +38,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Arguments:
         y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
         y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
-        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
+        normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
@@ -78,7 +78,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
         elif normalize_method == 'all':
             conf_mat = conf_mat.astype('float') / conf_mat.sum().sum()
         else:
-            raise ValueError('Invalid value provided for "normalize_method": %s'.format(normalize_method))
+            raise ValueError('Invalid value provided for "normalize_method": {}'.format(normalize_method))
         if w and "invalid value encountered in" in str(w[0].message):
             raise ValueError("Sum of given axis is 0 and normalization is not possible. Please select another option.")
     conf_mat = pd.DataFrame(conf_mat, index=col_names, columns=col_names)
@@ -93,8 +93,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     Arguments:
         y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
         y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
-        normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
-        title_addition (str or None): if not None, append to plot title. Default None.
+        normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
+        title_addition (str or None): if not None, append to plot title. Defaults to None.
 
     Returns:
         plotly.Figure representing the confusion matrix plot generated
@@ -439,7 +439,12 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions.
+            over all samples of X and the values used to calculate those predictions. The dataframe will
+            contain two columns: "feature_values" (grid points at which the partial dependence was calculated) and
+            "partial_dependence" (the partial dependence at that feature value). For classification problems, there
+            will be a third column called "class_label" (the class label for which the partial
+            dependence was calculated). For binary classification, the partial dependence is only calculated for the
+            "positive" class.
 
     """
     X = _convert_to_woodwork_structure(X)
@@ -462,11 +467,21 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
         # Delete scikit-learn attributes that were temporarily set
         del pipeline._estimator_type
         del pipeline.feature_importances_
-    return pd.DataFrame({"feature_values": values[0],
-                         "partial_dependence": avg_pred[0]})
+    classes = None
+    if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+        classes = [pipeline.classes_[1]]
+    elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+        classes = pipeline.classes_
+
+    data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
+                         "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    if classes is not None:
+        data['class_label'] = np.repeat(classes, len(values[0]))
+
+    return data
 
 
-def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
+def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolution=100):
     """Create an one-way partial dependence plot.
 
     Arguments:
@@ -476,6 +491,10 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
         feature (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
+        class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
+            the partial dependence for each class. This argument does not change behavior for regression or binary
+            classification pipelines. For binary classification, the partial dependence for the positive label will
+            always be displayed. Defaults to None.
 
     Returns:
         pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
@@ -485,19 +504,47 @@ def graph_partial_dependence(pipeline, X, feature, grid_resolution=100):
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
+    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline) and class_label is not None:
+        if class_label not in pipeline.classes_:
+            msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
+            raise ValueError(msg)
 
     part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
     feature_name = str(feature)
     title = f"Partial Dependence of '{feature_name}'"
     layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}', 'range': _calculate_axis_range(part_dep['feature_values'])},
-                        yaxis={'title': 'Partial Dependence', 'range': _calculate_axis_range(part_dep['partial_dependence'])})
-    data = []
-    data.append(_go.Scatter(x=part_dep['feature_values'],
+                        xaxis={'title': f'{feature_name}'},
+                        yaxis={'title': 'Partial Dependence'},
+                        showlegend=False)
+    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+        class_labels = [class_label] if class_label is not None else pipeline.classes_
+        _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")
+
+        # If the user passes in a value for class_label, we want to create a 1 x 1 subplot or else there would
+        # be an empty column in the plot and it would look awkward
+        rows, cols = ((len(class_labels) + 1) // 2, 2) if len(class_labels) > 1 else (1, len(class_labels))
+
+        # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
+        fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
+        for i, label in enumerate(class_labels):
+
+            # Plotly trace indexing begins at 1 so we add 1 to i
+            fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
+                                      y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
+                                      line=dict(width=3),
+                                      name=label),
+                          row=(i + 2) // 2, col=(i % 2) + 1)
+        fig.update_layout(layout)
+        fig.update_xaxes(title=f'{feature_name}', range=_calculate_axis_range(part_dep['feature_values']))
+        fig.update_yaxes(range=_calculate_axis_range(part_dep['partial_dependence']))
+    else:
+        trace = _go.Scatter(x=part_dep['feature_values'],
                             y=part_dep['partial_dependence'],
                             name='Partial Dependence',
-                            line=dict(width=3)))
-    return _go.Figure(layout=layout, data=data)
+                            line=dict(width=3))
+        fig = _go.Figure(layout=layout, data=[trace])
+
+    return fig
 
 
 def _calculate_axis_range(arr):
@@ -508,8 +555,26 @@ def _calculate_axis_range(arr):
     return [min_value - margins, max_value + margins]
 
 
-def _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold):
-    """Helper method to help calculate the y_true and y_pred dataframe, with a column for outliers"""
+def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
+    """Combines y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
+
+    Arguments:
+        y_true (pd.Series, ww.DataColumn, or np.ndarray): The real target values of the data
+        y_pred (pd.Series, ww.DataColumn, or np.ndarray): The predicted values outputted by the regression model.
+        outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
+                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
+                                 Defaults to None
+
+    Returns:
+        pd.DataFrame with the following columns:
+                * `prediction`: Predicted values from regression model.
+                * `actual`: Real target values.
+                * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
+
+    """
+    if outlier_threshold and outlier_threshold <= 0:
+        raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
+
     y_true = _convert_to_woodwork_structure(y_true)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     y_pred = _convert_to_woodwork_structure(y_pred)
@@ -548,7 +613,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
-    df = _get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
+    df = get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold)
     data = []
 
     x_axis = _calculate_axis_range(df['prediction'])

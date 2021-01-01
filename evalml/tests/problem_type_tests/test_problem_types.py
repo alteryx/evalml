@@ -5,7 +5,12 @@ import pytest
 from evalml.problem_types import (
     ProblemTypes,
     detect_problem_type,
-    handle_problem_types
+    handle_problem_types,
+    is_binary,
+    is_classification,
+    is_multiclass,
+    is_regression,
+    is_time_series
 )
 
 
@@ -13,12 +18,14 @@ from evalml.problem_types import (
 def correct_problem_types():
     # Unit tests expect this order
     correct_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS,
-                             ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_REGRESSION]
+                             ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_REGRESSION,
+                             ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
     yield correct_problem_types
 
 
 def test_handle_string(correct_problem_types):
-    problem_types = ['regression', ProblemTypes.MULTICLASS, 'binary', ProblemTypes.TIME_SERIES_REGRESSION]
+    problem_types = ['regression', ProblemTypes.MULTICLASS, 'binary', ProblemTypes.TIME_SERIES_REGRESSION,
+                     'time series binary', 'time series multiclass']
     for problem_type in zip(problem_types, correct_problem_types):
         assert handle_problem_types(problem_type[0]) == problem_type[1]
 
@@ -130,6 +137,24 @@ def test_all_problem_types():
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.REGRESSION,
-        ProblemTypes.TIME_SERIES_REGRESSION
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS
     ]
     assert ProblemTypes.all_problem_types == expected
+
+
+@pytest.mark.parametrize('problem_type', ProblemTypes.all_problem_types)
+def test_type_checks(problem_type):
+    assert is_regression(problem_type) == (problem_type in
+                                           [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION])
+    assert is_binary(problem_type) == (problem_type in
+                                       [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY])
+    assert is_multiclass(problem_type) == (problem_type in
+                                           [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS])
+    assert is_classification(problem_type) == (problem_type in
+                                               [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
+    assert is_time_series(problem_type) == (problem_type in
+                                            [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS,
+                                             ProblemTypes.TIME_SERIES_REGRESSION])

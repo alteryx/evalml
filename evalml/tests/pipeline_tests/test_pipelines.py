@@ -63,7 +63,7 @@ def test_allowed_model_families(has_minimal_dependencies):
     expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
         expected_model_families_binary.update([ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM])
-        expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST])
+        expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST, ModelFamily.LIGHTGBM])
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
     assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
@@ -72,7 +72,7 @@ def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 10
     else:
-        assert len(_all_estimators_used_in_search()) == 15
+        assert len(_all_estimators_used_in_search()) == 16
 
 
 def test_get_estimators(has_minimal_dependencies):
@@ -85,7 +85,7 @@ def test_get_estimators(has_minimal_dependencies):
         assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 8
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 8
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 8
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0
@@ -344,8 +344,8 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     est = RandomForestClassifier(random_state=7)
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
                                              random_state=15)
-    assert [c.__class__ for c in pipeline.component_graph] == [Imputer, RandomForestClassifier]
-    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline.component_graph]
+    assert [c.__class__ for c in pipeline._component_graph] == [Imputer, RandomForestClassifier]
+    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline._component_graph]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {
@@ -369,7 +369,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
         parameters = {'bar': 'baz'}
     random_state = np.random.RandomState(42)
     pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
-    components_list = pipeline.component_graph
+    components_list = [c for c in pipeline._component_graph]
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
     assert check_random_state_equality(components_list[0].random_state, random_state)
@@ -380,7 +380,8 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=np.random.RandomState(42))
-    new_pipeline = make_pipeline_from_components(pipeline.component_graph, ProblemTypes.BINARY)
+    component_instances = [c for c in pipeline._component_graph]
+    new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
     pipeline.fit(X, y)
     predictions = pipeline.predict(X)
     new_pipeline.fit(X, y)
@@ -389,7 +390,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     assert np.array_equal(pipeline.feature_importance, new_pipeline.feature_importance)
     assert new_pipeline.name == 'Templated Pipeline'
     assert pipeline.parameters == new_pipeline.parameters
-    for component, new_component in zip(pipeline.component_graph, new_pipeline.component_graph):
+    for component, new_component in zip(pipeline._component_graph, new_pipeline._component_graph):
         assert isinstance(new_component, type(component))
     assert pipeline.describe() == new_pipeline.describe()
 
@@ -504,7 +505,23 @@ def test_describe(caplog, logistic_regression_binary_pipeline_class):
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
-    for component in lrp.component_graph:
+    for component in lrp._component_graph:
+        if component.hyperparameter_ranges:
+            for parameter in component.hyperparameter_ranges:
+                assert parameter in out
+        assert component.name in out
+
+
+def test_describe_nonlinear(caplog, nonlinear_binary_pipeline_class):
+    nbpl = nonlinear_binary_pipeline_class(parameters={})
+    nbpl.describe()
+    out = caplog.text
+    assert "Non Linear Binary Pipeline" in out
+    assert "Problem Type: binary" in out
+    assert "Model Family: Linear" in out
+    assert "Number of features: " not in out
+
+    for component in nbpl._component_graph:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -522,11 +539,54 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
     assert "Model Family: Linear" in out
     assert "Number of features: {}".format(X.shape[1]) in out
 
-    for component in lrp.component_graph:
+    for component in lrp._component_graph:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
         assert component.name in out
+
+
+def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline_class):
+    X, y = X_y_binary
+    nbpl = nonlinear_binary_pipeline_class(parameters={})
+    nbpl.fit(X, y)
+    nbpl.describe()
+    out = caplog.text
+    assert "Non Linear Binary Pipeline" in out
+    assert "Problem Type: binary" in out
+    assert "Model Family: Linear" in out
+    assert "Number of features: 2" in out
+
+    for component in nbpl._component_graph:
+        if component.hyperparameter_ranges:
+            for parameter in component.hyperparameter_ranges:
+                assert parameter in out
+        assert component.name in out
+
+
+def test_nonlinear_model_family():
+    class DummyNonlinearPipeline(BinaryClassificationPipeline):
+        component_graph = {'Imputer': ['Imputer'],
+                           'OneHot': ['One Hot Encoder', 'Imputer.x'],
+                           'Elastic Net': ['Elastic Net Classifier', 'OneHot.x'],
+                           'Logistic Regression': ['Logistic Regression Classifier', 'OneHot.x'],
+                           'Random Forest': ['Random Forest Classifier', 'Logistic Regression', 'Elastic Net']}
+
+    class DummyTransformerEndPipeline(BinaryClassificationPipeline):
+        component_graph = {'Imputer': ['Imputer'],
+                           'OneHot': ['One Hot Encoder', 'Imputer.x'],
+                           'Random Forest': ['Random Forest Classifier', 'OneHot.x'],
+                           'Logistic Regression': ['Logistic Regression Classifier', 'OneHot.x'],
+                           'Scaler': ['Standard Scaler', 'Random Forest', 'Logistic Regression']}
+
+    assert DummyNonlinearPipeline.model_family == ModelFamily.RANDOM_FOREST
+    assert DummyTransformerEndPipeline.model_family == ModelFamily.NONE
+
+    nlbp = DummyNonlinearPipeline({})
+    nltp = DummyTransformerEndPipeline({})
+
+    assert nlbp.model_family == ModelFamily.RANDOM_FOREST
+    assert nltp.model_family == ModelFamily.NONE
 
 
 def test_parameters(logistic_regression_binary_pipeline_class):
@@ -567,6 +627,66 @@ def test_parameters(logistic_regression_binary_pipeline_class):
     assert lrp.parameters == expected_parameters
 
 
+def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
+
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "median"
+        },
+        'Logistic Regression': {
+            'penalty': 'l2',
+            'C': 3.0,
+        }
+    }
+    nlbp = nonlinear_binary_pipeline_class(parameters=parameters)
+    expected_parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "median",
+            'categorical_fill_value': None,
+            'numeric_fill_value': None
+        },
+        'OneHot_RandomForest': {
+            'top_n': 10,
+            'features_to_encode': None,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'OneHot_ElasticNet': {
+            'top_n': 10,
+            'features_to_encode': None,
+            'categories': None,
+            'drop': None,
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'Random Forest': {
+            'max_depth': 6,
+            'n_estimators': 100,
+            'n_jobs': -1
+        },
+        'Elastic Net': {
+            'alpha': 0.5,
+            'l1_ratio': 0.5,
+            'loss': 'log',
+            'max_iter': 1000,
+            'n_jobs': -1,
+            'penalty': 'elasticnet'
+        },
+        'Logistic Regression': {
+            'penalty': 'l2',
+            'C': 3.0,
+            'n_jobs': -1,
+            'multi_class': 'auto',
+            'solver': 'lbfgs'
+        }
+    }
+    assert nlbp.parameters == expected_parameters
+
+
 def test_name():
     class TestNamePipeline(BinaryClassificationPipeline):
         component_graph = ['Logistic Regression Classifier']
@@ -585,16 +705,6 @@ def test_name():
     assert TestDefinedNamePipeline(parameters={}).name == "Cool Logistic Regression"
     with pytest.raises(IllFormattedClassNameError):
         testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
-
-
-def test_estimator_not_last():
-    class MockBinaryClassificationPipelineWithoutEstimator(BinaryClassificationPipeline):
-        name = "Mock Binary Classification Pipeline Without Estimator"
-        component_graph = ['One Hot Encoder', 'Imputer', 'Logistic Regression Classifier', 'Standard Scaler']
-
-    err_msg = "A pipeline must have an Estimator as the last component in component_graph."
-    with pytest.raises(ValueError, match=err_msg):
-        MockBinaryClassificationPipelineWithoutEstimator(parameters={})
 
 
 def test_multi_format_creation(X_y_binary):
@@ -628,7 +738,7 @@ def test_multi_format_creation(X_y_binary):
 
     clf = TestPipeline(parameters=parameters)
     correct_components = [Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf.component_graph, correct_components):
+    for component, correct_components in zip(clf._component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
 
@@ -656,7 +766,7 @@ def test_multiple_feature_selectors(X_y_binary):
 
     clf = TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     correct_components = [Imputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf.component_graph, correct_components):
+    for component, correct_components in zip(clf._component_graph, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
 
@@ -707,6 +817,19 @@ def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
     assert scores == {'R2': 1.0}
 
 
+@patch('evalml.pipelines.ComponentGraph.fit')
+@patch('evalml.pipelines.RegressionPipeline.predict')
+def test_score_nonlinear_regression(mock_predict, mock_fit, nonlinear_regression_pipeline_class, X_y_regression):
+    X, y = X_y_regression
+    mock_predict.return_value = y
+    clf = nonlinear_regression_pipeline_class({})
+    clf.fit(X, y)
+    objective_names = ['r2']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'R2': 1.0}
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -739,6 +862,21 @@ def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {'F1 Micro': 1.0}
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.ComponentGraph.predict')
+def test_score_nonlinear_multiclass(mock_encode, mock_fit, mock_predict, nonlinear_multiclass_pipeline_class, X_y_multi):
+    X, y = X_y_multi
+    mock_predict.return_value = y
+    mock_encode.return_value = y
+    clf = nonlinear_multiclass_pipeline_class({})
+    clf.fit(X, y)
+    objective_names = ['f1 micro', 'precision micro']
+    scores = clf.score(X, y, objective_names)
+    mock_predict.assert_called()
+    assert scores == {'F1 Micro': 1.0, 'Precision Micro': 1.0}
 
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
@@ -829,6 +967,28 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
         assert 'finna kabooom 💣' in e.message
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
+@patch('evalml.objectives.F1.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.ComponentGraph.predict')
+def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, nonlinear_binary_pipeline_class, X_y_binary):
+    mock_objective_score.side_effect = Exception('finna kabooom 💣')
+    X, y = X_y_binary
+    mock_predict.return_value = y
+    mock_encode.return_value = y
+    clf = nonlinear_binary_pipeline_class({})
+    clf.fit(X, y)
+    objective_names = ['f1', 'precision']
+    # Using pytest.raises to make sure we error if an error is not thrown.
+    with pytest.raises(PipelineScoreError):
+        _ = clf.score(X, y, objective_names)
+    try:
+        _ = clf.score(X, y, objective_names)
+    except PipelineScoreError as e:
+        assert e.scored_successfully == {"Precision": 1.0}
+        assert 'finna kabooom 💣' in e.message
+
+
 @patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
 @patch('evalml.objectives.F1Micro.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
@@ -850,6 +1010,50 @@ def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective
         assert e.scored_successfully == {"Precision Micro": 1.0}
         assert 'finna kabooom 💣' in e.message
         assert "F1 Micro" in e.exceptions
+
+
+@patch('evalml.pipelines.components.Imputer.transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+@patch('evalml.pipelines.components.StandardScaler.transform')
+def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
+    mock_imputer.return_value = X
+    mock_ohe.return_value = X
+    mock_scaler.return_value = X_expected
+
+    pipeline = logistic_regression_binary_pipeline_class({})
+    pipeline.fit(X, y)
+
+    X_t = pipeline.compute_estimator_features(X)
+    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert mock_imputer.call_count == 2
+    assert mock_ohe.call_count == 2
+    assert mock_scaler.call_count == 1
+
+
+@patch('evalml.pipelines.components.Imputer.transform')
+@patch('evalml.pipelines.components.OneHotEncoder.transform')
+@patch('evalml.pipelines.components.RandomForestClassifier.predict')
+@patch('evalml.pipelines.components.ElasticNetClassifier.predict')
+def test_compute_estimator_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, X_y_binary, nonlinear_binary_pipeline_class):
+    X, y = X_y_binary
+    mock_imputer.return_value = pd.DataFrame(X)
+    mock_ohe.return_value = pd.DataFrame(X)
+    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+    X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
+
+    pipeline = nonlinear_binary_pipeline_class({})
+    pipeline.fit(X, y)
+
+    X_t = pipeline.compute_estimator_features(X)
+    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert mock_imputer.call_count == 2
+    assert mock_ohe.call_count == 4
+    assert mock_en_predict.call_count == 2
+    assert mock_rf_predict.call_count == 2
 
 
 def test_no_default_parameters():
@@ -905,6 +1109,29 @@ def test_correct_parameters(logistic_regression_binary_pipeline_class):
     assert lr_pipeline['Imputer'].parameters['numeric_impute_strategy'] == 'mean'
 
 
+def test_correct_nonlinear_parameters(nonlinear_binary_pipeline_class):
+    parameters = {
+        'Imputer': {
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'mean'
+        },
+        'OneHot_RandomForest': {
+            'top_n': 4
+        },
+        'Logistic Regression': {
+            'penalty': 'l2',
+            'C': 3.0,
+        }
+    }
+    nlb_pipeline = nonlinear_binary_pipeline_class(parameters=parameters)
+    assert nlb_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
+    assert nlb_pipeline.estimator.parameters['C'] == 3.0
+    assert nlb_pipeline['Imputer'].parameters['categorical_impute_strategy'] == 'most_frequent'
+    assert nlb_pipeline['Imputer'].parameters['numeric_impute_strategy'] == 'mean'
+    assert nlb_pipeline['OneHot_RandomForest'].parameters['top_n'] == 4
+    assert nlb_pipeline['OneHot_ElasticNet'].parameters['top_n'] == 10
+
+
 def test_hyperparameters():
     class MockPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'Random Forest Classifier']
@@ -922,6 +1149,33 @@ def test_hyperparameters():
 
     assert MockPipeline.hyperparameters == hyperparameters
     assert MockPipeline(parameters={}).hyperparameters == hyperparameters
+
+
+def test_nonlinear_hyperparameters(nonlinear_regression_pipeline_class):
+
+    hyperparameters = {
+        'Imputer': {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        },
+        'OneHot': {
+        },
+        'Random Forest': {
+            "n_estimators": Integer(10, 1000),
+            "max_depth": Integer(1, 32)
+        },
+        'Elastic Net': {
+            'alpha': Real(0, 1),
+            'l1_ratio': Real(0, 1)
+        },
+        'Linear Regressor': {
+            'fit_intercept': [True, False],
+            'normalize': [True, False]
+        }
+    }
+
+    assert nonlinear_regression_pipeline_class.hyperparameters == hyperparameters
+    assert nonlinear_regression_pipeline_class(parameters={}).hyperparameters == hyperparameters
 
 
 def test_hyperparameters_override():
@@ -952,6 +1206,51 @@ def test_hyperparameters_override():
 
     assert MockPipelineOverRide.hyperparameters == hyperparameters
     assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
+
+
+def test_nonlinear_hyperparameters_override():
+    class NonLinearRegressionPipelineOverRide(RegressionPipeline):
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OneHot': ['One Hot Encoder', 'Imputer.x'],
+            'Random Forest': ['Random Forest Regressor', 'OneHot.x'],
+            'Elastic Net': ['Elastic Net Regressor', 'OneHot.x'],
+            'Linear Regressor': ['Linear Regressor', 'Random Forest', 'Elastic Net']
+        }
+        custom_hyperparameters = {
+            'Imputer': {
+                "categorical_impute_strategy": ["most_frequent"],
+                "numeric_impute_strategy": ["median", "most_frequent"]
+            },
+            'Random Forest': {
+                "n_estimators": [1, 100, 200],
+                "max_depth": [5]
+            }
+        }
+
+    hyperparameters = {
+        'Imputer': {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": ["median", "most_frequent"]
+        },
+        'OneHot': {
+        },
+        'Random Forest': {
+            "n_estimators": [1, 100, 200],
+            "max_depth": [5]
+        },
+        'Elastic Net': {
+            'alpha': Real(0, 1),
+            'l1_ratio': Real(0, 1)
+        },
+        'Linear Regressor': {
+            'fit_intercept': [True, False],
+            'normalize': [True, False]
+        }
+    }
+
+    assert NonLinearRegressionPipelineOverRide.hyperparameters == hyperparameters
+    assert NonLinearRegressionPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
 def test_hyperparameters_none(dummy_classifier_estimator_class):
@@ -1020,6 +1319,12 @@ def test_pipeline_summary():
     assert MockPipeline.summary == "Random Forest Classifier w/ Imputer + One Hot Encoder"
 
 
+def test_nonlinear_pipeline_summary(nonlinear_binary_pipeline_class, nonlinear_multiclass_pipeline_class, nonlinear_regression_pipeline_class):
+    assert nonlinear_binary_pipeline_class.summary == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
+    assert nonlinear_multiclass_pipeline_class.summary == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
+    assert nonlinear_regression_pipeline_class.summary == "Linear Regressor w/ Imputer + One Hot Encoder + Random Forest Regressor + Elastic Net Regressor"
+
+
 def test_drop_columns_in_pipeline():
     class PipelineWithDropCol(BinaryClassificationPipeline):
         component_graph = ['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier']
@@ -1062,6 +1367,22 @@ def test_clone_init(linear_regression_pipeline_class):
     assert pipeline.parameters == pipeline_clone.parameters
 
 
+def test_nonlinear_clone_init(nonlinear_regression_pipeline_class):
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
+        },
+        'Linear Regressor': {
+            'fit_intercept': True,
+            'normalize': True,
+        }
+    }
+    pipeline = nonlinear_regression_pipeline_class(parameters=parameters)
+    pipeline_clone = pipeline.clone()
+    assert pipeline.parameters == pipeline_clone.parameters
+
+
 def test_clone_random_state(linear_regression_pipeline_class):
     parameters = {
         'Imputer': {
@@ -1086,6 +1407,23 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=42)
+    random_state_first_val = pipeline.random_state.randint(2**30)
+    pipeline.fit(X, y)
+    X_t = pipeline.predict_proba(X)
+
+    pipeline_clone = pipeline.clone(random_state=42)
+    assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
+    assert pipeline.parameters == pipeline_clone.parameters
+    with pytest.raises(PipelineNotYetFittedError):
+        pipeline_clone.predict(X)
+    pipeline_clone.fit(X, y)
+    X_t_clone = pipeline_clone.predict_proba(X)
+    pd.testing.assert_frame_equal(X_t, X_t_clone)
+
+
+def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = nonlinear_binary_pipeline_class(parameters={}, random_state=42)
     random_state_first_val = pipeline.random_state.randint(2**30)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
@@ -1128,6 +1466,29 @@ def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_bi
     assert sorted(clf.feature_importance["feature"]) == sorted(col_names)
 
 
+def test_nonlinear_feature_importance_has_feature_names(X_y_binary, nonlinear_binary_pipeline_class):
+    X, y = X_y_binary
+    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
+    X = pd.DataFrame(X, columns=col_names)
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean"
+        },
+        'Logistic Regression Classifier': {
+            'penalty': 'l2',
+            'C': 1.0,
+            'n_jobs': 1
+        }
+    }
+
+    clf = nonlinear_binary_pipeline_class(parameters=parameters)
+    clf.fit(X, y)
+    assert len(clf.feature_importance) == 2
+    assert not clf.feature_importance.isnull().all().all()
+    assert sorted(clf.feature_importance["feature"]) == ['Elastic Net', 'Random Forest']
+
+
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_dependencies,
                                                       X_y_regression, X_y_binary, X_y_multi):
@@ -1163,7 +1524,7 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
 def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
     class FakePipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
-    with pytest.raises(MissingComponentError, match="Error recieved when retrieving class for component 'This Component Does Not Exist'"):
+    with pytest.raises(MissingComponentError, match="was not found"):
         FakePipeline(parameters={})
 
 
@@ -1262,6 +1623,46 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         clf = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.predict(X)
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.feature_importance
+
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        with pytest.raises(PipelineNotYetFittedError):
+            clf.predict_proba(X)
+
+    clf.fit(X, y)
+    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        with patch('evalml.pipelines.ClassificationPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+        with patch('evalml.pipelines.ClassificationPipeline.predict_proba') as mock_predict_proba:
+            clf.predict_proba(X)
+            mock_predict_proba.assert_called()
+    else:
+        with patch('evalml.pipelines.RegressionPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+    clf.feature_importance
+
+
+@patch('evalml.pipelines.PipelineBase.fit')
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_nonlinear_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                             nonlinear_binary_pipeline_class,
+                                             nonlinear_multiclass_pipeline_class,
+                                             nonlinear_regression_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        clf = nonlinear_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        clf = nonlinear_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        clf = nonlinear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X)
@@ -1387,10 +1788,60 @@ def test_pipeline_equality(pipeline_class):
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
+        }
+    }
+
+    different_parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "constant",
+            "numeric_impute_strategy": "mean",
+        }
+    }
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = ['Imputer', final_estimator]
+
+        def fit(self, X, y=None):
+            return self
+    # Test self-equality
+    mock_pipeline = MockPipeline(parameters={})
+    assert mock_pipeline == mock_pipeline
+
+    # Test defaults
+    assert MockPipeline(parameters={}) == MockPipeline(parameters={})
+
+    # Test random_state
+    assert MockPipeline(parameters={}, random_state=10) == MockPipeline(parameters={}, random_state=10)
+    assert MockPipeline(parameters={}, random_state=10) != MockPipeline(parameters={}, random_state=0)
+
+    # Test parameters
+    assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
+
+    # Test fitted equality
+    X = pd.DataFrame({})
+    mock_pipeline.fit(X)
+    assert mock_pipeline != MockPipeline(parameters={})
+
+    mock_pipeline_equal = MockPipeline(parameters={})
+    mock_pipeline_equal.fit(X)
+    assert mock_pipeline == mock_pipeline_equal
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_nonlinear_pipeline_equality(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    parameters = {
+        'Imputer': {
+            "categorical_impute_strategy": "most_frequent",
+            "numeric_impute_strategy": "mean",
         },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 1.0,
+        'OHE_1': {
+            'top_n': 5
         }
     }
 
@@ -1399,15 +1850,19 @@ def test_pipeline_equality(pipeline_class):
             "categorical_impute_strategy": "constant",
             "numeric_impute_strategy": "mean",
         },
-        'Logistic Regression Classifier': {
-            'penalty': 'l2',
-            'C': 1.0,
+        'OHE_2': {
+            'top_n': 7,
         }
     }
 
     class MockPipeline(pipeline_class):
         name = "Mock Pipeline"
-        component_graph = ['Imputer', final_estimator]
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OHE_1': ['One Hot Encoder', 'Imputer'],
+            'OHE_2': ['One Hot Encoder', 'Imputer'],
+            'Estimator': [final_estimator, 'OHE_1', 'OHE_2']
+        }
 
         def fit(self, X, y=None):
             return self
@@ -1510,6 +1965,39 @@ def test_pipeline_repr(pipeline_class):
 
     pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_nan_parameters) == expected_repr
+
+
+@pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
+def test_nonlinear_pipeline_repr(pipeline_class):
+    if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
+        final_estimator = 'Random Forest Classifier'
+    else:
+        final_estimator = 'Random Forest Regressor'
+
+    class MockPipeline(pipeline_class):
+        name = "Mock Pipeline"
+        component_graph = {
+            'Imputer': ['Imputer'],
+            'OHE_1': ['One Hot Encoder', 'Imputer'],
+            'OHE_2': ['One Hot Encoder', 'Imputer'],
+            'Estimator': [final_estimator, 'OHE_1', 'OHE_2']
+        }
+
+    pipeline = MockPipeline(parameters={})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline) == expected_repr
+
+    pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_parameters) == expected_repr
+
+    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    assert repr(pipeline_with_inf_parameters) == expected_repr
+
+    pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
     assert repr(pipeline_with_nan_parameters) == expected_repr
 
 
@@ -1672,6 +2160,12 @@ def test_generate_code_pipeline():
                            '\npipeline = MockRegressionPipeline(parameters)'
     pipeline = generate_pipeline_code(mock_regression_pipeline_params)
     assert pipeline == expected_code_params
+
+
+def test_generate_code_nonlinear_pipeline_error(nonlinear_binary_pipeline_class):
+    pipeline = nonlinear_binary_pipeline_class({})
+    with pytest.raises(ValueError, match="Code generation for nonlinear pipelines is not supported yet"):
+        generate_pipeline_code(pipeline)
 
 
 def test_generate_code_pipeline_custom():

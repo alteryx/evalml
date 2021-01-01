@@ -10,6 +10,7 @@ from .classifiers import (LogisticRegressionClassifier,
                           DecisionTreeClassifier,
                           GAMClassifier)
 from .regressors import (LinearRegressor,
+                         LightGBMRegressor,
                          RandomForestRegressor,
                          CatBoostRegressor,
                          XGBoostRegressor,
