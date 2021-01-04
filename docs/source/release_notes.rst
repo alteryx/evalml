@@ -8,6 +8,7 @@ Release Notes
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
         * Pin scipy at < 1.6.0 while we work on adding support :pr:`1629`
     * Changes
+        * Added labeling to ``graph_confusion_matrix`` :pr:``
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
     * Testing Changes
