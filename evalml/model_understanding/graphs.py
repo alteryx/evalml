@@ -113,7 +113,7 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
         '' if normalize_method is None else (', normalized using method "' + normalize_method + '"'))
     z_data, custom_data = (conf_mat, conf_mat_normalized) if normalize_method is None else (conf_mat_normalized, conf_mat)
     z_data = z_data.to_numpy()
-    z_text = [[str(y) for y in x] for x in z_data]
+    z_text = [["{:.3f}".format(y) for y in x] for x in z_data]
     primary_heading, secondary_heading = ('Raw', 'Normalized') if normalize_method is None else ('Normalized', 'Raw')
     hover_text = '<br><b>' + primary_heading + ' Count</b>: %{z}<br><b>' + secondary_heading + ' Count</b>: %{customdata} <br>'
     # the "<extra> tags at the end are necessary to remove unwanted trace info
@@ -123,6 +123,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
                         yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
     fig = _ff.create_annotated_heatmap(z_data, x=labels, y=labels, annotation_text=z_text, customdata=custom_data, hovertemplate=hover_template, colorscale='Blues')
     fig.update_layout(layout)
+    # put xaxis text on bottom to not overlap with title
+    fig['layout']['xaxis'].update(side='bottom')
     # plotly Heatmap y axis defaults to the reverse of what we want: https://community.plotly.com/t/heatmap-y-axis-is-reversed-by-default-going-against-standard-convention-for-matrices/32180
     fig.update_yaxes(autorange="reversed")
     return fig
