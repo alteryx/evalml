@@ -8,6 +8,7 @@ Release Notes
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
         * Pin scipy at < 1.6.0 while we work on adding support :pr:`1629`
+        * Fixed data check message formatting in ``AutoMLSearch`` :pr:`1633`
         * Addressed stacked ensemble component for ``scikit-learn`` v0.24 support by setting ``shuffle=True`` for default CV :pr:`1613`
         * Fix bug where ``Imputer`` reset the index on ``X`` :pr:`1590`
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
