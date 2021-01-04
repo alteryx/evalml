@@ -31,7 +31,6 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    get_all_objective_names,
     get_core_objectives,
     get_non_core_objectives,
     get_objective
@@ -211,6 +210,7 @@ class AutoMLSearch:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
+        self.objective_name_to_class = {o.name: o for o in [self.objective] + self.additional_objectives}
 
         if not isinstance(max_time, (int, float, str, type(None))):
             raise TypeError(f"Parameter max_time must be a float, int, string or None. Received {type(max_time)} with value {str(max_time)}..")
@@ -418,10 +418,10 @@ class AutoMLSearch:
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for message in self._data_check_results["warnings"]:
-            logger.warning(message)
-        for message in self._data_check_results["errors"]:
-            logger.error(message)
+        for result in self._data_check_results["warnings"]:
+            logger.warning(result["message"])
+        for result in self._data_check_results["errors"]:
+            logger.error(result["message"])
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
         if self.allowed_pipelines is None:
@@ -631,15 +631,17 @@ class AutoMLSearch:
         return False
 
     @staticmethod
-    def _get_mean_cv_scores_for_all_objectives(cv_data):
+    def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
         scores = defaultdict(int)
-        objective_names = set([name.lower() for name in get_all_objective_names()])
         n_folds = len(cv_data)
         for fold_data in cv_data:
             for field, value in fold_data['all_objective_scores'].items():
-                if field.lower() in objective_names:
+                # The 'all_objective_scores' field contains scores for all objectives
+                # but also fields like "# Training" and "# Testing", so we want to exclude them since
+                # they are not scores
+                if field in objective_name_to_class:
                     scores[field] += value
-        return {objective_name: float(score) / n_folds for objective_name, score in scores.items()}
+        return {objective: float(score) / n_folds for objective, score in scores.items()}
 
     def _compute_cv_scores(self, pipeline):
         start = time.time()
@@ -717,9 +719,10 @@ class AutoMLSearch:
         cv_score = cv_scores.mean()
 
         percent_better_than_baseline = {}
-        mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data)
+        mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data, self.objective_name_to_class)
         for obj_name in mean_cv_all_objectives:
-            objective_class = get_objective(obj_name)
+            objective_class = self.objective_name_to_class[obj_name]
+
             # In the event add_to_rankings is called before search _baseline_cv_scores will be empty so we will return
             # nan for the base score.
             percent_better = objective_class.calculate_percent_difference(mean_cv_all_objectives[obj_name],
@@ -737,7 +740,6 @@ class AutoMLSearch:
         if high_variance_cv_check_results["warnings"]:
             logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
             high_variance_cv = True
-
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
@@ -786,7 +788,7 @@ class AutoMLSearch:
                 parameters = pipeline.parameters
 
                 if baseline:
-                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results["cv_data"])
+                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results["cv_data"], self.objective_name_to_class)
 
                 logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
                 self._add_result(trained_pipeline=pipeline,
