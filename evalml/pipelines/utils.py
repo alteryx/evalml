@@ -18,6 +18,7 @@ from evalml.pipelines.components import (  # noqa: F401
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
+    DelayedFeatureTransformer,
     DropNullColumns,
     Estimator,
     Imputer,
@@ -66,9 +67,11 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
-    # DateTimeFeaturizer can create categorical columns
+    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+        pp_components.append(DelayedFeatureTransformer)
+
     categorical_cols = X.select('category')
-    if (add_datetime_featurizer or len(categorical_cols.columns) > 0) and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
+    if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
     if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
