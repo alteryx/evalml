@@ -2291,10 +2291,34 @@ def test_generate_code_pipeline_custom():
     assert pipeline == expected_code
 
 
-def test_predict_has_input_target_name(X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
+                                          ProblemTypes.TIME_SERIES_REGRESSION])
+def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_regression, ts_data,
+                                       logistic_regression_binary_pipeline_class, logistic_regression_multiclass_pipeline_class, linear_regression_pipeline_class, time_series_regression_pipeline_class, time_series_binary_classification_pipeline_class,
+                                       time_series_multiclass_classification_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        clf = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        clf = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        clf = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
+        clf = time_series_regression_pipeline_class(parameters={"pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
     y = pd.Series(y, name="test target name")
-    lrp = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    lrp.fit(X, y)
-    predictions = lrp.predict(X)
+    clf.fit(X, y)
+    if problem_type == ProblemTypes.TIME_SERIES_REGRESSION or problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        predictions = clf.predict(X, y)
+    else:
+        predictions = clf.predict(X)
     assert predictions.name == "test target name"

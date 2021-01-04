@@ -370,7 +370,7 @@ def pad_with_nans(pd_data, num_to_pad):
         pd.DataFrame or pd.Series
     """
     if isinstance(pd_data, pd.Series):
-        padding = pd.Series([np.nan] * num_to_pad)
+        padding = pd.Series([np.nan] * num_to_pad, name=pd_data.name)
     else:
         padding = pd.DataFrame({col: [np.nan] * num_to_pad
                                 for col in pd_data.columns})

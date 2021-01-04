@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added time series support for ``make_pipeline`` :pr:`1566`
+        * Added target name for output of pipeline ``predict`` method :pr:`1578`
     * Fixes
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
@@ -35,7 +36,6 @@ Release Notes
         * Added utility method so that users can set feature types without having to learn about Woodwork directly :pr:`1555`
         * Added Linear Discriminant Analysis transformer for dimensionality reduction :pr:`1331`
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
-        * Added target name for output of pipeline `predict` method :pr:`1578`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
         * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`

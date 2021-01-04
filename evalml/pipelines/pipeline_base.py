@@ -197,6 +197,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return X_t
 
     def _fit(self, X, y):
+        self.input_target_name = y.name
         self._component_graph.fit(X, y)
         self.input_feature_names = self._component_graph.input_feature_names
 

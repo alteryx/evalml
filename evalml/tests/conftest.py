@@ -274,6 +274,9 @@ def dummy_time_series_regressor_estimator_class():
         def __init__(self, a=1, b=0, random_state=0):
             super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
 
+        def fit(self, X, y):
+            return self
+
     return MockTimeSeriesRegressor
 
 
@@ -318,6 +321,30 @@ def linear_regression_pipeline_class():
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
     return LinearRegressionPipeline
+
+
+@pytest.fixture
+def time_series_regression_pipeline_class():
+    class TSRegressionPipeline(TimeSeriesRegressionPipeline):
+        """Random Forest Regression Pipeline for time series regression problems."""
+        component_graph = ['Delayed Feature Transformer', 'Random Forest Regressor']
+    return TSRegressionPipeline
+
+
+@pytest.fixture
+def time_series_binary_classification_pipeline_class():
+    class TSBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
+        """Logistic Regression Pipeline for time series binary classification problems."""
+        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+    return TSBinaryPipeline
+
+
+@pytest.fixture
+def time_series_multiclass_classification_pipeline_class():
+    class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
+        """Logistic Regression Pipeline for time series multiclass classification problems."""
+        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+    return TSMultiPipeline
 
 
 @pytest.fixture
