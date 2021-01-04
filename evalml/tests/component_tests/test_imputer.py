@@ -187,11 +187,11 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
-        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     elif data_type == 'ww':
         X = ww.DataTable(pd.DataFrame())
         y = ww.DataColumn(pd.Series())
-        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])
@@ -199,11 +199,11 @@ def test_imputer_empty_data(data_type):
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False, check_index_type=False)
+    assert_frame_equal(transformed, expected, check_dtype=False)
 
     imputer = Imputer()
     transformed = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed, expected, check_dtype=False, check_index_type=False)
+    assert_frame_equal(transformed, expected, check_dtype=False)
 
 
 def test_imputer_does_not_reset_index():
