@@ -4,13 +4,13 @@ import numpy as np
 import pandas as pd
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import Estimator, LogisticRegressionClassifier
+from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
-    for estimator_class in [LogisticRegressionClassifier]:
+    for estimator_class in _all_estimators_used_in_search():
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
