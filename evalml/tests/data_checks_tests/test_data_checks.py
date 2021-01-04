@@ -126,10 +126,10 @@ def test_default_data_checks_classification(input_type):
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                 details={"target_values": [0.0, 2.0, 1.0]}).to_dict()]
-    min_2_class_count = [DataCheckError(message="Target does not have two examples per class which is required for multi-classification",
+    min_2_class_count = [DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
                                         data_check_name="InvalidTargetDataCheck",
                                         message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                        details={"least_populated_class_count": 1, "least_populated_class_label": 2.0}).to_dict()]
+                                        details={"least_populated_class_labels": [2.0, 1.0]}).to_dict()]
 
     data_checks = DefaultDataChecks("multiclass")
     assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance}

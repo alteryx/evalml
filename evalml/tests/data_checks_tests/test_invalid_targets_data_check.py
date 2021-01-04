@@ -73,13 +73,23 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
 def test_invalid_target_data_check_multiclass_two_examples_per_class():
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck("multiclass")
+    expected_message = "Target does not have at least two instances per class which is required for multiclass classification"
+
+    # with 1 class not having min 2 instances
     assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 2, 2])) == {
         "warnings": [],
-        "errors": [DataCheckError(message="Target does not have two examples per class which is required for multi-classification",
+        "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                  details={"least_populated_class_count": 1,
-                                           "least_populated_class_label": 0}).to_dict()]
+                                  details={"least_populated_class_labels": [0]}).to_dict()]
+    }
+    # with 2 classes not having min 2 instances
+    assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 2, 2, 3])) == {
+        "warnings": [],
+        "errors": [DataCheckError(message=expected_message,
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                  details={"least_populated_class_labels": [3, 0]}).to_dict()]
     }
 
 
