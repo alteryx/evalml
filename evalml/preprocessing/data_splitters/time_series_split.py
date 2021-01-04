@@ -21,6 +21,7 @@ class TimeSeriesSplit(BaseCrossValidator):
                 of rows of the current split to avoid "throwing out" more data than in necessary.
             gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows
                 since we are interested in
+            n_splits (int): number of data splits to make.
             """
         self.max_delay = max_delay
         self.gap = gap
