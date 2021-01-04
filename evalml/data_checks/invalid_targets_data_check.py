@@ -24,6 +24,7 @@ class InvalidTargetDataCheck(DataCheck):
         Arguments:
             n_unique (int): Number of unique target values to store when problem type is binary and target
                 incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
+            objective (str or ObjectiveBase): Name or instance of the objective class.
         """
         self.problem_type = handle_problem_types(problem_type)
         self.objective_name = get_objective(objective).name
@@ -102,7 +103,7 @@ class InvalidTargetDataCheck(DataCheck):
         any_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
         if any_neg and (self.objective_name in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
             details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
-            messages["errors"].append(DataCheckError(message=f"Target has negative values which is not supported for {self.objective_name}",
+            messages["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective_name}",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                                                      details=details).to_dict())

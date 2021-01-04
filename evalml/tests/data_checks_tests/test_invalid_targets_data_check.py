@@ -11,6 +11,11 @@ from evalml.data_checks import (
     InvalidTargetDataCheck
 )
 from evalml.exceptions import DataCheckInitError
+from evalml.objectives import (
+    MAPE,
+    MeanSquaredLogError,
+    RootMeanSquaredLogError
+)
 from evalml.utils.gen_utils import (
     categorical_dtypes,
     numeric_and_boolean_dtypes
@@ -199,7 +204,7 @@ def test_invalid_target_data_check_n_unique():
 
 
 @pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
-def test_invalid_target_data_check_invalid_labels_for_nonnegative_objectives(objective):
+def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_names(objective):
     X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
     y = pd.Series([2, 3, -1, 1, 1])
 
@@ -208,7 +213,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objectives(obj
     assert data_checks.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(
-            message=f"Target has negative values which is not supported for {objective}",
+            message=f"Target has non-positive values which is not supported for {objective}",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
             details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
@@ -222,7 +227,25 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objectives(obj
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(
-            message=f"Target has negative values which is not supported for {objective}",
+            message=f"Target has non-positive values which is not supported for {objective}",
+            data_check_name=invalid_targets_data_check_name,
+            message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
+    }
+
+
+@pytest.mark.parametrize("objective", [RootMeanSquaredLogError(), MeanSquaredLogError(), MAPE()])
+def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_instances(objective):
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
+    y = pd.Series([2, 3, -1, 1, 1])
+
+    data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
+                                                                                   "objective": objective}})
+
+    assert data_checks.validate(X, y) == {
+        "warnings": [],
+        "errors": [DataCheckError(
+            message=f"Target has non-positive values which is not supported for {objective.name}",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
             details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
