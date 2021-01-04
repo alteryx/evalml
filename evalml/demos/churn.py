@@ -1,7 +1,5 @@
 import os
 
-import woodwork as ww
-
 from evalml.preprocessing import load_data
 
 
@@ -26,5 +24,5 @@ def load_churn(n_rows=None, verbose=True, return_pandas=False):
                      n_rows=n_rows,
                      verbose=verbose)
     if return_pandas:
-        return X, y
-    return ww.DataTable(X), ww.DataColumn(y)
+        return X.to_dataframe(), y.to_series()
+    return X, y
