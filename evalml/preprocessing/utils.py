@@ -1,6 +1,12 @@
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
+from evalml.problem_types import (
+    is_classification,
+    is_regression,
+    is_time_series
+)
 from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
@@ -16,7 +22,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         verbose (bool): If True, prints information about features and target
 
     Returns:
-        pd.DataFrame, pd.Series: features and target
+        ww.DataTable, ww.DataColumn: Features matrix and target
     """
 
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
@@ -36,17 +42,21 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
+    X = _convert_to_woodwork_structure(X)
+    y = _convert_to_woodwork_structure(y)
     return X, y
 
 
-def split_data(X, y, regression=False, test_size=.2, random_state=None):
-    """Splits data into train and test sets.
+def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_state=0):
+    """splits data into train and test sets.
 
     Arguments:
-        X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-        y (ww.DataColumn, pd.Series, or np.ndarray): Target data of length [n_samples]
-        regression (bool): If true, do not use stratified split
-        test_size (float): Percent of train set to holdout for testing
+        X (ww.datatable, pd.dataframe or np.ndarray): data of shape [n_samples, n_features]
+        y (ww.datacolumn, pd.series, or np.ndarray): target data of length [n_samples]
+        problem_type (str or problemtypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
+        problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
+            in time series problems, values should be passed in for the gap and max_delay variables.
+        test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
         random_state (int, np.random.RandomState): Seed for the random number generator
 
     Returns:
@@ -55,16 +65,15 @@ def split_data(X, y, regression=False, test_size=.2, random_state=None):
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
 
-    if regression:
-        CV_method = ShuffleSplit(n_splits=1,
-                                 test_size=test_size,
-                                 random_state=random_state)
-    else:
-        CV_method = StratifiedShuffleSplit(
-            n_splits=1,
-            test_size=test_size,
-            random_state=random_state)
-    train, test = next(CV_method.split(X.to_dataframe(), y.to_series()))
+    data_splitter = None
+    if is_time_series(problem_type):
+        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_state)
+    elif is_regression(problem_type):
+        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+    elif is_classification(problem_type):
+        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+
+    train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 
     X_train = X.iloc[train]
     X_test = X.iloc[test]

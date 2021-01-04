@@ -3,6 +3,18 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+        * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
+        * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
+        * Pin scipy at < 1.6.0 while we work on adding support :pr:`1629`
+    * Changes
+    * Documentation Changes
+        * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+    * Testing Changes
+
+
+**v0.17.0 Dec. 29, 2020**
+    * Enhancements
         * Added ``save_plot`` that allows for saving figures from different backends :pr:`1588`
         * Added ``LightGBM Regressor`` to regression components :pr:`1459`
         * Added ``visualize_decision_tree`` for tree visualization with ``decision_tree_data_from_estimator`` and ``decision_tree_data_from_pipeline`` to reformat tree structure output :pr:`1511`
@@ -17,12 +29,18 @@ Release Notes
         * Added more information to users about ensembling behavior in ``AutoMLSearch`` :pr:`1527`
         * Add woodwork support for more utility and graph methods :pr:`1544`
         * Changed ``DateTimeFeaturizer`` to encode features as int :pr:`1479`
+        * Return trained pipelines from ``AutoMLSearch.best_pipeline`` :pr:`1547`
+        * Added utility method so that users can set feature types without having to learn about Woodwork directly :pr:`1555`
         * Added Linear Discriminant Analysis transformer for dimensionality reduction :pr:`1331`
         * Added multiclass support for ``partial_dependence`` and ``graph_partial_dependence`` :pr:`1554`
         * Added target name for output of pipeline `predict` method :pr:`1578`
         * Added ``TimeSeriesBinaryClassificationPipeline`` and ``TimeSeriesMulticlassClassificationPipeline`` classes :pr:`1528`
         * Added ``make_data_splitter`` method for easier automl data split customization :pr:`1568`
         * Integrated ``ComponentGraph`` class into Pipelines for full non-linear pipeline support :pr:`1543`
+        * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
+        * Update ``split_data`` helper args :pr:`1597`
+        * Add problem type utils ``is_regression``, ``is_classification``, ``is_timeseries`` :pr:`1597`
+        * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
     * Fixes
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
@@ -41,6 +59,8 @@ Release Notes
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
         * Made ``get_prediction_vs_actual_data()`` a public method :pr:`1553`
         * Updated ``Woodwork`` version requirement to v0.0.7 :pr:`1560`
+        * Move data splitters from ``evalml.automl.data_splitters`` to ``evalml.preprocessing.data_splitters`` :pr:`1597`
+        * Rename "# Testing" in automl log output to "# Validation" :pr:`1597`
     * Documentation Changes
         * Added partial dependence methods to API reference :pr:`1537`
         * Updated documentation for confusion matrix methods :pr:`1611`
@@ -51,7 +71,12 @@ Release Notes
 
     **Breaking Changes**
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
+        * Updated ``AutoMLSearch.best_pipeline`` to return a trained pipeline. Pass in ``train_best_pipeline=False`` to AutoMLSearch in order to return an untrained pipeline.
         * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
+        * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
+        * Update ``split_data`` helper args :pr:`1597`
+        * Move data splitters from ``evalml.automl.data_splitters`` to ``evalml.preprocessing.data_splitters`` :pr:`1597`
+        * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
 
 
 
