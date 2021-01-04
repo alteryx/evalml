@@ -6,8 +6,11 @@ Release Notes
     * Fixes
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
+        * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
+        * Pin scipy at < 1.6.0 while we work on adding support :pr:`1629`
     * Changes
     * Documentation Changes
+        * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
     * Testing Changes
 
 
