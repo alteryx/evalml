@@ -92,6 +92,13 @@ class InvalidTargetDataCheck(DataCheck):
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                      details=details).to_dict())
+        if self.problem_type == ProblemTypes.MULTICLASS and value_counts.min() <= 1:
+            least_populated = value_counts[value_counts <= 1]
+            details = {"least_populated_class_labels": least_populated.index.tolist()}
+            messages["errors"].append(DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                                     details=details).to_dict())
 
         if len(value_counts) == 2 and y.dtype in numeric_and_boolean_dtypes:
             if set(unique_values) != set([0, 1]):
