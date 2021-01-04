@@ -51,6 +51,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
     make_pipeline_from_components
 )
+from evalml.preprocessing.utils import is_time_series
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     categorical_dtypes,
@@ -2292,7 +2293,7 @@ def test_generate_code_pipeline_custom():
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
+                                          ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
 def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_regression, ts_data,
                                        logistic_regression_binary_pipeline_class, logistic_regression_multiclass_pipeline_class, linear_regression_pipeline_class, time_series_regression_pipeline_class, time_series_binary_classification_pipeline_class,
                                        time_series_multiclass_classification_pipeline_class):
@@ -2315,9 +2316,13 @@ def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_
         X, y = X_y_binary
         clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
                                                                            "pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
     y = pd.Series(y, name="test target name")
     clf.fit(X, y)
-    if problem_type == ProblemTypes.TIME_SERIES_REGRESSION or problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+    if is_time_series(problem_type):
         predictions = clf.predict(X, y)
     else:
         predictions = clf.predict(X)

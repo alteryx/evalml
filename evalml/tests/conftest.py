@@ -274,9 +274,6 @@ def dummy_time_series_regressor_estimator_class():
         def __init__(self, a=1, b=0, random_state=0):
             super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
 
-        def fit(self, X, y):
-            return self
-
     return MockTimeSeriesRegressor
 
 
