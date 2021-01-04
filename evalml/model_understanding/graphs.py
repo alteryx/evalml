@@ -121,7 +121,12 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': 'Predicted Label', 'type': 'category', 'tickvals': labels},
                         yaxis={'title': 'True Label', 'type': 'category', 'tickvals': labels})
-    fig = _ff.create_annotated_heatmap(z_data, x=labels, y=labels, annotation_text=z_text, customdata=custom_data, hovertemplate=hover_template, colorscale='Blues', showscale=True)
+    fig = _ff.create_annotated_heatmap(z_data, x=labels, y=labels,
+                                       annotation_text=z_text,
+                                       customdata=custom_data,
+                                       hovertemplate=hover_template,
+                                       colorscale='Blues',
+                                       showscale=True)
     fig.update_layout(layout)
     # put xaxis text on bottom to not overlap with title
     fig['layout']['xaxis'].update(side='bottom')
