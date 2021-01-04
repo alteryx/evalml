@@ -31,6 +31,7 @@ class DefaultDataChecks(DataChecks):
 
         Arguments:
             problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
+            n_splits (int): The number of splits as determined by the data splitter being used.
         """
         if handle_problem_types(problem_type) in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
