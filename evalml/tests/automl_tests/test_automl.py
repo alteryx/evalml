@@ -351,7 +351,7 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_validate.return_value = {
-        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks")],
+        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks").to_dict()],
         "errors": []
     }
 
@@ -368,8 +368,8 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
 class MockDataCheckErrorAndWarning(DataCheck):
     def validate(self, X, y):
         return {
-            "warnings": [],
-            "errors": [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+            "warnings": [DataCheckWarning("warning one", self.name).to_dict()],
+            "errors": [DataCheckError("error one", self.name).to_dict()],
         }
 
 
