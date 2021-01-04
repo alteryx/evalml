@@ -419,9 +419,9 @@ class AutoMLSearch:
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
         for result in self._data_check_results["warnings"]:
-            logger.warning(result.message)
+            logger.warning(result["message"])
         for result in self._data_check_results["errors"]:
-            logger.error(result.message)
+            logger.error(result["message"])
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
         if self.allowed_pipelines is None:
