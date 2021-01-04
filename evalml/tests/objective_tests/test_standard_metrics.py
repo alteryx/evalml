@@ -454,6 +454,9 @@ def test_mape_time_series_model():
         obj.score(s1_actual, s1_predicted)
     assert obj.score(s2_actual, s2_predicted) == pytest.approx(8 / 4 * 100)
     assert obj.score(s3_actual, s3_predicted) == pytest.approx(4 / 6 * 100)
+    assert obj.score(pd.Series(s3_actual, index=range(-12, -6)), s3_predicted) == pytest.approx(4 / 6 * 100)
+    assert obj.score(pd.Series(s2_actual, index=range(10, 14)),
+                     pd.Series(s2_predicted, index=range(20, 24))) == pytest.approx(8 / 4 * 100)
 
 
 @pytest.mark.parametrize("objective_class", _all_objectives_dict().values())
