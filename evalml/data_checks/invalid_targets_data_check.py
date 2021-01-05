@@ -27,7 +27,7 @@ class InvalidTargetDataCheck(DataCheck):
             objective (str or ObjectiveBase): Name or instance of the objective class.
         """
         self.problem_type = handle_problem_types(problem_type)
-        self.objective_name = get_objective(objective).name
+        self.objective = get_objective(objective)
         if n_unique is not None and n_unique <= 0:
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
@@ -108,9 +108,9 @@ class InvalidTargetDataCheck(DataCheck):
                                                              details={"target_values": unique_values}).to_dict())
 
         any_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
-        if any_neg and (self.objective_name in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']):
+        if any_neg and self.objective.positive_only:
             details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
-            messages["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective_name}",
+            messages["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective.name}",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                                                      details=details).to_dict())

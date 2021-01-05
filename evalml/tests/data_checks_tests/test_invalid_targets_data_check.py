@@ -280,7 +280,7 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_cor
     y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
 
     for objective in time_series_core_objectives:
-        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
+        if not objective.positive_only:
             data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                            "objective": objective}})
             assert data_checks.validate(X, y) == {
@@ -292,7 +292,7 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_cor
     y = pd.Series([2, 3, 0, 1, 1])
 
     for objective in time_series_core_objectives:
-        if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
+        if not objective.positive_only:
             invalid_targets_check = InvalidTargetDataCheck(problem_type="regression", objective=objective)
             assert invalid_targets_check.validate(X, y) == {
                 "warnings": [],

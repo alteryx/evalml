@@ -306,6 +306,7 @@ class RootMeanSquaredLogError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
+    positive_only = True
 
     def objective_function(self, y_true, y_predicted, X=None):
         return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
@@ -320,6 +321,7 @@ class MeanSquaredLogError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
+    positive_only = True
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_log_error(y_true, y_predicted)
@@ -355,6 +357,7 @@ class MAPE(TimeSeriesRegressionObjective):
     name = "Mean Absolute Percentage Error"
     greater_is_better = False
     perfect_score = 0.0
+    positive_only = True
 
     def objective_function(self, y_true, y_predicted, X=None):
         if (y_true == 0).any():
