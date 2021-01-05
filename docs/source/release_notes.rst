@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added time series support for ``make_pipeline`` :pr:`1566`
+        * Added multiclass check to InvalidTargetDataCheck for two examples per class :pr:`1596`
     * Fixes
         * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
@@ -47,6 +48,7 @@ Release Notes
         * Add problem type utils ``is_regression``, ``is_classification``, ``is_timeseries`` :pr:`1597`
         * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
     * Fixes
+        * Fix AutoML not passing CV folds to ``DefaultDataChecks`` for usage by ``ClassImbalanceDataCheck`` :pr:`1619`
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
         * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
