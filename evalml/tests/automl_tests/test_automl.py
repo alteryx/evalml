@@ -2045,4 +2045,4 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_scor
 
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
-                                                "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
+                                               "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
