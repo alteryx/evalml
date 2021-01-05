@@ -15,6 +15,7 @@ Release Notes
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
         * Fixed custom index bug for ``MAPE`` objective :pr:`1641`
         * Fixed index bug for ``TextFeaturizer`` and ``LSA`` components :pr:`1644`
+        * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
     * Changes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
