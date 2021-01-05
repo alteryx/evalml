@@ -53,12 +53,8 @@ class TimeSeriesBaselineRegressor(Estimator):
         return self
 
     def predict(self, X, y=None):
-        if X is None:
-            X = pd.DataFrame()
         if y is None:
             raise ValueError("Cannot predict Time Series Baseline Regressor if y is None")
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 

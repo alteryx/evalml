@@ -66,14 +66,35 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         self.estimator.fit(X_t, y_shifted)
         return self
 
+    def _estimator_predict_helper(self, features, y, return_probabilities):
+        """Helper to call estimator.predict(features, y) or estimator.predict(features) depending on the estimator.
+
+        If return_probabilities=True, then estimator.predict_proba is called instead.
+        """
+        method = self.estimator.predict_proba if return_probabilities else self.estimator.predict
+        if self.estimator.predict_uses_y:
+            return method(features, y)
+        return method(features)
+
+    def _estimator_predict(self, features, y):
+        """Get estimator predictions.
+
+        This helper passes y as an argument if needed by the estimator.
+        """
+        return self._estimator_predict_helper(features, y, return_probabilities=False)
+
+    def _estimator_predict_proba(self, features, y):
+        """Get estimator prediced probabilities.
+
+        This helper passes y as an argument if needed by the estimator.
+        """
+        return self._estimator_predict_helper(features, y, return_probabilities=True)
+
     def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
         features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
-        if self.estimator.predict_uses_y:
-            predictions = self.estimator.predict(features_no_nan, y_encoded)
-        else:
-            predictions = self.estimator.predict(features_no_nan)
+        predictions = self._estimator_predict(features_no_nan, y_encoded)
         if pad:
             return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return predictions
@@ -112,10 +133,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
         features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
-        if self.estimator.predict_uses_y:
-            proba = self.estimator.predict_proba(features_no_nan, y_encoded)
-        else:
-            proba = self.estimator.predict_proba(features_no_nan)
+        proba = self._estimator_predict_proba(features_no_nan, y_encoded)
         proba.columns = self._encoder.classes_
         return pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
 
@@ -177,20 +195,14 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
-            if self.estimator.predict_uses_y:
-                predictions = self.estimator.predict(features_no_nan, y_encoded)
-            else:
-                predictions = self.estimator.predict(features_no_nan)
+            predictions = self._estimator_predict(features_no_nan, y_encoded)
         else:
-            if self.estimator.predict_uses_y:
-                y_pred_proba = self.estimator.predict_proba(features_no_nan, y_encoded)
-            else:
-                y_pred_proba = self.estimator.predict_proba(features_no_nan).u
-            ypred_proba = y_pred_proba.iloc[:, 1]
+            proba = self._estimator_predict_proba(features_no_nan, y_encoded)
+            proba = proba.iloc[:, 1]
             if objective is None:
-                predictions = ypred_proba > self.threshold
+                predictions = proba > self.threshold
             else:
-                predictions = objective.decision_function(ypred_proba, threshold=self.threshold, X=features_no_nan)
+                predictions = objective.decision_function(proba, threshold=self.threshold, X=features_no_nan)
         if pad:
             return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return predictions
