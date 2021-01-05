@@ -548,8 +548,8 @@ class AutoMLSearch:
                 X_train, y_train = self.X_train, self.y_train
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                        test_size=0.2,
-                                                                                        random_state=self.random_seed)
+                                                                                          test_size=0.2,
+                                                                                          random_state=self.random_seed)
                 self._best_pipeline.fit(X_train, y_train)
                 self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
