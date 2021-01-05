@@ -117,17 +117,22 @@ def test_default_data_checks_classification(input_type):
                              {"InvalidTargetDataCheck": {"problem_type": "binary"}})
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
+    # multiclass
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                 details={"target_values": [0.0, 2.0, 1.0]}).to_dict()]
-    # multiclass
+    min_2_class_count = [DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
+                                        data_check_name="InvalidTargetDataCheck",
+                                        message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                        details={"least_populated_class_labels": [2.0, 1.0]}).to_dict()]
+
     data_checks = DefaultDataChecks("multiclass")
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass"}})
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": messages[3:]}
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3], "errors": [messages[3]] + min_2_class_count + messages[4:]}
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
