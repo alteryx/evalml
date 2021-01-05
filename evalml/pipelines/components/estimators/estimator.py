@@ -21,6 +21,7 @@ class Estimator(ComponentBase):
 
     To see some examples, check out the definitions of any Estimator component.
     """
+    # We can't use the inspect module to dynamically determine this because of issue 1582
     predict_uses_y = False
 
     @property
