@@ -1,6 +1,7 @@
 import warnings
 
 import numpy as np
+import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
@@ -359,7 +360,12 @@ class MAPE(TimeSeriesRegressionObjective):
         if (y_true == 0).any():
             raise ValueError("Mean Absolute Percentage Error cannot be used when "
                              "targets contain the value 0.")
-        return (np.abs((y_true - y_predicted) / y_true)).mean() * 100
+        if isinstance(y_true, pd.Series):
+            y_true = y_true.values
+        if isinstance(y_predicted, pd.Series):
+            y_predicted = y_predicted.values
+        scaled_difference = (y_true - y_predicted) / y_true
+        return np.abs(scaled_difference).mean() * 100
 
 
 class MSE(RegressionObjective):

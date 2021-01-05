@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -20,7 +21,8 @@ from evalml.automl.callbacks import (
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective
+    get_default_primary_search_objective,
+    make_data_splitter
 )
 from evalml.data_checks import (
     DataCheck,
@@ -413,6 +415,17 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
 
 
+def test_validate_data_check_n_splits():
+    X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
+                                        n_informative=3, n_redundant=2, random_state=0)
+
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+    automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
+    with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
+        automl.search()
+    assert automl.data_check_results["errors"][0]["message"] == "The number of instances of these targets is less than 2 * the number of cross folds = 8 instances: [2, 1, 0]"
+
+
 def test_automl_str_no_param_search(X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
@@ -599,6 +612,7 @@ def test_large_dataset_binary(mock_score):
     automl.search()
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
+
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
@@ -672,6 +686,7 @@ def test_large_dataset_split_size(X_y_binary):
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
+
     automl = AutoMLSearch(X_train=X, y_train=y,
                           problem_type='binary',
                           objective=fraud_objective,

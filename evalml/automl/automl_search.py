@@ -351,7 +351,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type)
+                return DefaultDataChecks(problem_type=self.problem_type, n_splits=self.data_splitter.get_n_splits())
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -647,6 +647,7 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
+
         X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
         for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):
