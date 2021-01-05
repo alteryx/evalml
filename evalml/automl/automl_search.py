@@ -540,19 +540,18 @@ class AutoMLSearch:
         """Finds the best pipeline in the rankings
         If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
         best_pipeline = self.rankings.iloc[0]
-        if self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id']):
-            return
-        self._best_pipeline = self.get_pipeline(best_pipeline['id'])
-        if self._train_best_pipeline:
-            X_threshold_tuning = None
-            y_threshold_tuning = None
-            X_train, y_train = self.X_train, self.y_train
-            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
-                X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                      test_size=0.2,
-                                                                                      random_state=self.random_seed)
-            self._best_pipeline.fit(X_train, y_train)
-            self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
+        if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
+            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            if self._train_best_pipeline:
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+                X_train, y_train = self.X_train, self.y_train
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                        test_size=0.2,
+                                                                                        random_state=self.random_seed)
+                self._best_pipeline.fit(X_train, y_train)
+                self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
     def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
         """Tunes the threshold of a binary pipeline to the X and y thresholding data
