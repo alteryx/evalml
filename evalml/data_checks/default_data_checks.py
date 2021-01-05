@@ -42,4 +42,4 @@ class DefaultDataChecks(DataChecks):
             super().__init__(self._DEFAULT_DATA_CHECK_CLASSES + [ClassImbalanceDataCheck],
                              data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type,
                                                                            "objective": objective},
-                                               "ClassImbalanceDataCheck": {"num_cv_folds": n_splits}})
+                                                "ClassImbalanceDataCheck": {"num_cv_folds": n_splits}})
