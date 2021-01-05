@@ -262,3 +262,12 @@ def test_polarity_primitive_output():
     X_t = tf.transform(X)
     features = X_t['POLARITY_SCORE(polarity)']
     np.testing.assert_almost_equal(features, expected_features)
+
+
+def test_featurizer_with_custom_indices(text_df):
+    X = text_df
+    X = X.set_index(pd.Series([2, 5, 19]))
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf.fit(X)
+    X_t = tf.transform(X)
+    assert not X_t.isnull().any().any()
