@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -19,7 +20,9 @@ from evalml.automl.callbacks import (
 )
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
-    _LARGE_DATA_ROW_THRESHOLD
+    _LARGE_DATA_ROW_THRESHOLD,
+    get_default_primary_search_objective,
+    make_data_splitter
 )
 from evalml.data_checks import (
     DataCheck,
@@ -34,7 +37,7 @@ from evalml.exceptions import (
     PipelineNotYetFittedError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost
+from evalml.objectives import CostBenefitMatrix, FraudCost, ObjectiveBase
 from evalml.objectives.utils import get_core_objectives, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -351,7 +354,7 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_validate.return_value = {
-        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks")],
+        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks").to_dict()],
         "errors": []
     }
 
@@ -368,8 +371,8 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
 class MockDataCheckErrorAndWarning(DataCheck):
     def validate(self, X, y):
         return {
-            "warnings": [],
-            "errors": [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+            "warnings": [DataCheckWarning("warning one", self.name).to_dict()],
+            "errors": [DataCheckError("error one", self.name).to_dict()],
         }
 
 
@@ -410,6 +413,17 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[DataChecks([]), 1])
     with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
+
+
+def test_validate_data_check_n_splits():
+    X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
+                                        n_informative=3, n_redundant=2, random_state=0)
+
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+    automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
+    with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
+        automl.search()
+    assert automl.data_check_results["errors"][0]["message"] == "The number of instances of these targets is less than 2 * the number of cross folds = 8 instances: [2, 1, 0]"
 
 
 def test_automl_str_no_param_search(X_y_binary):
@@ -598,6 +612,7 @@ def test_large_dataset_binary(mock_score):
     automl.search()
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
+
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
@@ -671,6 +686,7 @@ def test_large_dataset_split_size(X_y_binary):
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
+
     automl = AutoMLSearch(X_train=X, y_train=y,
                           problem_type='binary',
                           objective=fraud_objective,
@@ -1153,8 +1169,32 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_
 all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
 
 
+class CustomClassificationObjective(ObjectiveBase):
+    """Accuracy score for binary and multiclass classification."""
+    name = "Classification Accuracy"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        """Not implementing since mocked in our tests."""
+
+
+class CustomRegressionObjective(ObjectiveBase):
+    """Accuracy score for binary and multiclass classification."""
+    name = "Custom Regression Objective"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        """Not implementing since mocked in our tests."""
+
+
 @pytest.mark.parametrize("objective,pipeline_scores,baseline_score,problem_type_value",
-                         product(all_objectives + [CostBenefitMatrix],
+                         product(all_objectives + [CostBenefitMatrix, CustomClassificationObjective()],
                                  [(0.3, 0.4), (np.nan, 0.4), (0.3, np.nan), (np.nan, np.nan)],
                                  [0.1, np.nan],
                                  [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]))
@@ -1220,6 +1260,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
 
 
+@pytest.mark.parametrize("custom_additional_objective", [True, False])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression", "time series regression"])
 @patch("evalml.pipelines.ModeBaselineBinaryPipeline.fit")
 @patch("evalml.pipelines.ModeBaselineMulticlassPipeline.fit")
@@ -1230,6 +1271,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
                                                                   mock_baseline_multiclass_fit,
                                                                   mock_baseline_binary_fit,
                                                                   problem_type,
+                                                                  custom_additional_objective,
                                                                   dummy_binary_pipeline_class,
                                                                   dummy_multiclass_pipeline_class,
                                                                   dummy_regression_pipeline_class,
@@ -1256,19 +1298,32 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
+    additional_objectives = None
+    if custom_additional_objective:
+        if CustomClassificationObjective.is_defined_for_problem_type(problem_type_enum):
+            additional_objectives = [CustomClassificationObjective()]
+        else:
+            additional_objectives = [CustomRegressionObjective(), "Root Mean Squared Error"]
+
     core_objectives = get_core_objectives(problem_type)
-    mock_scores = {obj.name: i for i, obj in enumerate(core_objectives)}
-    mock_baseline_scores = {obj.name: i + 1 for i, obj in enumerate(core_objectives)}
-    answer = {obj.name: obj.calculate_percent_difference(mock_scores[obj.name],
-                                                         mock_baseline_scores[obj.name]) for obj in core_objectives}
+    if additional_objectives:
+        core_objectives = [get_default_primary_search_objective(problem_type_enum)] + additional_objectives
+    mock_scores = {get_objective(obj).name: i for i, obj in enumerate(core_objectives)}
+    mock_baseline_scores = {get_objective(obj).name: i + 1 for i, obj in enumerate(core_objectives)}
+    answer = {}
+    for obj in core_objectives:
+        obj_class = get_objective(obj)
+        answer[obj_class.name] = obj_class.calculate_percent_difference(mock_scores[obj_class.name],
+                                                                        mock_baseline_scores[obj_class.name])
 
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
 
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="auto",
-                          problem_configuration={'gap': 1, 'max_delay': 1})
+                          allowed_pipelines=[DummyPipeline],
+                          objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
+                          additional_objectives=additional_objectives)
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search(data_checks=None)
