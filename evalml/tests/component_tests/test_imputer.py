@@ -187,11 +187,11 @@ def test_imputer_empty_data(data_type):
     if data_type == 'pd':
         X = pd.DataFrame()
         y = pd.Series()
-        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     elif data_type == 'ww':
         X = ww.DataTable(pd.DataFrame())
         y = ww.DataColumn(pd.Series())
-        expected = pd.DataFrame(index=pd.Int64Index([]), columns=pd.Index([]))
+        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     else:
         X = np.array([[]])
         y = np.array([])
@@ -206,25 +206,23 @@ def test_imputer_empty_data(data_type):
     assert_frame_equal(transformed, expected, check_dtype=False)
 
 
-def test_imputer_resets_index():
-    X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10)})
+def test_imputer_does_not_reset_index():
+    X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10),
+                      'input_cat': ['a'] * 7 + ['b'] * 3})
     X.loc[5, 'input_val'] = np.nan
+    X.loc[5, 'input_cat'] = np.nan
     assert X.index.tolist() == list(range(10))
 
     X.drop(0, inplace=True)
     y = X.pop('target')
-    pd.testing.assert_frame_equal(X,
-                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, np.nan, 6, 7, 8, 9]},
-                                               dtype=float,
-                                               index=list(range(1, 10))))
 
     imputer = Imputer()
     imputer.fit(X, y=y)
     transformed = imputer.transform(X)
     pd.testing.assert_frame_equal(transformed,
-                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
-                                               dtype=float,
-                                               index=list(range(0, 9))))
+                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9],
+                                                'input_cat': pd.Categorical(['a'] * 6 + ['b'] * 3)},
+                                               index=list(range(1, 10))))
 
 
 def test_imputer_fill_value(imputer_test_data):
