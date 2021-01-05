@@ -4,15 +4,15 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added time series support for ``make_pipeline`` :pr:`1566`
-        * Added multiclass check to InvalidTargetDataCheck for two examples per class :pr:`1596`
+        * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
     * Fixes
-        * Fixed thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
+        * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
         * Pinned scipy at < 1.6.0 while we work on adding support :pr:`1629`
         * Fixed data check message formatting in ``AutoMLSearch`` :pr:`1633`
         * Addressed stacked ensemble component for ``scikit-learn`` v0.24 support by setting ``shuffle=True`` for default CV :pr:`1613`
         * Fixed bug where ``Imputer`` reset the index on ``X`` :pr:`1590`
-        * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
+        * Fixed ``AutoMLSearch`` stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
         * Fixed custom index bug for ``MAPE`` objective :pr:`1641`
         * Fixed index bug for ``TextFeaturizer`` and ``LSA`` components :pr:`1644`
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
