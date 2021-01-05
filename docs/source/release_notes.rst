@@ -14,6 +14,8 @@ Release Notes
         * Addressed stacked ensemble component for ``scikit-learn`` v0.24 support by setting ``shuffle=True`` for default CV :pr:`1613`
         * Fix bug where ``Imputer`` reset the index on ``X`` :pr:`1590`
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
+        * Fix custom index bug for ``MAPE`` objective :pr:`1641`
+        * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
     * Changes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
