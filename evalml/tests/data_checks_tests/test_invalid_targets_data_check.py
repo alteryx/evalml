@@ -80,7 +80,7 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
 
 def test_invalid_target_data_check_multiclass_two_examples_per_class():
     X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("multiclass")
+    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("binary"))
     expected_message = "Target does not have at least two instances per class which is required for multiclass classification"
 
     # with 1 class not having min 2 instances
@@ -228,8 +228,8 @@ def test_invalid_target_data_check_n_unique():
 
 @pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_names(objective):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
-    y = pd.Series([2, 3, -1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100]})
+    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
@@ -259,8 +259,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
 
 @pytest.mark.parametrize("objective", [RootMeanSquaredLogError(), MeanSquaredLogError(), MAPE()])
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_instances(objective):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
-    y = pd.Series([2, 3, -1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100]})
+    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
@@ -276,8 +276,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_inst
 
 
 def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_core_objectives):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
-    y = pd.Series([2, 3, -1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100]})
+    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
 
     for objective in time_series_core_objectives:
         if objective.name not in ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error']:
@@ -302,8 +302,8 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_cor
 
 @pytest.mark.parametrize("objective", ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
 def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objective):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
-    y = pd.Series([2, 3, 1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 100, 200, 300, 100, 200, 100]})
+    y = pd.Series([2, 2, 3, 3, 1, 1, 1])
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
