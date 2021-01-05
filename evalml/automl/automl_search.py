@@ -403,143 +403,146 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
         """
-        # don't show iteration plot outside of a jupyter notebook
-        if show_iteration_plot:
-            try:
-                get_ipython
-            except NameError:
-                show_iteration_plot = False
+        if not self.has_searched:
+            # don't show iteration plot outside of a jupyter notebook
+            if show_iteration_plot:
+                try:
+                    get_ipython
+                except NameError:
+                    show_iteration_plot = False
 
-        text_column_vals = self.X_train.select('natural_language')
-        text_columns = list(text_column_vals.to_dataframe().columns)
-        if len(text_columns) == 0:
-            text_columns = None
+            text_column_vals = self.X_train.select('natural_language')
+            text_columns = list(text_column_vals.to_dataframe().columns)
+            if len(text_columns) == 0:
+                text_columns = None
 
-        data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
-                                                        _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for message in self._data_check_results["warnings"]:
-            logger.warning(message)
-        for message in self._data_check_results["errors"]:
-            logger.error(message)
-        if self._data_check_results["errors"]:
-            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
-        if self.allowed_pipelines is None:
-            logger.info("Generating pipelines to search over...")
-            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
-            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, text_columns=text_columns) for estimator in allowed_estimators]
+            data_checks = self._validate_data_checks(data_checks)
+            self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
+                                                            _convert_woodwork_types_wrapper(self.y_train.to_series()))
+            for message in self._data_check_results["warnings"]:
+                logger.warning(message)
+            for message in self._data_check_results["errors"]:
+                logger.error(message)
+            if self._data_check_results["errors"]:
+                raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
+            if self.allowed_pipelines is None:
+                logger.info("Generating pipelines to search over...")
+                allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+                logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
+                self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, text_columns=text_columns) for estimator in allowed_estimators]
 
-        if self.allowed_pipelines == []:
-            raise ValueError("No allowed pipelines to search")
+            if self.allowed_pipelines == []:
+                raise ValueError("No allowed pipelines to search")
 
-        run_ensembling = self.ensembling
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
-            if self.max_iterations < first_ensembling_iteration:
+            run_ensembling = self.ensembling
+            if run_ensembling and len(self.allowed_pipelines) == 1:
+                logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
                 run_ensembling = False
-                logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
-            else:
-                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
 
-        if self.max_batches and self.max_iterations is None:
-            self.show_batch_output = True
-            if run_ensembling:
-                ensemble_nth_batch = len(self.allowed_pipelines) + 1
-                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
-                if num_ensemble_batches == 0:
-                    logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
+            if run_ensembling and self.max_iterations is not None:
+                # Baseline + first batch + each pipeline iteration + 1
+                first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
+                if self.max_iterations < first_ensembling_iteration:
+                    run_ensembling = False
+                    logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
                 else:
-                    logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
+                    logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
 
-                self.max_iterations = (1 + len(self.allowed_pipelines) +
-                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
-                                       num_ensemble_batches)
-            else:
-                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
-        self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
+            if self.max_batches and self.max_iterations is None:
+                self.show_batch_output = True
+                if run_ensembling:
+                    ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                    num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                    if num_ensemble_batches == 0:
+                        logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
+                    else:
+                        logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
 
-        logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
-        logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
+                    self.max_iterations = (1 + len(self.allowed_pipelines) +
+                                           self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
+                                           num_ensemble_batches)
+                else:
+                    self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
+            self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
-        self._automl_algorithm = IterativeAlgorithm(
-            max_iterations=self.max_iterations,
-            allowed_pipelines=self.allowed_pipelines,
-            tuner_class=self.tuner_class,
-            text_columns=text_columns,
-            random_state=self.random_state,
-            n_jobs=self.n_jobs,
-            number_features=self.X_train.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling,
-            pipeline_params=self.problem_configuration
-        )
+            logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
+            logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        log_title(logger, "Beginning pipeline search")
-        logger.info("Optimizing for %s. " % self.objective.name)
-        logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
+            self._automl_algorithm = IterativeAlgorithm(
+                max_iterations=self.max_iterations,
+                allowed_pipelines=self.allowed_pipelines,
+                tuner_class=self.tuner_class,
+                text_columns=text_columns,
+                random_state=self.random_state,
+                n_jobs=self.n_jobs,
+                number_features=self.X_train.shape[1],
+                pipelines_per_batch=self._pipelines_per_batch,
+                ensembling=run_ensembling,
+                pipeline_params=self.problem_configuration
+            )
 
-        if self.max_batches is not None:
-            logger.info(f"Searching up to {self.max_batches} batches for a total of {self.max_iterations} pipelines. ")
-        elif self.max_iterations is not None:
-            logger.info("Searching up to %s pipelines. " % self.max_iterations)
-        if self.max_time is not None:
-            logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
-        logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
-        search_iteration_plot = None
-        if self.plot:
-            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+            log_title(logger, "Beginning pipeline search")
+            logger.info("Optimizing for %s. " % self.objective.name)
+            logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
 
-        self._start = time.time()
+            if self.max_batches is not None:
+                logger.info(f"Searching up to {self.max_batches} batches for a total of {self.max_iterations} pipelines. ")
+            elif self.max_iterations is not None:
+                logger.info("Searching up to %s pipelines. " % self.max_iterations)
+            if self.max_time is not None:
+                logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
+            logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
+            search_iteration_plot = None
+            if self.plot:
+                search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
-        should_terminate = self._add_baseline_pipelines()
-        if should_terminate:
-            return
+            self._start = time.time()
 
-        current_batch_pipelines = []
-        current_batch_pipeline_scores = []
-        while self._check_stopping_condition(self._start):
-            try:
-                if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
-                    raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
-                current_batch_pipelines = self._automl_algorithm.next_batch()
-                current_batch_pipeline_scores = []
-            except StopIteration:
-                logger.info('AutoML Algorithm out of recommendations, ending')
-                break
+            should_terminate = self._add_baseline_pipelines()
+            if should_terminate:
+                return
 
-            current_batch_size = len(current_batch_pipelines)
-            current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, search_iteration_plot=search_iteration_plot)
+            current_batch_pipelines = []
+            current_batch_pipeline_scores = []
+            while self._check_stopping_condition(self._start):
+                try:
+                    if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
+                        raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
+                    current_batch_pipelines = self._automl_algorithm.next_batch()
+                    current_batch_pipeline_scores = []
+                except StopIteration:
+                    logger.info('AutoML Algorithm out of recommendations, ending')
+                    break
 
-            # Different size indicates early stopping
-            if len(current_batch_pipeline_scores) != current_batch_size:
-                break
+                current_batch_size = len(current_batch_pipelines)
+                current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, search_iteration_plot=search_iteration_plot)
 
-        elapsed_time = time_elapsed(self._start)
-        desc = f"\nSearch finished after {elapsed_time}"
-        desc = desc.ljust(self._MAX_NAME_LEN)
-        logger.info(desc)
+                # Different size indicates early stopping
+                if len(current_batch_pipeline_scores) != current_batch_size:
+                    break
 
-        best_pipeline = self.rankings.iloc[0]
-        best_pipeline_name = best_pipeline["pipeline_name"]
-        self._best_pipeline = self.get_pipeline(best_pipeline['id'])
-        if self._train_best_pipeline:
-            X_threshold_tuning = None
-            y_threshold_tuning = None
-            X_train, y_train = self.X_train, self.y_train
-            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
-                X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                      test_size=0.2,
-                                                                                      random_state=self.random_seed)
-            self._best_pipeline.fit(X_train, y_train)
-            self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
-        logger.info(f"Best pipeline: {best_pipeline_name}")
-        logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+            elapsed_time = time_elapsed(self._start)
+            desc = f"\nSearch finished after {elapsed_time}"
+            desc = desc.ljust(self._MAX_NAME_LEN)
+            logger.info(desc)
+
+            best_pipeline = self.rankings.iloc[0]
+            best_pipeline_name = best_pipeline["pipeline_name"]
+            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            if self._train_best_pipeline:
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+                X_train, y_train = self.X_train, self.y_train
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                          test_size=0.2,
+                                                                                          random_state=self.random_seed)
+                self._best_pipeline.fit(X_train, y_train)
+                self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
+            logger.info(f"Best pipeline: {best_pipeline_name}")
+            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+        else:
+            logger.info("AutoMLSearch has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again.")
 
     def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
         """Tunes the threshold of a binary pipeline to the X and y thresholding data
