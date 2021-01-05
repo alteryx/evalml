@@ -463,8 +463,8 @@ class AutoMLSearch:
                     logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
 
                 self.max_iterations = (1 + len(self.allowed_pipelines) +
-                                        self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
-                                        num_ensemble_batches)
+                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
+                                       num_ensemble_batches)
             else:
                 self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
