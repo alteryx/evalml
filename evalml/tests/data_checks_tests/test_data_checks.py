@@ -257,7 +257,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
     y[0] = -1
     y = pd.Series(y)
     details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
-    data_check_error = DataCheckError(message=f"Target has negative values which is not supported for {objective}",
+    data_check_error = DataCheckError(message=f"Target has non-positive values which is not supported for {objective}",
                                       data_check_name="InvalidTargetDataCheck",
                                       message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                                       details=details).to_dict()
