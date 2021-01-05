@@ -13,7 +13,7 @@ Release Notes
         * Addressed stacked ensemble component for ``scikit-learn`` v0.24 support by setting ``shuffle=True`` for default CV :pr:`1613`
         * Fix bug where ``Imputer`` reset the index on ``X`` :pr:`1590`
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
-        * Limit ``load_fraud`` dataset loaded into ``automl.ipynb`` :pr:``
+        * Limit ``load_fraud`` dataset loaded into ``automl.ipynb`` :pr:`1646`
     * Changes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
