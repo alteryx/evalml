@@ -241,9 +241,6 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
     class MockTextClassificationPipeline(BinaryClassificationPipeline):
         component_graph = [TextFeaturizer, dummy_classifier_estimator_class]
 
-    algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline], text_columns=['text_col_1', 'text_col_2'])
+    algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline])
     pipeline = algo.next_batch()[0]
-    expected_params = {'text_columns': ['text_col_1', 'text_col_2']}
-    assert pipeline.parameters['Text Featurization Component'] == expected_params
     assert isinstance(pipeline[0], TextFeaturizer)
-    assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']

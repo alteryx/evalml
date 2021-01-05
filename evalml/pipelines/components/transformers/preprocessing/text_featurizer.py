@@ -19,11 +19,10 @@ class TextFeaturizer(TextTransformer):
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
-    def __init__(self, text_columns=None, random_state=0, **kwargs):
+    def __init__(self, random_state=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
-            text_columns (list): list of feature names which should be treated as text features.
             random_state (int, np.random.RandomState): Seed for the random number generator.
 
         """
@@ -31,9 +30,8 @@ class TextFeaturizer(TextTransformer):
                        nlp_primitives.MeanCharactersPerWord,
                        nlp_primitives.PolarityScore]
         self._features = None
-        self._lsa = LSA(text_columns=text_columns, random_state=random_state)
-        super().__init__(text_columns=text_columns,
-                         random_state=random_state,
+        self._lsa = LSA(random_state=random_state)
+        super().__init__(random_state=random_state,
                          **kwargs)
 
     def _clean_text(self, X):
@@ -66,42 +64,43 @@ class TextFeaturizer(TextTransformer):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
-        if len(self._all_text_columns) == 0:
-            return self
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
         text_columns = self._get_text_columns(X)
+        if len(text_columns) == 0:
+            return self
+
+        self._lsa.fit(X)
+
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         es = self._make_entity_set(X, text_columns)
         self._features = ft.dfs(entityset=es,
                                 target_entity='X',
                                 trans_primitives=self._trans,
                                 features_only=True)
-        self._lsa.fit(X)
         return self
 
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing text columns
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The data to transform.
+            y (ww.DataColumn, pd.Series, np.ndarray, optional): Ignored.
 
         Returns:
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
+        text_columns = self._get_text_columns(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if self._features is None or len(self._features) == 0:
             return X
 
-        text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():

@@ -17,7 +17,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  allowed_pipelines=None,
                  max_iterations=None,
                  tuner_class=None,
-                 text_columns=None,
                  random_state=0,
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
@@ -44,7 +43,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
-        self._text_columns = text_columns
         self._first_batch_results = []
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
@@ -128,10 +126,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-
-            # Add the text columns parameter if the component is a TextFeaturizer
-            if component_class.name == "Text Featurization Component":
-                component_parameters['text_columns'] = self._text_columns
 
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in init_params:

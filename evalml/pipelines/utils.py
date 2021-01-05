@@ -37,14 +37,13 @@ from evalml.utils.gen_utils import _convert_to_woodwork_structure
 logger = get_logger(__file__)
 
 
-def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_class):
+def _get_preprocessing_components(X, y, problem_type, estimator_class):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Arguments:
         X (ww.DataTable): The input data of shape [n_samples, n_features]
         y (ww.DataColumn): The target data of length [n_samples]
         problem_type (ProblemTypes or str): Problem type
-        text_columns (list): feature names which should be treated as text features
         estimator_class (class): A class which subclasses Estimator estimator for pipeline
 
     Returns:
@@ -59,7 +58,8 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
 
     pp_components.append(Imputer)
 
-    if text_columns:
+    text_columns = list(X.select('NaturalLanguage').columns)
+    if len(text_columns) != 0:
         pp_components.append(TextFeaturizer)
 
     datetime_cols = X.select(["Datetime"])
@@ -95,7 +95,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, text_columns=None):
+def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -107,7 +107,6 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
             with component name as key and dictionary of parameters as the value
-        text_columns (list): feature names which should be treated as text features. Defaults to None.
 
     Returns:
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
@@ -119,7 +118,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    preprocessing_components = _get_preprocessing_components(X, y, problem_type, text_columns, estimator)
+    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):

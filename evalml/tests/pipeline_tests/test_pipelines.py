@@ -273,7 +273,7 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
 def test_make_pipeline_text_columns(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
-                      "text": ["string one", "another", "text for a column", "text string", "hello world"]})
+                      "text": ["string one", "another", "text for a column, this should be a text column!!", "text string", "hello world"]})
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
         X = ww.DataTable(X)
@@ -286,7 +286,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, text_columns=['text'])
+            pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
             if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
