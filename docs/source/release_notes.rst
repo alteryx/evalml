@@ -14,8 +14,9 @@ Release Notes
         * Fix bug where ``Imputer`` reset the index on ``X`` :pr:`1590`
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
         * Fix custom index bug for ``MAPE`` objective :pr:`1641`
+        * ``add_to_rankings`` updates ``AutoMLSearch.best_pipeline`` when necessary :pr:`1647`
     * Changes
-        * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search :pr:`1647`
+        * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
     * Testing Changes
