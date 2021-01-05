@@ -1,8 +1,7 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    datetime_dtypes
+    _convert_woodwork_types_wrapper
 )
 
 
@@ -77,8 +76,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        self._date_time_col_names = X.select_dtypes(include=datetime_dtypes).columns
+        self._date_time_col_names = X.select(include=["datetime"]).columns
         return self
 
     def transform(self, X, y=None):

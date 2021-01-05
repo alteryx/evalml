@@ -23,6 +23,7 @@ def load_fraud(n_rows=None, verbose=True, return_pandas=False):
                      target="fraud",
                      n_rows=n_rows,
                      verbose=verbose)
+    X = X.set_types({"provider": "Categorical", "region": "Categorical"})
 
     if return_pandas:
         return X.to_dataframe(), y.to_series()
