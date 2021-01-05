@@ -2038,3 +2038,17 @@ def test_automl_rerun(mock_fit, mock_score, X_y_binary, caplog):
     assert msg not in caplog.text
     automl.search()
     assert msg in caplog.text
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
+def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_score, X_y_regression):
+
+    X, y = X_y_regression
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression",
+                          problem_configuration={"gap": 6, "max_delay": 3}, max_iterations=1)
+    automl.search()
+
+    # Best pipeline is baseline pipeline because we only run one iteration
+    assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
+                                               "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
