@@ -537,6 +537,8 @@ class AutoMLSearch:
             logger.info("AutoMLSearch has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again.")
 
     def _find_best_pipeline(self):
+        """Finds the best pipeline in the rankings
+        If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
         best_pipeline = self.rankings.iloc[0]
         if self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id']):
             return
