@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
@@ -20,7 +21,8 @@ from evalml.automl.callbacks import (
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective
+    get_default_primary_search_objective,
+    make_data_splitter
 )
 from evalml.data_checks import (
     DataCheck,
@@ -352,7 +354,7 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
     mock_validate.return_value = {
-        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks")],
+        "warnings": [DataCheckWarning("default data check warning", "DefaultDataChecks").to_dict()],
         "errors": []
     }
 
@@ -369,8 +371,8 @@ def test_automl_default_data_checks(mock_fit, mock_score, mock_validate, X_y_bin
 class MockDataCheckErrorAndWarning(DataCheck):
     def validate(self, X, y):
         return {
-            "warnings": [],
-            "errors": [DataCheckError("error one", self.name), DataCheckWarning("warning one", self.name)]
+            "warnings": [DataCheckWarning("warning one", self.name).to_dict()],
+            "errors": [DataCheckError("error one", self.name).to_dict()],
         }
 
 
@@ -411,6 +413,17 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[DataChecks([]), 1])
     with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
+
+
+def test_validate_data_check_n_splits():
+    X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
+                                        n_informative=3, n_redundant=2, random_state=0)
+
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+    automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
+    with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
+        automl.search()
+    assert automl.data_check_results["errors"][0]["message"] == "The number of instances of these targets is less than 2 * the number of cross folds = 8 instances: [2, 1, 0]"
 
 
 def test_automl_str_no_param_search(X_y_binary):
@@ -599,6 +612,7 @@ def test_large_dataset_binary(mock_score):
     automl.search()
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
+
     for pipeline_id in automl.results['search_order']:
         assert len(automl.results['pipeline_results'][pipeline_id]['cv_data']) == 1
         assert automl.results['pipeline_results'][pipeline_id]['cv_data'][0]['score'] == 1.234
@@ -672,6 +686,7 @@ def test_large_dataset_split_size(X_y_binary):
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
     X, y = generate_fake_dataset(over_max_rows)
+
     automl = AutoMLSearch(X_train=X, y_train=y,
                           problem_type='binary',
                           objective=fraud_objective,
@@ -2017,3 +2032,17 @@ def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, moc
     assert data_splitters[0] == data_splitters[1]
     assert data_splitters[1] != data_splitters[2]
     assert data_splitters[2] == data_splitters[3]
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
+def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_score, X_y_regression):
+
+    X, y = X_y_regression
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression",
+                          problem_configuration={"gap": 6, "max_delay": 3}, max_iterations=1)
+    automl.search()
+
+    # Best pipeline is baseline pipeline because we only run one iteration
+    assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
+                                               "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}

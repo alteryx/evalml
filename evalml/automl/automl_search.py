@@ -351,7 +351,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type)
+                return DefaultDataChecks(problem_type=self.problem_type, n_splits=self.data_splitter.get_n_splits())
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -418,10 +418,10 @@ class AutoMLSearch:
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for message in self._data_check_results["warnings"]:
-            logger.warning(message)
-        for message in self._data_check_results["errors"]:
-            logger.error(message)
+        for result in self._data_check_results["warnings"]:
+            logger.warning(result["message"])
+        for result in self._data_check_results["errors"]:
+            logger.error(result["message"])
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
         if self.allowed_pipelines is None:
@@ -623,7 +623,8 @@ class AutoMLSearch:
         else:
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay}})
+            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+                                                                        "Time Series Baseline Regressor": {"gap": gap, "max_delay": max_delay}})
         pipelines = [baseline]
         scores = self._evaluate_pipelines(pipelines, baseline=True)
         if scores == []:
@@ -647,6 +648,7 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
+
         X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
         for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):

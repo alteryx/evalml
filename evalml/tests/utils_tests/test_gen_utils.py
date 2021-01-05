@@ -339,6 +339,13 @@ def test_convert_woodwork_types_wrapper():
     pd.testing.assert_series_equal(y, pd.Series([True, False, True], dtype="bool"))
 
 
+def test_convert_woodwork_types_wrapper_series_name():
+    name = "my series name"
+    series_with_name = pd.Series([1, 2, 3], name=name)
+    y = _convert_woodwork_types_wrapper(series_with_name)
+    assert y.name == name
+
+
 def test_convert_woodwork_types_wrapper_dataframe():
     X = pd.DataFrame({"Int series": pd.Series([1, 2, 3], dtype="Int64"),
                       "Int array": pd.array([1, 2, 3], dtype="Int64"),
