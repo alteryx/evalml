@@ -360,13 +360,11 @@ class MAPE(TimeSeriesRegressionObjective):
         if (y_true == 0).any():
             raise ValueError("Mean Absolute Percentage Error cannot be used when "
                              "targets contain the value 0.")
-        # Use numpy ufuncs to avoid errors with custom indices
         if isinstance(y_true, pd.Series):
             y_true = y_true.values
         if isinstance(y_predicted, pd.Series):
             y_predicted = y_predicted.values
-        difference = np.subtract(y_true, y_predicted)
-        scaled_difference = np.divide(difference, y_true)
+        scaled_difference = (y_true - y_predicted) / y_true
         return np.abs(scaled_difference).mean() * 100
 
 
