@@ -15,6 +15,7 @@ Release Notes
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
         * Limit ``load_fraud`` dataset loaded into ``automl.ipynb`` :pr:`1646`
         * Fix custom index bug for ``MAPE`` objective :pr:`1641`
+        * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
     * Changes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
