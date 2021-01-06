@@ -1,7 +1,6 @@
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier as SKRandomForesClassifier
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
-from skopt.space import Integer, Real
+from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
