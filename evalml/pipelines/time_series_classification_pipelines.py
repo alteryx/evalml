@@ -57,7 +57,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        self.input_target_name = y.name
         self._encoder.fit(y)
         y = self._encode_targets(y)
 

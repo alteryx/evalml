@@ -54,7 +54,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        self.input_target_name = y.name
         X_t = self._compute_features_during_fit(X, y)
         if X_t.empty:
             raise RuntimeError("Pipeline computed empty features during call to .fit. This means "
