@@ -9,7 +9,8 @@ def correct_model_families():
                               ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST,
                               ModelFamily.CATBOOST, ModelFamily.EXTRA_TREES,
                               ModelFamily.DECISION_TREE, ModelFamily.ENSEMBLE,
-                              ModelFamily.BASELINE, ModelFamily.NONE]
+                              ModelFamily.BASELINE, ModelFamily.K_NEIGHBORS,
+                              ModelFamily.NONE]
     yield correct_model_families
 
 

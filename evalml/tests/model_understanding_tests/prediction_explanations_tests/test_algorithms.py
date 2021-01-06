@@ -105,8 +105,11 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
 
-    if problem_type == ProblemTypes.MULTICLASS and estimator.model_family == ModelFamily.CATBOOST:
-        pytest.skip("Skipping Catboost for multiclass problems.")
+    if problem_type == ProblemTypes.MULTICLASS:
+        if estimator.model_family == ModelFamily.CATBOOST:
+            pytest.skip("Skipping Catboost for multiclass problems.")
+        if estimator.model_family == ModelFamily.K_NEIGHBORS:
+            pytest.skip("Skipping KNN for multiclass problems.")
 
     if problem_type == ProblemTypes.BINARY:
         training_data, y = X_y_binary
