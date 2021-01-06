@@ -11,17 +11,18 @@ from evalml.utils.gen_utils import (
 
 
 class TargetLeakageDataCheck(DataCheck):
-    """Check if any of the features are highly correlated with the target."""
+    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
 
     def __init__(self, pct_corr_threshold=0.95, pearson_corr=False):
-        """Check if any of the features are highly correlated with the target.
+        """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
 
-        If `pearson_corr=False`, supports all target and feature types. Otherwise, only supports binary with numeric and boolean dtypes.
+        If `pearson_corr=False`, this data check uses mutual information and supports all target and feature types.
+        Otherwise, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Arguments:
             pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
-            pearson_corr (bool): Whether or not to use the Pearson Correlation versus mutual information. Defaults to False, which uses mutual info.
+            pearson_corr (bool): Whether or not to use the Pearson correlation versus mutual information. Defaults to False, which uses mutual information.
 
         """
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
