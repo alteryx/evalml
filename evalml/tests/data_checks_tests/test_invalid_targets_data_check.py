@@ -17,8 +17,6 @@ from evalml.objectives import (
     RootMeanSquaredLogError
 )
 from evalml.utils.gen_utils import (
-    categorical_dtypes,
-    numeric_and_boolean_dtypes,
     numeric_and_boolean_ww
 )
 
@@ -106,7 +104,6 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
 def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    valid_data_types = numeric_and_boolean_dtypes + categorical_dtypes
     y = pd.Series([0, 1, 0, 0, 1, 0, 1, 0])
     y = y.astype(pd_type)
     assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}

@@ -10,10 +10,7 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    categorical_dtypes,
-    numeric_and_boolean_dtypes,
-    numeric_and_boolean_ww,
-    numeric_dtypes
+    numeric_and_boolean_ww
 )
 
 
@@ -108,9 +105,9 @@ class InvalidTargetDataCheck(DataCheck):
                                                              message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
                                                              details={"target_values": unique_values}).to_dict())
 
-        any_neg = not (y > 0).all() if y.dtype in numeric_dtypes else None
+        any_neg = not (y_df > 0).all() if y.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
         if any_neg and self.objective.positive_only:
-            details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
+            details = {"Count of offending values": sum(val <= 0 for val in y_df.values.flatten())}
             messages["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective.name}",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
