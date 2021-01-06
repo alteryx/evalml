@@ -48,9 +48,10 @@ def test_fit_predict_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
     np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
 
+
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
     clf = KNeighborsClassifier()
-    clf.fit(X,y)
+    clf.fit(X, y)
     np.testing.assert_equal(clf.feature_importance, np.zeros(X.shape[1]))

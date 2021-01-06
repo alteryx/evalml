@@ -1,6 +1,6 @@
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier as SKRandomForesClassifier
+from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -29,7 +29,7 @@ class KNeighborsClassifier(Estimator):
                  algorithm="auto",
                  leaf_size=30,
                  p=2,
-                 random_state=0, #Capture random_state so it doesn't get into params
+                 random_state=0,  # Capture random_state so it doesn't get into params
                  **kwargs):
         parameters = {"n_neighbors": n_neighbors,
                       "weights": weights,
