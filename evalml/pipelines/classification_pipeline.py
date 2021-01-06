@@ -42,7 +42,6 @@ class ClassificationPipeline(PipelineBase):
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-        self.input_target_name = y.name
         self._encoder.fit(y)
         y = self._encode_targets(y)
         self._fit(X, y)

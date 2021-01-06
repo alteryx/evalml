@@ -1824,7 +1824,8 @@ def test_pipeline_equality_subclasses(pipeline_class):
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
-def test_pipeline_equality(pipeline_class):
+@patch('evalml.pipelines.ComponentGraph.fit')
+def test_pipeline_equality(mock_fit, pipeline_class):
     if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
         final_estimator = 'Random Forest Classifier'
     else:
@@ -1848,8 +1849,6 @@ def test_pipeline_equality(pipeline_class):
         name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
 
-        def fit(self, X, y=None):
-            return self
     # Test self-equality
     mock_pipeline = MockPipeline(parameters={})
     assert mock_pipeline == mock_pipeline
@@ -1866,12 +1865,18 @@ def test_pipeline_equality(pipeline_class):
 
     # Test fitted equality
     X = pd.DataFrame({})
-    mock_pipeline.fit(X)
+    y = pd.Series([])
+    mock_pipeline.fit(X, y)
     assert mock_pipeline != MockPipeline(parameters={})
 
     mock_pipeline_equal = MockPipeline(parameters={})
-    mock_pipeline_equal.fit(X)
+    mock_pipeline_equal.fit(X, y)
     assert mock_pipeline == mock_pipeline_equal
+
+    # Test fitted equality: same data but different target names are not equal
+    mock_pipeline_different_target_name = MockPipeline(parameters={})
+    mock_pipeline_different_target_name.fit(X, y=pd.Series([], name="target with a name"))
+    assert mock_pipeline != mock_pipeline_different_target_name
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
