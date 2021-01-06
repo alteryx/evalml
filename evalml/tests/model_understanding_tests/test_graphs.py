@@ -478,6 +478,10 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
     assert np.array_equal(heatmap['z'], conf_mat)
     assert np.array_equal(heatmap['customdata'], conf_mat_unnormalized)
     assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Normalized Count</b>: %{z}<br><b>Raw Count</b>: %{customdata} <br><extra></extra>'
+    annotations = fig.__dict__['_layout_obj']['annotations']
+    # check that the figure has text annotations for the confusion matrix
+    for i in range(len(annotations)):
+        assert 'text' in annotations[i]
 
 
 def test_graph_confusion_matrix_norm_disabled(X_y_binary):
