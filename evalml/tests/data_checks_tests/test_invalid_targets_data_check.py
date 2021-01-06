@@ -16,9 +16,7 @@ from evalml.objectives import (
     MeanSquaredLogError,
     RootMeanSquaredLogError
 )
-from evalml.utils.gen_utils import (
-    numeric_and_boolean_ww
-)
+from evalml.utils.gen_utils import numeric_and_boolean_ww
 
 invalid_targets_data_check_name = InvalidTargetDataCheck.name
 
