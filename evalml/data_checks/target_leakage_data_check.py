@@ -89,13 +89,13 @@ class TargetLeakageDataCheck(DataCheck):
         }
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
+        if y.logical_type not in numeric_and_boolean_ww and self.pearson:
+            return messages
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         if not self.pearson:
             highly_corr_cols = self._calculate_mutual_information(X, y)
         else:
-            if y.logical_type not in numeric_and_boolean_ww:
-                return messages
             highly_corr_cols = self._calculate_pearson(X, y, messages)
 
         warning_msg = "Column '{}' is {}% or more correlated with the target"
