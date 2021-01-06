@@ -347,9 +347,8 @@ def test_score_works_with_estimator_uses_y(use_none_X, pipeline_class, X_y_binar
         X = None
 
     pl.fit(X, y)
-    if expected_unique_values:
-        # NaNs are expected because of padding due to max_delay
-        assert set(pl.predict(X, y).dropna().unique()) == expected_unique_values
+    # NaNs are expected because of padding due to max_delay
+    assert set(pl.predict(X, y).dropna().unique()) == expected_unique_values
     pl.score(X, y, objectives)
 
 

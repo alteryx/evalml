@@ -84,7 +84,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return self._estimator_predict_helper(features, y, return_probabilities=False)
 
     def _estimator_predict_proba(self, features, y):
-        """Get estimator prediced probabilities.
+        """Get estimator predicted probabilities.
 
         This helper passes y as an argument if needed by the estimator.
         """
@@ -139,8 +139,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
     def _compute_predictions(self, X, y, objectives):
         """Compute predictions/probabilities based on objectives."""
-        y_predicted = pd.Series([])
-        y_predicted_proba = pd.DataFrame([])
+        y_predicted = None
+        y_predicted_proba = None
         if any(o.score_needs_proba for o in objectives):
             y_predicted_proba = self.predict_proba(X, y)
         if any(not o.score_needs_proba for o in objectives):

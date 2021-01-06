@@ -406,17 +406,16 @@ def drop_rows_with_nans(*pd_data):
     """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
 
     Arguments:
-        pd_data_1 (pd.DataFrame or pd.Series): Data to subset.
-        pd_data_2 (pd.DataFrame or pd.Series): Data to subset.
+        *pd_data (sequence of pd.Series or pd.DataFrame or None)
 
     Returns:
-        tuple of pd.DataFrame or pd.Series
+        list of pd.DataFrame or pd.Series or None
     """
 
     mask = _get_rows_without_nans(*pd_data)
 
     def _subset(pd_data):
-        if not pd_data.empty:
+        if pd_data is not None and not pd_data.empty:
             return pd_data.iloc[mask]
         return pd_data
 
