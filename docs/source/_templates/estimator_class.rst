@@ -4,7 +4,7 @@
 
 .. autoclass:: {{ objname }}
    {% set class_attributes = ['name', 'model_family', 'hyperparameter_ranges', 'supported_problem_types',
-                              'default_parameters'] %}
+                              'default_parameters', 'predict_uses_y'] %}
 
    {% block attributes %}
    .. Class attributes:
