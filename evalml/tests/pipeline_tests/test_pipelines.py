@@ -57,11 +57,11 @@ from evalml.utils.gen_utils import check_random_state_equality
 
 
 def test_allowed_model_families(has_minimal_dependencies):
-    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.EXTRA_TREES, ModelFamily.DECISION_TREE]
+    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.EXTRA_TREES, ModelFamily.DECISION_TREE, ModelFamily.K_NEIGHBORS]
     expected_model_families_binary = set(families)
     expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
-        expected_model_families_binary.update([ModelFamily.K_NEIGHBORS, ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM])
+        expected_model_families_binary.update([ModelFamily.XGBOOST, ModelFamily.CATBOOST, ModelFamily.LIGHTGBM])
         expected_model_families_regression.update([ModelFamily.CATBOOST, ModelFamily.XGBOOST, ModelFamily.LIGHTGBM])
     assert set(allowed_model_families(ProblemTypes.BINARY)) == expected_model_families_binary
     assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
