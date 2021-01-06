@@ -10,6 +10,9 @@ class DataCheckMessageCode(Enum):
     HAS_ID_COLUMN = "has_id_column"
     """Message code for data that has ID columns."""
 
+    TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
+    """Message code for target data that has incompatible values for the specified objective"""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 

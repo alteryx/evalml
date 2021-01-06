@@ -6,12 +6,14 @@ from pandas.testing import assert_frame_equal
 from evalml.pipelines.components import PCA
 
 
-def test_pca_numeric():
+@pytest.mark.parametrize('data_type', ['pd', 'ww'])
+def test_pca_numeric(data_type, make_data_type):
     X = pd.DataFrame([[3, 0, 1, 6],
                       [1, 2, 1, 6],
                       [10, 2, 1, 6],
                       [10, 2, 2, 5],
                       [6, 2, 2, 5]])
+    X = make_data_type(data_type, X)
     pca = PCA()
     expected_X_t = pd.DataFrame([[3.176246, 1.282616],
                                  [4.969987, -0.702976],

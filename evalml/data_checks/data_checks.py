@@ -47,7 +47,6 @@ class DataChecks:
     @staticmethod
     def _init_data_checks(data_check_classes, params):
         data_check_instances = []
-
         for data_check_class in data_check_classes:
             class_params = params.get(data_check_class.name, {})
             if not isinstance(class_params, dict):
@@ -88,7 +87,6 @@ class DataChecks:
             "warnings": [],
             "errors": []
         }
-
         X = _convert_to_woodwork_structure(X)
         if y is not None:
             y = _convert_to_woodwork_structure(y)
@@ -97,6 +95,7 @@ class DataChecks:
             messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
+
         return messages
 
 

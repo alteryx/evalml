@@ -6,19 +6,6 @@ from evalml.pipelines.components import TextFeaturizer
 from evalml.utils.gen_utils import infer_feature_types
 
 
-@pytest.fixture()
-def text_df():
-    df = pd.DataFrame(
-        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
-                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
-                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
-         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
-                   'I dreamed a dream in days gone by, when hope was high and life worth living',
-                   'Red, the blood of angry men - black, the dark of ages past']
-         })
-    yield df
-
-
 def test_featurizer_only_text(text_df):
     X = text_df
     tf = TextFeaturizer()
@@ -232,3 +219,12 @@ def test_polarity_primitive_output():
     X_t = tf.transform(X)
     features = X_t['POLARITY_SCORE(polarity)']
     np.testing.assert_almost_equal(features, expected_features)
+
+
+def test_featurizer_with_custom_indices(text_df):
+    X = text_df
+    X = X.set_index(pd.Series([2, 5, 19]))
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf.fit(X)
+    X_t = tf.transform(X)
+    assert not X_t.isnull().any().any()

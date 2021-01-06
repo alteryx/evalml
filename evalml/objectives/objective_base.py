@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
-from evalml.utils import _convert_woodwork_types_wrapper
+from evalml.utils import _convert_woodwork_types_wrapper, classproperty
 
 
 class ObjectiveBase(ABC):
@@ -47,6 +47,11 @@ class ObjectiveBase(ABC):
         Returns:
             Numerical value used to calculate score
         """
+
+    @classproperty
+    def positive_only(cls):
+        """If True, this objective is only valid for positive data. Default False."""
+        return False
 
     def score(self, y_true, y_predicted, X=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.

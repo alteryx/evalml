@@ -6,19 +6,6 @@ from evalml.pipelines.components import LSA
 from evalml.utils.gen_utils import infer_feature_types
 
 
-@pytest.fixture()
-def text_df():
-    df = pd.DataFrame(
-        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
-                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
-                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
-         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
-                   'I dreamed a dream in days gone by, when hope was high and life worth living',
-                   'Red, the blood of angry men - black, the dark of ages past']
-         })
-    yield df
-
-
 def test_lsa_only_text(text_df):
     X = text_df
     lsa = LSA()
@@ -136,3 +123,12 @@ def test_lsa_output():
     cols = [col for col in X_t.columns if 'LSA' in col]
     features = X_t[cols]
     np.testing.assert_almost_equal(features, expected_features, decimal=3)
+
+
+def test_lsa_with_custom_indices(text_df):
+    X = text_df
+    X = X.set_index(pd.Series([2, 5, 19]))
+    lsa = LSA(text_columns=['col_1', 'col_2'])
+    lsa.fit(X)
+    X_t = lsa.transform(X)
+    assert not X_t.isnull().any().any()

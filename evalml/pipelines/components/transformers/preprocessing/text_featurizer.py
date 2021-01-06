@@ -106,5 +106,5 @@ class TextFeaturizer(TextTransformer):
             X_nlp_primitives.fillna(0, inplace=True)
 
         X_lsa = self._lsa.transform(X[self._text_columns])
-
+        X_nlp_primitives.set_index(X.index, inplace=True)
         return pd.concat([X.drop(self._text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
