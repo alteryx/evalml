@@ -154,7 +154,7 @@ def X_y_categorical_classification():
     titanic = pd.read_csv(data_path)
 
     y = titanic['Survived']
-    X = titanic.drop('Survived', axis=1)
+    X = titanic.drop(['Survived', 'Name'], axis=1)
     return X, y
 
 

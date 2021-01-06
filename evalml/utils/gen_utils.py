@@ -17,11 +17,7 @@ from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
-numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-boolean = ['bool']
-numeric_and_boolean_dtypes = numeric_dtypes + boolean
-categorical_dtypes = ['object', 'category']
-datetime_dtypes = [np.datetime64]
+numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
 
 
 def import_or_raise(library, error_msg=None, warning=False):
@@ -269,20 +265,21 @@ def safe_repr(value):
     return repr(value)
 
 
-def is_all_numeric(df):
-    """Checks if the given DataFrame contains only numeric values
+def is_all_numeric(dt):
+    """Checks if the given DataTable contains only numeric values
 
     Arguments:
-        df (DataFrame): The DataFrame to check datatypes of
+        dt (ww.DataTable): The DataTable to check data types of.
 
     Returns:
-        True if all the DataFrame columns are numeric and are not missing any values, False otherwise
+        True if all the DataTable columns are numeric and are not missing any values, False otherwise.
     """
-    if df.isnull().any().any():
-        return False
-    for dtype in df.dtypes:
-        if dtype not in numeric_and_boolean_dtypes:
+    for col_tags in dt.semantic_tags.values():
+        if "numeric" not in col_tags:
             return False
+
+    if dt.to_dataframe().isnull().any().any():
+        return False
     return True
 
 

@@ -11,13 +11,16 @@ def test_lda_invalid_init():
         LinearDiscriminantAnalysis(n_components=-1)
 
 
-def test_lda_numeric():
+@pytest.mark.parametrize('data_type', ['pd', 'ww'])
+def test_lda_numeric(data_type, make_data_type):
     X = pd.DataFrame([[3, 0, 1, 6],
                       [1, 2, 1, 6],
                       [10, 2, 1, 6],
                       [10, 2, 2, 5],
                       [6, 2, 2, 5]])
-    y = [0, 1, 0, 1, 1]
+    y = pd.Series([0, 1, 0, 1, 1])
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
     lda = LinearDiscriminantAnalysis()
     expected_X_t = pd.DataFrame([[-3.7498560857993817],
                                  [1.984459921694517],
@@ -30,12 +33,12 @@ def test_lda_numeric():
 
 
 def test_lda_array():
-    X = [[3, 0, 1, 6],
-         [1, 2, 1, 6],
-         [10, 2, 1, 6],
-         [10, 2, 2, 5],
-         [6, 2, 2, 5]]
-    y = [2, 2, 0, 1, 0]
+    X = np.array([[3, 0, 1, 6],
+                  [1, 2, 1, 6],
+                  [10, 2, 1, 6],
+                  [10, 2, 2, 5],
+                  [6, 2, 2, 5]])
+    y = np.array([2, 2, 0, 1, 0])
     lda = LinearDiscriminantAnalysis()
     expected_X_t = pd.DataFrame([[-0.6412164311777084, 0.5197032695565076],
                                  [0.9499648898073094, -0.6919658287324498],
