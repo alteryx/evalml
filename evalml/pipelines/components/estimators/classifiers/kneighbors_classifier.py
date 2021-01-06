@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
-from skopt.space import Real, Integer
+from sklearn.ensemble import RandomForestClassifier as SKRandomForesClassifier
+from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -28,6 +29,7 @@ class KNeighborsClassifier(Estimator):
                  algorithm="auto",
                  leaf_size=30,
                  p=2,
+                 random_state=0, #Capture random_state so it doesn't get into params
                  **kwargs):
         parameters = {"n_neighbors": n_neighbors,
                       "weights": weights,
@@ -39,3 +41,11 @@ class KNeighborsClassifier(Estimator):
         knn_classifier = SKKNeighborsClassifier(**parameters)
         super().__init__(parameters=parameters,
                          component_obj=knn_classifier)
+
+    @property
+    def feature_importance(self):
+        """
+        Restrictions: return must be a numpy array and the length must match the input num_cols
+        """
+        num_features = self._component_obj.n_features_in_
+        return np.zeros(num_features)
