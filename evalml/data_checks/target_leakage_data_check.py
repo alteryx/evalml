@@ -33,7 +33,6 @@ class TargetLeakageDataCheck(DataCheck):
     def _calculate_pearson(self, X, y):
         highly_corr_cols = []
         X_num = X.select(include=numeric_and_boolean_ww)
-        # X_num = _convert_woodwork_types_wrapper(X_num.to_dataframe())
         if len(X_num.columns) > 0:
             highly_corr_cols = [label for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
         return highly_corr_cols
