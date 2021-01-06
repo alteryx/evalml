@@ -13,6 +13,7 @@
    .. autoattribute:: supported_problem_types
    .. autoattribute:: hyperparameter_ranges
    .. autoattribute:: default_parameters
+   .. autoattribute:: predict_uses_y
    {% endblock %}
 
    {% block instance_attributes %}
