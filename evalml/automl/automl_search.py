@@ -352,7 +352,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type, n_splits=self.data_splitter.get_n_splits())
+                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective, n_splits=self.data_splitter.get_n_splits())
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:

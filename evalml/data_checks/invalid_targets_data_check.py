@@ -1,4 +1,3 @@
-
 import woodwork as ww
 
 from evalml.data_checks import (
@@ -7,6 +6,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
+from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
@@ -18,14 +18,16 @@ from evalml.utils.gen_utils import (
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
 
-    def __init__(self, problem_type, n_unique=100):
+    def __init__(self, problem_type, objective, n_unique=100):
         """Check if the target is invalid for the specified problem type.
 
         Arguments:
             n_unique (int): Number of unique target values to store when problem type is binary and target
                 incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
+            objective (str or ObjectiveBase): Name or instance of the objective class.
         """
         self.problem_type = handle_problem_types(problem_type)
+        self.objective = get_objective(objective)
         if n_unique is not None and n_unique <= 0:
             raise ValueError("`n_unique` must be a non-negative integer value.")
         self.n_unique = n_unique
@@ -44,7 +46,7 @@ class InvalidTargetDataCheck(DataCheck):
             >>> import pandas as pd
             >>> X = pd.DataFrame({})
             >>> y = pd.Series([0, 1, None, None])
-            >>> target_check = InvalidTargetDataCheck('binary')
+            >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
             >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
                                                                    "data_check_name": "InvalidTargetDataCheck",\
                                                                    "level": "error",\
@@ -103,5 +105,13 @@ class InvalidTargetDataCheck(DataCheck):
                                                              data_check_name=self.name,
                                                              message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
                                                              details={"target_values": unique_values}).to_dict())
+
+        any_neg = not (y_df > 0).all() if y.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
+        if any_neg and self.objective.positive_only:
+            details = {"Count of offending values": sum(val <= 0 for val in y_df.values.flatten())}
+            messages["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective.name}",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
+                                                     details=details).to_dict())
 
         return messages

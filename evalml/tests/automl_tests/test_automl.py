@@ -413,6 +413,36 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
 
 
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.predict')
+@patch('evalml.data_checks.InvalidTargetDataCheck')
+def test_automl_passes_correct_objective_name_to_invalid_target_data_checks(mock_obj, mock_predict, mock_fit, X_y_regression):
+    X, y = X_y_regression
+    mock_obj.objective_name.return_value = "R2"
+    automl = AutoMLSearch(X, y, max_iterations=1, problem_type=ProblemTypes.REGRESSION)
+    automl.search()
+    mock_fit.assert_called()
+    mock_predict.assert_called()
+    assert automl.objective.name == mock_obj.objective_name.return_value
+
+
+class MockDataCheckObjective(DataCheck):
+    def __init__(self, objective):
+        self.objective_name = get_objective(objective).name
+
+    def validate(self, X, y):
+        return {"warnings": [], "errors": []}
+
+
+@pytest.mark.parametrize("data_checks", [DataChecks([MockDataCheckObjective],
+                                                    data_check_params={"MockDataCheckObjective": {"objective": 'R2'}})])
+def test_automl_passes_correct_objective_name_to_data_check(data_checks, X_y_regression):
+    X, y = X_y_regression
+    automl = AutoMLSearch(X, y, problem_type=ProblemTypes.REGRESSION)
+    automl.search(data_checks=data_checks)
+    assert automl._validate_data_checks(data_checks).data_checks[0].objective_name == MockDataCheckObjective("R2").objective_name
+
+
 def test_validate_data_check_n_splits():
     X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
                                         n_informative=3, n_redundant=2, random_state=0)
@@ -737,6 +767,12 @@ def test_main_objective_problem_type_mismatch(X_y_binary):
     X, y = X_y_binary
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='R2')
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='Mean Absolute Percentage Error')
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Mean Absolute Percentage Error')
+    with pytest.raises(ValueError, match="is not compatible with a"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Mean Absolute Percentage Error')
 
 
 def test_init_missing_data(X_y_binary):
