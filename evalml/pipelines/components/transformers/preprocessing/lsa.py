@@ -38,11 +38,11 @@ class LSA(TextTransformer):
             self
         """
         X = _convert_to_woodwork_structure(X)
-        self.text_columns = self._get_text_columns(X)
-        if len(self.text_columns) == 0:
+        self._text_columns = self._get_text_columns(X)
+        if len(self._text_columns) == 0:
             return self
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        corpus = X[self.text_columns].values.flatten()
+        corpus = X[self._text_columns].values.flatten()
         # we assume non-str values will have been filtered out prior to calling LSA.fit. this is a safeguard.
         corpus = corpus.astype(str)
         self._lsa_pipeline.fit(corpus)
@@ -60,17 +60,15 @@ class LSA(TextTransformer):
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
         X = _convert_to_woodwork_structure(X)
-        text_columns = self._get_text_columns(X)
-
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        if len(self.text_columns) == 0:
+        if len(self._text_columns) == 0:
             return X
 
         X_t = X.copy()
-        for col in text_columns:
+        for col in self._text_columns:
             transformed = self._lsa_pipeline.transform(X[col])
 
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0])
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1])
-        X_t = X_t.drop(columns=text_columns)
+        X_t = X_t.drop(columns=self._text_columns)
         return X_t

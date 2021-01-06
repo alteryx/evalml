@@ -71,14 +71,14 @@ class TextFeaturizer(TextTransformer):
             self
         """
         X = _convert_to_woodwork_structure(X)
-        text_columns = self._get_text_columns(X)
-        if len(text_columns) == 0:
+        self._text_columns = self._get_text_columns(X)
+        if len(self._text_columns) == 0:
             return self
 
         self._lsa.fit(X)
 
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        es = self._make_entity_set(X, text_columns)
+        es = self._make_entity_set(X, self._text_columns)
         self._features = ft.dfs(entityset=es,
                                 target_entity='X',
                                 trans_primitives=self._trans,
@@ -96,16 +96,15 @@ class TextFeaturizer(TextTransformer):
             pd.DataFrame: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        text_columns = self._get_text_columns(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if self._features is None or len(self._features) == 0:
             return X
 
-        es = self._make_entity_set(X, text_columns)
+        es = self._make_entity_set(X, self._text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 
-        X_lsa = self._lsa.transform(X[text_columns])
+        X_lsa = self._lsa.transform(X[self._text_columns])
 
-        return pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
+        return pd.concat([X.drop(self._text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
