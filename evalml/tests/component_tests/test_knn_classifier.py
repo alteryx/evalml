@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 
 from evalml.model_family import ModelFamily
