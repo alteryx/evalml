@@ -16,12 +16,18 @@ Release Notes
         * Fixed AutoMLSearch stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
         * Limit ``load_fraud`` dataset loaded into ``automl.ipynb`` :pr:`1646`
         * Fix custom index bug for ``MAPE`` objective :pr:`1641`
+        * ``add_to_rankings`` updates ``AutoMLSearch.best_pipeline`` when necessary :pr:`1647`
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
     * Changes
+        * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
     * Testing Changes
 
+.. warning::
+
+    **Breaking Changes**
+        * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
 
 **v0.17.0 Dec. 29, 2020**
     * Enhancements
