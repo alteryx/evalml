@@ -55,10 +55,8 @@ from evalml.preprocessing.data_splitters import (
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
-    categorical_dtypes,
     check_random_state_equality,
-    get_random_state,
-    numeric_and_boolean_dtypes
+    get_random_state
 )
 
 
@@ -1013,9 +1011,9 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
-def test_targets_data_types_classification(data_type, automl_type, target_type):
-    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
+def test_targets_pandas_data_types_classification(data_type, automl_type, target_type):
+    if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
@@ -1028,7 +1026,7 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         X, y = load_wine(return_pandas=True)
     unique_vals = y.unique()
     # Update target types as necessary
-    if target_type in categorical_dtypes:
+    if target_type in ['category', 'object']:
         if target_type == "category":
             y = pd.Categorical(y)
     elif "int" in target_type.lower():
