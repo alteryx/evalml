@@ -102,9 +102,8 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
-@patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets", side_effect=lambda y: y)
-def test_predict_pad_nans(mock_decode_targets, mock_encode_targets,
+def test_predict_pad_nans(mock_decode_targets,
                           mock_regressor_predict, mock_regressor_fit, mock_classifier_predict, mock_classifier_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):

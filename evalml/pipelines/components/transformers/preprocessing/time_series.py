@@ -63,12 +63,13 @@ class DelayedFeatureTransformer(Transformer):
             X = pd.DataFrame(X)
         if y is not None:
             y = _convert_to_woodwork_structure(y)
+
+        if y.logical_type == logical_types.Categorical:
             original_y = _convert_woodwork_types_wrapper(y.to_series())
-            if y.logical_type == logical_types.Categorical:
-                y_encoded = LabelEncoder().fit_transform(original_y)
-                y = pd.Series(y_encoded, index=original_y.index)
-            else:
-                y = original_y
+            y_encoded = LabelEncoder().fit_transform(original_y)
+            y = pd.Series(y_encoded, index=original_y.index)
+        else:
+            y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.delay_features and not X.empty:
             X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
