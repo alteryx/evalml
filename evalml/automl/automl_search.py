@@ -405,7 +405,7 @@ class AutoMLSearch:
                 Disabled by default in non-Jupyter enviroments.
         """
         if self._searched:
-            logger.info("AutoMLSearch has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again.")
+            logger.info("AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again.")
             return
 
         # don't show iteration plot outside of a jupyter notebook

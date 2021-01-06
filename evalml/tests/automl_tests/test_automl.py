@@ -2031,7 +2031,7 @@ def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, moc
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_rerun(mock_fit, mock_score, X_y_binary, caplog):
-    msg = "AutoMLSearch has already been run and will not run again on the same instance"
+    msg = "AutoMLSearch.search() has already been run and will not run again on the same instance"
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", train_best_pipeline=False, n_jobs=1)
     automl.search()
