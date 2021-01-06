@@ -2,7 +2,11 @@ import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as SkLDA
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import is_all_numeric
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    is_all_numeric
+)
 
 
 class LinearDiscriminantAnalysis(Transformer):
@@ -26,12 +30,12 @@ class LinearDiscriminantAnalysis(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
         if not is_all_numeric(X):
             raise ValueError("LDA input must be all numeric")
-        if not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
         n_features = X.shape[1]
         n_classes = y.nunique()
         n_components = self.parameters['n_components']
@@ -42,19 +46,21 @@ class LinearDiscriminantAnalysis(Transformer):
         return self
 
     def transform(self, X, y=None):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+
         if not is_all_numeric(X):
             raise ValueError("LDA input must be all numeric")
-
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = self._component_obj.transform(X)
         return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
 
     def fit_transform(self, X, y=None):
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
         if not is_all_numeric(X):
             raise ValueError("LDA input must be all numeric")
+        y = _convert_to_woodwork_structure(y)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         X_t = self._component_obj.fit_transform(X, y)
         return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])

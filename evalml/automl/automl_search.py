@@ -264,6 +264,7 @@ class AutoMLSearch:
         self.problem_configuration = self._validate_problem_configuration(problem_configuration)
         self._train_best_pipeline = train_best_pipeline
         self._best_pipeline = None
+        self._searched = False
 
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
@@ -351,7 +352,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type, n_splits=self.data_splitter.get_n_splits())
+                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective, n_splits=self.data_splitter.get_n_splits())
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -403,6 +404,10 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
         """
+        if self._searched:
+            logger.info("AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again.")
+            return
+
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot:
             try:
@@ -527,19 +532,27 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
-        self._best_pipeline = self.get_pipeline(best_pipeline['id'])
-        if self._train_best_pipeline:
-            X_threshold_tuning = None
-            y_threshold_tuning = None
-            X_train, y_train = self.X_train, self.y_train
-            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
-                X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                      test_size=0.2,
-                                                                                      random_state=self.random_seed)
-            self._best_pipeline.fit(X_train, y_train)
-            self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
+        self._find_best_pipeline()
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+        self._searched = True
+
+    def _find_best_pipeline(self):
+        """Finds the best pipeline in the rankings
+        If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
+        best_pipeline = self.rankings.iloc[0]
+        if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
+            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            if self._train_best_pipeline:
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+                X_train, y_train = self.X_train, self.y_train
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                          test_size=0.2,
+                                                                                          random_state=self.random_seed)
+                self._best_pipeline.fit(X_train, y_train)
+                self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
     def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
         """Tunes the threshold of a binary pipeline to the X and y thresholding data
@@ -900,6 +913,7 @@ class AutoMLSearch:
             if pipeline.parameters == parameter:
                 return
         self._evaluate_pipelines(pipeline)
+        self._find_best_pipeline()
 
     @property
     def results(self):
@@ -909,12 +923,6 @@ class AutoMLSearch:
                     and `search_order`: a list describing the order the pipelines were searched.
            """
         return copy.deepcopy(self._results)
-
-    @property
-    def has_searched(self):
-        """Returns `True` if search has been ran and `False` if not"""
-        searched = True if self._results['pipeline_results'] else False
-        return searched
 
     @property
     def rankings(self):
@@ -930,7 +938,7 @@ class AutoMLSearch:
 
         full_rankings_cols = ["id", "pipeline_name", "score", "validation_score",
                               "percent_better_than_baseline", "high_variance_cv", "parameters"]
-        if not self.has_searched:
+        if not self._results['pipeline_results']:
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results['pipeline_results'].values())
@@ -946,7 +954,7 @@ class AutoMLSearch:
         Returns:
             PipelineBase: A trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
         """
-        if not (self.has_searched and self._best_pipeline):
+        if not self._best_pipeline:
             raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
 
         return self._best_pipeline

@@ -17,8 +17,8 @@ def get_non_core_objectives():
         List of ObjectiveBase classes
     """
     return [objectives.CostBenefitMatrix, objectives.FraudCost, objectives.LeadScoring,
-            objectives.MeanSquaredLogError, objectives.Recall, objectives.RecallMacro, objectives.RecallMicro,
-            objectives.RecallWeighted, objectives.RootMeanSquaredLogError, objectives.MAPE]
+            objectives.Recall, objectives.RecallMacro, objectives.RecallMicro,
+            objectives.RecallWeighted]
 
 
 def _all_objectives_dict():

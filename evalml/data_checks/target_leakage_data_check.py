@@ -6,7 +6,7 @@ from evalml.data_checks import (
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    numeric_and_boolean_dtypes
+    numeric_and_boolean_ww
 )
 
 
@@ -30,18 +30,21 @@ class TargetLeakageDataCheck(DataCheck):
         self.pct_corr_threshold = pct_corr_threshold
         self.pearson = pearson_corr
 
-    def _calculate_pearson(self, X, y, messages):
+    def _calculate_pearson(self, X, y):
         highly_corr_cols = []
-        X = X.select_dtypes(include=numeric_and_boolean_dtypes)
-        if len(X.columns) > 0:
-            highly_corr_cols = [label for label, col in X.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
+        X_num = X.select(include=numeric_and_boolean_ww)
+        # X_num = _convert_woodwork_types_wrapper(X_num.to_dataframe())
+        if len(X_num.columns) > 0:
+            highly_corr_cols = [label for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
         return highly_corr_cols
 
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
+        # safely add in the target column without overlapping with any existing column names
         target = 'target'
         while target in X.columns:
             target += '0'
+
         combined = X.copy()
         combined[target] = y
         combined = _convert_to_woodwork_structure(combined)
@@ -53,7 +56,7 @@ class TargetLeakageDataCheck(DataCheck):
         return highly_corr_cols
 
     def validate(self, X, y):
-        """Check if any of the features are highly correlated with the target.
+        """Check if any of the features are highly correlated with the target by using mutual information.
 
         If `pearson_corr=False`, supports all target and feature types. Otherwise, only supports binary with numeric and boolean dtypes.
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
@@ -85,7 +88,6 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -93,7 +95,7 @@ class TargetLeakageDataCheck(DataCheck):
         if not self.pearson:
             highly_corr_cols = self._calculate_mutual_information(X, y)
         else:
-            if y.dtype not in numeric_and_boolean_dtypes:
+            if y.logical_type not in numeric_and_boolean_ww:
                 return messages
             highly_corr_cols = self._calculate_pearson(X, y, messages)
 
