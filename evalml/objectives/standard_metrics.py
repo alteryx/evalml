@@ -11,6 +11,7 @@ from .multiclass_classification_objective import (
 )
 from .regression_objective import RegressionObjective
 from .time_series_regression_objective import TimeSeriesRegressionObjective
+from ..utils import classproperty
 
 
 class AccuracyBinary(BinaryClassificationObjective):
@@ -306,10 +307,14 @@ class RootMeanSquaredLogError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    positive_only = True
 
     def objective_function(self, y_true, y_predicted, X=None):
         return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
 
 
 class MeanSquaredLogError(RegressionObjective):
@@ -321,10 +326,14 @@ class MeanSquaredLogError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    positive_only = True
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_log_error(y_true, y_predicted)
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
 
 
 class R2(RegressionObjective):
@@ -357,7 +366,6 @@ class MAPE(TimeSeriesRegressionObjective):
     name = "Mean Absolute Percentage Error"
     greater_is_better = False
     perfect_score = 0.0
-    positive_only = True
 
     def objective_function(self, y_true, y_predicted, X=None):
         if (y_true == 0).any():
@@ -369,6 +377,11 @@ class MAPE(TimeSeriesRegressionObjective):
             y_predicted = y_predicted.values
         scaled_difference = (y_true - y_predicted) / y_true
         return np.abs(scaled_difference).mean() * 100
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
 
 
 class MSE(RegressionObjective):
