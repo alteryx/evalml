@@ -17,7 +17,7 @@ def correct_model_families():
 def test_handle_string(correct_model_families):
     model_families = ['linear_model', 'lightgbm', 'random_forest',
                       'xgboost', 'catboost', 'extra_trees', 'decision_tree',
-                      'ensemble', 'baseline', 'none']
+                      'ensemble', 'baseline', 'k_neighbors', 'none']
     for model_family in zip(model_families, correct_model_families):
         assert handle_model_family(model_family[0]) == model_family[1]
 
