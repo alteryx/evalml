@@ -1,7 +1,9 @@
 import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-
+from evalml.utils import _convert_to_woodwork_structure, _convert_woodwork_types_wrapper
 
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delayes input features and target variable for time series problems."""
@@ -59,8 +61,14 @@ class DelayedFeatureTransformer(Transformer):
         # Normalize the data into pandas objects
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        if y is not None and not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            original_y = _convert_woodwork_types_wrapper(y.to_series())
+            if y.logical_type == logical_types.Categorical:
+                y_encoded = LabelEncoder().fit_transform(original_y)
+                y = pd.Series(y_encoded, index=original_y.index)
+            else:
+                y = original_y
 
         if self.delay_features and not X.empty:
             X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
