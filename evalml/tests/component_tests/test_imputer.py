@@ -306,13 +306,12 @@ def test_imputer_all_bool_return_original(data_type):
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_imputer_bool_dtype_object(data_type):
+def test_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=object)
-    if data_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
     imputer = Imputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)

@@ -8,10 +8,7 @@ from evalml.data_checks import (
     DataCheckWarning,
     InvalidTargetDataCheck
 )
-from evalml.utils.gen_utils import (
-    categorical_dtypes,
-    numeric_and_boolean_dtypes
-)
+from evalml.utils.gen_utils import numeric_and_boolean_ww
 
 invalid_targets_data_check_name = InvalidTargetDataCheck.name
 
@@ -93,23 +90,23 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
     }
 
 
-def test_invalid_target_data_check_invalid_data_types_error():
+@pytest.mark.parametrize("pd_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool'])
+def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck("binary")
-    valid_data_types = numeric_and_boolean_dtypes + categorical_dtypes
     y = pd.Series([0, 1, 0, 0, 1, 0, 1, 0])
-    for data_type in valid_data_types:
-        y = y.astype(data_type)
-        assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
+    y = y.astype(pd_type)
+    assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
 
     y = pd.Series(pd.date_range('2000-02-03', periods=5, freq='W'))
     unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
-        "errors": [DataCheckError(message="Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_data_types)),
+        "errors": [DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
+                                  .format("Datetime", ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
-                                  details={"unsupported_type": y.dtype}).to_dict(),
+                                  details={"unsupported_type": "datetime"}).to_dict(),
                    DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,

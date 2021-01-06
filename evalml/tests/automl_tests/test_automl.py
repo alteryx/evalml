@@ -55,10 +55,8 @@ from evalml.preprocessing.data_splitters import (
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
-    categorical_dtypes,
     check_random_state_equality,
-    get_random_state,
-    numeric_and_boolean_dtypes
+    get_random_state
 )
 
 
@@ -806,11 +804,13 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
     automl.search()
-
+    best_pipeline = automl.best_pipeline
+    assert best_pipeline is not None
     mock_score.return_value = {'Log Loss Binary': 0.1234}
 
     test_pipeline = dummy_binary_pipeline_class(parameters={})
     automl.add_to_rankings(test_pipeline)
+    assert automl.best_pipeline != best_pipeline
 
     assert len(automl.rankings) == 2
     assert 0.1234 in automl.rankings['score'].values
@@ -822,17 +822,21 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
 
-    mock_score.return_value = {'Log Loss Binary': 0.1234}
+    mock_score.return_value = {'Log Loss Binary': 0.5234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
 
     automl.add_to_rankings(test_pipeline)
+    best_pipeline = automl.best_pipeline
+    assert best_pipeline is not None
     assert isinstance(automl.data_splitter, StratifiedKFold)
     assert len(automl.rankings) == 1
-    assert 0.1234 in automl.rankings['score'].values
+    assert 0.5234 in automl.rankings['score'].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
     assert all(np.isnan(res) for res in automl.results['pipeline_results'][0]['percent_better_than_baseline_all_objectives'].values())
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
     automl.search()
     assert len(automl.rankings) == 2
+    assert automl.best_pipeline != best_pipeline
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
@@ -873,8 +877,9 @@ def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_c
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
     automl.search()
-
+    best_pipeline = automl.best_pipeline
     test_pipeline = dummy_binary_pipeline_class(parameters={})
+    assert automl.best_pipeline == best_pipeline
     automl.add_to_rankings(test_pipeline)
 
     test_pipeline_duplicate = dummy_binary_pipeline_class(parameters={})
@@ -902,19 +907,6 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     automl.add_to_rankings(test_pipeline_trained)
 
     assert list(automl.rankings['score'].values).count(0.1234) == 2
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_has_searched(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
-    mock_score.return_value = {automl.objective.name: 1.0}
-    assert not automl.has_searched
-
-    automl.search()
-    assert automl.has_searched
 
 
 def test_no_search(X_y_binary):
@@ -1019,9 +1011,9 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
-def test_targets_data_types_classification(data_type, automl_type, target_type):
-    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
+def test_targets_pandas_data_types_classification(data_type, automl_type, target_type):
+    if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
@@ -1034,7 +1026,7 @@ def test_targets_data_types_classification(data_type, automl_type, target_type):
         X, y = load_wine(return_pandas=True)
     unique_vals = y.unique()
     # Update target types as necessary
-    if target_type in categorical_dtypes:
+    if target_type in ['category', 'object']:
         if target_type == "category":
             y = pd.Categorical(y)
     elif "int" in target_type.lower():
@@ -2032,6 +2024,18 @@ def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, moc
     assert data_splitters[0] == data_splitters[1]
     assert data_splitters[1] != data_splitters[2]
     assert data_splitters[2] == data_splitters[3]
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_rerun(mock_fit, mock_score, X_y_binary, caplog):
+    msg = "AutoMLSearch.search() has already been run and will not run again on the same instance"
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", train_best_pipeline=False, n_jobs=1)
+    automl.search()
+    assert msg not in caplog.text
+    automl.search()
+    assert msg in caplog.text
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')

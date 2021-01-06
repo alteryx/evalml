@@ -28,7 +28,7 @@ class IDColumnsDataCheck(DataCheck):
 
             - column name is "id"
             - column name ends in "_id"
-            - column contains all unique values (and is not float / boolean)
+            - column contains all unique values (and is categorical / integer type)
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
@@ -57,14 +57,14 @@ class IDColumnsDataCheck(DataCheck):
         }
 
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-        col_names = [col for col in X.columns.tolist()]
+        col_names = [col for col in X.columns]
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        non_id_types = ['float16', 'float32', 'float64', 'bool']
-        X = X.select_dtypes(exclude=non_id_types)
+        X = X.select(include=['Integer', 'Categorical'])
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
         check_all_unique = (X.nunique() == len(X))
         cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique
         id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in cols_with_all_unique])
