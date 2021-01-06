@@ -62,12 +62,16 @@ def test_target_leakage_data_check_warnings():
     }
 
 
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_target_leakage_data_check_empty(data_type, make_data_type):
+    X = make_data_type(data_type, pd.DataFrame())
+    y = make_data_type(data_type, pd.Series())
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
+    assert leakage_check.validate(X, y) == {"warnings": [], "errors": []}
+
+
 def test_target_leakage_data_check_input_formats():
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
-
-    # test empty pd.DataFrame, empty pd.Series
-    assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {"warnings": [], "errors": []}
-
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["a"] = y * 3
@@ -96,15 +100,14 @@ def test_target_leakage_data_check_input_formats():
                                       details={"column": "d"}).to_dict()],
         "errors": []
     }
-
     # test X as ww.DataTable, y as ww.DataColumn
     assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
 
-    #  test y as list
+    # test y as list
     assert leakage_check.validate(X, y.values) == expected_messages
 
     # test X as np.array
-    assert leakage_check.validate(X.to_numpy(), y) == {
+    assert leakage_check.validate(X.to_numpy().astype(float), y) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
