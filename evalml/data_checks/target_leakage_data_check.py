@@ -96,7 +96,7 @@ class TargetLeakageDataCheck(DataCheck):
         if not self.pearson:
             highly_corr_cols = self._calculate_mutual_information(X, y)
         else:
-            highly_corr_cols = self._calculate_pearson(X, y, messages)
+            highly_corr_cols = self._calculate_pearson(X, y)
 
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
