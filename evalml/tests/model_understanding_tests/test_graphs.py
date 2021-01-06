@@ -550,12 +550,13 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
-                                               regression_core_objectives):
-    X, y = X_y_regression
+def test_get_permutation_importance_regression(linear_regression_pipeline_class, regression_core_objectives):
+    X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
+    y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
                                                 random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
+
     for objective in regression_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
