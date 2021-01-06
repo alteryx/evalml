@@ -16,6 +16,7 @@ Release Notes
         * Fix custom index bug for ``MAPE`` objective :pr:`1641`
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
     * Changes
+        * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
     * Testing Changes
