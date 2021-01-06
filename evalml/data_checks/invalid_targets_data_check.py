@@ -1,3 +1,4 @@
+import woodwork as ww
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -11,6 +12,7 @@ from evalml.utils.gen_utils import (
     _convert_woodwork_types_wrapper,
     categorical_dtypes,
     numeric_and_boolean_dtypes,
+    numeric_and_boolean_ww,
     numeric_dtypes
 )
 
@@ -62,9 +64,15 @@ class InvalidTargetDataCheck(DataCheck):
             raise ValueError("y cannot be None")
 
         y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
-
-        null_rows = y.isnull()
+        is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
+        if not is_supported_type:
+            messages["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
+                                                     .format(y.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                                                     details={"unsupported_type": y.logical_type.type_string}).to_dict())
+        y_df = _convert_woodwork_types_wrapper(y.to_series())
+        null_rows = y_df.isnull()
         if null_rows.any():
             num_null_rows = null_rows.sum()
             pct_null_rows = null_rows.mean() * 100
@@ -72,15 +80,8 @@ class InvalidTargetDataCheck(DataCheck):
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                                      details={"num_null_rows": num_null_rows, "pct_null_rows": pct_null_rows}).to_dict())
-        valid_target_types = [dtype for dtype in numeric_and_boolean_dtypes + categorical_dtypes]
-        if y.dtype.name not in valid_target_types:
 
-            messages["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid target types include: {}".format(y.dtype, ", ".join(valid_target_types)),
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
-                                                     details={"unsupported_type": y.dtype}).to_dict())
-
-        value_counts = y.value_counts()
+        value_counts = y_df.value_counts()
         unique_values = value_counts.index.tolist()
 
         if self.problem_type == ProblemTypes.BINARY and len(value_counts) != 2:
@@ -100,7 +101,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
                                                      details=details).to_dict())
 
-        if len(value_counts) == 2 and y.dtype in numeric_and_boolean_dtypes:
+        if len(value_counts) == 2 and is_supported_type:
             if set(unique_values) != set([0, 1]):
                 messages["warnings"].append(DataCheckWarning(message="Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])),
                                                              data_check_name=self.name,
