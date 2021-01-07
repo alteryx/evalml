@@ -1,4 +1,5 @@
 import woodwork as ww
+import pandas as pd
 
 from evalml.data_checks import (
     DataCheck,
@@ -22,9 +23,11 @@ class InvalidTargetDataCheck(DataCheck):
         """Check if the target is invalid for the specified problem type.
 
         Arguments:
+            problem_type (str or ProblemTypes): The specific problem type to data check for.
+                e.g. 'binary', 'multiclass', 'regression, 'time series regression'
+            objective (str or ObjectiveBase): Name or instance of the objective class.
             n_unique (int): Number of unique target values to store when problem type is binary and target
                 incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
-            objective (str or ObjectiveBase): Name or instance of the objective class.
         """
         self.problem_type = handle_problem_types(problem_type)
         self.objective = get_objective(objective)
@@ -87,10 +90,19 @@ class InvalidTargetDataCheck(DataCheck):
                 details = {"target_values": unique_values}
             else:
                 details = {"target_values": unique_values[:min(self.n_unique, len(unique_values))]}
-            messages["errors"].append(DataCheckError(message="Target does not have two unique values which is not supported for binary classification",
+            messages["errors"].append(DataCheckError(message="Target does not have two unique values which is not supported for binary classification.",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                      details=details).to_dict())
+
+        # if self.problem_type == ProblemTypes.BINARY
+
+        if self.problem_type == ProblemTypes.REGRESSION and not pd.api.types.is_numeric_dtype(y.to_series()):
+            messages["errors"].append(DataCheckError(message="Target data type should be floating point for regression type problems.",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                                                     details={}).to_dict())
+
         if self.problem_type == ProblemTypes.MULTICLASS and value_counts.min() <= 1:
             least_populated = value_counts[value_counts <= 1]
             details = {"least_populated_class_labels": least_populated.index.tolist()}
