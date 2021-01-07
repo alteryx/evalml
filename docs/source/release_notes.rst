@@ -25,6 +25,7 @@ Release Notes
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
     * Testing Changes
 
 .. warning::
