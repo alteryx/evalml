@@ -96,7 +96,8 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {"navigation_depth": 2,
+                      "collapse_navigation" True}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
