@@ -285,6 +285,10 @@ def test_pad_with_nans_with_series_name():
                           ([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [3., 4., None, None]})],
                            [pd.Series([1.], index=pd.Int64Index([1])),
                             pd.DataFrame({"a": [4.]}, index=pd.Int64Index([1]))]),
+                          ([pd.DataFrame(), pd.Series([None, 1., 2., 3.])],
+                           [pd.DataFrame(), pd.Series([1., 2., 3.], index=pd.Int64Index([1, 2, 3]))]),
+                          ([pd.DataFrame({"a": [1., 2., None]}), pd.Series([])],
+                           [pd.DataFrame({"a": [1., 2.]}), pd.Series([])])
                           ])
 def test_drop_nan(data, expected):
     no_nan_1, no_nan_2 = drop_rows_with_nans(*data)
