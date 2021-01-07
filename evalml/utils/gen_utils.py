@@ -389,7 +389,7 @@ def _get_rows_without_nans(*data):
             are non-nan.
     """
     def _not_nan(pd_data):
-        if pd_data is None:
+        if pd_data is None or len(pd_data) == 0:
             return np.array([True])
         if isinstance(pd_data, pd.Series):
             return ~pd_data.isna().values
@@ -402,19 +402,24 @@ def _get_rows_without_nans(*data):
     return mask
 
 
-def drop_rows_with_nans(pd_data_1, pd_data_2):
-    """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
+def drop_rows_with_nans(*pd_data):
+    """Drop rows that have any NaNs in all dataframes or series.
 
     Arguments:
-        pd_data_1 (pd.DataFrame or pd.Series): Data to subset.
-        pd_data_2 (pd.DataFrame or pd.Series): Data to subset.
+        *pd_data (sequence of pd.Series or pd.DataFrame or None)
 
     Returns:
-        tuple of pd.DataFrame or pd.Series
+        list of pd.DataFrame or pd.Series or None
     """
 
-    mask = _get_rows_without_nans(pd_data_1, pd_data_2)
-    return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
+    mask = _get_rows_without_nans(*pd_data)
+
+    def _subset(pd_data):
+        if pd_data is not None and not pd_data.empty:
+            return pd_data.iloc[mask]
+        return pd_data
+
+    return [_subset(data) for data in pd_data]
 
 
 def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):
