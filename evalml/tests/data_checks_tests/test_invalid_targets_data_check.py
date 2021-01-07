@@ -229,7 +229,7 @@ def test_invalid_target_data_check_n_unique():
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(
-            message="Target does not have two unique values which is not supported for binary classification",
+            message="Target does not have two unique values which is not supported for binary classification.",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
             details={"target_values": unique_values}).to_dict()]
