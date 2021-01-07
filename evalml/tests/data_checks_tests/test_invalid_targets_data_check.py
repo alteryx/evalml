@@ -84,7 +84,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
     expected_message = "Target does not have at least two instances per class which is required for multiclass classification"
 
     # with 1 class not having min 2 instances
-    assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 2, 2])) == {
+    assert invalid_targets_check.validate(X, y=pd.Series([0] + [1] * 19 + [2] * 80)) == {
         "warnings": [],
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
@@ -92,12 +92,12 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
                                   details={"least_populated_class_labels": [0]}).to_dict()]
     }
     # with 2 classes not having min 2 instances
-    assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 2, 2, 3])) == {
+    assert invalid_targets_check.validate(X, y=pd.Series([0] + [1] + [2] * 98)) == {
         "warnings": [],
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                  details={"least_populated_class_labels": [3, 0]}).to_dict()]
+                                  details={"least_populated_class_labels": [1, 0]}).to_dict()]
     }
 
 
@@ -239,8 +239,8 @@ def test_invalid_target_data_check_n_unique():
 @pytest.mark.parametrize("objective",
                          ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_names(objective):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100]})
-    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100] * 25})
+    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1] * 25)
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
@@ -270,8 +270,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
 
 @pytest.mark.parametrize("objective", [RootMeanSquaredLogError(), MeanSquaredLogError(), MAPE()])
 def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_instances(objective):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100]})
-    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100] * 25})
+    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1] * 25)
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
@@ -287,8 +287,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_inst
 
 
 def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_core_objectives):
-    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100]})
-    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 200, 100, 200, 200, 100, 200, 100] * 25})
+    y = pd.Series([2, 2, 3, 3, -1, -1, 1, 1] * 25)
 
     for objective in time_series_core_objectives:
         if not objective.positive_only:
@@ -314,8 +314,8 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_cor
 @pytest.mark.parametrize("objective",
                          ['Root Mean Squared Log Error', 'Mean Squared Log Error', 'Mean Absolute Percentage Error'])
 def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objective):
-    X = pd.DataFrame({'column_one': [100, 100, 200, 300, 100, 200, 100]})
-    y = pd.Series([2, 2, 3, 3, 1, 1, 1])
+    X = pd.DataFrame({'column_one': [100, 100, 200, 300, 100, 200, 100] * 25})
+    y = pd.Series([2, 2, 3, 3, 1, 1, 1] * 25)
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
@@ -367,27 +367,64 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
 #     """
 #
 #     X = pd.DataFrame()
-#     y_categorical_multiclass = pd.Series(["Peace", "Is", "A", "Lie"])
+#     # y_categorical_multiclass = pd.Series(["Peace", "Is", "A", "Lie"])
 #     y_categorical_binary = pd.Series(["Peace", "Lie", "Peace", "Lie", "Peace", "Peace", "Lie"])
 #
-#     data_check_error = DataCheckError(
-#         message=f"Target does not have two unique values which is not supported for binary classification.",
-#         data_check_name=invalid_targets_data_check_name,
-#         message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-#         details={"target_values": set(y_categorical_multiclass)}).to_dict()
+#     # data_check_error = DataCheckError(
+#     #     message=f"Target does not have two unique values which is not supported for binary classification.",
+#     #     data_check_name=invalid_targets_data_check_name,
+#     #     message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+#     #     details={"target_values": set(y_categorical_multiclass)}).to_dict()
 #
 #     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-#     assert invalid_targets_check.validate(X, y=y_categorical_multiclass) == {"warnings": [], "errors": [data_check_error]}
-#     assert invalid_targets_check.validate(X, y=y_categorical_binary) == {"warnings": [], "errors": [data_check_error]}
+#     # assert invalid_targets_check.validate(X, y=y_categorical_multiclass) == {"warnings": [], "errors": [data_check_error]}
+#     # import pdb; pdb.set_trace()
+#     assert invalid_targets_check.validate(X, y=y_categorical_binary) == {"warnings": [], "errors": []}
 #
 #     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
-#     assert invalid_targets_check.validate(X, y=y_categorical_multiclass) == {"warnings": [], "errors": []}
+#     # assert invalid_targets_check.validate(X, y=y_categorical_multiclass) == {"warnings": [], "errors": []}
 #     assert invalid_targets_check.validate(X, y=y_categorical_binary) == {"warnings": [], "errors": []}
 
 
 def test_invalid_target_data_check_multiclass_problem_binary_data():
-    pass
+    """
+    For multiclass, error if the problem type was binary
+    For multiclass, warn if the problem type had a high number of unique values--perhaps set a max cap at over 5%.
+    """
+    X = pd.DataFrame()
+    y_multiclass = pd.Series([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3] * 25)
+    y_binary = pd.Series([0, 1, 1, 1, 0, 0] * 25)
+
+    data_check_error = DataCheckError(
+        message=f"Target does not have more than two classes, which is required for multiclass classification.",
+        data_check_name=invalid_targets_data_check_name,
+        message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
+        details={"num_classes": len(set(y_binary))}).to_dict()
+
+    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("regression"))
+    assert invalid_targets_check.validate(X, y=y_multiclass) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y=y_binary) == {"warnings": [], "errors": [data_check_error]}
 
 
 def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
-    pass
+    """
+    For multiclass, error if the problem type was binary
+    For multiclass, warn if the problem type had a high number of unique values--perhaps set a max cap at over 5%.
+    """
+    X = pd.DataFrame()
+    y_multiclass_very_high_classes = pd.Series(
+        list(range(0, 100)) * 3)  # 100 classes, 300 samples, .33 class.sample ratio
+    # y_multiclass_high_classes = pd.Series(list(range(0,5)) * 20) # 5 classes, 100 samples, .05 class/sample ratio
+    y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
+
+    data_check_error = DataCheckWarning(
+        message=f"Target has a large number of unique values, could be regression target.",
+        data_check_name=invalid_targets_data_check_name,
+        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
+        details={"class_to_value_ratio": 1 / 3}).to_dict()
+
+    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
+    # import pdb; pdb.set_trace()
+    assert invalid_targets_check.validate(X, y=y_multiclass_very_high_classes) == {"warnings": [data_check_error],
+                                                                                   "errors": []}
+    assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {"warnings": [], "errors": []}

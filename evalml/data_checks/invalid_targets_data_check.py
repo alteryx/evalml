@@ -15,6 +15,7 @@ from evalml.utils.gen_utils import (
     numeric_and_boolean_ww
 )
 
+MULTICLASS_CONTINUOUS_THRESHOLD = .05
 
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
@@ -95,21 +96,37 @@ class InvalidTargetDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                      details=details).to_dict())
 
-        # if self.problem_type == ProblemTypes.BINARY
-
         if self.problem_type == ProblemTypes.REGRESSION and not pd.api.types.is_numeric_dtype(y.to_series()):
             messages["errors"].append(DataCheckError(message="Target data type should be floating point for regression type problems.",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                                                      details={}).to_dict())
 
-        if self.problem_type == ProblemTypes.MULTICLASS and value_counts.min() <= 1:
-            least_populated = value_counts[value_counts <= 1]
-            details = {"least_populated_class_labels": least_populated.index.tolist()}
-            messages["errors"].append(DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                                     details=details).to_dict())
+        if self.problem_type == ProblemTypes.MULTICLASS:
+            if value_counts.min() <= 1:
+                least_populated = value_counts[value_counts <= 1]
+                details = {"least_populated_class_labels": least_populated.index.tolist()}
+                messages["errors"].append(DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
+                                                         data_check_name=self.name,
+                                                         message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                                         details=details).to_dict())
+            if len(unique_values) <= 2:
+                details = {"num_classes": len(unique_values)}
+                messages["errors"].append(DataCheckError(
+                    message="Target does not have more than two classes, which is required for multiclass classification.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
+                    details=details).to_dict())
+
+            num_class_to_num_value_ratio = len(unique_values)/len(y)
+            if num_class_to_num_value_ratio >= MULTICLASS_CONTINUOUS_THRESHOLD:
+                details = {"class_to_value_ratio": num_class_to_num_value_ratio}
+                messages["warnings"].append(DataCheckWarning(
+                    message="Target has a large number of unique values, could be regression target.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
+                    details=details).to_dict())
+
 
         if len(value_counts) == 2 and is_supported_type:
             if set(unique_values) != set([0, 1]):
