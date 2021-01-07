@@ -76,11 +76,15 @@ class ObjectiveBase(ABC):
         """Standardize input to pandas for scoring.
 
         Arguments:
-            input_data (ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
+            input_data (list, ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
             pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
         """
+        if isinstance(input_data, list):
+            if isinstance(input_data[0], list):
+                return pd.DataFrame(input_data)
+            return pd.Series(input_data)
         if isinstance(input_data, (pd.Series, pd.DataFrame)):
             return input_data
         if isinstance(input_data, ww.DataTable):

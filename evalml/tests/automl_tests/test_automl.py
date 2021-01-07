@@ -1045,7 +1045,7 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
     assert automl.results['pipeline_results'][0]['score'] == 1.0
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
 def test_targets_pandas_data_types_classification(data_type, automl_type, target_type):
@@ -1071,6 +1071,9 @@ def test_targets_pandas_data_types_classification(data_type, automl_type, target
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
 
     y = y.astype(target_type)
+    if data_type == 'li':
+        X = X.to_numpy().tolist()
+        y = y.to_numpy().tolist()
 
     if data_type == 'np':
         X = X.to_numpy()

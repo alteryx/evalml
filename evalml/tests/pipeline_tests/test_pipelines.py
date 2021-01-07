@@ -1597,7 +1597,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
 def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
@@ -1632,6 +1632,10 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     else:
         y = y.astype(target_type)
     unique_vals = y.unique()
+
+    if data_type == 'li':
+        X = X.to_numpy().tolist()
+        y = y.to_numpy().tolist()
 
     if data_type == 'np':
         X = X.to_numpy()
