@@ -38,7 +38,11 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import CostBenefitMatrix, FraudCost, ObjectiveBase
-from evalml.objectives.utils import get_core_objectives, get_objective, get_all_objective_names
+from evalml.objectives.utils import (
+    get_all_objective_names,
+    get_core_objectives,
+    get_objective
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
@@ -2117,4 +2121,3 @@ def test_automl_validate_objective(X_y_regression):
     with pytest.raises(ValueError, match='is not allowed in AutoML!'):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
                      additional_objectives=['Recall'])
-
