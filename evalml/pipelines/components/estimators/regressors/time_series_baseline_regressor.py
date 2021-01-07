@@ -19,6 +19,7 @@ class TimeSeriesBaselineRegressor(Estimator):
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
+    predict_uses_y = True
 
     def __init__(self, gap=1, random_state=0, **kwargs):
         """Baseline time series regressor that predicts using the naive forecasting approach.
@@ -52,12 +53,8 @@ class TimeSeriesBaselineRegressor(Estimator):
         return self
 
     def predict(self, X, y=None):
-        if X is None:
-            X = pd.DataFrame()
         if y is None:
             raise ValueError("Cannot predict Time Series Baseline Regressor if y is None")
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 

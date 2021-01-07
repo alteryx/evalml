@@ -7,6 +7,8 @@ Release Notes
         * Added time series support for ``make_pipeline`` :pr:`1566`
         * Added target name for output of pipeline ``predict`` method :pr:`1578`
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
+        * Support graphviz 0.16 :pr:`1657`
+        * Enhanced time series pipelines to accept empty features :pr:`1651`
     * Fixes
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
@@ -25,6 +27,7 @@ Release Notes
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
     * Testing Changes
 
 .. warning::
