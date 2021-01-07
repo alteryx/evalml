@@ -11,6 +11,7 @@ Release Notes
         * Support graphviz 0.16 :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
         * Added support for list inputs for objectives :pr:`1663`
+        * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
     * Fixes
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
