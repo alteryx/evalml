@@ -365,12 +365,6 @@ def test_target_leakage_data_check_input_formats_pearson():
         "errors": []
     }
 
-    # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
-
-    #  test y as list
-    assert leakage_check.validate(X, y.values) == expected_messages
-
     # test X as np.array
     assert leakage_check.validate(X.values, y) == {
         "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more correlated with the target",
@@ -391,6 +385,12 @@ def test_target_leakage_data_check_input_formats_pearson():
                                       details={"column": 3}).to_dict()],
         "errors": []
     }
+
+    # test X as ww.DataTable, y as ww.DataColumn
+    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
+
+    #  test y as list
+    assert leakage_check.validate(X, y.values) == expected_messages
 
 
 def test_target_leakage_none_pearson():
