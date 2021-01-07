@@ -6,19 +6,21 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    pad_with_nans
 )
 
 
-class TimeSeriesBaselineRegressor(Estimator):
+class TimeSeriesBaselineEstimator(Estimator):
     """Time series regressor that predicts using the naive forecasting approach.
 
     This is useful as a simple baseline regressor for time series problems
     """
-    name = "Time Series Baseline Regressor"
+    name = "Time Series Baseline Estimator"
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
-    supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
+    supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY,
+                               ProblemTypes.TIME_SERIES_MULTICLASS]
     predict_uses_y = True
 
     def __init__(self, gap=1, random_state=0, **kwargs):
@@ -62,6 +64,16 @@ class TimeSeriesBaselineRegressor(Estimator):
             y = y.shift(periods=1)
 
         return y
+
+    def predict_proba(self, X, y=None):
+        if y is None:
+            raise ValueError("Cannot predict Time Series Baseline Regressor if y is None")
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
+        preds = self.predict(X, y).dropna(axis=0, how='any').astype('int')
+        proba_arr = np.zeros((len(preds), y.max() + 1))
+        proba_arr[np.arange(len(preds)), preds] = 1
+        return pad_with_nans(pd.DataFrame(proba_arr), len(y) - len(preds))
 
     @property
     def feature_importance(self):

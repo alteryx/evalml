@@ -5,7 +5,12 @@ from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_classification,
+    is_time_series
+)
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 
@@ -25,7 +30,9 @@ def get_default_primary_search_objective(problem_type):
     objective_name = {'binary': 'Log Loss Binary',
                       'multiclass': 'Log Loss Multiclass',
                       'regression': 'R2',
-                      'time series regression': 'R2'}[problem_type.value]
+                      'time series regression': 'R2',
+                      'time series binary': 'Log Loss Binary',
+                      'time series multiclass': 'Log Loss Multiclass'}[problem_type.value]
     return get_objective(objective_name, return_instance=True)
 
 
@@ -49,11 +56,9 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     data_splitter = None
     if problem_type == ProblemTypes.REGRESSION:
         data_splitter = KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
-    elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+    elif is_classification(problem_type):
         data_splitter = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
-    elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
-                          ProblemTypes.TIME_SERIES_BINARY,
-                          ProblemTypes.TIME_SERIES_MULTICLASS]:
+    elif is_time_series(problem_type):
         if not problem_configuration:
             raise ValueError("problem_configuration is required for time series problem types")
         data_splitter = TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
