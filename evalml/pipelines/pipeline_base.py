@@ -68,6 +68,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
+        self.input_target_name = None
+
         final_component = self._component_graph.get_last_component()
         self.estimator = final_component if isinstance(final_component, Estimator) else None
         self._estimator_name = self._component_graph.compute_order[-1] if self.estimator is not None else None
@@ -189,11 +191,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return X_t
 
     def _compute_features_during_fit(self, X, y):
+        self.input_target_name = y.name
         X_t = self._component_graph.fit_features(X, y)
         self.input_feature_names = self._component_graph.input_feature_names
         return X_t
 
     def _fit(self, X, y):
+        self.input_target_name = y.name
         self._component_graph.fit(X, y)
         self.input_feature_names = self._component_graph.input_feature_names
 
@@ -221,7 +225,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pd.Series: Predicted values.
         """
         X = _convert_to_woodwork_structure(X)
-        return self._component_graph.predict(X)
+        predictions = self._component_graph.predict(X)
+        return predictions.rename(self.input_target_name)
 
     @abstractmethod
     def score(self, X, y, objectives):
@@ -477,7 +482,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         random_state_eq = check_random_state_equality(self.random_state, other.random_state)
         if not random_state_eq:
             return False
-        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names']
+        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False

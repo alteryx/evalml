@@ -334,6 +334,30 @@ def linear_regression_pipeline_class():
 
 
 @pytest.fixture
+def time_series_regression_pipeline_class():
+    class TSRegressionPipeline(TimeSeriesRegressionPipeline):
+        """Random Forest Regression Pipeline for time series regression problems."""
+        component_graph = ['Delayed Feature Transformer', 'Random Forest Regressor']
+    return TSRegressionPipeline
+
+
+@pytest.fixture
+def time_series_binary_classification_pipeline_class():
+    class TSBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
+        """Logistic Regression Pipeline for time series binary classification problems."""
+        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+    return TSBinaryPipeline
+
+
+@pytest.fixture
+def time_series_multiclass_classification_pipeline_class():
+    class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
+        """Logistic Regression Pipeline for time series multiclass classification problems."""
+        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+    return TSMultiPipeline
+
+
+@pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
     class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
