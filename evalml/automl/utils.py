@@ -56,7 +56,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     data_splitter = None
     if problem_type == ProblemTypes.REGRESSION:
         data_splitter = KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
-    elif is_classification(problem_type):
+    elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         data_splitter = StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
     elif is_time_series(problem_type):
         if not problem_configuration:
