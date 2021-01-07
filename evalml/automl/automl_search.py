@@ -415,11 +415,6 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        text_column_vals = self.X_train.select('natural_language')
-        text_columns = list(text_column_vals.to_dataframe().columns)
-        if len(text_columns) == 0:
-            text_columns = None
-
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
