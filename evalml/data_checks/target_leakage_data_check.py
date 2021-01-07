@@ -32,15 +32,12 @@ class TargetLeakageDataCheck(DataCheck):
 
     def _calculate_pearson(self, X, y):
         highly_corr_cols = []
-        if y.logical_type not in numeric_and_boolean_ww:
-            return highly_corr_cols
         X_num = X.select(include=numeric_and_boolean_ww)
-        if len(X_num.columns) == 0:
+        if y.logical_type not in numeric_and_boolean_ww or len(X_num.columns) == 0:
             return highly_corr_cols
         X_num = _convert_woodwork_types_wrapper(X_num.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        if len(X.columns) > 0:
-            highly_corr_cols = [label for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
+        highly_corr_cols = [label for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
         return highly_corr_cols
 
     def _calculate_mutual_information(self, X, y):
@@ -49,7 +46,6 @@ class TargetLeakageDataCheck(DataCheck):
         target = 'target'
         while target in X.columns:
             target += '0'
-
         combined = X.copy()
         combined[target] = y
         combined = _convert_to_woodwork_structure(combined)
