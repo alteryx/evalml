@@ -80,10 +80,10 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         features = self.compute_estimator_features(X, y)
         features_no_nan, y = drop_rows_with_nans(features, y)
+        y_arg = None
         if self.estimator.predict_uses_y:
-            predictions = self.estimator.predict(features_no_nan, y)
-        else:
-            predictions = self.estimator.predict(features_no_nan)
+            y_arg = y
+        predictions = self.estimator.predict(features_no_nan, y_arg)
         predictions = predictions.rename(self.input_target_name)
         return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 

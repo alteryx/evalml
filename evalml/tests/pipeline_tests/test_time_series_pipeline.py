@@ -124,7 +124,7 @@ def test_predict_pad_nans(mock_decode_targets, mock_encode_targets,
                                                    "delay_target": include_delayed_features},
                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
-    def mock_predict(df):
+    def mock_predict(df, y=None):
         return pd.Series(range(200, 200 + df.shape[0]))
 
     if isinstance(pl, TimeSeriesRegressionPipeline):
@@ -184,7 +184,7 @@ def test_score_drops_nans(mock_score, mock_encode_targets,
                                                    "delay_target": include_delayed_features},
                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
-    def mock_predict(df):
+    def mock_predict(df, y=None):
         return pd.Series(range(200, 200 + df.shape[0]))
 
     if isinstance(pl, TimeSeriesRegressionPipeline):

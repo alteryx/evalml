@@ -66,29 +66,25 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         self.estimator.fit(X_t, y_shifted)
         return self
 
-    def _estimator_predict_helper(self, features, y, return_probabilities):
-        """Helper to call estimator.predict(features, y) or estimator.predict(features) depending on the estimator.
-
-        If return_probabilities=True, then estimator.predict_proba is called instead.
-        """
-        method = self.estimator.predict_proba if return_probabilities else self.estimator.predict
-        if self.estimator.predict_uses_y:
-            return method(features, y)
-        return method(features)
-
     def _estimator_predict(self, features, y):
         """Get estimator predictions.
 
         This helper passes y as an argument if needed by the estimator.
         """
-        return self._estimator_predict_helper(features, y, return_probabilities=False)
+        y_arg = None
+        if self.estimator.predict_uses_y:
+            y_arg = y
+        return self.estimator.predict(features, y=y_arg)
 
     def _estimator_predict_proba(self, features, y):
         """Get estimator predicted probabilities.
 
         This helper passes y as an argument if needed by the estimator.
         """
-        return self._estimator_predict_helper(features, y, return_probabilities=True)
+        y_arg = None
+        if self.estimator.predict_uses_y:
+            y_arg = y
+        return self.estimator.predict_proba(features, y=y_arg)
 
     def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)

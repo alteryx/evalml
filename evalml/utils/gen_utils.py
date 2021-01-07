@@ -403,7 +403,7 @@ def _get_rows_without_nans(*data):
 
 
 def drop_rows_with_nans(*pd_data):
-    """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
+    """Drop rows that have any NaNs in all dataframes or series.
 
     Arguments:
         *pd_data (sequence of pd.Series or pd.DataFrame or None)
