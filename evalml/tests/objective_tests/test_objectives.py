@@ -15,8 +15,8 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.objectives.objective_base import ObjectiveBase
+from evalml.objectives.utils import _all_objectives_dict
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import _get_subclasses
 
 
 def test_create_custom_objective():
@@ -34,7 +34,7 @@ def test_create_custom_objective():
         MockNoObjectiveFunctionObjective()
 
 
-@pytest.mark.parametrize("obj", _get_subclasses(ObjectiveBase))
+@pytest.mark.parametrize("obj", _all_objectives_dict().values())
 def test_get_objective_works_for_names_of_defined_objectives(obj):
     assert get_objective(obj.name) == obj
     assert get_objective(obj.name.lower()) == obj
@@ -89,7 +89,8 @@ def test_can_get_only_core_and_all_objective_names():
 def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_core_objectives(ProblemTypes.BINARY)) == 7
-    assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
+    assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 9
+    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 10
 
 
 def test_get_time_series_objectives_types(time_series_objectives):

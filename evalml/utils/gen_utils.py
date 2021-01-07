@@ -17,11 +17,7 @@ from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
-numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-boolean = ['bool']
-numeric_and_boolean_dtypes = numeric_dtypes + boolean
-categorical_dtypes = ['object', 'category']
-datetime_dtypes = [np.datetime64]
+numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
 
 
 def import_or_raise(library, error_msg=None, warning=False):
@@ -269,20 +265,21 @@ def safe_repr(value):
     return repr(value)
 
 
-def is_all_numeric(df):
-    """Checks if the given DataFrame contains only numeric values
+def is_all_numeric(dt):
+    """Checks if the given DataTable contains only numeric values
 
     Arguments:
-        df (DataFrame): The DataFrame to check datatypes of
+        dt (ww.DataTable): The DataTable to check data types of.
 
     Returns:
-        True if all the DataFrame columns are numeric and are not missing any values, False otherwise
+        True if all the DataTable columns are numeric and are not missing any values, False otherwise.
     """
-    if df.isnull().any().any():
-        return False
-    for dtype in df.dtypes:
-        if dtype not in numeric_and_boolean_dtypes:
+    for col_tags in dt.semantic_tags.values():
+        if "numeric" not in col_tags:
             return False
+
+    if dt.to_dataframe().isnull().any().any():
+        return False
     return True
 
 
@@ -320,7 +317,8 @@ def _convert_to_woodwork_structure(data):
 
     ww_data = ww_data.copy()
     if len(ww_data.shape) == 1:
-        return ww.DataColumn(ww_data)
+        name = ww_data.name if isinstance(ww_data, pd.Series) else None
+        return ww.DataColumn(ww_data, name=name)
     return ww.DataTable(ww_data)
 
 
@@ -347,8 +345,8 @@ def _convert_woodwork_types_wrapper(pd_data):
         return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)])
     if (isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping):
         if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index)
-        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index)
+            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
+        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
@@ -369,7 +367,7 @@ def pad_with_nans(pd_data, num_to_pad):
         pd.DataFrame or pd.Series
     """
     if isinstance(pd_data, pd.Series):
-        padding = pd.Series([np.nan] * num_to_pad)
+        padding = pd.Series([np.nan] * num_to_pad, name=pd_data.name)
     else:
         padding = pd.DataFrame({col: [np.nan] * num_to_pad
                                 for col in pd_data.columns})
