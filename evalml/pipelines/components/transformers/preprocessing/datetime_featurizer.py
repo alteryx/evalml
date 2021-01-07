@@ -76,7 +76,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
-        self._date_time_col_names = X.select(include=["datetime"]).columns
+        self._date_time_col_names = X.select("datetime").columns
         return self
 
     def transform(self, X, y=None):

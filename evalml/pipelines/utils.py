@@ -58,8 +58,8 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
 
     pp_components.append(Imputer)
 
-    text_columns = list(X.select('NaturalLanguage').columns)
-    if len(text_columns) != 0:
+    text_columns = list(X.select('natural_language').columns)
+    if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
     datetime_cols = X.select(["Datetime"])

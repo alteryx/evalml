@@ -13,7 +13,7 @@ class DFSTransformer(Transformer):
     hyperparameter_ranges = {}
 
     def __init__(self, index='index', random_state=0, **kwargs):
-        """Allows for featuretools to be used in EvalML
+        """Allows for featuretools to be used in EvalML.
 
         Arguments:
             index (string): The name of the column that contains the indices. If no column with this name exists,
@@ -31,8 +31,7 @@ class DFSTransformer(Transformer):
                          random_state=random_state)
 
     def _make_entity_set(self, X):
-        """helper method that creates and returns the entity set given the datatable X
-        """
+        """Helper method that creates and returns the entity set given an input pandas DataFrame"""
         ft_es = EntitySet()
         if self.index not in X.columns:
             es = ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index=self.index, make_index=True)
