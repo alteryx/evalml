@@ -322,36 +322,6 @@ def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, 
     pl.score(X, y, objectives)
 
 
-@pytest.mark.parametrize("pipeline_class", [TimeSeriesBinaryClassificationPipeline,
-                                            TimeSeriesMulticlassClassificationPipeline])
-@pytest.mark.parametrize("use_none_X", [True, False])
-def test_score_works_with_estimator_uses_y(use_none_X, pipeline_class, X_y_binary, X_y_multi):
-
-    class Pipeline(pipeline_class):
-        component_graph = [ComponentUsesYInPredict]
-
-    pl = Pipeline({"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False}})
-    if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
-        y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")
-        expected_unique_values = {"good", "bad"}
-        objectives = ['MCC Binary', "Log Loss Binary"]
-    elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
-        label_map = {0: "good", 1: "bad", 2: "best"}
-        y = pd.Series(y).map(lambda label: label_map[label])
-        expected_unique_values = {"good", "bad", "best"}
-        objectives = ["MCC Multiclass", "Log Loss Multiclass"]
-
-    if use_none_X:
-        X = None
-
-    pl.fit(X, y)
-    # NaNs are expected because of padding due to max_delay
-    assert set(pl.predict(X, y).dropna().unique()) == expected_unique_values
-    pl.score(X, y, objectives)
-
-
 @patch('evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets')
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
 @patch('evalml.pipelines.components.Estimator.predict_proba', return_value=pd.DataFrame({0: [1.]}))
