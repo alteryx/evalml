@@ -41,7 +41,8 @@ from evalml.objectives import CostBenefitMatrix, FraudCost, ObjectiveBase
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
-    get_objective
+    get_objective,
+    get_non_core_objectives
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -2110,14 +2111,15 @@ def test_automl_does_not_include_positive_only_objectives_by_default(problem_typ
     assert all([obj not in only_positive for obj in search.additional_objectives])
 
 
-def test_automl_validate_objective(X_y_regression):
+@pytest.mark.parametrize('non_core_objective', get_non_core_objectives())
+def test_automl_validate_objective(non_core_objective, X_y_regression):
 
     X, y = X_y_regression
 
     with pytest.raises(ValueError, match='is not allowed in AutoML!'):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='regression',
-                     objective='Root Mean Squared Log Error')
+        AutoMLSearch(X_train=X, y_train=y, problem_type=non_core_objective.problem_types[0],
+                     objective=non_core_objective.name)
 
     with pytest.raises(ValueError, match='is not allowed in AutoML!'):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
-                     additional_objectives=['Recall'])
+        AutoMLSearch(X_train=X, y_train=y, problem_type=non_core_objective.problem_types[0],
+                     additional_objectives=[non_core_objective.name])
