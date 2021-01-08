@@ -1,4 +1,5 @@
-import numpy as np
+import pandas as pd
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -44,7 +45,7 @@ class TargetLeakageDataCheck(DataCheck):
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
         for col in X.columns:
-            cols_to_compare = _convert_to_woodwork_structure(np.array([X[col].values, y.values]).T)
+            cols_to_compare = _convert_to_woodwork_structure(pd.DataFrame({col: X[col], str(col) + "y": y}))
             mutual_info = cols_to_compare.mutual_information()
             if len(mutual_info) > 0 and mutual_info['mutual_info'].iloc[0] > self.pct_corr_threshold:
                 highly_corr_cols.append(col)
