@@ -23,6 +23,7 @@ Release Notes
         * ``add_to_rankings`` updates ``AutoMLSearch.best_pipeline`` when necessary :pr:`1647`
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
         * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
+        * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
