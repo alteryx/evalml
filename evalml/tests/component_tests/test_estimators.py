@@ -69,9 +69,6 @@ def test_all_estimators_check_fit_input_type(data_type, X_y_binary, make_data_ty
     y = make_data_type(data_type, y)
     estimators_to_check = [estimator for estimator in get_estimators('binary')]
     for component_class in estimators_to_check:
-        if not component_class.needs_fitting:
-            continue
-
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         component.fit(X, y)
 
@@ -83,8 +80,5 @@ def test_all_estimators_check_fit_input_type_regression(data_type, X_y_regressio
     y = make_data_type(data_type, y)
     estimators_to_check = [estimator for estimator in get_estimators('regression')]
     for component_class in estimators_to_check:
-        if not component_class.needs_fitting:
-            continue
-
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         component.fit(X, y)
