@@ -77,16 +77,20 @@ class SimpleImputer(Transformer):
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
+            X = _convert_to_woodwork_structure(X)
             return X
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
         category_cols = X_null_dropped.select_dtypes(include=['category']).columns
         X_t = self._component_obj.transform(X)
         if X_null_dropped.empty:
-            return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            X_t = _convert_to_woodwork_structure(X_t)
+            return X_t
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
         if len(category_cols) > 0:
             X_t[category_cols] = X_t[category_cols].astype('category')
+        X_t = _convert_to_woodwork_structure(X_t)
         return X_t
 
     def fit_transform(self, X, y=None):

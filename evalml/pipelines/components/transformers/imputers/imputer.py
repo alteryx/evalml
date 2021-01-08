@@ -101,6 +101,7 @@ class Imputer(Transformer):
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:
+            X_null_dropped = _convert_to_woodwork_structure(X_null_dropped)
             return X_null_dropped
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
@@ -114,5 +115,5 @@ class Imputer(Transformer):
             imputed = self._categorical_imputer.transform(X_categorical)
             imputed.index = X_null_dropped.index
             X_null_dropped[X_categorical.columns] = imputed
-
+        X_null_dropped = _convert_to_woodwork_structure(X_null_dropped)
         return X_null_dropped
