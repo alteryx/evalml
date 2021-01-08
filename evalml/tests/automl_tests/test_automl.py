@@ -38,7 +38,12 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import CostBenefitMatrix, FraudCost, ObjectiveBase
-from evalml.objectives.utils import get_core_objectives, get_objective
+from evalml.objectives.utils import (
+    get_all_objective_names,
+    get_core_objectives,
+    get_non_core_objectives,
+    get_objective
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
@@ -768,11 +773,11 @@ def test_main_objective_problem_type_mismatch(X_y_binary):
     with pytest.raises(ValueError, match="is not compatible with a"):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='R2')
     with pytest.raises(ValueError, match="is not compatible with a"):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='Mean Absolute Percentage Error')
+        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='MCC Binary')
     with pytest.raises(ValueError, match="is not compatible with a"):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Mean Absolute Percentage Error')
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='MCC Multiclass')
     with pytest.raises(ValueError, match="is not compatible with a"):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Mean Absolute Percentage Error')
+        AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='MSE')
 
 
 def test_init_missing_data(X_y_binary):
@@ -2086,3 +2091,35 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_scor
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
                                                "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
+
+
+@pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                                          ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.REGRESSION])
+def test_automl_does_not_include_positive_only_objectives_by_default(problem_type, X_y_regression):
+
+    X, y = X_y_regression
+
+    only_positive = []
+    for name in get_all_objective_names():
+        objective_class = get_objective(name)
+        if objective_class.positive_only:
+            only_positive.append(objective_class)
+
+    search = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
+                          problem_configuration={'gap': 0, 'max_delay': 0})
+    assert search.objective not in only_positive
+    assert all([obj not in only_positive for obj in search.additional_objectives])
+
+
+@pytest.mark.parametrize('non_core_objective', get_non_core_objectives())
+def test_automl_validate_objective(non_core_objective, X_y_regression):
+
+    X, y = X_y_regression
+
+    with pytest.raises(ValueError, match='is not allowed in AutoML!'):
+        AutoMLSearch(X_train=X, y_train=y, problem_type=non_core_objective.problem_types[0],
+                     objective=non_core_objective.name)
+
+    with pytest.raises(ValueError, match='is not allowed in AutoML!'):
+        AutoMLSearch(X_train=X, y_train=y, problem_type=non_core_objective.problem_types[0],
+                     additional_objectives=[non_core_objective.name])
