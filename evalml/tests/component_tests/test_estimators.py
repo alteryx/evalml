@@ -2,10 +2,14 @@ import string
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
-from evalml.pipelines.components.utils import _all_estimators_used_in_search
+from evalml.pipelines.components.utils import (
+    _all_estimators_used_in_search,
+    get_estimators
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
@@ -56,3 +60,31 @@ def test_estimator_equality_different_supported_problem_types():
     mock_estimator.supported_problem_types = ['binary', 'multiclass']
     assert mock_estimator != MockEstimator()
     assert 'Mock Estimator' != mock_estimator
+
+
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
+def test_all_estimators_check_fit_input_type(data_type, X_y_binary, make_data_type, helper_functions):
+    X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+    estimators_to_check = [estimator for estimator in get_estimators('binary')]
+    for component_class in estimators_to_check:
+        if not component_class.needs_fitting:
+            continue
+
+        component = helper_functions.safe_init_component_with_njobs_1(component_class)
+        component.fit(X, y)
+
+
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
+def test_all_estimators_check_fit_input_type_regression(data_type, X_y_regression, make_data_type, helper_functions):
+    X, y = X_y_regression
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+    estimators_to_check = [estimator for estimator in get_estimators('regression')]
+    for component_class in estimators_to_check:
+        if not component_class.needs_fitting:
+            continue
+
+        component = helper_functions.safe_init_component_with_njobs_1(component_class)
+        component.fit(X, y)

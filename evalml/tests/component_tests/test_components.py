@@ -838,20 +838,6 @@ def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_
         component.fit(X, y)
 
 
-@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
-def test_all_estimators_check_fit_input_type(data_type, X_y_binary, make_data_type, test_estimator_needs_fitting_false, helper_functions):
-    X, y = X_y_binary
-    X = make_data_type(data_type, X)
-    y = make_data_type(data_type, y)
-    estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineRegressor]] + [test_estimator_needs_fitting_false]
-    for component_class in estimators_to_check:
-        if not component_class.needs_fitting:
-            continue
-
-        component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        component.fit(X, y)
-
-
 def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
     for component_class in all_components() + [test_estimator_needs_fitting_false]:
