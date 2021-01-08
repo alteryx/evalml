@@ -94,6 +94,7 @@ class DateTimeFeaturizer(Transformer):
         X_t = X
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
+            X_t = _convert_to_woodwork_structure(X_t)
             return X_t
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
@@ -102,7 +103,9 @@ class DateTimeFeaturizer(Transformer):
                 X_t[name] = features
                 if categories:
                     self._categories[name] = categories
-        return X_t.drop(self._date_time_col_names, axis=1)
+        X_t = X_t.drop(self._date_time_col_names, axis=1)
+        X_t = _convert_to_woodwork_structure(X_t)
+        return X_t
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.
