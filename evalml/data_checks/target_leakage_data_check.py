@@ -15,22 +15,24 @@ from evalml.utils.gen_utils import (
 class TargetLeakageDataCheck(DataCheck):
     """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
 
-    def __init__(self, pct_corr_threshold=0.95, pearson_corr=False):
+    def __init__(self, pct_corr_threshold=0.95, method="mutual"):
         """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
 
-        If `pearson_corr=False`, this data check uses mutual information and supports all target and feature types.
-        Otherwise, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
+        If `method='mutual'`, this data check uses mutual information and supports all target and feature types.
+        Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Arguments:
             pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
-            pearson_corr (bool): Whether or not to use the Pearson correlation versus mutual information. Defaults to False, which uses mutual information.
+            method (string): The method to determine correlation. Use 'mutual' for mutual information, otherwise 'pearson' for Pearson correlation. Defaults to 'mutual'.
 
         """
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
+        if method not in ['mutual', 'pearson']:
+            raise ValueError(f"Method '{method}' not in ['mutual', 'pearson']")
         self.pct_corr_threshold = pct_corr_threshold
-        self.pearson = pearson_corr
+        self.method = method
 
     def _calculate_pearson(self, X, y):
         highly_corr_cols = []
@@ -52,9 +54,9 @@ class TargetLeakageDataCheck(DataCheck):
         return highly_corr_cols
 
     def validate(self, X, y):
-        """Check if any of the features are highly correlated with the target by using mutual information.
+        """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
 
-        If `pearson_corr=False`, supports all target and feature types. Otherwise, only supports binary with numeric and boolean dtypes.
+        If `method='mutual'`, supports all target and feature types. Otherwise, if `method='pearson'` only supports binary with numeric and boolean dtypes.
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Arguments:
@@ -87,7 +89,7 @@ class TargetLeakageDataCheck(DataCheck):
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
 
-        if self.pearson:
+        if self.method == 'pearson':
             highly_corr_cols = self._calculate_pearson(X, y)
         else:
             X = _convert_woodwork_types_wrapper(X.to_dataframe())

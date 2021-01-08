@@ -31,6 +31,11 @@ def test_target_leakage_data_check_init():
     with pytest.raises(ValueError, match="pct_corr_threshold must be a float between 0 and 1, inclusive."):
         TargetLeakageDataCheck(pct_corr_threshold=1.1)
 
+    with pytest.raises(ValueError, match="Method 'MUTUAL' not in"):
+        TargetLeakageDataCheck(method='MUTUAL')
+    with pytest.raises(ValueError, match="Method 'person' not in"):
+        TargetLeakageDataCheck(method='person')
+
 
 def test_target_leakage_data_check_warnings():
     y = pd.Series([1, 0, 1, 1])
@@ -68,7 +73,7 @@ def test_target_leakage_data_check_warnings():
 def test_target_leakage_data_check_empty(data_type, make_data_type):
     X = make_data_type(data_type, pd.DataFrame())
     y = make_data_type(data_type, pd.Series())
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8)
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method='mutual')
     assert leakage_check.validate(X, y) == {"warnings": [], "errors": []}
 
 
@@ -259,38 +264,6 @@ def test_target_leakage_regression():
     assert leakage_check.validate(X, y.values) == expected_messages
 
 
-def test_target_leakage_data_check_name():
-    y = pd.Series([1, 0, 1, 1])
-    X = pd.DataFrame()
-    X["target"] = y * 3
-    X["target0"] = y - 1
-    X["target00"] = y / 10
-    X["target000"] = ~y
-    X["e"] = [0, 0, 0, 0]
-    y = y.astype(bool)
-
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
-    assert leakage_check.validate(X, y) == {
-        "warnings": [DataCheckWarning(message="Column 'target' is 50.0% or more correlated with the target",
-                                      data_check_name=target_leakage_data_check_name,
-                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                      details={"column": "target"}).to_dict(),
-                     DataCheckWarning(message="Column 'target0' is 50.0% or more correlated with the target",
-                                      data_check_name=target_leakage_data_check_name,
-                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                      details={"column": "target0"}).to_dict(),
-                     DataCheckWarning(message="Column 'target00' is 50.0% or more correlated with the target",
-                                      data_check_name=target_leakage_data_check_name,
-                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                      details={"column": "target00"}).to_dict(),
-                     DataCheckWarning(message="Column 'target000' is 50.0% or more correlated with the target",
-                                      data_check_name=target_leakage_data_check_name,
-                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                      details={"column": "target000"}).to_dict()],
-        "errors": []
-    }
-
-
 def test_target_leakage_data_check_warnings_pearson():
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
@@ -301,7 +274,7 @@ def test_target_leakage_data_check_warnings_pearson():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, pearson_corr=True)
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method='pearson')
     assert leakage_check.validate(X, y) == {
         "warnings": [DataCheckWarning(message="Column 'a' is 50.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
@@ -323,7 +296,7 @@ def test_target_leakage_data_check_warnings_pearson():
     }
 
     y = ["a", "b", "a", "a"]
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, pearson_corr=True)
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method='pearson')
     assert leakage_check.validate(X, y) == {
         "warnings": [],
         "errors": []
@@ -331,7 +304,7 @@ def test_target_leakage_data_check_warnings_pearson():
 
 
 def test_target_leakage_data_check_input_formats_pearson():
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, pearson_corr=True)
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method='pearson')
 
     # test empty pd.DataFrame, empty pd.Series
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {"warnings": [], "errors": []}
@@ -394,7 +367,7 @@ def test_target_leakage_data_check_input_formats_pearson():
 
 
 def test_target_leakage_none_pearson():
-    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, pearson_corr=True)
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method='pearson')
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["a"] = [1, 1, 1, 1]
