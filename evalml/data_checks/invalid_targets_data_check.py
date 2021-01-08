@@ -1,5 +1,5 @@
-import woodwork as ww
 import pandas as pd
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
@@ -16,6 +16,7 @@ from evalml.utils.gen_utils import (
 )
 
 MULTICLASS_CONTINUOUS_THRESHOLD = .05
+
 
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
@@ -118,7 +119,7 @@ class InvalidTargetDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
                     details=details).to_dict())
 
-            num_class_to_num_value_ratio = len(unique_values)/len(y)
+            num_class_to_num_value_ratio = len(unique_values) / len(y)
             if num_class_to_num_value_ratio >= MULTICLASS_CONTINUOUS_THRESHOLD:
                 details = {"class_to_value_ratio": num_class_to_num_value_ratio}
                 messages["warnings"].append(DataCheckWarning(
@@ -126,7 +127,6 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
                     details=details).to_dict())
-
 
         if len(value_counts) == 2 and is_supported_type:
             if set(unique_values) != set([0, 1]):
