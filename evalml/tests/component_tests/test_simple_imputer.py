@@ -137,8 +137,8 @@ def test_simple_imputer_multitype_with_one_bool(data_type):
     })
     y = pd.Series([1, 0, 0, 1, 0])
     X_multi_expected_arr = pd.DataFrame({
-        "bool with nan": pd.Series([True, False, False, False, False], dtype='category'),
-        "bool no nan": pd.Series([False, False, False, False, True], dtype=object),
+        "bool with nan": pd.Series([True, False, False, False, False], dtype='boolean'),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype='boolean'),
     })
     if data_type == 'ww':
         X_multi = ww.DataTable(X_multi)
@@ -276,6 +276,6 @@ def test_simple_imputer_with_none():
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
     expected = pd.DataFrame({"category with None": pd.Series(["b", "a", "a", "a"], dtype='category'),
-                             "boolean with None": pd.Series([True, True, False, True], dtype='category'),
+                             "boolean with None": pd.Series([True, True, False, True], dtype='boolean'),
                              "object with None": pd.Series(["b", "a", "a", "a"], dtype='category')})
     assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)

@@ -47,7 +47,6 @@ class SimpleImputer(Transformer):
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
         # Convert all bool dtypes to category for fitting
         if (X.dtypes == bool).all():
             X = X.astype('category')
@@ -73,8 +72,7 @@ class SimpleImputer(Transformer):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         # Convert None to np.nan, since None cannot be properly handled
-        X = X.fillna(value=np.nan)
-
+        X = X.fillna(value=np.nan) # with woodwork, do we need this?
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
             X = _convert_to_woodwork_structure(X)
@@ -88,8 +86,9 @@ class SimpleImputer(Transformer):
             X_t = _convert_to_woodwork_structure(X_t)
             return X_t
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        if len(category_cols) > 0:
-            X_t[category_cols] = X_t[category_cols].astype('category')
+        X_t = X_t.infer_objects()
+        # if len(category_cols) > 0:
+        #     X_t[category_cols] = X_t[category_cols].astype('category')
         X_t = _convert_to_woodwork_structure(X_t)
         return X_t
 

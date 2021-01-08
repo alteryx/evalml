@@ -26,6 +26,7 @@ Release Notes
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
+        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
@@ -35,6 +36,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
+        * Components and pipelines return ``Woodwork`` data structures instead of pandas data structures :pr:`1668`
 
 **v0.17.0 Dec. 29, 2020**
     * Enhancements
