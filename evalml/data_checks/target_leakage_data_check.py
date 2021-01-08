@@ -1,3 +1,4 @@
+import numpy as np
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -42,15 +43,9 @@ class TargetLeakageDataCheck(DataCheck):
 
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
-        # safely add in the target column without overlapping with any existing column names
-        target = 'target'
-        while target in X.columns:
-            target += '0'
-        combined = X.copy()
-        combined[target] = y
-        combined = _convert_to_woodwork_structure(combined)
         for col in X.columns:
-            mutual_info = combined[[col, target]].mutual_information()
+            cols_to_compare = _convert_to_woodwork_structure(np.array([X[col].values, y.values]).T)
+            mutual_info = cols_to_compare.mutual_information()
             if len(mutual_info) > 0 and mutual_info['mutual_info'].iloc[0] > self.pct_corr_threshold:
                 highly_corr_cols.append(col)
         return highly_corr_cols
