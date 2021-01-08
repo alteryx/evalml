@@ -51,11 +51,11 @@ class Transformer(ComponentBase):
             pd.DataFrame: Transformed X
         """
         try:
-            X = _convert_to_woodwork_structure(X)
-            y = _convert_to_woodwork_structure(y)
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
-            y = _convert_woodwork_types_wrapper(y.to_series())
-            X_t = self._component_obj.fit_transform(X, y)
+            X2 = _convert_to_woodwork_structure(X)
+            y2 = _convert_to_woodwork_structure(y)
+            X2 = _convert_woodwork_types_wrapper(X2.to_dataframe())
+            y2 = _convert_woodwork_types_wrapper(y2.to_series())
+            X_t = self._component_obj.fit_transform(X2, y2)
         except AttributeError:
             try:
                 self.fit(X, y)
