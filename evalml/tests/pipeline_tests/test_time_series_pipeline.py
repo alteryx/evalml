@@ -5,9 +5,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.model_family import ModelFamily
 from evalml.pipelines import (
-    Estimator,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
@@ -250,30 +248,6 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     pl.score(X, y_encoded, objectives=['MCC Binary'])
     df_passed_to_predict = mock_predict.call_args[0][0]
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
-
-
-class ComponentUsesYInPredict(Estimator):
-    name = "Custom Component"
-    supported_problem_types = [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
-    model_family = ModelFamily.NONE
-    predict_uses_y = True
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(parameters={},
-                         component_obj=None,
-                         random_state=0)
-
-    def fit(self, X, y):
-        """No op."""
-
-    def predict(self, X, y):
-        return y
-
-    def predict_proba(self, X, y):
-        n_classes = len(y.value_counts())
-        mode_index = 0
-        proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(n_classes)]] * len(y))
-        return pd.DataFrame(proba_arr)
 
 
 @pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),

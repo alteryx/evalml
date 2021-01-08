@@ -21,6 +21,8 @@ def test_time_series_baseline_y_is_None(X_y_regression):
     clf.fit(X, y=None)
     with pytest.raises(ValueError):
         clf.predict(X, y=None)
+    with pytest.raises(ValueError):
+        clf.predict_proba(X, y=None)
 
 
 def test_time_series_baseline(ts_data):

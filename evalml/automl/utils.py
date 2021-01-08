@@ -8,7 +8,6 @@ from evalml.preprocessing.data_splitters import (
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
-    is_classification,
     is_time_series
 )
 
