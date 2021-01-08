@@ -238,14 +238,14 @@ def test_imputer_fill_value(imputer_test_data):
         "categorical with nan": pd.Series(["fill", "1", "fill", "0", "3"], dtype='category'),
         "float with nan": [0.0, 1.0, -1, -1.0, 0.],
         "object with nan": pd.Series(["b", "b", "fill", "c", "fill"], dtype='category'),
-        "bool col with nan": [True, "fill", False, "fill", True]
+        "bool col with nan": pd.Series([True, "fill", False, "fill", True], dtype='category')
     })
-    assert_frame_equal(transformed.to_dataframe(), expected, check_dtype=False)
+    assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
 
     imputer = Imputer(categorical_impute_strategy="constant", numeric_impute_strategy="constant",
                       categorical_fill_value="fill", numeric_fill_value=-1)
     transformed = imputer.fit_transform(X, y)
-    assert_frame_equal(transformed.to_dataframe(), expected, check_dtype=False)
+    assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
 
 
 def test_imputer_no_nans(imputer_test_data):
@@ -292,13 +292,11 @@ def test_imputer_with_none():
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_imputer_all_bool_return_original(data_type):
-    X = pd.DataFrame([True, True, False, True, True], dtype=bool)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
-    y = pd.Series([1, 0, 0, 1, 0])
-    if data_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+def test_imputer_all_bool_return_original(data_type, make_data_type):
+    X = make_data_type(data_type, pd.DataFrame([True, True, False, True, True], dtype=bool))
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='boolean')
+    y = make_data_type(data_type, pd.Series([1, 0, 0, 1, 0]))
+
     imputer = Imputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)
@@ -309,7 +307,7 @@ def test_imputer_all_bool_return_original(data_type):
 def test_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
     y = pd.Series([1, 0, 0, 1, 0])
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=object)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='boolean')
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     imputer = Imputer()
@@ -326,8 +324,8 @@ def test_imputer_multitype_with_one_bool(data_type):
     })
     y = pd.Series([1, 0, 0, 1, 0])
     X_multi_expected_arr = pd.DataFrame({
-        "bool with nan": pd.Series([True, False, False, False, False], dtype=object),
-        "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
+        "bool with nan": pd.Series([True, False, False, False, False], dtype='boolean'),
+        "bool no nan": pd.Series([False, False, False, False, True], dtype='boolean'),
     })
     if data_type == 'ww':
         X_multi = ww.DataTable(X_multi)

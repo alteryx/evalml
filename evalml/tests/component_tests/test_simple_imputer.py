@@ -109,7 +109,7 @@ def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
     y = pd.Series([1, 0, 0, 1, 0])
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
-    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype=bool)
+    X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='boolean')
     imputer = SimpleImputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)

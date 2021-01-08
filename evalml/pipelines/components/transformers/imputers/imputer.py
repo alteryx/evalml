@@ -106,14 +106,14 @@ class Imputer(Transformer):
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
-            imputed = self._numeric_imputer.transform(X_numeric)
-            imputed.index = X_null_dropped.index
+            imputed = self._numeric_imputer.transform(X_numeric).to_dataframe()
+            # imputed.index = X_null_dropped.index
             X_null_dropped[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X_null_dropped[self._categorical_cols]
-            imputed = self._categorical_imputer.transform(X_categorical)
-            imputed.index = X_null_dropped.index
+            imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
+            # imputed.index = X_null_dropped.index
             X_null_dropped[X_categorical.columns] = imputed
         X_null_dropped = _convert_to_woodwork_structure(X_null_dropped)
         return X_null_dropped

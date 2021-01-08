@@ -1,7 +1,5 @@
 from abc import abstractmethod
 
-import pandas as pd
-
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
