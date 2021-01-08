@@ -8,7 +8,6 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from skopt.space import Categorical
 
 from evalml.exceptions import (
@@ -827,23 +826,10 @@ def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
-def test_all_transformers_check_fit_input_type(data_type, X_y_binary):
+def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_type):
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-
-    if data_type == "li":
-        X = X.to_numpy().tolist()
-        y = y.to_numpy().tolist()
-
-    elif data_type == "pd":
-        X = X.to_numpy()
-        y = y.to_numpy()
-
-    elif data_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
-
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
     for component_class in _all_transformers():
         if not component_class.needs_fitting:
             continue
@@ -853,23 +839,10 @@ def test_all_transformers_check_fit_input_type(data_type, X_y_binary):
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
-def test_all_estimators_check_fit_input_type(data_type, X_y_binary, test_estimator_needs_fitting_false, helper_functions):
+def test_all_estimators_check_fit_input_type(data_type, X_y_binary, make_data_type, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-
-    if data_type == "li":
-        X = X.to_numpy().tolist()
-        y = y.to_numpy().tolist()
-
-    elif data_type == "np":
-        X = X.to_numpy()
-        y = y.to_numpy()
-
-    elif data_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
-
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
     estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineRegressor]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
