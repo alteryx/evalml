@@ -41,8 +41,8 @@ from evalml.objectives import CostBenefitMatrix, FraudCost, ObjectiveBase
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
-    get_objective,
-    get_non_core_objectives
+    get_non_core_objectives,
+    get_objective
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
