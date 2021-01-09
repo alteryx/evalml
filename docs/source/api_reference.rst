@@ -183,7 +183,7 @@ Components represent a step in a pipeline.
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: class_with_properties.rst
     :nosignatures:
 
     ComponentBase
