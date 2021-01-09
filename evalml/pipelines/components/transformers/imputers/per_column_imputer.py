@@ -73,7 +73,7 @@ class PerColumnImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -97,7 +97,7 @@ class PerColumnImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
 
         self.fit(X, y)

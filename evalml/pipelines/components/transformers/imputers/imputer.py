@@ -57,8 +57,8 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -89,11 +89,11 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())

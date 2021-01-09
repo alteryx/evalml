@@ -67,7 +67,7 @@ class SimpleImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -102,6 +102,6 @@ class SimpleImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): Target data.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         return self.fit(X, y).transform(X, y)
