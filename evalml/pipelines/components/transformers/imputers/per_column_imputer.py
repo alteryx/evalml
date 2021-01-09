@@ -86,6 +86,7 @@ class PerColumnImputer(Transformer):
             else:
                 X_t[column] = transformed[column]
         X_t = X_t.drop(cols_to_drop, axis=1)
+        X_t = _convert_to_woodwork_structure(X_t)
         return X_t
 
     def fit_transform(self, X, y=None):
