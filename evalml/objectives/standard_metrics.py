@@ -18,7 +18,6 @@ class AccuracyBinary(BinaryClassificationObjective):
     """Accuracy score for binary classification."""
     name = "Accuracy Binary"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -29,7 +28,6 @@ class AccuracyMulticlass(MulticlassClassificationObjective):
     """Accuracy score for multiclass classification."""
     name = "Accuracy Multiclass"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -40,7 +38,6 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
     """Balanced accuracy score for binary classification."""
     name = "Balanced Accuracy Binary"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -51,7 +48,6 @@ class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
     """Balanced accuracy score for multiclass classification."""
     name = "Balanced Accuracy Multiclass"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -62,7 +58,6 @@ class F1(BinaryClassificationObjective):
     """F1 score for binary classification."""
     name = "F1"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -73,7 +68,6 @@ class F1Micro(MulticlassClassificationObjective):
     """F1 score for multiclass classification using micro averaging."""
     name = "F1 Micro"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -84,7 +78,6 @@ class F1Macro(MulticlassClassificationObjective):
     """F1 score for multiclass classification using macro averaging."""
     name = "F1 Macro"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -95,7 +88,6 @@ class F1Weighted(MulticlassClassificationObjective):
     """F1 score for multiclass classification using weighted averaging."""
     name = "F1 Weighted"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -106,7 +98,6 @@ class Precision(BinaryClassificationObjective):
     """Precision score for binary classification."""
     name = "Precision"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -117,7 +108,6 @@ class PrecisionMicro(MulticlassClassificationObjective):
     """Precision score for multiclass classification using micro averaging."""
     name = "Precision Micro"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -128,7 +118,6 @@ class PrecisionMacro(MulticlassClassificationObjective):
     """Precision score for multiclass classification using macro averaging."""
     name = "Precision Macro"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -139,7 +128,6 @@ class PrecisionWeighted(MulticlassClassificationObjective):
     """Precision score for multiclass classification using weighted averaging."""
     name = "Precision Weighted"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -150,7 +138,6 @@ class Recall(BinaryClassificationObjective):
     """Recall score for binary classification."""
     name = "Recall"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -161,7 +148,6 @@ class RecallMicro(MulticlassClassificationObjective):
     """Recall score for multiclass classification using micro averaging."""
     name = "Recall Micro"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -172,7 +158,6 @@ class RecallMacro(MulticlassClassificationObjective):
     """Recall score for multiclass classification using macro averaging."""
     name = "Recall Macro"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -183,7 +168,6 @@ class RecallWeighted(MulticlassClassificationObjective):
     """Recall score for multiclass classification using weighted averaging."""
     name = "Recall Weighted"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -263,7 +247,6 @@ class MCCBinary(BinaryClassificationObjective):
     """Matthews correlation coefficient for binary classification."""
     name = "MCC Binary"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -277,7 +260,6 @@ class MCCMulticlass(MulticlassClassificationObjective):
     """Matthews correlation coefficient for multiclass classification."""
     name = "MCC Multiclass"
     greater_is_better = True
-    score_needs_proba = False
     perfect_score = 1.0
 
     def objective_function(self, y_true, y_predicted, X=None):

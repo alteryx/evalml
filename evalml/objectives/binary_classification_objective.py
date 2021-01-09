@@ -13,6 +13,7 @@ class BinaryClassificationObjective(ObjectiveBase):
         Set to [ProblemTypes.BINARY,  ProblemTypes.TIME_SERIES_BINARY].
     """
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+    score_needs_proba = False
 
     @property
     def can_optimize_threshold(cls):

@@ -11,3 +11,4 @@ class MulticlassClassificationObjective(ObjectiveBase):
     """
 
     problem_types = [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+    score_needs_proba = False
