@@ -27,18 +27,15 @@ def test_invalid_parameters():
 
 
 def test_all_strategies():
-    X = pd.DataFrame([[2, 4, 6, "a"],
-                      [4, 6, 8, "a"],
-                      [6, 4, 8, "b"],
-                      [np.nan, np.nan, np.nan, np.nan]])
+    X = pd.DataFrame({"A": pd.Series([2, 4, 6, np.nan]),
+                      "B": pd.Series([4, 6, 4, np.nan]),
+                      "C": pd.Series([6, 8, 8, np.nan]),
+                      "D": pd.Series(["a", "a", "b", np.nan])})
 
-    X_expected = pd.DataFrame([[2, 4, 6, "a"],
-                               [4, 6, 8, "a"],
-                               [6, 4, 8, "b"],
-                               [4, 4, 100, "a"]])
-
-    X.columns = ['A', 'B', 'C', 'D']
-    X_expected.columns = ['A', 'B', 'C', 'D']
+    X_expected = pd.DataFrame({"A": pd.Series([2, 4, 6, 4], dtype="int64"),
+                               "B": pd.Series([4, 6, 4, 4], dtype="int64"),
+                               "C": pd.Series([6, 8, 8, 100], dtype="int64"),
+                               "D": pd.Series(["a", "a", "b", "a"], dtype="category")})
 
     strategies = {
         'A': {"impute_strategy": "mean"},
@@ -108,14 +105,13 @@ def test_non_numeric_valid(non_numeric_df):
     strategies = {'C': {"impute_strategy": "most_frequent"}}
     transformer = PerColumnImputer(impute_strategies=strategies)
 
-    X_expected = pd.DataFrame([["a", "a", "a", "a"],
-                               ["b", "b", "b", "b"],
-                               ["a", "a", "a", "a"],
-                               ["a", "a", "a", "a"]])
-    X_expected.columns = ['A', 'B', 'C', 'D']
+    X_expected = pd.DataFrame({"A": pd.Series(["a", "b", "a", "a"], dtype="category"),
+                               "B": pd.Series(["a", "b", "a", "a"], dtype="category"),
+                               "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
+                               "D": pd.Series(["a", "b", "a", "a"], dtype="category")})
 
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert_frame_equal(X_expected, X_t)
 
     # constant with all strings
     strategies = {'D': {"impute_strategy": "constant", "fill_value": 100}}
@@ -126,7 +122,10 @@ def test_non_numeric_valid(non_numeric_df):
                                ["a", "a", "a", "a"],
                                ["a", "a", "a", 100]])
     X_expected.columns = ['A', 'B', 'C', 'D']
-
+    X_expected = pd.DataFrame({"A": pd.Series(["a", "b", "a", "a"], dtype="category"),
+                               "B": pd.Series(["a", "b", "a", "a"], dtype="category"),
+                               "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
+                               "D": pd.Series(["a", "b", "a", 100], dtype="category")})
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t, check_dtype=False)
 

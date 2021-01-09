@@ -80,11 +80,11 @@ class PerColumnImputer(Transformer):
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():
-            transformed = imputer.transform(X[[column]])
+            transformed = imputer.transform(X[[column]]).to_dataframe()
             if transformed.empty:
                 cols_to_drop.append(column)
             else:
-                X_t[column] = transformed
+                X_t[column] = transformed[column]
         X_t = X_t.drop(cols_to_drop, axis=1)
         return X_t
 
