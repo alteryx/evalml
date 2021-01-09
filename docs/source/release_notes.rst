@@ -10,6 +10,7 @@ Release Notes
         * Support graphviz 0.16 :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
     * Fixes
+        * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
         * Pinned scipy at < 1.6.0 while we work on adding support :pr:`1629`
