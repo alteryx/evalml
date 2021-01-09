@@ -3,12 +3,16 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['problem_types'] %}
 
    {% block attributes %}
-   .. Class attributes:
+   .. rubric:: Attributes
 
-   .. autoattribute:: problem_types
+   .. autosummary::
+      :nosignatures:
+
+   {% for item in attributes %}
+      ~{{ name }}.{{ item }}
+   {%- endfor %}
    {% endblock %}
 
    {% block methods %}
