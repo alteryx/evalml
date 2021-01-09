@@ -12,6 +12,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     problem_types (list(ProblemType)): List of problem types that this objective is defined for.
         Set to [ProblemTypes.BINARY,  ProblemTypes.TIME_SERIES_BINARY].
     """
+
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
     score_needs_proba = False
 

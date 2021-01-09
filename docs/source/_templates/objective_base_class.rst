@@ -3,13 +3,12 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['problem_types', 'score_needs_proba'] %}
+   {% set class_attributes = ['problem_types'] %}
 
    {% block attributes %}
    .. Class attributes:
 
    .. autoattribute:: problem_types
-   .. autoattribute:: score_needs_proba
    {% endblock %}
 
    {% block methods %}
