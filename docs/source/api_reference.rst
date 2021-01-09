@@ -36,6 +36,30 @@ Utilities to preprocess data before using evalml.
     split_data
 
 
+.. currentmodule:: evalml.exceptions
+
+Exceptions
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    MethodPropertyNotFoundError
+    PipelineNotFoundError
+    ObjectiveNotFoundError
+    IllFormattedClassNameError
+    MissingComponentError
+    ComponentNotYetFittedError
+    PipelineNotYetFittedError
+    AutoMLSearchException
+    EnsembleMissingPipelinesError
+    PipelineScoreError
+    DataCheckInitError
+    NullsInColumnWarning
+
+
 .. currentmodule:: evalml.automl
 
 AutoML
@@ -329,7 +353,7 @@ Domain-Specific Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     FraudCost
@@ -342,7 +366,7 @@ Classification Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     AccuracyBinary
@@ -377,7 +401,7 @@ Regression Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     R2
