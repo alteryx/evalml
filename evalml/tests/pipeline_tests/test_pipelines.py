@@ -51,6 +51,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
     make_pipeline_from_components
 )
+from evalml.preprocessing.utils import is_time_series
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import check_random_state_equality
 
@@ -1315,7 +1316,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = np.array([1] * 100)
+    mock_predict.return_value = pd.Series([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         clf = dummy_regression_pipeline_class(parameters={})
@@ -1759,7 +1760,8 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         objective = 'R2'
     parameters = {
         stacking_component_name: {
-            "input_pipelines": input_pipelines
+            "input_pipelines": input_pipelines,
+            "n_jobs": 1
         }
     }
     graph = ['Simple Imputer', stacking_component_name]
@@ -1819,7 +1821,8 @@ def test_pipeline_equality_subclasses(pipeline_class):
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
-def test_pipeline_equality(pipeline_class):
+@patch('evalml.pipelines.ComponentGraph.fit')
+def test_pipeline_equality(mock_fit, pipeline_class):
     if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
         final_estimator = 'Random Forest Classifier'
     else:
@@ -1843,8 +1846,6 @@ def test_pipeline_equality(pipeline_class):
         name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
 
-        def fit(self, X, y=None):
-            return self
     # Test self-equality
     mock_pipeline = MockPipeline(parameters={})
     assert mock_pipeline == mock_pipeline
@@ -1861,12 +1862,18 @@ def test_pipeline_equality(pipeline_class):
 
     # Test fitted equality
     X = pd.DataFrame({})
-    mock_pipeline.fit(X)
+    y = pd.Series([])
+    mock_pipeline.fit(X, y)
     assert mock_pipeline != MockPipeline(parameters={})
 
     mock_pipeline_equal = MockPipeline(parameters={})
-    mock_pipeline_equal.fit(X)
+    mock_pipeline_equal.fit(X, y)
     assert mock_pipeline == mock_pipeline_equal
+
+    # Test fitted equality: same data but different target names are not equal
+    mock_pipeline_different_target_name = MockPipeline(parameters={})
+    mock_pipeline_different_target_name.fit(X, y=pd.Series([], name="target with a name"))
+    assert mock_pipeline != mock_pipeline_different_target_name
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
@@ -2285,3 +2292,40 @@ def test_generate_code_pipeline_custom():
                     '\npipeline = MockAllCustom(parameters)'
     pipeline = generate_pipeline_code(mockAllCustom)
     assert pipeline == expected_code
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
+                                          ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
+def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_regression, ts_data,
+                                       logistic_regression_binary_pipeline_class, logistic_regression_multiclass_pipeline_class, linear_regression_pipeline_class, time_series_regression_pipeline_class, time_series_binary_classification_pipeline_class,
+                                       time_series_multiclass_classification_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        clf = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        clf = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        clf = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
+        clf = time_series_regression_pipeline_class(parameters={"pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+    y = pd.Series(y, name="test target name")
+    clf.fit(X, y)
+    if is_time_series(problem_type):
+        predictions = clf.predict(X, y)
+    else:
+        predictions = clf.predict(X)
+    assert predictions.name == "test target name"

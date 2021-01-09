@@ -5,7 +5,10 @@ Release Notes
     * Enhancements
         * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
         * Added time series support for ``make_pipeline`` :pr:`1566`
+        * Added target name for output of pipeline ``predict`` method :pr:`1578`
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
+        * Support graphviz 0.16 :pr:`1657`
+        * Enhanced time series pipelines to accept empty features :pr:`1651`
     * Fixes
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
@@ -19,11 +22,14 @@ Release Notes
         * Limited ``load_fraud`` dataset loaded into ``automl.ipynb`` :pr:`1646`
         * ``add_to_rankings`` updates ``AutoMLSearch.best_pipeline`` when necessary :pr:`1647`
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
+        * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
+        * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
     * Testing Changes
 
 .. warning::
@@ -107,6 +113,7 @@ Release Notes
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
+        * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
         * Updated pipeline and component documentation and demos to use ``Woodwork`` :pr:`1466`
     * Testing Changes

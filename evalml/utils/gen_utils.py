@@ -317,7 +317,8 @@ def _convert_to_woodwork_structure(data):
 
     ww_data = ww_data.copy()
     if len(ww_data.shape) == 1:
-        return ww.DataColumn(ww_data)
+        name = ww_data.name if isinstance(ww_data, pd.Series) else None
+        return ww.DataColumn(ww_data, name=name)
     return ww.DataTable(ww_data)
 
 
@@ -344,8 +345,8 @@ def _convert_woodwork_types_wrapper(pd_data):
         return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)])
     if (isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping):
         if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index)
-        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index)
+            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
+        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
     if isinstance(pd_data, pd.DataFrame):
         for col_name, col in pd_data.iteritems():
             if type(col.dtype) in nullable_to_numpy_mapping:
@@ -366,7 +367,7 @@ def pad_with_nans(pd_data, num_to_pad):
         pd.DataFrame or pd.Series
     """
     if isinstance(pd_data, pd.Series):
-        padding = pd.Series([np.nan] * num_to_pad)
+        padding = pd.Series([np.nan] * num_to_pad, name=pd_data.name)
     else:
         padding = pd.DataFrame({col: [np.nan] * num_to_pad
                                 for col in pd_data.columns})
@@ -388,7 +389,7 @@ def _get_rows_without_nans(*data):
             are non-nan.
     """
     def _not_nan(pd_data):
-        if pd_data is None:
+        if pd_data is None or len(pd_data) == 0:
             return np.array([True])
         if isinstance(pd_data, pd.Series):
             return ~pd_data.isna().values
@@ -401,19 +402,24 @@ def _get_rows_without_nans(*data):
     return mask
 
 
-def drop_rows_with_nans(pd_data_1, pd_data_2):
-    """Drop rows that have any NaNs in both pd_data_1 and pd_data_2.
+def drop_rows_with_nans(*pd_data):
+    """Drop rows that have any NaNs in all dataframes or series.
 
     Arguments:
-        pd_data_1 (pd.DataFrame or pd.Series): Data to subset.
-        pd_data_2 (pd.DataFrame or pd.Series): Data to subset.
+        *pd_data (sequence of pd.Series or pd.DataFrame or None)
 
     Returns:
-        tuple of pd.DataFrame or pd.Series
+        list of pd.DataFrame or pd.Series or None
     """
 
-    mask = _get_rows_without_nans(pd_data_1, pd_data_2)
-    return pd_data_1.iloc[mask], pd_data_2.iloc[mask]
+    mask = _get_rows_without_nans(*pd_data)
+
+    def _subset(pd_data):
+        if pd_data is not None and not pd_data.empty:
+            return pd_data.iloc[mask]
+        return pd_data
+
+    return [_subset(data) for data in pd_data]
 
 
 def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):

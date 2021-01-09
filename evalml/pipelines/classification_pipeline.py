@@ -50,7 +50,7 @@ class ClassificationPipeline(PipelineBase):
     def _encode_targets(self, y):
         """Converts target values from their original values to integer values that can be processed."""
         try:
-            return pd.Series(self._encoder.transform(y), index=y.index)
+            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
         except ValueError as e:
             raise ValueError(str(e))
 
@@ -91,7 +91,7 @@ class ClassificationPipeline(PipelineBase):
             pd.Series : Estimated labels
         """
         predictions = self._predict(X, objective)
-        return pd.Series(self._decode_targets(predictions))
+        return pd.Series(self._decode_targets(predictions), name=self.input_target_name)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.

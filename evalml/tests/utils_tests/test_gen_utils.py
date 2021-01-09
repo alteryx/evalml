@@ -271,6 +271,13 @@ def test_pad_with_nans(data, num_to_pad, expected):
     _check_equality(padded, expected)
 
 
+def test_pad_with_nans_with_series_name():
+    name = "data to pad"
+    data = pd.Series([1, 2, 3], name=name)
+    padded = pad_with_nans(data, 1)
+    _check_equality(padded, pd.Series([np.nan, 1, 2, 3], name=name))
+
+
 @pytest.mark.parametrize("data, expected",
                          [([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [1., 2., 3, None]})],
                            [pd.Series([1., 2.], index=pd.Int64Index([1, 2])),
@@ -278,6 +285,10 @@ def test_pad_with_nans(data, num_to_pad, expected):
                           ([pd.Series([None, 1., 2., 3]), pd.DataFrame({"a": [3., 4., None, None]})],
                            [pd.Series([1.], index=pd.Int64Index([1])),
                             pd.DataFrame({"a": [4.]}, index=pd.Int64Index([1]))]),
+                          ([pd.DataFrame(), pd.Series([None, 1., 2., 3.])],
+                           [pd.DataFrame(), pd.Series([1., 2., 3.], index=pd.Int64Index([1, 2, 3]))]),
+                          ([pd.DataFrame({"a": [1., 2., None]}), pd.Series([])],
+                           [pd.DataFrame({"a": [1., 2.]}), pd.Series([])])
                           ])
 def test_drop_nan(data, expected):
     no_nan_1, no_nan_2 = drop_rows_with_nans(*data)
@@ -339,6 +350,13 @@ def test_convert_woodwork_types_wrapper():
     pd.testing.assert_series_equal(y, pd.Series([True, False, True], dtype="bool"))
 
 
+def test_convert_woodwork_types_wrapper_series_name():
+    name = "my series name"
+    series_with_name = pd.Series([1, 2, 3], name=name)
+    y = _convert_woodwork_types_wrapper(series_with_name)
+    assert y.name == name
+
+
 def test_convert_woodwork_types_wrapper_dataframe():
     X = pd.DataFrame({"Int series": pd.Series([1, 2, 3], dtype="Int64"),
                       "Int array": pd.array([1, 2, 3], dtype="Int64"),
@@ -397,6 +415,14 @@ def test_convert_to_woodwork_structure():
     X_expected = ww.DataTable(pd.DataFrame(X_np))
     pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
+
+
+def test_convert_to_woodwork_structure_series_name():
+    name = "column with name"
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64", name=name)
+    X_dc = _convert_to_woodwork_structure(X_pd)
+    assert X_dc.name == name
+    pd.testing.assert_series_equal(X_pd, X_dc.to_series())
 
 
 def test_infer_feature_types_dataframe():
