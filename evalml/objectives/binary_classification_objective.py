@@ -7,14 +7,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class BinaryClassificationObjective(ObjectiveBase):
-    """Base class for all binary classification objectives.
-
-    problem_types (list(ProblemType)): List of problem types that this objective is defined for.
-        Set to [ProblemTypes.BINARY,  ProblemTypes.TIME_SERIES_BINARY].
-    """
+    """Base class for all binary classification objectives."""
 
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
-    score_needs_proba = False
 
     @property
     def can_optimize_threshold(cls):
