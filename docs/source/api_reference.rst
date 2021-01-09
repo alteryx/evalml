@@ -340,13 +340,10 @@ Objective Base Classes
 
 .. autosummary::
     :toctree: generated
-    :template: objective_base_class.rst
+    :template: class.rst
     :nosignatures:
 
     ObjectiveBase
-    BinaryClassificationObjective
-    MulticlassClassificationObjective
-    RegressionObjective
 
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -359,6 +356,9 @@ Domain-Specific Objectives
     FraudCost
     LeadScoring
     CostBenefitMatrix
+    BinaryClassificationObjective
+    MulticlassClassificationObjective
+    RegressionObjective
 
 
 Classification Objectives
