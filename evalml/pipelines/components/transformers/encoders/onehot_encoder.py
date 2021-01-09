@@ -151,6 +151,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
+        X_t = _convert_to_woodwork_structure(X_t)
         return X_t
 
     def _handle_parameter_handle_missing(self, X):
