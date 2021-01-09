@@ -183,7 +183,7 @@ Components represent a step in a pipeline.
 
 .. autosummary::
     :toctree: generated
-    :template: class_with_properties.rst
+    :template: class.rst
     :nosignatures:
 
     ComponentBase
@@ -340,7 +340,7 @@ Objective Base Classes
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_base_class.rst
     :nosignatures:
 
     ObjectiveBase
