@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
 
-from ..utils import classproperty
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes

@@ -11,19 +11,6 @@
    .. autoattribute:: problem_types
    {% endblock %}
 
-    {% block instance_attributes %}
-   .. rubric:: Instance attributes
-
-   .. autosummary::
-      :nosignatures:
-
-   {% for item in attributes %}
-   {%- if item not in class_attributes %}
-      ~{{ name }}.{{ item }}
-   {%- endif %}
-   {%- endfor %}
-   {% endblock %}
-
    {% block methods %}
    {% if methods %}
    .. rubric:: Methods
