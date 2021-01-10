@@ -4,12 +4,19 @@ from scipy.optimize import minimize_scalar
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
+from ..utils import classproperty
 
 
 class BinaryClassificationObjective(ObjectiveBase):
     """Base class for all binary classification objectives."""
 
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+    name = "Binary Classification Objective"
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
 
     @property
     def can_optimize_threshold(cls):
