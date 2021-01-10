@@ -10,7 +10,6 @@ from evalml.problem_types import ProblemTypes
 class BinaryClassificationObjective(ObjectiveBase):
     """Base class for all binary classification objectives."""
 
-    name = "Binary Classification Objective"
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
 
     @classproperty
