@@ -12,11 +12,6 @@ class BinaryClassificationObjective(ObjectiveBase):
 
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
 
-    @classproperty
-    def positive_only(self):
-        """If True, this objective is only valid for positive data. Default False."""
-        return True
-
     @property
     def can_optimize_threshold(cls):
         """Returns a boolean determining if we can optimize the binary classification objective threshold.

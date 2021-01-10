@@ -185,9 +185,7 @@ def test_pipeline_fit_raises(mock_fit, X_y_binary, caplog):
     # Don't train the best pipeline, since this test mocks the pipeline.fit() method and causes it to raise an exception,
     # which we don't want to raise while fitting the best pipeline.
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, train_best_pipeline=False)
-    with pytest.raises(ValueError, match="Data checks raised"):
-        automl.search()
-    print(automl.data_check_results)
+    automl.search()
     out = caplog.text
     assert 'Exception during automl search' in out
     pipeline_results = automl.results.get('pipeline_results', {})
