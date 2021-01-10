@@ -3,12 +3,11 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['name', 'problem_types'] %}
+   {% set class_attributes = ['problem_types'] %}
 
    {% block attributes %}
    .. Class attributes:
 
-   .. autoattribute:: name
    .. autoattribute:: problem_types
    {% endblock %}
 
