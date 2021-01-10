@@ -49,7 +49,7 @@ class LSA(TextTransformer):
             y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X. The original column is removed and replaced with two columns of the
+            ww.DataTable: Transformed X. The original column is removed and replaced with two columns of the
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
         X = _convert_to_woodwork_structure(X)
@@ -64,4 +64,5 @@ class LSA(TextTransformer):
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
         X_t = X_t.drop(columns=text_columns)
+        X_t = _convert_to_woodwork_structure(X_t)
         return X_t
