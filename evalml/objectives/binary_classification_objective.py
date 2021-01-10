@@ -1,17 +1,17 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
 
+from ..utils import classproperty
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes
-from ..utils import classproperty
 
 
 class BinaryClassificationObjective(ObjectiveBase):
     """Base class for all binary classification objectives."""
 
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
     name = "Binary Classification Objective"
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
 
     @classproperty
     def positive_only(self):
