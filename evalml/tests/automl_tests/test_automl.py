@@ -2133,24 +2133,3 @@ def test_automl_pipeline_params(X_y_binary):
     automl.search()
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
     assert automl.best_pipeline.parameters['LightGBM Classifier']['n_estimators'] == 10
-
-
-# @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
-# @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
-def test_time_series_and_pipeline_param(X_y_regression):
-    class Pipeline1(TimeSeriesRegressionPipeline):
-        name = "Pipeline 1"
-        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
-
-    X, y = X_y_regression
-    params = {'Imputer': {'numeric_impute_strategy': 'median'}}
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="regression", allowed_pipelines=[Pipeline1],
-                          problem_configuration={"gap": 6, "max_delay": 3}, max_iterations=1, pipeline_parameters=params)
-    automl.search()
-
-    # Best pipeline is baseline pipeline because we only run one iteration
-    assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
-                                               "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
-    print(automl.best_pipeline.parameters)
-    # assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'

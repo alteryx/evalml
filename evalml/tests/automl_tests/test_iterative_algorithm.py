@@ -152,7 +152,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
 def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value, dummy_binary_pipeline_classes):
 
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value,
-                              pipeline_params={"gap": 2, "max_delay": 10})
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}})
 
     next_batch = algo.next_batch()
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
