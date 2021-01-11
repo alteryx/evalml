@@ -54,13 +54,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-
         X_t = self._compute_features_during_fit(X, y)
-        if X_t.empty:
-            raise RuntimeError("Pipeline computed empty features during call to .fit. This means "
-                               "that either 1) you passed in X=None to fit and don't have a DelayFeatureTransformer "
-                               "in your pipeline or 2) you do have a DelayFeatureTransformer but gap=0 and max_delay=0. "
-                               "Please add a DelayFeatureTransformer or change the values of gap and max_delay")
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
@@ -84,9 +78,13 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_to_woodwork_structure(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-
         features = self.compute_estimator_features(X, y)
-        predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
+        features_no_nan, y = drop_rows_with_nans(features, y)
+        y_arg = None
+        if self.estimator.predict_uses_y:
+            y_arg = y
+        predictions = self.estimator.predict(features_no_nan, y_arg)
+        predictions = predictions.rename(self.input_target_name)
         return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
 
     def score(self, X, y, objectives):

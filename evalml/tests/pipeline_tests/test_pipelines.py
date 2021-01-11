@@ -25,6 +25,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
+    DelayedFeatureTransformer,
     DropNullColumns,
     Estimator,
     Imputer,
@@ -44,17 +45,15 @@ from evalml.pipelines.components.utils import (
     allowed_model_families
 )
 from evalml.pipelines.utils import (
+    _get_pipeline_base_class,
     generate_pipeline_code,
     get_estimators,
     make_pipeline,
     make_pipeline_from_components
 )
+from evalml.preprocessing.utils import is_time_series
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    categorical_dtypes,
-    check_random_state_equality,
-    numeric_and_boolean_dtypes
-)
+from evalml.utils.gen_utils import check_random_state_equality
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -100,7 +99,7 @@ def test_get_estimators(has_minimal_dependencies):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
     # testing that all_null column is not considered categorical
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
@@ -111,27 +110,30 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
         y = ww.DataColumn(y)
 
     estimators = get_estimators(problem_type=problem_type)
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2, 0])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [estimator_class]
+            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline(input_type, problem_type):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -142,29 +144,30 @@ def test_make_pipeline(input_type, problem_type):
         y = ww.DataColumn(y)
 
     estimators = get_estimators(problem_type=problem_type)
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2, 0])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer, OneHotEncoder, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [OneHotEncoder, estimator_class]
+            assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_nulls(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -175,29 +178,30 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
         y = ww.DataColumn(y)
 
     estimators = get_estimators(problem_type=problem_type)
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2, 0])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [Imputer, DateTimeFeaturizer, OneHotEncoder, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [OneHotEncoder, estimator_class]
+            assert pipeline.component_graph == [Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_datetimes(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -208,29 +212,30 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
         y = ww.DataColumn(y)
 
     estimators = get_estimators(problem_type=problem_type)
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2, 0])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [OneHotEncoder, estimator_class]
+            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_column_names(input_type, problem_type):
     X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
     y = pd.Series([0, 0, 1])
@@ -238,29 +243,30 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
     estimators = get_estimators(problem_type=problem_type)
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, OneHotEncoder, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [OneHotEncoder, estimator_class]
+            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_text_columns(input_type, problem_type):
     X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -271,48 +277,84 @@ def test_make_pipeline_text_columns(input_type, problem_type):
         y = ww.DataColumn(y)
     estimators = get_estimators(problem_type=problem_type)
 
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
         y = pd.Series([0, 2, 1, 2])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
+
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type, text_columns=['text'])
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                assert pipeline.component_graph == [Imputer, TextFeaturizer, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [Imputer, TextFeaturizer, OneHotEncoder, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [OneHotEncoder, estimator_class]
+            assert pipeline.component_graph == [Imputer, TextFeaturizer] + delayed_features + estimator_components
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_numpy_input(problem_type):
     X = np.array([[1, 2, 0, np.nan], [2, 2, 1, np.nan], [5, 1, np.nan, np.nan]])
     y = np.array([0, 0, 1, 0])
 
     estimators = get_estimators(problem_type=problem_type)
-    if problem_type == ProblemTypes.BINARY:
-        pipeline_class = BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
         y = pd.Series([0, 2, 1, 2])
-        pipeline_class = MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        pipeline_class = RegressionPipeline
 
     for estimator_class in estimators:
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, StandardScaler, estimator_class]
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
             else:
-                assert pipeline.component_graph == [DropNullColumns, Imputer, estimator_class]
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [StandardScaler, estimator_class]
+            else:
+                estimator_components = [estimator_class]
+            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
+    X = pd.DataFrame({"numerical": [1, 2, 3, 1, 2],
+                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
+    y = pd.Series([0, 1, 1, 0, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+
+    estimators = get_estimators(problem_type=problem_type)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
+
+    for estimator_class in estimators:
+        for problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type)
+            assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
+            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+                delayed_features = [DelayedFeatureTransformer]
+            else:
+                delayed_features = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [StandardScaler, estimator_class]
+            elif estimator_class.model_family == ModelFamily.CATBOOST:
+                estimator_components = [estimator_class]
+            else:
+                estimator_components = [estimator_class]
+            assert pipeline.component_graph == [Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 def test_make_pipeline_problem_type_mismatch():
@@ -1274,7 +1316,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = np.array([1] * 100)
+    mock_predict.return_value = pd.Series([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         clf = dummy_regression_pipeline_class(parameters={})
@@ -1557,10 +1599,10 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", numeric_and_boolean_dtypes + categorical_dtypes + ['Int64', 'boolean'])
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
 def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
                                                      all_multiclass_pipeline_classes, helper_functions):
-    if data_type == 'np' and target_type not in numeric_and_boolean_dtypes + categorical_dtypes:
+    if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if problem_type == ProblemTypes.BINARY:
@@ -1718,7 +1760,8 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         objective = 'R2'
     parameters = {
         stacking_component_name: {
-            "input_pipelines": input_pipelines
+            "input_pipelines": input_pipelines,
+            "n_jobs": 1
         }
     }
     graph = ['Simple Imputer', stacking_component_name]
@@ -1778,7 +1821,8 @@ def test_pipeline_equality_subclasses(pipeline_class):
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
-def test_pipeline_equality(pipeline_class):
+@patch('evalml.pipelines.ComponentGraph.fit')
+def test_pipeline_equality(mock_fit, pipeline_class):
     if pipeline_class in [BinaryClassificationPipeline, MulticlassClassificationPipeline]:
         final_estimator = 'Random Forest Classifier'
     else:
@@ -1802,8 +1846,6 @@ def test_pipeline_equality(pipeline_class):
         name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
 
-        def fit(self, X, y=None):
-            return self
     # Test self-equality
     mock_pipeline = MockPipeline(parameters={})
     assert mock_pipeline == mock_pipeline
@@ -1820,12 +1862,18 @@ def test_pipeline_equality(pipeline_class):
 
     # Test fitted equality
     X = pd.DataFrame({})
-    mock_pipeline.fit(X)
+    y = pd.Series([])
+    mock_pipeline.fit(X, y)
     assert mock_pipeline != MockPipeline(parameters={})
 
     mock_pipeline_equal = MockPipeline(parameters={})
-    mock_pipeline_equal.fit(X)
+    mock_pipeline_equal.fit(X, y)
     assert mock_pipeline == mock_pipeline_equal
+
+    # Test fitted equality: same data but different target names are not equal
+    mock_pipeline_different_target_name = MockPipeline(parameters={})
+    mock_pipeline_different_target_name.fit(X, y=pd.Series([], name="target with a name"))
+    assert mock_pipeline != mock_pipeline_different_target_name
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
@@ -2012,7 +2060,8 @@ def test_make_pipeline_error():
             make_pipeline(X, y, estimator, "binary", custom_hyperparameters)
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
+                                          ProblemTypes.TIME_SERIES_REGRESSION])
 def test_make_pipeline_custom_hyperparameters(problem_type):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
@@ -2243,3 +2292,40 @@ def test_generate_code_pipeline_custom():
                     '\npipeline = MockAllCustom(parameters)'
     pipeline = generate_pipeline_code(mockAllCustom)
     assert pipeline == expected_code
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
+                                          ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
+def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_regression, ts_data,
+                                       logistic_regression_binary_pipeline_class, logistic_regression_multiclass_pipeline_class, linear_regression_pipeline_class, time_series_regression_pipeline_class, time_series_binary_classification_pipeline_class,
+                                       time_series_multiclass_classification_pipeline_class):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        clf = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        clf = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        clf = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
+
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
+        clf = time_series_regression_pipeline_class(parameters={"pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+    y = pd.Series(y, name="test target name")
+    clf.fit(X, y)
+    if is_time_series(problem_type):
+        predictions = clf.predict(X, y)
+    else:
+        predictions = clf.predict(X)
+    assert predictions.name == "test target name"

@@ -3,15 +3,39 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
+        * Added time series support for ``make_pipeline`` :pr:`1566`
+        * Added target name for output of pipeline ``predict`` method :pr:`1578`
+        * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
+        * Support graphviz 0.16 :pr:`1657`
+        * Enhanced time series pipelines to accept empty features :pr:`1651`
     * Fixes
-        * Fix thresholding for pipelines in AutoMLSearch to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
+        * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
-        * Pin scipy at < 1.6.0 while we work on adding support :pr:`1629`
+        * Pinned scipy at < 1.6.0 while we work on adding support :pr:`1629`
+        * Fixed data check message formatting in ``AutoMLSearch`` :pr:`1633`
+        * Addressed stacked ensemble component for ``scikit-learn`` v0.24 support by setting ``shuffle=True`` for default CV :pr:`1613`
+        * Fixed bug where ``Imputer`` reset the index on ``X`` :pr:`1590`
+        * Fixed ``AutoMLSearch`` stacktrace when a cutom objective was passed in as a primary objective or additional objective :pr:`1575`
+        * Fixed custom index bug for ``MAPE`` objective :pr:`1641`
+        * Fixed index bug for ``TextFeaturizer`` and ``LSA`` components :pr:`1644`
+        * Limited ``load_fraud`` dataset loaded into ``automl.ipynb`` :pr:`1646`
+        * ``add_to_rankings`` updates ``AutoMLSearch.best_pipeline`` when necessary :pr:`1647`
+        * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
+        * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
+        * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
     * Changes
+        * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
+        * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
     * Testing Changes
 
+.. warning::
+
+    **Breaking Changes**
+        * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
 
 **v0.17.0 Dec. 29, 2020**
     * Enhancements
@@ -41,6 +65,7 @@ Release Notes
         * Add problem type utils ``is_regression``, ``is_classification``, ``is_timeseries`` :pr:`1597`
         * Rename ``AutoMLSearch`` ``data_split`` arg to ``data_splitter`` :pr:`1569`
     * Fixes
+        * Fix AutoML not passing CV folds to ``DefaultDataChecks`` for usage by ``ClassImbalanceDataCheck`` :pr:`1619`
         * Fix Windows CI jobs: install ``numba`` via conda, required for ``shap`` :pr:`1490`
         * Added custom-index support for `reset-index-get_prediction_vs_actual_over_time_data` :pr:`1494`
         * Fix ``generate_pipeline_code`` to account for boolean and None differences between Python and JSON :pr:`1524` :pr:`1531`
@@ -55,6 +80,7 @@ Release Notes
         * Reverting ``save_graph`` :pr:`1550` to resolve kaleido build issues :pr:`1585`
         * Update circleci badge to apply to ``main`` :pr:`1489`
         * Added script to generate github markdown for releases :pr:`1487`
+        * Updated selection using pandas ``dtypes`` to selecting using Woodwork logical types :pr:`1551`
         * Updated dependencies to fix ``ImportError: cannot import name 'MaskedArray' from 'sklearn.utils.fixes'`` error and to address Woodwork and Featuretool dependencies :pr:`1540`
         * Made ``get_prediction_vs_actual_data()`` a public method :pr:`1553`
         * Updated ``Woodwork`` version requirement to v0.0.7 :pr:`1560`
@@ -87,6 +113,7 @@ Release Notes
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
+        * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
         * Updated pipeline and component documentation and demos to use ``Woodwork`` :pr:`1466`
     * Testing Changes

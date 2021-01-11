@@ -6,7 +6,6 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _get_rows_without_nans,
     drop_rows_with_nans,
     pad_with_nans
 )
@@ -61,21 +60,37 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = self._encode_targets(y)
 
         X_t = self._compute_features_during_fit(X, y)
-        if X_t.empty:
-            raise RuntimeError("Pipeline computed empty features during call to .fit. This means "
-                               "that either 1) you passed in X=None to fit and don't have a DelayFeatureTransformer "
-                               "in your pipeline or 2) you do have a DelayFeatureTransformer but gap=0 and max_delay=0. "
-                               "Please add a DelayFeatureTransformer or change the values of gap and max_delay")
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
         return self
 
+    def _estimator_predict(self, features, y):
+        """Get estimator predictions.
+
+        This helper passes y as an argument if needed by the estimator.
+        """
+        y_arg = None
+        if self.estimator.predict_uses_y:
+            y_arg = y
+        return self.estimator.predict(features, y=y_arg)
+
+    def _estimator_predict_proba(self, features, y):
+        """Get estimator predicted probabilities.
+
+        This helper passes y as an argument if needed by the estimator.
+        """
+        y_arg = None
+        if self.estimator.predict_uses_y:
+            y_arg = y
+        return self.estimator.predict_proba(features, y=y_arg)
+
     def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
-        predictions = self.estimator.predict(features.dropna(axis=0, how="any"))
+        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
+        predictions = self._estimator_predict(features_no_nan, y_encoded)
         if pad:
             return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return predictions
@@ -96,7 +111,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         n_features = max(len(y), X.shape[0])
         predictions = self._predict(X, y, objective=objective, pad=False)
-        predictions = pd.Series(self._decode_targets(predictions))
+        predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
         return pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
 
     def predict_proba(self, X, y=None):
@@ -113,7 +128,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
-        proba = self.estimator.predict_proba(features.dropna(axis=0, how="any"))
+        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
+        proba = self._estimator_predict_proba(features_no_nan, y_encoded)
         proba.columns = self._encoder.classes_
         return pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
 
@@ -146,13 +162,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
         y_pred, y_pred_proba = self._compute_predictions(X, y, objectives)
-        non_nan_mask = _get_rows_without_nans(y_shifted, y_pred, y_pred_proba)
-        if y_pred is not None:
-            y_pred = y_pred.iloc[non_nan_mask]
-        if y_pred_proba is not None:
-            y_pred_proba = y_pred_proba.iloc[non_nan_mask]
-        y_labels = y_shifted.iloc[non_nan_mask]
-        return self._score_all_objectives(X, y_labels, y_pred,
+        y_shifted, y_pred, y_pred_proba = drop_rows_with_nans(y_shifted, y_pred, y_pred_proba)
+        return self._score_all_objectives(X, y_shifted, y_pred,
                                           y_pred_proba=y_pred_proba,
                                           objectives=objectives)
 
@@ -172,7 +183,7 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
     def _predict(self, X, y, objective=None, pad=False):
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
-        features_no_nan = features.dropna(axis=0, how="any")
+        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -180,13 +191,14 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
-            predictions = self.estimator.predict(features_no_nan)
+            predictions = self._estimator_predict(features_no_nan, y_encoded)
         else:
-            ypred_proba = self.estimator.predict_proba(features_no_nan).iloc[:, 1]
+            proba = self._estimator_predict_proba(features_no_nan, y_encoded)
+            proba = proba.iloc[:, 1]
             if objective is None:
-                predictions = ypred_proba > self.threshold
+                predictions = proba > self.threshold
             else:
-                predictions = objective.decision_function(ypred_proba, threshold=self.threshold, X=features_no_nan)
+                predictions = objective.decision_function(proba, threshold=self.threshold, X=features_no_nan)
         if pad:
             return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return predictions

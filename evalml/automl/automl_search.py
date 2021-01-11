@@ -31,7 +31,6 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    get_all_objective_names,
     get_core_objectives,
     get_non_core_objectives,
     get_objective
@@ -211,6 +210,7 @@ class AutoMLSearch:
             additional_objectives = [get_objective(o) for o in additional_objectives]
         additional_objectives = [self._validate_objective(obj) for obj in additional_objectives]
         self.additional_objectives = additional_objectives
+        self.objective_name_to_class = {o.name: o for o in [self.objective] + self.additional_objectives}
 
         if not isinstance(max_time, (int, float, str, type(None))):
             raise TypeError(f"Parameter max_time must be a float, int, string or None. Received {type(max_time)} with value {str(max_time)}..")
@@ -264,6 +264,7 @@ class AutoMLSearch:
         self.problem_configuration = self._validate_problem_configuration(problem_configuration)
         self._train_best_pipeline = train_best_pipeline
         self._best_pipeline = None
+        self._searched = False
 
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
@@ -351,7 +352,7 @@ class AutoMLSearch:
             return AutoMLDataChecks(data_checks)
         elif isinstance(data_checks, str):
             if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type)
+                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective, n_splits=self.data_splitter.get_n_splits())
             elif data_checks == "disabled":
                 return EmptyDataChecks()
             else:
@@ -403,6 +404,10 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
         """
+        if self._searched:
+            logger.info("AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again.")
+            return
+
         # don't show iteration plot outside of a jupyter notebook
         if show_iteration_plot:
             try:
@@ -418,10 +423,10 @@ class AutoMLSearch:
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for message in self._data_check_results["warnings"]:
-            logger.warning(message)
-        for message in self._data_check_results["errors"]:
-            logger.error(message)
+        for result in self._data_check_results["warnings"]:
+            logger.warning(result["message"])
+        for result in self._data_check_results["errors"]:
+            logger.error(result["message"])
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
         if self.allowed_pipelines is None:
@@ -527,19 +532,27 @@ class AutoMLSearch:
 
         best_pipeline = self.rankings.iloc[0]
         best_pipeline_name = best_pipeline["pipeline_name"]
-        self._best_pipeline = self.get_pipeline(best_pipeline['id'])
-        if self._train_best_pipeline:
-            X_threshold_tuning = None
-            y_threshold_tuning = None
-            X_train, y_train = self.X_train, self.y_train
-            if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
-                X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                      test_size=0.2,
-                                                                                      random_state=self.random_seed)
-            self._best_pipeline.fit(X_train, y_train)
-            self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
+        self._find_best_pipeline()
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+        self._searched = True
+
+    def _find_best_pipeline(self):
+        """Finds the best pipeline in the rankings
+        If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
+        best_pipeline = self.rankings.iloc[0]
+        if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
+            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            if self._train_best_pipeline:
+                X_threshold_tuning = None
+                y_threshold_tuning = None
+                X_train, y_train = self.X_train, self.y_train
+                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
+                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
+                                                                                          test_size=0.2,
+                                                                                          random_state=self.random_seed)
+                self._best_pipeline.fit(X_train, y_train)
+                self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
     def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
         """Tunes the threshold of a binary pipeline to the X and y thresholding data
@@ -623,7 +636,8 @@ class AutoMLSearch:
         else:
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay}})
+            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+                                                                        "Time Series Baseline Regressor": {"gap": gap, "max_delay": max_delay}})
         pipelines = [baseline]
         scores = self._evaluate_pipelines(pipelines, baseline=True)
         if scores == []:
@@ -631,20 +645,23 @@ class AutoMLSearch:
         return False
 
     @staticmethod
-    def _get_mean_cv_scores_for_all_objectives(cv_data):
+    def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
         scores = defaultdict(int)
-        objective_names = set([name.lower() for name in get_all_objective_names()])
         n_folds = len(cv_data)
         for fold_data in cv_data:
             for field, value in fold_data['all_objective_scores'].items():
-                if field.lower() in objective_names:
+                # The 'all_objective_scores' field contains scores for all objectives
+                # but also fields like "# Training" and "# Testing", so we want to exclude them since
+                # they are not scores
+                if field in objective_name_to_class:
                     scores[field] += value
-        return {objective_name: float(score) / n_folds for objective_name, score in scores.items()}
+        return {objective: float(score) / n_folds for objective, score in scores.items()}
 
     def _compute_cv_scores(self, pipeline):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
+
         X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
         for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):
@@ -716,9 +733,10 @@ class AutoMLSearch:
         cv_score = cv_scores.mean()
 
         percent_better_than_baseline = {}
-        mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data)
+        mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data, self.objective_name_to_class)
         for obj_name in mean_cv_all_objectives:
-            objective_class = get_objective(obj_name)
+            objective_class = self.objective_name_to_class[obj_name]
+
             # In the event add_to_rankings is called before search _baseline_cv_scores will be empty so we will return
             # nan for the base score.
             percent_better = objective_class.calculate_percent_difference(mean_cv_all_objectives[obj_name],
@@ -736,7 +754,6 @@ class AutoMLSearch:
         if high_variance_cv_check_results["warnings"]:
             logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
             high_variance_cv = True
-
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline_name,
@@ -785,7 +802,7 @@ class AutoMLSearch:
                 parameters = pipeline.parameters
 
                 if baseline:
-                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results["cv_data"])
+                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results["cv_data"], self.objective_name_to_class)
 
                 logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
                 self._add_result(trained_pipeline=pipeline,
@@ -896,6 +913,7 @@ class AutoMLSearch:
             if pipeline.parameters == parameter:
                 return
         self._evaluate_pipelines(pipeline)
+        self._find_best_pipeline()
 
     @property
     def results(self):
@@ -905,12 +923,6 @@ class AutoMLSearch:
                     and `search_order`: a list describing the order the pipelines were searched.
            """
         return copy.deepcopy(self._results)
-
-    @property
-    def has_searched(self):
-        """Returns `True` if search has been ran and `False` if not"""
-        searched = True if self._results['pipeline_results'] else False
-        return searched
 
     @property
     def rankings(self):
@@ -926,7 +938,7 @@ class AutoMLSearch:
 
         full_rankings_cols = ["id", "pipeline_name", "score", "validation_score",
                               "percent_better_than_baseline", "high_variance_cv", "parameters"]
-        if not self.has_searched:
+        if not self._results['pipeline_results']:
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results['pipeline_results'].values())
@@ -942,7 +954,7 @@ class AutoMLSearch:
         Returns:
             PipelineBase: A trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
         """
-        if not (self.has_searched and self._best_pipeline):
+        if not self._best_pipeline:
             raise PipelineNotFoundError("automl search must be run before selecting `best_pipeline`.")
 
         return self._best_pipeline
