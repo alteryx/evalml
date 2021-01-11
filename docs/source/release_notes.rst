@@ -114,6 +114,7 @@ Release Notes
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
+        * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
         * Updated pipeline and component documentation and demos to use ``Woodwork`` :pr:`1466`
     * Testing Changes
