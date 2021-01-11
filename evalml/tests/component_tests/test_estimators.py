@@ -71,6 +71,8 @@ def test_all_estimators_check_fit_input_type(data_type, X_y_binary, make_data_ty
     for component_class in estimators_to_check:
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         component.fit(X, y)
+        component.predict(X)
+        component.predict_proba(X)
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
@@ -82,3 +84,4 @@ def test_all_estimators_check_fit_input_type_regression(data_type, X_y_regressio
     for component_class in estimators_to_check:
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         component.fit(X, y)
+        component.predict(X)
