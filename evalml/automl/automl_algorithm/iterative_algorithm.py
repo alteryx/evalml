@@ -122,8 +122,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
-        if self._pipeline_params:
-            parameters['pipeline'] = self._pipeline_params
+        if 'pipeline' in self._pipeline_params:
+            parameters['pipeline'] = self._pipeline_params['pipeline']
         component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph]
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
@@ -139,8 +139,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
             # Pass the pipeline params to the components that need them
-            for param_name, value in self._pipeline_params.items():
-                if param_name in init_params:
-                    component_parameters[param_name] = value
+            if component_class.name in self._pipeline_params:
+                component_parameters.update(self._pipeline_params[component_class.name])
+            if 'pipeline' in self._pipeline_params:
+                for param_name, value in self._pipeline_params['pipeline'].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
+        print(parameters)
         return parameters
