@@ -1,14 +1,17 @@
 from skopt.space import Real
 
-from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    SEED_BOUNDS,
+    get_logger,
+    get_random_seed,
+    import_or_raise
 )
+from evalml.utils.gen_utils import make_h2o_ready
+
+logger = get_logger(__file__)
 
 
 class GAMClassifier(Estimator):
@@ -20,7 +23,7 @@ class GAMClassifier(Estimator):
         "lambda": Real(0.000001, 1)
     }
     model_family = ModelFamily.LINEAR_MODEL
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
@@ -39,54 +42,60 @@ class GAMClassifier(Estimator):
         self.h2o = import_or_raise("h2o", error_msg=h2o_error_msg)
         self.h2o.init()
 
-        self.h2o_model = self.h2o.estimators.gam.H2OGeneralizedAdditiveEstimator
+        self.h2o_model_init = self.h2o.estimators.gam.H2OGeneralizedAdditiveEstimator
 
         super().__init__(parameters=self._parameters,
+                         component_obj=None,
                          random_state=random_seed)
 
     def _update_params(self, X, y):
-        feat_columns = list(X.columns)
-        new_params = {'gam_columns': feat_columns,
+        X_cols = [str(col_) for col_ in list(X.columns)]
+        new_params = {'gam_columns': X_cols,
                       "lambda_search": True}
         if y.nunique() == 3:
             new_params.update({"family": "multinomial",
                                "link": "Family_Default"})
         elif y.nunique() > 3:
             new_params.update({"family": "ordinal",
-                              "solver": "GRADIENT_DESCENT_LH",
-                               "link": "Family_Default"})
+                               "solver": "GRADIENT_DESCENT_LH",
+                               "link": "Family_Default",
+                               "lambda_search": False})
         else:
             new_params.update({"family": "binomial",
                                "link": "Logit"})
-
         return new_params
 
-    def train(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        if y is not None:
-            y = _convert_to_woodwork_structure(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
-        try:
-            training_frame = X.merge(y, left_index=True, right_index=True)
-            training_frame = self.h2o.H2OFrame(training_frame)
-            training_frame[y.name] = training_frame[y.name].asfactor()
+    def _retry_fit(self, X, y, training_frame, error=None):
+        error = str(error)
+        array_exception = "ArrayIndexOutOfBoundsException"
+        if error.find(array_exception) != -1:
+            index_start = error.find(array_exception) + 38
+            index_end = error.find(" out")
+            new_col = int(error[index_start:index_end]) if index_end != 1 else None
+            logger.info(f"Encountered ArrayIndexOutOfBoundsException, limiting number of gam_columns to {new_col}")
+        else:
+            raise error
+        self._parameters['gam_columns'] = self._parameters['gam_columns'][:new_col]
+        self.h2o_model = self.h2o_model_init(**self._parameters)
+        self.h2o_model.train(x=list(X.columns), y=y.name, training_frame=training_frame)
 
+    def fit(self, X, y=None, retrying=False):
+        if not retrying:
+            X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMClassifier.supported_problem_types)
             new_params = self._update_params(X, y)
             self._parameters.update(new_params)
-            self.h2o_model(**self._parameters)
-
+        self.h2o_model = self.h2o_model_init(**self._parameters)
+        try:
             self.h2o_model.train(x=list(X.columns), y=y.name, training_frame=training_frame)
-            return self.h2o_model
-        except AttributeError:
-            raise MethodPropertyNotFoundError("Component requires a train method or a component_obj that implements train")
+        except OSError as e:
+            self._retry_fit(X, y, training_frame, e)
+        return self.h2o_model
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = make_h2o_ready(X, supported_problem_types=GAMClassifier.supported_problem_types)
         X = self.h2o.H2OFrame(X)
         predictions = self.h2o_model.predict(X)
-        predictions = predictions.as_data_frame(use_pandas=True)
+        predictions = predictions.as_data_frame(use_pandas=True).iloc[:, 0]
         return predictions
 
     @property

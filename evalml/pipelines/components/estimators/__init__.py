@@ -19,5 +19,4 @@ from .regressors import (LinearRegressor,
                          BaselineRegressor,
                          DecisionTreeRegressor,
                          GAMRegressor,
-                         TimeSeriesBaselineRegressor,
-                         DecisionTreeRegressor)
+                         TimeSeriesBaselineRegressor)

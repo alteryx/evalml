@@ -7,6 +7,7 @@ from functools import reduce
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -510,3 +511,41 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
 
     if return_filepath:
         return filepath
+
+
+def make_h2o_ready(X, y=None, supported_problem_types=["binary"]):
+    """ Used with H2O estimators like GAMClassifier and GAMRegressor. Converts a given input
+        into an H2O-compatible format (h2o.H2OFrame). If y is passed, determines whether it should be cast
+        to a factor depending on the supported problem types.
+
+    Arguments:
+        X (pd.DataFrame): Features
+        y (pd.Series, optional): Labels
+        supported_problem_types (list(str) or list(ProblemTypes)): If the supported problem type
+        is categorical, y will be cast to a factor. Default is "binary".
+
+    Returns:
+        If y was not passed, returns X with categorical variables ordinally encoded.
+        If y was passed, returns a training frame of type h2o.H2OFrame alongside the transformed X and y.
+    """
+    h2o_error_msg = "H2O is not installed. please install using `pip install h2o`."
+    h2o = import_or_raise("h2o", error_msg=h2o_error_msg)
+    supported_problem_types = [str(type_) if not isinstance(type_, str) else type_ for type_ in supported_problem_types]
+    X = _convert_to_woodwork_structure(X)
+    cat_cols = list(X.select('category').columns)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    encoder_output = OrdinalEncoder().fit_transform(X[cat_cols])
+    X[cat_cols] = pd.DataFrame(encoder_output)
+    if y is not None:
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
+        y.name = 'label'
+        training_frame = X.merge(y, left_index=True, right_index=True)
+        training_frame = h2o.H2OFrame(training_frame)
+        if ("binary" in supported_problem_types) or \
+                ("multiclass" in supported_problem_types) or \
+                ("time series binary" in supported_problem_types) or \
+                ("time series multiclass" in supported_problem_types):
+            training_frame[y.name] = training_frame[y.name].asfactor()  # Converts to 'enum' type
+        return X, y, training_frame
+    return X
