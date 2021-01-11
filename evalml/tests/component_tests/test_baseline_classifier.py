@@ -27,12 +27,12 @@ def test_baseline_y_is_None(X_y_binary):
 
 
 @pytest.mark.parametrize('data_type', ['pd', 'ww'])
-def test_baseline_binary_mode(data_type, X_y_binary):
+def test_baseline_binary_mode(data_type, make_data_type):
     X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
     y = pd.Series([10, 11, 10, 10])
-    if data_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
     clf = BaselineClassifier(strategy="mode")
     clf.fit(X, y)
     assert clf.classes_ == [10, 11]

@@ -64,11 +64,12 @@ class BaselineClassifier(Estimator):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
-            return pd.Series([self._mode] * len(X))
+            predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            return self.random_state.choice(self._classes, len(X))
+            predictions = self.random_state.choice(self._classes, len(X))
         else:
-            return self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
+            predictions = self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         X = _convert_to_woodwork_structure(X)
@@ -77,13 +78,14 @@ class BaselineClassifier(Estimator):
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
             proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]] * len(X))
-            return pd.DataFrame(proba_arr, columns=self._classes)
+            predictions = pd.DataFrame(proba_arr, columns=self._classes)
         elif strategy == "random":
             proba_arr = np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
-            return pd.DataFrame(proba_arr, columns=self._classes)
+            predictions = pd.DataFrame(proba_arr, columns=self._classes)
         else:
             proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
-            return pd.DataFrame(proba_arr, columns=self._classes)
+            predictions = pd.DataFrame(proba_arr, columns=self._classes)
+        return _convert_to_woodwork_structure(predictions)
 
     @property
     def feature_importance(self):

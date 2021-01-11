@@ -25,27 +25,30 @@ class Transformer(ComponentBase):
         """Transforms data X
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Target data
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Target data
+
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         try:
             X_t = self._component_obj.transform(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
-        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            return _convert_to_woodwork_structure(pd.DataFrame(X_t, columns=X.columns, index=X.index))
+        # if isinstance(X, pd.DataFrame):
+            # return _convert_to_woodwork_structure(pd.DataFrame(X_t, columns=X.columns, index=X.index))
+
         return _convert_to_woodwork_structure(X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
 
         Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd. DataFrame): Target data
+            X (ww.DataTable, pd.DataFrame): Data to fit and transform
+            y (ww.DataColumn, pd.Series): Target data
+
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         try:
             X_t = self._component_obj.fit_transform(X, y)
@@ -55,6 +58,4 @@ class Transformer(ComponentBase):
                 X_t = self.transform(X, y)
             except MethodPropertyNotFoundError as e:
                 raise e
-
-        # return _convert_to_woodwork_structure(pd.DataFrame(X_t, columns=X.columns, index=X.index))
         return _convert_to_woodwork_structure(X_t)

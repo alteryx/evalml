@@ -46,6 +46,9 @@ class DFSTransformer(Transformer):
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+        
+        Returns:
+            self
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -61,10 +64,13 @@ class DFSTransformer(Transformer):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): Ignored.
+        Returns:
+            ww.DataTable: Feature matrix
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X.columns = X.columns.astype(str)
         es = self._make_entity_set(X)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return feature_matrix
+        return _convert_to_woodwork_structure(feature_matrix)

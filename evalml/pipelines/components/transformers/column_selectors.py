@@ -48,11 +48,11 @@ class ColumnSelector(Transformer):
         """'Fits' the transformer by checking if the column names are present in the dataset.
 
         Arguments:
-            X (pd.DataFrame): Data to check.
-            y (pd.Series, optional): Targets.
+            X (ww.DataTable, pd.DataFrame): Data to check.
+            y (ww.DataColumn, pd.Series, optional): Targets.
 
         Returns:
-            None.
+            self
         """
 
         self._check_input_for_columns(X)
@@ -64,7 +64,8 @@ class ColumnSelector(Transformer):
         self._check_input_for_columns(X)
 
         cols = self.parameters.get("columns") or []
-        return self._modify_columns(cols, X, y)
+        cols = self._modify_columns(cols, X, y)
+        return _convert_to_woodwork_structure(cols)
 
     def fit_transform(self, X, y=None):
         """Fit transformer to data, then transform data.
@@ -74,7 +75,7 @@ class ColumnSelector(Transformer):
             y (pd.Series, optional): Targets.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
 
         # transform method already calls fit under the hood.
@@ -95,11 +96,11 @@ class DropColumns(ColumnSelector):
         """Transforms data X by dropping columns.
 
         Arguments:
-            X (pd.DataFrame): Data to transform.
-            y (pd.Series, optional): Targets.
+            X (ww.DataTable, pd.DataFrame): Data to transform.
+            y (ww.DataColumn, pd.Series, optional): Targets.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
         return super().transform(X, y)
 
@@ -117,10 +118,10 @@ class SelectColumns(ColumnSelector):
         """Transforms data X by selecting columns.
 
         Arguments:
-            X (pd.DataFrame): Data to transform.
-            y (pd.Series, optional): Targets.
+            X (ww.DataTable, pd.DataFrame): Data to transform.
+            y (ww.DataColumn, pd.Series, optional): Targets.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
         return super().transform(X, y)

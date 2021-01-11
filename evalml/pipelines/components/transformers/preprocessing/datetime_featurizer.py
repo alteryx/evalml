@@ -83,11 +83,11 @@ class DateTimeFeaturizer(Transformer):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -111,7 +111,7 @@ class DateTimeFeaturizer(Transformer):
         """Gets the categories of each datetime feature.
 
         Returns:
-           Dict. Each key-value pair is a column name and a dictionary mapping the unique feature values to their
-           integer encoding.
+           Dictionary, where each key-value pair is a column name and a dictionary
+           mapping the unique feature values to their integer encoding.
         """
         return self._categories

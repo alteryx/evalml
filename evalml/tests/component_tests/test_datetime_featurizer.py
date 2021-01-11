@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import DateTimeFeaturizer
 
@@ -30,7 +31,7 @@ def test_datetime_featurizer_encodes_as_ints():
     feature_names = {'date_month': {'April': 3, 'March': 2, 'July': 6, 'August': 7, 'January': 0},
                      'date_day_of_week': {'Sunday': 0, 'Wednesday': 3, 'Tuesday': 2, 'Monday': 1, 'Friday': 5}
                      }
-    pd.testing.assert_frame_equal(expected, X_transformed_df.to_dataframe())
+    assert_frame_equal(expected, X_transformed_df.to_dataframe())
     assert dt.get_feature_names() == feature_names
 
     # Test that changing encode_as_categories to True only changes the dtypes but not the values
@@ -39,8 +40,7 @@ def test_datetime_featurizer_encodes_as_ints():
     expected["date_month"] = pd.Categorical([3, 2, 6, 7, 0])
     expected["date_day_of_week"] = pd.Categorical([0, 3, 2, 1, 5])
 
-    # import pdb; pdb.set_trace()
-    pd.testing.assert_frame_equal(expected, X_transformed_df.to_dataframe())
+    assert_frame_equal(expected, X_transformed_df.to_dataframe())
     assert dt_with_cats.get_feature_names() == feature_names
 
     # Test that sequential calls to the same DateTimeFeaturizer work as expected by using the first dt we defined
@@ -50,7 +50,7 @@ def test_datetime_featurizer_encodes_as_ints():
                              "date_month": pd.Series([3, 2, 7], dtype="Int64"),
                              "date_day_of_week": pd.Series([5, 3, 1], dtype="Int64"),
                              "date_hour": pd.Series([0, 0, 0], dtype="Int64")})
-    pd.testing.assert_frame_equal(expected, X_transformed_df.to_dataframe())
+    assert_frame_equal(expected, X_transformed_df.to_dataframe())
     assert dt.get_feature_names() == {'date_month': {'April': 3, 'March': 2, 'August': 7},
                                       'date_day_of_week': {'Friday': 5, 'Wednesday': 3, 'Monday': 1}}
 
@@ -109,7 +109,7 @@ def test_datetime_featurizer_no_features_to_extract():
     expected["numerical"] = expected["numerical"].astype("Int64")
     datetime_transformer.fit(X)
     transformed = datetime_transformer.transform(X).to_dataframe()
-    pd.testing.assert_frame_equal(expected, transformed)
+    assert_frame_equal(expected, transformed)
     assert datetime_transformer.get_feature_names() == {}
 
 
@@ -128,7 +128,7 @@ def test_datetime_featurizer_no_datetime_cols():
     expected = X.astype("Int64")
     datetime_transformer.fit(X)
     transformed = datetime_transformer.transform(X).to_dataframe()
-    pd.testing.assert_frame_equal(expected, transformed)
+    assert_frame_equal(expected, transformed)
     assert datetime_transformer.get_feature_names() == {}
 
 
