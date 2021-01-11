@@ -33,9 +33,12 @@ def test_fraud_objective_function_amount_col(X_y_binary):
                           fraud_payout_percentage=.75,
                           amount_col="this column does not exist")
     y_predicted = pd.Series([.1, .5, .5])
-    y_true = pd.Series([True, False, True])
+    y_true = [True, False, True]
     with pytest.raises(ValueError, match="`this column does not exist` is not a valid column in X."):
         objective.objective_function(y_true, y_predicted, X)
+
+    with pytest.raises(ValueError, match="`this column does not exist` is not a valid column in X."):
+        objective.objective_function(y_true, y_predicted, X.tolist())
 
 
 def test_input_contains_nan(X_y_binary):
@@ -139,3 +142,18 @@ def test_fraud_objective_score(X_y_binary):
     pd.testing.assert_series_equal(out, expected_y_pred, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.255)
+
+
+def test_fraud_objective_score_list(X_y_binary):
+    X, y = X_y_binary
+    fraud_cost = FraudCost(amount_col="value")
+
+    y_predicted = [.1, .5, .5]
+    y_true = [True, False, True]
+    extra_columns = pd.DataFrame({"value": [100, 5, 250]})
+
+    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
+    assert isinstance(out, pd.Series)
+    pd.testing.assert_series_equal(out, pd.Series(y_true), check_names=False)
+    score = fraud_cost.score(y_true, out, extra_columns)
+    assert (score == 0.0)

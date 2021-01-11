@@ -219,7 +219,7 @@ def _rename_column_names_to_numeric(X):
         Transformed X where column names are renamed to numerical values
     """
     X_t = X
-    if isinstance(X, np.ndarray):
+    if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
     if isinstance(X, ww.DataTable):
         X_t = X.to_dataframe()
