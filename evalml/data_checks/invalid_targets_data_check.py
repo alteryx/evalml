@@ -15,11 +15,11 @@ from evalml.utils.gen_utils import (
     numeric_and_boolean_ww
 )
 
-MULTICLASS_CONTINUOUS_THRESHOLD = .05
-
 
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values."""
+
+    multiclass_continuous_threshold = .05
 
     def __init__(self, problem_type, objective, n_unique=100):
         """Check if the target is invalid for the specified problem type.
@@ -120,7 +120,7 @@ class InvalidTargetDataCheck(DataCheck):
                     details=details).to_dict())
 
             num_class_to_num_value_ratio = len(unique_values) / len(y)
-            if num_class_to_num_value_ratio >= MULTICLASS_CONTINUOUS_THRESHOLD:
+            if num_class_to_num_value_ratio >= self.multiclass_continuous_threshold:
                 details = {"class_to_value_ratio": num_class_to_num_value_ratio}
                 messages["warnings"].append(DataCheckWarning(
                     message="Target has a large number of unique values, could be regression target.",
