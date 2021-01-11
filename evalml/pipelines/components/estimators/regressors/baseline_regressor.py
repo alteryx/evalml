@@ -57,7 +57,8 @@ class BaselineRegressor(Estimator):
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        return pd.Series([self._prediction_value] * len(X))
+        predictions = pd.Series([self._prediction_value] * len(X))
+        return _convert_to_woodwork_structure(predictions)
 
     @property
     def feature_importance(self):

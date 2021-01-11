@@ -1,5 +1,7 @@
 import numpy as np
+import pandas as pd
 import pytest
+from pandas.testing import assert_series_equal
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import BaselineRegressor
@@ -27,7 +29,8 @@ def test_baseline_mean(X_y_regression):
     mean = y.mean()
     clf = BaselineRegressor()
     clf.fit(X, y)
-    np.testing.assert_allclose(clf.predict(X), np.array([mean] * len(X)))
+    predictions = clf.predict(X)
+    assert_series_equal(pd.Series([mean] * len(X)), predictions.to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -36,5 +39,6 @@ def test_baseline_median(X_y_regression):
     median = np.median(y)
     clf = BaselineRegressor(strategy="median")
     clf.fit(X, y)
-    np.testing.assert_allclose(clf.predict(X), np.array([median] * len(X)))
+    predictions = clf.predict(X)
+    assert_series_equal(pd.Series([median] * len(X)), predictions.to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
