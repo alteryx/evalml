@@ -144,7 +144,7 @@ def test_default_data_checks_classification(input_type):
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                          "objective": get_default_primary_search_objective("multiclass")}})
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio, "errors": [messages[3]] + min_2_class_count + messages[4:] }
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio, "errors": [messages[3]] + min_2_class_count + messages[4:]}
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
