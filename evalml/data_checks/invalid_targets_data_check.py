@@ -92,7 +92,7 @@ class InvalidTargetDataCheck(DataCheck):
                 details = {"target_values": unique_values}
             else:
                 details = {"target_values": unique_values[:min(self.n_unique, len(unique_values))]}
-            messages["errors"].append(DataCheckError(message="Target does not have two unique values which is not supported for binary classification.",
+            messages["errors"].append(DataCheckError(message="Binary class targets require exactly two unique values.",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                      details=details).to_dict())
