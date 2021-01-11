@@ -2,6 +2,8 @@ import pandas as pd
 import pytest
 
 from evalml.demos import load_breast_cancer, load_diabetes, load_wine
+from evalml.pipelines import RegressionPipeline
+from evalml.preprocessing import split_data
 
 
 @pytest.mark.parametrize("target_type", ["category", "string", "bool"])
@@ -22,3 +24,17 @@ def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
     mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
     mock_regression_pipeline.fit(X, y)
     assert not pd.isnull(mock_regression_pipeline.predict(X)).any()
+
+
+def test_custom_indices():
+    # custom regression pipeline
+    class MyTargetPipeline(RegressionPipeline):
+        component_graph = ['Imputer', 'Target Encoder', 'Linear Regressor']
+        custom_name = "Target Pipeline"
+
+    X = pd.DataFrame({"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]})
+    y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0], index=[7, 2, 1, 4, 5, 3, 6, 8])
+
+    x1, x2, y1, y2 = split_data(X, y, problem_type='binary')
+    tp = MyTargetPipeline({})
+    tp.fit(x2, y2)

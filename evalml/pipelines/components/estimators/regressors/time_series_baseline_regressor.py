@@ -61,7 +61,7 @@ class TimeSeriesBaselineRegressor(Estimator):
         if self.gap == 0:
             y = y.shift(periods=1)
 
-        return y
+        return _convert_to_woodwork_structure(y)
 
     @property
     def feature_importance(self):

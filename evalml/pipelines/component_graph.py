@@ -219,6 +219,7 @@ class ComponentGraph:
         Returns:
             pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
         """
+
         if len(x_inputs) == 0:
             return_x = X
         else:
