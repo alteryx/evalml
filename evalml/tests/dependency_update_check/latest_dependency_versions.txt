@@ -4,7 +4,7 @@ cloudpickle==1.6.0
 colorama==0.4.4
 featuretools==0.23.0
 graphviz==0.16
-h2o==3.32.0.2
+h2o==3.32.0.3
 ipywidgets==7.6.3
 kaleido==0.1.0
 lightgbm==3.1.1
