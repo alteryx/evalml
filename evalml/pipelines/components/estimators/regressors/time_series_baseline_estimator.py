@@ -12,9 +12,9 @@ from evalml.utils.gen_utils import (
 
 
 class TimeSeriesBaselineEstimator(Estimator):
-    """Time series regressor that predicts using the naive forecasting approach.
+    """Time series estimator that predicts using the naive forecasting approach.
 
-    This is useful as a simple baseline regressor for time series problems
+    This is useful as a simple baseline estimator for time series problems
     """
     name = "Time Series Baseline Estimator"
     hyperparameter_ranges = {}
@@ -56,7 +56,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     def predict(self, X, y=None):
         if y is None:
-            raise ValueError("Cannot predict Time Series Baseline Regressor if y is None")
+            raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -67,7 +67,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     def predict_proba(self, X, y=None):
         if y is None:
-            raise ValueError("Cannot predict Time Series Baseline Regressor if y is None")
+            raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         preds = self.predict(X, y).dropna(axis=0, how='any').astype('int')
@@ -77,7 +77,9 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     @property
     def feature_importance(self):
-        """Returns importance associated with each feature. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
+        """Returns importance associated with each feature.
+
+        Since baseline estimators do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
             np.ndarray (float): an array of zeroes
