@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase

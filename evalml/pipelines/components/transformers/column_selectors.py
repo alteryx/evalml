@@ -54,7 +54,6 @@ class ColumnSelector(Transformer):
         Returns:
             self
         """
-
         self._check_input_for_columns(X)
         return self
 
@@ -68,16 +67,6 @@ class ColumnSelector(Transformer):
         return _convert_to_woodwork_structure(cols)
 
     def fit_transform(self, X, y=None):
-        """Fit transformer to data, then transform data.
-
-        Arguments:
-            X (pd.DataFrame): Data to transform.
-            y (pd.Series, optional): Targets.
-
-        Returns:
-            ww.DataTable: Transformed X.
-        """
-
         # transform method already calls fit under the hood.
         self.fit(X, y)
         return self.transform(X, y)

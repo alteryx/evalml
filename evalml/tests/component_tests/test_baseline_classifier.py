@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import BaselineClassifier
