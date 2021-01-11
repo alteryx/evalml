@@ -825,6 +825,19 @@ def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false
         component.feature_importance
 
 
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
+def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_type):
+    X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+    for component_class in _all_transformers():
+        if not component_class.needs_fitting:
+            continue
+
+        component = component_class()
+        component.fit(X, y)
+
+
 def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
     X, y = X_y_binary
     for component_class in all_components() + [test_estimator_needs_fitting_false]:
