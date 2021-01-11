@@ -2128,8 +2128,8 @@ def test_automl_pipeline_params(X_y_binary):
     print(automl.best_pipeline)
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
 
-    params = {"Imputer": {"numeric_impute_strategy": "median"}, "LightGBM Classifier": {"n_estimators": 10}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LIGHTGBM], pipeline_parameters=params, n_jobs=1)
+    params = {"Imputer": {"numeric_impute_strategy": "median"}, "Logistic Regression Classifier": {"C": 2}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, n_jobs=1)
     automl.search()
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
-    assert automl.best_pipeline.parameters['LightGBM Classifier']['n_estimators'] == 10
+    assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 2
