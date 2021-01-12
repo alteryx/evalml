@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from skopt.space import Categorical, Integer, Real
+
 
 class Tuner(ABC):
     """Defines API for Tuners.
