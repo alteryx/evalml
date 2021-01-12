@@ -368,7 +368,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
     data_check_error = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression target.",
         data_check_name=invalid_targets_data_check_name,
-        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
+        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": 1 / 3}).to_dict()
     assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {"warnings": [data_check_error],
                                                                               "errors": []}
@@ -377,7 +377,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
     data_check_error = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression target.",
         data_check_name=invalid_targets_data_check_name,
-        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
+        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": .05}).to_dict()
     assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {"warnings": [data_check_error],
                                                                              "errors": []}
