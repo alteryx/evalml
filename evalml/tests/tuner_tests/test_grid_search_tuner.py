@@ -69,3 +69,9 @@ def test_grid_search_tuner_invalid_space():
     bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
     with pytest.raises(ValueError, match=bound_error_text):
         GridSearchTuner({'Mock Classifier': {'param a': (1, 0)}})
+
+
+def test_grid_search_tuner_valid_space():
+    GridSearchTuner({'Mock Classifier': {'param a': 1}})
+    GridSearchTuner({'Mock Classifier': {'param a': "param_value"}})
+    GridSearchTuner({'Mock Classifier': {'param a': 3.200}})
