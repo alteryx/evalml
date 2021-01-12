@@ -322,10 +322,12 @@ def test_invalid_target_data_check_initialize_with_none_objective():
                                                                          "objective": None}})
 
 
-def test_invalid_target_data_check_regression_problem_nonnumeric_data():
+@pytest.mark.parametrize("problem_type",
+                         ['regression'])
+def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_type):
     X = pd.DataFrame()
-    y_categorical = pd.Series(["Peace", "Is", "A", "Lie"])
-    y_mixed_cat_numeric = pd.Series(["Peace", 2, "A", 4])
+    y_categorical = pd.Series(["Peace", "Is", "A", "Lie"] * 100)
+    y_mixed_cat_numeric = pd.Series(["Peace", 2, "A", 4] * 100)
     y_integer = pd.Series([1, 2, 3, 4])
     y_float = pd.Series([1.1, 2.2, 3.3, 4.4])
     y_numeric = pd.Series([1, 2.2, 3, 4.4])
@@ -336,7 +338,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
         message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
         details={}).to_dict()
 
-    invalid_targets_check = InvalidTargetDataCheck("regression", get_default_primary_search_objective("regression"))
+    invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
     assert invalid_targets_check.validate(X, y=y_categorical) == {"warnings": [], "errors": [data_check_error]}
     assert invalid_targets_check.validate(X, y=y_mixed_cat_numeric) == {"warnings": [], "errors": [data_check_error]}
     assert invalid_targets_check.validate(X, y=y_integer) == {"warnings": [], "errors": []}
@@ -350,12 +352,12 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
     y_binary = pd.Series([0, 1, 1, 1, 0, 0] * 25)
 
     data_check_error = DataCheckError(
-        message=f"Target does not have more than two classes, which is required for multiclass classification.",
+        message=f"Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
         details={"num_classes": len(set(y_binary))}).to_dict()
 
-    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("regression"))
+    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
     assert invalid_targets_check.validate(X, y=y_multiclass) == {"warnings": [], "errors": []}
     assert invalid_targets_check.validate(X, y=y_binary) == {"warnings": [], "errors": [data_check_error]}
 
@@ -364,7 +366,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
     X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
 
-    y_multiclass_high_classes = pd.Series(list(range(0, 100)) * 3)  # 100 classes, 300 samples, .33 class.sample ratio
+    y_multiclass_high_classes = pd.Series(list(range(0, 100)) * 3)  # 100 classes, 300 samples, .33 class/sample ratio
     data_check_error = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,

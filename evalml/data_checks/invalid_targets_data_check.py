@@ -1,4 +1,3 @@
-import pandas as pd
 import woodwork as ww
 
 from evalml.data_checks import (
@@ -97,7 +96,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                      details=details).to_dict())
 
-        if self.problem_type == ProblemTypes.REGRESSION and not pd.api.types.is_numeric_dtype(y.to_series()):
+        if self.problem_type == ProblemTypes.REGRESSION and "numeric" not in y.semantic_tags:
             messages["errors"].append(DataCheckError(message="Target data type should be numeric for regression type problems.",
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
@@ -114,7 +113,7 @@ class InvalidTargetDataCheck(DataCheck):
             if len(unique_values) <= 2:
                 details = {"num_classes": len(unique_values)}
                 messages["errors"].append(DataCheckError(
-                    message="Target does not have more than two classes, which is required for multiclass classification.",
+                    message="Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
                     details=details).to_dict())
