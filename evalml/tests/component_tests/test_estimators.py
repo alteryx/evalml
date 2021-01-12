@@ -27,7 +27,8 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             clf.fit(X, y)
             assert len(clf.feature_importance) == len(X.columns)
             assert not np.isnan(clf.feature_importance).all().all()
-            predictions = clf.predict(X)
+            print (clf.name)
+            predictions = clf.predict(X).to_series()
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
 
@@ -41,7 +42,7 @@ def test_binary_classification_estimators_predict_proba_col_order(helper_functio
         if ProblemTypes.BINARY in supported_problem_types:
             estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             estimator.fit(X, y)
-            predicted_proba = estimator.predict_proba(X)
+            predicted_proba = estimator.predict_proba(X).to_dataframe()
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
 

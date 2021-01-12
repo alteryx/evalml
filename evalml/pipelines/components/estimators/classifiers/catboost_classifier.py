@@ -83,6 +83,7 @@ class CatBoostClassifier(Estimator):
             predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
         if not isinstance(predictions, pd.Series):
             predictions = pd.Series(predictions)
+        predictions = _convert_to_woodwork_structure(predictions)
         return predictions
 
     @property
