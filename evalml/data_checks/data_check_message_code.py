@@ -31,7 +31,7 @@ class DataCheckMessageCode(Enum):
     TARGET_MULTICLASS_NOT_ENOUGH_CLASSES = "target_multiclass_not_enough_classes"
     """Message code for target data for a multi classification problem that does not have more than two unique classes."""
 
-    TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING = "target_multiclass_high_unique_class_warning"
+    TARGET_MULTICLASS_HIGH_UNIQUE_CLASS = "target_multiclass_high_unique_class_warning"
     """Message code for target data for a multi classification problem that has an abnormally large number of unique classes relative to the number of target values."""
 
     HIGH_VARIANCE = "high_variance"
