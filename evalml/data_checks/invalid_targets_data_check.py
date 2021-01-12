@@ -125,7 +125,7 @@ class InvalidTargetDataCheck(DataCheck):
                 messages["warnings"].append(DataCheckWarning(
                     message="Target has a large number of unique values, could be regression target.",
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
+                    message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                     details=details).to_dict())
 
         if len(value_counts) == 2 and is_supported_type:
