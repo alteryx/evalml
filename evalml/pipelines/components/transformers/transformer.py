@@ -1,7 +1,9 @@
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
 
 
 class Transformer(ComponentBase):
@@ -49,7 +51,11 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         try:
-            X_t = self._component_obj.fit_transform(X, y)
+            X2 = _convert_to_woodwork_structure(X)
+            y2 = _convert_to_woodwork_structure(y)
+            X2 = _convert_woodwork_types_wrapper(X2.to_dataframe())
+            y2 = _convert_woodwork_types_wrapper(y2.to_series())
+            X_t = self._component_obj.fit_transform(X2, y2)
         except AttributeError:
             try:
                 self.fit(X, y)

@@ -91,7 +91,8 @@ class LightGBMClassifier(Estimator):
         return X_encoded
 
     def _encode_labels(self, y):
-        y_encoded = pd.Series(y)
+        y_encoded = _convert_to_woodwork_structure(y)
+        y_encoded = _convert_woodwork_types_wrapper(y_encoded.to_series())
         # change only if dtype isn't int
         if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()

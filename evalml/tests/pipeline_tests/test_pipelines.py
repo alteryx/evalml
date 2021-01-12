@@ -1597,11 +1597,11 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
 def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
-                                                     all_multiclass_pipeline_classes, helper_functions):
+                                                     make_data_type, all_multiclass_pipeline_classes, helper_functions):
     if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
@@ -1633,13 +1633,8 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         y = y.astype(target_type)
     unique_vals = y.unique()
 
-    if data_type == 'np':
-        X = X.to_numpy()
-        y = y.to_numpy()
-
-    elif data_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
 
     for pipeline_class in pipeline_classes:
         pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
@@ -1760,7 +1755,8 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         objective = 'R2'
     parameters = {
         stacking_component_name: {
-            "input_pipelines": input_pipelines
+            "input_pipelines": input_pipelines,
+            "n_jobs": 1
         }
     }
     graph = ['Simple Imputer', stacking_component_name]
