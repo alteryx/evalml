@@ -2122,11 +2122,11 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
 
 def test_automl_pipeline_params(X_y_binary):
     X, y = X_y_binary
-    params = {'Imputer': {'numeric_impute_strategy': 'median'}}
+    params = {'Imputer': {'numeric_impute_strategy': 'constant'}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, max_iterations=2, n_jobs=1)
     automl.search()
     print(automl.best_pipeline)
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'constant'
 
     params = {"Imputer": {"numeric_impute_strategy": "median"}, "Logistic Regression Classifier": {"C": 2}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, n_jobs=1)
