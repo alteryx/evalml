@@ -24,7 +24,7 @@ class TimeSeriesBaselineEstimator(Estimator):
     predict_uses_y = True
 
     def __init__(self, gap=1, random_state=0, **kwargs):
-        """Baseline time series regressor that predicts using the naive forecasting approach.
+        """Baseline time series estimator that predicts using the naive forecasting approach.
 
         Arguments:
             gap (int): gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
