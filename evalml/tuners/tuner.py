@@ -30,8 +30,6 @@ class Tuner(ABC):
                 if parameter_range is None:
                     raise ValueError('pipeline_hyperparameter_ranges has invalid dimensions for ' +
                                      '{} parameter {}: None.'.format(component_name, parameter_name))
-                if not isinstance(parameter_range, (Real, Integer, Categorical, list, tuple)):
-                    continue
                 flat_parameter_name = '{}: {}'.format(component_name, parameter_name)
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)

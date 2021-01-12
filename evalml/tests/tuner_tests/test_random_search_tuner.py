@@ -78,7 +78,12 @@ def test_random_search_tuner_space_types():
 
 
 def test_random_search_tuner_invalid_space():
+    value_error_text = 'Dimension has to be a list or tuple'
     bound_error_text = "has to be less than the upper bound"
+    with pytest.raises(ValueError, match=value_error_text):
+        RandomSearchTuner({'Mock Classifier': {'param a': False}}, random_state=random_state)
+    with pytest.raises(ValueError, match=value_error_text):
+        RandomSearchTuner({'Mock Classifier': {'param a': (0)}}, random_state=random_state)
     with pytest.raises(ValueError, match=bound_error_text):
         RandomSearchTuner({'Mock Classifier': {'param a': (1, 0)}}, random_state=random_state)
     with pytest.raises(ValueError, match=bound_error_text):
