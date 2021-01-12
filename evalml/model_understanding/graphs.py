@@ -433,14 +433,14 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def partial_dependence(pipeline, X, feature, grid_resolution=100):
+def partial_dependence(pipeline, X, features, grid_resolution=100):
     """Calculates partial dependence.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target features for which to create the partial dependence plot for.
+        features (int, string): The target features for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
 
@@ -466,10 +466,11 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
         pipeline._estimator_type = "regressor"
     pipeline.feature_importances_ = pipeline.feature_importance
-    if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
+    if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
     try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=features, grid_resolution=grid_resolution)
+        #avg_pred returns 1xgrid_resolution
     finally:
         # Delete scikit-learn attributes that were temporarily set
         del pipeline._estimator_type
@@ -480,22 +481,31 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         classes = pipeline.classes_
 
-    data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
-                         "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    if isinstance(features, int) or isinstance(features, str):
+        data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
+                             "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    elif len(features) == 2:
+        # data = pd.DataFrame({"%s values" % features[0]: values[0],
+        #                      "%s values" % features[1]: values[1],
+        #                      "partial_dependence": avg_pred[0]})
+        data = pd.DataFrame(avg_pred[0])
+        data.index = features[0]
+        data.columns = features[1]
+
     if classes is not None:
         data['class_label'] = np.repeat(classes, len(values[0]))
 
     return data
 
 
-def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolution=100):
+def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resolution=100):
     """Create an one-way partial dependence plot.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target feature for which to create the partial dependence plot for.
+        features (int, string): The target feature for which to create the partial dependence plot for.
             If feature is an int, it must be the index of the feature to use.
             If feature is a string, it must be a valid column name in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
@@ -516,8 +526,8 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
             msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
             raise ValueError(msg)
 
-    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
-    feature_name = str(feature)
+    part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
+    feature_name = str(features)
     title = f"Partial Dependence of '{feature_name}'"
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': f'{feature_name}'},
