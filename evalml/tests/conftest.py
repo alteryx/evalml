@@ -516,6 +516,11 @@ def helper_functions():
 def make_data_type():
     """Helper function to convert numpy or pandas input to the appropriate type for tests."""
     def _make_data_type(data_type, data):
+        if data_type == "li":
+            if isinstance(data, pd.DataFrame):
+                data = data.to_numpy()
+            data = data.tolist()
+            return data
         if data_type != "np":
             if len(data.shape) == 1:
                 data = pd.Series(data)

@@ -9,6 +9,7 @@ Release Notes
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
         * Support graphviz 0.16 :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
+        * Added support for list inputs for objectives :pr:`1663`
     * Fixes
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
