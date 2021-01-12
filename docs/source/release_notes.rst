@@ -29,6 +29,7 @@ Release Notes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
     * Documentation Changes
+        * Update Model Understanding in the user guide to include ``visualize_decision_tree`` :pr:`1678`
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
     * Testing Changes
