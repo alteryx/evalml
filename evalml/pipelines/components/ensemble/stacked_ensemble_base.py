@@ -79,5 +79,5 @@ class StackedEnsembleBase(Estimator):
         return {
             'final_estimator': None,
             'cv': None,
-            'n_jobs': 1,
+            'n_jobs': -1,
         }
