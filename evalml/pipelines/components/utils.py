@@ -147,7 +147,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             pd.Series: Predicted values
         """
         check_is_fitted(self, 'is_fitted_')
-        return self.pipeline.predict(X).to_numpy()
+        return self.pipeline.predict(X).to_dataframe().to_numpy()
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -158,7 +158,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             pd.DataFrame: Probability estimates
         """
-        return self.pipeline.predict_proba(X).to_numpy()
+        return self.pipeline.predict_proba(X).to_dataframe().to_numpy()
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):
@@ -195,7 +195,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         Returns:
             pd.Series: Predicted values
         """
-        return self.pipeline.predict(X).to_numpy()
+        return self.pipeline.predict(X).to_dataframe().to_numpy()
 
 
 def scikit_learn_wrapped_estimator(evalml_obj):

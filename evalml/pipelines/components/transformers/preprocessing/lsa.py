@@ -53,9 +53,10 @@ class LSA(TextTransformer):
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if len(self._all_text_columns) == 0:
             return X
+
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X.copy()
         text_columns = self._get_text_columns(X)
         for col in text_columns:

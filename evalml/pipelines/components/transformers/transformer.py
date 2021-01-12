@@ -4,6 +4,7 @@ from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
+)
 
 
 class Transformer(ComponentBase):

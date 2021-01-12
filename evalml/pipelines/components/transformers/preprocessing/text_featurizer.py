@@ -97,10 +97,10 @@ class TextFeaturizer(TextTransformer):
             ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if self._features is None or len(self._features) == 0:
             return X
 
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
