@@ -313,7 +313,7 @@ def test_component_fit_transform(X_y_binary):
         hyperparameter_ranges = {}
 
         def fit_transform(self, X, y=None):
-            return X
+            return ww.DataTable(X)
 
         def __init__(self):
             parameters = {}
@@ -342,7 +342,7 @@ def test_component_fit_transform(X_y_binary):
             return self
 
         def transform(self, X, y=None):
-            return X
+            return ww.DataTable(X)
 
         def __init__(self):
             parameters = {}
@@ -369,14 +369,14 @@ def test_component_fit_transform(X_y_binary):
     y = pd.Series(y)
 
     component = MockTransformerWithFitTransform()
-    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
+    assert isinstance(component.fit_transform(X, y), ww.DataTable)
 
     component = MockTransformerWithFitTransformButError()
     with pytest.raises(RuntimeError):
         component.fit_transform(X, y)
 
     component = MockTransformerWithFitAndTransform()
-    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
+    assert isinstance(component.fit_transform(X, y), ww.DataTable)
 
     component = MockTransformerWithOnlyFit()
     with pytest.raises(MethodPropertyNotFoundError):
@@ -554,7 +554,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 continue
             else:
                 assert transform_output.shape == X.shape
-                assert (transform_output.to_dataframe().columns == X_cols_expected).all()
+                assert (list(transform_output.columns) == X_cols_expected).all()
 
             transform_output = component.fit_transform(X, y=y)
             assert isinstance(transform_output, ww.DataTable)
@@ -632,7 +632,7 @@ def test_transformer_check_for_fit(X_y_binary):
             pass
 
         def transform(self, X):
-            pass
+            return pd.DataFrame()
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
