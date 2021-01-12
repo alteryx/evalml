@@ -222,11 +222,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Predicted values.
+            ww.DataColumn: Predicted values.
         """
         X = _convert_to_woodwork_structure(X)
         predictions = self._component_graph.predict(X)
-        return predictions.rename(self.input_target_name)
+        predictions_series = predictions.to_series()
+        predictions_series.name = self.input_target_name
+        return _convert_to_woodwork_structure(predictions_series)
 
     @abstractmethod
     def score(self, X, y, objectives):
