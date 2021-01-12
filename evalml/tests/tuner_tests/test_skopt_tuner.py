@@ -85,10 +85,18 @@ def test_skopt_tuner_invalid_ranges():
             'param c': None
         }}, random_state=random_state)
 
+
+def test_skopt_tuner_single_value():
     SKOptTuner({'Mock Classifier': {
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
         'param c': 'Value'
+    }}, random_state=random_state)
+
+    SKOptTuner({'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': 10
     }}, random_state=random_state)
 
 
