@@ -3,6 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
 
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
@@ -458,7 +459,7 @@ def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_bin
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert_frame_equal(X_t, X_expected)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
 
@@ -478,7 +479,7 @@ def test_compute_final_component_features_nonlinear(mock_en_predict, mock_rf_pre
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert_frame_equal(X_expected, X_t.to_dataframe())
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
 
@@ -492,7 +493,7 @@ def test_compute_final_component_features_single_component(mock_transform, X_y_b
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    pd.testing.assert_frame_equal(X_t, X)
+    assert_frame_equal(X, X_t.to_dataframe())
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')

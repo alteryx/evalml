@@ -91,6 +91,7 @@ class ClassificationPipeline(PipelineBase):
             pd.Series : Estimated labels
         """
         predictions = self._predict(X, objective)
+        predictions = predictions.to_series()
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
         return _convert_to_woodwork_structure(predictions)
 
@@ -124,8 +125,13 @@ class ClassificationPipeline(PipelineBase):
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
-        y_predicted = _convert_to_woodwork_structure(y_predicted)
-        y_predicted_proba = _convert_to_woodwork_structure(y_predicted_proba)
+        if y_predicted is not None:
+            y_predicted = _convert_to_woodwork_structure(y_predicted)
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+
+        if y_predicted_proba is not None:
+            y_predicted_proba = _convert_to_woodwork_structure(y_predicted_proba)
+            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
     def _compute_predictions(self, X, objectives):

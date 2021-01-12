@@ -9,7 +9,10 @@ from evalml.model_family.utils import handle_model_family
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
-from evalml.utils.gen_utils import get_importable_subclasses
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    get_importable_subclasses
+)
 
 logger = get_logger(__file__)
 
@@ -147,7 +150,8 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             pd.Series: Predicted values
         """
         check_is_fitted(self, 'is_fitted_')
-        return self.pipeline.predict(X).to_series().to_numpy()
+
+        return _convert_woodwork_types_wrapper(self.pipeline.predict(X).to_series()).to_numpy()
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -158,7 +162,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             pd.DataFrame: Probability estimates
         """
-        return self.pipeline.predict_proba(X).to_dataframe().to_numpy()
+        return _convert_woodwork_types_wrapper(self.pipeline.predict_proba(X).to_dataframe()).to_numpy()
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):

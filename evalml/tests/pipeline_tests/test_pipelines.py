@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from pandas.testing import assert_frame_equal
 from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
@@ -1061,6 +1062,7 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
+    X_expected = X_expected.astype("Int64")
     mock_imputer.return_value = X
     mock_ohe.return_value = X
     mock_scaler.return_value = X_expected
@@ -1069,10 +1071,10 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
     pipeline.fit(X, y)
 
     X_t = pipeline.compute_estimator_features(X)
-    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert_frame_equal(X_expected, X_t.to_dataframe())
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
-    assert mock_scaler.call_count == 1
+    assert mock_scaler.call_count == 2
 
 
 @patch('evalml.pipelines.components.Imputer.transform')
@@ -1081,17 +1083,17 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
 @patch('evalml.pipelines.components.ElasticNetClassifier.predict')
 def test_compute_estimator_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, X_y_binary, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
-    mock_imputer.return_value = pd.DataFrame(X)
-    mock_ohe.return_value = pd.DataFrame(X)
-    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
-    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+    ### TODO: can clean
+    mock_imputer.return_value = ww.DataTable(pd.DataFrame(X))
+    mock_ohe.return_value = ww.DataTable(pd.DataFrame(X))
+    mock_en_predict.return_value = ww.DataColumn(pd.Series(np.ones(X.shape[0])))
+    mock_rf_predict.return_value = ww.DataColumn(pd.Series(np.zeros(X.shape[0])))
     X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
 
     pipeline = nonlinear_binary_pipeline_class({})
     pipeline.fit(X, y)
-
     X_t = pipeline.compute_estimator_features(X)
-    pd.testing.assert_frame_equal(X_t, X_expected)
+    assert_frame_equal(X_expected, X_t.to_dataframe())
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
     assert mock_en_predict.call_count == 2
@@ -1316,7 +1318,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = pd.Series([1] * 100)
+    mock_predict.return_value = ww.DataColumn(pd.Series([1] * 100))
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         clf = dummy_regression_pipeline_class(parameters={})
@@ -1460,7 +1462,7 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
-    pd.testing.assert_frame_equal(X_t, X_t_clone)
+    assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
 
 
 def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
@@ -1477,7 +1479,7 @@ def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
-    pd.testing.assert_frame_equal(X_t, X_t_clone)
+    assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
 
 
 def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
@@ -1639,7 +1641,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     for pipeline_class in pipeline_classes:
         pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
         pipeline.fit(X, y)
-        predictions = pipeline.predict(X, objective)
+        predictions = pipeline.predict(X, objective).to_series()
         assert set(predictions.unique()).issubset(unique_vals)
         predict_proba = pipeline.predict_proba(X)
         assert set(predict_proba.columns) == set(unique_vals)
@@ -1768,13 +1770,13 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     pipeline = StackedPipeline(parameters=parameters)
     pipeline.fit(X, y)
     comparison_pipeline.fit(X, y)
-    assert not np.isnan(pipeline.predict(X)).values.any()
+    assert not np.isnan(pipeline.predict(X).to_series()).values.any()
 
     pipeline_score = pipeline.score(X, y, [objective])[objective]
     comparison_pipeline_score = comparison_pipeline.score(X, y, [objective])[objective]
 
     if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
-        assert not np.isnan(pipeline.predict_proba(X)).values.any()
+        assert not np.isnan(pipeline.predict_proba(X).to_dataframe()).values.any()
         assert (pipeline_score <= comparison_pipeline_score)
     else:
         assert (pipeline_score >= comparison_pipeline_score)

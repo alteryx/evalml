@@ -6,7 +6,11 @@ from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import get_random_state, import_or_raise
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    get_random_state,
+    import_or_raise
+)
 
 
 class ComponentGraph:
@@ -104,9 +108,16 @@ class ComponentGraph:
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
             if isinstance(parent_output, pd.Series):
+                # this shouldnt happen anymore, datacolumn
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
+            if isinstance(parent_output, ww.DataColumn):
+                parent_output = parent_output.to_series()
+                parent_output = pd.DataFrame(parent_output, columns=[parent])
+                parent_output = _convert_to_woodwork_structure(parent_output)
             final_component_inputs.append(parent_output)
-        return pd.concat(final_component_inputs, axis=1)
+
+        concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
+        return _convert_to_woodwork_structure(concatted)
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -124,6 +135,7 @@ class ComponentGraph:
         return outputs.get(final_component, outputs.get(f'{final_component}.x'))
 
     def compute_final_component_features(self, X, y=None):
+        ### TODO: COMBINE WITH fit_features
         """ Transform all components save the final one, and gathers the data from any number of parents
         to get all the information that should be fed to the final component
 
@@ -141,9 +153,17 @@ class ComponentGraph:
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
             if isinstance(parent_output, pd.Series):
+                # shouldnt happen...
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
+            if isinstance(parent_output, ww.DataColumn):
+                parent_output = parent_output.to_series()
+                parent_output = pd.DataFrame(parent_output, columns=[parent])
+                parent_output = _convert_to_woodwork_structure(parent_output)
             final_component_inputs.append(parent_output)
-        return pd.concat(final_component_inputs, axis=1)
+        # concatted = pd.concat([i.to_dataframe() for i in final_component_inputs], axis=1)
+        concatted = pd.concat([i.to_dataframe() if isinstance(i, ww.DataTable) else i for i in final_component_inputs], axis=1)
+
+        return _convert_to_woodwork_structure(concatted)
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -181,6 +201,10 @@ class ComponentGraph:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
                     if isinstance(parent_x, pd.Series):
                         parent_x = pd.DataFrame(parent_x, columns=[parent_input])
+                    if isinstance(parent_x, ww.DataColumn):
+                        parent_x_series = parent_x.to_series()
+                        parent_x = pd.DataFrame(parent_x_series, columns=[parent_input])
+                        parent_x = _convert_to_woodwork_structure(parent_x)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
@@ -223,7 +247,7 @@ class ComponentGraph:
         if len(x_inputs) == 0:
             return_x = X
         else:
-            return_x = pd.concat(x_inputs, axis=1)
+            return_x = pd.concat([x_in.to_dataframe() if isinstance(x_in, ww.DataTable) else x_in for x_in in x_inputs], axis=1)
         return_y = y
         if y_input is not None:
             return_y = y_input
