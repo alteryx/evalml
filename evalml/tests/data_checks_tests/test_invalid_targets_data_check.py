@@ -344,20 +344,6 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     assert invalid_targets_check.validate(X, y=y_numeric) == {"warnings": [], "errors": []}
 
 
-def test_invalid_target_data_check_binary_problem_nonbinarycategorical_data():
-    X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
-
-    y_binary = pd.Series([0, 1, 1, 1, 1, 0])
-
-    data_check_error = DataCheckError(
-        message=f"Binary class targets require exactly two unique values.",
-        data_check_name=invalid_targets_data_check_name,
-        message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-        details={"target_values": set(y_binary)}).to_dict()
-
-
-
 def test_invalid_target_data_check_multiclass_problem_binary_data():
     X = pd.DataFrame()
     y_multiclass = pd.Series([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3] * 25)
@@ -385,16 +371,16 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
         details={"class_to_value_ratio": 1 / 3}).to_dict()
     assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {"warnings": [data_check_error],
-                                                                                   "errors": []}
+                                                                              "errors": []}
 
-    y_multiclass_med_classes = pd.Series(list(range(0,5)) * 20) # 5 classes, 100 samples, .05 class/sample ratio
+    y_multiclass_med_classes = pd.Series(list(range(0, 5)) * 20)  # 5 classes, 100 samples, .05 class/sample ratio
     data_check_error = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression target.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
         details={"class_to_value_ratio": .05}).to_dict()
     assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {"warnings": [data_check_error],
-                                                                                   "errors": []}
+                                                                             "errors": []}
 
     y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
     assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {"warnings": [], "errors": []}
