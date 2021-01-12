@@ -36,6 +36,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.threshold is None:
             return self._component_graph.predict(X)
         ypred_proba = self.predict_proba(X)
+        ypred_proba = ypred_proba.to_dataframe()
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
             return ypred_proba > self.threshold
