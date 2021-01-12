@@ -20,9 +20,7 @@ def test_time_series_baseline(pipeline_class, gap, X_none, ts_data):
 
     clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1},
                                      "Time Series Baseline Estimator": {'gap': gap, 'max_delay': 1}})
-    expected_y = y
-    if gap == 0:
-        expected_y = y.shift(1)
+    expected_y = y.shift(1) if gap == 0 else y
     if X_none:
         X = None
     clf.fit(X, y)
