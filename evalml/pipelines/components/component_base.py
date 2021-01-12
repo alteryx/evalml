@@ -86,8 +86,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Fits component to data
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            X (list, ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (list, ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self

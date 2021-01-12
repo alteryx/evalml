@@ -9,6 +9,7 @@ Release Notes
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
         * Support graphviz 0.16 :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
+        * Added support for list inputs for objectives :pr:`1663`
     * Fixes
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
@@ -115,6 +116,7 @@ Release Notes
         * Updated ``detect_problem_type`` to use ``pandas.api.is_numeric_dtype`` :pr:`1476`
     * Changes
         * Changed ``make clean`` to delete coverage reports as a convenience for developers :pr:`1464`
+        * Set ``n_jobs=-1`` by default for stacked ensemble components :pr:`1472`
     * Documentation Changes
         * Updated pipeline and component documentation and demos to use ``Woodwork`` :pr:`1466`
     * Testing Changes
