@@ -331,7 +331,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     y_numeric = pd.Series([1, 2.2, 3, 4.4])
 
     data_check_error = DataCheckError(
-        message=f"Target data type should be floating point for regression type problems.",
+        message=f"Target data type should be numeric for regression type problems.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
         details={}).to_dict()
@@ -366,7 +366,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
 
     y_multiclass_high_classes = pd.Series(list(range(0, 100)) * 3)  # 100 classes, 300 samples, .33 class.sample ratio
     data_check_error = DataCheckWarning(
-        message=f"Target has a large number of unique values, could be regression target.",
+        message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": 1 / 3}).to_dict()
@@ -375,7 +375,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
 
     y_multiclass_med_classes = pd.Series(list(range(0, 5)) * 20)  # 5 classes, 100 samples, .05 class/sample ratio
     data_check_error = DataCheckWarning(
-        message=f"Target has a large number of unique values, could be regression target.",
+        message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": .05}).to_dict()

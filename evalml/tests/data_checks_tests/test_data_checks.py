@@ -133,7 +133,7 @@ def test_default_data_checks_classification(input_type):
                                         message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
                                         details={"least_populated_class_labels": [2.0, 1.0]}).to_dict()]
     high_class_to_sample_ratio = [DataCheckWarning(
-        message="Target has a large number of unique values, could be regression target.",
+        message="Target has a large number of unique values, could be regression type problem.",
         data_check_name="InvalidTargetDataCheck",
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={'class_to_value_ratio': 0.6}).to_dict()]
