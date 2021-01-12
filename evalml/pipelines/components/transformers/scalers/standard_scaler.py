@@ -1,6 +1,11 @@
+import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
 
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class StandardScaler(Transformer):
@@ -16,3 +21,16 @@ class StandardScaler(Transformer):
         super().__init__(parameters=parameters,
                          component_obj=scaler,
                          random_state=random_state)
+
+    def transform(self, X, y=None):
+
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_cols = X.columns
+        X_index = X.index
+        X_t = self._component_obj.transform(X)
+        X_t_df = pd.DataFrame(X_t, columns=X_cols, index=X_index)
+        return _convert_to_woodwork_structure(X_t_df)
+
+    def fit_transform(self, X, y=None):
+        return self.fit(X, y).transform(X, y)

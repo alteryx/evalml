@@ -554,7 +554,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 continue
             else:
                 assert transform_output.shape == X.shape
-                assert (list(transform_output.columns) == X_cols_expected).all()
+                assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
             assert isinstance(transform_output, ww.DataTable)
@@ -572,7 +572,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert isinstance(transform_output.to_dataframe().columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
-                assert (transform_output.to_dataframe().columns == X_cols_expected).all()
+                assert (list(transform_output.columns) == list(X_cols_expected))
 
 
 @pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
@@ -631,7 +631,7 @@ def test_transformer_check_for_fit(X_y_binary):
         def fit(self, X, y):
             pass
 
-        def transform(self, X):
+        def transform(self, X, y=None):
             return pd.DataFrame()
 
     class MockTransformer(Transformer):

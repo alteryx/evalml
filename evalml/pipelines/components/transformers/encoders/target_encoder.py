@@ -58,11 +58,11 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             y.reset_index(drop=True, inplace=True)
         return super().fit(X, y)
 
-    def transform(self, X, y=None):
-        return super().transform(X, y)
+    # def transform(self, X, y=None):
+    #     return super().transform(X, y)
 
-    def fit_transform(self, X, y):
-        return self.fit(X, y).transform(X)
+    # def fit_transform(self, X, y):
+    #     return self.fit(X, y).transform(X)
 
     def get_feature_names(self):
         """Return feature names for the input features after fitting.

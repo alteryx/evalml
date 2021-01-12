@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
@@ -33,13 +35,20 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         try:
-            X_t = self._component_obj.transform(X)
+            X = _convert_to_woodwork_structure(X)
+            X = _convert_woodwork_types_wrapper(X.to_dataframe())
+            if y is not None:
+                y = _convert_to_woodwork_structure(y)
+                y = _convert_woodwork_types_wrapper(y.to_series())
+            X_cols = X.columns
+            X_index = X.index
+            X_t = self._component_obj.transform(X, y)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
         # if isinstance(X, pd.DataFrame):
             # return _convert_to_woodwork_structure(pd.DataFrame(X_t, columns=X.columns, index=X.index))
-
-        return _convert_to_woodwork_structure(X_t)
+        X_t_df = pd.DataFrame(X_t, columns=X_cols, index=X_index)
+        return _convert_to_woodwork_structure(X_t_df)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
