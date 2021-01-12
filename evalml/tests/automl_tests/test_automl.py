@@ -2120,16 +2120,37 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
                      additional_objectives=[non_core_objective.name])
 
 
-def test_automl_pipeline_params(X_y_binary):
+def test_automl_pipeline_params_simple(X_y_binary):
     X, y = X_y_binary
-    params = {'Imputer': {'numeric_impute_strategy': 'constant'}}
+    params = {'Imputer': {'numeric_impute_strategy': 'median'}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, max_iterations=2, n_jobs=1)
     automl.search()
-    print(automl.best_pipeline)
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'constant'
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
 
     params = {"Imputer": {"numeric_impute_strategy": "median"}, "Logistic Regression Classifier": {"C": 2}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, n_jobs=1)
     automl.search()
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
     assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 2
+
+    params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
+              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'}}
+    # set max_iterations=2 because we don't want elastic net to run, otherwise it'll be the best pipeline
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, max_iterations=2, n_jobs=1)
+    automl.search()
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+    assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 20
+    assert automl.best_pipeline.parameters['Logistic Regression Classifier']['penalty'] == 'none'
+
+    params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
+              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
+              "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, n_jobs=1)
+    automl.search()
+    expected_parameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent',
+                                       'numeric_impute_strategy': 'most_frequent',
+                                       'categorical_fill_value': None,
+                                       'numeric_fill_value': None},
+                           'Elastic Net Classifier': {'alpha': 0.75, 'l1_ratio': 0.2, 'n_jobs': 1,
+                                                      'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}}
+    assert automl.best_pipeline.parameters == expected_parameters

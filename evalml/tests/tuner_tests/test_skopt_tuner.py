@@ -84,12 +84,12 @@ def test_skopt_tuner_invalid_ranges():
             'param b': Real(0, 10),
             'param c': None
         }}, random_state=random_state)
-    with pytest.raises(ValueError, match="Dimension has to be a list or tuple."):
-        SKOptTuner({'Mock Classifier': {
-            'param a': Integer(0, 10),
-            'param b': Real(0, 10),
-            'param c': 'Value'
-        }}, random_state=random_state)
+
+    SKOptTuner({'Mock Classifier': {
+        'param a': Integer(0, 10),
+        'param b': Real(0, 10),
+        'param c': 'Value'
+    }}, random_state=random_state)
 
 
 def test_skopt_tuner_invalid_parameters_score():
