@@ -66,11 +66,6 @@ def test_grid_search_tuner_space_types():
 
 
 def test_grid_search_tuner_invalid_space():
-    type_error_text = 'Invalid dimension type in tuner'
     bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
-    with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner({'Mock Classifier': {'param a': False}})
-    with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner({'Mock Classifier': {'param a': (0)}})
     with pytest.raises(ValueError, match=bound_error_text):
         GridSearchTuner({'Mock Classifier': {'param a': (1, 0)}})
