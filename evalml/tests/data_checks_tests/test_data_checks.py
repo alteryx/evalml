@@ -135,7 +135,7 @@ def test_default_data_checks_classification(input_type):
     high_class_to_sample_ratio = [DataCheckWarning(
         message="Target has a large number of unique values, could be regression target.",
         data_check_name="InvalidTargetDataCheck",
-        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS_WARNING,
+        message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={'class_to_value_ratio': 0.6}).to_dict()]
     # multiclass
     data_checks = DefaultDataChecks("multiclass", get_default_primary_search_objective("multiclass"))
