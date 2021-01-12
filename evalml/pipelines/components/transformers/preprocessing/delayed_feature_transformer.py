@@ -1,6 +1,10 @@
 import pandas as pd
 
 from evalml.pipelines.components.transformers.transformer import Transformer
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class DelayedFeatureTransformer(Transformer):
@@ -50,17 +54,19 @@ class DelayedFeatureTransformer(Transformer):
         If y is not None, it will also compute the delayed values for the target variable.
 
         Arguments:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
-            y (pd.Series, None): Target.
+            X (ww.DataTable, pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (ww.DataColumn, pd.Series, or None): Target.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
-        # Normalize the data into pandas objects
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
-        if y is not None and not isinstance(y, pd.Series):
-            y = pd.Series(y)
+        if X is None:
+            X = pd.DataFrame()
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.delay_features and not X.empty:
             X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
@@ -72,4 +78,4 @@ class DelayedFeatureTransformer(Transformer):
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return X
+        return _convert_to_woodwork_structure(X)

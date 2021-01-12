@@ -4,7 +4,10 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
-from evalml.utils.gen_utils import _rename_column_names_to_numeric
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _rename_column_names_to_numeric
+)
 
 
 class XGBoostRegressor(Estimator):
@@ -47,6 +50,7 @@ class XGBoostRegressor(Estimator):
     def predict(self, X):
         X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
+        predictions = _convert_to_woodwork_structure(predictions)
         return predictions
 
     @property

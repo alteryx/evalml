@@ -4,7 +4,10 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
-from evalml.utils.gen_utils import _rename_column_names_to_numeric
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    _rename_column_names_to_numeric
+)
 
 
 class XGBoostClassifier(Estimator):
@@ -48,12 +51,14 @@ class XGBoostClassifier(Estimator):
     def predict(self, X):
         X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
+        predictions = _convert_to_woodwork_structure(predictions)
         return predictions
 
     def predict_proba(self, X):
         X = _rename_column_names_to_numeric(X)
-        predictions = super().predict_proba(X)
-        return predictions
+        pred_proba = super().predict_proba(X)
+        pred_proba = _convert_to_woodwork_structure(pred_proba)
+        return pred_proba
 
     @property
     def feature_importance(self):
