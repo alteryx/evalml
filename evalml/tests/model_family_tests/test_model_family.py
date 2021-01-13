@@ -9,14 +9,14 @@ def correct_model_families():
                               ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST,
                               ModelFamily.CATBOOST, ModelFamily.EXTRA_TREES,
                               ModelFamily.DECISION_TREE, ModelFamily.ENSEMBLE,
-                              ModelFamily.BASELINE, ModelFamily.NONE]
+                              ModelFamily.BASELINE, ModelFamily.PROPHET, ModelFamily.NONE]
     yield correct_model_families
 
 
 def test_handle_string(correct_model_families):
     model_families = ['linear_model', 'lightgbm', 'random_forest',
                       'xgboost', 'catboost', 'extra_trees', 'decision_tree',
-                      'ensemble', 'baseline', 'none']
+                      'ensemble', 'baseline', 'prophet', 'none']
     for model_family in zip(model_families, correct_model_families):
         assert handle_model_family(model_family[0]) == model_family[1]
 
