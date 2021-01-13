@@ -11,13 +11,13 @@ from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml import AutoMLSearch
-from evalml.automl.callbacks import (
-    log_and_save_error_callback,
-    log_error_callback,
-    raise_and_save_error_callback,
-    raise_error_callback,
-    silent_error_callback
-)
+# from evalml.automl.callbacks import (
+#     log_and_save_error_callback,
+#     log_error_callback,
+#     raise_and_save_error_callback,
+#     raise_error_callback,
+#     silent_error_callback
+# )
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
