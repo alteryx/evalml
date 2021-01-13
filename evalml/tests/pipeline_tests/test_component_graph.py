@@ -523,7 +523,7 @@ def test_predict_empty_graph(X_y_binary):
 
     component_graph.fit(X, y)
     X_t = component_graph.predict(X)
-    assert_frame_equal(X_t, X)
+    assert_frame_equal(X, X_t)
 
 
 @patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
@@ -537,8 +537,7 @@ def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary)
 
     component_graph.fit(X, y)
     output = component_graph.predict(X)
-
-    assert_frame_equal(output, pd.DataFrame(X))
+    assert_frame_equal(pd.DataFrame(X), output.to_dataframe())
 
 
 def test_no_instantiate_before_fit(X_y_binary):
@@ -631,7 +630,7 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
     assert_frame_equal(mock_preda.call_args[0][0], X)
     assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
     assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6), 'estimator a': [0, 0, 0, 1, 0, 0], 'feature b': np.ones(6) * 2, 'estimator b': [0, 0, 0, 0, 1, 0], 'feature c': np.ones(6) * 3}, columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
-    assert_series_equal(predict_out, pd.Series([0, 0, 0, 0, 0, 1]))
+    assert_series_equal(pd.Series([0, 0, 0, 0, 0, 1], dtype="Int64"), predict_out.to_series())
 
 
 def test_input_feature_names(example_graph):
