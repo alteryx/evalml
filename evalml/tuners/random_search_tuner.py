@@ -56,6 +56,8 @@ class RandomSearchTuner(Tuner):
         Returns:
             dict: proposed pipeline parameters
         """
+        if not len(self._search_space_ranges):
+            return self._convert_to_pipeline_parameters({})
         if self._with_replacement:
             return self._convert_to_pipeline_parameters(self._get_sample())
         elif not self.curr_params:
