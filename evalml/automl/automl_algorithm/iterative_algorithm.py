@@ -2,6 +2,7 @@ import inspect
 from operator import itemgetter
 
 import numpy as np
+from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
@@ -49,6 +50,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
+        self.random_state = random_state
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -140,11 +142,21 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters['number_features'] = self.number_features
             # Pass the pipeline params to the components that need them
             if component_class.name in self._pipeline_params:
-                component_parameters.update(self._pipeline_params[component_class.name])
+                for param_name, value in self._pipeline_params[component_class.name].items():
+                    if param_name in init_params:
+                        if isinstance(value, (Integer, Real)):
+                            # get a random value in the space
+                            component_parameters[param_name] = value.rvs(random_state=self.random_state)[0]
+                        elif isinstance(value, Categorical):
+                            component_parameters[param_name] = value.rvs(random_state=self.random_state)
+                        elif isinstance(value, (list, tuple)):
+                            component_parameters[param_name] = value[0]
+                        else:
+                            component_parameters[param_name] = value
+                # component_parameters.update(self._pipeline_params[component_class.name])
             if 'pipeline' in self._pipeline_params:
                 for param_name, value in self._pipeline_params['pipeline'].items():
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
-        print(parameters)
         return parameters

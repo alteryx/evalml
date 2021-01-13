@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
+from skopt.space import Categorical, Integer, Real
 
 from evalml.automl.automl_algorithm import (
     AutoMLAlgorithmException,
@@ -247,3 +248,32 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
     assert pipeline.parameters['Text Featurization Component'] == expected_params
     assert isinstance(pipeline[0], TextFeaturizer)
     assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']
+
+
+@pytest.mark.parametrize("parameter", [1, [1, 3, 4], (2, 3, 4)])
+def test_iterative_algorithm_pipeline_params(parameter, dummy_binary_pipeline_classes):
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
+                                               'Mock Classifier': {'dummy_parameter': parameter}})
+
+    next_batch = algo.next_batch()
+    if isinstance(parameter, (list, tuple)):
+        parameter = parameter[0]
+    assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
+    assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": parameter, "n_jobs": -1} for p in next_batch])
+
+
+@pytest.mark.parametrize("parameter", [Real(0, 1), Categorical(["random", "dummy", "test"]), Integer(1, 10)])
+def test_iterative_algorithm_pipeline_params_skopt(parameter, dummy_binary_pipeline_classes):
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
+                                               'Mock Classifier': {'dummy_parameter': parameter}},
+                              random_state=0)
+
+    next_batch = algo.next_batch()
+    if isinstance(parameter, (Real, Integer)):
+        parameter = parameter.rvs(random_state=0)[0]
+    else:
+        parameter = parameter.rvs(random_state=0)
+    assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
+    assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": parameter, "n_jobs": -1} for p in next_batch])

@@ -9,6 +9,7 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
+from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
@@ -2098,7 +2099,8 @@ def test_automl_pipeline_params_simple(X_y_binary):
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
 
     params = {"Imputer": {"numeric_impute_strategy": "median"}, "Logistic Regression Classifier": {"C": 2}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL],
+                          pipeline_parameters=params, n_jobs=1)
     automl.search()
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
     assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 2
@@ -2106,7 +2108,8 @@ def test_automl_pipeline_params_simple(X_y_binary):
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
               "Logistic Regression Classifier": {"C": 20, "penalty": 'none'}}
     # set max_iterations=2 because we don't want elastic net to run, otherwise it'll be the best pipeline
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, max_iterations=2, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL],
+                          pipeline_parameters=params, max_iterations=2, n_jobs=1)
     automl.search()
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
     assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 20
@@ -2115,7 +2118,8 @@ def test_automl_pipeline_params_simple(X_y_binary):
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
               "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
               "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL], pipeline_parameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL],
+                          pipeline_parameters=params, n_jobs=1)
     automl.search()
     expected_parameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent',
                                        'numeric_impute_strategy': 'most_frequent',
@@ -2124,3 +2128,37 @@ def test_automl_pipeline_params_simple(X_y_binary):
                            'Elastic Net Classifier': {'alpha': 0.75, 'l1_ratio': 0.2, 'n_jobs': 1,
                                                       'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}}
     assert automl.best_pipeline.parameters == expected_parameters
+
+
+def test_automl_pipeline_params_multiple(X_y_regression):
+    X, y = X_y_regression
+    params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, max_iterations=2, n_jobs=1)
+    automl.search()
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
+
+    params = {'Imputer': {'numeric_impute_strategy': ['most_frequent', 'median']},
+              'Decision Tree Regressor': {'max_depth': Integer(7, 9)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params,
+                          allowed_model_families=[ModelFamily.DECISION_TREE], max_iterations=2, n_jobs=1)
+    automl.search()
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+    assert automl.best_pipeline.parameters['Decision Tree Regressor']['max_depth'] == 8
+
+    params = {'Imputer': {'numeric_impute_strategy': ['most_frequent', 'median']},
+              'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params,
+                          allowed_model_families=[ModelFamily.DECISION_TREE], max_iterations=2, n_jobs=1)
+    automl.search()
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+    assert automl.best_pipeline.parameters['Decision Tree Regressor']['max_depth'] == 17
+    assert automl.best_pipeline.parameters['Decision Tree Regressor']['max_features'] == 'auto'
+
+    params = {'Imputer': {'numeric_impute_strategy': ['most_frequent', 'median']},
+              'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": (0.01, 0.02, 0.03)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params,
+                          allowed_model_families=[ModelFamily.LINEAR_MODEL], max_iterations=2, n_jobs=1)
+    automl.search()
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+    assert automl.best_pipeline.parameters['Elastic Net Regressor']['alpha'] == 0.4221328742905088
+    assert automl.best_pipeline.parameters['Elastic Net Regressor']['l1_ratio'] == 0.01
