@@ -58,9 +58,10 @@ class DelayedFeatureTransformer(Transformer):
         Returns:
             pd.DataFrame: Transformed X.
         """
+        if X is None:
+            X = pd.DataFrame()
         # Normalize the data into pandas objects
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
         if y is not None:
             y = _convert_to_woodwork_structure(y)
 
@@ -71,10 +72,17 @@ class DelayedFeatureTransformer(Transformer):
         else:
             y = _convert_woodwork_types_wrapper(y.to_series())
 
-        if self.delay_features and not X.empty:
-            X = X.assign(**{f"{col}_delay_{t}": X[col].shift(t)
-                            for t in range(1, self.max_delay + 1)
-                            for col in X})
+        categorical_columns = {name for name, column in X.columns.items() if
+                               column.logical_type == logical_types.Categorical}
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+        if self.delay_features and len(X) > 0:
+            for col_name in X:
+                col = X[col_name]
+                if col_name in categorical_columns:
+                    col = LabelEncoder().fit_transform(col)
+                    col = pd.Series(col, index=X.index)
+                X = X.assign(**{f"{col_name}_delay_{t}": col.shift(t) for t in range(1, self.max_delay + 1)})
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
