@@ -30,7 +30,11 @@ from evalml.pipelines.components import (  # noqa: F401
     TextFeaturizer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_time_series
+)
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
@@ -67,7 +71,7 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
     if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
-    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+    if is_time_series(problem_type):
         pp_components.append(DelayedFeatureTransformer)
 
     categorical_cols = X.select('category')
