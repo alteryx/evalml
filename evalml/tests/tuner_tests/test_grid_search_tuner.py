@@ -74,4 +74,6 @@ def test_grid_search_tuner_invalid_space():
 def test_grid_search_tuner_valid_space():
     GridSearchTuner({'Mock Classifier': {'param a': 1}})
     GridSearchTuner({'Mock Classifier': {'param a': "param_value"}})
-    GridSearchTuner({'Mock Classifier': {'param a': 3.200}})
+    tuner = GridSearchTuner({'Mock Classifier': {'param a': 3.200}})
+    proposed_params = tuner.propose()
+    assert proposed_params == {'Mock Classifier': {}}

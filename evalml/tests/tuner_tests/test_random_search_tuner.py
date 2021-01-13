@@ -76,6 +76,10 @@ def test_random_search_tuner_space_types():
     proposed_params = tuner.propose()
     assert proposed_params == {'Mock Classifier': {'param a': 5.488135039273248}}
 
+    tuner = RandomSearchTuner({'Mock Classifier': {'param a': 10.0}}, random_state=random_state)
+    proposed_params = tuner.propose()
+    assert proposed_params == {'Mock Classifier': {}}
+
 
 def test_random_search_tuner_invalid_space():
     bound_error_text = "has to be less than the upper bound"

@@ -93,11 +93,12 @@ def test_skopt_tuner_single_value():
         'param c': 'Value'
     }}, random_state=random_state)
 
-    SKOptTuner({'Mock Classifier': {
-        'param a': Integer(0, 10),
-        'param b': Real(0, 10),
+    tuner = SKOptTuner({'Mock Classifier': {
         'param c': 10
     }}, random_state=random_state)
+
+    proposed_params = tuner.propose()
+    assert proposed_params == {'Mock Classifier': {}}
 
 
 def test_skopt_tuner_invalid_parameters_score():
