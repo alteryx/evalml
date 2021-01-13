@@ -234,24 +234,22 @@ def test_simple_imputer_fill_value(data_type):
     assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
 
 
-def test_simple_imputer_resets_index():
+def test_simple_imputer_does_not_reset_index():
     X = pd.DataFrame({'input_val': np.arange(10), 'target': np.arange(10)})
     X.loc[5, 'input_val'] = np.nan
     assert X.index.tolist() == list(range(10))
 
     X.drop(0, inplace=True)
     y = X.pop('target')
-    pd.testing.assert_frame_equal(X,
-                                  pd.DataFrame({'input_val': [1.0, 2, 3, 4, np.nan, 6, 7, 8, 9]},
-                                               dtype=float,
-                                               index=list(range(1, 10))))
+    pd.testing.assert_frame_equal(pd.DataFrame({'input_val': [1.0, 2, 3, 4, np.nan, 6, 7, 8, 9]},
+                                               dtype=float, index=list(range(1, 10))), X)
 
     imputer = SimpleImputer(impute_strategy="mean")
     imputer.fit(X, y=y)
     transformed = imputer.transform(X)
     pd.testing.assert_frame_equal(pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
                                                dtype=float,
-                                               index=list(range(0, 9))),
+                                               index=list(range(1, 10))),
                                   transformed.to_dataframe())
 
 

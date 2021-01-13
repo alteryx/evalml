@@ -54,7 +54,7 @@ def test_xgboost_feature_name_with_random_ascii(X_y_regression):
     clf.fit(X, y)
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
-    assert not np.isnan(predictions).all()
+    assert not np.isnan(predictions.to_series()).all()
 
     assert len(clf.feature_importance) == len(X.columns)
     assert not np.isnan(clf.feature_importance).all().all()
