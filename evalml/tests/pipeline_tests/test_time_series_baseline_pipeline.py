@@ -13,7 +13,7 @@ from evalml.pipelines.time_series_baselines import (
 
 @pytest.mark.parametrize('X_none', [True, False])
 @pytest.mark.parametrize('gap', [0, 1])
-@pytest.mark.parametrize('pipeline_class', [
+@pytest.mark.parametrize('pipeline_class', [TimeSeriesBaselineRegressionPipeline,
                                             TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline])
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets", side_effect=lambda y: y)
 def test_time_series_baseline(mock_decode, pipeline_class, gap, X_none, ts_data):

@@ -192,7 +192,6 @@ def test_lagged_feature_extractor_delay_target(encode_y_as_str, encode_X_as_str,
 
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
 
-
     answer = pd.DataFrame()
     if delay_target:
         answer = pd.DataFrame({"target_delay_0": y_answer,
@@ -234,33 +233,33 @@ def test_target_delay_when_gap_is_0(gap, delayed_features_data):
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
 def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode_y_as_str, use_woodwork,
                                                          delayed_features_data):
-        X, y = delayed_features_data
+    X, y = delayed_features_data
 
-        X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
+    X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
 
-        X.index = pd.RangeIndex(50, 81)
-        X_answer.index = pd.RangeIndex(50, 81)
-        y.index = pd.RangeIndex(50, 81)
-        y_answer.index = pd.RangeIndex(50, 81)
+    X.index = pd.RangeIndex(50, 81)
+    X_answer.index = pd.RangeIndex(50, 81)
+    y.index = pd.RangeIndex(50, 81)
+    y_answer.index = pd.RangeIndex(50, 81)
 
-        answer = pd.DataFrame({"feature": X.feature,
-                               "feature_delay_1": X_answer.feature.shift(1),
-                               "feature_delay_2": X_answer.feature.shift(2),
-                               "feature_delay_3": X_answer.feature.shift(3),
-                               "target_delay_0": y_answer,
-                               "target_delay_1": y_answer.shift(1),
-                               "target_delay_2": y_answer.shift(2),
-                               "target_delay_3": y_answer.shift(3)}, index=pd.RangeIndex(50, 81))
+    answer = pd.DataFrame({"feature": X.feature,
+                           "feature_delay_1": X_answer.feature.shift(1),
+                           "feature_delay_2": X_answer.feature.shift(2),
+                           "feature_delay_3": X_answer.feature.shift(3),
+                           "target_delay_0": y_answer,
+                           "target_delay_1": y_answer.shift(1),
+                           "target_delay_2": y_answer.shift(2),
+                           "target_delay_3": y_answer.shift(3)}, index=pd.RangeIndex(50, 81))
 
-        if use_woodwork:
-            X = ww.DataTable(X)
-            y = ww.DataColumn(y)
+    if use_woodwork:
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
 
-        pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y), answer)
+    pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y), answer)
 
-        answer_only_y = pd.DataFrame({"target_delay_0": y_answer,
-                                      "target_delay_1": y_answer.shift(1),
-                                      "target_delay_2": y_answer.shift(2),
-                                      "target_delay_3": y_answer.shift(3)}, index=pd.RangeIndex(50, 81))
-        pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y),
-                                      answer_only_y)
+    answer_only_y = pd.DataFrame({"target_delay_0": y_answer,
+                                  "target_delay_1": y_answer.shift(1),
+                                  "target_delay_2": y_answer.shift(2),
+                                  "target_delay_3": y_answer.shift(3)}, index=pd.RangeIndex(50, 81))
+    pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y),
+                                  answer_only_y)

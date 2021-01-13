@@ -3,7 +3,11 @@ from sklearn.preprocessing import LabelEncoder
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import _convert_to_woodwork_structure, _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
+
 
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delayes input features and target variable for time series problems."""
