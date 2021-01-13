@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from pandas.testing import assert_series_equal
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import TimeSeriesBaselineRegressor
@@ -29,7 +30,7 @@ def test_time_series_baseline(ts_data):
     clf = TimeSeriesBaselineRegressor(gap=1)
     clf.fit(X, y)
 
-    np.testing.assert_allclose(clf.predict(X, y), y)
+    assert_series_equal(y.astype("Int64"), clf.predict(X, y).to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -41,7 +42,7 @@ def test_time_series_baseline_gap_0(ts_data):
     clf = TimeSeriesBaselineRegressor(gap=0)
     clf.fit(X, y)
 
-    np.testing.assert_allclose(clf.predict(X, y), y_true)
+    assert_series_equal(y_true, clf.predict(X, y).to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -51,5 +52,5 @@ def test_time_series_baseline_no_X(ts_data):
     clf = TimeSeriesBaselineRegressor()
     clf.fit(X=None, y=y)
 
-    np.testing.assert_allclose(clf.predict(X=None, y=y), y)
+    assert_series_equal(y.astype("Int64"), clf.predict(X=None, y=y).to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([]))
