@@ -46,6 +46,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
     estimator = pipeline.estimator
     if estimator.model_family == ModelFamily.BASELINE:
         raise ValueError("You passed in a baseline pipeline. These are simple enough that SHAP values are not needed.")
+
     feature_names = features.columns
 
     # This is to make sure all dtypes are numeric - SHAP algorithms will complain otherwise.

@@ -174,11 +174,14 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     try:
         if pipeline.problem_type == ProblemTypes.REGRESSION:
             y_pred = pipeline.predict(input_features)
+            y_pred = y_pred.to_series()
             y_pred_values = None
             errors = metric(y_true, y_pred)
         else:
             y_pred = pipeline.predict_proba(input_features)
+            y_pred = y_pred.to_dataframe()
             y_pred_values = pipeline.predict(input_features)
+            y_pred_values = y_pred_values.to_series()
             errors = metric(pipeline._encode_targets(y_true), y_pred)
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])
