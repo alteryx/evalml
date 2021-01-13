@@ -28,6 +28,8 @@ def encode_y_as_string(y):
 
 def encode_X_as_string(X):
     X_answer = X.astype(int) - 1
+    # So that the encoder encodes the values in ascending order. This makes it easier to
+    # specify the answer for each unit test
     X.feature = pd.Categorical(X.feature.map(lambda val: str(val).zfill(2)))
     return X, X_answer
 

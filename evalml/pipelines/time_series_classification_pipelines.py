@@ -130,11 +130,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-
         features = self.compute_estimator_features(X, y)
         features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
-
         proba = self._estimator_predict_proba(features_no_nan, y_no_nan)
+
         proba.columns = self._encoder.classes_
         return pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
 
