@@ -26,7 +26,7 @@ def test_fit_predict(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
 
 
 def test_feature_importance(X_y_regression):
