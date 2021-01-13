@@ -114,6 +114,7 @@ class ObjectiveBase(ABC):
             raise ValueError("y_true contains NaN or infinity")
         # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
         y_pred_flat = y_predicted.to_numpy().flatten()
+
         if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
             raise ValueError("y_predicted contains NaN or infinity")
         if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):

@@ -258,6 +258,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
             objectives (list): List of objectives to score.
+        
+        Returns:
+            Ordered dictionary with objectives and their scores.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()

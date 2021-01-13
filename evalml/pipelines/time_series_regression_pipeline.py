@@ -116,6 +116,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         y_predicted = self.predict(X, y)
+        y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+
         y_shifted = y.shift(-self.gap)
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y_shifted, y_predicted = drop_rows_with_nans(y_shifted, y_predicted)

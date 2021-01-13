@@ -59,7 +59,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         self._encoder.fit(y)
         y = self._encode_targets(y)
-
         X_t = self._compute_features_during_fit(X, y)
         X_t = _convert_woodwork_types_wrapper(X_t.to_dataframe())
         y_shifted = y.shift(-self.gap)
@@ -85,6 +84,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y_arg = None
         if self.estimator.predict_uses_y:
             y_arg = y
+
         return self.estimator.predict_proba(features, y=y_arg)
 
     def _predict(self, X, y, objective=None, pad=False):
@@ -98,8 +98,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         # features = _convert_woodwork_types_wrapper(features.to_series())
         features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
         predictions = self._estimator_predict(features_no_nan, y_encoded)
+        # predictions = predictions.to_series()
         if pad:
-            return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+            padded = pad_with_nans(predictions.to_series(), max(0, features.shape[0] - predictions.shape[0]))
+            return _convert_to_woodwork_structure(padded)
         return predictions
 
     def predict(self, X, y=None, objective=None):
@@ -141,8 +143,13 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         y_encoded = self._encode_targets(y)
         features = self.compute_estimator_features(X, y_encoded)
+        if isinstance(features, ww.DataTable):
+            features = _convert_woodwork_types_wrapper(features.to_dataframe())
+        elif isinstance(features, ww.DataColumn):
+            features = _convert_woodwork_types_wrapper(features.to_series())
         features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
         proba = self._estimator_predict_proba(features_no_nan, y_encoded)
+        proba = proba.to_dataframe()
         proba.columns = self._encoder.classes_
         padded = pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
         return _convert_to_woodwork_structure(padded)
@@ -155,6 +162,12 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
             y_predicted_proba = self.predict_proba(X, y)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self._predict(X, y, pad=True)
+
+        if isinstance(y_predicted_proba, ww.DataTable):
+            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
+
+        if isinstance(y_predicted, ww.DataColumn):
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives):
@@ -210,17 +223,18 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
-            predictions = self._estimator_predict(features_no_nan, y_encoded)
+            predictions = self._estimator_predict(features_no_nan, y_encoded).to_series()
         else:
-            proba = self._estimator_predict_proba(features_no_nan, y_encoded)
+            proba = self._estimator_predict_proba(features_no_nan, y_encoded).to_dataframe()
             proba = proba.iloc[:, 1]
             if objective is None:
                 predictions = proba > self.threshold
             else:
                 predictions = objective.decision_function(proba, threshold=self.threshold, X=features_no_nan)
         if pad:
-            return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
-        return predictions
+            padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+            return _convert_to_woodwork_structure(padded)
+        return _convert_to_woodwork_structure(predictions)
 
     @staticmethod
     def _score(X, y, predictions, objective):

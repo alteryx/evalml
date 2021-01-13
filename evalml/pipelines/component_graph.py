@@ -100,9 +100,12 @@ class ComponentGraph:
         Arguments:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (pd.Series): The target training data of length [n_samples]
+        
+        Returns:
+            ww.DataTable
         """
         if len(self.compute_order) <= 1:
-            return X
+            return _convert_to_woodwork_structure(X)
 
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=True)
         final_component_inputs = []
