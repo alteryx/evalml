@@ -16,5 +16,5 @@ from .regressors import (LinearRegressor,
                          ElasticNetRegressor,
                          ExtraTreesRegressor,
                          BaselineRegressor,
-                         TimeSeriesBaselineRegressor,
+                         TimeSeriesBaselineEstimator,
                          DecisionTreeRegressor)

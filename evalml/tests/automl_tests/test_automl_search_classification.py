@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.model_selection import StratifiedKFold, TimeSeriesSplit
+from sklearn.model_selection import StratifiedKFold
 from skopt.space import Categorical
 
 from evalml import AutoMLSearch
@@ -22,10 +22,13 @@ from evalml.pipelines import (
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     MulticlassClassificationPipeline,
-    PipelineBase
+    PipelineBase,
+    TimeSeriesBaselineBinaryPipeline,
+    TimeSeriesBaselineMulticlassPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
+from evalml.preprocessing import TimeSeriesSplit
 from evalml.problem_types import ProblemTypes
 
 
@@ -77,8 +80,8 @@ def test_data_splitter(X_y_binary):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=TimeSeriesSplit(cv_folds), max_iterations=1,
-                          n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=TimeSeriesSplit(n_splits=cv_folds),
+                          max_iterations=1, n_jobs=1)
     automl.search()
 
     assert isinstance(automl.rankings, pd.DataFrame)
@@ -677,3 +680,37 @@ def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_m
     assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineMulticlassPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
     assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class
+
+
+@pytest.mark.parametrize('problem_type', [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY])
+@patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
+@patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
+def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_fit, mock_binary_score, mock_multiclass_score,
+                                                    problem_type, X_y_binary, X_y_multi):
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        baseline = TimeSeriesBaselineBinaryPipeline
+        mock_binary_score.return_value = {"Log Loss Binary": 0.2}
+        problem_type = 'time series binary'
+    else:
+        X, y = X_y_multi
+        baseline = TimeSeriesBaselineMulticlassPipeline
+        mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
+        problem_type = 'time series multiclass'
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
+                          problem_configuration=configuration,
+                          max_batches=2)
+    automl.search()
+    assert isinstance(automl.data_splitter, TimeSeriesSplit)
+    for result in automl.results['pipeline_results'].values():
+        if result["id"] == 0:
+            assert result['pipeline_class'] == baseline
+            continue
+
+        assert result['parameters']['Delayed Feature Transformer'] == configuration
+        assert result['parameters']['pipeline'] == configuration

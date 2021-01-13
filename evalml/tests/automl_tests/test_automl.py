@@ -48,15 +48,11 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
-    RegressionPipeline,
-    TimeSeriesRegressionPipeline
+    RegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit
-)
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
@@ -1976,32 +1972,6 @@ def test_automl_validates_problem_configuration(X_y_binary):
     assert problem_config == {"max_delay": 2, "gap": 3}
 
 
-@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
-@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
-def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
-    X, y = X_y_regression
-
-    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
-
-    class Pipeline1(TimeSeriesRegressionPipeline):
-        name = "Pipeline 1"
-        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
-
-    class Pipeline2(TimeSeriesRegressionPipeline):
-        name = "Pipeline 2"
-        component_graph = ["Delayed Feature Transformer", "Elastic Net Regressor"]
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration,
-                          allowed_pipelines=[Pipeline1, Pipeline2], max_batches=2)
-    automl.search()
-    assert isinstance(automl.data_splitter, TimeSeriesSplit)
-    for result in automl.results['pipeline_results'].values():
-        if result["id"] == 0:
-            continue
-        assert result['parameters']['Delayed Feature Transformer'] == configuration
-        assert result['parameters']['pipeline'] == configuration
-
-
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 def test_automl_best_pipeline(mock_optimize, X_y_binary):
     X, y = X_y_binary
@@ -2085,7 +2055,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_scor
 
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
-                                               "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
+                                               "Time Series Baseline Estimator": {"gap": 6, "max_delay": 3}}
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
