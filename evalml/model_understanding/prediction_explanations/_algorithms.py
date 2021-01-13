@@ -6,7 +6,7 @@ from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types.problem_types import ProblemTypes
-from evalml.utils import get_logger
+from evalml.utils import _convert_woodwork_types_wrapper, get_logger
 
 logger = get_logger(__file__)
 
@@ -46,7 +46,6 @@ def _compute_shap_values(pipeline, features, training_data=None):
     estimator = pipeline.estimator
     if estimator.model_family == ModelFamily.BASELINE:
         raise ValueError("You passed in a baseline pipeline. These are simple enough that SHAP values are not needed.")
-
     feature_names = features.columns
 
     # This is to make sure all dtypes are numeric - SHAP algorithms will complain otherwise.
@@ -83,6 +82,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
         # More than 100 datapoints can negatively impact runtime according to SHAP
         # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
         sampled_training_data_features = pipeline.compute_estimator_features(shap.sample(training_data, 100))
+        sampled_training_data_features = _convert_woodwork_types_wrapper(sampled_training_data_features.to_dataframe())
         sampled_training_data_features = check_array(sampled_training_data_features)
 
         if pipeline.problem_type == ProblemTypes.REGRESSION:
