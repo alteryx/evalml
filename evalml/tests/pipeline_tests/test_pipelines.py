@@ -851,7 +851,7 @@ def make_mock_multiclass_pipeline():
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
     X, y = X_y_regression
-    mock_predict.return_value = y
+    mock_predict.return_value = ww.DataColumn(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2']
@@ -864,7 +864,7 @@ def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_nonlinear_regression(mock_predict, mock_fit, nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
-    mock_predict.return_value = y
+    mock_predict.return_value = ww.DataColumn(y)
     clf = nonlinear_regression_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['r2']
@@ -926,7 +926,7 @@ def test_score_nonlinear_multiclass(mock_encode, mock_fit, mock_predict, nonline
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = y
+    mock_predict.return_value = ww.DataColumn(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
@@ -973,7 +973,7 @@ def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
 def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
-    mock_predict.return_value = y
+    mock_predict.return_value = ww.DataColumn(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']

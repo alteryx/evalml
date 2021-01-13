@@ -137,7 +137,7 @@ class ComponentGraph:
             return X
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return outputs.get(final_component, outputs.get(f'{final_component}.x'))
+        return _convert_to_woodwork_structure(outputs.get(final_component, outputs.get(f'{final_component}.x')))
 
     def compute_final_component_features(self, X, y=None):
         ### TODO: COMBINE WITH fit_features

@@ -117,7 +117,7 @@ def test_binary_auto(X_y_binary):
     best_pipeline = automl.best_pipeline
     assert best_pipeline._is_fitted
     y_pred = best_pipeline.predict(X)
-    assert len(np.unique(y_pred)) == 2
+    assert len(np.unique(y_pred.to_series())) == 2
 
 
 def test_multi_auto(X_y_multi, multiclass_core_objectives):
@@ -128,7 +128,7 @@ def test_multi_auto(X_y_multi, multiclass_core_objectives):
     best_pipeline = automl.best_pipeline
     assert best_pipeline._is_fitted
     y_pred = best_pipeline.predict(X)
-    assert len(np.unique(y_pred)) == 3
+    assert len(np.unique(y_pred.to_series())) == 3
 
     objective_in_additional_objectives = next((obj for obj in multiclass_core_objectives if obj.name == objective.name), None)
     multiclass_core_objectives.remove(objective_in_additional_objectives)

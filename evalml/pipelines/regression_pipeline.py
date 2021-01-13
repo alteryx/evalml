@@ -43,5 +43,5 @@ class RegressionPipeline(PipelineBase):
             dict: Ordered dictionary of objective scores
         """
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        y_predicted = self.predict(X).to_series()
+        y_predicted = _convert_woodwork_types_wrapper(self.predict(X).to_series())
         return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)

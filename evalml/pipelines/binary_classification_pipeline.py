@@ -1,6 +1,7 @@
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
+from evalml.utils import _convert_to_woodwork_structure
 
 
 class BinaryClassificationPipeline(ClassificationPipeline):
@@ -39,8 +40,8 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         ypred_proba = ypred_proba.to_dataframe()
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
-            return ypred_proba > self.threshold
-        return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+            return _convert_to_woodwork_structure(ypred_proba > self.threshold)
+        return _convert_to_woodwork_structure(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
 
     def predict_proba(self, X):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
