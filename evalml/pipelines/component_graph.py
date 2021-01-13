@@ -8,6 +8,7 @@ from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
     _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
     get_random_state,
     import_or_raise
 )
@@ -181,10 +182,8 @@ class ComponentGraph:
         """
         if len(component_list) == 0:
             return X
-        if isinstance(X, ww.DataTable):
-            X = X.to_dataframe()
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         output_cache = {}
         for component_name in component_list:
@@ -205,10 +204,12 @@ class ComponentGraph:
                     if isinstance(parent_x, ww.DataColumn):
                         parent_x_series = parent_x.to_series()
                         parent_x = pd.DataFrame(parent_x_series, columns=[parent_input])
-                        parent_x = _convert_to_woodwork_structure(parent_x)
+                        parent_x = _convert_to_woodwork_structure(parent_x).to_dataframe()
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
+
             self.input_feature_names.update({component_name: list(input_x.columns)})
+
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(input_x, input_y)

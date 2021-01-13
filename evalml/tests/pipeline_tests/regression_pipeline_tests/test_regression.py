@@ -21,9 +21,9 @@ def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipel
 
 def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
     X, y = load_diabetes()
-    mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
-    mock_regression_pipeline.fit(X, y)
-    assert not pd.isnull(mock_regression_pipeline.predict(X)).any()
+    regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
+    regression_pipeline.fit(X, y)
+    assert not pd.isnull(regression_pipeline.predict(X).to_series()).any()
 
 
 def test_custom_indices():
@@ -35,6 +35,6 @@ def test_custom_indices():
     X = pd.DataFrame({"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]})
     y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0], index=[7, 2, 1, 4, 5, 3, 6, 8])
 
-    x1, x2, y1, y2 = split_data(X, y, problem_type='binary')
+    x1, x2, y1, y2 = split_data(X, y, problem_type='regression')
     tp = MyTargetPipeline({})
     tp.fit(x2, y2)
