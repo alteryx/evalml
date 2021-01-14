@@ -2,6 +2,9 @@ from unittest.mock import patch
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engines import SequentialEngine
+from evalml.tests.automl_tests.test_automl import (
+    KeyboardInterruptOnKthPipeline
+)
 
 
 class DummyAlgorithm:
@@ -47,6 +50,42 @@ def test_evaluate_batch(mock_cv, X_y_binary, linear_regression_pipeline_class):
     fitted_pipelines = engine_result.completed_pipelines
     evaluation_results = engine_result.pipeline_results
     unprocessed_pipelines = engine_result.unprocessed_pipelines
+    assert engine_result.early_stop is False
     assert len(evaluation_results) == 3
     assert len(fitted_pipelines) == 3
     assert len(unprocessed_pipelines) == 0
+
+
+@patch("builtins.input")
+@patch('evalml.automl.engines.EngineBase._compute_cv_scores')
+def test_evaluate_batch_keyboard_interrupt(mock_cv, mock_input, X_y_binary, linear_regression_pipeline_class):
+    X, y = X_y_binary
+    seq_engine = SequentialEngine()
+    seq_engine.load_data(X, y)
+    callback = KeyboardInterruptOnKthPipeline(k=2)
+    mock_input.side_effect = "y"
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, start_iteration_callback=callback, max_iterations=1)
+    automl._start = 0
+    automl._automl_algorithm = DummyAlgorithm()
+    automl._automl_algorithm.batch_number = 0
+    seq_engine.load_search(automl)
+    mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
+    pipeline_batch = [mock_regression_pipeline, mock_regression_pipeline, mock_regression_pipeline]
+    score_dict = {
+        'cv_data': [
+            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 1},
+            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 0},
+        ],
+        'training_time': 1.0,
+        'cv_scores': [1, 0],
+        'cv_score_mean': 0.5
+    }
+    mock_cv.return_value = (mock_regression_pipeline, score_dict)
+    engine_result = seq_engine.evaluate_batch(pipeline_batch)
+    fitted_pipelines = engine_result.completed_pipelines
+    evaluation_results = engine_result.pipeline_results
+    unprocessed_pipelines = engine_result.unprocessed_pipelines
+    assert engine_result.early_stop is True
+    assert len(evaluation_results) == 1
+    assert len(fitted_pipelines) == 1
+    assert len(unprocessed_pipelines) == 2
