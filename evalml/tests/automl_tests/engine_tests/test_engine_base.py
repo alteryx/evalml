@@ -13,9 +13,6 @@ class DummyEngine(EngineBase):
     def evaluate_batch(self, pipeline_batch):
         super().evaluate_batch()
 
-    def evaluate_pipeline(self, pipeline):
-        super().evaluate_pipeline()
-
 
 def test_load_data(X_y_binary):
     engine = DummyEngine()

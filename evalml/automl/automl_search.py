@@ -715,6 +715,7 @@ class AutoMLSearch:
             engine_result = engine.evaluate_batch(current_pipeline_batch, log_pipeline=log_pipeline, result_callback=result_callback, ignore_stopping_condition=ignore_stopping_condition)
             completed_pipelines = engine_result.completed_pipelines
             evaluation_results = engine_result.pipeline_results
+            current_pipeline_batch = engine_result.unprocessed_pipelines
             for pipeline, result in zip(completed_pipelines, evaluation_results):
                 if baseline:
                     self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(result["cv_data"], self.objective_name_to_class)
