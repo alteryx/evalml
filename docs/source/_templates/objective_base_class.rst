@@ -3,7 +3,6 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['problem_types'] %}
 
    {% block attributes %}
    .. Class attributes:

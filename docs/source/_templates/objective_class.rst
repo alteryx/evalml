@@ -3,8 +3,6 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['name', 'greater_is_better', 'perfect_score', 'positive_only', 'problem_types',
-                              'score_needs_proba'] %}
 
    {% block attributes %}
    .. Class attributes:
