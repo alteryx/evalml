@@ -167,11 +167,12 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineRegressor',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineEstimator',
                        'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
-                       'TimeSeriesBaselineRegressionPipeline'}
+                       'TimeSeriesBaselineRegressionPipeline', 'TimeSeriesBaselineBinaryPipeline',
+                       'TimeSeriesBaselineMulticlassPipeline'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
@@ -219,7 +220,7 @@ def _rename_column_names_to_numeric(X):
         Transformed X where column names are renamed to numerical values
     """
     X_t = X
-    if isinstance(X, np.ndarray):
+    if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
     if isinstance(X, ww.DataTable):
         X_t = X.to_dataframe()

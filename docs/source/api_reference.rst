@@ -271,7 +271,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
-    TimeSeriesBaselineRegressor
+    TimeSeriesBaselineEstimator
     StackedEnsembleRegressor
     DecisionTreeRegressor
     LightGBMRegressor

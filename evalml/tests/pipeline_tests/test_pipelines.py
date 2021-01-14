@@ -51,8 +51,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
     make_pipeline_from_components
 )
-from evalml.preprocessing.utils import is_time_series
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_time_series
 from evalml.utils.gen_utils import check_random_state_equality
 
 
@@ -119,7 +118,7 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -153,7 +152,7 @@ def test_make_pipeline(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -187,7 +186,7 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -221,7 +220,7 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -252,7 +251,7 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -286,7 +285,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type, text_columns=['text'])
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -313,7 +312,7 @@ def test_make_pipeline_numpy_input(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -344,7 +343,7 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
-            if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+            if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             else:
                 delayed_features = []
@@ -1597,11 +1596,11 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
 def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
-                                                     all_multiclass_pipeline_classes, helper_functions):
+                                                     make_data_type, all_multiclass_pipeline_classes, helper_functions):
     if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
@@ -1633,13 +1632,8 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         y = y.astype(target_type)
     unique_vals = y.unique()
 
-    if data_type == 'np':
-        X = X.to_numpy()
-        y = y.to_numpy()
-
-    elif data_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
 
     for pipeline_class in pipeline_classes:
         pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
