@@ -143,16 +143,15 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             # Pass the pipeline params to the components that need them
             if component_class.name in self._pipeline_params:
                 for param_name, value in self._pipeline_params[component_class.name].items():
-                    if param_name in init_params:
-                        if isinstance(value, (Integer, Real)):
-                            # get a random value in the space
-                            component_parameters[param_name] = value.rvs(random_state=self._random_state)[0]
-                        elif isinstance(value, Categorical):
-                            component_parameters[param_name] = value.rvs(random_state=self._random_state)
-                        elif isinstance(value, (list, tuple)):
-                            component_parameters[param_name] = value[0]
-                        else:
-                            component_parameters[param_name] = value
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(random_state=self._random_state)[0]
+                    elif isinstance(value, Categorical):
+                        component_parameters[param_name] = value.rvs(random_state=self._random_state)
+                    elif isinstance(value, (list, tuple)):
+                        component_parameters[param_name] = value[0]
+                    else:
+                        component_parameters[param_name] = value
             if 'pipeline' in self._pipeline_params:
                 for param_name, value in self._pipeline_params['pipeline'].items():
                     if param_name in init_params:
