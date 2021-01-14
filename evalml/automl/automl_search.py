@@ -479,7 +479,7 @@ class AutoMLSearch:
             pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
         else:
             pipeline_params = self.pipeline_parameters
-        # pipeline_params = self.problem_configuration
+
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,

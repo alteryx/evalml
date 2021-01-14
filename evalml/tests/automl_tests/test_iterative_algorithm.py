@@ -279,10 +279,8 @@ def test_iterative_algorithm_pipeline_params_skopt(parameter, dummy_binary_pipel
 
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
-                              pipeline_params={'pipeline': {"gap": 3, "max_delay": 1},
-                                               'Mock Classifier': {'dummy_parameter': "dummy", 'fake_param': 'fake'}},
+                              pipeline_params={'Mock Classifier': {'dummy_parameter': "dummy", 'fake_param': 'fake'}},
                               random_state=0)
 
     next_batch = algo.next_batch()
-    assert all([p.parameters['pipeline'] == {"gap": 3, "max_delay": 1} for p in next_batch])
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": "dummy", "n_jobs": -1, "fake_param": "fake"} for p in next_batch])
