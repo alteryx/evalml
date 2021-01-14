@@ -48,8 +48,6 @@ class GridSearchTuner(Tuner):
                     range_values = [int((x * delta) + low) for x in range(n_points)]
                 else:
                     range_values = [(x * delta) + low for x in range(n_points)]
-            else:
-                raise TypeError("Invalid dimension type in tuner")
             raw_dimensions.append(range_values)
         self._grid_points = itertools.product(*raw_dimensions)
         self.curr_params = None
