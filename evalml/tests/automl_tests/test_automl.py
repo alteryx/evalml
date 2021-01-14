@@ -2162,3 +2162,14 @@ def test_automl_pipeline_params_multiple(X_y_regression):
     assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
     assert automl.best_pipeline.parameters['Elastic Net Regressor']['alpha'] == 0.4221328742905088
     assert automl.best_pipeline.parameters['Elastic Net Regressor']['l1_ratio'] == 0.01
+
+
+def test_automl_pipeline_params_kwargs(X_y_multi):
+    X, y = X_y_multi
+    params = {'Imputer': {'numeric_impute_strategy': 'most_frequent'},
+              'Decision Tree Classifier': {'ccp_alpha': Real(0.1, 0.5)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
+                          allowed_model_families=[ModelFamily.DECISION_TREE], max_iterations=2, n_jobs=1)
+    automl.search()
+    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+    assert automl.best_pipeline.parameters['Decision Tree Classifier']['ccp_alpha'] == 0.3860757465489678
