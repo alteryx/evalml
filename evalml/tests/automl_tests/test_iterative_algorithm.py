@@ -120,7 +120,6 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             last_pipeline_number = algo.pipeline_number
             assert algo.batch_number == last_batch_number + 1
             last_batch_number = algo.batch_number
-            print([p.parameters for p in next_batch])
             all_parameters.extend([p.parameters for p in next_batch])
             scores = -np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
@@ -224,13 +223,12 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     for i in range(1, 5):
         next_batch = algo.next_batch()
         assert len(next_batch) == algo.pipelines_per_batch
-        assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
         assert all(check_random_state_equality(p.random_state, algo.random_state) for p in next_batch)
+        assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
         assert algo.pipeline_number == last_pipeline_number + len(next_batch)
         last_pipeline_number = algo.pipeline_number
         assert algo.batch_number == last_batch_number + 1
         last_batch_number = algo.batch_number
-        print([p.parameters for p in next_batch])
         all_parameters.extend([p.parameters for p in next_batch])
         scores = -np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
