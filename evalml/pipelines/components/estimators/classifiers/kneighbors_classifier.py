@@ -30,6 +30,7 @@ class KNeighborsClassifier(Estimator):
                  algorithm="auto",
                  leaf_size=30,
                  p=2,
+                 random_state=0,
                  **kwargs):
         parameters = {"n_neighbors": n_neighbors,
                       "weights": weights,
@@ -37,14 +38,10 @@ class KNeighborsClassifier(Estimator):
                       "leaf_size": leaf_size,
                       "p": p}
         parameters.update(kwargs)
-        scikit_knn_parameters = copy.copy(parameters)
-        try:
-            scikit_knn_parameters.pop("random_state")
-        except KeyError:
-            pass
-        knn_classifier = SKKNeighborsClassifier(**scikit_knn_parameters)
+        knn_classifier = SKKNeighborsClassifier(**parameters)
         super().__init__(parameters=parameters,
-                         component_obj=knn_classifier)
+                         component_obj=knn_classifier,
+                         random_state=random_state)
 
     @property
     def feature_importance(self):
