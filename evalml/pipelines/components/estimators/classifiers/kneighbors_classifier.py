@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 from skopt.space import Integer
@@ -11,7 +12,7 @@ class KNeighborsClassifier(Estimator):
     """
     K-Nearest Neighbors Classifier.
     """
-    name = "K-Nearest Neighbors Classifier"
+    name = "KNN Classifier"
     hyperparameter_ranges = {
         "n_neighbors": Integer(2, 12),
         "weights": ["uniform", "distance"],
@@ -20,7 +21,8 @@ class KNeighborsClassifier(Estimator):
         "p": Integer(1, 5)
     }
     model_family = ModelFamily.K_NEIGHBORS
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     def __init__(self,
                  n_neighbors=5,
@@ -28,7 +30,6 @@ class KNeighborsClassifier(Estimator):
                  algorithm="auto",
                  leaf_size=30,
                  p=2,
-                 random_state=0,  # Capture random_state so it doesn't get into params
                  **kwargs):
         parameters = {"n_neighbors": n_neighbors,
                       "weights": weights,
@@ -36,8 +37,12 @@ class KNeighborsClassifier(Estimator):
                       "leaf_size": leaf_size,
                       "p": p}
         parameters.update(kwargs)
-
-        knn_classifier = SKKNeighborsClassifier(**parameters)
+        scikit_knn_parameters = copy.copy(parameters)
+        try:
+            scikit_knn_parameters.pop("random_state")
+        except KeyError:
+            pass
+        knn_classifier = SKKNeighborsClassifier(**scikit_knn_parameters)
         super().__init__(parameters=parameters,
                          component_obj=knn_classifier)
 

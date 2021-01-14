@@ -10,7 +10,7 @@ Release Notes
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
         * Support graphviz 0.16 :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
-        * Add KNN Classifier to baseline. :pr:`1650`
+        * Added KNN Classifier to estimators. :pr:`1650`
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
     * Fixes
