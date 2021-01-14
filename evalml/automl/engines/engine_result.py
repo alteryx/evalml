@@ -24,6 +24,3 @@ class EngineResult:
                 raise ValueError(f"`pipeline_results` must be dict or list(dict). Recieved {(pipeline_results)}.")
             self.completed_pipelines = self.completed_pipelines + completed_pipelines
             self.pipeline_results = self.pipeline_results + pipeline_results
-
-    def set_unprocessed_pipelines(self, unprocessed_pipeline):
-        self.unprocessed_pipelines = unprocessed_pipeline
