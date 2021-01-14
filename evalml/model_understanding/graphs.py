@@ -454,6 +454,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
             "positive" class.
 
     """
+    from evalml.pipelines.components.utils import scikit_learn_wrapped_estimator
     X = _convert_to_woodwork_structure(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
@@ -461,15 +462,19 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        pipeline._estimator_type = "classifier"
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        pipeline._estimator_type = "regressor"
-    pipeline.feature_importances_ = pipeline.feature_importance
+
     if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
     try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
+        wrapped = scikit_learn_wrapped_estimator(pipeline)
+        if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+            wrapped._estimator_type = "classifier"
+            wrapped.classes_ = pipeline.classes_
+        elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+            wrapped._estimator_type = "regressor"
+        wrapped.feature_importances_ = pipeline.feature_importance
+        wrapped._is_fitted = True
+        avg_pred, values = sk_partial_dependence(wrapped, X=X, features=[feature], grid_resolution=grid_resolution)
     finally:
         # Delete scikit-learn attributes that were temporarily set
         del pipeline._estimator_type

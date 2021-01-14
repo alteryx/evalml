@@ -727,7 +727,7 @@ def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=20):
 def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
                                           logistic_regression_multiclass_pipeline_class,
-                                          linear_regression_pipeline_class):
+                                          linear_regression_pipeline_class, make_data_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -740,11 +740,7 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
         X, y = X_y_regression
         pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
 
-    if data_type != "np":
-        X = pd.DataFrame(X)
-    if data_type == "ww":
-        X = ww.DataTable(X)
-
+    X = make_data_type(data_type, X)
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
