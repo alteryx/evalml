@@ -1877,7 +1877,7 @@ def test_automl_error_callback_log(mock_fit, mock_score, X_y_binary, caplog):
     X, y = X_y_binary
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
-    # caplog.clear()
+    caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg in caplog.text

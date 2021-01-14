@@ -1,4 +1,3 @@
-import copy
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 from skopt.space import Integer
@@ -46,7 +45,8 @@ class KNeighborsClassifier(Estimator):
     @property
     def feature_importance(self):
         """
-        Restrictions: return must be a numpy array and the length must match the input num_cols
+        Returns array of 0's matching the input number of features as feature_importance is
+        not defined for KNN classifiers.
         """
         num_features = self._component_obj.n_features_in_
         return np.zeros(num_features)
