@@ -2136,7 +2136,7 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
 def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
     X, y = X_y_multi
     params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
-              'Decision Tree Classifier': {'max_depth': Integer(1,2), 'ccp_alpha': Real(0.1, 0.5)}}
+              'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
                           allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
     automl.search()
