@@ -140,8 +140,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
-            # Pass the pipeline params to the components that need them
-            if component_class.name in self._pipeline_params:
+            # For first batch, pass the pipeline params to the components that need them
+            if component_class.name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[component_class.name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space

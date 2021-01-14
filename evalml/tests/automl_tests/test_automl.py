@@ -2091,85 +2091,57 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
                      additional_objectives=[non_core_objective.name])
 
 
-def test_automl_pipeline_params_simple(X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
-    params = {'Imputer': {'numeric_impute_strategy': 'median'}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, max_iterations=2, n_jobs=1)
-    automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
-
-    params = {"Imputer": {"numeric_impute_strategy": "median"}, "Logistic Regression Classifier": {"C": 2}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL],
-                          pipeline_parameters=params, n_jobs=1)
-    automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
-    assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 2
-
-    params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
-              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'}}
-    # set max_iterations=2 because we don't want elastic net to run, otherwise it'll be the best pipeline
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL],
-                          pipeline_parameters=params, max_iterations=2, n_jobs=1)
-    automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
-    assert automl.best_pipeline.parameters['Logistic Regression Classifier']['C'] == 20
-    assert automl.best_pipeline.parameters['Logistic Regression Classifier']['penalty'] == 'none'
-
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
               "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
               "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_model_families=[ModelFamily.LINEAR_MODEL],
-                          pipeline_parameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
     automl.search()
-    expected_parameters = {'Imputer': {'categorical_impute_strategy': 'most_frequent',
-                                       'numeric_impute_strategy': 'most_frequent',
-                                       'categorical_fill_value': None,
-                                       'numeric_fill_value': None},
-                           'Elastic Net Classifier': {'alpha': 0.75, 'l1_ratio': 0.2, 'n_jobs': 1,
-                                                      'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}}
-    assert automl.best_pipeline.parameters == expected_parameters
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+        if 'Logistic Regression Classifier' in row['parameters']:
+            assert row['parameters']['Logistic Regression Classifier']['C'] == 20
+            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'none'
+        if 'Elastic Net Classifier' in row['parameters']:
+            assert row['parameters']['Elastic Net Classifier']['alpha'] == 0.75
+            assert row['parameters']['Elastic Net Classifier']['l1_ratio'] == 0.2
 
 
-def test_automl_pipeline_params_multiple(X_y_regression):
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
     X, y = X_y_regression
-    params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, max_iterations=2, n_jobs=1)
-    automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'median'
-
-    params = {'Imputer': {'numeric_impute_strategy': ['most_frequent', 'median']},
-              'Decision Tree Regressor': {'max_depth': Integer(7, 9)}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params,
-                          allowed_model_families=[ModelFamily.DECISION_TREE], max_iterations=2, n_jobs=1)
-    automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
-    assert automl.best_pipeline.parameters['Decision Tree Regressor']['max_depth'] == 8
-
-    params = {'Imputer': {'numeric_impute_strategy': ['most_frequent', 'median']},
-              'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params,
-                          allowed_model_families=[ModelFamily.DECISION_TREE], max_iterations=2, n_jobs=1)
-    automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
-    assert automl.best_pipeline.parameters['Decision Tree Regressor']['max_depth'] == 17
-    assert automl.best_pipeline.parameters['Decision Tree Regressor']['max_features'] == 'auto'
-
-    params = {'Imputer': {'numeric_impute_strategy': ['most_frequent', 'median']},
+    params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']},
+              'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])},
               'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": (0.01, 0.02, 0.03)}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params,
-                          allowed_model_families=[ModelFamily.LINEAR_MODEL], max_iterations=2, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, n_jobs=1)
     automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
-    assert automl.best_pipeline.parameters['Elastic Net Regressor']['alpha'] == 0.4221328742905088
-    assert automl.best_pipeline.parameters['Elastic Net Regressor']['l1_ratio'] == 0.01
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'median'
+        if 'Decision Tree Regressor' in row['parameters']:
+            assert row['parameters']['Decision Tree Regressor']['max_depth'] == 17
+            assert row['parameters']['Decision Tree Regressor']['max_features'] == 'auto'
+        if 'Elastic Net Classifier' in row['parameters']:
+            assert row['parameters']['Elastic Net Regressor']['alpha'] == 0.4221328742905088
+            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == 0.01
 
 
-def test_automl_pipeline_params_kwargs(X_y_multi):
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
     X, y = X_y_multi
-    params = {'Imputer': {'numeric_impute_strategy': 'most_frequent'},
+    params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
               'Decision Tree Classifier': {'ccp_alpha': Real(0.1, 0.5)}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
-                          allowed_model_families=[ModelFamily.DECISION_TREE], max_iterations=2, n_jobs=1)
+                          allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
     automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == 'most_frequent'
-    assert automl.best_pipeline.parameters['Decision Tree Classifier']['ccp_alpha'] == 0.3860757465489678
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+        if 'Decision Tree Regressor' in row['parameters']:
+            assert row['parameters']['Decision Tree Classifier']['ccp_alpha'] == 0.3860757465489678
