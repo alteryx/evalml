@@ -2127,7 +2127,7 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
             assert row['parameters']['Decision Tree Regressor']['max_depth'] == 17
             assert row['parameters']['Decision Tree Regressor']['max_features'] == 'auto'
         if 'Elastic Net Regressor' in row['parameters']:
-            assert row['parameters']['Elastic Net Regressor']['alpha'] == 0.44588650039104
+            assert 0 < row['parameters']['Elastic Net Regressor']['alpha'] < 0.5
             assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == 0.01
 
 
@@ -2144,5 +2144,5 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
         if 'Imputer' in row['parameters']:
             assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
         if 'Decision Tree Classifier' in row['parameters']:
-            assert row['parameters']['Decision Tree Classifier']['ccp_alpha'] == 0.4431782470491028
+            assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
