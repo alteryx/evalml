@@ -28,8 +28,9 @@ def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
 
 def test_custom_indices():
     # custom regression pipeline
+    # don't need to use target encoder, which wont run on core dependencies true tests
     class MyTargetPipeline(RegressionPipeline):
-        component_graph = ['Imputer', 'Target Encoder', 'Linear Regressor']
+        component_graph = ['Imputer', 'One Hot Encoder', 'Linear Regressor']
         custom_name = "Target Pipeline"
 
     X = pd.DataFrame({"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]})
