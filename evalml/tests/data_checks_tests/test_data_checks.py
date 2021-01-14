@@ -107,21 +107,17 @@ def test_default_data_checks_classification(input_type):
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
 
-    leakage = [DataCheckWarning(message="Column 'has_label_leakage' is 95.0% or more correlated with the target",
-                                data_check_name="TargetLeakageDataCheck",
-                                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                details={"column": "has_label_leakage"}).to_dict()]
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                 details={"target_values": [1.0, 0.0]}).to_dict()]
 
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:] + imbalance}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "binary",
                                                          "objective": get_default_primary_search_objective("binary")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + leakage, "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
     # multiclass
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]",
@@ -152,7 +148,7 @@ def test_default_data_checks_regression(input_type):
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, "some data"],
                       'all_null': [None, None, None, None, None],
                       'also_all_null': [None, None, None, None, None],
-                      'no_null': [1, 2, 3, 4, 5],
+                      'no_null': [1, 2, 3, 5, 5],
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100]})
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
@@ -162,19 +158,27 @@ def test_default_data_checks_regression(input_type):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
         y_no_variance = ww.DataColumn(y_no_variance)
+    id_leakage = [DataCheckWarning(message="Column 'id' is 95.0% or more correlated with the target",
+                                   data_check_name="TargetLeakageDataCheck",
+                                   message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                   details={"column": "id"}).to_dict()]
+    null_leakage = [DataCheckWarning(message="Column 'lots_of_null' is 95.0% or more correlated with the target",
+                                     data_check_name="TargetLeakageDataCheck",
+                                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                     details={"column": "lots_of_null"}).to_dict()]
     data_checks = DefaultDataChecks("regression", get_default_primary_search_objective("regression"))
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
 
     # Skip Invalid Target
-    assert data_checks.validate(X, y_no_variance) == {"warnings": messages[:3], "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
-                                                                                                                         data_check_name="NoVarianceDataCheck",
-                                                                                                                         message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                                                                                         details={"column": "Y"}).to_dict()]}
+    assert data_checks.validate(X, y_no_variance) == {"warnings": messages[:3] + null_leakage, "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
+                                                                                                                                        data_check_name="NoVarianceDataCheck",
+                                                                                                                                        message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                                                                                                        details={"column": "Y"}).to_dict()]}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
 
 
 def test_default_data_checks_time_series_regression():
