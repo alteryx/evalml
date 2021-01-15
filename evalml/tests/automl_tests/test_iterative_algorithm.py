@@ -43,7 +43,7 @@ def dummy_binary_pipeline_classes():
             model_family = ModelFamily.RANDOM_FOREST
             supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
             if isinstance(hyperparameters, (list, tuple, Real, Categorical, Integer)):
-                    hyperparameter_ranges = {'dummy_parameter': hyperparameters}
+                hyperparameter_ranges = {'dummy_parameter': hyperparameters}
             else:
                 hyperparameter_ranges = {'dummy_parameter': [hyperparameters]}
 
