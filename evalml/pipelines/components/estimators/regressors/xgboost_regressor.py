@@ -50,7 +50,7 @@ class XGBoostRegressor(Estimator):
     def predict(self, X):
         X = _rename_column_names_to_numeric(X)
         predictions = super().predict(X)
-        predictions = _convert_to_woodwork_structure(predictions)
+        predictions = _convert_to_woodwork_structure(predictions)  # UNNECESSARY?
         return predictions
 
     @property

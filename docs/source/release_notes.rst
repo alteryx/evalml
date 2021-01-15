@@ -42,7 +42,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
-        * Components and pipelines return ``Woodwork`` data structures instead of pandas data structures :pr:`1668`
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
 
 **v0.17.0 Dec. 29, 2020**
     * Enhancements

@@ -91,7 +91,6 @@ class ComponentGraph:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (pd.Series): The target training data of length [n_samples]
         """
-        # import pdb; pdb.set_trace()
         self._compute_features(self.compute_order, X, y, fit=True)
         return self
 

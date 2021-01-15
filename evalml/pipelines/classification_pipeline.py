@@ -39,7 +39,6 @@ class ClassificationPipeline(PipelineBase):
             self
 
         """
-        # import pdb; pdb.set_trace()
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
@@ -80,7 +79,6 @@ class ClassificationPipeline(PipelineBase):
             pd.Series: Estimated labels
         """
         # why does this not use objectives... because multiclass doesnt? so maybe this should be moved for less confusion
-        # import pdb; pdb.set_trace()
         return self._component_graph.predict(X)
 
     def predict(self, X, objective=None):
@@ -93,7 +91,6 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series : Estimated labels
         """
-        # import pdb; pdb.set_trace()
         predictions = self._predict(X, objective)
         predictions = predictions.to_series()
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)

@@ -465,6 +465,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
 
     if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
+
     wrapped = scikit_learn_wrapped_estimator(pipeline)
     if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
         wrapped._estimator_type = "classifier"
