@@ -150,7 +150,6 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
 @pytest.mark.parametrize("ensembling_value", [True, False])
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
 def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value, dummy_binary_pipeline_classes):
-
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value,
                               pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}})
 
@@ -177,9 +176,7 @@ def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value
 
 
 def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
-
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, n_jobs=2, ensembling=False)
-
     next_batch = algo.next_batch()
 
     # the "best" score will be the 1st dummy pipeline
@@ -248,17 +245,60 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
     assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']
 
 
-@pytest.mark.parametrize("parameter", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
-def test_iterative_algorithm_pipeline_params(parameter, dummy_binary_pipeline_classes):
+@pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
+def test_iterative_algorithm_pipeline_params(parameters):
+    # We make sure the hyperparameter ranges are set as specified
+    # In AutoMLSearch, this is taken care of in `make_pipelines`
+    def dummy_binary_pipeline_classes():
+        class MockEstimator(Estimator):
+            name = "Mock Classifier"
+            model_family = ModelFamily.RANDOM_FOREST
+            supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+            if isinstance(parameters, (list, tuple)):
+                hyperparameter_ranges = {'dummy_parameter': parameters}
+            else:
+                hyperparameter_ranges = {'dummy_parameter': [parameters]}
+
+            def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
+                super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
+                                             'n_jobs': n_jobs},
+                                 component_obj=None, random_state=random_state)
+
+        class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
+            estimator = MockEstimator
+            component_graph = [MockEstimator]
+
+        class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
+            estimator = MockEstimator
+            component_graph = [MockEstimator]
+
+        return [MockBinaryClassificationPipeline1,
+                MockBinaryClassificationPipeline2]
+
+    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
                               pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
-                                               'Mock Classifier': {'dummy_parameter': parameter}})
+                                               'Mock Classifier': {'dummy_parameter': parameters}})
 
     next_batch = algo.next_batch()
+    parameter = parameters
     if isinstance(parameter, (list, tuple)):
-        parameter = parameter[0]
+        parameter = parameters[0]
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": parameter, "n_jobs": -1} for p in next_batch])
+
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+    # make sure that future batches remain in the hyperparam range
+    for i in range(1, 5):
+        next_batch = algo.next_batch()
+        for p in next_batch:
+            if isinstance(parameters, (tuple, list)):
+                assert p.parameters['Mock Classifier']['dummy_parameter'] in parameters
+            else:
+                assert p.parameters['Mock Classifier']['dummy_parameter'] == parameter
 
 
 @pytest.mark.parametrize("parameter", [Real(0, 1), Categorical(["random", "dummy", "test"]), Integer(1, 10)])
