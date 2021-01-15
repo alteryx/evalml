@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines import TimeSeriesBaselineRegressionPipeline
 from evalml.pipelines.time_series_baselines import (
@@ -25,7 +24,7 @@ def test_time_series_baseline(pipeline_class, gap, X_none, ts_data):
     if X_none:
         X = None
     clf.fit(X, y)
-    assert_series_equal(expected_y, clf.predict(X, y).to_series())
+    np.testing.assert_equal(expected_y.values, clf.predict(X, y).to_series().values)
 
 
 @pytest.mark.parametrize('X_none', [True, False])
@@ -50,7 +49,7 @@ def test_time_series_baseline_predict_proba(pipeline_class, gap, X_none):
     if X_none:
         X = None
     clf.fit(X, y)
-    assert_frame_equal(expected_proba, clf.predict_proba(X, y).to_dataframe())
+    pd.testing.assert_frame_equal(expected_proba, clf.predict_proba(X, y).to_dataframe())
 
 
 @pytest.mark.parametrize('pipeline_class', [TimeSeriesBaselineRegressionPipeline,

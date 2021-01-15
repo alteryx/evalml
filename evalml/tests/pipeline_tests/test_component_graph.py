@@ -455,7 +455,7 @@ def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
 def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
-    X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
+    X_expected = X.fillna(0)
     mock_imputer.return_value = ww.DataTable(X)
     mock_ohe.return_value = ww.DataTable(X_expected)
 
