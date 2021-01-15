@@ -1082,17 +1082,17 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
 @patch('evalml.pipelines.components.ElasticNetClassifier.predict')
 def test_compute_estimator_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, X_y_binary, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
-    ### TODO: can clean
-    mock_imputer.return_value = ww.DataTable(pd.DataFrame(X))
-    mock_ohe.return_value = ww.DataTable(pd.DataFrame(X))
-    mock_en_predict.return_value = ww.DataColumn(pd.Series(np.ones(X.shape[0])))
-    mock_rf_predict.return_value = ww.DataColumn(pd.Series(np.zeros(X.shape[0])))
-    X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
+    mock_imputer.return_value = ww.DataTable(X)
+    mock_ohe.return_value = ww.DataTable(X)
+    mock_en_predict.return_value = ww.DataColumn(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = ww.DataColumn(np.zeros(X.shape[0]))
+    X_expected_df = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
 
     pipeline = nonlinear_binary_pipeline_class({})
     pipeline.fit(X, y)
     X_t = pipeline.compute_estimator_features(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+
+    assert_frame_equal(X_expected_df, X_t.to_dataframe())
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
     assert mock_en_predict.call_count == 2
