@@ -15,6 +15,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Fixed docs to show plots for ``AutoMLSearch`` :pr:``
     * Testing Changes
 
 
