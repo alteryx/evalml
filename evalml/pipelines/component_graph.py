@@ -285,9 +285,16 @@ class ComponentGraph:
         if len(x_inputs) == 0:
             return_x = X
         else:
+            x_to_concat = []
             for x_in in x_inputs:
-                merged_types_dict.update(x_in.logical_types)
-            return_x = pd.concat([x_in.to_dataframe() if isinstance(x_in, ww.DataTable) else x_in for x_in in x_inputs], axis=1)
+                if isinstance(x_in, ww.DataTable):
+                    merged_types_dict.update(x_in.logical_types)
+                    x_to_concat.append(x_in.to_dataframe())
+                elif isinstance(x_in, ww.DataColumn):
+                    x_to_concat.append(x_in.to_series())
+                else:  # shouldnt reach here.
+                    x_to_concat.append(x_in)
+            return_x = pd.concat(x_to_concat, axis=1)
         return_y = y
         if y_input is not None:
             return_y = y_input

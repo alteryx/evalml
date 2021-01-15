@@ -418,7 +418,7 @@ def test_fit_features_nonlinear(mock_predict, mock_fit, mock_fit_transform, exam
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = pd.Series(y)
+    mock_predict.return_value = ww.DataColumn(pd.Series(y))
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
@@ -431,7 +431,7 @@ def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = pd.Series(y)
+    mock_predict.return_value = ww.DataColumn(pd.Series(y))
 
     graph = {'Imputer': [Imputer],
              'OneHot_RandomForest': [OneHotEncoder, 'Imputer.x'],
@@ -476,10 +476,10 @@ def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_bin
 @patch('evalml.pipelines.components.ElasticNetClassifier.predict')
 def test_compute_final_component_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_imputer.return_value = pd.DataFrame(X)
-    mock_ohe.return_value = pd.DataFrame(X)
-    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
-    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+    mock_imputer.return_value = ww.DataTable(pd.DataFrame(X))
+    mock_ohe.return_value = ww.DataTable(pd.DataFrame(X))
+    mock_en_predict.return_value = ww.DataColumn(pd.Series(np.ones(X.shape[0])))
+    mock_rf_predict.return_value = ww.DataColumn(pd.Series(np.zeros(X.shape[0])))
     X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
