@@ -43,7 +43,6 @@ class BaselineRegressor(Estimator):
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -56,7 +55,6 @@ class BaselineRegressor(Estimator):
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         predictions = pd.Series([self._prediction_value] * len(X))
         return _convert_to_woodwork_structure(predictions)
 

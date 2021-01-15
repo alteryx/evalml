@@ -61,6 +61,7 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
     X = clf.random_state.random((X.shape[0], len(string.printable)))
     col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
     X = pd.DataFrame(X, columns=col_names)
+
     clf.fit(X, y)
     predictions = clf.predict(X)
     assert len(predictions) == len(y)

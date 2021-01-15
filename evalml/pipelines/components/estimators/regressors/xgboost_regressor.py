@@ -49,9 +49,7 @@ class XGBoostRegressor(Estimator):
 
     def predict(self, X):
         X = _rename_column_names_to_numeric(X)
-        predictions = super().predict(X)
-        predictions = _convert_to_woodwork_structure(predictions)  # UNNECESSARY?
-        return predictions
+        return super().predict(X)
 
     @property
     def feature_importance(self):

@@ -45,7 +45,6 @@ class BaselineClassifier(Estimator):
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -61,7 +60,6 @@ class BaselineClassifier(Estimator):
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
@@ -73,18 +71,15 @@ class BaselineClassifier(Estimator):
 
     def predict_proba(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
             proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]] * len(X))
-            predictions = pd.DataFrame(proba_arr, columns=self._classes)
         elif strategy == "random":
             proba_arr = np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
-            predictions = pd.DataFrame(proba_arr, columns=self._classes)
         else:
             proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
-            predictions = pd.DataFrame(proba_arr, columns=self._classes)
+        predictions = pd.DataFrame(proba_arr, columns=self._classes)
         return _convert_to_woodwork_structure(predictions)
 
     @property
