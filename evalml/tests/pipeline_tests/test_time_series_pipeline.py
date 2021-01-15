@@ -5,9 +5,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.model_family import ModelFamily
 from evalml.pipelines import (
-    Estimator,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
@@ -252,30 +250,6 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     pd.testing.assert_frame_equal(df_passed_to_predict, answer)
 
 
-class ComponentUsesYInPredict(Estimator):
-    name = "Custom Component"
-    supported_problem_types = [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
-    model_family = ModelFamily.NONE
-    predict_uses_y = True
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(parameters={},
-                         component_obj=None,
-                         random_state=0)
-
-    def fit(self, X, y):
-        """No op."""
-
-    def predict(self, X, y):
-        return ww.DataColumn(y)
-
-    def predict_proba(self, X, y):
-        n_classes = len(y.value_counts())
-        mode_index = 0
-        proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(n_classes)]] * len(y))
-        return ww.DataTable(pd.DataFrame(proba_arr))
-
-
 @pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),
                                                        (TimeSeriesBinaryClassificationPipeline, ["Log Loss Binary"]),
                                                        (TimeSeriesBinaryClassificationPipeline, ["MCC Binary", "Log Loss Binary"]),
@@ -319,36 +293,6 @@ def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, 
     if expected_unique_values:
         # NaNs are expected because of padding due to max_delay
         assert set(pl.predict(X, y).to_series().dropna().unique()) == expected_unique_values
-    pl.score(X, y, objectives)
-
-
-@pytest.mark.parametrize("pipeline_class", [TimeSeriesBinaryClassificationPipeline,
-                                            TimeSeriesMulticlassClassificationPipeline])
-@pytest.mark.parametrize("use_none_X", [True, False])
-def test_score_works_with_estimator_uses_y(use_none_X, pipeline_class, X_y_binary, X_y_multi):
-
-    class Pipeline(pipeline_class):
-        component_graph = [ComponentUsesYInPredict]
-
-    pl = Pipeline({"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False}})
-    if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
-        y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")
-        expected_unique_values = {"good", "bad"}
-        objectives = ['MCC Binary', "Log Loss Binary"]
-    elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
-        label_map = {0: "good", 1: "bad", 2: "best"}
-        y = pd.Series(y).map(lambda label: label_map[label])
-        expected_unique_values = {"good", "bad", "best"}
-        objectives = ["MCC Multiclass", "Log Loss Multiclass"]
-
-    if use_none_X:
-        X = None
-
-    pl.fit(X, y)
-    # NaNs are expected because of padding due to max_delay
-    assert set(pl.predict(X, y).to_series().dropna().unique()) == expected_unique_values
     pl.score(X, y, objectives)
 
 

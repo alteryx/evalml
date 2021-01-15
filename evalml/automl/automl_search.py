@@ -42,6 +42,8 @@ from evalml.pipelines import (
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     PipelineBase,
+    TimeSeriesBaselineBinaryPipeline,
+    TimeSeriesBaselineMulticlassPipeline,
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
@@ -637,10 +639,14 @@ class AutoMLSearch:
         elif self.problem_type == ProblemTypes.REGRESSION:
             baseline = MeanBaselineRegressionPipeline(parameters={})
         else:
+            pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
+                              ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,
+                              ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = TimeSeriesBaselineRegressionPipeline(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
-                                                                        "Time Series Baseline Regressor": {"gap": gap, "max_delay": max_delay}})
+            baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+                                                  "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
+
         pipelines = [baseline]
         scores = self._evaluate_pipelines(pipelines, baseline=True)
         if scores == []:
