@@ -50,14 +50,14 @@ def test_null_values_in_dataframe():
                       'col_2': ["a", "b", "a", "c", "b"],
                       'col_3': ["a", "a", "a", "a", "a"]})
     y = pd.Series([0, 1, 1, 1, 0])
-    # encoder = TargetEncoder(handle_missing='value')
-    # encoder.fit(X, y)
-    # X_t = encoder.transform(X)
-    # X_expected = pd.DataFrame({'col_1': [0.6, 0.6, 0.6, 0.6, 0.6],
-    #                            'col_2': [0.526894, 0.526894, 0.526894, 0.6, 0.526894],
-    #                            'col_3': [0.6, 0.6, 0.6, 0.6, 0.6, ]})
+    encoder = TargetEncoder(handle_missing='value')
+    encoder.fit(X, y)
+    X_t = encoder.transform(X)
+    X_expected = pd.DataFrame({'col_1': [0.6, 0.6, 0.6, 0.6, 0.6],
+                               'col_2': [0.526894, 0.526894, 0.526894, 0.6, 0.526894],
+                               'col_3': [0.6, 0.6, 0.6, 0.6, 0.6, ]})
 
-    # assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t.to_dataframe())
 
     encoder = TargetEncoder(handle_missing='return_nan')
     encoder.fit(X, y)
