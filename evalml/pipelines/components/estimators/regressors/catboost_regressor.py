@@ -62,8 +62,8 @@ class CatBoostRegressor(Estimator):
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
-        return self
+        model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
+        return model
 
     @property
     def feature_importance(self):
