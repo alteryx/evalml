@@ -493,8 +493,9 @@ class AutoMLSearch:
         logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
         search_iteration_plot = None
         if self.plot:
-            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
-
+            # search_iteration_plot, text = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+            search_iteration_plot, text = self.plot.search_iteration_plot(interactive_plot=False)
+        logger.info(text)
         self._start = time.time()
 
         should_terminate = self._add_baseline_pipelines()

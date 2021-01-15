@@ -88,11 +88,11 @@ class PipelineSearchPlots:
         """
         if not interactive_plot:
             plot_obj = SearchIterationPlot(self.data)
-            return self._go.Figure(plot_obj.best_score_by_iter_fig)
+            return self._go.Figure(plot_obj.best_score_by_iter_fig), "GO FIGURE"
         try:
             ipython_display = import_or_raise("IPython.display", error_msg="Cannot find dependency IPython.display")
             plot_obj = SearchIterationPlot(self.data)
             ipython_display.display(plot_obj.best_score_by_iter_fig)
-            return plot_obj
+            return plot_obj, "IPYTHON DISPLAY"
         except ImportError:
             return self.search_iteration_plot(interactive_plot=False)
