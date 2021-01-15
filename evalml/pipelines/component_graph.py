@@ -204,13 +204,6 @@ class ComponentGraph:
                     y_input = output_cache[parent_input]
                 else:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
-                    # ideally, we want this to be woodwork stuff that's outputted and concatted.
-                    # if isinstance(parent_x, pd.Series):
-                    #     parent_x = pd.DataFrame(parent_x, columns=[parent_input])
-                    # if isinstance(parent_x, ww.DataColumn):
-                    #     parent_x_series = parent_x.to_series()
-                    #     parent_x = pd.DataFrame(parent_x_series, columns=[parent_input])
-                    #     parent_x = _convert_to_woodwork_structure(parent_x).to_dataframe()
                     if isinstance(parent_x, ww.DataTable):
                         merged_types_dict.update(parent_x.logical_types)
                         parent_x = parent_x.to_dataframe()
@@ -219,12 +212,8 @@ class ComponentGraph:
                         parent_x = pd.DataFrame(parent_x.to_series(), columns=[parent_input])
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
-            # check for original types and make sure they're preserved...
-            # import pdb; pdb.set_trace()
-            # for t in original_logical_types:
-            #     if t in input_x.columns:
-            #         input_x = input_x.set_types({t: original_logical_types[t]})
             for t in original_logical_types:
+                # numeric is special(ints, floats. ex: targetencoder.)
                 if t in input_x.columns and "numeric" not in input_x[t].semantic_tags:
                     input_x = input_x.set_types({t: original_logical_types[t]})
             self.input_feature_names.update({component_name: list(input_x.columns)})
@@ -251,28 +240,6 @@ class ComponentGraph:
                 output_cache[component_name] = output
         return output_cache
 
-    # @staticmethod
-    # def _consolidate_inputs(x_inputs, y_input, X, y):
-    #     """ Combines any/all X and y inputs for a component, including handling defaults
-
-    #     Arguments:
-    #         x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
-    #         y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
-    #         X (pd.DataFrame): The original X input, to be used if there is no parent X input
-    #         y (pd.Series): The original y input, to be used if there is no parent y input
-
-    #     Returns:
-    #         pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
-    #     """
-
-    #     if len(x_inputs) == 0:
-    #         return_x = X
-    #     else:
-    #         return_x = pd.concat([x_in.to_dataframe() if isinstance(x_in, ww.DataTable) else x_in for x_in in x_inputs], axis=1)
-    #     return_y = y
-    #     if y_input is not None:
-    #         return_y = y_input
-    #     return return_x, return_y
 
     @staticmethod
     def _consolidate_inputs(x_inputs, y_input, X, y):
@@ -292,16 +259,6 @@ class ComponentGraph:
         if len(x_inputs) == 0:
             return_x = X
         else:
-            # x_to_concat = []
-            # for x_in in x_inputs:
-            #     if isinstance(x_in, ww.DataTable):
-            #         merged_types_dict.update(x_in.logical_types)
-            #         x_to_concat.append(x_in.to_dataframe())
-            #     elif isinstance(x_in, ww.DataColumn):
-            #         # following what was previously here, but could probs be simplified.
-            #         x_to_concat.append(pd.DataFrame(x_in.to_series(), columns=[parent_input]))
-            #     else:  # shouldnt reach here.
-            #         x_to_concat.append(x_in)
             return_x = pd.concat(x_inputs, axis=1)
         return_y = y
         if y_input is not None:
