@@ -3,13 +3,14 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines import TimeSeriesBaselineRegressionPipeline
 from evalml.pipelines.time_series_baselines import (
     TimeSeriesBaselineBinaryPipeline,
     TimeSeriesBaselineMulticlassPipeline
 )
-from pandas.testing import assert_series_equal, assert_frame_equal
+
 
 @pytest.mark.parametrize('X_none', [True, False])
 @pytest.mark.parametrize('gap', [0, 1])

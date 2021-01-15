@@ -206,10 +206,10 @@ class ComponentGraph:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
                     if isinstance(parent_x, ww.DataTable):
                         merged_types_dict.update(parent_x.logical_types)
-                        parent_x = parent_x.to_dataframe()
+                        parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
                     elif isinstance(parent_x, ww.DataColumn):
                         # following what was previously here, but could probs be simplified.
-                        parent_x = pd.DataFrame(parent_x.to_series(), columns=[parent_input])
+                        parent_x = pd.DataFrame(_convert_woodwork_types_wrapper(parent_x.to_series()), columns=[parent_input])
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             for t in original_logical_types:
@@ -239,7 +239,6 @@ class ComponentGraph:
                     output = None
                 output_cache[component_name] = output
         return output_cache
-
 
     @staticmethod
     def _consolidate_inputs(x_inputs, y_input, X, y):

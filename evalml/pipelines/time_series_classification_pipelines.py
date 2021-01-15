@@ -131,8 +131,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         padded = pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
         return _convert_to_woodwork_structure(padded)
 
-
-
     def predict_proba(self, X, y=None):
         """Make probability estimates for labels.
 

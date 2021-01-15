@@ -368,9 +368,9 @@ def test_fit_correct_inputs(mock_ohe_transform, mock_imputer_fit_transform, X_y_
     mock_ohe_transform.return_value = expected_x
     component_graph = ComponentGraph(graph).instantiate({})
     component_graph.fit(X, y)
-    ### TODO
-    assert_frame_equal(mock_ohe_transform.call_args[0][0], expected_x.to_dataframe())
-    assert_series_equal(mock_ohe_transform.call_args[0][1].to_series(), expected_y.to_series())
+
+    assert_frame_equal(expected_x.to_dataframe(), mock_ohe_transform.call_args[0][0].to_dataframe())
+    assert_series_equal(expected_y.to_series(), mock_ohe_transform.call_args[0][1].to_series())
 
 
 @patch('evalml.pipelines.components.Transformer.fit_transform')
@@ -603,12 +603,12 @@ def test_computation_input_custom_index(index):
 @patch(f'{__name__}.TransformerA.transform')
 def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_transc, mock_preda, mock_predb, mock_predc, dummy_components):
     TransformerA, TransformerB, TransformerC, EstimatorA, EstimatorB, EstimatorC = dummy_components
-    mock_transa.return_value = pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)})
-    mock_transb.return_value = pd.DataFrame({'feature b': np.ones(6) * 2})
-    mock_transc.return_value = pd.DataFrame({'feature c': np.ones(6) * 3})
-    mock_preda.return_value = pd.Series([0, 0, 0, 1, 0, 0])
-    mock_predb.return_value = pd.Series([0, 0, 0, 0, 1, 0])
-    mock_predc.return_value = pd.Series([0, 0, 0, 0, 0, 1])
+    mock_transa.return_value = ww.DataTable(pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}))
+    mock_transb.return_value = ww.DataTable(pd.DataFrame({'feature b': np.ones(6) * 2}))
+    mock_transc.return_value = ww.DataTable(pd.DataFrame({'feature c': np.ones(6) * 3}))
+    mock_preda.return_value = ww.DataColumn(pd.Series([0, 0, 0, 1, 0, 0]))
+    mock_predb.return_value = ww.DataColumn(pd.Series([0, 0, 0, 0, 1, 0]))
+    mock_predc.return_value = ww.DataColumn(pd.Series([0, 0, 0, 0, 0, 1]))
     graph = {
         'transformer a': [TransformerA],
         'transformer b': [TransformerB, 'transformer a'],
@@ -624,12 +624,24 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
     component_graph.fit(X, y)
     predict_out = component_graph.predict(X)
 
-    assert_frame_equal(mock_transa.call_args[0][0], X)
-    assert_frame_equal(mock_transb.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
-    assert_frame_equal(mock_transc.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6), 'feature b': np.ones(6) * 2}, columns=['feature trans', 'feature a', 'feature b']))
-    assert_frame_equal(mock_preda.call_args[0][0], X)
-    assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
-    assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6), 'estimator a': [0, 0, 0, 1, 0, 0], 'feature b': np.ones(6) * 2, 'estimator b': [0, 0, 0, 0, 1, 0], 'feature c': np.ones(6) * 3}, columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
+    assert_frame_equal(mock_transa.call_args[0][0].to_dataframe(), X)
+    assert_frame_equal(mock_transb.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
+                                                                                 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
+    assert_frame_equal(mock_transc.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
+                                                                                 'feature a': np.ones(6),
+                                                                                 'feature b': np.ones(6) * 2},
+                                                                                columns=['feature trans', 'feature a', 'feature b']))
+    assert_frame_equal(mock_preda.call_args[0][0].to_dataframe(), X)
+    assert_frame_equal(mock_predb.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
+                                                                                'feature a': np.ones(6)},
+                                                                               columns=['feature trans', 'feature a']))
+    assert_frame_equal(mock_predc.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
+                                                                                'feature a': np.ones(6),
+                                                                                'estimator a': pd.Series([0, 0, 0, 1, 0, 0], dtype="Int64"),
+                                                                                'feature b': np.ones(6) * 2,
+                                                                                'estimator b': pd.Series([0, 0, 0, 0, 1, 0], dtype="Int64"),
+                                                                                'feature c': np.ones(6) * 3},
+                                                                               columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
     assert_series_equal(pd.Series([0, 0, 0, 0, 0, 1], dtype="Int64"), predict_out.to_series())
 
 

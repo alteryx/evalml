@@ -63,7 +63,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         if self.gap == 0:
             y = y.shift(periods=1)
-        
+
         return _convert_to_woodwork_structure(y)
 
     def predict_proba(self, X, y=None):
