@@ -358,7 +358,7 @@ def _convert_woodwork_types_wrapper(pd_data):
 
 def pad_with_nans(pd_data, num_to_pad):
     """Pad the beginning num_to_pad rows with nans.
-        TODO
+
     Arguments:
         pd_data (pd.DataFrame or pd.Series): Data to pad.
 
