@@ -196,6 +196,7 @@ class ComponentGraph:
                 raise ValueError('All components must be instantiated before fitting or predicting')
             x_inputs = []
             y_input = None
+            merged_types_dict = {}
             for parent_input in self.get_parents(component_name):
                 if parent_input[-2:] == '.y':
                     if y_input is not None:
@@ -210,6 +211,12 @@ class ComponentGraph:
                     #     parent_x_series = parent_x.to_series()
                     #     parent_x = pd.DataFrame(parent_x_series, columns=[parent_input])
                     #     parent_x = _convert_to_woodwork_structure(parent_x).to_dataframe()
+                    if isinstance(parent_x, ww.DataTable):
+                        merged_types_dict.update(parent_x.logical_types)
+                        parent_x = parent_x.to_dataframe()
+                    elif isinstance(parent_x, ww.DataColumn):
+                        # following what was previously here, but could probs be simplified.
+                        parent_x = pd.DataFrame(parent_x.to_series(), columns=[parent_input])
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             # check for original types and make sure they're preserved...
@@ -285,16 +292,17 @@ class ComponentGraph:
         if len(x_inputs) == 0:
             return_x = X
         else:
-            x_to_concat = []
-            for x_in in x_inputs:
-                if isinstance(x_in, ww.DataTable):
-                    merged_types_dict.update(x_in.logical_types)
-                    x_to_concat.append(x_in.to_dataframe())
-                elif isinstance(x_in, ww.DataColumn):
-                    x_to_concat.append(x_in.to_series())
-                else:  # shouldnt reach here.
-                    x_to_concat.append(x_in)
-            return_x = pd.concat(x_to_concat, axis=1)
+            # x_to_concat = []
+            # for x_in in x_inputs:
+            #     if isinstance(x_in, ww.DataTable):
+            #         merged_types_dict.update(x_in.logical_types)
+            #         x_to_concat.append(x_in.to_dataframe())
+            #     elif isinstance(x_in, ww.DataColumn):
+            #         # following what was previously here, but could probs be simplified.
+            #         x_to_concat.append(pd.DataFrame(x_in.to_series(), columns=[parent_input]))
+            #     else:  # shouldnt reach here.
+            #         x_to_concat.append(x_in)
+            return_x = pd.concat(x_inputs, axis=1)
         return_y = y
         if y_input is not None:
             return_y = y_input
