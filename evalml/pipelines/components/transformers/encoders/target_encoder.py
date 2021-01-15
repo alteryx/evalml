@@ -52,14 +52,12 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
                          random_state=random_state)
 
     def fit(self, X, y):
+        # do we want to do this?
         if isinstance(X, pd.DataFrame):
             X.reset_index(drop=True, inplace=True)
         if isinstance(y, pd.Series):
             y.reset_index(drop=True, inplace=True)
         return super().fit(X, y)
-
-    def transform(self, X, y=None):
-        return super().transform(X, y)
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)

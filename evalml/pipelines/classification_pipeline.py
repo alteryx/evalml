@@ -39,6 +39,7 @@ class ClassificationPipeline(PipelineBase):
             self
 
         """
+        # import pdb; pdb.set_trace()
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
