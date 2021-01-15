@@ -45,6 +45,22 @@ class DelayedFeatureTransformer(Transformer):
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer."""
 
+    @staticmethod
+    def _encode_y_while_preserving_index(y):
+        original_y = _convert_woodwork_types_wrapper(y.to_series())
+        y_encoded = LabelEncoder().fit_transform(original_y)
+        y = pd.Series(y_encoded, index=original_y.index)
+        return y
+
+    @staticmethod
+    def _get_categorical_columns(X):
+        return [name for name, column in X.columns.items() if column.logical_type == logical_types.Categorical]
+
+    @staticmethod
+    def _encode_X_while_preserving_index(X_categorical):
+        return pd.DataFrame(OrdinalEncoder().fit_transform(X_categorical),
+                            columns=X_categorical.columns, index=X_categorical.index)
+
     def transform(self, X, y=None):
         """Computes the delayed features for all features in X and y.
 
@@ -66,31 +82,25 @@ class DelayedFeatureTransformer(Transformer):
             X = pd.DataFrame()
         # Normalize the data into pandas objects
         X = _convert_to_woodwork_structure(X)
-        if y is not None:
-            y = _convert_to_woodwork_structure(y)
 
-        if y.logical_type == logical_types.Categorical:
-            original_y = _convert_woodwork_types_wrapper(y.to_series())
-            y_encoded = LabelEncoder().fit_transform(original_y)
-            y = pd.Series(y_encoded, index=original_y.index)
-        else:
-            y = _convert_woodwork_types_wrapper(y.to_series())
-
-        categorical_columns = [name for name, column in X.columns.items() if
-                               column.logical_type == logical_types.Categorical]
+        categorical_columns = self._get_categorical_columns(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X_encoded_cat = pd.DataFrame(OrdinalEncoder().fit_transform(X[categorical_columns]),
-                                     columns=categorical_columns, index=X.index)
+        X_categorical = self._encode_X_while_preserving_index(X[categorical_columns])
 
         if self.delay_features and len(X) > 0:
             for col_name in X:
                 col = X[col_name]
                 if col_name in categorical_columns:
-                    col = X_encoded_cat[col_name]
+                    col = X_categorical[col_name]
                 X = X.assign(**{f"{col_name}_delay_{t}": col.shift(t) for t in range(1, self.max_delay + 1)})
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
+            y = _convert_to_woodwork_structure(y)
+            if y.logical_type == logical_types.Categorical:
+                y = self._encode_y_while_preserving_index(y)
+            else:
+                y = _convert_woodwork_types_wrapper(y.to_series())
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 

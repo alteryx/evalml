@@ -281,3 +281,12 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
                            "target_delay_1": y_answer.shift(1),
                            })
     pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y), answer)
+
+
+def test_delay_feature_transformer_y_is_none(delayed_features_data):
+
+    X, y = delayed_features_data
+    answer = pd.DataFrame({"feature": X.feature,
+                           "feature_delay_1": X.feature.shift(1),
+                           })
+    pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y=None), answer)
