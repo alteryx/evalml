@@ -1,5 +1,5 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
@@ -76,16 +76,17 @@ class DelayedFeatureTransformer(Transformer):
         else:
             y = _convert_woodwork_types_wrapper(y.to_series())
 
-        categorical_columns = {name for name, column in X.columns.items() if
-                               column.logical_type == logical_types.Categorical}
+        categorical_columns = [name for name, column in X.columns.items() if
+                               column.logical_type == logical_types.Categorical]
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_encoded_cat = pd.DataFrame(OrdinalEncoder().fit_transform(X[categorical_columns]),
+                                     columns=categorical_columns, index=X.index)
 
         if self.delay_features and len(X) > 0:
             for col_name in X:
                 col = X[col_name]
                 if col_name in categorical_columns:
-                    col = LabelEncoder().fit_transform(col)
-                    col = pd.Series(col, index=X.index)
+                    col = X_encoded_cat[col_name]
                 X = X.assign(**{f"{col_name}_delay_{t}": col.shift(t) for t in range(1, self.max_delay + 1)})
 
         # Handle cases where the target was passed in

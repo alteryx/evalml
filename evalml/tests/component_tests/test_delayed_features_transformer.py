@@ -265,3 +265,19 @@ def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode
                                   "target_delay_3": y_answer.shift(3)}, index=pd.RangeIndex(50, 81))
     pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y),
                                   answer_only_y)
+
+
+def test_delay_feature_transformer_multiple_categorical_columns(delayed_features_data):
+
+    X, y = delayed_features_data
+    X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, True, True)
+    X['feature_2'] = pd.Categorical(["a"] * 10 + ['aa'] * 10 + ['aaa'] * 10 + ['aaaa'])
+    X_answer['feature_2'] = pd.Series([0] * 10 + [1] * 10 + [2] * 10 + [3])
+    answer = pd.DataFrame({"feature": X.feature,
+                           'feature_2': X.feature_2,
+                           "feature_delay_1": X_answer.feature.shift(1),
+                           "feature_2_delay_1": X_answer.feature_2.shift(1),
+                           "target_delay_0": y_answer,
+                           "target_delay_1": y_answer.shift(1),
+                           })
+    pd.testing.assert_frame_equal(DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y), answer)
