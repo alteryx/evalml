@@ -211,8 +211,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     Returns:
         str: Table
     """
-    pipeline_features = pipeline.compute_estimator_features(input_features)
-    pipeline_features = pipeline_features.to_dataframe()
+    pipeline_features = pipeline.compute_estimator_features(input_features).to_dataframe()
     shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
     normalized_shap_values = _normalize_shap_values(shap_values)
 

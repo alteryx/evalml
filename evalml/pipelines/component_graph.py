@@ -111,9 +111,6 @@ class ComponentGraph:
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, pd.Series):
-                # this shouldnt happen anymore, datacolumn
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
             if isinstance(parent_output, ww.DataColumn):
                 parent_output = parent_output.to_series()
                 parent_output = pd.DataFrame(parent_output, columns=[parent])

@@ -107,6 +107,8 @@ class ClassificationPipeline(PipelineBase):
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
+        # proba = self.estimator.predict_proba(X)
+        # proba = proba.rename({old_name: new_name for old_name, new_name in zip(list(proba.columns.keys), self._encoder.classes_)})
         proba.columns = self._encoder.classes_
         return _convert_to_woodwork_structure(proba)
 
