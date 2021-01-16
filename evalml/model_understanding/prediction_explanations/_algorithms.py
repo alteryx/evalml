@@ -6,7 +6,7 @@ from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types.problem_types import ProblemTypes
-from evalml.utils import _convert_woodwork_types_wrapper, get_logger
+from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 

@@ -1,12 +1,7 @@
 from abc import abstractmethod
 
-import numpy as np
-
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
 class ColumnSelector(Transformer):

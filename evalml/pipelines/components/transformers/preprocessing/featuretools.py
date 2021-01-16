@@ -65,6 +65,7 @@ class DFSTransformer(Transformer):
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series, optional): Ignored.
+
         Returns:
             ww.DataTable: Feature matrix
         """

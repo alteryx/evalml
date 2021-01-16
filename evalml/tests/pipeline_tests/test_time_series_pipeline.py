@@ -258,8 +258,8 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
                                                        (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass", "Log Loss Multiclass"]),
                                                        (TimeSeriesRegressionPipeline, ['R2']),
                                                        (TimeSeriesRegressionPipeline, ['R2', "Mean Absolute Percentage Error"])])
-@pytest.mark.parametrize("use_ww", [True, False])
-def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, X_y_regression, make_data_type):
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_multi, X_y_regression, make_data_type):
 
     preprocessing = ['Delayed Feature Transformer']
     if pipeline_class == TimeSeriesRegressionPipeline:
@@ -285,9 +285,9 @@ def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, 
         X, y = X_y_regression
         y = pd.Series(y)
         expected_unique_values = None
-    if use_ww:
-        X = make_data_type("ww", X)
-        y = make_data_type("ww", y)
+
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
 
     pl.fit(X, y)
     if expected_unique_values:

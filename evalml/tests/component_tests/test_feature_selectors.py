@@ -49,11 +49,11 @@ def test_feature_selector_missing_component_obj():
         name = "Mock Feature Selector"
 
         def fit(self, X, y):
-            pass
+            return self
 
     mock_feature_selector = MockFeatureSelector()
     mock_feature_selector.fit(pd.DataFrame(), pd.Series())
-    with pytest.raises(RuntimeError, match="Transformer requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(RuntimeError, match="Feature selector requires a transform method or a component_obj that implements transform"):
         mock_feature_selector.transform(pd.DataFrame())
-    with pytest.raises(RuntimeError, match="Transformer requires a fit_transform method or a component_obj that implements fit_transform"):
+    with pytest.raises(RuntimeError, match="Feature selector requires a transform method or a component_obj that implements transform"):
         mock_feature_selector.fit_transform(pd.DataFrame())

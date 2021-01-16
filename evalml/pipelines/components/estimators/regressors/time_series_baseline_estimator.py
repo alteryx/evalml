@@ -49,8 +49,6 @@ class TimeSeriesBaselineEstimator(Estimator):
         if X is None:
             X = pd.DataFrame()
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
         self._num_features = X.shape[1]
         return self
 
