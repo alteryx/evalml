@@ -307,6 +307,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     assert "Search Results" not in str_rep
 
     mock_score.return_value = {automl.objective.name: 1.0}
+    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame([[1.0, 0.0], [0.0, 1.0]]))
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()

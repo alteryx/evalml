@@ -572,12 +572,8 @@ class AutoMLSearch:
             pipeline.threshold = 0.5
             if X_threshold_tuning:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                if isinstance(y_predict_proba, pd.DataFrame):
-                    y_predict_proba = y_predict_proba.iloc[:, 1]  # shouldnt need
-                elif isinstance(y_predict_proba, ww.DataTable):
-                    y_predict_proba = y_predict_proba.to_dataframe().iloc[:, 1]
-                else:
-                    y_predict_proba = y_predict_proba[:, 1]
+                # y_predict_proba = y_predict_proba.to_dataframe().iloc[:, 1]
+                y_predict_proba = y_predict_proba.iloc[:, 1]
                 pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
         return pipeline
 

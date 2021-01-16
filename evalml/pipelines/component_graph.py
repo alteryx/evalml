@@ -157,17 +157,12 @@ class ComponentGraph:
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, pd.Series):
-                # shouldnt happen...
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
             if isinstance(parent_output, ww.DataColumn):
                 parent_output = parent_output.to_series()
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = _convert_to_woodwork_structure(parent_output)
             final_component_inputs.append(parent_output)
-        # concatted = pd.concat([i.to_dataframe() for i in final_component_inputs], axis=1)
         concatted = pd.concat([i.to_dataframe() if isinstance(i, ww.DataTable) else i for i in final_component_inputs], axis=1)
-
         return _convert_to_woodwork_structure(concatted)
 
     def _compute_features(self, component_list, X, y=None, fit=False):
