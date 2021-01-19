@@ -18,19 +18,19 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/ --doctest-modules --doctest-continue-on-failure
+	pytest evalml/ --doctest-modules --doctest-continue-on-failure --durations=0
 
 .PHONY: circleci-test
 circleci-test:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
+	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --durations=0
 
 .PHONY: circleci-test-minimal-deps
 circleci-test-minimal-deps:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --has-minimal-dependencies
+	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --has-minimal-dependencies --durations=0
 
 .PHONY: win-circleci-test
 win-circleci-test:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
+	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v --durations=0
 
 .PHONY: installdeps
 installdeps:

@@ -61,7 +61,6 @@ class LSA(TextTransformer):
         text_columns = self._get_text_columns(X)
         for col in text_columns:
             transformed = self._lsa_pipeline.transform(X[col])
-
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
         X_t = X_t.drop(columns=text_columns)

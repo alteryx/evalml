@@ -148,10 +148,6 @@ def test_lsa_output():
                  'Red, the blood of angry men - black, the dark of ages past']})
     lsa = LSA(text_columns=['lsa'])
     lsa.fit(X)
-
-    expected_features = [[0.832, 0.],
-                         [0., 1.],
-                         [0.832, 0.]]
     expected_features = pd.DataFrame([[0.832, 0.],
                                       [0., 1.],
                                       [0.832, 0.]], columns=["LSA(lsa)[0]", "LSA(lsa)[1]"])

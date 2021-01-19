@@ -144,10 +144,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame): Features
 
         Returns:
-            pd.Series: Predicted values
+            np.ndarray: Predicted values
         """
         check_is_fitted(self, 'is_fitted_')
 
@@ -157,10 +157,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame): Features
 
         Returns:
-            pd.DataFrame: Probability estimates
+            np.ndarray: Probability estimates
         """
         return _convert_woodwork_types_wrapper(self.pipeline.predict_proba(X).to_dataframe()).to_numpy()
 
@@ -181,8 +181,8 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -194,10 +194,10 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame): Features
 
         Returns:
-            pd.Series: Predicted values
+            np.ndarray: Predicted values
         """
         return self.pipeline.predict(X).to_series().to_numpy()
 

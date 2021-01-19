@@ -68,7 +68,6 @@ class TimeSeriesBaselineEstimator(Estimator):
             raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-
         preds = self.predict(X, y).to_series().dropna(axis=0, how='any').astype('int')
         proba_arr = np.zeros((len(preds), y.max() + 1))
         proba_arr[np.arange(len(preds)), preds] = 1

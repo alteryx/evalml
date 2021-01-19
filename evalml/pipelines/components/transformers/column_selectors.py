@@ -37,7 +37,7 @@ class ColumnSelector(Transformer):
         """How the transformer modifies the columns of the input data."""
 
     def fit(self, X, y=None):
-        """'Fits the transformer by checking if column names are present in the dataset.
+        """Fits the transformer by checking if column names are present in the dataset.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data to check.
