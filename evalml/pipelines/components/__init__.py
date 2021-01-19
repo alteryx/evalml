@@ -19,7 +19,6 @@ from .estimators import (
     BaselineRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
-    TimeSeriesBaselineRegressor,
     TimeSeriesBaselineEstimator,
     ProphetRegressor,
     KNeighborsClassifier
