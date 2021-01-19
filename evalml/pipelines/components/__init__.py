@@ -19,7 +19,8 @@ from .estimators import (
     BaselineRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
-    TimeSeriesBaselineRegressor
+    TimeSeriesBaselineRegressor,
+    ProphetRegressor
 )
 from .transformers import (
     Transformer,

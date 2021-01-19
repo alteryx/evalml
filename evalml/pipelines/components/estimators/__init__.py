@@ -17,4 +17,5 @@ from .regressors import (LinearRegressor,
                          ExtraTreesRegressor,
                          BaselineRegressor,
                          TimeSeriesBaselineRegressor,
-                         DecisionTreeRegressor)
+                         DecisionTreeRegressor,
+                         ProphetRegressor)

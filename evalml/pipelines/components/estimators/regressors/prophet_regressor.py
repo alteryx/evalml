@@ -1,5 +1,6 @@
 import copy
 
+import pandas as pd
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -8,7 +9,8 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    suppress_stdout_stderr
 )
 
 
@@ -56,19 +58,19 @@ class ProphetRegressor(Estimator):
         # check for datetime column
         if 'ds' in X.columns:
             date_col = X['ds']
+        elif isinstance(X.index, pd.DatetimeIndex):
+            date_col = X.reset_index()
+            date_col = date_col['index']
         else:
-            date_col = X.select('datetime')
+            date_col = X.select_dtypes(include='datetime')
             if date_col.shape[1] == 0:
-                return ValueError('Prophet estimator requires input data X to have a datetime column')
+                raise ValueError('Prophet estimator requires input data X to have a datetime column')
 
-        prophet_df = date_col.to_dataframe()
-        prophet_df = prophet_df[prophet_df.columns[0]].rename('ds')
-
-        if y:
-            y = y.to_series()
-            y = y.rename('y')
-            prophet_df = prophet_df.append(y)
-
+        date_col = date_col.rename('ds')
+        prophet_df = date_col.to_frame()
+        if y is not None:
+            y.index = prophet_df.index
+            prophet_df['y'] = y
         return prophet_df
 
     def fit(self, X, y=None):
@@ -79,7 +81,9 @@ class ProphetRegressor(Estimator):
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         prophet_df = self.build_prophet_df(X, y)
-        self._component_obj.fit(prophet_df)
+
+        with suppress_stdout_stderr():
+            self._component_obj.fit(prophet_df)
         return self
 
     def predict(self, X, y=None):
@@ -87,7 +91,10 @@ class ProphetRegressor(Estimator):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         prophet_df = self.build_prophet_df(X)
-        return self._component_obj.predict(prophet_df)['yhat']
+
+        with suppress_stdout_stderr():
+            y_pred = self._component_obj.predict(prophet_df)['yhat']
+            return y_pred
 
     @property
     def feature_importance(self):
