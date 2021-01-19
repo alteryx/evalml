@@ -106,7 +106,7 @@ class Imputer(Transformer):
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
-            imputed = self._numeric_imputerd.index
+            imputed = self._numeric_imputer.transform(X_numeric).to_dataframe()
             X_null_dropped[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
