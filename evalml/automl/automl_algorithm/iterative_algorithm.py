@@ -2,6 +2,7 @@ import inspect
 from operator import itemgetter
 
 import numpy as np
+from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
@@ -42,7 +43,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                          tuner_class=tuner_class,
                          random_state=random_state)
         self.pipelines_per_batch = pipelines_per_batch
-        print(n_jobs)
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._text_columns = text_columns
@@ -50,8 +50,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
-        print(self._pipeline_params)
-        print(allowed_pipelines)
+        self._random_state = random_state
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -127,8 +126,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
-        if self._pipeline_params:
-            parameters['pipeline'] = self._pipeline_params
+        if 'pipeline' in self._pipeline_params:
+            parameters['pipeline'] = self._pipeline_params['pipeline']
         component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph]
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
@@ -143,9 +142,21 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
-            # Pass the pipeline params to the components that need them
-            for param_name, value in self._pipeline_params.items():
-                if param_name in init_params:
-                    component_parameters[param_name] = value
+            # For first batch, pass the pipeline params to the components that need them
+            if component_class.name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[component_class.name].items():
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(random_state=self._random_state)[0]
+                    elif isinstance(value, Categorical):
+                        component_parameters[param_name] = value.rvs(random_state=self._random_state)
+                    elif isinstance(value, (list, tuple)):
+                        component_parameters[param_name] = value[0]
+                    else:
+                        component_parameters[param_name] = value
+            if 'pipeline' in self._pipeline_params:
+                for param_name, value in self._pipeline_params['pipeline'].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
         return parameters
