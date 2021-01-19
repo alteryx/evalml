@@ -11,8 +11,9 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    RegressionPipeline,
     StackedEnsembleClassifier,
-    StackedEnsembleRegressor
+    StackedEnsembleRegressor,
 )
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
@@ -72,6 +73,34 @@ def dummy_binary_pipeline_classes():
                 MockBinaryClassificationPipeline2,
                 MockBinaryClassificationPipeline3]
     return _method
+
+
+@pytest.fixture
+def dummy_regression_pipeline_classes():
+    def _method():
+        class MockEstimator(Estimator):
+            name = "Mock Regressor"
+            model_family = ModelFamily.RANDOM_FOREST
+            supported_problem_types = [ProblemTypes.REGRESSION]
+            hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
+
+            def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
+                super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
+                                             'n_jobs': n_jobs},
+                                 component_obj=None, random_state=random_state)
+
+        class MockRegressionPipeline1(RegressionPipeline):
+            estimator = MockEstimator
+            component_graph = [MockEstimator]
+
+        class MockRegressionPipeline2(RegressionPipeline):
+            estimator = MockEstimator
+            component_graph = [MockEstimator]
+
+        return [MockRegressionPipeline1,
+                MockRegressionPipeline2]
+    return _method
+
 
 
 def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
@@ -258,8 +287,9 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
-def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, logistic_regression_binary_pipeline_class):
-    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=True, n_jobs=n_jobs)
+def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary_pipeline_classes):
+    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=True, n_jobs=n_jobs)
     next_batch = algo.next_batch()
 
     scores = range(0, len(next_batch))
@@ -273,8 +303,9 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, logistic_reg
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
-def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
-    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class], ensembling=True, n_jobs=n_jobs)
+def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, dummy_regression_pipeline_classes):
+    dummy_regression_pipeline_classes = dummy_regression_pipeline_classes()
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_regression_pipeline_classes, ensembling=True, n_jobs=n_jobs)
     next_batch = algo.next_batch()
 
     scores = range(0, len(next_batch))
