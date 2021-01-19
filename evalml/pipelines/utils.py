@@ -226,7 +226,7 @@ def generate_pipeline_code(element):
     return "\n".join(code_strings)
 
 
-def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=0, **kwargs):
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=0, n_jobs=-1):
     """
     Creates a pipeline with a stacked ensemble estimator.
 
@@ -239,10 +239,10 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=
         Pipeline with appropriate stacked ensemble estimator.
     """
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, **kwargs)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Classification Pipeline",
                                              random_state=random_state)
     else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, **kwargs)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
                                              random_state=random_state)
