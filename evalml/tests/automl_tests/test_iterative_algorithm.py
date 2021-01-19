@@ -257,8 +257,25 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
-def test_iterative_algorithm_stacked_ensemble_n_jobs(n_jobs, logistic_regression_binary_pipeline_class):
+def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, logistic_regression_binary_pipeline_class):
     algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=True, n_jobs=n_jobs)
+
+    next_batch = algo.next_batch()
+
+    scores = range(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+    next_batch = algo.next_batch()
+
+    for pipeline in next_batch:
+        if isinstance(pipeline.estimator, StackedEnsembleClassifier):
+            assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == 2
+
+
+@pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
+def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
+    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class], ensembling=True, n_jobs=n_jobs)
 
     next_batch = algo.next_batch()
 
