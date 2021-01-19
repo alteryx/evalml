@@ -798,14 +798,18 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X)
 
 
-def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
-    X, y = X_y_binary
+def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions):
     estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineEstimator]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
+        if component.supported_problem_types == [ProblemTypes.TIME_SERIES_REGRESSION]:
+            X, y = ts_data
+        else:
+            X, y = X_y_binary
+
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
 
@@ -822,7 +826,11 @@ def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false
             component.predict_proba(X)
 
         component.predict(X)
-        component.feature_importance
+
+        try:
+            component.feature_importance
+        except NotImplementedError:
+            continue
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
@@ -849,8 +857,7 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, tmpdir, helper_functions):
-    X, y = X_y_binary
+def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
@@ -861,6 +868,12 @@ def test_serialization(X_y_binary, tmpdir, helper_functions):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)], n_jobs=1)
             elif (component_class == StackedEnsembleRegressor):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)], n_jobs=1)
+
+        if isinstance(component, Estimator) and component.supported_problem_types == [ProblemTypes.TIME_SERIES_REGRESSION]:
+            X, y = ts_data
+        else:
+            X, y = X_y_binary
+
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
@@ -869,7 +882,10 @@ def test_serialization(X_y_binary, tmpdir, helper_functions):
             assert component.parameters == loaded_component.parameters
             assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
             if (issubclass(component_class, Estimator) and not (isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor))):
-                assert (component.feature_importance == loaded_component.feature_importance).all()
+                try:
+                    assert (component.feature_importance == loaded_component.feature_importance).all()
+                except NotImplementedError:
+                    continue
 
 
 @patch('cloudpickle.dump')
@@ -904,7 +920,10 @@ def test_estimators_accept_all_kwargs(estimator_class,
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
         params = estimator.parameters
     else:
-        params = estimator._component_obj.get_params()
+        try:
+            params = estimator._component_obj.get_params()
+        except AttributeError:
+            pytest.skip('estimator does not have `get_params()` method.')
     if estimator_class.model_family == ModelFamily.CATBOOST:
         # Deleting because we call it random_state in our api
         del params["random_seed"]

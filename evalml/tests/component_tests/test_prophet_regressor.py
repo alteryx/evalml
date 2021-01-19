@@ -1,10 +1,12 @@
 import pandas as pd
-from fbprophet import Prophet
+from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ProphetRegressor
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import suppress_stdout_stderr
+
+prophet = importorskip('fbprophet', reason='Skipping test because xgboost not installed')
 
 
 def test_model_family():
@@ -37,7 +39,7 @@ def test_fit_predict_ts(ts_data):
             prophet_df['y'] = y
         return prophet_df
 
-    p_clf = Prophet()
+    p_clf = prophet.Prophet()
     prophet_df = build_prophet_df(X, y)
 
     with suppress_stdout_stderr():

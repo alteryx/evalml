@@ -530,6 +530,7 @@ class suppress_stdout_stderr(object):
     https://github.com/facebook/prophet/issues/223
 
     '''
+
     def __init__(self):
         # Open a pair of null files
         self.null_fds = [os.open(os.devnull, os.O_RDWR) for x in range(2)]
