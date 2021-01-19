@@ -81,7 +81,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_state=self.random_state,
                                                        n_jobs=self.n_jobs)
-            
+
             next_batch.append(ensemble)
         else:
             num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)

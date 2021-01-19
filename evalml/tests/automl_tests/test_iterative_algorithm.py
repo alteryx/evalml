@@ -9,7 +9,10 @@ from evalml.automl.automl_algorithm import (
     IterativeAlgorithm
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, StackedEnsembleClassifier
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    StackedEnsembleClassifier
+)
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
@@ -264,7 +267,7 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs(n_jobs, logistic_regression
         algo.add_result(score, pipeline)
 
     next_batch = algo.next_batch()
-    
+
     for pipeline in next_batch:
         if isinstance(pipeline.estimator, StackedEnsembleClassifier):
             assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == 2
