@@ -42,6 +42,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                          tuner_class=tuner_class,
                          random_state=random_state)
         self.pipelines_per_batch = pipelines_per_batch
+        print(n_jobs)
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._text_columns = text_columns
@@ -49,6 +50,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
+        print(self._pipeline_params)
+        print(allowed_pipelines)
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -77,7 +80,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params),
                                                       random_state=self.random_state))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
-                                                       random_state=self.random_state)
+                                                       random_state=self.random_state,
+                                                       n_jobs=self.n_jobs)
+            
             next_batch.append(ensemble)
         else:
             num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)

@@ -8,7 +8,7 @@ from evalml.automl.automl_algorithm import (
     IterativeAlgorithm
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import BinaryClassificationPipeline, StackedEnsembleClassifier
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
@@ -247,3 +247,20 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
     assert pipeline.parameters['Text Featurization Component'] == expected_params
     assert isinstance(pipeline[0], TextFeaturizer)
     assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']
+
+
+@pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
+def test_iterative_algorithm_stacked_ensemble_n_jobs(n_jobs, logistic_regression_binary_pipeline_class):
+    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=True, n_jobs=n_jobs)
+
+    next_batch = algo.next_batch()
+
+    scores = range(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+
+    next_batch = algo.next_batch()
+    
+    for pipeline in next_batch:
+        if isinstance(pipeline.estimator, StackedEnsembleClassifier):
+            assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == 2
