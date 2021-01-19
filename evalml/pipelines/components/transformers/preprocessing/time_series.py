@@ -85,9 +85,9 @@ class DelayedFeatureTransformer(Transformer):
 
         categorical_columns = self._get_categorical_columns(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X_categorical = self._encode_X_while_preserving_index(X[categorical_columns])
 
         if self.delay_features and len(X) > 0:
+            X_categorical = self._encode_X_while_preserving_index(X[categorical_columns])
             for col_name in X:
                 col = X[col_name]
                 if col_name in categorical_columns:
