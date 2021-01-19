@@ -466,12 +466,37 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
     if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
 
-    wrapped = scikit_learn_wrapped_estimator(pipeline)
+
+
+    # wrapped = scikit_learn_wrapped_estimator(pipeline)
     if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+        class Pipeline(evalml.pipelines.ClassificationPipeline):
+            component_graph = pipeline.component_graph
+            problem_type = pipeline.problem_type
+            _is_fitted = True
+            def predict(self, X):
+                return pipeline.predict(X).to_series()
+
+            def predict_proba(self, X):
+                return pipeline.predict_proba(X).to_dataframe()
+        wrapped = Pipeline(parameters=pipeline.parameters)
+
         wrapped._estimator_type = "classifier"
-        wrapped.classes_ = pipeline.classes_
+        wrapped._encoder = pipeline._encoder
+
     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+
+        class Pipeline(evalml.pipelines.RegressionPipeline):
+            component_graph = pipeline.component_graph
+            problem_type = pipeline.problem_type
+            _is_fitted = True
+
+            def predict(self, X):
+                return pipeline.predict(X).to_series()
+        wrapped = Pipeline(parameters=pipeline.parameters)
+
         wrapped._estimator_type = "regressor"
+    # import pdb; pdb.set_trace()
     wrapped.feature_importances_ = pipeline.feature_importance
     wrapped._is_fitted = True
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=[feature], grid_resolution=grid_resolution)
@@ -488,6 +513,62 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
         data['class_label'] = np.repeat(classes, len(values[0]))
 
     return data
+
+# def partial_dependence(pipeline, X, feature, grid_resolution=100):
+#     """Calculates partial dependence.
+
+#     Arguments:
+#         pipeline (PipelineBase or subclass): Fitted pipeline
+#         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
+#             for feature where partial dependence will be calculated at
+#         feature (int, string): The target features for which to create the partial dependence plot for.
+#             If feature is an int, it must be the index of the feature to use.
+#             If feature is a string, it must be a valid column name in X.
+
+#     Returns:
+#         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+#             over all samples of X and the values used to calculate those predictions. The dataframe will
+#             contain two columns: "feature_values" (grid points at which the partial dependence was calculated) and
+#             "partial_dependence" (the partial dependence at that feature value). For classification problems, there
+#             will be a third column called "class_label" (the class label for which the partial
+#             dependence was calculated). For binary classification, the partial dependence is only calculated for the
+#             "positive" class.
+
+#     """
+#     from evalml.pipelines.components.utils import scikit_learn_wrapped_estimator
+#     X = _convert_to_woodwork_structure(X)
+#     X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+#     if not pipeline._is_fitted:
+#         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
+#     if pipeline.model_family == ModelFamily.BASELINE:
+#         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
+
+#     if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
+#         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
+
+#     wrapped = scikit_learn_wrapped_estimator(pipeline)
+#     if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
+#         wrapped._estimator_type = "classifier"
+#         wrapped.classes_ = pipeline.classes_
+#     elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
+#         wrapped._estimator_type = "regressor"
+#     wrapped.feature_importances_ = pipeline.feature_importance
+#     wrapped._is_fitted = True
+#     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=[feature], grid_resolution=grid_resolution)
+
+#     classes = None
+#     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+#         classes = [pipeline.classes_[1]]
+#     elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+#         classes = pipeline.classes_
+
+#     data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
+#                          "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+#     if classes is not None:
+#         data['class_label'] = np.repeat(classes, len(values[0]))
+
+#     return data
 
 
 def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolution=100):
