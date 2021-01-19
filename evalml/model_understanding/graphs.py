@@ -525,28 +525,34 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
             raise ValueError(msg)
 
     part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
-    feature_name = str(features)
-    title = f"Partial Dependence of '{feature_name}'"
-    layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}'},
-                        yaxis={'title': 'Partial Dependence'},
-                        showlegend=False)
+
     if not isinstance(features, (list, tuple)):
-        fig = graph_one_way_part_dep(_go, class_label, feature_name, layout, part_dep, pipeline)
+        fig = graph_one_way_part_dep(_go, class_label, features, part_dep, pipeline)
     else:
-        fig = graph_two_way_part_dep(_go, layout, part_dep)
+        fig = graph_two_way_part_dep(_go, features, part_dep)
 
     return fig
 
 
-def graph_two_way_part_dep(_go, layout, part_dep):
+def graph_two_way_part_dep(_go, features, part_dep):
+    title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': f'{features[0]}'},
+                        yaxis={'title': f'{features[1]}'},
+                        showlegend=False)
     trace = _go.Contour(x=part_dep["feature_values"]["x"], y=part_dep["feature_values"]["y"],
                         z=part_dep["partial_dependence"], name="Partial Dependence")
     fig = _go.Figure(layout=layout, data=[trace])
     return fig
 
 
-def graph_one_way_part_dep(_go, class_label, feature_name, layout, part_dep, pipeline):
+def graph_one_way_part_dep(_go, class_label, features, part_dep, pipeline):
+    feature_name = str(features)
+    title = f"Partial Dependence of '{feature_name}'"
+    layout = _go.Layout(title={'text': title},
+                        xaxis={'title': f'{feature_name}'},
+                        yaxis={'title': 'Partial Dependence'},
+                        showlegend=False)
     if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")

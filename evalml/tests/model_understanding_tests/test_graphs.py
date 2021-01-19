@@ -925,12 +925,11 @@ def test_graph_two_way_partial_dependence(test_pipeline):
     fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
-    assert fig_dict['layout']['title']['text'] == "Partial Dependence of '('mean radius', 'mean area')'"
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius' vs. 'mean area'"
     assert len(fig_dict['data']) == 1
     assert fig_dict['data'][0]['name'] == "Partial Dependence"
 
     part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
-    # import pdb; pdb.set_trace()
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values']['x'])
     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['feature_values']['y'])
     assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data['partial_dependence'])
