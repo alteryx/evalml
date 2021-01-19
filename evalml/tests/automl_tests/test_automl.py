@@ -1851,7 +1851,7 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+def test_automl_error_callback_none(mock_fit, mock_score, X_y_binary, caplog):
     X, y = X_y_binary
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
@@ -1859,16 +1859,36 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl.search()
     assert msg in caplog.text
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_silent(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=silent_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg not in caplog.text
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_log(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg in caplog.text
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_raise(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_error_callback, train_best_pipeline=False, n_jobs=1)
     with pytest.raises(Exception, match="all your model are belong to us"):
@@ -1876,6 +1896,13 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_log_and_save(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
@@ -1886,6 +1913,13 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     for e in automl._results['errors']:
         assert str(e) == msg
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
     with pytest.raises(Exception, match="all your model are belong to us"):
