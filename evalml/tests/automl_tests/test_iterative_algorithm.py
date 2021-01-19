@@ -49,8 +49,8 @@ def dummy_binary_pipeline_classes():
 
             def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
                 super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
-                                            'n_jobs': n_jobs},
-                                component_obj=None, random_state=random_state)
+                                             'n_jobs': n_jobs},
+                                 component_obj=None, random_state=random_state)
 
         class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
             estimator = MockEstimator
