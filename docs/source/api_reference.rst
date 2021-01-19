@@ -229,6 +229,7 @@ Classifiers are components that output a predicted class label.
     BaselineClassifier
     StackedEnsembleClassifier
     DecisionTreeClassifier
+    KNeighborsClassifier
 
 Regressors
 -----------
@@ -247,7 +248,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
-    TimeSeriesBaselineRegressor
+    TimeSeriesBaselineEstimator
     StackedEnsembleRegressor
     DecisionTreeRegressor
     LightGBMRegressor

@@ -76,7 +76,7 @@ class ObjectiveBase(ABC):
         """Standardize input to pandas for scoring.
 
         Arguments:
-            input_data (ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
+            input_data (list, ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
             pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
@@ -87,9 +87,14 @@ class ObjectiveBase(ABC):
             return _convert_woodwork_types_wrapper(input_data.to_dataframe())
         if isinstance(input_data, ww.DataColumn):
             return _convert_woodwork_types_wrapper(input_data.to_series())
-        if len(input_data.shape) == 1:
+        if isinstance(input_data, list):
+            if isinstance(input_data[0], list):
+                return pd.DataFrame(input_data)
             return pd.Series(input_data)
-        return pd.DataFrame(input_data)
+        if isinstance(input_data, np.ndarray):
+            if len(input_data.shape) == 1:
+                return pd.Series(input_data)
+            return pd.DataFrame(input_data)
 
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.

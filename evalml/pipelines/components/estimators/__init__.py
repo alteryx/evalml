@@ -7,7 +7,8 @@ from .classifiers import (LogisticRegressionClassifier,
                           ElasticNetClassifier,
                           ExtraTreesClassifier,
                           BaselineClassifier,
-                          DecisionTreeClassifier)
+                          DecisionTreeClassifier,
+                          KNeighborsClassifier)
 from .regressors import (LinearRegressor,
                          LightGBMRegressor,
                          RandomForestRegressor,

@@ -87,10 +87,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return self.estimator.predict_proba(features, y=y_arg)
 
     def _predict(self, X, y, objective=None, pad=False):
-        y_encoded = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y_encoded)
-        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
-        predictions = self._estimator_predict(features_no_nan, y_encoded)
+        features = self.compute_estimator_features(X, y)
+        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
+        predictions = self._estimator_predict(features_no_nan, y_no_nan)
+
         if pad:
             return pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return predictions
@@ -111,7 +111,11 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         n_features = max(len(y), X.shape[0])
         predictions = self._predict(X, y, objective=objective, pad=False)
-        predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+
+        # In case gap is 0 and this is a baseline pipeline, we drop the nans in the
+        # predictions before decoding them
+        predictions = pd.Series(self._decode_targets(predictions.dropna()), name=self.input_target_name)
+
         return pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
 
     def predict_proba(self, X, y=None):
@@ -126,10 +130,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        y_encoded = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y_encoded)
-        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
-        proba = self._estimator_predict_proba(features_no_nan, y_encoded)
+        features = self.compute_estimator_features(X, y)
+        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
+        proba = self._estimator_predict_proba(features_no_nan, y_no_nan)
+
         proba.columns = self._encoder.classes_
         return pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
 
@@ -181,9 +185,8 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
         self._threshold = value
 
     def _predict(self, X, y, objective=None, pad=False):
-        y_encoded = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y_encoded)
-        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
+        features = self.compute_estimator_features(X, y)
+        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -191,9 +194,9 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
-            predictions = self._estimator_predict(features_no_nan, y_encoded)
+            predictions = self._estimator_predict(features_no_nan, y_no_nan)
         else:
-            proba = self._estimator_predict_proba(features_no_nan, y_encoded)
+            proba = self._estimator_predict_proba(features_no_nan, y_no_nan)
             proba = proba.iloc[:, 1]
             if objective is None:
                 predictions = proba > self.threshold
