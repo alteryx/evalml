@@ -9,6 +9,7 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
+from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
@@ -2122,3 +2123,60 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
     with pytest.raises(ValueError, match='is not allowed in AutoML!'):
         AutoMLSearch(X_train=X, y_train=y, problem_type=non_core_objective.problem_types[0],
                      additional_objectives=[non_core_objective.name])
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
+              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
+              "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+        if 'Logistic Regression Classifier' in row['parameters']:
+            assert row['parameters']['Logistic Regression Classifier']['C'] == 20
+            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'none'
+        if 'Elastic Net Classifier' in row['parameters']:
+            assert row['parameters']['Elastic Net Classifier']['alpha'] == 0.75
+            assert row['parameters']['Elastic Net Classifier']['l1_ratio'] == 0.2
+
+
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
+    X, y = X_y_regression
+    params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']},
+              'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])},
+              'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": (0.01, 0.02, 0.03)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'median'
+        if 'Decision Tree Regressor' in row['parameters']:
+            assert row['parameters']['Decision Tree Regressor']['max_depth'] == 17
+            assert row['parameters']['Decision Tree Regressor']['max_features'] == 'auto'
+        if 'Elastic Net Regressor' in row['parameters']:
+            assert 0 < row['parameters']['Elastic Net Regressor']['alpha'] < 0.5
+            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == 0.01
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
+    X, y = X_y_multi
+    params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
+              'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
+                          allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+        if 'Decision Tree Classifier' in row['parameters']:
+            assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
+            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
