@@ -478,6 +478,10 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
     assert np.array_equal(heatmap['z'], conf_mat)
     assert np.array_equal(heatmap['customdata'], conf_mat_unnormalized)
     assert heatmap['hovertemplate'] == '<b>True</b>: %{y}<br><b>Predicted</b>: %{x}<br><b>Normalized Count</b>: %{z}<br><b>Raw Count</b>: %{customdata} <br><extra></extra>'
+    annotations = fig.__dict__['_layout_obj']['annotations']
+    # check that the figure has text annotations for the confusion matrix
+    for i in range(len(annotations)):
+        assert 'text' in annotations[i]
 
 
 def test_graph_confusion_matrix_norm_disabled(X_y_binary):
@@ -550,12 +554,13 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
         assert not permutation_importance.isnull().all().all()
 
 
-def test_get_permutation_importance_regression(X_y_regression, linear_regression_pipeline_class,
-                                               regression_core_objectives):
-    X, y = X_y_regression
+def test_get_permutation_importance_regression(linear_regression_pipeline_class, regression_core_objectives):
+    X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
+    y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
                                                 random_state=np.random.RandomState(42))
     pipeline.fit(X, y)
+
     for objective in regression_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
@@ -1279,7 +1284,7 @@ def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
     est_class, _ = fitted_tree_estimators
     filepath = os.path.join(str(tmpdir), 'test_0.xyz')
     with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: "
-                                         f"{graphviz.backend.FORMATS}"):
+                       f"{graphviz.backend.FORMATS}"):
         visualize_decision_tree(estimator=est_class, filepath=filepath)
 
 

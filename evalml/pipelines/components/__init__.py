@@ -19,7 +19,7 @@ from .estimators import (
     BaselineRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
-    TimeSeriesBaselineRegressor
+    TimeSeriesBaselineEstimator
 )
 from .transformers import (
     Transformer,

@@ -1,9 +1,11 @@
 import warnings
 
 import numpy as np
+import pandas as pd
 from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
+from ..utils import classproperty
 from .binary_classification_objective import BinaryClassificationObjective
 from .multiclass_classification_objective import (
     MulticlassClassificationObjective
@@ -309,6 +311,11 @@ class RootMeanSquaredLogError(RegressionObjective):
     def objective_function(self, y_true, y_predicted, X=None):
         return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
 
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
+
 
 class MeanSquaredLogError(RegressionObjective):
     """Mean squared log error for regression.
@@ -322,6 +329,11 @@ class MeanSquaredLogError(RegressionObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_log_error(y_true, y_predicted)
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
 
 
 class R2(RegressionObjective):
@@ -359,7 +371,17 @@ class MAPE(TimeSeriesRegressionObjective):
         if (y_true == 0).any():
             raise ValueError("Mean Absolute Percentage Error cannot be used when "
                              "targets contain the value 0.")
-        return (np.abs((y_true - y_predicted) / y_true)).mean() * 100
+        if isinstance(y_true, pd.Series):
+            y_true = y_true.values
+        if isinstance(y_predicted, pd.Series):
+            y_predicted = y_predicted.values
+        scaled_difference = (y_true - y_predicted) / y_true
+        return np.abs(scaled_difference).mean() * 100
+
+    @classproperty
+    def positive_only(self):
+        """If True, this objective is only valid for positive data. Default False."""
+        return True
 
 
 class MSE(RegressionObjective):

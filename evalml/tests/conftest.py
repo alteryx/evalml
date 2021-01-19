@@ -154,8 +154,21 @@ def X_y_categorical_classification():
     titanic = pd.read_csv(data_path)
 
     y = titanic['Survived']
-    X = titanic.drop('Survived', axis=1)
+    X = titanic.drop(['Survived', 'Name'], axis=1)
     return X, y
+
+
+@pytest.fixture()
+def text_df():
+    df = pd.DataFrame(
+        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
+         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I dreamed a dream in days gone by, when hope was high and life worth living',
+                   'Red, the blood of angry men - black, the dark of ages past']
+         })
+    yield df
 
 
 @pytest.fixture
@@ -321,6 +334,30 @@ def linear_regression_pipeline_class():
 
 
 @pytest.fixture
+def time_series_regression_pipeline_class():
+    class TSRegressionPipeline(TimeSeriesRegressionPipeline):
+        """Random Forest Regression Pipeline for time series regression problems."""
+        component_graph = ['Delayed Feature Transformer', 'Random Forest Regressor']
+    return TSRegressionPipeline
+
+
+@pytest.fixture
+def time_series_binary_classification_pipeline_class():
+    class TSBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
+        """Logistic Regression Pipeline for time series binary classification problems."""
+        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+    return TSBinaryPipeline
+
+
+@pytest.fixture
+def time_series_multiclass_classification_pipeline_class():
+    class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
+        """Logistic Regression Pipeline for time series multiclass classification problems."""
+        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+    return TSMultiPipeline
+
+
+@pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
     class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
@@ -479,6 +516,11 @@ def helper_functions():
 def make_data_type():
     """Helper function to convert numpy or pandas input to the appropriate type for tests."""
     def _make_data_type(data_type, data):
+        if data_type == "li":
+            if isinstance(data, pd.DataFrame):
+                data = data.to_numpy()
+            data = data.tolist()
+            return data
         if data_type != "np":
             if len(data.shape) == 1:
                 data = pd.Series(data)

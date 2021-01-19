@@ -90,6 +90,7 @@ def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
     assert len(get_core_objectives(ProblemTypes.BINARY)) == 7
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
+    assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
 
 
 def test_get_time_series_objectives_types(time_series_objectives):

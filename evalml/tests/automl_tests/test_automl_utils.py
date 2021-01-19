@@ -23,6 +23,8 @@ def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass)
     assert isinstance(get_default_primary_search_objective("regression"), R2)
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
+    assert isinstance(get_default_primary_search_objective('time series binary'), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective('time series multiclass'), LogLossMulticlass)
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
 

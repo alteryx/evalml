@@ -10,6 +10,9 @@ class DataCheckMessageCode(Enum):
     HAS_ID_COLUMN = "has_id_column"
     """Message code for data that has ID columns."""
 
+    TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
+    """Message code for target data that has incompatible values for the specified objective"""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
@@ -21,6 +24,15 @@ class DataCheckMessageCode(Enum):
 
     TARGET_BINARY_INVALID_VALUES = "target_binary_invalid_values"
     """Message code for target data for a binary classification problem with numerical values not equal to {0, 1}."""
+
+    TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS = "target_multiclass_not_two_examples_per_class"
+    """Message code for target data for a multi classification problem that does not have two examples per class."""
+
+    TARGET_MULTICLASS_NOT_ENOUGH_CLASSES = "target_multiclass_not_enough_classes"
+    """Message code for target data for a multi classification problem that does not have more than two unique classes."""
+
+    TARGET_MULTICLASS_HIGH_UNIQUE_CLASS = "target_multiclass_high_unique_class_warning"
+    """Message code for target data for a multi classification problem that has an abnormally large number of unique classes relative to the number of target values."""
 
     HIGH_VARIANCE = "high_variance"
     """Message code for when high variance is detected for cross-validation."""
