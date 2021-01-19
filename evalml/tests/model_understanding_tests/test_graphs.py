@@ -915,22 +915,26 @@ def test_graph_partial_dependence(test_pipeline):
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
 
-# def test_graph_two_way_partial_dependence(test_pipeline):
-#     X, y = load_breast_cancer()
-#
-#     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-#     clf = test_pipeline
-#     clf.fit(X, y)
-#     fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
-#     assert isinstance(fig, go.Figure)
-#     fig_dict = fig.to_dict()
-#     assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius'"
-#     assert len(fig_dict['data']) == 1
-#     assert fig_dict['data'][0]['name'] == "Partial Dependence"
-#
-#     part_dep_data = partial_dependence(clf, X, features='mean radius', grid_resolution=20)
-#     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
-#     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
+
+def test_graph_two_way_partial_dependence(test_pipeline):
+    X, y = load_breast_cancer()
+
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    clf = test_pipeline
+    clf.fit(X, y)
+    fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of '('mean radius', 'mean area')'"
+    assert len(fig_dict['data']) == 1
+    assert fig_dict['data'][0]['name'] == "Partial Dependence"
+
+    part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
+    # import pdb; pdb.set_trace()
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values']['x'])
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['feature_values']['y'])
+    assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data['partial_dependence'])
+
 
 def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')

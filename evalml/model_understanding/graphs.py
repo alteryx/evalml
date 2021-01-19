@@ -470,7 +470,6 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
     try:
         avg_pred, values = sk_partial_dependence(pipeline, X=X, features=features, grid_resolution=grid_resolution)
-        #avg_pred returns 1xgrid_resolution
     finally:
         # Delete scikit-learn attributes that were temporarily set
         del pipeline._estimator_type
@@ -485,16 +484,15 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
                              "partial_dependence": np.concatenate([pred for pred in avg_pred])})
     elif len(features) == 2:
-        # data = pd.DataFrame({"%s values" % features[0]: values[0],
-        #                      "%s values" % features[1]: values[1],
-        #                      "partial_dependence": avg_pred[0]})
         data = pd.DataFrame(avg_pred[0])
-        data.index = features[0]
-        data.columns = features[1]
+        data.index = values[0]
+        data.columns = values[1]
+        data = {"partial_dependence": data,
+                "feature_values": {"x": values[0],
+                                   "y": values[1]}}
 
     if classes is not None:
         data['class_label'] = np.repeat(classes, len(values[0]))
-
     return data
 
 
@@ -533,6 +531,22 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
                         xaxis={'title': f'{feature_name}'},
                         yaxis={'title': 'Partial Dependence'},
                         showlegend=False)
+    if not isinstance(features, (list, tuple)):
+        fig = graph_one_way_part_dep(_go, class_label, feature_name, layout, part_dep, pipeline)
+    else:
+        fig = graph_two_way_part_dep(_go, layout, part_dep)
+
+    return fig
+
+
+def graph_two_way_part_dep(_go, layout, part_dep):
+    trace = _go.Contour(x=part_dep["feature_values"]["x"], y=part_dep["feature_values"]["y"],
+                        z=part_dep["partial_dependence"], name="Partial Dependence")
+    fig = _go.Figure(layout=layout, data=[trace])
+    return fig
+
+
+def graph_one_way_part_dep(_go, class_label, feature_name, layout, part_dep, pipeline):
     if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")
@@ -544,7 +558,6 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
-
             # Plotly trace indexing begins at 1 so we add 1 to i
             fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
                                       y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
@@ -560,7 +573,6 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
                             name='Partial Dependence',
                             line=dict(width=3))
         fig = _go.Figure(layout=layout, data=[trace])
-
     return fig
 
 
