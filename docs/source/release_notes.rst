@@ -37,6 +37,7 @@ Release Notes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
+        * Added ``infer_feature_types`` to the ``start.ipynb`` guide :pr:`1700`
     * Testing Changes
 
 .. warning::
