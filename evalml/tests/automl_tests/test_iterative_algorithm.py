@@ -11,7 +11,8 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    StackedEnsembleClassifier
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
@@ -282,8 +283,8 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_r
 
     next_batch = algo.next_batch()
     for pipeline in next_batch:
-        if isinstance(pipeline.estimator, StackedEnsembleClassifier):
-            assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == 2
+        if isinstance(pipeline.estimator, StackedEnsembleRegressor):
+            assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == 2
 
 
 @pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
