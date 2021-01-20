@@ -14,6 +14,7 @@ Release Notes
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
+        * Added support for ``pandas`` version 1.2.0 :pr:`1708`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
