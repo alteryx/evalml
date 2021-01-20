@@ -10,6 +10,8 @@ from evalml.utils import _convert_woodwork_types_wrapper, classproperty
 class ObjectiveBase(ABC):
     """Base class for all objectives."""
 
+    problem_types = None
+
     @property
     @classmethod
     @abstractmethod

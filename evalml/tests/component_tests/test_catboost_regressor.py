@@ -17,7 +17,8 @@ def test_catboost_regressor_random_state_bounds_seed(X_y_regression):
     clf = CatBoostRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
     clf.fit(X, y)
     clf = CatBoostRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, CatBoostRegressor)
 
 
 def test_catboost_regressor_random_state_bounds_rng(X_y_regression):
