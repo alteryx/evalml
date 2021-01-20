@@ -22,4 +22,4 @@ seaborn==0.11.1
 shap==0.38.1
 texttable==1.6.3
 woodwork==0.0.7
-xgboost==1.3.2
+xgboost==1.3.3
