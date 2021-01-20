@@ -34,7 +34,8 @@ def test_baseline_binary_mode(data_type, X_y_binary):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
     clf = BaselineClassifier(strategy="mode")
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, BaselineClassifier)
     assert clf.classes_ == [10, 11]
     np.testing.assert_allclose(clf.predict(X), np.array([10] * X.shape[0]))
     predicted_proba = clf.predict_proba(X)
