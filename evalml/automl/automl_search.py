@@ -98,6 +98,7 @@ class AutoMLSearch:
                  max_batches=None,
                  problem_configuration=None,
                  train_best_pipeline=True,
+                 pipeline_parameters=None,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -275,6 +276,7 @@ class AutoMLSearch:
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_state=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
+        self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -435,7 +437,7 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, text_columns=text_columns) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, text_columns=text_columns) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -473,6 +475,10 @@ class AutoMLSearch:
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
+        if len(self.problem_configuration):
+            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
+        else:
+            pipeline_params = self.pipeline_parameters
 
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
@@ -484,7 +490,7 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
-            pipeline_params=self.problem_configuration
+            pipeline_params=pipeline_params
         )
 
         log_title(logger, "Beginning pipeline search")
