@@ -42,7 +42,9 @@ def test_fit_predict_multi(X_y_multi):
     y_pred_proba_sk = sk_clf.predict_proba(X)
 
     clf = DecisionTreeClassifier()
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, DecisionTreeClassifier)
+
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 

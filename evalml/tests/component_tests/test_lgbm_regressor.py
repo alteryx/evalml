@@ -29,7 +29,8 @@ def test_lightgbm_regressor_random_state_bounds_seed(X_y_regression):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, LightGBMRegressor)
     clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
     clf.fit(X, y)
 

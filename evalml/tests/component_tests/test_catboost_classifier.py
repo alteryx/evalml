@@ -17,7 +17,8 @@ def test_catboost_classifier_random_state_bounds_seed(X_y_binary):
     clf = CatBoostClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
     clf.fit(X, y)
     clf = CatBoostClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, CatBoostClassifier)
 
 
 def test_catboost_classifier_random_state_bounds_rng(X_y_binary):

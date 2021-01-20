@@ -34,7 +34,8 @@ def test_baseline_binary_mode(data_type, make_data_type):
     y = make_data_type(data_type, y)
 
     clf = BaselineClassifier(strategy="mode")
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, BaselineClassifier)
     assert clf.classes_ == [10, 11]
     predictions = clf.predict(X)
     assert_series_equal(pd.Series(np.array([10] * X.shape[0]), dtype="Int64"), predictions.to_series())

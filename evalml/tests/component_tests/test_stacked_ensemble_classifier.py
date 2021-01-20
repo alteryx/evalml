@@ -60,7 +60,10 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logisti
         'n_jobs': 1
     }
     assert clf.parameters == expected_parameters
-    clf.fit(X, y)
+
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, StackedEnsembleClassifier)
+
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
     assert not np.isnan(y_pred.to_series()).all()

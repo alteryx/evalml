@@ -28,7 +28,8 @@ from .components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
-    DFSTransformer
+    DFSTransformer,
+    KNeighborsClassifier
 )
 
 from .component_graph import ComponentGraph

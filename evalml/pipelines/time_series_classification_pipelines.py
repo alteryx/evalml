@@ -88,17 +88,15 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         return self.estimator.predict_proba(features, y=y_arg)
 
     def _predict(self, X, y, objective=None, pad=False):
-        y_encoded = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y_encoded)
+        features = self.compute_estimator_features(X, y)
         if isinstance(features, ww.DataTable):
             features = _convert_woodwork_types_wrapper(features.to_dataframe())
         elif isinstance(features, ww.DataColumn):
             features = _convert_woodwork_types_wrapper(features.to_series())
 
-        # features = _convert_woodwork_types_wrapper(features.to_series())
-        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
-        predictions = self._estimator_predict(features_no_nan, y_encoded)
-        # predictions = predictions.to_series()
+        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
+        predictions = self._estimator_predict(features_no_nan, y_no_nan)
+
         if pad:
             padded = pad_with_nans(predictions.to_series(), max(0, features.shape[0] - predictions.shape[0]))
             return _convert_to_woodwork_structure(padded)
@@ -143,15 +141,13 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        y_encoded = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y_encoded)
+        features = self.compute_estimator_features(X, y)
         if isinstance(features, ww.DataTable):
             features = _convert_woodwork_types_wrapper(features.to_dataframe())
         elif isinstance(features, ww.DataColumn):
             features = _convert_woodwork_types_wrapper(features.to_series())
-        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
-        proba = self._estimator_predict_proba(features_no_nan, y_encoded)
-        proba = proba.to_dataframe()
+        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
+        proba = self._estimator_predict_proba(features_no_nan, y_no_nan).to_dataframe()
         proba.columns = self._encoder.classes_
         padded = pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
         return _convert_to_woodwork_structure(padded)
@@ -210,14 +206,13 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
         self._threshold = value
 
     def _predict(self, X, y, objective=None, pad=False):
-        y_encoded = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y_encoded)
+        features = self.compute_estimator_features(X, y)
         if isinstance(features, ww.DataTable):
             features = _convert_woodwork_types_wrapper(features.to_dataframe())
         elif isinstance(features, ww.DataColumn):
             features = _convert_woodwork_types_wrapper(features.to_series())
 
-        features_no_nan, y_encoded = drop_rows_with_nans(features, y_encoded)
+        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -225,9 +220,9 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
                 raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
 
         if self.threshold is None:
-            predictions = self._estimator_predict(features_no_nan, y_encoded).to_series()
+            predictions = self._estimator_predict(features_no_nan, y_no_nan).to_series()
         else:
-            proba = self._estimator_predict_proba(features_no_nan, y_encoded).to_dataframe()
+            proba = self._estimator_predict_proba(features_no_nan, y_no_nan).to_dataframe()
             proba = proba.iloc[:, 1]
             if objective is None:
                 predictions = proba > self.threshold

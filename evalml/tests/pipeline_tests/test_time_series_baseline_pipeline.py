@@ -3,6 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines import TimeSeriesBaselineRegressionPipeline
 from evalml.pipelines.time_series_baselines import (
@@ -15,16 +16,20 @@ from evalml.pipelines.time_series_baselines import (
 @pytest.mark.parametrize('gap', [0, 1])
 @pytest.mark.parametrize('pipeline_class', [TimeSeriesBaselineRegressionPipeline,
                                             TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline])
-def test_time_series_baseline(pipeline_class, gap, X_none, ts_data):
+@patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets", side_effect=lambda y: y)
+def test_time_series_baseline(mock_decode, pipeline_class, gap, X_none, ts_data):
     X, y = ts_data
 
     clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1},
                                      "Time Series Baseline Estimator": {'gap': gap, 'max_delay': 1}})
     expected_y = y.shift(1) if gap == 0 else y
+    expected_y = expected_y.reset_index(drop=True)
+    if not expected_y.isnull().values.any():
+        expected_y = expected_y.astype("Int64")
     if X_none:
         X = None
     clf.fit(X, y)
-    np.testing.assert_equal(expected_y.values, clf.predict(X, y).to_series().values)
+    assert_series_equal(expected_y, clf.predict(X, y).to_series())
 
 
 @pytest.mark.parametrize('X_none', [True, False])
@@ -49,7 +54,7 @@ def test_time_series_baseline_predict_proba(pipeline_class, gap, X_none):
     if X_none:
         X = None
     clf.fit(X, y)
-    pd.testing.assert_frame_equal(expected_proba, clf.predict_proba(X, y).to_dataframe())
+    assert_frame_equal(expected_proba, clf.predict_proba(X, y).to_dataframe())
 
 
 @pytest.mark.parametrize('pipeline_class', [TimeSeriesBaselineRegressionPipeline,
