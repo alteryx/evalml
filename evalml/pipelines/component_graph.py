@@ -88,8 +88,8 @@ class ComponentGraph:
         """Fit each component in the graph
 
         Arguments:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
         """
         self._compute_features(self.compute_order, X, y, fit=True)
         return self
@@ -98,8 +98,8 @@ class ComponentGraph:
         """ Fit all components save the final one, usually an estimator
 
         Arguments:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
 
         Returns:
             ww.DataTable
@@ -121,17 +121,16 @@ class ComponentGraph:
         return _convert_to_woodwork_structure(concatted)
 
     def predict(self, X):
-        ### TODO
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.Series: Predicted values.
+            ww.DataColumn: Predicted values.
         """
         if len(self.compute_order) == 0:
-            return X
+            return _convert_to_woodwork_structure(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
         return _convert_to_woodwork_structure(outputs.get(final_component, outputs.get(f'{final_component}.x')))
@@ -142,21 +141,19 @@ class ComponentGraph:
         to get all the information that should be fed to the final component
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: Transformed values.
+            ww.DataTable: Transformed values.
         """
         if len(self.compute_order) <= 1:
-            return X
-
+            return _convert_to_woodwork_structure(X)
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=False)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
             if isinstance(parent_output, ww.DataColumn):
-                parent_output = parent_output.to_series()
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
+                parent_output = pd.DataFrame(parent_output.to_series(), columns=[parent])
                 parent_output = _convert_to_woodwork_structure(parent_output)
             final_component_inputs.append(parent_output)
         concatted = pd.concat([i.to_dataframe() if isinstance(i, ww.DataTable) else i for i in final_component_inputs], axis=1)
@@ -167,18 +164,17 @@ class ComponentGraph:
 
         Arguments:
             component_list (list): The list of component names to compute.
-            X (pd.DataFrame): Input data to the pipeline to transform.
-            y (pd.Series): The target training data of length [n_samples]
+            X (ww.DataTable, d.DataFrame): Input data to the pipeline to transform.
+            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
             fit (bool): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
         Returns:
             dict - outputs from each component
         """
+        X = _convert_to_woodwork_structure(X)
         if len(component_list) == 0:
             return X
-        X = _convert_to_woodwork_structure(X)
-
         output_cache = {}
         original_logical_types = X.logical_types
         for component_name in component_list:
