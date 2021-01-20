@@ -906,7 +906,7 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
 
     with pytest.raises(ValueError) as execinfo:
         partial_dependence(pipeline, X, features=('a', 'b', 'c'), grid_resolution=20)
-        assert "Too many features" in str(execinfo.value)
+    assert "Too many features" in str(execinfo.value)
 
 
 def test_graph_partial_dependence(test_pipeline):
