@@ -3,6 +3,7 @@ from abc import abstractmethod
 import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
@@ -23,6 +24,7 @@ class Estimator(ComponentBase):
     """
     # We can't use the inspect module to dynamically determine this because of issue 1582
     predict_uses_y = False
+    model_family = ModelFamily.NONE
 
     @property
     @classmethod
