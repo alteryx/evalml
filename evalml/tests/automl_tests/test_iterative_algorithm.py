@@ -295,11 +295,11 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
     scores = range(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
-
-    next_batch = algo.next_batch()
-    for pipeline in next_batch:
-        if isinstance(pipeline.estimator, StackedEnsembleClassifier):
-            assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == 2
+    for i in range(5):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            if isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == n_jobs
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
@@ -311,11 +311,11 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, dummy_re
     scores = range(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
-
-    next_batch = algo.next_batch()
-    for pipeline in next_batch:
-        if isinstance(pipeline.estimator, StackedEnsembleRegressor):
-            assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == 2
+    for i in range(5):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            if isinstance(pipeline.estimator, StackedEnsembleRegressor):
+                assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == n_jobs
 
 
 @pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
