@@ -1,3 +1,5 @@
+import copy
+
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -31,9 +33,8 @@ class XGBoostRegressor(Estimator):
                       "min_child_weight": min_child_weight,
                       "n_estimators": n_estimators}
         parameters.update(kwargs)
-        xgb_parameters = parameters.copy()
-        xgb_parameters['use_label_encoder'] = False
-        xgb_parameters['eval_metric'] = "error"
+        xgb_parameters = copy.copy(parameters)
+        xgb_parameters.update({"use_label_encoder": False, "eval_metric": "error"})
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_Regressor = xgb.XGBRegressor(random_state=random_seed,
