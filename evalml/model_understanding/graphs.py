@@ -434,24 +434,36 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
 
 def partial_dependence(pipeline, X, features, grid_resolution=100):
-    """Calculates partial dependence.
+    """Calculates one or two-way partial dependence.  If a single integer or
+    string is given for features, one-way partial dependence is calculated. If
+    a tuple of two integers or strings is given, two-way partial dependence
+    is calculated with the first feature in the y-axis and second feature in the
+    x-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        features (int, string): The target features for which to create the partial dependence plot for.
-            If feature is an int, it must be the index of the feature to use.
-            If feature is a string, it must be a valid column name in X.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
+            If features is an int, it must be the index of the feature to use.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions. The dataframe will
-            contain two columns: "feature_values" (grid points at which the partial dependence was calculated) and
-            "partial_dependence" (the partial dependence at that feature value). For classification problems, there
-            will be a third column called "class_label" (the class label for which the partial
-            dependence was calculated). For binary classification, the partial dependence is only calculated for the
-            "positive" class.
+            over all samples of X and the values used to calculate those predictions.
+
+            In the one-way case: The dataframe will contain two columns, "feature_values" (grid points at which the
+            partial dependence was calculated) and "partial_dependence" (the partial dependence at that feature value).
+            For classification problems, there will be a third column called "class_label" (the class label for which
+            the partial dependence was calculated). For binary classification, the partial dependence is only calculated
+            for the "positive" class.
+
+            In the two-way case: The data frame will contain grid_resolution number of columns and rows where the
+            index and column headers are the sampled values of the first and second features, respectively, used to make
+            the partial dependence contour. The values of the data frame contain the partial dependence data for each
+            feature value pair.
 
     """
     X = _convert_to_woodwork_structure(X)
@@ -491,7 +503,8 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             data.index = values[0]
             data.columns = values[1]
         else:
-            raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported.")
+            raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial "
+                             "dependence is supported.")
 
     return data
 
@@ -499,18 +512,18 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
 def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resolution=100):
     """Create an one-way or two-way partial dependence plot.  Passing a single integer or
     string as features will create a one-way partial dependence plot with the feature values
-    plotted against the partial dependence.  Passing features a tuple of strings will create
-    a two-way partial dependence plot with a contour of feature[0] in the x-axis, feature[1]
-    in the y-axis and the partial dependence in the z-axis.
+    plotted against the partial dependence.  Passing features a tuple of int/strings will create
+    a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
+    in the x-axis and the partial dependence in the z-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        features (int, string, tuple[string]): The target feature for which to create the partial dependence plot for.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
-            If features is a tuple of strings, it must contain valid column names in X.
+            If features is a tuple of strings, it must contain valid column int/names in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
@@ -539,6 +552,15 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
 
 
 def graph_two_way_part_dep(_go, features, part_dep):
+    """Generates a two-way partial dependence plot given a list of features and the partial dependence data.
+
+    Arguments:
+        _go (python module): plotly.graph_objects
+        features (int, string, tuple[int or string]): The target features for which to create the partial dependence plot for.
+        part_dep (pd.DataFrame): DataFrame with partial dependence values and the feature values in the index and columns.
+    Returns:
+        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
+    """
     title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
     layout = _go.Layout(title={'text': title},
                         xaxis={'title': f'{features[0]}'},
@@ -551,6 +573,17 @@ def graph_two_way_part_dep(_go, features, part_dep):
 
 
 def graph_one_way_part_dep(_go, class_label, features, part_dep, pipeline):
+    """Generates a one-way partial dependence plot given a feature and the partial dependence data.
+
+    Arguments:
+        _go (python module): plotly.graph_objects
+        class_label (str): Name of class to plot for partial dependence.
+        features (int, string, tuple[int or string]): The target features for which to create the partial dependence plot for.
+        part_dep (pd.DataFrame): DataFrame with partial dependence values and the feature values in the index and columns.
+        pipeline (PipelineBase or subclass): Fitted pipeline
+    Returns:
+        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
+    """
     feature_name = str(features)
     title = f"Partial Dependence of '{feature_name}'"
     layout = _go.Layout(title={'text': title},
