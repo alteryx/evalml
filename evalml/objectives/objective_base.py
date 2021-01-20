@@ -84,7 +84,7 @@ class ObjectiveBase(ABC):
             pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
         """
         if isinstance(input_data, (pd.Series, pd.DataFrame)):
-            return input_data
+            return _convert_woodwork_types_wrapper(input_data)
         if isinstance(input_data, ww.DataTable):
             return _convert_woodwork_types_wrapper(input_data.to_dataframe())
         if isinstance(input_data, ww.DataColumn):
