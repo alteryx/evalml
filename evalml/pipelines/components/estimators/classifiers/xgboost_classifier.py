@@ -35,7 +35,8 @@ class XGBoostClassifier(Estimator):
                       "n_estimators": n_estimators}
         parameters.update(kwargs)
         xgb_parameters = copy.copy(parameters)
-        xgb_parameters.update({"use_label_encoder": False, "eval_metric": "error"})
+        # remove warning messages
+        xgb_parameters.update({"use_label_encoder": False, "eval_metric": "logloss"})
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(random_state=random_seed,
