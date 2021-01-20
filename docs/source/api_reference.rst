@@ -253,6 +253,7 @@ Classifiers are components that output a predicted class label.
     BaselineClassifier
     StackedEnsembleClassifier
     DecisionTreeClassifier
+    KNeighborsClassifier
 
 Regressors
 -----------

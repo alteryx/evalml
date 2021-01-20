@@ -10,8 +10,10 @@ Release Notes
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
         * Support graphviz 0.16 :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
+        * Added KNN Classifier to estimators. :pr:`1650`
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
+        * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
@@ -29,6 +31,8 @@ Release Notes
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
         * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
         * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
+        * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
+        * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
@@ -36,6 +40,7 @@ Release Notes
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
+        * Added ``infer_feature_types`` to the ``start.ipynb`` guide :pr:`1700`
     * Testing Changes
 
 .. warning::

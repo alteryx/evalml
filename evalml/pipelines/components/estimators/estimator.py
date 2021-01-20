@@ -75,7 +75,7 @@ class Estimator(ComponentBase):
         """Returns importance associated with each feature.
 
         Returns:
-            list(float): Importance associated with each feature
+            np.ndarray: Importance associated with each feature
         """
         try:
             return self._component_obj.feature_importances_

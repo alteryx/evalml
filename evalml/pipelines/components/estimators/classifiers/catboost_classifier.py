@@ -70,8 +70,8 @@ class CatBoostClassifier(Estimator):
         if y.nunique() <= 2:
             self._label_encoder = LabelEncoder()
             y = pd.Series(self._label_encoder.fit_transform(y))
-        model = self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
-        return model
+        self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
+        return self
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
