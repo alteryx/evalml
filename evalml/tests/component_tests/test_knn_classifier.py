@@ -25,7 +25,9 @@ def test_fit_predict_binary(X_y_binary):
     y_pred_proba_sk = sk_clf.predict_proba(X)
 
     clf = KNeighborsClassifier()
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, KNeighborsClassifier)
+
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
