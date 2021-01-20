@@ -483,13 +483,16 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     if isinstance(features, int) or isinstance(features, str):
         data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
                              "partial_dependence": np.concatenate([pred for pred in avg_pred])})
-    elif len(features) == 2:
-        data = pd.DataFrame(avg_pred[0])
-        data.index = values[0]
-        data.columns = values[1]
-        data = {"partial_dependence": data,
-                "feature_values": {"x": values[0],
-                                   "y": values[1]}}
+    elif isinstance(features, (list, tuple)):
+        if len(features) == 2:
+            data = pd.DataFrame(avg_pred[0])
+            data.index = values[0]
+            data.columns = values[1]
+            data = {"partial_dependence": data,
+                    "feature_values": {"x": values[0],
+                                       "y": values[1]}}
+        else:
+            raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported.")
 
     if classes is not None:
         data['class_label'] = np.repeat(classes, len(values[0]))
@@ -497,24 +500,28 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
 
 
 def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resolution=100):
-    """Create an one-way partial dependence plot.
+    """Create an one-way or two-way partial dependence plot.  Passing a single integer or
+    string as features will create a one-way partial dependence plot with the feature values
+    plotted against the partial dependence.  Passing features a tuple of strings will create
+    a two-way partial dependence plot with a contour of feature[0] in the x-axis, feature[1]
+    in the y-axis and the partial dependence in the z-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        features (int, string): The target feature for which to create the partial dependence plot for.
-            If feature is an int, it must be the index of the feature to use.
-            If feature is a string, it must be a valid column name in X.
+        features (int, string, tuple[string]): The target feature for which to create the partial dependence plot for.
+            If features is an int, it must be the index of the feature to use.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of strings, it must contain valid column names in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
 
     Returns:
-        pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions.
-
+        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
@@ -526,10 +533,10 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
 
     part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
 
-    if not isinstance(features, (list, tuple)):
-        fig = graph_one_way_part_dep(_go, class_label, features, part_dep, pipeline)
-    else:
+    if isinstance(features, (list, tuple)):
         fig = graph_two_way_part_dep(_go, features, part_dep)
+    else:
+        fig = graph_one_way_part_dep(_go, class_label, features, part_dep, pipeline)
 
     return fig
 
