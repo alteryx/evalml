@@ -483,19 +483,16 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     if isinstance(features, int) or isinstance(features, str):
         data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
                              "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+        if classes is not None:
+            data['class_label'] = np.repeat(classes, len(values[0]))
     elif isinstance(features, (list, tuple)):
         if len(features) == 2:
             data = pd.DataFrame(avg_pred[0])
             data.index = values[0]
             data.columns = values[1]
-            data = {"partial_dependence": data,
-                    "feature_values": {"x": values[0],
-                                       "y": values[1]}}
         else:
             raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported.")
 
-    if classes is not None:
-        data['class_label'] = np.repeat(classes, len(values[0]))
     return data
 
 
@@ -547,8 +544,8 @@ def graph_two_way_part_dep(_go, features, part_dep):
                         xaxis={'title': f'{features[0]}'},
                         yaxis={'title': f'{features[1]}'},
                         showlegend=False)
-    trace = _go.Contour(x=part_dep["feature_values"]["x"], y=part_dep["feature_values"]["y"],
-                        z=part_dep["partial_dependence"], name="Partial Dependence")
+    trace = _go.Contour(x=part_dep.index, y=part_dep.columns,
+                        z=part_dep.values, name="Partial Dependence")
     fig = _go.Figure(layout=layout, data=[trace])
     return fig
 

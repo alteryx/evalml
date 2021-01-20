@@ -941,9 +941,9 @@ def test_graph_two_way_partial_dependence(test_pipeline):
     assert fig_dict['data'][0]['name'] == "Partial Dependence"
 
     part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
-    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values']['x'])
-    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['feature_values']['y'])
-    assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data['partial_dependence'])
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data.index)
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data.columns)
+    assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data.values)
 
 
 def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
