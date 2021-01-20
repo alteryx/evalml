@@ -230,7 +230,6 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
                            "target_delay_1": y_series.shift(1)}).dropna(axis=0, how='any')
 
     df_passed_to_estimator, target_passed_to_estimator = mock_fit.call_args[0]
-
     # Check the features have target values encoded as ints.
     pd.testing.assert_frame_equal(df_passed_to_estimator, answer)
 

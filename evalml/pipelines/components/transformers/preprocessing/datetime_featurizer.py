@@ -3,7 +3,7 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
-
+import pandas as pd
 
 def _extract_year(col, encode_as_categories=False):
     return col.dt.year, None
@@ -99,7 +99,7 @@ class DateTimeFeaturizer(Transformer):
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
                 features, categories = self._function_mappings[feature](X_t[col_name], self.encode_as_categories)
-                X_t[name] = features
+                X_t[name] = pd.Series(features)
                 if categories:
                     self._categories[name] = categories
         return X_t.drop(self._date_time_col_names, axis=1)

@@ -92,7 +92,7 @@ class DelayedFeatureTransformer(Transformer):
                 col = X[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
-                X = X.assign(**{f"{col_name}_delay_{t}": col.shift(t) for t in range(1, self.max_delay + 1)})
+                X = X.assign(**{f"{col_name}_delay_{t}": pd.Series(col.shift(t)) for t in range(1, self.max_delay + 1)})
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
