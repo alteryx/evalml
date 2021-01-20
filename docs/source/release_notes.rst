@@ -30,6 +30,7 @@ Release Notes
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
         * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
         * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
+        * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
