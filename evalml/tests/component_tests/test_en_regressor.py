@@ -40,9 +40,10 @@ def test_fit_predict(X_y_regression):
     y_pred_sk = sk_clf.predict(X)
 
     clf = ElasticNetRegressor()
-    clf.fit(X, y)
-    y_pred = clf.predict(X)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, ElasticNetRegressor)
 
+    y_pred = clf.predict(X)
     np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
 
 

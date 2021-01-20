@@ -9,6 +9,7 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
+from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
@@ -48,15 +49,11 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
-    RegressionPipeline,
-    TimeSeriesRegressionPipeline
+    RegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit
-)
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
@@ -1855,7 +1852,7 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+def test_automl_error_callback_none(mock_fit, mock_score, X_y_binary, caplog):
     X, y = X_y_binary
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
@@ -1863,16 +1860,36 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     automl.search()
     assert msg in caplog.text
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_silent(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=silent_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg not in caplog.text
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_log(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg in caplog.text
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_raise(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_error_callback, train_best_pipeline=False, n_jobs=1)
     with pytest.raises(Exception, match="all your model are belong to us"):
@@ -1880,6 +1897,13 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback_log_and_save(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
@@ -1890,6 +1914,13 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
     for e in automl._results['errors']:
         assert str(e) == msg
 
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+    msg = 'all your model are belong to us'
+    mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
     with pytest.raises(Exception, match="all your model are belong to us"):
@@ -1976,32 +2007,6 @@ def test_automl_validates_problem_configuration(X_y_binary):
     assert problem_config == {"max_delay": 2, "gap": 3}
 
 
-@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
-@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
-def test_automl_time_series_regression(mock_fit, mock_score, X_y_regression):
-    X, y = X_y_regression
-
-    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
-
-    class Pipeline1(TimeSeriesRegressionPipeline):
-        name = "Pipeline 1"
-        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
-
-    class Pipeline2(TimeSeriesRegressionPipeline):
-        name = "Pipeline 2"
-        component_graph = ["Delayed Feature Transformer", "Elastic Net Regressor"]
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration,
-                          allowed_pipelines=[Pipeline1, Pipeline2], max_batches=2)
-    automl.search()
-    assert isinstance(automl.data_splitter, TimeSeriesSplit)
-    for result in automl.results['pipeline_results'].values():
-        if result["id"] == 0:
-            continue
-        assert result['parameters']['Delayed Feature Transformer'] == configuration
-        assert result['parameters']['pipeline'] == configuration
-
-
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 def test_automl_best_pipeline(mock_optimize, X_y_binary):
     X, y = X_y_binary
@@ -2085,7 +2090,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_scor
 
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
-                                               "Time Series Baseline Regressor": {"gap": 6, "max_delay": 3}}
+                                               "Time Series Baseline Estimator": {"gap": 6, "max_delay": 3}}
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
@@ -2118,3 +2123,60 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
     with pytest.raises(ValueError, match='is not allowed in AutoML!'):
         AutoMLSearch(X_train=X, y_train=y, problem_type=non_core_objective.problem_types[0],
                      additional_objectives=[non_core_objective.name])
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
+              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
+              "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+        if 'Logistic Regression Classifier' in row['parameters']:
+            assert row['parameters']['Logistic Regression Classifier']['C'] == 20
+            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'none'
+        if 'Elastic Net Classifier' in row['parameters']:
+            assert row['parameters']['Elastic Net Classifier']['alpha'] == 0.75
+            assert row['parameters']['Elastic Net Classifier']['l1_ratio'] == 0.2
+
+
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
+    X, y = X_y_regression
+    params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']},
+              'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])},
+              'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": (0.01, 0.02, 0.03)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'median'
+        if 'Decision Tree Regressor' in row['parameters']:
+            assert row['parameters']['Decision Tree Regressor']['max_depth'] == 17
+            assert row['parameters']['Decision Tree Regressor']['max_features'] == 'auto'
+        if 'Elastic Net Regressor' in row['parameters']:
+            assert 0 < row['parameters']['Elastic Net Regressor']['alpha'] < 0.5
+            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == 0.01
+
+
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
+    X, y = X_y_multi
+    params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
+              'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
+                          allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        if 'Imputer' in row['parameters']:
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
+        if 'Decision Tree Classifier' in row['parameters']:
+            assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
+            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2

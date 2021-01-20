@@ -12,14 +12,14 @@ networkx==2.5
 nlp-primitives==1.1.0
 numpy==1.19.5
 pandas==1.1.5
-plotly==4.14.2
+plotly==4.14.3
 psutil==5.8.0
 requirements-parser==0.2.0
 scikit-learn==0.23.2
 scikit-optimize==0.8.1
 scipy==1.5.4
 seaborn==0.11.1
-shap==0.37.0
+shap==0.38.1
 texttable==1.6.3
 woodwork==0.0.7
 xgboost==1.2.1

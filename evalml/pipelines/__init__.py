@@ -28,7 +28,8 @@ from .components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
-    DFSTransformer
+    DFSTransformer,
+    KNeighborsClassifier
 )
 
 from .component_graph import ComponentGraph
@@ -52,5 +53,5 @@ from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 from .regression import (
     BaselineRegressionPipeline,
     MeanBaselineRegressionPipeline,
-    TimeSeriesBaselineRegressionPipeline
 )
+from .time_series_baselines import TimeSeriesBaselineRegressionPipeline, TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline

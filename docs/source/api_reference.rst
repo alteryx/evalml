@@ -36,6 +36,30 @@ Utilities to preprocess data before using evalml.
     split_data
 
 
+.. currentmodule:: evalml.exceptions
+
+Exceptions
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    MethodPropertyNotFoundError
+    PipelineNotFoundError
+    ObjectiveNotFoundError
+    IllFormattedClassNameError
+    MissingComponentError
+    ComponentNotYetFittedError
+    PipelineNotYetFittedError
+    AutoMLSearchException
+    EnsembleMissingPipelinesError
+    PipelineScoreError
+    DataCheckInitError
+    NullsInColumnWarning
+
+
 .. currentmodule:: evalml.automl
 
 AutoML
@@ -229,6 +253,7 @@ Classifiers are components that output a predicted class label.
     BaselineClassifier
     StackedEnsembleClassifier
     DecisionTreeClassifier
+    KNeighborsClassifier
 
 Regressors
 -----------
@@ -247,7 +272,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
-    TimeSeriesBaselineRegressor
+    TimeSeriesBaselineEstimator
     StackedEnsembleRegressor
     DecisionTreeRegressor
     LightGBMRegressor
@@ -316,7 +341,7 @@ Objective Base Classes
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_base_class.rst
     :nosignatures:
 
     ObjectiveBase
@@ -324,12 +349,13 @@ Objective Base Classes
     MulticlassClassificationObjective
     RegressionObjective
 
+
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     FraudCost
@@ -342,7 +368,7 @@ Classification Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     AccuracyBinary
@@ -377,7 +403,7 @@ Regression Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     R2
