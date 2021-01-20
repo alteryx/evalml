@@ -11,7 +11,6 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    RegressionPipeline,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
@@ -72,33 +71,6 @@ def dummy_binary_pipeline_classes():
         return [MockBinaryClassificationPipeline1,
                 MockBinaryClassificationPipeline2,
                 MockBinaryClassificationPipeline3]
-    return _method
-
-
-@pytest.fixture
-def dummy_regression_pipeline_classes():
-    def _method():
-        class MockEstimator(Estimator):
-            name = "Mock Regressor"
-            model_family = ModelFamily.RANDOM_FOREST
-            supported_problem_types = [ProblemTypes.REGRESSION]
-            hyperparameter_ranges = {'dummy_parameter': ['default', 'other']}
-
-            def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
-                super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
-                                             'n_jobs': n_jobs},
-                                 component_obj=None, random_state=random_state)
-
-        class MockRegressionPipeline1(RegressionPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-        class MockRegressionPipeline2(RegressionPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-        return [MockRegressionPipeline1,
-                MockRegressionPipeline2]
     return _method
 
 
@@ -290,7 +262,7 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=True, n_jobs=n_jobs)
     next_batch = algo.next_batch()
-
+    seen_ensemble = False
     scores = range(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
@@ -298,15 +270,16 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
         next_batch = algo.next_batch()
         for pipeline in next_batch:
             if isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                seen_ensemble = True
                 assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == n_jobs
+    assert seen_ensemble
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
-def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, dummy_regression_pipeline_classes):
-    dummy_regression_pipeline_classes = dummy_regression_pipeline_classes()
-    algo = IterativeAlgorithm(allowed_pipelines=dummy_regression_pipeline_classes, ensembling=True, n_jobs=n_jobs)
+def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
+    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class, linear_regression_pipeline_class], ensembling=True, n_jobs=n_jobs)
     next_batch = algo.next_batch()
-
+    seen_ensemble = False
     scores = range(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
         algo.add_result(score, pipeline)
@@ -314,7 +287,9 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, dummy_re
         next_batch = algo.next_batch()
         for pipeline in next_batch:
             if isinstance(pipeline.estimator, StackedEnsembleRegressor):
+                seen_ensemble = True
                 assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == n_jobs
+    assert seen_ensemble
 
 
 @pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
