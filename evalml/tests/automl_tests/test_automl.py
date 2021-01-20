@@ -58,7 +58,8 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
     check_random_state_equality,
-    get_random_state
+    get_random_state,
+    get_random_seed
 )
 
 
@@ -2180,3 +2181,14 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
+
+
+@pytest.mark.parametrize("random_state", [0, 1, 3, 9])
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_multi):
+    X, y = X_y_multi
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=random_state, n_jobs=1)
+    automl.search()
+    for i, row in automl.rankings.iterrows():
+        print(automl.get_pipeline(row['id']).random_state)

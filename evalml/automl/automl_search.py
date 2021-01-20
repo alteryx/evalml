@@ -245,7 +245,7 @@ class AutoMLSearch:
             'errors': []
         }
         self.random_state = get_random_state(random_state)
-        self.random_seed = get_random_seed(self.random_state)
+        self.random_seed = get_random_seed(random_state)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -844,13 +844,12 @@ class AutoMLSearch:
 
         return current_batch_pipeline_scores
 
-    def get_pipeline(self, pipeline_id, random_state=0):
+    def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
         initialized with the parameters used to train that pipeline during automl search.
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
         Returns:
             PipelineBase: untrained pipeline instance associated with the provided ID
@@ -862,7 +861,7 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters, random_state=random_state)
+        return pipeline_class(parameters, random_state=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
