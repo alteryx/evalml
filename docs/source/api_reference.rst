@@ -502,6 +502,7 @@ Data Check Classes
     OutliersDataCheck
     NoVarianceDataCheck
     ClassImbalanceDataCheck
+    MulticollinearityDataCheck
 
 
 .. autosummary::
@@ -565,3 +566,4 @@ General Utils
     pad_with_nans
     drop_rows_with_nans
     infer_feature_types
+    save_plot
