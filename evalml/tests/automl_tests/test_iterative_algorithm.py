@@ -13,7 +13,7 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     RegressionPipeline,
     StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    StackedEnsembleRegressor
 )
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
@@ -100,7 +100,6 @@ def dummy_regression_pipeline_classes():
         return [MockRegressionPipeline1,
                 MockRegressionPipeline2]
     return _method
-
 
 
 def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
