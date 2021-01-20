@@ -15,6 +15,7 @@ Release Notes
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
     * Fixes
+        * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
         * Fixed thresholding for pipelines in ``AutoMLSearch`` to only threshold binary classification pipelines :pr:`1622` :pr:`1626`
         * Updated ``load_data`` to return Woodwork structures and update default parameter value for ``index`` to ``None`` :pr:`1610`
@@ -30,6 +31,7 @@ Release Notes
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
         * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
         * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
+        * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`

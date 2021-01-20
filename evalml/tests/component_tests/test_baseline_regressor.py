@@ -26,7 +26,8 @@ def test_baseline_mean(X_y_regression):
     X, y = X_y_regression
     mean = y.mean()
     clf = BaselineRegressor()
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, BaselineRegressor)
     np.testing.assert_allclose(clf.predict(X), np.array([mean] * len(X)))
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
