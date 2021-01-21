@@ -547,7 +547,7 @@ def test_describe(caplog, logistic_regression_binary_pipeline_class):
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
-    for component in lrp._component_graph:
+    for component in lrp:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -563,7 +563,7 @@ def test_describe_nonlinear(caplog, nonlinear_binary_pipeline_class):
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
-    for component in nbpl._component_graph:
+    for component in nbpl:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -581,7 +581,7 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
     assert "Model Family: Linear" in out
     assert "Number of features: {}".format(X.shape[1]) in out
 
-    for component in lrp._component_graph:
+    for component in lrp:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -599,7 +599,7 @@ def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline
     assert "Model Family: Linear" in out
     assert "Number of features: 2" in out
 
-    for component in nbpl._component_graph:
+    for component in nbpl:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -780,7 +780,7 @@ def test_multi_format_creation(X_y_binary):
 
     clf = TestPipeline(parameters=parameters)
     correct_components = [Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf._component_graph, correct_components):
+    for component, correct_components in zip(clf, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
 
@@ -808,7 +808,7 @@ def test_multiple_feature_selectors(X_y_binary):
 
     clf = TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     correct_components = [Imputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf._component_graph, correct_components):
+    for component, correct_components in zip(clf, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
 
