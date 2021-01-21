@@ -148,12 +148,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
             y_predicted_proba = self.predict_proba(X, y)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self._predict(X, y, pad=True)
-
-        if y_predicted_proba is not None:
-            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
-        if y_predicted is not None:
-            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
-
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives):
@@ -174,10 +168,14 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
-        y_pred, y_pred_proba = self._compute_predictions(X, y, objectives)
-        y_shifted, y_pred, y_pred_proba = drop_rows_with_nans(y_shifted, y_pred, y_pred_proba)
-        return self._score_all_objectives(X, y_shifted, y_pred,
-                                          y_pred_proba=y_pred_proba,
+        y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
+        if y_predicted is not None:
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        if y_predicted_proba is not None:
+            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
+        y_shifted, y_predicted, y_predicted_proba = drop_rows_with_nans(y_shifted, y_predicted, y_predicted_proba)
+        return self._score_all_objectives(X, y_shifted, y_predicted,
+                                          y_pred_proba=y_predicted_proba,
                                           objectives=objectives)
 
 
