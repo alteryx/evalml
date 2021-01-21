@@ -1,5 +1,4 @@
 import pandas as pd
-import woodwork as ww
 
 from evalml.objectives import get_objective
 from evalml.pipelines.regression_pipeline import RegressionPipeline

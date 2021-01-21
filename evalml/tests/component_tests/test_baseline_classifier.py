@@ -114,7 +114,6 @@ def test_baseline_multiclass_random(X_y_multi):
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     assert_frame_equal(pd.DataFrame(np.array([[1. / 3 for i in range(len(values))]] * len(X))), predicted_proba.to_dataframe())
-    # np.testing.assert_allclose(predicted_proba, )
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -130,7 +129,6 @@ def test_baseline_multiclass_random_weighted(X_y_multi):
     predictions = clf.predict(X)
     assert_series_equal(pd.Series(get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="Int64"), predictions.to_series())
 
-    # np.testing.assert_allclose(clf.predict(X), get_random_state(0).choice(np.unique(y), len(X), p=percent_freq))
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     assert_frame_equal(pd.DataFrame(np.array([[percent_freq[i] for i in range(len(values))]] * len(X))), predicted_proba.to_dataframe())

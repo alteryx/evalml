@@ -1,5 +1,4 @@
 import pandas as pd
-import woodwork as ww
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
@@ -84,7 +83,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y_arg = None
         if self.estimator.predict_uses_y:
             y_arg = y
-
         return self.estimator.predict_proba(features, y=y_arg)
 
     def _predict(self, X, y, objective=None, pad=False):

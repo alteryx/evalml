@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -232,21 +233,22 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     df_passed_to_estimator, target_passed_to_estimator = mock_fit.call_args[0]
 
     # Check the features have target values encoded as ints.
-    pd.testing.assert_frame_equal(df_passed_to_estimator, answer)
+    assert_frame_equal(df_passed_to_estimator, answer)
 
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
-    pd.testing.assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
+    assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
 
     pl.predict(X, y_encoded)
     # Best way to get the argument since the api changes between 3.6/3.7 and 3.8
     df_passed_to_predict = mock_predict.call_args[0][0]
-    pd.testing.assert_frame_equal(df_passed_to_predict, answer)
+    assert_frame_equal(df_passed_to_predict, answer)
 
     mock_predict.reset_mock()
+
     # Since we mock score_all_objectives, the objective doesn't matter
     pl.score(X, y_encoded, objectives=['MCC Binary'])
     df_passed_to_predict = mock_predict.call_args[0][0]
-    pd.testing.assert_frame_equal(df_passed_to_predict, answer)
+    assert_frame_equal(df_passed_to_predict, answer)
 
 
 @pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),

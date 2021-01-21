@@ -104,7 +104,7 @@ def test_drop_null_transformer_fit_transform():
                       'some_null': [None, 0, 3, 4, 5]})
     drop_null_transformer = DropNullColumns(pct_null_threshold=1.0)
     X_t = drop_null_transformer.fit_transform(X)
-    assert_frame_equal(X_t.to_dataframe(), X.drop(["all_null"], axis=1))
+    assert_frame_equal(X.drop(["all_null"], axis=1), X_t.to_dataframe())
 
 
 def test_drop_null_transformer_np_array():

@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import Imputer
@@ -183,19 +182,12 @@ def test_imputer_datetime_input():
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
-def test_imputer_empty_data(data_type):
-    if data_type == 'pd':
-        X = pd.DataFrame()
-        y = pd.Series()
-        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
-    elif data_type == 'ww':
-        X = ww.DataTable(pd.DataFrame())
-        y = ww.DataColumn(pd.Series())
-        expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
-    else:
-        X = np.array([[]])
-        y = np.array([])
-        expected = pd.DataFrame(index=pd.Index([0]), columns=pd.Int64Index([]))
+def test_imputer_empty_data(data_type, make_data_type):
+    X = pd.DataFrame()
+    y = pd.Series()
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+    expected = pd.DataFrame(index=pd.Index([]), columns=pd.Index([]))
     imputer = Imputer()
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)
@@ -317,7 +309,7 @@ def test_imputer_bool_dtype_object(data_type, make_data_type):
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_imputer_multitype_with_one_bool(data_type):
+def test_imputer_multitype_with_one_bool(data_type, make_data_type):
     X_multi = pd.DataFrame({
         "bool with nan": pd.Series([True, np.nan, False, np.nan, False], dtype=object),
         "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
@@ -327,9 +319,10 @@ def test_imputer_multitype_with_one_bool(data_type):
         "bool with nan": pd.Series([True, False, False, False, False], dtype='boolean'),
         "bool no nan": pd.Series([False, False, False, False, True], dtype='boolean'),
     })
-    if data_type == 'ww':
-        X_multi = ww.DataTable(X_multi)
-        y = ww.DataColumn(y)
+
+    X_multi = make_data_type(data_type, X_multi)
+    y = make_data_type(data_type, y)
+
     imputer = Imputer()
     imputer.fit(X_multi, y)
     X_multi_t = imputer.transform(X_multi)

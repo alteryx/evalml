@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import SimpleImputer
@@ -117,12 +116,11 @@ def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_simple_imputer_bool_dtype_object(data_type):
+def test_simple_imputer_bool_dtype_object(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype=object)
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='boolean')
-    if data_type == 'ww':
-        X = ww.DataTable(X)
+    X = make_data_type(data_type, X)
     imputer = SimpleImputer()
     imputer.fit(X, y)
     X_t = imputer.transform(X)
@@ -130,7 +128,7 @@ def test_simple_imputer_bool_dtype_object(data_type):
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_simple_imputer_multitype_with_one_bool(data_type):
+def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
     X_multi = pd.DataFrame({
         "bool with nan": pd.Series([True, np.nan, False, np.nan, False], dtype=object),
         "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
@@ -140,8 +138,8 @@ def test_simple_imputer_multitype_with_one_bool(data_type):
         "bool with nan": pd.Series([True, False, False, False, False], dtype='boolean'),
         "bool no nan": pd.Series([False, False, False, False, True], dtype='boolean'),
     })
-    if data_type == 'ww':
-        X_multi = ww.DataTable(X_multi)
+    X_multi = make_data_type(data_type, X_multi)
+
     imputer = SimpleImputer()
     imputer.fit(X_multi, y)
     X_multi_t = imputer.transform(X_multi)

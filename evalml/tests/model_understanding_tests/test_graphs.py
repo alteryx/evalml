@@ -298,12 +298,8 @@ def test_roc_curve_binary(data_type, make_data_type):
 
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
-    if data_type != 'np':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
-    if data_type == 'ww':
-        y_true = ww.DataColumn(y_true)
-        y_predict_proba = ww.DataTable(y_predict_proba)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
@@ -349,6 +345,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
     y_true_unique = y_true
     if data_type == 'ww':
         y_true_unique = y_true.to_series()
+
     for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
         tpr_rates = roc_curve_data[i].get('tpr_rates')
