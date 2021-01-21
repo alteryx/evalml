@@ -49,7 +49,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataTable: probability estimates
+            ww.DataTable: Probability estimates
         """
         return super().predict_proba(X)
 

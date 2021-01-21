@@ -45,8 +45,7 @@ class Estimator(ComponentBase):
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
-        predictions = _convert_to_woodwork_structure(predictions)
-        return predictions
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -63,8 +62,7 @@ class Estimator(ComponentBase):
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
-        pred_proba = _convert_to_woodwork_structure(pred_proba)
-        return pred_proba
+        return _convert_to_woodwork_structure(pred_proba)
 
     @property
     def feature_importance(self):

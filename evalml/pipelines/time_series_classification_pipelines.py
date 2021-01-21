@@ -89,14 +89,9 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
     def _predict(self, X, y, objective=None, pad=False):
         features = self.compute_estimator_features(X, y)
-        if isinstance(features, ww.DataTable):
-            features = _convert_woodwork_types_wrapper(features.to_dataframe())
-        elif isinstance(features, ww.DataColumn):
-            features = _convert_woodwork_types_wrapper(features.to_series())
-
+        features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
         predictions = self._estimator_predict(features_no_nan, y_no_nan)
-
         if pad:
             padded = pad_with_nans(predictions.to_series(), max(0, features.shape[0] - predictions.shape[0]))
             return _convert_to_woodwork_structure(padded)
@@ -118,14 +113,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y = _convert_woodwork_types_wrapper(y.to_series())
         n_features = max(len(y), X.shape[0])
         predictions = self._predict(X, y, objective=objective, pad=False)
-        if isinstance(predictions, ww.DataTable):
-            predictions = _convert_woodwork_types_wrapper(predictions.to_dataframe())
-        elif isinstance(predictions, ww.DataColumn):
-            predictions = _convert_woodwork_types_wrapper(predictions.to_series())
+        predictions = _convert_woodwork_types_wrapper(predictions.to_series())
         # In case gap is 0 and this is a baseline pipeline, we drop the nans in the
         # predictions before decoding them
         predictions = pd.Series(self._decode_targets(predictions.dropna()), name=self.input_target_name)
-
         padded = pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
         return _convert_to_woodwork_structure(padded)
 
@@ -142,10 +133,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         features = self.compute_estimator_features(X, y)
-        if isinstance(features, ww.DataTable):
-            features = _convert_woodwork_types_wrapper(features.to_dataframe())
-        elif isinstance(features, ww.DataColumn):
-            features = _convert_woodwork_types_wrapper(features.to_series())
+        features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
         proba = self._estimator_predict_proba(features_no_nan, y_no_nan).to_dataframe()
         proba.columns = self._encoder.classes_
@@ -207,11 +195,7 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
 
     def _predict(self, X, y, objective=None, pad=False):
         features = self.compute_estimator_features(X, y)
-        if isinstance(features, ww.DataTable):
-            features = _convert_woodwork_types_wrapper(features.to_dataframe())
-        elif isinstance(features, ww.DataColumn):
-            features = _convert_woodwork_types_wrapper(features.to_series())
-
+        features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
 
         if objective is not None:
@@ -229,8 +213,7 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
             else:
                 predictions = objective.decision_function(proba, threshold=self.threshold, X=features_no_nan)
         if pad:
-            padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
-            return _convert_to_woodwork_structure(padded)
+            predictions = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return _convert_to_woodwork_structure(predictions)
 
     @staticmethod
