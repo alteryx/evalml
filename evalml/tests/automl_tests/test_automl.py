@@ -2183,12 +2183,14 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
 
 
-@pytest.mark.parametrize("random_state", [0, 1, 3, 9])
+@pytest.mark.parametrize("random_state", [0, 1, 9, np.random.RandomState(100)])
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_multi):
     X, y = X_y_multi
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=random_state, n_jobs=1)
     automl.search()
+    if isinstance(random_state, int):
+        random_state = automl.random_state
     for i, row in automl.rankings.iterrows():
-        print(automl.get_pipeline(row['id']).random_state)
+        assert check_random_state_equality(automl.get_pipeline(row['id']).random_state, random_state)
