@@ -18,6 +18,18 @@ def test_problem_types():
     assert set(ProphetRegressor.supported_problem_types) == {ProblemTypes.TIME_SERIES_REGRESSION}
 
 
+def test_init_with_other_params():
+    clf = ProphetRegressor(daily_seasonality=True, mcmc_samples=5, interval_width=0.8, uncertainty_samples=0)
+    assert clf.parameters == {'changepoint_prior_scale': 0.05,
+                              'daily_seasonality': True,
+                              'holidays_prior_scale': 10,
+                              'interval_width': 0.8,
+                              'mcmc_samples': 5,
+                              'seasonality_mode': 'additive',
+                              'seasonality_prior_scale': 10,
+                              'uncertainty_samples': 0}
+
+
 def test_fit_predict_ts_with_X_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
