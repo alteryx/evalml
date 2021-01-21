@@ -879,6 +879,37 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
     assert not part_dep.isnull().all().all()
 
 
+def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
+    X, y = load_wine()
+    pipeline = logistic_regression_multiclass_pipeline_class(
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+
+    num_classes = y.to_series().nunique()
+    grid_resolution = 20
+
+    one_way_part_dep = partial_dependence(pipeline=pipeline,
+                                          X=X,
+                                          features="magnesium",
+                                          grid_resolution=grid_resolution)
+    assert "class_label" in one_way_part_dep.columns
+    assert one_way_part_dep["class_label"].nunique() == num_classes
+    assert len(one_way_part_dep.index) == num_classes * grid_resolution
+    assert list(one_way_part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+
+    two_way_part_dep = partial_dependence(pipeline=pipeline,
+                                          X=X,
+                                          features=("magnesium", "alcohol"),
+                                          grid_resolution=20)
+
+    assert "class_label" in two_way_part_dep.columns
+    assert two_way_part_dep["class_label"].nunique() == num_classes
+    assert len(two_way_part_dep.index) == num_classes * grid_resolution
+    assert len(two_way_part_dep.columns) == grid_resolution + 1
+
+    # Test 2-way non-multiclass
+
+
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -951,6 +982,8 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     X, y = load_wine()
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
+
+    # Test one-way without class labels
     fig = graph_partial_dependence(pipeline, X, features='magnesium', grid_resolution=20)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -965,8 +998,35 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
         for axis_type in ['x', 'y']:
             assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
+    # Test one-way with class labels
     fig = graph_partial_dependence(pipeline, X, features='magnesium', class_label='class_1', grid_resolution=20)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert len(fig_dict['data']) == 1
+    assert len(fig_dict['data'][0]['x']) == 20
+    assert len(fig_dict['data'][0]['y']) == 20
+    assert fig_dict['data'][0]['name'] == 'class_1'
 
+    msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
+    with pytest.raises(ValueError, match=msg):
+        graph_partial_dependence(pipeline, X, features='alcohol', class_label='wine')
+
+    # Test two-way without class labels
+    fig = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), grid_resolution=20)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert len(fig_dict['data']) == 3, "Figure does not have partial dependence data for each class."
+    assert all([len(fig_dict["data"][i]['x']) == 20 for i in range(3)])
+    assert all([len(fig_dict["data"][i]['y']) == 20 for i in range(3)])
+    assert [fig_dict["data"][i]['name'] for i in range(3)] == ["class_0", "class_1", "class_2"]
+
+    # Check that all the subplots axes have the same range
+    for suplot_1_axis, suplot_2_axis in [('axis2', 'axis3'), ('axis2', 'axis4'), ('axis3', 'axis4')]:
+        for axis_type in ['x', 'y']:
+            assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
+
+    # Test two-way with class labels
+    fig = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), class_label='class_1', grid_resolution=20)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert len(fig_dict['data']) == 1
