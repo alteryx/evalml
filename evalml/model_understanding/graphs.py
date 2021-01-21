@@ -473,6 +473,8 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     """
     X = _convert_to_woodwork_structure(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    # if X[feature].dtype.name == "category":
+    #     raise ValueError("Partial dependence is not supported for categorical features.")
 
     if isinstance(features, (list, tuple)):
         if len(features) != 2:
