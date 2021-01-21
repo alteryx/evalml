@@ -499,7 +499,7 @@ def test_compute_final_component_features_single_component(mock_transform, X_y_b
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    assert_frame_equal(X, X_t)
+    assert_frame_equal(X, X_t.to_dataframe())
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')
@@ -523,7 +523,7 @@ def test_predict_empty_graph(X_y_binary):
 
     component_graph.fit(X, y)
     X_t = component_graph.predict(X)
-    assert_frame_equal(X, X_t)
+    assert_frame_equal(X, X_t.to_dataframe())
 
 
 @patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
