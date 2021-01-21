@@ -41,7 +41,7 @@ class Transformer(ComponentBase):
                 y = _convert_to_woodwork_structure(y)
                 y = _convert_woodwork_types_wrapper(y.to_series())
             # category treated differently from object...
-                X_t = self._component_obj.transform(X, y)
+            X_t = self._component_obj.transform(X, y)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
 
