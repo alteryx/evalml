@@ -88,7 +88,7 @@ class ClassificationPipeline(PipelineBase):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series : Estimated labels
+            ww.DataColumn: Estimated labels
         """
         predictions = self._predict(X, objective).to_series()
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
@@ -101,7 +101,7 @@ class ClassificationPipeline(PipelineBase):
             X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: Probability estimates
+            ww.DataTable: Probability estimates
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
@@ -132,7 +132,7 @@ class ClassificationPipeline(PipelineBase):
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
     def _compute_predictions(self, X, objectives):
-        """Scan through the objectives list and precompute"""
+        """Helper function to scan through the objectives list and precompute probabilities."""
         y_predicted = None
         y_predicted_proba = None
         for objective in objectives:

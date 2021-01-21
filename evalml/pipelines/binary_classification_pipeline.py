@@ -22,11 +22,11 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Estimated labels
+            ww.DataColumn: Estimated labels
         """
 
         if objective is not None:
@@ -46,10 +46,10 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: probability estimates
+            ww.DataTable: probability estimates
         """
         return super().predict_proba(X)
 

@@ -111,7 +111,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Predicted values.
+            ww.DataColumn: Predicted values.
         """
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -136,7 +136,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
             X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: Probability estimates
+            ww.DataTable: Probability estimates
         """
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -173,7 +173,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, ww.DataColumn): True labels of length [n_samples]
+            y (ww.DataColumn, pd.Series): True labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:

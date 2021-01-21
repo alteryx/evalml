@@ -72,7 +72,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Predicted values.
+            ww.DataColumn: Predicted values.
         """
         if X is None:
             X = pd.DataFrame()

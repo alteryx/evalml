@@ -182,10 +182,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
-            X (pd.DataFrame): Input data to the pipeline to transform.
+            X (ww.DataTable, pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            pd.DataFrame - New transformed features.
+            ww.DataTable: New transformed features.
         """
         X_t = self._component_graph.compute_final_component_features(X, y=y)
         return X_t
