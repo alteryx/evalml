@@ -356,8 +356,8 @@ def test_fit(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_bina
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')
-@patch('evalml.pipelines.components.OneHotEncoder.transform')
-def test_fit_correct_inputs(mock_ohe_transform, mock_imputer_fit_transform, X_y_binary):
+@patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
+def test_fit_correct_inputs(mock_ohe_fit_transform, mock_imputer_fit_transform, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series(y)
@@ -365,12 +365,12 @@ def test_fit_correct_inputs(mock_ohe_transform, mock_imputer_fit_transform, X_y_
     expected_x = ww.DataTable(pd.DataFrame(index=X.index, columns=X.index).fillna(1))
     expected_y = ww.DataColumn(pd.Series(index=y.index).fillna(0))
     mock_imputer_fit_transform.return_value = tuple((expected_x, expected_y))
-    mock_ohe_transform.return_value = expected_x
+    mock_ohe_fit_transform.return_value = expected_x
     component_graph = ComponentGraph(graph).instantiate({})
     component_graph.fit(X, y)
-
-    assert_frame_equal(expected_x.to_dataframe(), mock_ohe_transform.call_args[0][0].to_dataframe())
-    assert_series_equal(expected_y.to_series(), mock_ohe_transform.call_args[0][1].to_series())
+    expected_x_df = expected_x.to_dataframe().astype("Int64")
+    assert_frame_equal(expected_x_df, mock_ohe_fit_transform.call_args[0][0].to_dataframe())
+    assert_series_equal(expected_y.to_series(), mock_ohe_fit_transform.call_args[0][1].to_series())
 
 
 @patch('evalml.pipelines.components.Transformer.fit_transform')
