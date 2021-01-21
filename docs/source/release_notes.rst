@@ -38,6 +38,7 @@ Release Notes
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
+        * Capped LightGBM version limit to remove bug in docs :pr:`1711`
     * Documentation Changes
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
