@@ -26,10 +26,8 @@ class StandardScaler(Transformer):
 
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X_cols = X.columns
-        X_index = X.index
         X_t = self._component_obj.transform(X)
-        X_t_df = pd.DataFrame(X_t, columns=X_cols, index=X_index)
+        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
         return _convert_to_woodwork_structure(X_t_df)
 
     def fit_transform(self, X, y=None):

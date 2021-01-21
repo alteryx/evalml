@@ -108,5 +108,4 @@ class TextFeaturizer(TextTransformer):
         X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        X_t = _convert_to_woodwork_structure(X_t)
-        return X_t
+        return _convert_to_woodwork_structure(X_t)

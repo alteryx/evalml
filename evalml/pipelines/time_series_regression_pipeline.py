@@ -81,17 +81,12 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         features = self.compute_estimator_features(X, y)
-        if isinstance(features, ww.DataTable):
-            features = _convert_woodwork_types_wrapper(features.to_dataframe())
-        elif isinstance(features, ww.DataColumn):
-            features = _convert_woodwork_types_wrapper(features.to_series())
-
+        features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y = drop_rows_with_nans(features, y)
         y_arg = None
         if self.estimator.predict_uses_y:
             y_arg = y
-        predictions = self.estimator.predict(features_no_nan, y_arg)
-        predictions = predictions.to_series()
+        predictions = self.estimator.predict(features_no_nan, y_arg).to_series()
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return _convert_to_woodwork_structure(padded)

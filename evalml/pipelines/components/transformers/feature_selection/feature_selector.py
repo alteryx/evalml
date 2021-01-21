@@ -23,8 +23,8 @@ class FeatureSelector(Transformer):
         """Transforms input data by selecting features.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Target data
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Target data. Ignored.
 
         Returns:
             ww.DataTable: Transformed X
@@ -43,6 +43,3 @@ class FeatureSelector(Transformer):
         col_types = {key: X_dtypes[key] for key in selected_col_names}
         features = pd.DataFrame(X_t, columns=selected_col_names, index=X.index).astype(col_types)
         return _convert_to_woodwork_structure(features)
-
-    def fit_transform(self, X, y=None):
-        return self.fit(X, y).transform(X, y)

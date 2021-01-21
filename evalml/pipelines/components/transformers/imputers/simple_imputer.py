@@ -56,8 +56,7 @@ class SimpleImputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Transforms input by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data to transform

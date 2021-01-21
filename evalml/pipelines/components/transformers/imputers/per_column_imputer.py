@@ -86,19 +86,4 @@ class PerColumnImputer(Transformer):
             else:
                 X_t[column] = transformed[column]
         X_t = X_t.drop(cols_to_drop, axis=1)
-        X_t = _convert_to_woodwork_structure(X_t)
-        return X_t
-
-    def fit_transform(self, X, y=None):
-        """Fits imputer and imputes missing values in input data.
-
-        Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
-
-        Returns:
-            ww.DataTable: Transformed X
-        """
-
-        self.fit(X, y)
-        return self.transform(X, y)
+        return _convert_to_woodwork_structure(X_t)

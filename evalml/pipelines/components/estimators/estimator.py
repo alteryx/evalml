@@ -37,7 +37,7 @@ class Estimator(ComponentBase):
             X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.Series: Predicted values
+            ww.DataColumn: Predicted values
         """
         try:
             X = _convert_to_woodwork_structure(X)
@@ -54,7 +54,7 @@ class Estimator(ComponentBase):
             X (ww.DataTable, pd.DataFrame, or np.ndarray): Features
 
         Returns:
-            pd.DataFrame: Probability estimates
+            ww.DataTable: Probability estimates
         """
         try:
             X = _convert_to_woodwork_structure(X)
