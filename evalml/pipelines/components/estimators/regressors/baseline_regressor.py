@@ -25,8 +25,7 @@ class BaselineRegressor(Estimator):
 
         Arguments:
             strategy (str): method used to predict. Valid options are "mean", "median". Defaults to "mean".
-            random_state (int, np.random.RandomState): seed for the random number generator
-
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mean", "median"]:
             raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")

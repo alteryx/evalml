@@ -58,7 +58,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
         if isinstance(self.component_graph, list):  # Backwards compatibility

@@ -22,7 +22,7 @@ class LSA(TextTransformer):
 
         Arguments:
             text_columns (list): list of feature names which should be treated as text features.
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
         super().__init__(text_columns=text_columns,

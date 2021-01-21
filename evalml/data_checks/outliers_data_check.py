@@ -19,7 +19,7 @@ class OutliersDataCheck(DataCheck):
         """Checks if there are any outliers in the input data.
 
         Arguments:
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         self.random_state = get_random_state(random_state)
 

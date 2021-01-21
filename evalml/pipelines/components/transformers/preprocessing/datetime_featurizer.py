@@ -55,7 +55,7 @@ class DateTimeFeaturizer(Transformer):
             features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour".
             encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
                 This allows OneHotEncoders to encode these features.
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]

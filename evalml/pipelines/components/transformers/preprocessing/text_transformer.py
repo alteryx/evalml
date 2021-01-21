@@ -12,7 +12,7 @@ class TextTransformer(Transformer):
 
         Arguments:
             text_columns (list): list of feature names which should be treated as text features.
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         parameters = {'text_columns': text_columns}
         parameters.update(kwargs)

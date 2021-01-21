@@ -14,7 +14,7 @@ class Tuner(ABC):
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state (int, np.random.RandomState): The random state
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
         self._parameter_names_map = dict()

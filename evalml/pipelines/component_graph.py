@@ -123,7 +123,7 @@ class ComponentGraph:
         """Helper function that transforms the input data based on the component graph components.
 
         Arguments:
-            needs_fitting (bool): Determines if components should be fit.
+            needs_fitting (boolean): Determines if components should be fit.
             X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
 
@@ -176,14 +176,13 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
         output_cache = {}
-        original_logical_types = X.logical_types
+        input_logical_types = X.logical_types
         for component_name in component_list:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
             x_inputs = []
             y_input = None
-            merged_types_dict = {}
             for parent_input in self.get_parents(component_name):
                 if parent_input[-2:] == '.y':
                     if y_input is not None:
@@ -192,17 +191,16 @@ class ComponentGraph:
                 else:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
                     if isinstance(parent_x, ww.DataTable):
-                        merged_types_dict.update(parent_x.logical_types)
                         parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
                     elif isinstance(parent_x, ww.DataColumn):
-                        # following what was previously here, but could probs be simplified.
-                        parent_x = pd.DataFrame(_convert_woodwork_types_wrapper(parent_x.to_series()), columns=[parent_input])
+                        parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
-            for t in original_logical_types:
-                # numeric is special(ints, floats. ex: targetencoder.)
-                if t in input_x.columns and "numeric" not in input_x[t].semantic_tags:
-                    input_x = input_x.set_types({t: original_logical_types[t]})
+            for col in input_logical_types:
+                if (col in input_x.columns and
+                        input_logical_types[col] != input_x[col].logical_type and
+                        "numeric" not in input_x[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
+                    input_x = input_x.set_types({col: input_logical_types[col]})
             self.input_feature_names.update({component_name: list(input_x.columns)})
 
             if isinstance(component_instance, Transformer):
@@ -234,8 +232,8 @@ class ComponentGraph:
         Arguments:
             x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
             y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
-            X (pd.DataFrame): The original X input, to be used if there is no parent X input
-            y (pd.Series): The original y input, to be used if there is no parent y input
+            X (ww.DataTable, pd.DataFrame): The original X input, to be used if there is no parent X input
+            y (ww.DataColumn, pd.Series): The original y input, to be used if there is no parent y input
 
         Returns:
             ww.DataTable, ww.DataColumn: The X and y transformed values to evaluate a component with
@@ -281,7 +279,7 @@ class ComponentGraph:
         """Gets a list of all the estimator components within this graph
 
         Returns:
-            list: all estimator objects within the graph
+            list: All estimator objects within the graph
         """
         if not isinstance(self.get_last_component(), ComponentBase):
             raise ValueError('Cannot get estimators until the component graph is instantiated')
@@ -294,7 +292,7 @@ class ComponentGraph:
             component_name (str): Name of the child component to look up
 
         Returns:
-            list(str): iterator of parent component names
+            list(str): Iterator of parent component names
         """
         try:
             component_info = self.component_dict[component_name]
@@ -380,10 +378,10 @@ class ComponentGraph:
         return self
 
     def __next__(self):
-        """Iterator for graphs, prints the components in the graph in order
+        """Iterator for graphs, retrieves the components in the graph in order
 
         Returns:
-            ComponentBase - the next component class or instance in the graph
+            ComponentBase obj: The next component class or instance in the graph
         """
         if self._i < len(self.compute_order):
             self._i += 1

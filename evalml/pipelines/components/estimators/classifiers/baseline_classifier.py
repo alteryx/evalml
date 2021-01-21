@@ -26,7 +26,7 @@ class BaselineClassifier(Estimator):
 
         Arguments:
             strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_state (int, np.random.RandomState): Seed for the random number generator
+            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
