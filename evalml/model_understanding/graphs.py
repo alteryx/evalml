@@ -469,6 +469,10 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     X = _convert_to_woodwork_structure(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
+    if isinstance(features, (list, tuple)) and len(features) != 2:
+        raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial "
+                         "dependence is supported.")
+
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
@@ -498,13 +502,9 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         if classes is not None:
             data['class_label'] = np.repeat(classes, len(values[0]))
     elif isinstance(features, (list, tuple)):
-        if len(features) == 2:
-            data = pd.DataFrame(avg_pred[0])
-            data.index = values[0]
-            data.columns = values[1]
-        else:
-            raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial "
-                             "dependence is supported.")
+        data = pd.DataFrame(avg_pred[0])
+        data.index = values[0]
+        data.columns = values[1]
 
     return data
 
