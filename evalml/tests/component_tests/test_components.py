@@ -253,7 +253,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         name = "Mock Transformer"
 
         def fit(self, X, y=None):
-            return X
+            return self
 
     component = MockComponent()
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):

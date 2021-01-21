@@ -40,11 +40,9 @@ class Transformer(ComponentBase):
             if y is not None:
                 y = _convert_to_woodwork_structure(y)
                 y = _convert_woodwork_types_wrapper(y.to_series())
-            # category treated differently from object...
             X_t = self._component_obj.transform(X, y)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
-
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
         return _convert_to_woodwork_structure(X_t_df)
 
@@ -59,10 +57,10 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         try:
-            X = _convert_to_woodwork_structure(X)
-            y = _convert_to_woodwork_structure(y)
-            X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
-            y_pd = _convert_woodwork_types_wrapper(y.to_series())
+            X_ww = _convert_to_woodwork_structure(X)
+            y_ww = _convert_to_woodwork_structure(y)
+            X_pd = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+            y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
             X_t = self._component_obj.fit_transform(X_pd, y_pd)
         except AttributeError:
             try:
