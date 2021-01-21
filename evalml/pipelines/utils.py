@@ -10,6 +10,7 @@ from .time_series_classification_pipelines import (
     TimeSeriesMulticlassClassificationPipeline
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
+from .generate_pipeline import GeneratedPipeline
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
@@ -120,7 +121,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
 
-    problem_type = handle_problem_types(problem_type)
+    problem_types = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, text_columns, estimator)
@@ -132,11 +133,20 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
 
+    # class GeneratedPipeline(base_class):
+    #     custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
+    #     component_graph = [c.name for c in complete_component_graph]
+    #     problem_type = problem_types
+    #     print(component_graph)
+    #     custom_hyperparameters = hyperparameters
+    #     print(custom_hyperparameters)
     class GeneratedPipeline(base_class):
         custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
         component_graph = complete_component_graph
         custom_hyperparameters = hyperparameters
 
+        def __reduce__(self):
+            return (GeneratedPipeline(base_class), (self.component_graph, self.custom_name, self.custom_hyperparameters,), self.__dict__)
     return GeneratedPipeline
 
 
