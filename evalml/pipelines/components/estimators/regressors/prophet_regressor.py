@@ -1,5 +1,4 @@
-import copy
-
+import numpy as np
 import pandas as pd
 from skopt.space import Real
 
@@ -49,9 +48,7 @@ class ProphetRegressor(Estimator):
         p_error_msg = "prophet is not installed. Please install using `pip install pystan` and `pip install fbprophet`."
         prophet = import_or_raise("fbprophet", error_msg=p_error_msg)
 
-        prophet_parameters = copy.copy(parameters)
-
-        prophet_regressor = prophet.Prophet(**prophet_parameters)
+        prophet_regressor = prophet.Prophet(**parameters)
         super().__init__(parameters=parameters,
                          component_obj=prophet_regressor,
                          random_state=random_state)
@@ -113,5 +110,7 @@ class ProphetRegressor(Estimator):
 
     @property
     def feature_importance(self):
-        """Not implemented for ProphetRegressor"""
-        raise NotImplementedError("feature_importance is not implemented for ProphetRegressor")
+        """
+        Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor.
+        """
+        return np.zeros(1)

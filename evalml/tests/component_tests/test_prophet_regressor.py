@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from pytest import importorskip
@@ -28,6 +29,13 @@ def test_init_with_other_params():
                               'seasonality_mode': 'additive',
                               'seasonality_prior_scale': 10,
                               'uncertainty_samples': 0}
+
+
+def test_feature_importance(ts_data):
+    X, y = ts_data
+    clf = ProphetRegressor()
+    clf.fit(X, y)
+    clf.feature_importance == np.zeros(1)
 
 
 def test_fit_predict_ts_with_X_index(ts_data):

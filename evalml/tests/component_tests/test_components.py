@@ -42,6 +42,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     PerColumnImputer,
+    ProphetRegressor,
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
@@ -189,6 +190,7 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
+
     assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
     assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}
@@ -220,6 +222,11 @@ def test_describe_component():
                                                                                                           'min_child_samples': 20, 'n_jobs': -1, 'bagging_fraction': 0.9, 'bagging_freq': 0}}
         assert lg_regressor.describe(return_dict=True) == {'name': 'LightGBM Regressor', 'parameters': {'boosting_type': 'gbdt', 'learning_rate': 0.1, 'n_estimators': 20, 'max_depth': 0, 'num_leaves': 31,
                                                                                                         'min_child_samples': 20, 'n_jobs': -1, 'bagging_fraction': 0.9, 'bagging_freq': 0}}
+    except ImportError:
+        pass
+    try:
+        prophet_regressor = ProphetRegressor()
+        assert prophet_regressor.describe(return_dict=True) == {'name': 'Prophet Regressor', 'parameters': {'changepoint_prior_scale': 0.05, 'holidays_prior_scale': 10, 'seasonality_mode': 'additive', 'seasonality_prior_scale': 10}}
     except ImportError:
         pass
 
