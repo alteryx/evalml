@@ -365,6 +365,7 @@ class MAPE(TimeSeriesRegressionObjective):
     """
     name = "Mean Absolute Percentage Error"
     greater_is_better = False
+    score_needs_proba = False
     perfect_score = 0.0
 
     def objective_function(self, y_true, y_predicted, X=None):

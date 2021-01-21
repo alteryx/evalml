@@ -3,30 +3,27 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set special_methods = ['__str__', '__eq__'] %}
-
 
    {% block attributes %}
    .. Class attributes:
 
-   .. autoattribute:: message_type
-
+   .. autoattribute:: name
+   .. autoattribute:: greater_is_better
+   .. autoattribute:: perfect_score
+   .. autoattribute:: positive_only
+   .. autoattribute:: problem_types
+   .. autoattribute:: score_needs_proba
    {% endblock %}
-
 
    {% block methods %}
    {% if methods %}
-   .. rubric:: Methods:
+   .. rubric:: Methods
 
    .. autosummary::
       :nosignatures:
       :toctree: methods
 
    {% for item in methods %}
-      ~{{ name }}.{{ item }}
-   {%- endfor %}
-
-   {% for item in special_methods %}
       ~{{ name }}.{{ item }}
    {%- endfor %}
    {% endif %}

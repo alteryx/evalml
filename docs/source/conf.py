@@ -207,6 +207,7 @@ extlinks = {
     'user': ('https://github.com/%s', '@')
 }
 
+#autoclass_content = 'both'
 autosummary_generate = ["api_reference.rst"]
 templates_path = ["_templates"]
 

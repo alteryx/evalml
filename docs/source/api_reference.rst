@@ -36,6 +36,30 @@ Utilities to preprocess data before using evalml.
     split_data
 
 
+.. currentmodule:: evalml.exceptions
+
+Exceptions
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    MethodPropertyNotFoundError
+    PipelineNotFoundError
+    ObjectiveNotFoundError
+    IllFormattedClassNameError
+    MissingComponentError
+    ComponentNotYetFittedError
+    PipelineNotYetFittedError
+    AutoMLSearchException
+    EnsembleMissingPipelinesError
+    PipelineScoreError
+    DataCheckInitError
+    NullsInColumnWarning
+
+
 .. currentmodule:: evalml.automl
 
 AutoML
@@ -317,7 +341,7 @@ Objective Base Classes
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_base_class.rst
     :nosignatures:
 
     ObjectiveBase
@@ -325,12 +349,13 @@ Objective Base Classes
     MulticlassClassificationObjective
     RegressionObjective
 
+
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     FraudCost
@@ -343,7 +368,7 @@ Classification Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     AccuracyBinary
@@ -378,7 +403,7 @@ Regression Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     R2
@@ -477,6 +502,7 @@ Data Check Classes
     OutliersDataCheck
     NoVarianceDataCheck
     ClassImbalanceDataCheck
+    MulticollinearityDataCheck
 
 
 .. autosummary::
@@ -540,3 +566,4 @@ General Utils
     pad_with_nans
     drop_rows_with_nans
     infer_feature_types
+    save_plot
