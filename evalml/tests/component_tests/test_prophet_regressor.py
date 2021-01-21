@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 from pytest import importorskip
 
@@ -17,20 +18,12 @@ def test_problem_types():
     assert set(ProphetRegressor.supported_problem_types) == {ProblemTypes.TIME_SERIES_REGRESSION}
 
 
-def test_fit_predict_ts(ts_data):
+def test_fit_predict_ts_with_X_index(ts_data):
     X, y = ts_data
-
-    def build_prophet_df(X, y=None):
-        date_col = X.reset_index()
-        date_col = date_col['index']
-        date_col = date_col.rename('ds')
-        prophet_df = date_col.to_frame()
-        y.index = prophet_df.index
-        prophet_df['y'] = y
-        return prophet_df
+    assert isinstance(X.index, pd.DatetimeIndex)
 
     p_clf = prophet.Prophet()
-    prophet_df = build_prophet_df(X, y)
+    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column='ds')
 
     with suppress_stdout_stderr():
         p_clf.fit(prophet_df)
@@ -43,20 +36,47 @@ def test_fit_predict_ts(ts_data):
     assert (y_pred == y_pred_p).all()
 
 
-def test_fit_predict_ds_col(ts_data):
+def test_fit_predict_ts_with_y_index(ts_data):
     X, y = ts_data
-
-    def build_prophet_df(X, y=None):
-        date_col = X.reset_index()
-        date_col = date_col['index']
-        date_col = date_col.rename('ds')
-        prophet_df = date_col.to_frame()
-        y.index = prophet_df.index
-        prophet_df['y'] = y
-        return prophet_df
+    X = X.reset_index(drop=True)
+    assert isinstance(y.index, pd.DatetimeIndex)
 
     p_clf = prophet.Prophet()
-    prophet_df = build_prophet_df(X, y)
+    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column='ds')
+
+    with suppress_stdout_stderr():
+        p_clf.fit(prophet_df)
+    y_pred_p = p_clf.predict(prophet_df)['yhat']
+
+    clf = ProphetRegressor()
+    clf.fit(X, y)
+    y_pred = clf.predict(X, y)
+
+    assert (y_pred == y_pred_p).all()
+
+
+def test_fit_predict_ts_no_X(ts_data):
+    X, y = ts_data
+
+    p_clf = prophet.Prophet()
+    prophet_df = ProphetRegressor.build_prophet_df(X=pd.DataFrame(), y=y, date_column='ds')
+
+    with suppress_stdout_stderr():
+        p_clf.fit(prophet_df)
+    y_pred_p = p_clf.predict(prophet_df)['yhat']
+
+    clf = ProphetRegressor()
+    clf.fit(X=None, y=y)
+    y_pred = clf.predict(X=None, y=y)
+
+    assert (y_pred == y_pred_p).all()
+
+
+def test_fit_predict_date_col(ts_data):
+    X, y = ts_data
+
+    p_clf = prophet.Prophet()
+    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column='ds')
 
     with suppress_stdout_stderr():
         p_clf.fit(prophet_df)
@@ -64,14 +84,14 @@ def test_fit_predict_ds_col(ts_data):
 
     X = X.reset_index()
     X = X['index'].rename('ds').to_frame()
-    clf = ProphetRegressor()
+    clf = ProphetRegressor(date_column='ds')
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
     assert (y_pred == y_pred_p).all()
 
 
-def test_fit_predict_no_ds(X_y_binary):
+def test_fit_predict_no_date_col_or_index(X_y_binary):
     X, y = X_y_binary
 
     clf = ProphetRegressor()

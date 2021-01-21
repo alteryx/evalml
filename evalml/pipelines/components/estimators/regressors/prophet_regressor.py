@@ -35,8 +35,10 @@ class ProphetRegressor(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, changepoint_prior_scale=0.05, seasonality_prior_scale=10, holidays_prior_scale=10, seasonality_mode="additive",
+    def __init__(self, date_column='ds', changepoint_prior_scale=0.05, seasonality_prior_scale=10, holidays_prior_scale=10, seasonality_mode="additive",
                  random_state=0, **kwargs):
+        self.date_column = date_column
+
         parameters = {'changepoint_prior_scale': changepoint_prior_scale,
                       "seasonality_prior_scale": seasonality_prior_scale,
                       "holidays_prior_scale": holidays_prior_scale,
@@ -54,17 +56,24 @@ class ProphetRegressor(Estimator):
                          component_obj=prophet_regressor,
                          random_state=random_state)
 
-    def build_prophet_df(self, X, y=None):
-        # check for datetime column
-        if 'ds' in X.columns:
-            date_col = X['ds']
+    @staticmethod
+    def build_prophet_df(X, y=None, date_column='ds'):
+        if X is not None:
+            X = X.copy(deep=True)
+        if y is not None:
+            y = y.copy(deep=True)
+
+        if date_column in X.columns:
+            date_col = X[date_column]
         elif isinstance(X.index, pd.DatetimeIndex):
             date_col = X.reset_index()
             date_col = date_col['index']
+        elif isinstance(y.index, pd.DatetimeIndex):
+            date_col = y.reset_index()
+            date_col = date_col['index']
         else:
-            date_col = X.select_dtypes(include='datetime')
-            if date_col.shape[1] == 0:
-                raise ValueError('Prophet estimator requires input data X to have a datetime column')
+            msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_column' parameter. If not it will look for the datetime column in the index of X or y."
+            raise ValueError(msg)
 
         date_col = date_col.rename('ds')
         prophet_df = date_col.to_frame()
@@ -74,23 +83,29 @@ class ProphetRegressor(Estimator):
         return prophet_df
 
     def fit(self, X, y=None):
+        if X is None:
+            X = pd.DataFrame()
+
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        prophet_df = self.build_prophet_df(X, y)
+        prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column=self.date_column)
 
         with suppress_stdout_stderr():
             self._component_obj.fit(prophet_df)
         return self
 
     def predict(self, X, y=None):
+        if X is None:
+            X = pd.DataFrame()
+
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-        prophet_df = self.build_prophet_df(X)
+        prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column=self.date_column)
 
         with suppress_stdout_stderr():
             y_pred = self._component_obj.predict(prophet_df)['yhat']
