@@ -833,11 +833,7 @@ def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitt
             component.predict_proba(X)
 
         component.predict(X)
-
-        try:
-            component.feature_importance
-        except NotImplementedError:
-            continue
+        component.feature_importance
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
@@ -889,10 +885,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             assert component.parameters == loaded_component.parameters
             assert component.describe(return_dict=True) == loaded_component.describe(return_dict=True)
             if (issubclass(component_class, Estimator) and not (isinstance(component, StackedEnsembleClassifier) or isinstance(component, StackedEnsembleRegressor))):
-                try:
-                    assert (component.feature_importance == loaded_component.feature_importance).all()
-                except NotImplementedError:
-                    continue
+                assert (component.feature_importance == loaded_component.feature_importance).all()
 
 
 @patch('cloudpickle.dump')
