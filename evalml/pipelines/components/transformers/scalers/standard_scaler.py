@@ -22,22 +22,22 @@ class StandardScaler(Transformer):
                          component_obj=scaler,
                          random_state=random_state)
 
-    def transform(self, X, y=None):
+    # def transform(self, X, y=None):
 
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X_t = self._component_obj.transform(X)
-        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _convert_to_woodwork_structure(X_t_df)
+    #     X = _convert_to_woodwork_structure(X)
+    #     X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    #     X_t = self._component_obj.transform(X)
+    #     X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
+    #     return _convert_to_woodwork_structure(X_t_df)
 
-    def fit_transform(self, X, y=None):
-        return self.fit(X, y).transform(X, y)
+    # def fit_transform(self, X, y=None):
+    #     return self.fit(X, y).transform(X, y)
 
-    def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        if y is not None:
-            y = _convert_to_woodwork_structure(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
-        self._component_obj.fit(X, y)
-        return self
+    # def fit(self, X, y=None):
+    #     X = _convert_to_woodwork_structure(X)
+    #     X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    #     if y is not None:
+    #         y = _convert_to_woodwork_structure(y)
+    #         y = _convert_woodwork_types_wrapper(y.to_series())
+    #     self._component_obj.fit(X, y)
+    #     return self

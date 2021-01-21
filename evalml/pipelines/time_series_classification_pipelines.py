@@ -149,11 +149,11 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self._predict(X, y, pad=True)
 
-        if isinstance(y_predicted_proba, ww.DataTable):
+        if y_predicted_proba is not None:
             y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
-
-        if isinstance(y_predicted, ww.DataColumn):
+        if y_predicted is not None:
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives):
