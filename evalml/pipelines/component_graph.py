@@ -95,7 +95,7 @@ class ComponentGraph:
         return self
 
     def fit_features(self, X, y):
-        """ Fit all components save the final one, usually an estimator
+        """Fit all components save the final one, usually an estimator
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
@@ -104,7 +104,7 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        return self._fit_transform_feature_helper(True, X, y)
+        return self._fit_transform_features_helper(True, X, y)
 
     def compute_final_component_features(self, X, y=None):
         """Transform all components save the final one, and gathers the data from any number of parents
@@ -117,12 +117,22 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        return self._fit_transform_feature_helper(False, X, y)
+        return self._fit_transform_features_helper(False, X, y)
 
-    def _fit_transform_feature_helper(self, fit, X, y=None):
+    def _fit_transform_features_helper(self, needs_fitting, X, y=None):
+        """Helper function that transforms the input data based on the component graph components.
+
+        Arguments:
+            needs_fitting (bool): Determines if components should be fit.
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
+
+        Returns:
+            ww.DataTable: Transformed values.
+        """
         if len(self.compute_order) <= 1:
             return _convert_to_woodwork_structure(X)
-        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=fit)
+        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
