@@ -345,8 +345,8 @@ def test_get_last_component(example_graph):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_fit(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_fit_transform.return_value = pd.DataFrame(X)
-    mock_predict.return_value = pd.Series(y)
+    mock_fit_transform.return_value = ww.DataTable(X)
+    mock_predict.return_value = ww.DataColumn(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
@@ -382,8 +382,7 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     component_graph = ComponentGraph.from_list(component_list)
     component_graph.instantiate({})
 
-    mock_X_t = pd.DataFrame(np.ones(X.shape))
-    mock_fit_transform.return_value = ww.DataTable(mock_X_t)
+    mock_fit_transform.return_value = ww.DataTable(np.ones(X.shape))
     mock_fit.return_value = Estimator
     mock_predict.return_value = ww.DataColumn(y)
 

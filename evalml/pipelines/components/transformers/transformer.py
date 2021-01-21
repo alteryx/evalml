@@ -61,13 +61,12 @@ class Transformer(ComponentBase):
         try:
             X = _convert_to_woodwork_structure(X)
             y = _convert_to_woodwork_structure(y)
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
-            y = _convert_woodwork_types_wrapper(y.to_series())
-            X_t = self._component_obj.fit_transform(X, y)
+            X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
+            y_pd = _convert_woodwork_types_wrapper(y.to_series())
+            X_t = self._component_obj.fit_transform(X_pd, y_pd)
         except AttributeError:
             try:
-                self.fit(X, y)
-                X_t = self.transform(X, y)
+                return self.fit(X, y).transform(X, y)
             except MethodPropertyNotFoundError as e:
                 raise e
         return _convert_to_woodwork_structure(X_t)
