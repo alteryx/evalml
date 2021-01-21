@@ -44,6 +44,7 @@ class DelayedFeatureTransformer(Transformer):
 
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer."""
+        return self
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
