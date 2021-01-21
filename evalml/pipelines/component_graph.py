@@ -238,8 +238,8 @@ class ComponentGraph:
         if y_input is not None:
             return_y = y_input
         return_x = _convert_to_woodwork_structure(return_x)
-        return_y = _convert_to_woodwork_structure(return_y)
-
+        if return_y is not None:
+            return_y = _convert_to_woodwork_structure(return_y)
         return return_x, return_y
 
     def get_component(self, component_name):
