@@ -83,7 +83,7 @@ def test_get_estimators(has_minimal_dependencies):
         assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 8
         assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[ModelFamily.LINEAR_MODEL])) == 2
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 8
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 9
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 8
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
     assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS, model_families=[])) == 0
