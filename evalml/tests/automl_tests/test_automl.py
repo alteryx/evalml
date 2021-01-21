@@ -58,8 +58,7 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import (
     check_random_state_equality,
-    get_random_state,
-    get_random_seed
+    get_random_state
 )
 
 
