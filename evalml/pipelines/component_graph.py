@@ -102,12 +102,27 @@ class ComponentGraph:
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
 
         Returns:
-            ww.DataTable
+            ww.DataTable: Transformed values.
         """
+        return self._fit_transform_feature_helper(True, X, y)
+
+    def compute_final_component_features(self, X, y=None):
+        """Transform all components save the final one, and gathers the data from any number of parents
+        to get all the information that should be fed to the final component
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
+
+        Returns:
+            ww.DataTable: Transformed values.
+        """
+        return self._fit_transform_feature_helper(False, X, y)
+
+    def _fit_transform_feature_helper(self, fit, X, y=None):
         if len(self.compute_order) <= 1:
             return _convert_to_woodwork_structure(X)
-
-        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=True)
+        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=fit)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
@@ -116,7 +131,6 @@ class ComponentGraph:
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = _convert_to_woodwork_structure(parent_output)
             final_component_inputs.append(parent_output)
-
         concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
         return _convert_to_woodwork_structure(concatted)
 
@@ -135,30 +149,6 @@ class ComponentGraph:
         outputs = self._compute_features(self.compute_order, X)
         return _convert_to_woodwork_structure(outputs.get(final_component, outputs.get(f'{final_component}.x')))
 
-    def compute_final_component_features(self, X, y=None):
-        ### TODO: COMBINE WITH fit_features
-        """ Transform all components save the final one, and gathers the data from any number of parents
-        to get all the information that should be fed to the final component
-
-        Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
-
-        Returns:
-            ww.DataTable: Transformed values.
-        """
-        if len(self.compute_order) <= 1:
-            return _convert_to_woodwork_structure(X)
-        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=False)
-        final_component_inputs = []
-        for parent in self.get_parents(self.compute_order[-1]):
-            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, ww.DataColumn):
-                parent_output = pd.DataFrame(parent_output.to_series(), columns=[parent])
-                parent_output = _convert_to_woodwork_structure(parent_output)
-            final_component_inputs.append(parent_output)
-        concatted = pd.concat([i.to_dataframe() if isinstance(i, ww.DataTable) else i for i in final_component_inputs], axis=1)
-        return _convert_to_woodwork_structure(concatted)
-
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
 
@@ -170,7 +160,7 @@ class ComponentGraph:
                         Defaults to False.
 
         Returns:
-            dict - outputs from each component
+            dict: Outputs from each component
         """
         X = _convert_to_woodwork_structure(X)
         if len(component_list) == 0:
@@ -229,7 +219,7 @@ class ComponentGraph:
 
     @staticmethod
     def _consolidate_inputs(x_inputs, y_input, X, y):
-        """ Combines any/all X and y inputs for a component, including handling defaults
+        """Combines any/all X and y inputs for a component, including handling defaults
 
         Arguments:
             x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
@@ -238,10 +228,8 @@ class ComponentGraph:
             y (pd.Series): The original y input, to be used if there is no parent y input
 
         Returns:
-            pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
+            ww.DataTable, ww.DataColumn: The X and y transformed values to evaluate a component with
         """
-        merged_types_dict = {}
-
         if len(x_inputs) == 0:
             return_x = X
         else:
@@ -250,7 +238,8 @@ class ComponentGraph:
         if y_input is not None:
             return_y = y_input
         return_x = _convert_to_woodwork_structure(return_x)
-        return_x.set_types(merged_types_dict)
+        return_y = _convert_to_woodwork_structure(return_y)
+
         return return_x, return_y
 
     def get_component(self, component_name):

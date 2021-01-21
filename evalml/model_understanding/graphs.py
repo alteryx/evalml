@@ -473,6 +473,7 @@ def partial_dependence(pipeline, X, feature, grid_resolution=100):
         wrapped._estimator_type = "regressor"
     wrapped.feature_importances_ = pipeline.feature_importance
     wrapped._is_fitted = True
+
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=[feature], grid_resolution=grid_resolution)
 
     classes = None

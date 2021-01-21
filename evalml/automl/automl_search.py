@@ -567,8 +567,8 @@ class AutoMLSearch:
 
         Arguments:
             pipeline (Pipeline): Pipeline instance to threshold
-            X_threshold_tuning (ww DataTable): X data to tune pipeline to
-            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
+            X_threshold_tuning (ww.DataTable): X data to tune pipeline to
+            y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
 
         Returns:
             Trained pipeline instance
@@ -577,7 +577,6 @@ class AutoMLSearch:
             pipeline.threshold = 0.5
             if X_threshold_tuning:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                # y_predict_proba = y_predict_proba.to_dataframe().iloc[:, 1]
                 y_predict_proba = y_predict_proba.iloc[:, 1]
                 pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
         return pipeline

@@ -48,12 +48,12 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
 
 
 def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_state=0):
-    """splits data into train and test sets.
+    """Splits data into train and test sets.
 
     Arguments:
-        X (ww.datatable, pd.dataframe or np.ndarray): data of shape [n_samples, n_features]
-        y (ww.datacolumn, pd.series, or np.ndarray): target data of length [n_samples]
-        problem_type (str or problemtypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
+        X (ww.Datatable, pd.Dataframe or np.ndarray): data of shape [n_samples, n_features]
+        y (ww.Datacolumn, pd.Series, or np.ndarray): target data of length [n_samples]
+        problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the gap and max_delay variables.
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
@@ -122,11 +122,11 @@ def drop_nan_target_rows(X, y):
     """Drops rows in X and y when row in the target y has a value of NaN.
 
     Arguments:
-        X (pd.DataFrame): Data to transform
-        y (pd.Series): Target data
+        X (pd.DataFrame, np.ndarray): Data to transform
+        y (pd.Series, np.ndarray): Target data
 
     Returns:
-        pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
+        pd.DataFrame, pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
     """
     X_t = X
     y_t = y

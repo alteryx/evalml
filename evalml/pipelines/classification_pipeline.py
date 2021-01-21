@@ -72,11 +72,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Estimated labels
+            ww.DataColumn: Estimated labels
         """
         return self._component_graph.predict(X)
 
@@ -105,8 +105,6 @@ class ClassificationPipeline(PipelineBase):
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
-        # proba = self.estimator.predict_proba(X)
-        # proba = proba.rename({old_name: new_name for old_name, new_name in zip(list(proba.columns.keys), self._encoder.classes_)})
         proba.columns = self._encoder.classes_
         return _convert_to_woodwork_structure(proba)
 
@@ -127,11 +125,11 @@ class ClassificationPipeline(PipelineBase):
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
         if y_predicted is not None:
-            y_predicted = _convert_to_woodwork_structure(y_predicted)
+            # y_predicted = _convert_to_woodwork_structure(y_predicted)
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
 
         if y_predicted_proba is not None:
-            y_predicted_proba = _convert_to_woodwork_structure(y_predicted_proba)
+            # y_predicted_proba = _convert_to_woodwork_structure(y_predicted_proba)
             y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
