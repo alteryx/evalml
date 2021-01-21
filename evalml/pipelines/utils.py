@@ -1,6 +1,14 @@
 import json
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .generate_pipeline import (
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression
+)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -10,7 +18,6 @@ from .time_series_classification_pipelines import (
     TimeSeriesMulticlassClassificationPipeline
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
-from .generate_pipeline import GeneratedPipeline
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
@@ -121,7 +128,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
 
-    problem_types = handle_problem_types(problem_type)
+    problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, text_columns, estimator)
@@ -130,24 +137,32 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
-    hyperparameters = custom_hyperparameters
-    base_class = _get_pipeline_base_class(problem_type)
+    custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
+    generatedPipeline = _get_generated_pipeline(problem_type)
+    generatedPipeline.custom_name = custom_name
+    generatedPipeline.component_graph = complete_component_graph
+    generatedPipeline.custom_hyperparameters = custom_hyperparameters
+    return generatedPipeline
 
-    # class GeneratedPipeline(base_class):
-    #     custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    #     component_graph = [c.name for c in complete_component_graph]
-    #     problem_type = problem_types
-    #     print(component_graph)
-    #     custom_hyperparameters = hyperparameters
-    #     print(custom_hyperparameters)
-    class GeneratedPipeline(base_class):
-        custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-        component_graph = complete_component_graph
-        custom_hyperparameters = hyperparameters
 
-        def __reduce__(self):
-            return (GeneratedPipeline(base_class), (self.component_graph, self.custom_name, self.custom_hyperparameters,), self.__dict__)
-    return GeneratedPipeline
+def _get_generated_pipeline(problem_type):
+    """Returns the class for the generated pipeline based on the problem type
+
+    Arguments:
+        problem_type (Problem_Type): The problem_type that the pipeline is for
+    """
+    if problem_type == ProblemTypes.BINARY:
+        return GeneratedPipelineBinary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        return GeneratedPipelineMulticlass
+    elif problem_type == ProblemTypes.REGRESSION:
+        return GeneratedPipelineRegression
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        return GeneratedPipelineTimeSeriesRegression
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        return GeneratedPipelineTimeSeriesBinary
+    else:
+        return GeneratedPipelineTimeSeriesMulticlass
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):

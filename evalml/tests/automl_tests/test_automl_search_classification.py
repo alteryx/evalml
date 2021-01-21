@@ -1,3 +1,4 @@
+import pickle
 import time
 from unittest.mock import MagicMock, patch
 
@@ -19,6 +20,8 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     MulticlassClassificationPipeline,
@@ -714,3 +717,29 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration
         assert result['parameters']['pipeline'] == configuration
+
+
+@pytest.mark.parametrize('problem_type', [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY])
+@patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
+@patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
+def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary_fit, mock_multi_fit, mock_binary_score, mock_multiclass_score,
+                                                                     problem_type, X_y_binary, X_y_multi):
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        pipeline = GeneratedPipelineTimeSeriesBinary
+        problem_type = 'time series binary'
+    else:
+        X, y = X_y_multi
+        pipeline = GeneratedPipelineTimeSeriesMulticlass
+        problem_type = 'time series multiclass'
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, problem_configuration=configuration)
+    a.search()
+
+    for i, row in a.rankings.iterrows():
+        if 'Baseline' not in list(row['parameters'].keys())[0]:
+            assert a.get_pipeline(row['id']).__class__ == pipeline
+            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))

@@ -1,4 +1,5 @@
 import os
+import pickle
 from itertools import product
 from unittest.mock import MagicMock, patch
 
@@ -48,6 +49,9 @@ from evalml.objectives.utils import (
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
@@ -2180,3 +2184,34 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_automl_pickle_generated_pipeline(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
+                                          mock_regression_score, mock_regression_fit, problem_type,
+                                          X_y_binary, X_y_multi, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        pipeline = GeneratedPipelineBinary
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        pipeline = GeneratedPipelineMulticlass
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        pipeline = GeneratedPipelineRegression
+
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type)
+    a.search()
+
+    for i, row in a.rankings.iterrows():
+        if 'Baseline' not in list(row['parameters'].keys())[0]:
+            assert a.get_pipeline(row['id']).__class__ == pipeline
+            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))

@@ -55,3 +55,11 @@ from .regression import (
     MeanBaselineRegressionPipeline,
 )
 from .time_series_baselines import TimeSeriesBaselineRegressionPipeline, TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline
+from .generate_pipeline import (
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression
+)
