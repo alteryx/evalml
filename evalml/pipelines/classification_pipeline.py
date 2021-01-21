@@ -130,12 +130,12 @@ class ClassificationPipeline(PipelineBase):
             y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
-    def _compute_predictions(self, X, objectives):
-        """Helper function to scan through the objectives list and precompute probabilities."""
+    def _compute_predictions(self, X, y, objectives, time_series=False):
+        """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
         if any(o.score_needs_proba for o in objectives):
-            y_predicted_proba = self.predict_proba(X)
+            y_predicted_proba = self.predict_proba(X, y) if time_series else self.predict_proba(X)
         if any(not o.score_needs_proba for o in objectives):
-            y_predicted = self._predict(X)
+            y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)
         return y_predicted, y_predicted_proba

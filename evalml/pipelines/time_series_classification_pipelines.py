@@ -138,16 +138,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         padded = pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
         return _convert_to_woodwork_structure(padded)
 
-    def _compute_predictions(self, X, y, objectives):
-        """Compute predictions/probabilities based on objectives."""
-        y_predicted = None
-        y_predicted_proba = None
-        if any(o.score_needs_proba for o in objectives):
-            y_predicted_proba = self.predict_proba(X, y)
-        if any(not o.score_needs_proba for o in objectives):
-            y_predicted = self._predict(X, y, pad=True)
-        return y_predicted, y_predicted_proba
-
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.
 
@@ -166,7 +156,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
 
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
-        y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
+        y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives, time_series=True)
         if y_predicted is not None:
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
         if y_predicted_proba is not None:
