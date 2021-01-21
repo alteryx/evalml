@@ -909,9 +909,9 @@ def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary
 @patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.ComponentGraph.predict')
-def test_score_nonlinear_multiclass(mock_encode, mock_fit, mock_predict, nonlinear_multiclass_pipeline_class, X_y_multi):
+def test_score_nonlinear_multiclass(mock_predict, mock_fit, mock_encode, nonlinear_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
-    mock_predict.return_value = y
+    mock_predict.return_value = ww.DataColumn(y)
     mock_encode.return_value = y
     clf = nonlinear_multiclass_pipeline_class({})
     clf.fit(X, y)
@@ -1016,7 +1016,7 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
 def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, nonlinear_binary_pipeline_class, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
-    mock_predict.return_value = y
+    mock_predict.return_value = ww.DataColumn(y)
     mock_encode.return_value = y
     clf = nonlinear_binary_pipeline_class({})
     clf.fit(X, y)
@@ -1061,10 +1061,10 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
+    mock_imputer.return_value = ww.DataTable(X)
+    mock_ohe.return_value = ww.DataTable(X)
+    mock_scaler.return_value = ww.DataTable(X_expected)
     X_expected = X_expected.astype("Int64")
-    mock_imputer.return_value = X
-    mock_ohe.return_value = X
-    mock_scaler.return_value = X_expected
 
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
