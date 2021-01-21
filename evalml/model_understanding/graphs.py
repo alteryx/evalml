@@ -550,27 +550,7 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
 
     part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
 
-    if isinstance(features, (list, tuple)):
-        fig = graph_part_dep(_go, class_label, features, part_dep, pipeline)
-    else:
-        fig = graph_part_dep(_go, class_label, features, part_dep, pipeline)
-
-    return fig
-
-
-def graph_part_dep(_go, class_label, features, part_dep, pipeline):
-    """Generates a two-way partial dependence plot given a list of features and the partial dependence data.
-
-    Arguments:
-        _go (python module): plotly.graph_objects
-        class_label (str): Name of class to plot for partial dependence.
-        features (int, string, tuple[int or string]): The target features for which to create the partial dependence plot for.
-        part_dep (pd.DataFrame): DataFrame with partial dependence values and the feature values in the index and columns.
-        pipeline (PipelineBase or subclass): Fitted pipeline
-    Returns:
-        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
-    """
-    if isinstance(features,(tuple,list)):
+    if isinstance(features, (tuple, list)):
         title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
         layout = _go.Layout(title={'text': title},
                             xaxis={'title': f'{features[0]}'},
@@ -602,14 +582,14 @@ def graph_part_dep(_go, class_label, features, part_dep, pipeline):
                 z = label_df.values
                 fig.add_trace(_go.Contour(x=x, y=y, z=z, name=label, coloraxis="coloraxis"),
                               row=(i + 2) // 2, col=(i % 2) + 1)
-            elif isinstance(features,(int, str)):
+            elif isinstance(features, (int, str)):
                 x = label_df['feature_values']
                 y = label_df['partial_dependence']
                 fig.add_trace(_go.Scatter(x=x, y=y, line=dict(width=3), name=label),
                               row=(i + 2) // 2, col=(i % 2) + 1)
         fig.update_layout(layout)
 
-        if isinstance(features, (tuple,list)):
+        if isinstance(features, (tuple, list)):
             title = f'{features[0]}'
             xrange = _calculate_axis_range(part_dep.index)
             yrange = _calculate_axis_range(np.array([x for x in part_dep.columns if isinstance(x, (int, float))]))
@@ -621,7 +601,7 @@ def graph_part_dep(_go, class_label, features, part_dep, pipeline):
         fig.update_xaxes(title=title, range=xrange)
         fig.update_yaxes(range=yrange)
     else:
-        if isinstance(features, (tuple,list)):
+        if isinstance(features, (tuple, list)):
             trace = _go.Contour(x=part_dep.index,
                                 y=part_dep.columns,
                                 z=part_dep.values,
@@ -632,6 +612,7 @@ def graph_part_dep(_go, class_label, features, part_dep, pipeline):
                                 name='Partial Dependence',
                                 line=dict(width=3))
         fig = _go.Figure(layout=layout, data=[trace])
+
     return fig
 
 

@@ -984,9 +984,9 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     pipeline.fit(X, y)
 
     # Test one-way without class labels
-    fig = graph_partial_dependence(pipeline, X, features='magnesium', grid_resolution=20)
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
+    fig_one_way_no_class_labels = graph_partial_dependence(pipeline, X, features='magnesium', grid_resolution=20)
+    assert isinstance(fig_one_way_no_class_labels, go.Figure)
+    fig_dict = fig_one_way_no_class_labels.to_dict()
     assert len(fig_dict['data']) == len(pipeline.classes_)
     for data, label in zip(fig_dict['data'], pipeline.classes_):
         assert len(data['x']) == 20
@@ -999,9 +999,9 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
             assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
     # Test one-way with class labels
-    fig = graph_partial_dependence(pipeline, X, features='magnesium', class_label='class_1', grid_resolution=20)
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
+    fig_one_way_class_labels = graph_partial_dependence(pipeline, X, features='magnesium', class_label='class_1', grid_resolution=20)
+    assert isinstance(fig_one_way_class_labels, go.Figure)
+    fig_dict = fig_one_way_class_labels.to_dict()
     assert len(fig_dict['data']) == 1
     assert len(fig_dict['data'][0]['x']) == 20
     assert len(fig_dict['data'][0]['y']) == 20
@@ -1012,9 +1012,9 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
         graph_partial_dependence(pipeline, X, features='alcohol', class_label='wine')
 
     # Test two-way without class labels
-    fig = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), grid_resolution=20)
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
+    fig_two_way_no_class_labels = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), grid_resolution=20)
+    assert isinstance(fig_two_way_no_class_labels, go.Figure)
+    fig_dict = fig_two_way_no_class_labels.to_dict()
     assert len(fig_dict['data']) == 3, "Figure does not have partial dependence data for each class."
     assert all([len(fig_dict["data"][i]['x']) == 20 for i in range(3)])
     assert all([len(fig_dict["data"][i]['y']) == 20 for i in range(3)])
@@ -1026,9 +1026,9 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
             assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
     # Test two-way with class labels
-    fig = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), class_label='class_1', grid_resolution=20)
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
+    fig_two_way_class_labels = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), class_label='class_1', grid_resolution=20)
+    assert isinstance(fig_two_way_class_labels, go.Figure)
+    fig_dict = fig_two_way_class_labels.to_dict()
     assert len(fig_dict['data']) == 1
     assert len(fig_dict['data'][0]['x']) == 20
     assert len(fig_dict['data'][0]['y']) == 20
