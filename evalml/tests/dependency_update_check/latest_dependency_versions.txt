@@ -7,7 +7,7 @@ featuretools==0.23.0
 graphviz==0.16
 ipywidgets==7.6.3
 kaleido==0.1.0
-lightgbm==3.1.1
+lightgbm==3.0.0
 matplotlib==3.3.3
 networkx==2.5
 nlp-primitives==1.1.0
