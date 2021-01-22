@@ -38,8 +38,7 @@ installdeps:
 	pip3 install --upgrade pip==20.3.3
 	pip3 install --upgrade numpy
 	pip3 install cython>=0.29
-	pip3 install arrow==0.17.0 --no-build-isolation
-	pip3 install pyarrow>=2.0.0 --no-build-isolation
+	pip3 install pyarrow>=2.0.0 --no-dependencies
 	pip3 install --upgrade setuptools
 	pip3 install --upgrade wheel
 
@@ -49,8 +48,7 @@ installdeps-test:
 	pip3 install --upgrade pip==20.3.3
 	pip3 install --upgrade numpy
 	pip3 install cython>=0.29
-	pip3 install arrow==0.17.0 --no-build-isolation
-	pip3 install pyarrow>=2.0.0 --no-build-isolation
+	pip3 install pyarrow>=2.0.0 --no-dependencies
 	pip3 install --upgrade setuptools
 	pip3 install --upgrade wheel
 	pip3 install -r test-requirements.txt
