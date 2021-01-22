@@ -39,7 +39,6 @@ installdeps:
 	pip3 install --upgrade setuptools
 	pip3 install --upgrade wheel
 	pip3 install --upgrade numpy
-	pip3 install -e .
 
 .PHONY: installdeps-test
 installdeps-test:
