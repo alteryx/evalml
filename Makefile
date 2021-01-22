@@ -43,14 +43,14 @@ installdeps:
 .PHONY: installdeps-test
 installdeps-test:
 	pip3 install -e .
-	pip3 install -r test-requirements.txt -q
+	pip3 install -r test-requirements.txt
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip3 install -e . -q
-	pip3 install -r dev-requirements.txt -q
+	pip3 install -e .
+	pip3 install -r dev-requirements.txt
 
 .PHONY: installdeps-docs
 installdeps-docs:
 	pip3 install -e . -q
-	pip3 install -r docs-requirements.txt -q
+	pip3 install -r docs-requirements.txt

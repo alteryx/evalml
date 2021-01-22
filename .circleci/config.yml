@@ -23,31 +23,31 @@ commands:
   install_dependencies:
     steps:
       - run: |
-          virtualenv test_python -q
+          virtualenv test_python
           source test_python/bin/activate
           make installdeps
   install_dependencies_test:
     steps:
       - run: |
-            virtualenv test_python -q
+            virtualenv test_python
             source test_python/bin/activate
             make installdeps-test
   install_dependencies_dev:
     steps:
       - run: |
-            virtualenv test_python -q
+            virtualenv test_python
             source test_python/bin/activate
             make installdeps-dev
   install_dependencies_docs:
     steps:
       - run: |
-            virtualenv test_python -q
+            virtualenv test_python
             source test_python/bin/activate
             make installdeps-docs
   install_dependencies_core:
     steps:
       - run: |
-            virtualenv test_python -q
+            virtualenv test_python
             source test_python/bin/activate
             pip3 install --upgrade pip==20.3.3
             pip3 install -e . --no-dependencies
