@@ -131,13 +131,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def __getitem__(self, index):
         if isinstance(index, slice):
             raise NotImplementedError('Slicing pipelines is currently not supported.')
-        elif isinstance(index, int):
-            component_name = self.component_graph[index]
-            if not isinstance(component_name, str):
-                component_name = component_name.name
-            return self.get_component(component_name)
-        else:
-            return self.get_component(index)
+        return self._component_graph[index]
 
     def __setitem__(self, index, value):
         raise NotImplementedError('Setting pipeline components is not supported.')
@@ -497,3 +491,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
         return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self._component_graph)
