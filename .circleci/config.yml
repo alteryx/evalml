@@ -171,7 +171,8 @@ jobs:
               conda activate curr_py
               conda install libpython m2w64-toolchain -c msys2
               conda install numpy cython -c conda-forge
-              python -m pip install pystan
+              conda install pystan -c conda-forge
+              conda install fbprophet -c conda-forge 
       - run:
           name: Install EvalML
           command: |
