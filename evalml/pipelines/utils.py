@@ -195,7 +195,7 @@ def generate_pipeline_code(element):
     if isinstance(element.component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
 
-    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element._component_graph])
+    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element])
     code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []
