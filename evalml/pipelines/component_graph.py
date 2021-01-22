@@ -176,7 +176,6 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
         output_cache = {}
-        input_logical_types = X.logical_types
         for component_name in component_list:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
@@ -196,11 +195,11 @@ class ComponentGraph:
                         parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
-            for col in input_logical_types:
-                if (col in input_x.columns and
-                        input_logical_types[col] != input_x[col].logical_type and
-                        "numeric" not in input_x[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
-                    input_x = input_x.set_types({col: input_logical_types[col]})
+            col_intersection = set(X.columns.keys()).intersection(set(input_x.columns.keys()))
+            for col in col_intersection:
+                if (X[col].logical_type != input_x[col].logical_type and
+                        "numeric" not in X[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
+                    input_x = input_x.set_types({col: X[col].logical_type})
             self.input_feature_names.update({component_name: list(input_x.columns)})
 
             if isinstance(component_instance, Transformer):
