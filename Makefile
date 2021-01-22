@@ -35,7 +35,7 @@ win-circleci-test:
 .PHONY: installdeps
 installdeps:
 	pip install --upgrade pip -q
-	numpy>=1.15.4
+	pip install numpy>=1.15.4
 	pip install pandas>=1.1.1
 	pip install click>=7.1.2
 	pip install scikit-learn>=0.21.3
@@ -45,7 +45,7 @@ installdeps:
 .PHONY: installdeps-test
 installdeps-test:
 	pip install --upgrade pip -q
-	numpy>=1.15.4
+	pip install numpy>=1.15.4
 	pip install pandas>=1.1.1
 	pip install click>=7.1.2
 	pip install scikit-learn>=0.21.3
@@ -56,7 +56,7 @@ installdeps-test:
 .PHONY: installdeps-dev
 installdeps-dev:
 	pip install --upgrade pip -q
-	numpy>=1.15.4
+	pip install numpy>=1.15.4
 	pip install pandas>=1.1.1
 	pip install click>=7.1.2
 	pip install scikit-learn>=0.21.3
