@@ -113,7 +113,6 @@ Release Notes
         * Updated minimal dependencies: ``numpy>=1.19.1``, ``pandas>=1.1.0``, ``scikit-learn>=0.23.1``, ``scikit-optimize>=0.8.1``
         * Updated ``AutoMLSearch.best_pipeline`` to return a trained pipeline. Pass in ``train_best_pipeline=False`` to AutoMLSearch in order to return an untrained pipeline.
         * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
-        * Pipeline component instances can no longer be iterated through using ``Pipeline.component_graph`` :pr:`1543`
         * Update ``AutoMLSearch`` constructor to take training data instead of ``search`` and ``add_to_leaderboard`` :pr:`1597`
         * Update ``split_data`` helper args :pr:`1597`
         * Move data splitters from ``evalml.automl.data_splitters`` to ``evalml.preprocessing.data_splitters`` :pr:`1597`
