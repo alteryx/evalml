@@ -12,7 +12,7 @@ executors:
         default: "3.8"
     working_directory: ~/evalml
     docker:
-      - image: circleci/python:<< parameters.python_version >>
+      - image: cimg/python:<< parameters.python_version >>
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
