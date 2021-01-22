@@ -34,31 +34,20 @@ win-circleci-test:
 
 .PHONY: installdeps
 installdeps:
-	pip3 install --upgrade pip
-	pip3 install --upgrade pip==20.3.3
-	pip3 install --upgrade numpy
-	pip3 install cython>=0.29
-	pip3 install pyarrow>=2.0.0 --no-dependencies
-	pip3 install --upgrade setuptools
-	pip3 install --upgrade wheel
+	pip install --upgrade pip -q
+	pip install -e . -q
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip3 install --upgrade pip
-	pip3 install --upgrade pip==20.3.3
-	pip3 install --upgrade numpy
-	pip3 install cython>=0.29
-	pip3 install pyarrow>=2.0.0 --no-dependencies
-	pip3 install --upgrade setuptools
-	pip3 install --upgrade wheel
-	pip3 install -r test-requirements.txt
+	pip install -e . -q
+	pip install -r test-requirements.txt -q
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip3 install -e .
-	pip3 install -r dev-requirements.txt
+	pip install -e . -q
+	pip install -r dev-requirements.txt -q
 
 .PHONY: installdeps-docs
 installdeps-docs:
-	pip3 install -e . -q
-	pip3 install -r docs-requirements.txt
+	pip install -e . -q
+	pip install -r docs-requirements.txt -q
