@@ -244,8 +244,11 @@ class AutoMLSearch:
             'search_order': [],
             'errors': []
         }
+        self._random_isint = False
+        if isinstance(random_state, int):
+            self._random_isint = True
         self.random_state = get_random_state(random_state)
-        self.random_seed = get_random_seed(self.random_state)
+        self.random_seed = get_random_seed(random_state)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -861,6 +864,9 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
+        if self._random_isint:
+            print(self.random_seed)
+            return pipeline_class(parameters, random_state=self.random_seed)
         return pipeline_class(parameters, random_state=self.random_state)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
