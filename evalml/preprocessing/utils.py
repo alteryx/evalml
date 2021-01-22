@@ -51,8 +51,8 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
     """Splits data into train and test sets.
 
     Arguments:
-        X (ww.Datatable, pd.Dataframe or np.ndarray): data of shape [n_samples, n_features]
-        y (ww.Datacolumn, pd.Series, or np.ndarray): target data of length [n_samples]
+        X (ww.DataTable, pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
+        y (ww.DataColumn, pd.Series, or np.ndarray): target data of length [n_samples]
         problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the gap and max_delay variables.
