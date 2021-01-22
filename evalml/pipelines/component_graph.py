@@ -6,7 +6,7 @@ from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import get_random_state, import_or_raise
+from evalml.utils import get_random_seed, import_or_raise
 
 
 class ComponentGraph:
@@ -17,7 +17,7 @@ class ComponentGraph:
             >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
            """
-        self.random_state = get_random_state(random_state)
+        self.random_state = get_random_seed(random_state)
         self.component_dict = component_dict or {}
         self.component_instances = {}
         self._is_instantiated = False

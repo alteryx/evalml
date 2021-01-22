@@ -27,7 +27,7 @@ class DelayedFeatureTransformer(Transformer):
                 when the target is collected. For example, if you are predicting the next time step's target, gap=1.
                 This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
                 at 1.
-            random_state (int, np.random.RandomState): Seed for the random number generator. There is no randomness
+            random_state (int): Seed for the random number generator. There is no randomness
                 in this transformer.
         """
         self.max_delay = max_delay

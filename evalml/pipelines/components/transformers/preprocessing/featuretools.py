@@ -18,7 +18,7 @@ class DFSTransformer(Transformer):
         Arguments:
             index (string): The name of the column that contains the indices. If no column with this name exists,
                 then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
-            random_state (int, np.random.RandomState): seed for the random number generator
+            random_state (int): seed for the random number generator
         """
         parameters = {"index": index}
         if not isinstance(index, str):

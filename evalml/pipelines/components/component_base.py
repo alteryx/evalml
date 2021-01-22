@@ -6,10 +6,9 @@ import cloudpickle
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
-    check_random_state_equality,
     classproperty,
     get_logger,
-    get_random_state,
+    get_random_seed,
     log_subtitle,
     safe_repr
 )
@@ -26,7 +25,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     _default_parameters = None
 
     def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
-        self.random_state = get_random_state(random_state)
+        self.random_state = get_random_seed(random_state)
         self._component_obj = component_obj
         self._parameters = parameters or {}
         self._is_fitted = False
@@ -75,7 +74,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Constructs a new component with the same parameters
 
         Arguments:
-            random_state (int, RandomState): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+            random_state (int): the value to seed the random state with. Defaults to 0.
 
         Returns:
             A new instance of this component with identical parameters
@@ -153,7 +152,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+        random_state_eq = bool(self.random_state == other.random_state)
         if not random_state_eq:
             return False
         attributes_to_check = ['_parameters', '_is_fitted']

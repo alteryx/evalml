@@ -28,7 +28,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         Arguments:
             gap (int): gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
-            random_state (int, np.random.RandomState): seed for the random number generator
+            random_state (int): seed for the random number generator
 
         """
 

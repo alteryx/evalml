@@ -46,7 +46,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             in time series problems, values should be passed in for the gap and max_delay variables.
         n_splits (int, None): the number of CV splits, if applicable. Default 3.
         shuffle (bool): whether or not to shuffle the data before splitting, if applicable. Default True.
-        random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+        random_state (int): The random seed/state. Defaults to 0.
 
     Returns:
         sklearn.model_selection.BaseCrossValidator: data splitting method.

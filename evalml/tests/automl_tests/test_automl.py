@@ -56,10 +56,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
-from evalml.utils.gen_utils import (
-    check_random_state_equality,
-    get_random_state
-)
+from evalml.utils.gen_utils import get_random_seed
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -289,7 +286,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],
-        'Random State': 'RandomState(MT19937)',
+        'Random State': 0,
         'n_jobs': search_params['n_jobs'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
@@ -478,7 +475,7 @@ def test_automl_str_no_param_search(X_y_binary):
             'Precision'],
         'Start Iteration Callback': 'None',
         'Add Result Callback': 'None',
-        'Random State': 'RandomState(MT19937)',
+        'Random State': 0,
         'n_jobs': '-1',
         'Verbose': 'True',
         'Optimize Thresholds': 'False'
@@ -1829,7 +1826,7 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
 
-    expected_random_state = get_random_state(42)
+    expected_random_state = get_random_seed(42)
     X, y = X_y_binary
 
     class DummyPipeline(BinaryClassificationPipeline):
@@ -1838,8 +1835,8 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
         num_pipelines_init = 0
 
         def __init__(self, parameters, random_state):
-            random_state = get_random_state(random_state)
-            is_diff_random_state = not check_random_state_equality(random_state, expected_random_state)
+            random_state = get_random_seed(random_state)
+            is_diff_random_state = not bool(random_state == expected_random_state)
             self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_state
             super().__init__(parameters, random_state)
@@ -2179,4 +2176,4 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
             assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
-            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
+            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 1
