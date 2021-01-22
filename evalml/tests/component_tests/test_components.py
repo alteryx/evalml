@@ -632,7 +632,7 @@ def test_transformer_check_for_fit(X_y_binary):
             pass
 
         def transform(self, X, y=None):
-            return pd.DataFrame()
+            return ww.DataTable(X)
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"

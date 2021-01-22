@@ -113,7 +113,7 @@ def test_drop_column_transformer_input_invalid_col_name(class_to_test):
                                            pd.DataFrame(np.arange(12).reshape(3, 4), dtype="Int64"),
                                            pd.DataFrame([[], [], []], dtype="Int64")])
                           ])
-def test_column_transformer_int_col_names(class_to_test, answers):
+def test_column_transformer_int_col_names_np_array(class_to_test, answers):
     X = np.arange(12).reshape(3, 4)
     answer1, answer2, answer3 = answers
 

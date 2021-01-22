@@ -64,5 +64,4 @@ class LSA(TextTransformer):
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
         X_t = X_t.drop(columns=text_columns)
-        X_t = _convert_to_woodwork_structure(X_t)
-        return X_t
+        return _convert_to_woodwork_structure(X_t)

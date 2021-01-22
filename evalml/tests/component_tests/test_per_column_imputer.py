@@ -32,9 +32,9 @@ def test_all_strategies():
                       "C": pd.Series([6, 8, 8, np.nan]),
                       "D": pd.Series(["a", "a", "b", np.nan])})
 
-    X_expected = pd.DataFrame({"A": pd.Series([2, 4, 6, 4], dtype="int64"),
-                               "B": pd.Series([4, 6, 4, 4], dtype="int64"),
-                               "C": pd.Series([6, 8, 8, 100], dtype="int64"),
+    X_expected = pd.DataFrame({"A": pd.Series([2, 4, 6, 4]),
+                               "B": pd.Series([4, 6, 4, 4]),
+                               "C": pd.Series([6, 8, 8, 100]),
                                "D": pd.Series(["a", "a", "b", "a"], dtype="category")})
 
     strategies = {
@@ -126,7 +126,7 @@ def test_non_numeric_valid(non_numeric_df):
                                "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
                                "D": pd.Series(["a", "b", "a", 100], dtype="category")})
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected, X_t.to_dataframe())
 
 
 def test_fit_transform_drop_all_nan_columns():

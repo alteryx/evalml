@@ -64,7 +64,7 @@ class Transformer(ComponentBase):
             X_t = self._component_obj.fit_transform(X_pd, y_pd)
         except AttributeError:
             try:
-                return self.fit(X, y).transform(X, y)
+                X_t = self.fit(X, y).transform(X, y)
             except MethodPropertyNotFoundError as e:
                 raise e
         return _convert_to_woodwork_structure(X_t)

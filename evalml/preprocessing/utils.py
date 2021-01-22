@@ -54,7 +54,7 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
         X (ww.Datatable, pd.Dataframe or np.ndarray): data of shape [n_samples, n_features]
         y (ww.Datacolumn, pd.Series, or np.ndarray): target data of length [n_samples]
         problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
-        problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
+        problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the gap and max_delay variables.
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
         random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.

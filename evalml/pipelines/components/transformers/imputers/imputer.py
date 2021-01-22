@@ -115,6 +115,3 @@ class Imputer(Transformer):
 
         X_null_dropped = _convert_to_woodwork_structure(X_null_dropped)
         return X_null_dropped
-
-    # def fit_transform(self, X, y=None):
-    #     return self.fit(X, y).transform(X, y)

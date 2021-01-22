@@ -43,7 +43,15 @@ class DelayedFeatureTransformer(Transformer):
         super().__init__(parameters=parameters, random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits the DelayFeatureTransformer."""
+        """Fits the DelayFeatureTransformer.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
+
+        Returns:
+            self
+        """
         return self
 
     @staticmethod
