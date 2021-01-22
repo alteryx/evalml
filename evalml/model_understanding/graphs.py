@@ -465,6 +465,10 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             the partial dependence contour. The values of the data frame contain the partial dependence data for each
             feature value pair.
 
+    Raises:
+        ValueError: if the user provides a tuple of not exactly two features.
+        ValueError: if the provided pipeline isn't fitted.
+        ValueError: if the provided pipeline is a Baseline pipeline.
     """
     X = _convert_to_woodwork_structure(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -472,7 +476,6 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     if isinstance(features, (list, tuple)) and len(features) != 2:
         raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial "
                          "dependence is supported.")
-
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
@@ -496,20 +499,16 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         classes = pipeline.classes_
 
-    if isinstance(features, int) or isinstance(features, str):
+    if isinstance(features, (int, str)):
         data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
                              "partial_dependence": np.concatenate([pred for pred in avg_pred])})
-        if classes is not None:
-            data['class_label'] = np.repeat(classes, len(values[0]))
     elif isinstance(features, (list, tuple)):
         data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
         data.columns = values[1]
         data.index = np.tile(values[0], avg_pred.shape[0])
-        data['class_label'] = np.repeat(classes, len(values[0]))
-        # data = pd.DataFrame(avg_pred[0])
-        # data.index = values[0]
-        # data.columns = values[1]
 
+    if classes is not None:
+        data['class_label'] = np.repeat(classes, len(values[0]))
     return data
 
 
@@ -540,6 +539,10 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
     Raises:
         ValueError: if a graph is requested for a class name that isn't present in the pipeline
     """
+    if isinstance(features, (list, tuple)):
+        mode = "two-way"
+    elif isinstance(features, (int, str)):
+        mode = "one-way"
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -550,13 +553,13 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
 
     part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
 
-    if isinstance(features, (tuple, list)):
+    if mode == "two-way":
         title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
         layout = _go.Layout(title={'text': title},
                             xaxis={'title': f'{features[0]}'},
                             yaxis={'title': f'{features[1]}'},
                             showlegend=False)
-    elif isinstance(features, (int, str)):
+    elif mode == "one-way":
         feature_name = str(features)
         title = f"Partial Dependence of '{feature_name}'"
         layout = _go.Layout(title={'text': title},
@@ -576,37 +579,37 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
         for i, label in enumerate(class_labels):
             # Plotly trace indexing begins at 1 so we add 1 to i
             label_df = part_dep.loc[part_dep.class_label == label]
-            if isinstance(features, (tuple, list)):
+            if mode == "two-way":
                 x = label_df.index
                 y = np.array([col for col in label_df.columns if isinstance(col, (int, float))])
                 z = label_df.values
                 fig.add_trace(_go.Contour(x=x, y=y, z=z, name=label, coloraxis="coloraxis"),
                               row=(i + 2) // 2, col=(i % 2) + 1)
-            elif isinstance(features, (int, str)):
+            elif mode == "one-way":
                 x = label_df['feature_values']
                 y = label_df['partial_dependence']
                 fig.add_trace(_go.Scatter(x=x, y=y, line=dict(width=3), name=label),
                               row=(i + 2) // 2, col=(i % 2) + 1)
         fig.update_layout(layout)
 
-        if isinstance(features, (tuple, list)):
+        if mode == "two-way":
             title = f'{features[0]}'
             xrange = _calculate_axis_range(part_dep.index)
             yrange = _calculate_axis_range(np.array([x for x in part_dep.columns if isinstance(x, (int, float))]))
             fig.update_layout(coloraxis=dict(colorscale='Bluered_r'), showlegend=False)
-        elif isinstance(features, (int, str)):
+        elif mode == "one-way":
             title = f'{feature_name}'
             xrange = _calculate_axis_range(part_dep['feature_values'])
             yrange = _calculate_axis_range(part_dep['partial_dependence'])
         fig.update_xaxes(title=title, range=xrange)
         fig.update_yaxes(range=yrange)
     else:
-        if isinstance(features, (tuple, list)):
+        if mode == "two-way":
             trace = _go.Contour(x=part_dep.index,
                                 y=part_dep.columns,
                                 z=part_dep.values,
                                 name="Partial Dependence")
-        elif isinstance(features, (int, str)):
+        elif mode == "one-way":
             trace = _go.Scatter(x=part_dep['feature_values'],
                                 y=part_dep['partial_dependence'],
                                 name='Partial Dependence',
