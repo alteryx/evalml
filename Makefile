@@ -35,16 +35,33 @@ win-circleci-test:
 .PHONY: installdeps
 installdeps:
 	pip install --upgrade pip -q
+	numpy>=1.15.4
+	pip install pandas>=1.1.1
+	pip install click>=7.1.2
+	pip install scikit-learn>=0.21.3
+	pip install woodwork==0.0.7 --no-dependencies
 	pip install -e .
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -e . -q
+	pip install --upgrade pip -q
+	numpy>=1.15.4
+	pip install pandas>=1.1.1
+	pip install click>=7.1.2
+	pip install scikit-learn>=0.21.3
+	pip install woodwork==0.0.7 --no-dependencies
+	pip install -e .
 	pip install -r test-requirements.txt
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install -e . -q
+	pip install --upgrade pip -q
+	numpy>=1.15.4
+	pip install pandas>=1.1.1
+	pip install click>=7.1.2
+	pip install scikit-learn>=0.21.3
+	pip install woodwork==0.0.7 --no-dependencies
+	pip install -e .
 	pip install -r dev-requirements.txt
 
 .PHONY: installdeps-docs
