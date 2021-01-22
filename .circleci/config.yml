@@ -169,6 +169,8 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda config --add channels conda-forge
               conda activate curr_py
+              conda install numpy cython matplotlib scipy pandas pystan -c conda-forge
+              conda install gcc
               conda install fbprophet -c conda-forge 
       - run:
           name: Install EvalML
