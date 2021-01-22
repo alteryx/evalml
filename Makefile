@@ -36,9 +36,10 @@ win-circleci-test:
 installdeps:
 	pip3 install --upgrade pip
 	pip3 install --upgrade pip==20.3.3
-	pip install --upgrade setuptools
-	pip install --upgrade wheel
-	pip3 install -e . -q
+	pip3 install --upgrade setuptools
+	pip3 install --upgrade wheel
+	pip3 install --upgrade numpy
+	pip3 install -e .
 
 .PHONY: installdeps-test
 installdeps-test:
