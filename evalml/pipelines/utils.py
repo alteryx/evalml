@@ -137,15 +137,18 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
-    custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    generatedPipeline = _get_generated_pipeline(problem_type)
-    generatedPipeline.custom_name = custom_name
-    generatedPipeline.component_graph = complete_component_graph
-    generatedPipeline.custom_hyperparameters = custom_hyperparameters
-    return generatedPipeline
+    hyperparameters = custom_hyperparameters
+    base_class = _get_pipeline_base_class(problem_type)
+
+    class GeneratedPipeline(base_class):
+        custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
+        component_graph = complete_component_graph
+        custom_hyperparameters = hyperparameters
+
+    return GeneratedPipeline
 
 
-def _get_generated_pipeline(problem_type):
+def get_generated_pipeline(problem_type):
     """Returns the class for the generated pipeline based on the problem type
 
     Arguments:

@@ -1,5 +1,4 @@
 import os
-import pickle
 from unittest.mock import patch
 
 import cloudpickle
@@ -164,7 +163,6 @@ def test_make_pipeline(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
-            assert pickle.loads(pickle.dumps(pipeline))
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
