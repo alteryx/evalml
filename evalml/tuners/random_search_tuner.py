@@ -19,7 +19,7 @@ class RandomSearchTuner(Tuner):
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state: Unused in this class
+            random_state (int): Unused in this class. Defaults to 0.
             with_replacement: If false, only unique hyperparameters will be shown
             replacement_max_attempts: The maximum number of tries to get a unique
                 set of random parameters. Only used if tuner is initalized with

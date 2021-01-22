@@ -23,7 +23,7 @@ class GridSearchTuner(Tuner):
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
             n_points: The number of points to sample from along each dimension
                 defined in the ``space`` argument
-            random_state: Unused in this class
+            random_state (int): Unused in this class, defaults to 0.
         """
         super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         raw_dimensions = list()
