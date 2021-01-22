@@ -235,7 +235,7 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
         problem_type (ProblemType): problem type of pipeline
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-            Default -1.
+            Defaults to -1.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
