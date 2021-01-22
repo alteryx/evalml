@@ -253,7 +253,7 @@ def generate_pipeline_code(element):
     return "\n".join(code_strings)
 
 
-def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=0):
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, random_state=0):
     """
     Creates a pipeline with a stacked ensemble estimator.
 
@@ -261,15 +261,18 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
+        n_jobs (int or None): Integer describing level of parallelism used for pipelines.
+            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+            Defaults to -1.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Classification Pipeline",
                                              random_state=random_state)
     else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
                                              random_state=random_state)
