@@ -34,12 +34,13 @@ win-circleci-test:
 
 .PHONY: installdeps
 installdeps:
-	pip install --upgrade pip -q
+	pip install --upgrade pip
+	pip install --upgrade pip==20.3.3
 	pip install -e . -q
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -e . -q
+	pip install -e .
 	pip install -r test-requirements.txt -q
 
 .PHONY: installdeps-dev
