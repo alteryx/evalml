@@ -25,29 +25,6 @@ def test_xgboost_classifier_random_state_bounds_seed(X_y_binary):
     clf.fit(X, y)
 
 
-# def test_xgboost_classifier_random_state_bounds_rng(X_y_binary):
-#     """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for xgboost is in xgboost's supported range"""
-
-#     def make_mock_random_state(return_value):
-
-#         class MockRandomState(return_value):
-
-#             def randint(self, min_bound, max_bound):
-#                 return return_value
-#         return MockRandomState()
-
-#     X, y = X_y_binary
-#     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-#     X = pd.DataFrame(X, columns=col_names)
-#     y = pd.Series(y)
-#     rng = make_mock_random_state(XGBoostClassifier.SEED_MIN)
-#     clf = XGBoostClassifier(n_estimators=1, max_depth=1, random_state=rng)
-#     clf.fit(X, y)
-#     rng = make_mock_random_state(XGBoostClassifier.SEED_MAX)
-#     clf = XGBoostClassifier(n_estimators=1, max_depth=1, random_state=rng)
-#     clf.fit(X, y)
-
-
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_multi):
     clf = XGBoostClassifier()

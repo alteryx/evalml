@@ -23,29 +23,6 @@ def test_xgboost_regressor_random_state_bounds_seed(X_y_regression):
     clf.fit(X, y)
 
 
-# def test_xgboost_regressor_random_state_bounds_rng(X_y_regression):
-#     """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for xgboost is in xgboost's supported range"""
-
-#     def make_mock_random_state(return_value):
-
-#         class MockRandomState(return_value):
-
-#             def randint(self, min_bound, max_bound):
-#                 return return_value
-#         return MockRandomState()
-
-#     X, y = X_y_regression
-#     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-#     X = pd.DataFrame(X, columns=col_names)
-#     y = pd.Series(y)
-#     rng = make_mock_random_state(XGBoostRegressor.SEED_MIN)
-#     clf = XGBoostRegressor(n_estimators=1, max_depth=1, random_state=rng)
-#     clf.fit(X, y)
-#     rng = make_mock_random_state(XGBoostRegressor.SEED_MAX)
-#     clf = XGBoostRegressor(n_estimators=1, max_depth=1, random_state=rng)
-#     clf.fit(X, y)
-
-
 def test_xgboost_feature_name_with_random_ascii(X_y_regression):
     X, y = X_y_regression
     clf = XGBoostRegressor()

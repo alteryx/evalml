@@ -245,8 +245,6 @@ class AutoMLSearch:
             'errors': []
         }
         self.random_state = get_random_seed(random_state)
-        # self.random_state = self.random_state
-        # self.random_state = get_random_seed(self.random_state)
         self.n_jobs = n_jobs
 
         self.plot = None
