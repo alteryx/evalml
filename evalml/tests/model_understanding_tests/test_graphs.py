@@ -935,9 +935,11 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
 
-    with pytest.raises(ValueError) as execinfo:
+    with pytest.raises(ValueError, match="Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported."):
         partial_dependence(pipeline, X, features=('a', 'b', 'c'), grid_resolution=20)
-    assert "Too many features" in str(execinfo.value)
+
+    with pytest.raises(ValueError, match="Features provided must be a tuple entirely of integers or strings, not a mixture of both."):
+        partial_dependence(pipeline, X, features=(0, 'b'))
 
 
 def test_graph_partial_dependence(test_pipeline):
