@@ -35,19 +35,19 @@ win-circleci-test:
 .PHONY: installdeps
 installdeps:
 	pip install --upgrade pip -q
-	pip install -e . -q
+	pip install -e .
 
 .PHONY: installdeps-test
 installdeps-test:
 	pip install -e . -q
-	pip install -r test-requirements.txt -q
+	pip install -r test-requirements.txt
 
 .PHONY: installdeps-dev
 installdeps-dev:
 	pip install -e . -q
-	pip install -r dev-requirements.txt -q
+	pip install -r dev-requirements.txt
 
 .PHONY: installdeps-docs
 installdeps-docs:
 	pip install -e . -q
-	pip install -r docs-requirements.txt -q
+	pip install -r docs-requirements.txt
