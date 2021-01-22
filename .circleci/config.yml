@@ -49,7 +49,7 @@ commands:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
-            pip install --upgrade pip -q
+            pip install --upgrade pip==20.3.3
             pip install -e . --no-dependencies
             pip install -r core-requirements.txt
             pip install -r test-requirements.txt
