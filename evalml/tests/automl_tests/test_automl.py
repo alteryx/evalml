@@ -2187,7 +2187,6 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
 @pytest.mark.parametrize("random_state", [0, 1, 9, np.random.RandomState(100)])
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-# @patch.object(PipelineBase, '__init__')
 @patch('evalml.pipelines.classification_pipeline.ClassificationPipeline.__init__', return_value=None)
 def test_automl_pipeline_random_state(mock_init, mock_fit, mock_score, random_state, X_y_multi):
     X, y = X_y_multi
@@ -2204,15 +2203,15 @@ def test_automl_pipeline_random_state(mock_init, mock_fit, mock_score, random_st
     # side_effect.counter = 0
     # mock_init.side_effect = MulticlassPipeline({})
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=random_state, n_jobs=1)
-    # automl.search()
-    try:
-        automl.search()
-    except AttributeError:
-        print(mock_init.call_args_list)
-        try:
-            automl.search()
-        except AttributeError:
-            print(mock_init.call_args_list)
+    automl.search()
+    # try:
+    #     automl.search()
+    # except AttributeError:
+    #     print(mock_init.call_args_list)
+    #     try:
+    #         automl.search()
+    #     except AttributeError:
+    #         print(mock_init.call_args_list)
     if isinstance(random_state, int):
         random_state = get_random_state(random_state)
     for i, row in automl.rankings.iterrows():
