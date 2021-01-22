@@ -862,13 +862,11 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        print(pipeline_class)
         pipeline = get_generated_pipeline(self.problem_type)
         pipeline.custom_hyperparameters = pipeline_class.custom_hyperparameters
         pipeline.custom_name = pipeline_class.name
         pipeline.component_graph = pipeline_class.component_graph
         return pipeline(parameters, random_state=random_state)
-        # return pipeline_class(parameters, random_state=random_state)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
