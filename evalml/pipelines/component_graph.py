@@ -33,6 +33,7 @@ class ComponentGraph:
             self.component_instances[component_name] = component_class
         self.compute_order = self.generate_order(self.component_dict)
         self.input_feature_names = {}
+        self._i = 0
 
     @classmethod
     def from_list(cls, component_list, random_state=0):
@@ -372,6 +373,12 @@ class ComponentGraph:
             raise ValueError('The given graph has more than one final (childless) component')
         return compute_order
 
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self.get_component(self.compute_order[index])
+        else:
+            return self.get_component(index)
+
     def __iter__(self):
         self._i = 0
         return self
@@ -386,4 +393,5 @@ class ComponentGraph:
             self._i += 1
             return self.get_component(self.compute_order[self._i - 1])
         else:
+            self._i = 0
             raise StopIteration

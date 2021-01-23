@@ -9,7 +9,11 @@ from evalml.automl.automl_algorithm import (
     IterativeAlgorithm
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
@@ -251,6 +255,41 @@ def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class)
     assert pipeline.parameters['Text Featurization Component'] == expected_params
     assert isinstance(pipeline[0], TextFeaturizer)
     assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']
+
+
+@pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
+def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary_pipeline_classes):
+    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=True, n_jobs=n_jobs)
+    next_batch = algo.next_batch()
+    seen_ensemble = False
+    scores = range(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+    for i in range(5):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            if isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                seen_ensemble = True
+                assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == n_jobs
+    assert seen_ensemble
+
+
+@pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
+def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
+    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class, linear_regression_pipeline_class], ensembling=True, n_jobs=n_jobs)
+    next_batch = algo.next_batch()
+    seen_ensemble = False
+    scores = range(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+    for i in range(5):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            if isinstance(pipeline.estimator, StackedEnsembleRegressor):
+                seen_ensemble = True
+                assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == n_jobs
+    assert seen_ensemble
 
 
 @pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
