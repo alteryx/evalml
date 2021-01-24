@@ -66,5 +66,11 @@ installdeps-dev:
 
 .PHONY: installdeps-docs
 installdeps-docs:
+	pip install --upgrade pip -q
+	pip install numpy>=1.15.4
+	pip install pandas>=1.1.1
+	pip install click>=7.1.2
+	pip install scikit-learn>=0.21.3
+	pip install woodwork==0.0.7 --no-dependencies
 	pip install -e . -q
 	pip install -r docs-requirements.txt

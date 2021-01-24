@@ -169,6 +169,11 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               python -m pip install --upgrade pip
+	            python -m pip install numpy>=1.15.4
+	            python -m pip install pandas>=1.1.1
+	            python -m pip install click>=7.1.2
+	            python -m pip install scikit-learn>=0.21.3
+	            python -m pip install woodwork==0.0.7 --no-dependencies
               python -m pip install .
               python -m pip install -r test-requirements.txt
       - run:
