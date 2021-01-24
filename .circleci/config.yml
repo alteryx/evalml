@@ -49,12 +49,12 @@ commands:
       - run: |
             virtualenv test_python
             source test_python/bin/activate
-            pip3 install --upgrade pip==20.3.3
-            pip3 install -e . --no-dependencies
-            pip3 install -r core-requirements.txt
-            pip3 install -r test-requirements.txt
+            pip install --upgrade pip==20.3.3
+            pip install -e . --no-dependencies
+            pip install -r core-requirements.txt
+            pip install -r test-requirements.txt
             # "!" negates return code. exit nonzero if any of these deps are found
-            ! pip3 freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+            ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
             exit $?
   build_pkg:
     steps:
@@ -168,9 +168,9 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
-              python -m pip3 install --upgrade pip
-              python -m pip3 install .
-              python -m pip3 install -r test-requirements.txt
+              python -m pip install --upgrade pip
+              python -m pip install .
+              python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
           command: |
