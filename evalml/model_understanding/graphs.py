@@ -580,7 +580,6 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
-            # Plotly trace indexing begins at 1 so we add 1 to i
             label_df = part_dep.loc[part_dep.class_label == label]
             if mode == "two-way":
                 x = label_df.index
