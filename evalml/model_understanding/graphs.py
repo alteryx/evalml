@@ -841,7 +841,7 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
     Returns:
         np.ndarray (n_samples, n_components)
     """
-    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate)
+    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric)
     X_new = t_sne_.fit_transform(X)
     return X_new
 
