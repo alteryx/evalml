@@ -8,13 +8,14 @@ Release Notes
         * Added time series support for ``make_pipeline`` :pr:`1566`
         * Added target name for output of pipeline ``predict`` method :pr:`1578`
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
-        * Support graphviz 0.16 :pr:`1657`
+        * Added support for ``graphviz`` ``v0.16`` :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
         * Added KNN Classifier to estimators. :pr:`1650`
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
         * Added ability to directly iterate through components within Pipelines :pr:`1583`
+        * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
