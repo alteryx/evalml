@@ -241,6 +241,8 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, data_splitter
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
+    if data_splitter is not None and data_splitter.get_n_splits() < 2:
+        raise ValueError("A valid data_splitter for stacking ensemble must have at least 2 splits")
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs, cv=data_splitter)], problem_type,
                                              custom_name="Stacked Ensemble Classification Pipeline",

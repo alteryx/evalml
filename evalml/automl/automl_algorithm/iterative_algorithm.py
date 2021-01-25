@@ -52,6 +52,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
+        self.data_splitter = data_splitter
         self._random_state = random_state
 
     def next_batch(self):
@@ -82,7 +83,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                                                       random_state=self.random_state))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_state=self.random_state,
-                                                       n_jobs=self.n_jobs)
+                                                       n_jobs=self.n_jobs,
+                                                       data_splitter=self.data_splitter)
 
             next_batch.append(ensemble)
         else:

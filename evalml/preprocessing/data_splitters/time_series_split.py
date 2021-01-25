@@ -46,7 +46,7 @@ class TimeSeriesSplit(BaseCrossValidator):
         Arguments:
             X (pd.DataFrame, None): Features to split.
             y (pd.DataFrame, None): Target variable to split.
-            groups: Ignored but kept for compatibility with sklearn api.
+            groups (None): Ignored but kept for compatibility with sklearn API.
 
         Returns:
             Iterator of (train, test) indices tuples.

@@ -32,15 +32,17 @@ class TrainingValidationSplit(BaseCrossValidator):
         """Returns the number of splits of this object"""
         return 1
 
-    def split(self, X, y=None):
+    def split(self, X, y=None, groups=None):
         """Divides the data into training and testing sets
 
-            Arguments:
-                X (pd.DataFrame): dataframe of points to split
-                y (pd.Series): series of points to split
+        Arguments:
+            X (pd.DataFrame): Dataframe of points to split
+            y (pd.Series): Series of points to split
+            groups (None): Group labels for the samples used while splitting the dataset into train and test set.
+                Ignored but kept for compatibility with sklearn API.
 
-            Returns:
-                list: indices to split data into training and test set
+        Returns:
+            list: indices to split data into training and test set
         """
         train, test = train_test_split(np.arange(X.shape[0]), test_size=self.test_size, train_size=self.train_size, shuffle=self.shuffle, stratify=self.stratify, random_state=self.random_state)
         return iter([(train, test)])

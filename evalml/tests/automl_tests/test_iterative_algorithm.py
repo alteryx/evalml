@@ -16,6 +16,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes
 from evalml.utils import check_random_state_equality
 
@@ -360,3 +361,15 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
 
     next_batch = algo.next_batch()
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": "dummy", "n_jobs": -1, "fake_param": "fake"} for p in next_batch])
+
+
+def test_iterative_algorithm_stacked_ensemble_data_splitter_less_than_two_splits(dummy_binary_pipeline_classes):
+    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=True, data_splitter=TrainingValidationSplit())
+    next_batch = algo.next_batch()
+    scores = range(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline)
+    with pytest.raises(ValueError, match="A valid data_splitter for stacking ensemble must have at least 2 splits"):
+        for _ in range(5):
+            next_batch = algo.next_batch()
