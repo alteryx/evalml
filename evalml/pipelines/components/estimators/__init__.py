@@ -1,21 +1,25 @@
+from .classifiers import (
+    BaselineClassifier,
+    CatBoostClassifier,
+    DecisionTreeClassifier,
+    ElasticNetClassifier,
+    ExtraTreesClassifier,
+    KNeighborsClassifier,
+    LightGBMClassifier,
+    LogisticRegressionClassifier,
+    RandomForestClassifier,
+    XGBoostClassifier
+)
 from .estimator import Estimator
-from .classifiers import (LogisticRegressionClassifier,
-                          RandomForestClassifier,
-                          XGBoostClassifier,
-                          LightGBMClassifier,
-                          CatBoostClassifier,
-                          ElasticNetClassifier,
-                          ExtraTreesClassifier,
-                          BaselineClassifier,
-                          DecisionTreeClassifier,
-                          KNeighborsClassifier)
-from .regressors import (LinearRegressor,
-                         LightGBMRegressor,
-                         RandomForestRegressor,
-                         CatBoostRegressor,
-                         XGBoostRegressor,
-                         ElasticNetRegressor,
-                         ExtraTreesRegressor,
-                         BaselineRegressor,
-                         TimeSeriesBaselineEstimator,
-                         DecisionTreeRegressor)
+from .regressors import (
+    BaselineRegressor,
+    CatBoostRegressor,
+    DecisionTreeRegressor,
+    ElasticNetRegressor,
+    ExtraTreesRegressor,
+    LightGBMRegressor,
+    LinearRegressor,
+    RandomForestRegressor,
+    TimeSeriesBaselineEstimator,
+    XGBoostRegressor
+)

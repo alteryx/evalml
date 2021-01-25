@@ -1,1 +1,4 @@
-from .baseline_regression import BaselineRegressionPipeline, MeanBaselineRegressionPipeline
+from .baseline_regression import (
+    BaselineRegressionPipeline,
+    MeanBaselineRegressionPipeline
+)

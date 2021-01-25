@@ -13,10 +13,7 @@ from .standard_metrics import (
     MAE,
     MAPE,
     MSE,
-    MeanSquaredLogError,
     R2,
-    RootMeanSquaredError,
-    RootMeanSquaredLogError,
     AccuracyBinary,
     AccuracyMulticlass,
     AUCMacro,
@@ -33,6 +30,7 @@ from .standard_metrics import (
     MaxError,
     MCCBinary,
     MCCMulticlass,
+    MeanSquaredLogError,
     MedianAE,
     Precision,
     PrecisionMacro,
@@ -41,7 +39,14 @@ from .standard_metrics import (
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted
+    RecallWeighted,
+    RootMeanSquaredError,
+    RootMeanSquaredLogError
 )
-from .utils import get_objective, get_core_objectives, get_all_objective_names, get_non_core_objectives,\
-    get_core_objective_names
+from .utils import (
+    get_all_objective_names,
+    get_core_objective_names,
+    get_core_objectives,
+    get_non_core_objectives,
+    get_objective
+)
