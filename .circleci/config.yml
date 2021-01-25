@@ -170,7 +170,7 @@ jobs:
               conda config --add channels conda-forge
               conda activate curr_py
               conda install libpython m2w64-toolchain -c msys2
-              conda install cython pystan -c conda-forge
+              conda install numpy cython matplotlib scipy pandas pystan -c conda-forge
               conda install gcc
               conda install fbprophet -c conda-forge 
       - run:
