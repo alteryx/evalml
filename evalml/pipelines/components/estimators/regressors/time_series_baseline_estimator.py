@@ -27,8 +27,8 @@ class TimeSeriesBaselineEstimator(Estimator):
         """Baseline time series estimator that predicts using the naive forecasting approach.
 
         Arguments:
-            gap (int): gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
-            random_state (int): seed for the random number generator
+            gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
+            random_state (int): Seed for the random number generator
 
         """
 

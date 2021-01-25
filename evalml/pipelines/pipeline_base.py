@@ -57,7 +57,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
         """
         self.random_state = get_random_seed(random_state)
         if isinstance(self.component_graph, list):  # Backwards compatibility
@@ -472,7 +472,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = bool(self.random_state == other.random_state)
+        random_state_eq = self.random_state == other.random_state
         if not random_state_eq:
             return False
         attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']

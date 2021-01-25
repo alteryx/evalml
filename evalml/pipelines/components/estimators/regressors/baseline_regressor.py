@@ -25,7 +25,7 @@ class BaselineRegressor(Estimator):
 
         Arguments:
             strategy (str): method used to predict. Valid options are "mean", "median". Defaults to "mean".
-            random_state (int): seed for the random number generator
+            random_state (int): Seed for the random number generator
 
         """
         if strategy not in ["mean", "median"]:

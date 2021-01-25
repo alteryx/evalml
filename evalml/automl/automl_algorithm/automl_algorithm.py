@@ -25,7 +25,7 @@ class AutoMLAlgorithm(ABC):
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_state (int): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
         """
         self.random_state = get_random_seed(random_state)
         self.allowed_pipelines = allowed_pipelines or []

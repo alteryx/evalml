@@ -22,7 +22,7 @@ class ClassificationPipeline(PipelineBase):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
         """
         self._encoder = LabelEncoder()
         super().__init__(parameters, random_state)

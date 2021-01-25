@@ -74,7 +74,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Constructs a new component with the same parameters
 
         Arguments:
-            random_state (int): the value to seed the random state with. Defaults to 0.
+            random_state (int): The value to seed the random state with. Defaults to 0.
 
         Returns:
             A new instance of this component with identical parameters
@@ -152,7 +152,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = bool(self.random_state == other.random_state)
+        random_state_eq = self.random_state == other.random_state
         if not random_state_eq:
             return False
         attributes_to_check = ['_parameters', '_is_fitted']

@@ -1836,7 +1836,7 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
 
         def __init__(self, parameters, random_state):
             random_state = get_random_seed(random_state)
-            is_diff_random_state = not bool(random_state == expected_random_state)
+            is_diff_random_state = not (random_state == expected_random_state)
             self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_state
             super().__init__(parameters, random_state)

@@ -386,7 +386,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
                                              random_state=15)
     assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
-    assert [bool(c.random_state == 15) for c in pipeline]
+    assert [(c.random_state == 15) for c in pipeline]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {

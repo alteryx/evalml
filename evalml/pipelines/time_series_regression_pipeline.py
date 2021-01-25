@@ -27,7 +27,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
                  An empty dictionary {} implies using all default values for component parameters. Pipeline-level
                  parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
-            random_state (int): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
         """
         if "pipeline" not in parameters:
             raise ValueError("gap and max_delay parameters cannot be omitted from the parameters dict. "
