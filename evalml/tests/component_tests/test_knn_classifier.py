@@ -1,17 +1,17 @@
 import numpy as np
-from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
+from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import ExtraTreesClassifier
+from evalml.pipelines import KNeighborsClassifier
 from evalml.problem_types import ProblemTypes
 
 
 def test_model_family():
-    assert ExtraTreesClassifier.model_family == ModelFamily.EXTRA_TREES
+    assert KNeighborsClassifier.model_family == ModelFamily.K_NEIGHBORS
 
 
 def test_problem_types():
-    assert set(ExtraTreesClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
+    assert set(KNeighborsClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
                                                                  ProblemTypes.TIME_SERIES_BINARY,
                                                                  ProblemTypes.TIME_SERIES_MULTICLASS}
 
@@ -19,13 +19,15 @@ def test_problem_types():
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
+    sk_clf = SKKNeighborsClassifier()
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
 
-    clf = ExtraTreesClassifier()
-    clf.fit(X, y)
+    clf = KNeighborsClassifier()
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, KNeighborsClassifier)
+
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
@@ -36,15 +38,13 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0)
+    sk_clf = SKKNeighborsClassifier()
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
 
-    clf = ExtraTreesClassifier()
-    fitted = clf.fit(X, y)
-    assert isinstance(fitted, ExtraTreesClassifier)
-
+    clf = KNeighborsClassifier()
+    clf.fit(X, y)
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
@@ -55,12 +55,6 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
-    clf = ExtraTreesClassifier(n_jobs=1)
-    sk_clf = SKExtraTreesClassifier(max_depth=6, random_state=0, n_jobs=1)
-    sk_clf.fit(X, y)
-    sk_feature_importance = sk_clf.feature_importances_
-
+    clf = KNeighborsClassifier()
     clf.fit(X, y)
-    feature_importance = clf.feature_importance
-
-    np.testing.assert_almost_equal(sk_feature_importance, feature_importance, decimal=5)
+    np.testing.assert_equal(clf.feature_importance, np.zeros(X.shape[1]))
