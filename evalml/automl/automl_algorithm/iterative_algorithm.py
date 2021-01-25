@@ -24,7 +24,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
                  ensembling=False,
-                 pipeline_params=None):
+                 pipeline_params=None,
+                 data_splitter=None):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -37,6 +38,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
+            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to None.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,

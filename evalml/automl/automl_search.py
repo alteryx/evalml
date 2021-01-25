@@ -490,7 +490,8 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
-            pipeline_params=pipeline_params
+            pipeline_params=pipeline_params,
+            data_splitter=self.data_splitter
         )
 
         log_title(logger, "Beginning pipeline search")
