@@ -35,42 +35,19 @@ win-circleci-test:
 .PHONY: installdeps
 installdeps:
 	pip install --upgrade pip -q
-	pip install numpy>=1.15.4
-	pip install pandas>=1.1.1
-	pip install click>=7.1.2
-	pip install scikit-learn>=0.21.3
-	pip install woodwork==0.0.7 --no-dependencies
-	pip install -e .
+	pip install -e . -q
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install --upgrade pip -q
-	pip install numpy>=1.15.4
-	pip install pandas>=1.1.1
-	pip install click>=7.1.2
-	pip install scikit-learn>=0.21.3
-	pip install woodwork==0.0.7 --no-dependencies
-	pip install -e .
-	pip install -r test-requirements.txt
+	pip install -e . -q
+	pip install -r test-requirements.txt -q
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install --upgrade pip -q
-	pip install numpy>=1.15.4
-	pip install pandas>=1.1.1
-	pip install click>=7.1.2
-	pip install scikit-learn>=0.21.3
-	pip install woodwork==0.0.7 --no-dependencies
-	pip install -e .
-	pip install -r dev-requirements.txt
+	pip install -e . -q
+	pip install -r dev-requirements.txt -q
 
 .PHONY: installdeps-docs
 installdeps-docs:
-	pip install --upgrade pip -q
-	pip install numpy>=1.15.4
-	pip install pandas>=1.1.1
-	pip install click>=7.1.2
-	pip install scikit-learn>=0.21.3
-	pip install woodwork==0.0.7 --no-dependencies
-	pip install -e .
-	pip install -r docs-requirements.txt
+	pip install -e . -q
+	pip install -r docs-requirements.txt -q

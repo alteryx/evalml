@@ -1,4 +1,4 @@
-numpy>=1.19.3
+numpy>=1.19.1
 pandas>=1.1.0,<1.2.0
 scipy>=1.2.1,<1.6.0
 scikit-learn>=0.23.1,<0.24.0
@@ -10,6 +10,7 @@ psutil>=5.6.3
 requirements-parser>=0.2.0
 shap>=0.35.0
 texttable>=1.6.2
+woodwork==0.0.7
 featuretools>=0.20.0
 nlp-primitives>=1.1.0
 networkx>=2.5
