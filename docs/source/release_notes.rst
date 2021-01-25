@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
         * Added validation checks for binary problems with regression-like datasets and multiclass problems without true multiclass targets in ``invalid_targets_data_check`` :pr:`1665`
         * Added time series support for ``make_pipeline`` :pr:`1566`
