@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn import datasets
 from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
@@ -35,7 +34,7 @@ from evalml.model_understanding.graphs import (
     partial_dependence,
     precision_recall_curve,
     roc_curve,
-    visualize_decision_tree, t_sne, graph_t_sne
+    visualize_decision_tree, graph_t_sne
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -47,7 +46,7 @@ from evalml.pipelines import (
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper, import_or_raise
+    _convert_woodwork_types_wrapper
 )
 
 
