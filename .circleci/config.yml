@@ -167,7 +167,7 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda config --add channels conda-forge
               conda activate curr_py
-              conda install numba -q -y
+              conda install -c numba/label/dev numba
       - run:
           name: Install EvalML
           command: |
