@@ -27,6 +27,7 @@ from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
     DropNullColumns,
+    ElasticNetClassifier,
     Estimator,
     Imputer,
     LinearRegressor,
@@ -385,8 +386,8 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     est = RandomForestClassifier(random_state=7)
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
                                              random_state=15)
-    assert [c.__class__ for c in pipeline._component_graph] == [Imputer, RandomForestClassifier]
-    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline._component_graph]
+    assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
+    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {
@@ -410,7 +411,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
         parameters = {'bar': 'baz'}
     random_state = np.random.RandomState(42)
     pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
-    components_list = [c for c in pipeline._component_graph]
+    components_list = [c for c in pipeline]
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
     assert check_random_state_equality(components_list[0].random_state, random_state)
@@ -421,7 +422,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=np.random.RandomState(42))
-    component_instances = [c for c in pipeline._component_graph]
+    component_instances = [c for c in pipeline]
     new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
     pipeline.fit(X, y)
     predictions = pipeline.predict(X)
@@ -546,7 +547,7 @@ def test_describe(caplog, logistic_regression_binary_pipeline_class):
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
-    for component in lrp._component_graph:
+    for component in lrp:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -562,7 +563,7 @@ def test_describe_nonlinear(caplog, nonlinear_binary_pipeline_class):
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
-    for component in nbpl._component_graph:
+    for component in nbpl:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -580,7 +581,7 @@ def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline
     assert "Model Family: Linear" in out
     assert "Number of features: {}".format(X.shape[1]) in out
 
-    for component in lrp._component_graph:
+    for component in lrp:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -598,7 +599,7 @@ def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline
     assert "Model Family: Linear" in out
     assert "Number of features: 2" in out
 
-    for component in nbpl._component_graph:
+    for component in nbpl:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -779,7 +780,7 @@ def test_multi_format_creation(X_y_binary):
 
     clf = TestPipeline(parameters=parameters)
     correct_components = [Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf._component_graph, correct_components):
+    for component, correct_components in zip(clf, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
 
@@ -807,7 +808,7 @@ def test_multiple_feature_selectors(X_y_binary):
 
     clf = TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     correct_components = [Imputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
-    for component, correct_components in zip(clf._component_graph, correct_components):
+    for component, correct_components in zip(clf, correct_components):
         assert isinstance(component, correct_components)
     assert clf.model_family == ModelFamily.LINEAR_MODEL
 
@@ -2323,3 +2324,93 @@ def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_
     else:
         predictions = clf.predict(X)
     assert predictions.name == "test target name"
+
+
+def test_linear_pipeline_iteration(logistic_regression_binary_pipeline_class):
+    expected_order = [Imputer(), OneHotEncoder(), StandardScaler(), LogisticRegressionClassifier()]
+
+    pipeline = logistic_regression_binary_pipeline_class({})
+    order = [c for c in pipeline]
+    order_again = [c for c in pipeline]
+
+    assert order == expected_order
+    assert order_again == expected_order
+
+    expected_order_params = [Imputer(numeric_impute_strategy='median'), OneHotEncoder(top_n=2), StandardScaler(), LogisticRegressionClassifier()]
+
+    pipeline = logistic_regression_binary_pipeline_class({'One Hot Encoder': {'top_n': 2}, 'Imputer': {'numeric_impute_strategy': 'median'}})
+    order_params = [c for c in pipeline]
+    order_again_params = [c for c in pipeline]
+
+    assert order_params == expected_order_params
+    assert order_again_params == expected_order_params
+
+
+def test_nonlinear_pipeline_iteration(nonlinear_binary_pipeline_class):
+    expected_order = [Imputer(), OneHotEncoder(), ElasticNetClassifier(), OneHotEncoder(), RandomForestClassifier(), LogisticRegressionClassifier()]
+
+    pipeline = nonlinear_binary_pipeline_class({})
+    order = [c for c in pipeline]
+    order_again = [c for c in pipeline]
+
+    assert order == expected_order
+    assert order_again == expected_order
+
+    expected_order_params = [Imputer(), OneHotEncoder(top_n=2), ElasticNetClassifier(), OneHotEncoder(top_n=5), RandomForestClassifier(), LogisticRegressionClassifier()]
+
+    pipeline = nonlinear_binary_pipeline_class({'OneHot_ElasticNet': {'top_n': 2}, 'OneHot_RandomForest': {'top_n': 5}})
+    order_params = [c for c in pipeline]
+    order_again_params = [c for c in pipeline]
+
+    assert order_params == expected_order_params
+    assert order_again_params == expected_order_params
+
+
+def test_linear_getitem(logistic_regression_binary_pipeline_class):
+    pipeline = logistic_regression_binary_pipeline_class({'One Hot Encoder': {'top_n': 4}})
+
+    assert pipeline[0] == Imputer()
+    assert pipeline[1] == OneHotEncoder(top_n=4)
+    assert pipeline[2] == StandardScaler()
+    assert pipeline[3] == LogisticRegressionClassifier()
+
+    assert pipeline['Imputer'] == Imputer()
+    assert pipeline['One Hot Encoder'] == OneHotEncoder(top_n=4)
+    assert pipeline['Standard Scaler'] == StandardScaler()
+    assert pipeline['Logistic Regression Classifier'] == LogisticRegressionClassifier()
+
+
+def test_nonlinear_getitem(nonlinear_binary_pipeline_class):
+    pipeline = nonlinear_binary_pipeline_class({'OneHot_RandomForest': {'top_n': 4}})
+
+    assert pipeline[0] == Imputer()
+    assert pipeline[1] == OneHotEncoder()
+    assert pipeline[2] == ElasticNetClassifier()
+    assert pipeline[3] == OneHotEncoder(top_n=4)
+    assert pipeline[4] == RandomForestClassifier()
+    assert pipeline[5] == LogisticRegressionClassifier()
+
+    assert pipeline['Imputer'] == Imputer()
+    assert pipeline['OneHot_ElasticNet'] == OneHotEncoder()
+    assert pipeline['Elastic Net'] == ElasticNetClassifier()
+    assert pipeline['OneHot_RandomForest'] == OneHotEncoder(top_n=4)
+    assert pipeline['Random Forest'] == RandomForestClassifier()
+    assert pipeline['Logistic Regression'] == LogisticRegressionClassifier()
+
+
+def test_get_component(logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
+    pipeline = logistic_regression_binary_pipeline_class({'One Hot Encoder': {'top_n': 4}})
+
+    assert pipeline.get_component('Imputer') == Imputer()
+    assert pipeline.get_component('One Hot Encoder') == OneHotEncoder(top_n=4)
+    assert pipeline.get_component('Standard Scaler') == StandardScaler()
+    assert pipeline.get_component('Logistic Regression Classifier') == LogisticRegressionClassifier()
+
+    pipeline = nonlinear_binary_pipeline_class({'OneHot_RandomForest': {'top_n': 4}})
+
+    assert pipeline.get_component('Imputer') == Imputer()
+    assert pipeline.get_component('OneHot_ElasticNet') == OneHotEncoder()
+    assert pipeline.get_component('Elastic Net') == ElasticNetClassifier()
+    assert pipeline.get_component('OneHot_RandomForest') == OneHotEncoder(top_n=4)
+    assert pipeline.get_component('Random Forest') == RandomForestClassifier()
+    assert pipeline.get_component('Logistic Regression') == LogisticRegressionClassifier()
