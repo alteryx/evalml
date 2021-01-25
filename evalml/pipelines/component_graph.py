@@ -199,7 +199,7 @@ class ComponentGraph:
             col_intersection = set(X.columns.keys()).intersection(set(input_x.columns.keys()))
             for col in col_intersection:
                 if (X[col].logical_type != input_x[col].logical_type and
-                        "numeric" not in X[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
+                        "numeric" not in X[col].semantic_tags and "numeric" not in input_x[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
                     input_x = input_x.set_types({col: X[col].logical_type})
             self.input_feature_names.update({component_name: list(input_x.columns)})
 
