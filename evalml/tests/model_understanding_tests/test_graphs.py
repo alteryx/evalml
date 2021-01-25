@@ -900,14 +900,12 @@ def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_c
     two_way_part_dep = partial_dependence(pipeline=pipeline,
                                           X=X,
                                           features=("magnesium", "alcohol"),
-                                          grid_resolution=20)
+                                          grid_resolution=grid_resolution)
 
     assert "class_label" in two_way_part_dep.columns
     assert two_way_part_dep["class_label"].nunique() == num_classes
     assert len(two_way_part_dep.index) == num_classes * grid_resolution
     assert len(two_way_part_dep.columns) == grid_resolution + 1
-
-    # Test 2-way non-multiclass
 
 
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
