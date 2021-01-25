@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from sklearn import datasets
 from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
@@ -34,7 +35,7 @@ from evalml.model_understanding.graphs import (
     partial_dependence,
     precision_recall_curve,
     roc_curve,
-    visualize_decision_tree
+    visualize_decision_tree, t_sne, graph_t_sne
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
@@ -46,7 +47,7 @@ from evalml.pipelines import (
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper, import_or_raise
 )
 
 
@@ -1327,3 +1328,18 @@ def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
     src = visualize_decision_tree(estimator=est_reg, filled=True, max_depth=2)
     assert src.format == 'pdf'
     assert isinstance(src, graphviz.Source)
+
+
+def test_t_sne():
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    X_np = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    X_pd = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    X_list = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
+    for X, width_, size_ in [(X_np, 3, 2), (X_pd, 2, 3), (X_list, 1, 4)]:
+        fig = graph_t_sne(X, n_components=2, perplexity=50, learning_rate=200.0, marker_line_width=width_, marker_size=size_)
+        assert isinstance(fig, go.Figure)
+        fig_dict_data = fig.to_dict()['data'][0]
+        assert fig_dict_data['marker']['line']['width'] == width_
+        assert fig_dict_data['marker']['size'] == size_
+        assert fig_dict_data['mode'] == 'markers'
+        assert fig_dict_data['type'] == 'scatter'

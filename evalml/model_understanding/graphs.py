@@ -10,6 +10,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
+from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
@@ -823,3 +824,59 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
                         yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)
+
+
+def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean'):
+    """Get the transformed output after fitting X to the embedded space.
+
+     Arguments:
+        X (ww.DataTable, pd.DataFrame): Features.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+
+    Returns:
+        np.ndarray (n_samples, n_components)
+    """
+    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate)
+    X_new = t_sne_.fit_transform(X)
+    return X_new
+
+
+def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7):
+    """Visualization tool for high dimensional data.
+
+    Arguments:
+        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        marker_line_width (int, optional): Determines the line width of the marker boundary.
+        marker_size (int, optional): Determines the size of the marker.
+
+    Returns:
+        np.ndarray (n_samples, n_components)
+
+    """
+    X = X.to_dataframe() if isinstance(X, ww.DataTable) else np.array(X)
+    X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric)
+
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    xx, yy = np.meshgrid(X, X)
+    color = xx.ravel()
+    fig = _go.Figure()
+    fig.add_trace(_go.Scatter(
+        x=X_embedded[:, 0], y=X_embedded[:, 1],
+        mode='markers',
+        marker_color=color
+    ))
+    fig.update_traces(mode='markers', marker_line_width=marker_line_width, marker_size=marker_size)
+    fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)
+
+    return fig
