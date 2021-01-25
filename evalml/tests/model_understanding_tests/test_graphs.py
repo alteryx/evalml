@@ -1057,7 +1057,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, feature=0, grid_resolution=20)
+        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
         assert len(graph_valid) == 1  # scikit-learn partial_dependence warning
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
