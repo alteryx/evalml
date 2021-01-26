@@ -28,6 +28,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, KFold is used. Defaults to None.
                 Possible inputs for cv are:
+
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object

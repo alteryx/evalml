@@ -24,6 +24,7 @@ class StackedEnsembleBase(Estimator):
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
                 Possible inputs for cv are:
+
                 - None: 5-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object
