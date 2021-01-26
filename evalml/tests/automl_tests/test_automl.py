@@ -49,19 +49,14 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
-    RegressionPipeline,
-    PipelineBase,
-    ModeBaselineMulticlassPipeline
+    RegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
-from evalml.utils.gen_utils import (
-    check_random_state_equality,
-    get_random_state
-)
+from evalml.utils.gen_utils import get_random_seed
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -291,7 +286,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],
-        'Random State': 'RandomState(MT19937)',
+        'Random State': 0,
         'n_jobs': search_params['n_jobs'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
@@ -480,7 +475,7 @@ def test_automl_str_no_param_search(X_y_binary):
             'Precision'],
         'Start Iteration Callback': 'None',
         'Add Result Callback': 'None',
-        'Random State': 'RandomState(MT19937)',
+        'Random State': 0,
         'n_jobs': '-1',
         'Verbose': 'True',
         'Optimize Thresholds': 'False'
@@ -1831,7 +1826,7 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
 
-    expected_random_state = get_random_state(42)
+    expected_random_state = get_random_seed(42)
     X, y = X_y_binary
 
     class DummyPipeline(BinaryClassificationPipeline):
@@ -1840,8 +1835,8 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
         num_pipelines_init = 0
 
         def __init__(self, parameters, random_state):
-            random_state = get_random_state(random_state)
-            is_diff_random_state = not check_random_state_equality(random_state, expected_random_state)
+            random_state = get_random_seed(random_state)
+            is_diff_random_state = not (random_state == expected_random_state)
             self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_state
             super().__init__(parameters, random_state)
@@ -2181,42 +2176,21 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
             assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
-            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
+            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 1
 
 
-@pytest.mark.parametrize("random_state", [0, 1, 9, np.random.RandomState(100)])
+@pytest.mark.parametrize("random_state", [0, 1, 9])
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-@patch('evalml.pipelines.classification_pipeline.ClassificationPipeline.__init__', return_value=None)
-def test_automl_pipeline_random_state(mock_init, mock_fit, mock_score, random_state, X_y_multi):
+def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_multi):
     X, y = X_y_multi
 
     class MulticlassPipeline(MulticlassClassificationPipeline):
         component_graph = ['Imputer', 'Random Forest Classifier']
-    # def side_effect(*args, **kwargs):
-    #     print(side_effect.counter, args, kwargs)
-    #     if side_effect.counter <= 10:
-    #         side_effect.counter += 1
-    #         return ModeBaselineMulticlassPipeline({})
-    #     else:
-    #         return MulticlassClassificationPipeline({})
-    # side_effect.counter = 0
-    # mock_init.side_effect = MulticlassPipeline({})
+
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=random_state, n_jobs=1)
     automl.search()
-    # try:
-    #     automl.search()
-    # except AttributeError:
-    #     print(mock_init.call_args_list)
-    #     try:
-    #         automl.search()
-    #     except AttributeError:
-    #         print(mock_init.call_args_list)
-    if isinstance(random_state, int):
-        random_state = get_random_state(random_state)
+
     for i, row in automl.rankings.iterrows():
         if 'Base' not in list(row['parameters'].keys())[0]:
-            print(automl.get_pipeline(row['id']).random_state)
-            print("STATE", mock_init)
-            # print(mock_init.call_args)
-            # assert check_random_state_equality(automl.get_pipeline(row['id']).random_state, random_state)
+            assert automl.get_pipeline(row['id']).random_state == random_state

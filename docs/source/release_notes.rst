@@ -14,6 +14,8 @@ Release Notes
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
+        * Added 2-way dependence plots. :pr:`1690`
+        * Added ability to directly iterate through components within Pipelines :pr:`1583`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
@@ -31,6 +33,7 @@ Release Notes
         * Fixed bug where time series baseline estimators were not receiving ``gap`` and ``max_delay`` in ``AutoMLSearch`` :pr:`1645`
         * Fixed jupyter notebooks to help the RTD buildtime :pr:`1654`
         * Added ``positive_only`` objectives to ``non_core_objectives`` :pr:`1661`
+        * Fixed stacking argument ``n_jobs`` for IterativeAlgorithm :pr:`1706`
         * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
         * Remove ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
@@ -39,7 +42,9 @@ Release Notes
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
         * Capped LightGBM version limit to remove bug in docs :pr:`1711`
+        * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
     * Documentation Changes
+        * Update Model Understanding in the user guide to include ``visualize_decision_tree`` :pr:`1678`
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
         * Added ``infer_feature_types`` to the ``start.ipynb`` guide :pr:`1700`
@@ -50,6 +55,8 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
+        * Removed support for `np.random.RandomState` in EvalML. Rather than passing ``np.random.RandomState`` as component and pipeline random_state values, we use int random_seed :pr:`1727`
+
 
 **v0.17.0 Dec. 29, 2020**
     * Enhancements

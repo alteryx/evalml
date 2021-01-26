@@ -18,10 +18,9 @@ from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    check_random_state_equality,
     classproperty,
     get_logger,
-    get_random_state,
+    get_random_seed,
     import_or_raise,
     jupyter_check,
     log_subtitle,
@@ -58,9 +57,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
         """
-        self.random_state = get_random_state(random_state)
+        self.random_state = get_random_seed(random_state)
         if isinstance(self.component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(self.component_graph, random_state=self.random_state)
         else:
@@ -132,13 +131,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def __getitem__(self, index):
         if isinstance(index, slice):
             raise NotImplementedError('Slicing pipelines is currently not supported.')
-        elif isinstance(index, int):
-            component_name = self.component_graph[index]
-            if not isinstance(component_name, str):
-                component_name = component_name.name
-            return self.get_component(component_name)
-        else:
-            return self.get_component(index)
+        return self._component_graph[index]
 
     def __setitem__(self, index, value):
         raise NotImplementedError('Setting pipeline components is not supported.')
@@ -469,7 +462,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Constructs a new pipeline with the same parameters and components.
 
         Arguments:
-            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+            random_state (int): the value to seed the random state with. Defaults to 0.
 
         Returns:
             A new instance of this pipeline with identical parameters and components
@@ -479,7 +472,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
+        random_state_eq = self.random_state == other.random_state
         if not random_state_eq:
             return False
         attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
@@ -498,3 +491,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
         return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self._component_graph)
