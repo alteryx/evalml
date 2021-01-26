@@ -26,7 +26,8 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
-                Must result in more than one split. For int/None inputs, KFold is used. Defaults to None.
+                Must result in more than one split. For int/None inputs, KFold is used.
+                Must result in at least two splits. Defaults to None.
                 Possible inputs for cv are:
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
