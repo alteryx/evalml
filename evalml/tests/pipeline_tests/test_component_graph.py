@@ -13,12 +13,14 @@ from pandas.testing import (
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
+    DateTimeFeaturizer,
     ElasticNetClassifier,
     Estimator,
     Imputer,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
+    StandardScaler,
     Transformer
 )
 from evalml.utils.gen_utils import infer_feature_types
@@ -698,8 +700,11 @@ def test_custom_input_feature_types(example_graph):
     assert input_feature_names['Elastic Net'] == ['column_1_a', 'column_1_b', 'column_1_c', 'column_2_3', 'column_2_4', 'column_2_5']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
 
-from evalml.pipelines.components import DateTimeFeaturizer, StandardScaler
+
 def test_component_graph_dataset_with_different_types():
+    # Checks that types are converted correctly by Woodwork. Specifically, the standard scaler
+    # should convert column_3 to float, so our code to try to convert back to the original boolean type
+    # will catch the TypeError thrown and not convert the column.
     graph = {'Imputer': [Imputer],
              'OneHot': [OneHotEncoder, 'Imputer.x'],
              'DateTime': [DateTimeFeaturizer, 'OneHot.x'],
@@ -715,8 +720,7 @@ def test_component_graph_dataset_with_different_types():
     X = infer_feature_types(X, {"column_2": "categorical"})
 
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({'OneHot_RandomForest': {'top_n': 2},
-                                 'OneHot_ElasticNet': {'top_n': 3}})
+    component_graph.instantiate({})
     assert component_graph.input_feature_names == {}
     component_graph.fit(X, y)
 
@@ -724,11 +728,11 @@ def test_component_graph_dataset_with_different_types():
     assert input_feature_names['Imputer'] == ['column_1', 'column_2', 'column_3']
     assert input_feature_names['OneHot'] == ['column_1', 'column_2', 'column_3']
     assert input_feature_names['DateTime'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-    'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
+                                               'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
     assert input_feature_names['Scaler'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-    'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
+                                             'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
     assert input_feature_names['Random Forest'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-    'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
+                                                    'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
     assert input_feature_names['Elastic Net'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-    'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
+                                                  'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
