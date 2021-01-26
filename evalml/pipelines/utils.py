@@ -155,7 +155,7 @@ def get_generated_pipeline_class(problem_type):
         problem_type (ProblemTypes): The problem_type that the pipeline is for
 
     Returns:
-        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type 
+        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
     """
     try:
         return {ProblemTypes.BINARY: GeneratedPipelineBinary,
