@@ -1461,7 +1461,6 @@ def test_t_sne_errors_marker_line_width(marker_line_width, has_minimal_dependenc
         graph_t_sne(X, marker_line_width=marker_line_width)
 
 
-
 @pytest.mark.parametrize("marker_size", [-2, -1.2])
 def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
     if has_minimal_dependencies:
