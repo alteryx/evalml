@@ -13,7 +13,6 @@ def delayed_features_data():
 
 
 def test_delayed_features_transformer_init():
-
     delayed_features = DelayedFeatureTransformer(max_delay=4, delay_features=True, delay_target=False,
                                                  random_state=1)
     assert delayed_features.parameters == {"max_delay": 4, "delay_features": True, "delay_target": False,
@@ -41,7 +40,6 @@ def encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str):
     X_answer = X
     if encode_X_as_str:
         X, X_answer = encode_X_as_string(X)
-
     return X, X_answer, y, y_answer
 
 
@@ -49,9 +47,7 @@ def encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str):
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
 def test_delayed_feature_extractor_maxdelay3_gap1(encode_X_as_str, encode_y_as_str, delayed_features_data):
     X, y = delayed_features_data
-
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     answer = pd.DataFrame({"feature": X.feature,
                            "feature_delay_1": X_answer.feature.shift(1),
                            "feature_delay_2": X_answer.feature.shift(2),
@@ -76,12 +72,8 @@ def test_delayed_feature_extractor_maxdelay3_gap1(encode_X_as_str, encode_y_as_s
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
 def test_delayed_feature_extractor_maxdelay5_gap1(encode_X_as_str, encode_y_as_str, delayed_features_data):
-
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
-    X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     answer = pd.DataFrame({"feature": X.feature,
                            "feature_delay_1": X_answer.feature.shift(1),
                            "feature_delay_2": X_answer.feature.shift(2),
@@ -110,11 +102,8 @@ def test_delayed_feature_extractor_maxdelay5_gap1(encode_X_as_str, encode_y_as_s
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
 def test_delayed_feature_extractor_maxdelay3_gap7(encode_X_as_str, encode_y_as_str, delayed_features_data):
-
     X, y = delayed_features_data
-
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     answer = pd.DataFrame({"feature": X.feature,
                            "feature_delay_1": X_answer.feature.shift(1),
                            "feature_delay_2": X_answer.feature.shift(2),
@@ -137,14 +126,10 @@ def test_delayed_feature_extractor_maxdelay3_gap7(encode_X_as_str, encode_y_as_s
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
 def test_delayed_feature_extractor_numpy(encode_X_as_str, encode_y_as_str, delayed_features_data):
-
     X, y = delayed_features_data
-
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     X_np = X.values
     y_np = y.values
-
     answer = pd.DataFrame({0: X.feature,
                            "0_delay_1": X_answer.feature.shift(1),
                            "0_delay_2": X_answer.feature.shift(2),
@@ -171,9 +156,7 @@ def test_lagged_feature_extractor_delay_features_delay_target(encode_y_as_str, e
                                                               delay_target,
                                                               delayed_features_data):
     X, y = delayed_features_data
-
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     all_delays = pd.DataFrame({"feature": X.feature,
                                "feature_delay_1": X_answer.feature.shift(1),
                                "feature_delay_2": X_answer.feature.shift(2),
@@ -200,9 +183,7 @@ def test_lagged_feature_extractor_delay_features_delay_target(encode_y_as_str, e
 def test_lagged_feature_extractor_delay_target(encode_y_as_str, encode_X_as_str, delay_features,
                                                delay_target, delayed_features_data):
     X, y = delayed_features_data
-
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     answer = pd.DataFrame()
     if delay_target:
         answer = pd.DataFrame({"target_delay_0": y_answer.astype("Int64"),
@@ -218,7 +199,6 @@ def test_lagged_feature_extractor_delay_target(encode_y_as_str, encode_X_as_str,
 @pytest.mark.parametrize("gap", [0, 1, 7])
 def test_target_delay_when_gap_is_0(gap, delayed_features_data):
     X, y = delayed_features_data
-
     expected = pd.DataFrame({"feature": X.feature.astype("Int64"),
                              "feature_delay_1": X.feature.shift(1),
                              "target_delay_0": y.astype("Int64"),
@@ -229,13 +209,11 @@ def test_target_delay_when_gap_is_0(gap, delayed_features_data):
 
     transformer = DelayedFeatureTransformer(max_delay=1, gap=gap)
     assert_frame_equal(expected, transformer.fit_transform(X, y).to_dataframe())
-
     expected = pd.DataFrame({"target_delay_0": y.astype("Int64"),
                              "target_delay_1": y.shift(1)})
 
     if gap == 0:
         expected = expected.drop(columns=["target_delay_0"])
-
     assert_frame_equal(expected, transformer.fit_transform(None, y).to_dataframe())
 
 
@@ -245,14 +223,11 @@ def test_target_delay_when_gap_is_0(gap, delayed_features_data):
 def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode_y_as_str, data_type, make_data_type,
                                                          delayed_features_data):
     X, y = delayed_features_data
-
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str)
-
     X.index = pd.RangeIndex(50, 81)
     X_answer.index = pd.RangeIndex(50, 81)
     y.index = pd.RangeIndex(50, 81)
     y_answer.index = pd.RangeIndex(50, 81)
-
     answer = pd.DataFrame({"feature": X.feature,
                            "feature_delay_1": X_answer.feature.shift(1),
                            "feature_delay_2": X_answer.feature.shift(2),
@@ -277,7 +252,6 @@ def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode
 
 
 def test_delay_feature_transformer_multiple_categorical_columns(delayed_features_data):
-
     X, y = delayed_features_data
     X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, True, True)
     X['feature_2'] = pd.Categorical(["a"] * 10 + ['aa'] * 10 + ['aaa'] * 10 + ['aaaa'])

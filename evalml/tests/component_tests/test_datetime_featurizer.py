@@ -105,7 +105,7 @@ def test_datetime_featurizer_no_features_to_extract():
     datetime_transformer = DateTimeFeaturizer(features_to_extract=[])
     rng = pd.date_range('2020-02-24', periods=20, freq='D')
     X = pd.DataFrame({"date col": rng, "numerical": [0] * len(rng)})
-    expected = X
+    expected = pd.DataFrame({"date col": rng, "numerical": [0] * len(rng)})
     expected["numerical"] = expected["numerical"].astype("Int64")
     datetime_transformer.fit(X)
     transformed = datetime_transformer.transform(X).to_dataframe()

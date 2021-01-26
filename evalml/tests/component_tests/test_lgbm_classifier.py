@@ -132,8 +132,8 @@ def test_fit_string_features(X_y_binary):
     np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
 
 
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba', return_value=ww.DataTable(pd.DataFrame()))
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict', return_value=ww.DataColumn(pd.Series()))
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X, y = X_y_binary
@@ -153,8 +153,8 @@ def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binar
     np.testing.assert_array_equal(arg_X, X2)
 
 
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba', return_value=ww.DataTable(pd.DataFrame()))
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict', return_value=ww.DataColumn(pd.Series()))
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X, y = X_y_binary
@@ -190,8 +190,8 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     assert_frame_equal(X_expected, arg_X)
 
 
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba', return_value=ww.DataTable(pd.DataFrame()))
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict', return_value=ww.DataColumn(pd.Series()))
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X = pd.DataFrame({"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]})
@@ -218,8 +218,8 @@ def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y
     assert_frame_equal(X_expected_subset, arg_X)
 
 
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba', return_value=ww.DataTable(pd.DataFrame()))
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict', return_value=ww.DataColumn(pd.Series()))
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
     y = pd.Series([1] * 4)
@@ -251,7 +251,7 @@ def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
     assert_frame_equal(X2_predict_expected, mock_predict_proba.call_args[0][0])
 
 
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict', return_value=ww.DataColumn(pd.Series()))
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     X, y = X_y_multi
@@ -266,7 +266,7 @@ def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     clf.predict(X)
 
 
-@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict', return_value=ww.DataColumn(pd.Series()))
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
 @patch('evalml.pipelines.components.component_base.ComponentBase.fit')
 def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     X, y = X_y_binary
