@@ -920,7 +920,7 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
     return X_new
 
 
-def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7):
+def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7, **kwargs):
     """Visualization tool for high dimensional data.
 
     Arguments:
@@ -947,7 +947,7 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
     if not marker_size >= 0:
         raise ValueError("The parameter marker_size must be non-negative")
 
-    X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric)
+    X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
 
     xx, yy = np.meshgrid(X, X)
     color = xx.ravel()
