@@ -35,6 +35,7 @@ from evalml.model_understanding.graphs import (
     partial_dependence,
     precision_recall_curve,
     roc_curve,
+    t_sne,
     visualize_decision_tree
 )
 from evalml.objectives import CostBenefitMatrix
@@ -1420,13 +1421,67 @@ def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
     assert isinstance(src, graphviz.Source)
 
 
-def test_t_sne():
+@pytest.mark.parametrize("n_components", [2.0, -2, 0])
+def test_t_sne_errors_n_components(n_components):
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter n_components must be of type integer and greater than 0"):
+        t_sne(X, n_components=n_components)
+
+
+@pytest.mark.parametrize("perplexity", [-2, -1.2])
+def test_t_sne_errors_perplexity(perplexity):
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter perplexity must be non-negative"):
+        t_sne(X, perplexity=perplexity)
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_t_sne(data_type):
+    if data_type == 'np':
+        X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'pd':
+        X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'ww':
+        X = ww.DataTable(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
+
+    output_ = t_sne(X, n_components=2, perplexity=50, learning_rate=200.0)
+    assert isinstance(output_, np.ndarray)
+
+
+@pytest.mark.parametrize("marker_line_width", [-2, -1.2])
+def test_t_sne_errors_marker_line_width(marker_line_width):
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter marker_line_width must be non-negative"):
+        graph_t_sne(X, marker_line_width=marker_line_width)
+
+
+@pytest.mark.parametrize("marker_size", [-2, -1.2])
+def test_t_sne_errors_marker_size(marker_size):
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter marker_size must be non-negative"):
+        graph_t_sne(X, marker_size=marker_size)
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("perplexity", [0, 4.6, 100])
+@pytest.mark.parametrize("learning_rate", [100.0, -15, 0])
+def test_graph_t_sne(data_type, perplexity, learning_rate):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-    X_np = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-    X_pd = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-    X_list = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]
-    for X, width_, size_ in [(X_np, 3, 2), (X_pd, 2, 3), (X_list, 1, 4)]:
-        fig = graph_t_sne(X, n_components=2, perplexity=50, learning_rate=200.0, marker_line_width=width_, marker_size=size_)
+    if data_type == 'np':
+        X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'pd':
+        X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'ww':
+        X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+    for width_, size_ in [(3, 2), (2, 3), (1, 4)]:
+        fig = graph_t_sne(X, n_components=2, perplexity=perplexity, learning_rate=learning_rate, marker_line_width=width_, marker_size=size_)
         assert isinstance(fig, go.Figure)
         fig_dict_data = fig.to_dict()['data'][0]
         assert fig_dict_data['marker']['line']['width'] == width_

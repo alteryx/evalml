@@ -893,11 +893,11 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     return _go.Figure(data=data, layout=layout)
 
 
-def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean'):
+def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
     """Get the transformed output after fitting X to the embedded space.
 
      Arguments:
-        X (ww.DataTable, pd.DataFrame): Features.
+        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
         algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
@@ -908,7 +908,14 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
     Returns:
         np.ndarray (n_samples, n_components)
     """
-    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric)
+    if not isinstance(n_components, int) or not n_components > 0:
+        raise ValueError("The parameter n_components must be of type integer and greater than 0")
+    if not perplexity >= 0:
+        raise ValueError("The parameter perplexity must be non-negative")
+
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
     X_new = t_sne_.fit_transform(X)
     return X_new
 
@@ -928,13 +935,20 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
         marker_size (int, optional): Determines the size of the marker.
 
     Returns:
-        np.ndarray (n_samples, n_components)
+        plotly.Figure representing the transformed data
 
     """
-    X = X.to_dataframe() if isinstance(X, ww.DataTable) else np.array(X)
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+    if jupyter_check():
+        import_or_raise("ipywidgets", warning=True)
+
+    if not marker_line_width >= 0:
+        raise ValueError("The parameter marker_line_width must be non-negative")
+    if not marker_size >= 0:
+        raise ValueError("The parameter marker_size must be non-negative")
+
     X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric)
 
-    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     xx, yy = np.meshgrid(X, X)
     color = xx.ravel()
     fig = _go.Figure()
