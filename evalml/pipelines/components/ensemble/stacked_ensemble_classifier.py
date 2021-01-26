@@ -30,6 +30,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 Must result in at least two splits.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. Defaults to None.
                 Possible inputs for cv are:
+
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object

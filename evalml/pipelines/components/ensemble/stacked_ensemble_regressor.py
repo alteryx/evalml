@@ -29,6 +29,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 The CV splitting strategy must result in at least two splits.
                 Must result in more than one split. For int/None inputs, KFold is used. Defaults to None.
                 Possible inputs for cv are:
+
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object
