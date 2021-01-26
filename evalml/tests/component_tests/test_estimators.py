@@ -11,6 +11,7 @@ from evalml.pipelines.components.utils import (
     get_estimators
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.utils import get_random_state
 
 
 def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
@@ -25,7 +26,7 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             elif problem_type == ProblemTypes.REGRESSION:
                 X, y = X_y_regression
 
-            X = clf.random_state.random((X.shape[0], len(string.printable)))
+            X = get_random_state(clf.random_state).random((X.shape[0], len(string.printable)))
             col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
             X = pd.DataFrame(X, columns=col_names)
             clf.fit(X, y)

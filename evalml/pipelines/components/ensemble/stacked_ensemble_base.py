@@ -34,7 +34,7 @@ class StackedEnsembleBase(Estimator):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
                 Defaults to None.
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
-            random_state (int, np.random.RandomState): seed for the random number generator
+            random_state (int): Seed for the random number generator
         """
         if not input_pipelines:
             raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
