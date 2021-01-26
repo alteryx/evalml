@@ -18,7 +18,7 @@ class LinearDiscriminantAnalysis(Transformer):
         """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
 
         Arguments:
-            n_components (int): the number of features to maintain after computation. Defaults to None.
+            n_components (int): The number of features to maintain after computation. Defaults to None.
         """
         if n_components and n_components < 1:
             raise ValueError("Invalid number of compponents for Linear Discriminant Analysis")

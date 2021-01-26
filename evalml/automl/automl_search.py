@@ -50,7 +50,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
+from evalml.utils import convert_to_seconds, get_random_seed
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -157,7 +157,7 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -244,8 +244,7 @@ class AutoMLSearch:
             'search_order': [],
             'errors': []
         }
-        self.random_state = get_random_state(random_state)
-        self.random_seed = get_random_seed(self.random_state)
+        self.random_state = get_random_seed(random_state)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -274,7 +273,7 @@ class AutoMLSearch:
         self.y_train = _convert_to_woodwork_structure(y_train)
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
-                                                   n_splits=3, shuffle=True, random_state=self.random_seed)
+                                                   n_splits=3, shuffle=True, random_state=self.random_state)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
 
@@ -558,7 +557,7 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
-                                                                                          random_state=self.random_seed)
+                                                                                          random_state=self.random_state)
                 self._best_pipeline.fit(X_train, y_train)
                 self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
@@ -700,7 +699,7 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
-                                                                                          random_state=self.random_seed)
+                                                                                          random_state=self.random_state)
                 cv_pipeline = pipeline.clone(pipeline.random_state)
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
@@ -850,7 +849,7 @@ class AutoMLSearch:
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): The random seed. Defaults to 0.
 
         Returns:
             PipelineBase: untrained pipeline instance associated with the provided ID
