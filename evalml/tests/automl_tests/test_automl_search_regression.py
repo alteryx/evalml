@@ -10,6 +10,7 @@ from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
+    GeneratedPipelineRegression,
     GeneratedPipelineTimeSeriesRegression,
     MeanBaselineRegressionPipeline,
     PipelineBase,
@@ -307,6 +308,21 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration
         assert result['parameters']['pipeline'] == configuration
+
+
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression_fit, X_y_regression):
+    X, y = X_y_regression
+    pipeline = GeneratedPipelineRegression
+
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
+    a.search()
+
+    for i, row in a.rankings.iterrows():
+        if 'Baseline' not in list(row['parameters'].keys())[0]:
+            assert a.get_pipeline(row['id']).__class__ == pipeline
+            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')

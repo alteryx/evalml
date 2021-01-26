@@ -152,7 +152,7 @@ def get_generated_pipeline(problem_type):
     """Returns the class for the generated pipeline based on the problem type
 
     Arguments:
-        problem_type (Problem_Type): The problem_type that the pipeline is for
+        problem_type (ProblemTypes): The problem_type that the pipeline is for
     """
     if problem_type == ProblemTypes.BINARY:
         return GeneratedPipelineBinary
@@ -164,8 +164,10 @@ def get_generated_pipeline(problem_type):
         return GeneratedPipelineTimeSeriesRegression
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         return GeneratedPipelineTimeSeriesBinary
-    else:
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         return GeneratedPipelineTimeSeriesMulticlass
+    else:
+        raise ValueError("ProblemType {} not recognized".format(problem_type))
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
