@@ -20,9 +20,9 @@ class PCA(Transformer):
         """Initalizes an transformer that reduces the number of features using PCA."
 
         Arguments:
-            variance (float): the percentage of the original data variance that should be preserved when reducing the
+            variance (float): The percentage of the original data variance that should be preserved when reducing the
                               number of features.
-            n_components (int): the number of features to maintain after computing SVD. Defaults to None, but will override
+            n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override
                                 variance variable if set.
         """
         parameters = {"variance": variance,
