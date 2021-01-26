@@ -293,7 +293,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+        random_state (int): The random seed. Defaults to 0.
 
     Returns:
         Mean feature importance scores over 5 shuffles.

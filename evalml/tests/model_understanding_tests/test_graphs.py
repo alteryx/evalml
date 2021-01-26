@@ -50,7 +50,8 @@ from evalml.pipelines import (
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    get_random_state
 )
 
 
@@ -207,7 +208,7 @@ def test_confusion_matrix_labels(data_type, make_data_type):
 @pytest.fixture
 def binarized_ys(X_y_multi):
     _, y_true = X_y_multi
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_tr = label_binarize(y_true, classes=[0, 1, 2])
     y_pred_proba = y_tr * rs.random(y_tr.shape)
     return y_true, y_tr, y_pred_proba
@@ -249,7 +250,7 @@ def test_precision_recall_curve(data_type, make_data_type):
 def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     X = make_data_type(data_type, X)
     y_true = make_data_type(data_type, y_true)
@@ -269,7 +270,7 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
 def test_graph_precision_recall_curve_title_addition(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_precision_recall_curve(y_true, y_pred_proba, title_addition='with added title text')
     assert isinstance(fig, type(go.Figure()))
@@ -371,7 +372,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
 def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     y_true = make_data_type(data_type, y_true)
     y_pred_proba = make_data_type(data_type, y_pred_proba)
@@ -448,7 +449,7 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
 def test_graph_roc_curve_title_addition(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_roc_curve(y_true, y_pred_proba, title_addition='with added title text')
     assert isinstance(fig, type(go.Figure()))
@@ -460,7 +461,7 @@ def test_graph_roc_curve_title_addition(X_y_binary):
 def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     y_true = make_data_type(data_type, y_true)
     y_pred = make_data_type(data_type, y_pred)
@@ -491,7 +492,7 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
 def test_graph_confusion_matrix_norm_disabled(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred, normalize_method=None)
     assert isinstance(fig, type(go.Figure()))
@@ -515,7 +516,7 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary):
 def test_graph_confusion_matrix_title_addition(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred, title_addition='with added title text')
     assert isinstance(fig, type(go.Figure()))
@@ -525,7 +526,7 @@ def test_graph_confusion_matrix_title_addition(X_y_binary):
 
 def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters={}, random_state=42)
     with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
         calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
@@ -538,7 +539,7 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
     y = make_data_type(data_type, y)
 
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=np.random.RandomState(42))
+                                                         random_state=42)
     pipeline.fit(X, y)
     for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -550,7 +551,7 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
                                                multiclass_core_objectives):
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                             random_state=np.random.RandomState(42))
+                                                             random_state=42)
     pipeline.fit(X, y)
     for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -562,7 +563,7 @@ def test_get_permutation_importance_regression(linear_regression_pipeline_class,
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
-                                                random_state=np.random.RandomState(42))
+                                                random_state=42)
     pipeline.fit(X, y)
 
     for objective in regression_core_objectives:
@@ -577,7 +578,7 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     X["correlated"] = y * 2
     X["not correlated"] = [-1, -1, -1, 0]
     y = y.astype(bool)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=42)
     pipeline.fit(X, y)
     importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=0)
     assert list(importance.columns) == ["feature", "importance"]
@@ -1069,7 +1070,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
-        rs = np.random.RandomState(42)
+        rs = get_random_state(42)
         y_pred_proba = y * rs.random(y.shape)
         graph_precision_recall_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
@@ -1083,7 +1084,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
-        rs = np.random.RandomState(42)
+        rs = get_random_state(42)
         y_pred_proba = y * rs.random(y.shape)
         graph_roc_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
@@ -1091,7 +1092,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
 
     Xr, yr = X_y_regression
     with pytest.warns(None) as graph_valid:
-        rs = np.random.RandomState(42)
+        rs = get_random_state(42)
         y_preds = yr * rs.random(yr.shape)
         graph_prediction_vs_actual(yr, y_preds)
         assert len(graph_valid) == 0
