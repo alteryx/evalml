@@ -54,7 +54,6 @@ from evalml.pipelines.utils import (
     make_pipeline_from_components
 )
 from evalml.problem_types import ProblemTypes, is_time_series
-from evalml.utils.gen_utils import check_random_state_equality
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -388,7 +387,7 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
                                              random_state=15)
     assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
-    assert [check_random_state_equality(c.random_state, np.random.RandomState(15)) for c in pipeline]
+    assert [(c.random_state == 15) for c in pipeline]
     assert pipeline.problem_type == ProblemTypes.BINARY
     assert pipeline.custom_name == 'My Pipeline'
     expected_parameters = {
@@ -403,26 +402,26 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
             'n_jobs': -1}
     }
     assert pipeline.parameters == expected_parameters
-    assert check_random_state_equality(pipeline.random_state, np.random.RandomState(15))
+    assert pipeline.random_state == 15
 
     class DummyEstimator(Estimator):
         name = "Dummy!"
         model_family = "foo"
         supported_problem_types = [ProblemTypes.BINARY]
         parameters = {'bar': 'baz'}
-    random_state = np.random.RandomState(42)
+    random_state = 42
     pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
     components_list = [c for c in pipeline]
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
-    assert check_random_state_equality(components_list[0].random_state, random_state)
+    assert components_list[0].random_state == random_state
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
-    assert check_random_state_equality(pipeline.random_state, random_state)
+    assert pipeline.random_state == random_state
 
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=np.random.RandomState(42))
+                                                         random_state=42)
     component_instances = [c for c in pipeline]
     new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
     pipeline.fit(X, y)
@@ -1147,7 +1146,7 @@ def test_correct_parameters(logistic_regression_binary_pipeline_class):
         }
     }
     lr_pipeline = logistic_regression_binary_pipeline_class(parameters=parameters)
-    assert lr_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
+    assert lr_pipeline.estimator.random_state == 0
     assert lr_pipeline.estimator.parameters['C'] == 3.0
     assert lr_pipeline['Imputer'].parameters['categorical_impute_strategy'] == 'most_frequent'
     assert lr_pipeline['Imputer'].parameters['numeric_impute_strategy'] == 'mean'
@@ -1168,7 +1167,7 @@ def test_correct_nonlinear_parameters(nonlinear_binary_pipeline_class):
         }
     }
     nlb_pipeline = nonlinear_binary_pipeline_class(parameters=parameters)
-    assert nlb_pipeline.estimator.random_state.get_state()[0] == np.random.RandomState(1).get_state()[0]
+    assert nlb_pipeline.estimator.random_state == 0
     assert nlb_pipeline.estimator.parameters['C'] == 3.0
     assert nlb_pipeline['Imputer'].parameters['categorical_impute_strategy'] == 'most_frequent'
     assert nlb_pipeline['Imputer'].parameters['numeric_impute_strategy'] == 'mean'
@@ -1438,25 +1437,25 @@ def test_clone_random_state(linear_regression_pipeline_class):
             'normalize': True,
         }
     }
-    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=np.random.RandomState(42))
-    pipeline_clone = pipeline.clone(random_state=np.random.RandomState(42))
-    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=42)
+    pipeline_clone = pipeline.clone(random_state=42)
+    assert pipeline_clone.random_state == pipeline.random_state
 
     pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=2)
     pipeline_clone = pipeline.clone(random_state=2)
-    assert pipeline_clone.random_state.randint(2**30) == pipeline.random_state.randint(2**30)
+    assert pipeline_clone.random_state == pipeline.random_state
 
 
 def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=42)
-    random_state_first_val = pipeline.random_state.randint(2**30)
+    random_state_first_val = pipeline.random_state
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
     pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
+    assert pipeline_clone.random_state == random_state_first_val
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)
@@ -1468,12 +1467,12 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
 def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = nonlinear_binary_pipeline_class(parameters={}, random_state=42)
-    random_state_first_val = pipeline.random_state.randint(2**30)
+    random_state_first_val = pipeline.random_state
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
     pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state.randint(2**30) == random_state_first_val
+    assert pipeline_clone.random_state == random_state_first_val
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)

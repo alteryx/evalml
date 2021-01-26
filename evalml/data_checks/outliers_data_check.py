@@ -5,7 +5,6 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import get_random_state
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -15,13 +14,8 @@ from evalml.utils.gen_utils import (
 class OutliersDataCheck(DataCheck):
     """Checks if there are any outliers in input data by using IQR to determine score anomalies. Columns with score anomalies are considered to contain outliers."""
 
-    def __init__(self, random_state=0):
-        """Checks if there are any outliers in the input data.
-
-        Arguments:
-            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
-        """
-        self.random_state = get_random_state(random_state)
+    def __init__(self):
+        """Checks if there are any outliers in the input data."""
 
     def validate(self, X, y=None):
         """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.

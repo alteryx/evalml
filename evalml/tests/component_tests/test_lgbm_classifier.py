@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest import importorskip
 
@@ -35,29 +34,6 @@ def test_lightgbm_classifier_random_state_bounds_seed(X_y_binary):
     fitted = clf.fit(X, y)
     assert isinstance(fitted, LightGBMClassifier)
     clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound, n_jobs=1)
-    clf.fit(X, y)
-
-
-def test_lightgbm_classifier_random_state_bounds_rng(X_y_binary):
-    """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for lightgbm is in lightgbm's supported range"""
-
-    def make_mock_random_state(return_value):
-
-        class MockRandomState(np.random.RandomState):
-
-            def randint(self, min_bound, max_bound):
-                return return_value
-        return MockRandomState()
-
-    X, y = X_y_binary
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
-    rng = make_mock_random_state(LightGBMClassifier.SEED_MIN)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng, n_jobs=1)
-    clf.fit(X, y)
-    rng = make_mock_random_state(LightGBMClassifier.SEED_MAX)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng, n_jobs=1)
     clf.fit(X, y)
 
 

@@ -7,7 +7,8 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    get_random_state
 )
 
 
@@ -26,7 +27,7 @@ class BaselineClassifier(Estimator):
 
         Arguments:
             strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
@@ -64,9 +65,9 @@ class BaselineClassifier(Estimator):
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            predictions = self.random_state.choice(self._classes, len(X))
+            predictions = get_random_state(self.random_state).choice(self._classes, len(X))
         else:
-            predictions = self.random_state.choice(self._classes, len(X), p=self._percentage_freq)
+            predictions = get_random_state(self.random_state).choice(self._classes, len(X), p=self._percentage_freq)
         return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):

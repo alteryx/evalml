@@ -9,7 +9,7 @@ from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    get_random_state
+    get_random_seed
 )
 
 
@@ -289,7 +289,7 @@ def test_more_top_n_unique_values_large():
                       "col_4": [2, 0, 1, 3, 0, 1, 2, 4, 1]})
 
     random_seed = 2
-    test_random_state = get_random_state(random_seed)
+    test_random_state = get_random_seed(random_seed)
 
     encoder = OneHotEncoder(top_n=3, random_state=random_seed)
     encoder.fit(X)
@@ -480,7 +480,7 @@ def test_ohe_top_n_categories_always_the_same():
         assert_frame_equal(df1, df2)
 
     check_df_equality(5)
-    check_df_equality(get_random_state(5))
+    check_df_equality(get_random_seed(5))
 
 
 def test_ohe_column_names_unique():

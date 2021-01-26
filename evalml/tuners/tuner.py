@@ -14,7 +14,7 @@ class Tuner(ABC):
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
+            random_state (int): The random state. Defaults to 0.
         """
         self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
         self._parameter_names_map = dict()
@@ -57,7 +57,7 @@ class Tuner(ABC):
 
     @abstractmethod
     def add(self, pipeline_parameters, score):
-        """ Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.
+        """Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.
 
         Arguments:
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
@@ -72,12 +72,11 @@ class Tuner(ABC):
         """Returns a suggested set of parameters to train and score a pipeline with, based off the search space dimensions and prior samples.
 
         Returns:
-            dict: proposed pipeline parameters
+            dict: Proposed pipeline parameters
         """
 
     def is_search_space_exhausted(self):
-        """ Optional. If possible search space for tuner is finite, this method indicates
-        whether or not all possible parameters have been scored.
+        """Optional. If possible search space for tuner is finite, this method indicates whether or not all possible parameters have been scored.
 
         Returns:
             bool: Returns true if all possible parameters in a search space has been scored.

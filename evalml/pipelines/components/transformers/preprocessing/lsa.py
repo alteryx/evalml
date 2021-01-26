@@ -21,8 +21,8 @@ class LSA(TextTransformer):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            text_columns (list): list of feature names which should be treated as text features.
-            random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
+            text_columns (list): List of feature names which should be treated as text features.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
         super().__init__(text_columns=text_columns,
