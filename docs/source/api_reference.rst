@@ -133,12 +133,6 @@ Pipeline Base Classes
     TimeSeriesBinaryClassificationPipeline
     TimeSeriesMulticlassClassificationPipeline
     TimeSeriesRegressionPipeline
-    GeneratedPipelineBinary
-    GeneratedPipelineMulticlass
-    GeneratedPipelineRegression
-    GeneratedPipelineTimeSeriesBinary
-    GeneratedPipelineTimeSeriesMulticlass
-    GeneratedPipelineTimeSeriesRegression
 
 Classification Pipelines
 ~~~~~~~~~~~~~~~~~~~~~~~~

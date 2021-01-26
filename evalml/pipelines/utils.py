@@ -1,7 +1,7 @@
 import json
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .generate_pipeline import (
+from .generated_pipelines import (
     GeneratedPipelineBinary,
     GeneratedPipelineMulticlass,
     GeneratedPipelineRegression,
@@ -148,25 +148,23 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     return GeneratedPipeline
 
 
-def get_generated_pipeline(problem_type):
+def get_generated_pipeline_class(problem_type):
     """Returns the class for the generated pipeline based on the problem type
 
     Arguments:
         problem_type (ProblemTypes): The problem_type that the pipeline is for
+
+    Returns:
+        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type 
     """
-    if problem_type == ProblemTypes.BINARY:
-        return GeneratedPipelineBinary
-    elif problem_type == ProblemTypes.MULTICLASS:
-        return GeneratedPipelineMulticlass
-    elif problem_type == ProblemTypes.REGRESSION:
-        return GeneratedPipelineRegression
-    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        return GeneratedPipelineTimeSeriesRegression
-    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        return GeneratedPipelineTimeSeriesBinary
-    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        return GeneratedPipelineTimeSeriesMulticlass
-    else:
+    try:
+        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
+                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
+                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
+                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
+                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
+                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
+    except KeyError:
         raise ValueError("ProblemType {} not recognized".format(problem_type))
 
 

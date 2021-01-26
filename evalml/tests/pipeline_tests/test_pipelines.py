@@ -55,7 +55,7 @@ from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     generate_pipeline_code,
     get_estimators,
-    get_generated_pipeline,
+    get_generated_pipeline_class,
     make_pipeline,
     make_pipeline_from_components
 )
@@ -2431,9 +2431,9 @@ def test_get_component(logistic_regression_binary_pipeline_class, nonlinear_bina
                           (ProblemTypes.TIME_SERIES_MULTICLASS, GeneratedPipelineTimeSeriesMulticlass),
                           (ProblemTypes.TIME_SERIES_REGRESSION, GeneratedPipelineTimeSeriesRegression),
                           ("invalid", None)])
-def test_get_generated_pipeline(problem_type, resulting_class):
+def test_get_generated_pipeline_class(problem_type, resulting_class):
     if problem_type != "invalid":
-        assert get_generated_pipeline(problem_type) == resulting_class
+        assert get_generated_pipeline_class(problem_type) == resulting_class
     else:
         with pytest.raises(ValueError, match="not recognized"):
-            get_generated_pipeline(problem_type)
+            get_generated_pipeline_class(problem_type)

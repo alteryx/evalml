@@ -14,6 +14,7 @@ from evalml.pipelines import (
     GeneratedPipelineTimeSeriesRegression,
     MeanBaselineRegressionPipeline,
     PipelineBase,
+    RegressionPipeline,
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
@@ -313,16 +314,27 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
 def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression_fit, X_y_regression):
+    class RegressionPipelineCustoms(RegressionPipeline):
+        custom_name = "Custom Regression Name"
+        component_graph = ["Imputer", "Linear Regressor"]
+        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
+
     X, y = X_y_regression
     pipeline = GeneratedPipelineRegression
 
     a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
     a.search()
-
+    a.add_to_rankings(RegressionPipelineCustoms({}))
+    seen_name = False
     for i, row in a.rankings.iterrows():
-        if 'Baseline' not in list(row['parameters'].keys())[0]:
-            assert a.get_pipeline(row['id']).__class__ == pipeline
-            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
+        automl_pipeline = a.get_pipeline(row['id'])
+        assert automl_pipeline.__class__ == pipeline
+        assert pickle.loads(pickle.dumps(automl_pipeline))
+        if automl_pipeline.custom_name == RegressionPipelineCustoms.custom_name:
+            seen_name = True
+            assert automl_pipeline.custom_hyperparameters == RegressionPipelineCustoms.custom_hyperparameters
+            assert automl_pipeline.component_graph == RegressionPipelineCustoms.component_graph
+    assert seen_name
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
@@ -334,6 +346,5 @@ def test_automl_time_series_regression_pickle_generated_pipeline(mock_fit, mock_
     a.search()
 
     for i, row in a.rankings.iterrows():
-        if 'Baseline' not in list(row['parameters'].keys())[0]:
-            assert a.get_pipeline(row['id']).__class__ == GeneratedPipelineTimeSeriesRegression
-            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
+        assert a.get_pipeline(row['id']).__class__ == GeneratedPipelineTimeSeriesRegression
+        assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))

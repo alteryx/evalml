@@ -740,9 +740,8 @@ def test_automl_pickle_generated_pipeline(mock_binary_score, mock_binary_fit, mo
     a.search()
 
     for i, row in a.rankings.iterrows():
-        if 'Baseline' not in list(row['parameters'].keys())[0]:
-            assert a.get_pipeline(row['id']).__class__ == pipeline
-            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
+        assert a.get_pipeline(row['id']).__class__ == pipeline
+        assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY])
@@ -755,17 +754,14 @@ def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
         pipeline = GeneratedPipelineTimeSeriesBinary
-        problem_type = 'time series binary'
     else:
         X, y = X_y_multi
         pipeline = GeneratedPipelineTimeSeriesMulticlass
-        problem_type = 'time series multiclass'
 
     configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
     a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, problem_configuration=configuration)
     a.search()
 
     for i, row in a.rankings.iterrows():
-        if 'Baseline' not in list(row['parameters'].keys())[0]:
-            assert a.get_pipeline(row['id']).__class__ == pipeline
-            assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
+        assert a.get_pipeline(row['id']).__class__ == pipeline
+        assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
