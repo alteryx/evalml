@@ -54,7 +54,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
-        * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
+        * Removed support for `np.random.RandomState` in EvalML. Rather than passing ``np.random.RandomState`` as component and pipeline random_state values, we use int random_seed :pr:`1727`
 
 
 **v0.17.0 Dec. 29, 2020**
