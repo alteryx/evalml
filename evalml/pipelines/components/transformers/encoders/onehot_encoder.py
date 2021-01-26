@@ -34,7 +34,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Arguments:
             top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
                 Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
-            features_to_encode (list(str)): List of columns to encode. All other columns will remain untouched.
+            features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
                 If None, all appropriate columns will be encoded. Defaults to None.
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.

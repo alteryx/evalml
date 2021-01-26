@@ -14,7 +14,7 @@ class FeatureSelector(Transformer):
         """Get names of selected features.
 
         Returns:
-            List of the names of features selected
+            list[str]: List of the names of features selected
         """
         selected_masks = self._component_obj.get_support()
         return [feature_name for (selected, feature_name) in zip(selected_masks, self.input_feature_names) if selected]
@@ -23,7 +23,7 @@ class FeatureSelector(Transformer):
         """Transforms input data by selecting features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
+            X (ww.DataTable, pd.DataFrame): Data to transform.
             y (ww.DataColumn, pd.Series, optional): Target data. Ignored.
 
         Returns:

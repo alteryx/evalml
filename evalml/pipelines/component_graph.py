@@ -298,7 +298,7 @@ class ComponentGraph:
             component_name (str): Name of the child component to look up
 
         Returns:
-            list(str): Iterator of parent component names
+            list[str]: Iterator of parent component names
         """
         try:
             component_info = self.component_dict[component_name]

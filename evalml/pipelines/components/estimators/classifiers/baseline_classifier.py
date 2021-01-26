@@ -97,6 +97,6 @@ class BaselineClassifier(Estimator):
         """Returns class labels. Will return None before fitting.
 
         Returns:
-            list(str) or list(float) : Class names
+            list[str] or list(float) : Class names
         """
         return self._classes

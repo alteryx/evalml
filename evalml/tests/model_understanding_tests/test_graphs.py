@@ -743,24 +743,6 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().any(axis=None)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
-
-
-@patch('evalml.model_understanding.graphs.sk_partial_dependence')
-def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    pipeline.fit(X, y)
-    mock_part_dep.side_effect = Exception()
-    with pytest.raises(Exception):
-        partial_dependence(pipeline, X, features=0, grid_resolution=20)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
 
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):

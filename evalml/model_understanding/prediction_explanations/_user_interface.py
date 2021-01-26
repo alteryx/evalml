@@ -23,7 +23,7 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
         convert_numeric_to_string (bool): Whether numeric values should be converted to strings from numeric
 
     Returns:
-          list(str)
+          list[str]
     """
     tuples = [(value[0], feature_name) for feature_name, value in normalized_values.items()]
 

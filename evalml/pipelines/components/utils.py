@@ -122,6 +122,11 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
+        self._estimator_type = "classifier"
+        if pipeline._is_fitted:
+            self.feature_importances_ = pipeline.feature_importance
+            self._is_fitted = True
+            self.classes_ = pipeline.classes_
 
     def fit(self, X, y):
         """Fits component to data
@@ -176,6 +181,10 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
+        self._estimator_type = "regressor"
+        if pipeline._is_fitted:
+            self.feature_importances_ = pipeline.feature_importance
+            self._is_fitted = True
 
     def fit(self, X, y):
         """Fits component to data

@@ -112,8 +112,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def linearized_component_graph(cls):
-        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order
-        """
+        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
         if isinstance(cls.component_graph, list):
             return cls.component_graph
         else:
@@ -253,7 +252,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             objectives (list): List of objectives to score.
 
         Returns:
-            Ordered dictionary with objectives and their scores.
+            dict: Ordered dictionary with objectives and their scores.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()

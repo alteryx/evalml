@@ -488,14 +488,6 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
 
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        wrapped._estimator_type = "classifier"
-        wrapped.classes_ = pipeline.classes_
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        wrapped._estimator_type = "regressor"
-    wrapped.feature_importances_ = pipeline.feature_importance
-    wrapped._is_fitted = True
-
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
 
     classes = None
