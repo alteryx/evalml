@@ -1451,17 +1451,20 @@ def test_t_sne(data_type):
 
 
 @pytest.mark.parametrize("marker_line_width", [-2, -1.2])
-def test_t_sne_errors_marker_line_width(marker_line_width):
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+def test_t_sne_errors_marker_line_width(marker_line_width, has_minimal_dependencies):
+    if has_minimal_dependencies:
+        pytest.skip("Skipping plotting test because plotly not installed")
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(ValueError, match=f"The parameter marker_line_width must be non-negative"):
         graph_t_sne(X, marker_line_width=marker_line_width)
 
 
+
 @pytest.mark.parametrize("marker_size", [-2, -1.2])
-def test_t_sne_errors_marker_size(marker_size):
-    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
+    if has_minimal_dependencies:
+        pytest.skip("Skipping plotting test because plotly not installed")
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(ValueError, match=f"The parameter marker_size must be non-negative"):
