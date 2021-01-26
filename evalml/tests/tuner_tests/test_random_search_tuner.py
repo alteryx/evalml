@@ -14,11 +14,11 @@ def test_random_search_tuner_inheritance():
 def test_random_search_tuner_unique_values(dummy_pipeline_hyperparameters):
     tuner = RandomSearchTuner(dummy_pipeline_hyperparameters, random_state=random_state)
     generated_parameters = []
-    for i in range(10):
+    for i in range(3):
         params = tuner.propose()
         generated_parameters.append(params)
-    assert len(generated_parameters) == 10
-    for i in range(10):
+    assert len(generated_parameters) == 3
+    for i in range(3):
         assert generated_parameters[i].keys() == dummy_pipeline_hyperparameters.keys()
         assert generated_parameters[i]['Mock Classifier'].keys() == dummy_pipeline_hyperparameters['Mock Classifier'].keys()
 
