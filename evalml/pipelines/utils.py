@@ -232,7 +232,8 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, data_splitter
     Arguments:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
-        data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to None.
+        data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method for the stacking ensemble to use.
+            If set to None, will use the default stacking ensemble data split. Defaults to None.
         problem_type (ProblemType): Problem type of pipeline
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.

@@ -22,8 +22,9 @@ class StackedEnsembleBase(Estimator):
                 This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
             final_estimator (Estimator or subclass): The estimator used to combine the base estimators.
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
+                The CV splitting strategy must result in at least two splits.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used.
-                Must result in at least two splits. In all other cases, KFold is used.
+                In all other cases, KFold is used.
                 Possible inputs for cv are:
                 - None: 5-fold cross validation
                 - int: the number of folds in a (Stratified) KFold

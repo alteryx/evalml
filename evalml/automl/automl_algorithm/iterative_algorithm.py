@@ -38,7 +38,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
-            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to None.
+            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method for the stacking ensemble to use.
+                If set to None, will use the default stacking ensemble data split. Defaults to None.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
