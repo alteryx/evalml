@@ -1455,15 +1455,15 @@ def test_linear_coefficients_output():
 
     output_ = get_linear_coefficients(lin, features=['First', 'Second', 'Third', 'Fourth'])
 
-    assert (output_.index == ['Second', 'Fourth', 'First', 'Third']).all()
-    assert output_.shape[0] == X.shape[1]
-    assert (pd.Series(lin.feature_importance).sort_values() == output_.values).all()
+    assert (output_.index == ['Intercept', 'Second', 'Fourth', 'First', 'Third']).all()
+    assert output_.shape[0] == X.shape[1]+1
+    assert (pd.Series(lin._component_obj.intercept_, index=['Intercept']).append(pd.Series(lin.feature_importance).sort_values()) == output_.values).all()
 
     en = ElasticNetRegressor()
     en.fit(X, y)
 
     output_ = get_linear_coefficients(en, features=['First', 'Second', 'Third', 'Fourth'])
 
-    assert (output_.index == ['Second', 'Third', 'Fourth', 'First']).all()
-    assert output_.shape[0] == X.shape[1]
-    assert (pd.Series(en.feature_importance).sort_values() == output_.values).all()
+    assert (output_.index == ['Intercept', 'Second', 'Third', 'Fourth', 'First']).all()
+    assert output_.shape[0] == X.shape[1]+1
+    assert (pd.Series(en._component_obj.intercept_, index=['Intercept']).append(pd.Series(en.feature_importance).sort_values()) == output_.values).all()

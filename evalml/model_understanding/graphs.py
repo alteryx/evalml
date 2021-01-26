@@ -908,7 +908,8 @@ def get_linear_coefficients(estimator, features=None):
         raise NotFittedError("This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
                              "before using this estimator.")
     coef_ = estimator.feature_importance
-    coef_ = pd.Series(coef_, name='Coeffiicients', index=features)
+    coef_ = pd.Series(coef_, name='Coefficients', index=features)
     coef_ = coef_.sort_values()
+    coef_ = pd.Series(estimator._component_obj.intercept_, index=['Intercept']).append(coef_)
 
     return coef_
