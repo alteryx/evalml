@@ -2184,10 +2184,6 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_multi):
     X, y = X_y_multi
-
-    class MulticlassPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Imputer', 'Random Forest Classifier']
-
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=random_state, n_jobs=1)
     automl.search()
 
