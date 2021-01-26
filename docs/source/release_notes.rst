@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
         * Added validation checks for binary problems with regression-like datasets and multiclass problems without true multiclass targets in ``invalid_targets_data_check`` :pr:`1665`
         * Added time series support for ``make_pipeline`` :pr:`1566`
