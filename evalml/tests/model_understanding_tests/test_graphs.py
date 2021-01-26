@@ -20,6 +20,7 @@ from evalml.model_understanding.graphs import (
     confusion_matrix,
     decision_tree_data_from_estimator,
     decision_tree_data_from_pipeline,
+    get_linear_coefficients,
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
@@ -40,6 +41,9 @@ from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ClassificationPipeline,
+    DecisionTreeRegressor,
+    ElasticNetRegressor,
+    LinearRegressor,
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
@@ -1417,3 +1421,48 @@ def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
     src = visualize_decision_tree(estimator=est_reg, filled=True, max_depth=2)
     assert src.format == 'pdf'
     assert isinstance(src, graphviz.Source)
+
+
+def test_linear_coefficients_errors():
+    X = pd.DataFrame([[1, 2, 3, 5],
+                      [3, 5, 2, 1],
+                      [5, 2, 2, 2],
+                      [3, 2, 3, 3]])
+    y = pd.Series([2, 1, 3, 4])
+
+    dt = DecisionTreeRegressor()
+    dt.fit(X, y)
+
+    with pytest.raises(ValueError, match="Linear coefficients are only available for linear family models"):
+        get_linear_coefficients(dt)
+
+    lin = LinearRegressor()
+
+    with pytest.raises(ValueError, match="This linear estimator is not fitted yet."):
+        get_linear_coefficients(lin)
+
+
+def test_linear_coefficients_output():
+    X = pd.DataFrame([[1, 2, 3, 5],
+                      [3, 5, 2, 1],
+                      [5, 2, 2, 2],
+                      [3, 2, 3, 3]], columns=['First', 'Second', 'Third', 'Fourth'])
+    y = pd.Series([2, 1, 3, 4])
+
+    lin = LinearRegressor()
+    lin.fit(X, y)
+
+    output_ = get_linear_coefficients(lin, features=['First', 'Second', 'Third', 'Fourth'])
+
+    assert (output_.index == ['Second', 'Fourth', 'First', 'Third']).all()
+    assert output_.shape[0] == X.shape[1]
+    assert (pd.Series(lin.feature_importance).sort_values() == output_.values).all()
+
+    en = ElasticNetRegressor()
+    en.fit(X, y)
+
+    output_ = get_linear_coefficients(en, features=['First', 'Second', 'Third', 'Fourth'])
+
+    assert (output_.index == ['Second', 'Third', 'Fourth', 'First']).all()
+    assert output_.shape[0] == X.shape[1]
+    assert (pd.Series(en.feature_importance).sort_values() == output_.values).all()
