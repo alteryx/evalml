@@ -1,6 +1,14 @@
 import json
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .generated_pipelines import (
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression
+)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -138,6 +146,26 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         custom_hyperparameters = hyperparameters
 
     return GeneratedPipeline
+
+
+def get_generated_pipeline_class(problem_type):
+    """Returns the class for the generated pipeline based on the problem type
+
+    Arguments:
+        problem_type (ProblemTypes): The problem_type that the pipeline is for
+
+    Returns:
+        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
+    """
+    try:
+        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
+                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
+                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
+                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
+                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
+                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
+    except KeyError:
+        raise ValueError("ProblemType {} not recognized".format(problem_type))
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
