@@ -43,17 +43,10 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         y (ww.DataColumn, pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-<<<<<<< HEAD
             in time series problems, values should be passed in for the gap and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
-        random_state (int, np.random.RandomState): Seed for the random number generator. Defaults to 0.
-=======
-            in time series problems, values should be passed in for the gap and max_delay variables.
-        n_splits (int, None): the number of CV splits, if applicable. Default 3.
-        shuffle (bool): whether or not to shuffle the data before splitting, if applicable. Default True.
         random_state (int): Seed for the random number generator. Defaults to 0.
->>>>>>> main
 
     Returns:
         sklearn.model_selection.BaseCrossValidator: Data splitting method.
