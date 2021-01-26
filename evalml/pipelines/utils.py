@@ -178,7 +178,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
-        random_state (int or np.random.RandomState): Random state used to intialize the pipeline.
+        random_state (int): Random seed used to intialize the pipeline.
 
     Returns:
         Pipeline instance with component instances and specified estimator created from given random state.
