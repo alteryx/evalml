@@ -45,8 +45,8 @@ class DelayedFeatureTransformer(Transformer):
         """Fits the DelayFeatureTransformer.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self

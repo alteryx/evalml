@@ -1,5 +1,6 @@
 import pandas as pd
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
@@ -20,7 +21,7 @@ class FeatureSelector(Transformer):
         return [feature_name for (selected, feature_name) in zip(selected_masks, self.input_feature_names) if selected]
 
     def transform(self, X, y=None):
-        """Transforms input data by selecting features.
+        """Transforms input data by selecting features. If the component_obj does not have a transform method, will raise an MethodPropertyNotFoundError exception.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data to transform.
@@ -36,7 +37,7 @@ class FeatureSelector(Transformer):
         try:
             X_t = self._component_obj.transform(X)
         except AttributeError:
-            raise RuntimeError("Feature selector requires a transform method or a component_obj that implements transform")
+            raise MethodPropertyNotFoundError("Feature selector requires a transform method or a component_obj that implements transform")
 
         X_dtypes = X.dtypes.to_dict()
         selected_col_names = self.get_names()

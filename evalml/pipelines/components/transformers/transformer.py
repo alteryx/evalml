@@ -25,11 +25,11 @@ class Transformer(ComponentBase):
     model_family = ModelFamily.NONE
 
     def transform(self, X, y=None):
-        """Transforms data X
+        """Transforms data X.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Target data
+            X (ww.DataTable, pd.DataFrame): Data to transform.
+            y (ww.DataColumn, pd.Series, optional): Target data.
 
         Returns:
             ww.DataTable: Transformed X

@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import (
     ComponentBase,
     FeatureSelector,
@@ -53,7 +54,25 @@ def test_feature_selector_missing_component_obj():
 
     mock_feature_selector = MockFeatureSelector()
     mock_feature_selector.fit(pd.DataFrame(), pd.Series())
-    with pytest.raises(RuntimeError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
         mock_feature_selector.transform(pd.DataFrame())
-    with pytest.raises(RuntimeError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+        mock_feature_selector.fit_transform(pd.DataFrame())
+
+
+def test_feature_selector_component_obj_missing_transform():
+    class MockFeatureSelector(FeatureSelector):
+        name = "Mock Feature Selector"
+
+        def __init__(self):
+            self._component_obj = None
+
+        def fit(self, X, y):
+            return self
+
+    mock_feature_selector = MockFeatureSelector()
+    mock_feature_selector.fit(pd.DataFrame(), pd.Series())
+    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+        mock_feature_selector.transform(pd.DataFrame())
+    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
         mock_feature_selector.fit_transform(pd.DataFrame())

@@ -32,8 +32,9 @@ def test_baseline_mean(X_y_regression):
     fitted = clf.fit(X, y)
     assert isinstance(fitted, BaselineRegressor)
 
+    expected_predictions = pd.Series([mean] * len(X))
     predictions = clf.predict(X)
-    assert_series_equal(pd.Series([mean] * len(X)), predictions.to_series())
+    assert_series_equal(expected_predictions, predictions.to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -42,6 +43,8 @@ def test_baseline_median(X_y_regression):
     median = np.median(y)
     clf = BaselineRegressor(strategy="median")
     clf.fit(X, y)
+
+    expected_predictions = pd.Series([median] * len(X))
     predictions = clf.predict(X)
-    assert_series_equal(pd.Series([median] * len(X)), predictions.to_series())
+    assert_series_equal(expected_predictions, predictions.to_series())
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
