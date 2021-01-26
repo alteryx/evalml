@@ -72,7 +72,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         expected_pipeline_class = MulticlassClassificationPipeline
         X, y = X_y_multi
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, max_iterations=2, n_jobs=1, error_callback=raise_error_callback)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, max_iterations=2, n_jobs=1)
     automl.search()
     assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]

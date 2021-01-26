@@ -590,13 +590,13 @@ def test_estimator_check_for_fit(X_y_binary):
             pass
 
         def fit(self, X, y):
-            pass
+            return self
 
         def predict(self, X):
-            return pd.Series()
+            return ww.DataColumn(pd.Series())
 
         def predict_proba(self, X):
-            return pd.DataFrame()
+            return ww.DataTable(pd.DataFrame())
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -625,7 +625,7 @@ def test_transformer_check_for_fit(X_y_binary):
             pass
 
         def fit(self, X, y):
-            pass
+            return self
 
         def transform(self, X, y=None):
             return ww.DataTable(X)
@@ -651,19 +651,19 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         name = "Mock Transformer"
 
         def fit(self, X, y):
-            pass
+            return self
 
         def transform(self, X):
-            pass
+            return ww.DataTable(pd.DataFrame())
 
     class MockTransformerWithOverrideSubclass(Transformer):
         name = "Mock Transformer Subclass"
 
         def fit(self, X, y):
-            pass
+            return self
 
         def transform(self, X):
-            pass
+            return ww.DataTable(pd.DataFrame())
 
     X, y = X_y_binary
     transformer = MockTransformerWithOverride()
