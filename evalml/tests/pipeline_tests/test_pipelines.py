@@ -20,6 +20,12 @@ from evalml.model_family import ModelFamily
 from evalml.objectives import FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline
@@ -50,6 +56,7 @@ from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     generate_pipeline_code,
     get_estimators,
+    get_generated_pipeline_class,
     make_pipeline,
     make_pipeline_from_components
 )
@@ -2415,3 +2422,19 @@ def test_get_component(logistic_regression_binary_pipeline_class, nonlinear_bina
     assert pipeline.get_component('OneHot_RandomForest') == OneHotEncoder(top_n=4)
     assert pipeline.get_component('Random Forest') == RandomForestClassifier()
     assert pipeline.get_component('Logistic Regression') == LogisticRegressionClassifier()
+
+
+@pytest.mark.parametrize("problem_type,resulting_class",
+                         [(ProblemTypes.BINARY, GeneratedPipelineBinary),
+                          (ProblemTypes.MULTICLASS, GeneratedPipelineMulticlass),
+                          (ProblemTypes.REGRESSION, GeneratedPipelineRegression),
+                          (ProblemTypes.TIME_SERIES_BINARY, GeneratedPipelineTimeSeriesBinary),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, GeneratedPipelineTimeSeriesMulticlass),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, GeneratedPipelineTimeSeriesRegression),
+                          ("invalid", None)])
+def test_get_generated_pipeline_class(problem_type, resulting_class):
+    if problem_type != "invalid":
+        assert get_generated_pipeline_class(problem_type) == resulting_class
+    else:
+        with pytest.raises(ValueError, match="not recognized"):
+            get_generated_pipeline_class(problem_type)
