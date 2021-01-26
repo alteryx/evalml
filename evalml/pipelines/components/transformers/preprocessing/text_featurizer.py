@@ -24,7 +24,7 @@ class TextFeaturizer(TextTransformer):
 
         Arguments:
             text_columns (list): list of feature names which should be treated as text features.
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (int): Seed for the random number generator.
 
         """
         self._trans = [nlp_primitives.DiversityScore,

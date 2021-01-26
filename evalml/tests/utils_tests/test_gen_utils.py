@@ -14,13 +14,11 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
-    check_random_state_equality,
     classproperty,
     convert_to_seconds,
     drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
-    get_random_state,
     import_or_raise,
     infer_feature_types,
     jupyter_check,
@@ -70,20 +68,6 @@ def test_convert_to_seconds():
 
     with pytest.raises(AssertionError, match="Invalid unit."):
         convert_to_seconds("10 years")
-
-
-def test_get_random_state_int():
-    assert abs(get_random_state(None).rand() - get_random_state(None).rand()) > 1e-6
-    assert get_random_state(42).rand() == np.random.RandomState(42).rand()
-    assert get_random_state(np.random.RandomState(42)).rand() == np.random.RandomState(42).rand()
-    assert get_random_state(SEED_BOUNDS.min_bound).rand() == np.random.RandomState(SEED_BOUNDS.min_bound).rand()
-    assert get_random_state(SEED_BOUNDS.max_bound).rand() == np.random.RandomState(SEED_BOUNDS.max_bound).rand()
-    with pytest.raises(ValueError, match=r'Seed "[-0-9]+" is not in the range \[{}, {}\], inclusive'.format(
-            SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)):
-        get_random_state(SEED_BOUNDS.min_bound - 1)
-    with pytest.raises(ValueError, match=r'Seed "[-0-9]+" is not in the range \[{}, {}\], inclusive'.format(
-            SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)):
-        get_random_state(SEED_BOUNDS.max_bound + 1)
 
 
 def test_get_random_seed_rng():
@@ -203,29 +187,6 @@ def test_import_or_warn_errors(dummy_importlib):
         import_or_raise("_evalml", "Additional error message", warning=True)
     with pytest.warns(UserWarning, match="An exception occurred while trying to import `attr_error_lib`: Mock Exception executed!"):
         import_or_raise("attr_error_lib", warning=True)
-
-
-def test_check_random_state_equality():
-    assert check_random_state_equality(get_random_state(1), get_random_state(1))
-
-    rs_1 = get_random_state(1)
-    rs_2 = get_random_state(2)
-    assert not check_random_state_equality(rs_1, rs_2)
-
-    # Test equality
-    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
-    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
-    assert check_random_state_equality(rs_1, rs_2)
-
-    # Test numpy array value not equal
-    rs_1.set_state(tuple(['MT19937', np.array([0] * 624), 0, 1, 0.1]))
-    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
-    assert not check_random_state_equality(rs_1, rs_2)
-
-    # Test non-numpy array value not equal
-    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
-    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
-    assert not check_random_state_equality(rs_1, rs_2)
 
 
 @patch('evalml.utils.gen_utils.import_or_raise')
