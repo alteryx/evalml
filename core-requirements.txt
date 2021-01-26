@@ -10,7 +10,7 @@ psutil>=5.6.3
 requirements-parser>=0.2.0
 shap>=0.35.0
 texttable>=1.6.2
-woodwork==0.0.7
+woodwork==0.0.8
 featuretools>=0.20.0
 nlp-primitives>=1.1.0
 networkx>=2.5
