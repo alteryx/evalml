@@ -18,7 +18,6 @@ from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes
-from evalml.utils import check_random_state_equality
 
 
 def test_iterative_algorithm_init_iterative():
@@ -126,7 +125,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
             assert all([p.parameters['Mock Classifier']['n_jobs'] == -1 for p in next_batch])
-            assert all(check_random_state_equality(p.random_state, algo.random_state) for p in next_batch)
+            assert all((p.random_state == algo.random_state) for p in next_batch)
             assert algo.pipeline_number == last_pipeline_number + len(next_batch)
             last_pipeline_number = algo.pipeline_number
             assert algo.batch_number == last_batch_number + 1
@@ -150,10 +149,10 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
             assert pipeline.model_family == ModelFamily.ENSEMBLE
-            assert check_random_state_equality(pipeline.random_state, algo.random_state)
+            assert pipeline.random_state == algo.random_state
             stack_args = mock_stack.call_args[1]['estimators']
             estimators_used_in_ensemble = [args[1] for args in stack_args]
-            random_states_the_same = [check_random_state_equality(estimator.pipeline.random_state, algo.random_state)
+            random_states_the_same = [(estimator.pipeline.random_state == algo.random_state)
                                       for estimator in estimators_used_in_ensemble]
             assert all(random_states_the_same)
 
@@ -233,7 +232,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     for i in range(1, 5):
         next_batch = algo.next_batch()
         assert len(next_batch) == algo.pipelines_per_batch
-        assert all(check_random_state_equality(p.random_state, algo.random_state) for p in next_batch)
+        assert all((p.random_state == algo.random_state) for p in next_batch)
         assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
         assert algo.pipeline_number == last_pipeline_number + len(next_batch)
         last_pipeline_number = algo.pipeline_number

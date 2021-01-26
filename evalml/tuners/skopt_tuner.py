@@ -19,7 +19,7 @@ class SKOptTuner(Tuner):
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state (int, np.random.RandomState): The random state
+            random_state (int): The random state. Defaults to 0.
         """
         super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         self.opt = Optimizer(self._search_space_ranges, "ET", acq_optimizer="sampling", random_state=random_state)
