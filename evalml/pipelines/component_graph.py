@@ -199,8 +199,14 @@ class ComponentGraph:
             col_intersection = set(X.columns.keys()).intersection(set(input_x.columns.keys()))
             for col in col_intersection:
                 if (X[col].logical_type != input_x[col].logical_type and
-                        "numeric" not in X[col].semantic_tags and "numeric" not in input_x[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
-                    input_x = input_x.set_types({col: X[col].logical_type})
+                        "numeric" not in X[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
+                    try:
+                        input_x = input_x.set_types({col: X[col].logical_type})
+                    except TypeError:
+                        # if there is a column whose type has been converted s.t. it cannot be converted back, keep as is.
+                        # example: StandardScaler could convert a boolean column to a float column. This is expected, and we should not
+                        # try to convert back to boolean.
+                        continue
             self.input_feature_names.update({component_name: list(input_x.columns)})
 
             if isinstance(component_instance, Transformer):
