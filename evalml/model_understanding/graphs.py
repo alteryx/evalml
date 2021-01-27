@@ -294,7 +294,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int): The random seed. Defaults to 0.
+        random_state (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         Mean feature importance scores over 5 shuffles.
@@ -484,19 +484,13 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        pipeline._estimator_type = "classifier"
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        pipeline._estimator_type = "regressor"
-    pipeline.feature_importances_ = pipeline.feature_importance
+
     if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
-    try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=features, grid_resolution=grid_resolution)
-    finally:
-        # Delete scikit-learn attributes that were temporarily set
-        del pipeline._estimator_type
-        del pipeline.feature_importances_
+
+    wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
         classes = [pipeline.classes_[1]]
@@ -871,7 +865,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-        plotly.Figure showing the prediction vs actual over time.
+        plotly.Figure: Showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
@@ -893,7 +887,30 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     return _go.Figure(data=data, layout=layout)
 
 
-def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
+def get_linear_coefficients(estimator, features=None):
+    """Returns a dataframe showing the features with the greatest predictive power for a linear model.
+
+    Arguments:
+        estimator (Estimator): Fitted linear model family estimator.
+        features (list[str]): List of feature names associated with the underlying data.
+
+    Returns:
+        pd.DataFrame: Displaying the features by importance.
+    """
+    if not estimator.model_family == ModelFamily.LINEAR_MODEL:
+        raise ValueError("Linear coefficients are only available for linear family models")
+    if not estimator._is_fitted:
+        raise NotFittedError("This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    coef_ = estimator.feature_importance
+    coef_ = pd.Series(coef_, name='Coefficients', index=features)
+    coef_ = coef_.sort_values()
+    coef_ = pd.Series(estimator._component_obj.intercept_, index=['Intercept']).append(coef_)
+
+    return coef_
+
+  
+  def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
     """Get the transformed output after fitting X to the embedded space using t-SNE.
 
      Arguments:

@@ -20,6 +20,7 @@ from evalml.model_understanding.graphs import (
     confusion_matrix,
     decision_tree_data_from_estimator,
     decision_tree_data_from_pipeline,
+    get_linear_coefficients,
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
@@ -42,6 +43,9 @@ from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ClassificationPipeline,
+    DecisionTreeRegressor,
+    ElasticNetRegressor,
+    LinearRegressor,
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
@@ -301,12 +305,8 @@ def test_roc_curve_binary(data_type, make_data_type):
 
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
-    if data_type != 'np':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
-    if data_type == 'ww':
-        y_true = ww.DataColumn(y_true)
-        y_predict_proba = ww.DataTable(y_predict_proba)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
@@ -352,6 +352,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
     y_true_unique = y_true
     if data_type == 'ww':
         y_true_unique = y_true.to_series()
+
     for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
         tpr_rates = roc_curve_data[i].get('tpr_rates')
@@ -730,7 +731,7 @@ def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=20):
 def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
                                           logistic_regression_multiclass_pipeline_class,
-                                          linear_regression_pipeline_class):
+                                          linear_regression_pipeline_class, make_data_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -743,33 +744,11 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
         X, y = X_y_regression
         pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
 
-    if data_type != "np":
-        X = pd.DataFrame(X)
-    if data_type == "ww":
-        X = ww.DataTable(X)
-
+    X = make_data_type(data_type, X)
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().any(axis=None)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
-
-
-@patch('evalml.model_understanding.graphs.sk_partial_dependence')
-def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    pipeline.fit(X, y)
-    mock_part_dep.side_effect = Exception()
-    with pytest.raises(Exception):
-        partial_dependence(pipeline, X, features=0, grid_resolution=20)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
 
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
@@ -1420,6 +1399,39 @@ def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
     src = visualize_decision_tree(estimator=est_reg, filled=True, max_depth=2)
     assert src.format == 'pdf'
     assert isinstance(src, graphviz.Source)
+
+
+def test_linear_coefficients_errors():
+    dt = DecisionTreeRegressor()
+
+    with pytest.raises(ValueError, match="Linear coefficients are only available for linear family models"):
+        get_linear_coefficients(dt)
+
+    lin = LinearRegressor()
+
+    with pytest.raises(ValueError, match="This linear estimator is not fitted yet."):
+        get_linear_coefficients(lin)
+
+
+@pytest.mark.parametrize("estimator", [LinearRegressor, ElasticNetRegressor])
+def test_linear_coefficients_output(estimator):
+    X = pd.DataFrame([[1, 2, 3, 5],
+                      [3, 5, 2, 1],
+                      [5, 2, 2, 2],
+                      [3, 2, 3, 3]], columns=['First', 'Second', 'Third', 'Fourth'])
+    y = pd.Series([2, 1, 3, 4])
+
+    est_ = estimator()
+    est_.fit(X, y)
+
+    output_ = get_linear_coefficients(est_, features=['First', 'Second', 'Third', 'Fourth'])
+
+    if estimator.name == 'Linear Regressor':
+        assert (output_.index == ['Intercept', 'Second', 'Fourth', 'First', 'Third']).all()
+    elif estimator.name == 'Elastic Net Regressor':
+        assert (output_.index == ['Intercept', 'Second', 'Third', 'Fourth', 'First']).all()
+    assert output_.shape[0] == X.shape[1] + 1
+    assert (pd.Series(est_._component_obj.intercept_, index=['Intercept']).append(pd.Series(est_.feature_importance).sort_values()) == output_.values).all()
 
 
 @pytest.mark.parametrize("n_components", [2.0, -2, 0])

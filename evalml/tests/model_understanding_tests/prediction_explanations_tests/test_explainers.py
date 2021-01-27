@@ -154,7 +154,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     pipeline.classes_ = ["class_0", "class_1", "class_2"]
 
     # By the time we call transform, we are looking at only one row of the input data.
-    pipeline.compute_estimator_features.return_value = pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]})
+    pipeline.compute_estimator_features.return_value = ww.DataTable(pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]}))
     features = pd.DataFrame({"a": [1], "b": [2]})
     training_data = pd.DataFrame()
     if input_type == "ww":
@@ -442,7 +442,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         abs_error_mock = MagicMock(__name__="abs_error")
         abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
-        pipeline.predict.return_value = pd.Series([2, 1])
+        pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
         y_true = pd.Series([3, 2], index=custom_index)
         answer = _add_custom_index(answer, index_best=custom_index[1],
                                    index_worst=custom_index[0], output_format=output_format)
@@ -451,8 +451,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
-        pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
-        pipeline.predict.return_value = pd.Series(["malignant"] * 2)
+        pipeline.predict_proba.return_value = ww.DataTable(pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]}))
+        pipeline.predict.return_value = ww.DataColumn(pd.Series(["malignant"] * 2))
         y_true = pd.Series(["malignant", "benign"], index=custom_index)
         answer = _add_custom_index(answer, index_best=custom_index[0],
                                    index_worst=custom_index[1], output_format=output_format)
@@ -464,9 +464,9 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
         cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
-        pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
-                                                            "virginica": [0.1, 0.05]})
-        pipeline.predict.return_value = ["setosa", "versicolor"]
+        pipeline.predict_proba.return_value = ww.DataTable(pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
+                                                                         "virginica": [0.1, 0.05]}))
+        pipeline.predict.return_value = ww.DataColumn(pd.Series(["setosa", "versicolor"]))
         y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
         answer = _add_custom_index(answer, index_best=custom_index[0],
                                    index_worst=custom_index[1], output_format=output_format)
@@ -503,18 +503,18 @@ def test_explain_predictions_custom_index(mock_make_table, problem_type, output_
     pipeline.name = "Test Pipeline Name"
 
     if problem_type == ProblemTypes.REGRESSION:
-        pipeline.predict.return_value = pd.Series([2, 1])
+        pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
     elif problem_type == ProblemTypes.BINARY:
         pipeline.classes_.return_value = ["benign", "malignant"]
-        pipeline.predict.return_value = pd.Series(["malignant"] * 2)
-        pipeline.predict_proba.return_value = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
+        pipeline.predict.return_value = ww.DataColumn(pd.Series(["malignant"] * 2))
+        pipeline.predict_proba.return_value = ww.DataTable(pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]}))
     else:
         if output_format == "text":
             mock_make_table.return_value = multiclass_table
         pipeline.classes_.return_value = ["setosa", "versicolor", "virginica"]
-        pipeline.predict.return_value = pd.Series(["setosa", "versicolor"])
-        pipeline.predict_proba.return_value = pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
-                                                            "virginica": [0.1, 0.05]})
+        pipeline.predict.return_value = ww.DataColumn(pd.Series(["setosa", "versicolor"]))
+        pipeline.predict_proba.return_value = ww.DataTable(pd.DataFrame({"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75],
+                                                                         "virginica": [0.1, 0.05]}))
 
     report = explain_predictions(pipeline, input_features, training_data=input_features, output_format=output_format)
     if output_format == "text":
@@ -578,7 +578,7 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
 
-    pipeline.predict.return_value = pd.Series([2, 1])
+    pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
 
     def sum(y_true, y_pred):

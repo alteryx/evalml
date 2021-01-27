@@ -21,13 +21,13 @@ class RegressionPipeline(PipelineBase):
 
         Returns:
             self
-
         """
         X = _convert_to_woodwork_structure(X)
         y = _convert_to_woodwork_structure(y)
         if "numeric" not in y.semantic_tags:
             raise ValueError(f"Regression pipeline can only handle numeric target data")
         y = _convert_woodwork_types_wrapper(y.to_series())
+
         self._fit(X, y)
         return self
 
@@ -43,5 +43,5 @@ class RegressionPipeline(PipelineBase):
             dict: Ordered dictionary of objective scores
         """
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        y_predicted = self.predict(X)
+        y_predicted = _convert_woodwork_types_wrapper(self.predict(X).to_series())
         return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)

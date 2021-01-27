@@ -157,7 +157,7 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int): The random seed. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -566,8 +566,8 @@ class AutoMLSearch:
 
         Arguments:
             pipeline (Pipeline): Pipeline instance to threshold
-            X_threshold_tuning (ww DataTable): X data to tune pipeline to
-            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
+            X_threshold_tuning (ww.DataTable): X data to tune pipeline to
+            y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
 
         Returns:
             Trained pipeline instance
@@ -576,10 +576,7 @@ class AutoMLSearch:
             pipeline.threshold = 0.5
             if X_threshold_tuning:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                if isinstance(y_predict_proba, pd.DataFrame):
-                    y_predict_proba = y_predict_proba.iloc[:, 1]
-                else:
-                    y_predict_proba = y_predict_proba[:, 1]
+                y_predict_proba = y_predict_proba.iloc[:, 1]
                 pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
         return pipeline
 
@@ -849,7 +846,7 @@ class AutoMLSearch:
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-            random_state (int): The random seed. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
 
         Returns:
             PipelineBase: untrained pipeline instance associated with the provided ID

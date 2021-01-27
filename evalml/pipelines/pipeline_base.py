@@ -57,7 +57,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): The random seed. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         self.random_state = get_random_seed(random_state)
         if isinstance(self.component_graph, list):  # Backwards compatibility
@@ -112,8 +112,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def linearized_component_graph(cls):
-        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order
-        """
+        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
         if isinstance(cls.component_graph, list):
             return cls.component_graph
         else:
@@ -175,10 +174,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
-            X (pd.DataFrame): Input data to the pipeline to transform.
+            X (ww.DataTable, pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            pd.DataFrame - New transformed features.
+            ww.DataTable: New transformed features.
         """
         X_t = self._component_graph.compute_final_component_features(X, y=y)
         return X_t
@@ -215,11 +214,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Predicted values.
+            ww.DataColumn: Predicted values.
         """
         X = _convert_to_woodwork_structure(X)
         predictions = self._component_graph.predict(X)
-        return predictions.rename(self.input_target_name)
+        predictions_series = predictions.to_series()
+        predictions_series.name = self.input_target_name
+        return _convert_to_woodwork_structure(predictions_series)
 
     @abstractmethod
     def score(self, X, y, objectives):
@@ -249,6 +250,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
             objectives (list): List of objectives to score.
+
+        Returns:
+            dict: Ordered dictionary with objectives and their scores.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()

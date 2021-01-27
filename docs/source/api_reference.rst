@@ -297,6 +297,7 @@ Utility Methods
     get_prediction_vs_actual_over_time_data
     partial_dependence
     get_prediction_vs_actual_data
+    get_linear_coefficients
     t_sne
 
 

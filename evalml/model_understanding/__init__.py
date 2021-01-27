@@ -2,6 +2,7 @@ from .graphs import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
     confusion_matrix,
+    get_linear_coefficients,
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
