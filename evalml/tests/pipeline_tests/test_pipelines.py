@@ -1405,16 +1405,17 @@ def test_clone_init(linear_regression_pipeline_class):
     parameters = {
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
-            "numeric_impute_strategy": "mean",
+            "numeric_impute_strategy": "mean"
         },
         'Linear Regressor': {
             'fit_intercept': True,
             'normalize': True,
         }
     }
-    pipeline = linear_regression_pipeline_class(parameters=parameters)
+    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=42)
     pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
+    assert pipeline.random_state == pipeline_clone.random_state
 
 
 def test_nonlinear_clone_init(nonlinear_regression_pipeline_class):
@@ -1430,39 +1431,19 @@ def test_nonlinear_clone_init(nonlinear_regression_pipeline_class):
     }
     pipeline = nonlinear_regression_pipeline_class(parameters=parameters)
     pipeline_clone = pipeline.clone()
+    assert pipeline.random_state == pipeline_clone.random_state
     assert pipeline.parameters == pipeline_clone.parameters
-
-
-def test_clone_random_state(linear_regression_pipeline_class):
-    parameters = {
-        'Imputer': {
-            "categorical_impute_strategy": "most_frequent",
-            "numeric_impute_strategy": "mean"
-        },
-        'Linear Regressor': {
-            'fit_intercept': True,
-            'normalize': True,
-        }
-    }
-    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=42)
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state == pipeline.random_state
-
-    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=2)
-    pipeline_clone = pipeline.clone(random_state=2)
-    assert pipeline_clone.random_state == pipeline.random_state
 
 
 def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_state=42)
-    random_state_first_val = pipeline.random_state
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state == random_state_first_val
+    pipeline_clone = pipeline.clone()
+    assert pipeline.random_state == pipeline_clone.random_state
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)
@@ -1474,12 +1455,11 @@ def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
 def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = nonlinear_binary_pipeline_class(parameters={}, random_state=42)
-    random_state_first_val = pipeline.random_state
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state == random_state_first_val
+    pipeline_clone = pipeline.clone()
+    assert pipeline_clone.random_state == pipeline.random_state
     assert pipeline.parameters == pipeline_clone.parameters
     with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)

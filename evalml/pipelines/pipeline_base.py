@@ -462,16 +462,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
 
-    def clone(self, random_state=0):
+    def clone(self):
         """Constructs a new pipeline with the same parameters and components.
-
-        Arguments:
-            random_state (int): the value to seed the random state with. Defaults to 0.
 
         Returns:
             A new instance of this pipeline with identical parameters and components
         """
-        return self.__class__(self.parameters, random_state=random_state)
+        return self.__class__(self.parameters, random_state=self.random_state)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

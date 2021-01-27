@@ -70,16 +70,13 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         return cls._default_parameters
 
-    def clone(self, random_state=0):
+    def clone(self):
         """Constructs a new component with the same parameters
-
-        Arguments:
-            random_state (int): The value to seed the random state with. Defaults to 0.
 
         Returns:
             A new instance of this component with identical parameters
         """
-        return self.__class__(**self.parameters, random_state=random_state)
+        return self.__class__(**self.parameters, random_state=self.random_state)
 
     def fit(self, X, y=None):
         """Fits component to data
