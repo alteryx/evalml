@@ -63,11 +63,6 @@ def test_featurizer_no_text():
 def test_some_missing_col_names(text_df, caplog):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2', 'col_3'])
-
-    with caplog.at_level(logging.WARNING):
-        tf.fit(X)
-    assert "Columns ['col_3'] were not found in the given DataFrame, ignoring" in caplog.messages
-
     expected_col_names = set(['DIVERSITY_SCORE(col_1)',
                               'DIVERSITY_SCORE(col_2)',
                               'LSA(col_1)[0]',
@@ -78,19 +73,11 @@ def test_some_missing_col_names(text_df, caplog):
                               'MEAN_CHARACTERS_PER_WORD(col_2)',
                               'POLARITY_SCORE(col_1)',
                               'POLARITY_SCORE(col_2)'])
+    tf.fit(X)
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
     assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
-
-
-def test_all_missing_col_names(text_df):
-    X = text_df
-    tf = TextFeaturizer(text_columns=['col_3', 'col_4'])
-
-    error_msg = "None of the provided text column names match the columns in the given DataFrame"
-    with pytest.raises(AttributeError, match=error_msg):
-        tf.fit(X)
 
 
 def test_empty_text_column():

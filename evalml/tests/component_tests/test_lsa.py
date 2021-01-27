@@ -50,29 +50,16 @@ def test_lsa_no_text():
 
 def test_some_missing_col_names(text_df, caplog):
     X = text_df
-    lsa = LSA(text_columns=['col_1', 'col_2', 'col_3'])
-
-    with caplog.at_level(logging.WARNING):
-        lsa.fit(X)
-    assert "Columns ['col_3'] were not found in the given DataFrame, ignoring" in caplog.messages
-
     expected_col_names = set(['LSA(col_1)[0]',
                               'LSA(col_1)[1]',
                               'LSA(col_2)[0]',
                               'LSA(col_2)[1]'])
+    lsa = LSA(text_columns=['col_1', 'col_2', 'col_3'])
+    lsa.fit(X)
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
     assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
-
-
-def test_all_missing_col_names(text_df):
-    X = text_df
-    lsa = LSA(text_columns=['col_3', 'col_4'])
-
-    error_msg = "None of the provided text column names match the columns in the given DataFrame"
-    with pytest.raises(AttributeError, match=error_msg):
-        lsa.fit(X)
 
 
 def test_lsa_empty_text_column():
