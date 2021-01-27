@@ -59,7 +59,7 @@ commands:
   build_pkg:
     steps:
       - run: |
-            git clone https://github.com/conda-forge/evalml-core-feedstock
+            git clone https://github.com/angela97lin/evalml-core-feedstock
             source test_python/bin/activate
             mkdir evalml-core-feedstock/evalml
             cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
