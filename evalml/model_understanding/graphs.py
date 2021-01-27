@@ -472,8 +472,6 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         ValueError: if the provided pipeline is a Baseline pipeline.
     """
 
-
-
     X = _convert_to_woodwork_structure(X)
     try:
         max_num_cats = max(X.select("categorical").describe().loc["nunique"])

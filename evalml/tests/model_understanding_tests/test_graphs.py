@@ -11,7 +11,7 @@ from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
-from evalml.demos import load_breast_cancer, load_wine, load_fraud
+from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.graphs import (
@@ -786,23 +786,6 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
     assert len(part_dep["feature_values"]) == 3
     assert not part_dep.isnull().any(axis=None)
 
-    part_dep = partial_dependence(pipeline, X, features='bigger strings')
-    assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
-    assert len(part_dep["partial_dependence"]) == 4
-    assert len(part_dep["feature_values"]) == 4
-    assert not part_dep.isnull().any(axis=None)
-
-
-    X2, y = load_fraud(1000)
-    X2 = X2.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
-
-    pipeline = linear_regression_pipeline_class({})
-
-    pipeline.fit(X2, y)
-
-    with pytest.raises(ValueError) as execinfo:
-        part_dep = partial_dependence(pipeline, X2, 'currency')
-    assert "Partial dependence is not supported for categorical features" in str(execinfo.value)
 
 def test_partial_dependence_baseline():
     X = pd.DataFrame([[1, 0], [0, 1]])
@@ -942,14 +925,22 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
     with pytest.raises(ValueError, match="Features provided must be a tuple entirely of integers or strings, not a mixture of both."):
         partial_dependence(pipeline, X, features=(0, 'b'))
 
+
 def test_partial_dependence_input_error(logistic_regression_binary_pipeline_class):
 
     X, y = load_fraud(1000)
-    # import pdb; pdb.set_trace()
     X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, 'currency')
+
+    assert dict(part_dep["partial_dependence"].value_counts()) == {0.1424060057413758: 154, 0.006837318701999957: 1,
+                                                                   0.24445532203317386: 1, 0.15637574440029903: 1,
+                                                                   0.11676042311300606: 1, 0.13434069071819482: 1,
+                                                                   0.1502609021969637: 1, 0.14486201259150977: 1,
+                                                                   0.16687406140200164: 1, 0.06815227785761911: 1,
+                                                                   0.0791821060634158: 1}
+
 
 def test_graph_partial_dependence(test_pipeline):
     X, y = load_breast_cancer()
