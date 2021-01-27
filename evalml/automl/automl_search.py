@@ -46,7 +46,7 @@ from evalml.pipelines import (
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
@@ -157,7 +157,7 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int): The random seed. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -566,8 +566,8 @@ class AutoMLSearch:
 
         Arguments:
             pipeline (Pipeline): Pipeline instance to threshold
-            X_threshold_tuning (ww DataTable): X data to tune pipeline to
-            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
+            X_threshold_tuning (ww.DataTable): X data to tune pipeline to
+            y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
 
         Returns:
             Trained pipeline instance
@@ -576,10 +576,7 @@ class AutoMLSearch:
             pipeline.threshold = 0.5
             if X_threshold_tuning:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                if isinstance(y_predict_proba, pd.DataFrame):
-                    y_predict_proba = y_predict_proba.iloc[:, 1]
-                else:
-                    y_predict_proba = y_predict_proba[:, 1]
+                y_predict_proba = y_predict_proba.iloc[:, 1]
                 pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
         return pipeline
 
@@ -860,7 +857,11 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters, random_state=self.random_state)
+        pipeline = get_generated_pipeline_class(self.problem_type)
+        pipeline.custom_hyperparameters = pipeline_class.custom_hyperparameters
+        pipeline.custom_name = pipeline_class.name
+        pipeline.component_graph = pipeline_class.component_graph
+        return pipeline(parameters, random_state=self.random_state)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline

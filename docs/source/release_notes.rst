@@ -3,6 +3,17 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
+        * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
+    * Fixes
+        * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.18.0 Jan. 26, 2021**
+    * Enhancements
         * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
         * Added validation checks for binary problems with regression-like datasets and multiclass problems without true multiclass targets in ``invalid_targets_data_check`` :pr:`1665`
         * Added time series support for ``make_pipeline`` :pr:`1566`
@@ -36,10 +47,11 @@ Release Notes
         * Fixed stacking argument ``n_jobs`` for IterativeAlgorithm :pr:`1706`
         * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
-        * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
+        * Make AutoMLSearch pipelines pickle-able :pr:`1721`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
+        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
         * Capped LightGBM version limit to remove bug in docs :pr:`1711`
         * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
@@ -55,6 +67,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
         * Removed support for `np.random.RandomState` in EvalML. Rather than passing ``np.random.RandomState`` as component and pipeline random_state values, we use int random_seed :pr:`1727`
 
 

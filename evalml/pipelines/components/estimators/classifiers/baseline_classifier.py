@@ -27,7 +27,7 @@ class BaselineClassifier(Estimator):
 
         Arguments:
             strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_state (int): Seed for the random number generator
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
@@ -46,7 +46,6 @@ class BaselineClassifier(Estimator):
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -62,29 +61,27 @@ class BaselineClassifier(Estimator):
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
-            return pd.Series([self._mode] * len(X))
+            predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            return get_random_state(self.random_state).choice(self._classes, len(X))
+            predictions = get_random_state(self.random_state).choice(self._classes, len(X))
         else:
-            return get_random_state(self.random_state).choice(self._classes, len(X), p=self._percentage_freq)
+            predictions = get_random_state(self.random_state).choice(self._classes, len(X), p=self._percentage_freq)
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
             proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]] * len(X))
-            return pd.DataFrame(proba_arr, columns=self._classes)
         elif strategy == "random":
             proba_arr = np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
-            return pd.DataFrame(proba_arr, columns=self._classes)
         else:
             proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
-            return pd.DataFrame(proba_arr, columns=self._classes)
+        predictions = pd.DataFrame(proba_arr, columns=self._classes)
+        return _convert_to_woodwork_structure(predictions)
 
     @property
     def feature_importance(self):
@@ -100,6 +97,6 @@ class BaselineClassifier(Estimator):
         """Returns class labels. Will return None before fitting.
 
         Returns:
-            list(str) or list(float) : Class names
+            list[str] or list(float) : Class names
         """
         return self._classes
