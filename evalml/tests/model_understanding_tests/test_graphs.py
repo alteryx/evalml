@@ -926,7 +926,7 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
         partial_dependence(pipeline, X, features=(0, 'b'))
 
 
-def test_partial_dependence_input_error(logistic_regression_binary_pipeline_class):
+def test_partial_dependence_more_categories_than_grid_resolution(logistic_regression_binary_pipeline_class):
 
     X, y = load_fraud(1000)
     X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
