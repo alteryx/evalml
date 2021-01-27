@@ -118,11 +118,14 @@ def test_make_data_splitter_error():
         make_data_splitter(X, y, 'XYZ')
 
 
-def test_make_data_splitter_error_shuffle_random_state():
+@pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
+                                                                  (ProblemTypes.BINARY, StratifiedKFold),
+                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
+def test_make_data_splitter_error_shuffle_random_state(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
                       'target': list(range(n))})
     y = X.pop('target')
 
     with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
-        make_data_splitter(X, y, ProblemTypes.REGRESSION, n_splits=5, shuffle=False, random_state=42)
+        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)
