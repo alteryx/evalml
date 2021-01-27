@@ -26,7 +26,7 @@ def test_fit_predict_regression(X_y_regression):
     svr.fit(X, y)
     y_pred = svr.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred.to_series().values, y_pred_sk, decimal=5)
 
 
 @pytest.mark.parametrize('kernel', ['linear', 'rbf', 'sigmoid'])
