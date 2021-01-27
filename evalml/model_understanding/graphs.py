@@ -909,8 +909,8 @@ def get_linear_coefficients(estimator, features=None):
 
     return coef_
 
-  
-  def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
+
+def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
     """Get the transformed output after fitting X to the embedded space using t-SNE.
 
      Arguments:
