@@ -14,7 +14,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-    * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
+        * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
 
 **v0.18.0 Jan. 26, 2021**
     * Enhancements
