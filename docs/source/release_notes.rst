@@ -8,6 +8,7 @@ Release Notes
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
     * Fixes
+        * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
     * Changes
