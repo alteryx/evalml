@@ -52,7 +52,6 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         sklearn.model_selection.BaseCrossValidator: Data splitting method.
     """
     problem_type = handle_problem_types(problem_type)
-    data_splitter = None
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
 
@@ -65,5 +64,4 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             raise ValueError("problem_configuration is required for time series problem types")
         return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
                                max_delay=problem_configuration.get('max_delay'))
-
-    return data_splitter
+    return None

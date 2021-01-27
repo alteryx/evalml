@@ -4,10 +4,18 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
+        * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
     * Fixes
     * Changes
+        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
     * Documentation Changes
     * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
 
 
 **v0.18.0 Jan. 26, 2021**
@@ -25,7 +33,6 @@ Release Notes
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
         * Added 2-way dependence plots. :pr:`1690`
         * Added ability to directly iterate through components within Pipelines :pr:`1583`
-        * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
@@ -50,7 +57,6 @@ Release Notes
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
-        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
         * Capped LightGBM version limit to remove bug in docs :pr:`1711`
         * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
