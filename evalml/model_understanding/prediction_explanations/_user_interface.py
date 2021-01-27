@@ -23,7 +23,7 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
         convert_numeric_to_string (bool): Whether numeric values should be converted to strings from numeric
 
     Returns:
-          list(str)
+          list[str]
     """
     tuples = [(value[0], feature_name) for feature_name, value in normalized_values.items()]
 
@@ -211,8 +211,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
     Returns:
         str: Table
     """
-    pipeline_features = pipeline.compute_estimator_features(input_features)
-
+    pipeline_features = pipeline.compute_estimator_features(input_features).to_dataframe()
     shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
