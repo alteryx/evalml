@@ -1449,9 +1449,9 @@ def test_linear_coefficients_output(estimator):
 
     output_ = get_linear_coefficients(est_, features=['First', 'Second', 'Third', 'Fourth'])
 
-    if isinstance(estimator, LinearRegressor):
+    if estimator.name == 'Linear Regressor':
         assert (output_.index == ['Intercept', 'Second', 'Fourth', 'First', 'Third']).all()
-    elif isinstance(estimator, ElasticNetRegressor):
+    elif estimator.name == 'Elastic Net Regressor':
         assert (output_.index == ['Intercept', 'Second', 'Third', 'Fourth', 'First']).all()
     assert output_.shape[0] == X.shape[1] + 1
     assert (pd.Series(est_._component_obj.intercept_, index=['Intercept']).append(pd.Series(est_.feature_importance).sort_values()) == output_.values).all()
