@@ -834,13 +834,12 @@ class AutoMLSearch:
 
         return current_batch_pipeline_scores
 
-    def get_pipeline(self, pipeline_id, random_state=0):
+    def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
         initialized with the parameters used to train that pipeline during automl search.
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-            random_state (int): Seed for the random number generator. Defaults to 0.
 
         Returns:
             PipelineBase: untrained pipeline instance associated with the provided ID
@@ -856,7 +855,7 @@ class AutoMLSearch:
         pipeline.custom_hyperparameters = pipeline_class.custom_hyperparameters
         pipeline.custom_name = pipeline_class.name
         pipeline.component_graph = pipeline_class.component_graph
-        return pipeline(parameters, random_state=random_state)
+        return pipeline(parameters, random_state=self.random_state)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
