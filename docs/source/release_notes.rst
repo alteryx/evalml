@@ -50,6 +50,7 @@ Release Notes
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
+        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
         * Capped LightGBM version limit to remove bug in docs :pr:`1711`
         * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
@@ -65,6 +66,7 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
         * Removed support for `np.random.RandomState` in EvalML. Rather than passing ``np.random.RandomState`` as component and pipeline random_state values, we use int random_seed :pr:`1727`
 
 

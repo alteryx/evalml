@@ -15,21 +15,21 @@ class SKOptTuner(Tuner):
     """Bayesian Optimizer."""
 
     def __init__(self, pipeline_hyperparameter_ranges, random_state=0):
-        """ Init SkOptTuner
+        """Init SkOptTuner
 
         Arguments:
-            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
+            pipeline_hyperparameter_ranges (dict): A set of hyperparameter ranges corresponding to a pipeline's parameters
             random_state (int): The random state. Defaults to 0.
         """
         super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         self.opt = Optimizer(self._search_space_ranges, "ET", acq_optimizer="sampling", random_state=random_state)
 
     def add(self, pipeline_parameters, score):
-        """ Add score to sample
+        """Add score to sample
 
         Arguments:
-            pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
-            score (float): the score obtained by evaluating the pipeline with the provided parameters
+            pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
+            score (float): The score obtained by evaluating the pipeline with the provided parameters
 
         Returns:
             None
@@ -54,7 +54,7 @@ class SKOptTuner(Tuner):
         """Returns a suggested set of parameters to train and score a pipeline with, based off the search space dimensions and prior samples.
 
         Returns:
-            dict: proposed pipeline parameters
+            dict: Proposed pipeline parameters
         """
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')

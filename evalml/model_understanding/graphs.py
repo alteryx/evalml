@@ -293,7 +293,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int): The random seed. Defaults to 0.
+        random_state (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         Mean feature importance scores over 5 shuffles.
@@ -483,19 +483,13 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        pipeline._estimator_type = "classifier"
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        pipeline._estimator_type = "regressor"
-    pipeline.feature_importances_ = pipeline.feature_importance
+
     if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
-    try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=features, grid_resolution=grid_resolution)
-    finally:
-        # Delete scikit-learn attributes that were temporarily set
-        del pipeline._estimator_type
-        del pipeline.feature_importances_
+
+    wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
         classes = [pipeline.classes_[1]]

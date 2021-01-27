@@ -303,12 +303,8 @@ def test_roc_curve_binary(data_type, make_data_type):
 
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
-    if data_type != 'np':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
-    if data_type == 'ww':
-        y_true = ww.DataColumn(y_true)
-        y_predict_proba = ww.DataTable(y_predict_proba)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
@@ -354,6 +350,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
     y_true_unique = y_true
     if data_type == 'ww':
         y_true_unique = y_true.to_series()
+
     for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
         tpr_rates = roc_curve_data[i].get('tpr_rates')
@@ -732,7 +729,7 @@ def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=20):
 def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
                                           logistic_regression_multiclass_pipeline_class,
-                                          linear_regression_pipeline_class):
+                                          linear_regression_pipeline_class, make_data_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -745,33 +742,11 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
         X, y = X_y_regression
         pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
 
-    if data_type != "np":
-        X = pd.DataFrame(X)
-    if data_type == "ww":
-        X = ww.DataTable(X)
-
+    X = make_data_type(data_type, X)
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().any(axis=None)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
-
-
-@patch('evalml.model_understanding.graphs.sk_partial_dependence')
-def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    pipeline.fit(X, y)
-    mock_part_dep.side_effect = Exception()
-    with pytest.raises(Exception):
-        partial_dependence(pipeline, X, features=0, grid_resolution=20)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
 
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):

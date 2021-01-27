@@ -13,13 +13,6 @@ from evalml.data_checks import (
 outliers_data_check_name = OutliersDataCheck.name
 
 
-def test_outliers_data_check_init():
-    outliers_check = OutliersDataCheck()
-    assert outliers_check.random_state == 0
-    outliers_check = OutliersDataCheck(random_state=2)
-    assert outliers_check.random_state == 2
-
-
 def test_outliers_data_check_warnings():
     a = np.arange(10) * 0.01
     data = np.tile(a, (100, 10))
