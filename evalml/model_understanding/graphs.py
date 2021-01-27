@@ -864,7 +864,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-        plotly.Figure showing the prediction vs actual over time.
+        plotly.Figure: Showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
@@ -884,3 +884,26 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
                         yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)
+
+
+def get_linear_coefficients(estimator, features=None):
+    """Returns a dataframe showing the features with the greatest predictive power for a linear model.
+
+    Arguments:
+        estimator (Estimator): Fitted linear model family estimator.
+        features (list[str]): List of feature names associated with the underlying data.
+
+    Returns:
+        pd.DataFrame: Displaying the features by importance.
+    """
+    if not estimator.model_family == ModelFamily.LINEAR_MODEL:
+        raise ValueError("Linear coefficients are only available for linear family models")
+    if not estimator._is_fitted:
+        raise NotFittedError("This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    coef_ = estimator.feature_importance
+    coef_ = pd.Series(coef_, name='Coefficients', index=features)
+    coef_ = coef_.sort_values()
+    coef_ = pd.Series(estimator._component_obj.intercept_, index=['Intercept']).append(coef_)
+
+    return coef_
