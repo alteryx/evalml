@@ -47,13 +47,11 @@ class XGBoostClassifier(Estimator):
 
     def predict(self, X):
         X = _rename_column_names_to_numeric(X)
-        predictions = super().predict(X)
-        return predictions
+        return super().predict(X)
 
     def predict_proba(self, X):
         X = _rename_column_names_to_numeric(X)
-        predictions = super().predict_proba(X)
-        return predictions
+        return super().predict_proba(X)
 
     @property
     def feature_importance(self):

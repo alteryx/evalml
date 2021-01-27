@@ -106,9 +106,10 @@ class LightGBMClassifier(Estimator):
     def predict(self, X):
         X_encoded = self._encode_categories(X)
         predictions = super().predict(X_encoded)
-        if self._label_encoder:
-            predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
-        return predictions
+        if not self._label_encoder:
+            return predictions
+        predictions = pd.Series(self._label_encoder.inverse_transform(predictions.to_series().astype(np.int64)))
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         X_encoded = self._encode_categories(X)

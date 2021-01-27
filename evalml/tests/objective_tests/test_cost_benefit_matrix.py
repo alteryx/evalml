@@ -31,10 +31,10 @@ def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
 
     pipeline = automl.best_pipeline
     pipeline.fit(X, y)
-    assert not np.isnan(pipeline.predict(X, cbm)).values.any()
-    assert not np.isnan(pipeline.predict_proba(X)).values.any()
+    predictions = pipeline.predict(X, cbm)
+    assert not np.isnan(predictions.to_series()).values.any()
+    assert not np.isnan(pipeline.predict_proba(X).to_dataframe()).values.any()
     assert not np.isnan(pipeline.score(X, y, [cbm])['Cost Benefit Matrix'])
-    assert not np.isnan(list(pipeline.predict(X, cbm))).any()
 
 
 @pytest.mark.parametrize("data_type", ['ww', 'pd'])

@@ -57,8 +57,8 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -89,11 +89,11 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -101,18 +101,17 @@ class Imputer(Transformer):
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:
-            return X_null_dropped
+            return _convert_to_woodwork_structure(X_null_dropped)
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
-            imputed = self._numeric_imputer.transform(X_numeric)
-            imputed.index = X_null_dropped.index
+            imputed = self._numeric_imputer.transform(X_numeric).to_dataframe()
             X_null_dropped[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X_null_dropped[self._categorical_cols]
-            imputed = self._categorical_imputer.transform(X_categorical)
-            imputed.index = X_null_dropped.index
+            imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
             X_null_dropped[X_categorical.columns] = imputed
 
+        X_null_dropped = _convert_to_woodwork_structure(X_null_dropped)
         return X_null_dropped

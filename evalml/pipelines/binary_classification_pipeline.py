@@ -1,6 +1,7 @@
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
+from evalml.utils import _convert_to_woodwork_structure
 
 
 class BinaryClassificationPipeline(ClassificationPipeline):
@@ -21,11 +22,11 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Estimated labels
+            ww.DataColumn: Estimated labels
         """
 
         if objective is not None:
@@ -35,20 +36,20 @@ class BinaryClassificationPipeline(ClassificationPipeline):
 
         if self.threshold is None:
             return self._component_graph.predict(X)
-        ypred_proba = self.predict_proba(X)
+        ypred_proba = self.predict_proba(X).to_dataframe()
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
-            return ypred_proba > self.threshold
-        return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+            return _convert_to_woodwork_structure(ypred_proba > self.threshold)
+        return _convert_to_woodwork_structure(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
 
     def predict_proba(self, X):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: probability estimates
+            ww.DataTable: Probability estimates
         """
         return super().predict_proba(X)
 
