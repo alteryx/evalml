@@ -361,3 +361,9 @@ workflows:
           filters:
             branches:
               only: main
+    build_conda_pkg_test:
+    jobs:
+      - shellcheck/check
+      - build_conda_pkg:
+          requires:
+            - shellcheck/check
