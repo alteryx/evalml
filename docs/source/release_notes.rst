@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.18.0 Jan. 26, 2021**
+    * Enhancements
         * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
         * Added validation checks for binary problems with regression-like datasets and multiclass problems without true multiclass targets in ``invalid_targets_data_check`` :pr:`1665`
         * Added time series support for ``make_pipeline`` :pr:`1566`
@@ -37,6 +45,7 @@ Release Notes
         * Fixed stacking argument ``n_jobs`` for IterativeAlgorithm :pr:`1706`
         * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
+        * Make AutoMLSearch pipelines pickle-able :pr:`1721`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
