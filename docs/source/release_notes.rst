@@ -11,6 +11,7 @@ Release Notes
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
     * Documentation Changes
+        * Add Twitter and Github link to documentation toolbar :pr:`1754`
     * Testing Changes
 
 
