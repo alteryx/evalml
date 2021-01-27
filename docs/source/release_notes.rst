@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
     * Fixes
     * Changes
     * Documentation Changes
