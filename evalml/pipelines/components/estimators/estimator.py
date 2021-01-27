@@ -1,8 +1,7 @@
 from abc import abstractmethod
 
-import pandas as pd
-
 from evalml.exceptions import MethodPropertyNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
@@ -23,6 +22,7 @@ class Estimator(ComponentBase):
     """
     # We can't use the inspect module to dynamically determine this because of issue 1582
     predict_uses_y = False
+    model_family = ModelFamily.NONE
 
     @property
     @classmethod
@@ -37,7 +37,7 @@ class Estimator(ComponentBase):
             X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.Series: Predicted values
+            ww.DataColumn: Predicted values
         """
         try:
             X = _convert_to_woodwork_structure(X)
@@ -45,9 +45,7 @@ class Estimator(ComponentBase):
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
-        if not isinstance(predictions, pd.Series):
-            predictions = pd.Series(predictions)
-        return predictions
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -56,7 +54,7 @@ class Estimator(ComponentBase):
             X (ww.DataTable, pd.DataFrame, or np.ndarray): Features
 
         Returns:
-            pd.DataFrame: Probability estimates
+            ww.DataTable: Probability estimates
         """
         try:
             X = _convert_to_woodwork_structure(X)
@@ -64,16 +62,14 @@ class Estimator(ComponentBase):
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
-        if not isinstance(pred_proba, pd.DataFrame):
-            pred_proba = pd.DataFrame(pred_proba)
-        return pred_proba
+        return _convert_to_woodwork_structure(pred_proba)
 
     @property
     def feature_importance(self):
         """Returns importance associated with each feature.
 
         Returns:
-            list(float): Importance associated with each feature
+            np.ndarray: Importance associated with each feature
         """
         try:
             return self._component_obj.feature_importances_

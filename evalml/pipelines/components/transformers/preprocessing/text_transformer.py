@@ -11,7 +11,7 @@ class TextTransformer(Transformer):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {}
         parameters.update(kwargs)

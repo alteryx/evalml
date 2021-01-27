@@ -22,7 +22,7 @@ class ClassificationPipeline(PipelineBase):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         self._encoder = LabelEncoder()
         super().__init__(parameters, random_state)
@@ -72,11 +72,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Estimated labels
+            ww.DataColumn: Estimated labels
         """
         return self._component_graph.predict(X)
 
@@ -88,10 +88,11 @@ class ClassificationPipeline(PipelineBase):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series : Estimated labels
+            ww.DataColumn: Estimated labels
         """
-        predictions = self._predict(X, objective)
-        return pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+        predictions = self._predict(X, objective).to_series()
+        predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -100,12 +101,12 @@ class ClassificationPipeline(PipelineBase):
             X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: Probability estimates
+            ww.DataTable: Probability estimates
         """
         X = self.compute_estimator_features(X, y=None)
-        proba = self.estimator.predict_proba(X)
+        proba = self.estimator.predict_proba(X).to_dataframe()
         proba.columns = self._encoder.classes_
-        return proba
+        return _convert_to_woodwork_structure(proba)
 
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives
@@ -122,17 +123,19 @@ class ClassificationPipeline(PipelineBase):
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)
-        y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
-
+        y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
+        if y_predicted is not None:
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        if y_predicted_proba is not None:
+            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
-    def _compute_predictions(self, X, objectives):
-        """Scan through the objectives list and precompute"""
+    def _compute_predictions(self, X, y, objectives, time_series=False):
+        """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
-        for objective in objectives:
-            if objective.score_needs_proba and y_predicted_proba is None:
-                y_predicted_proba = self.predict_proba(X)
-            if not objective.score_needs_proba and y_predicted is None:
-                y_predicted = self._predict(X)
+        if any(o.score_needs_proba for o in objectives):
+            y_predicted_proba = self.predict_proba(X, y) if time_series else self.predict_proba(X)
+        if any(not o.score_needs_proba for o in objectives):
+            y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)
         return y_predicted, y_predicted_proba

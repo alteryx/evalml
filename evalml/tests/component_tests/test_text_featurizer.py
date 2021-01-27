@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines.components import TextFeaturizer
 from evalml.utils.gen_utils import infer_feature_types
@@ -24,7 +26,7 @@ def test_featurizer_only_text(text_df):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert X_t.dtypes.all() == np.float64
+    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_featurizer_with_nontext(text_df):
@@ -47,7 +49,7 @@ def test_featurizer_with_nontext(text_df):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 11
-    assert X_t.dtypes.all() == np.float64
+    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_featurizer_no_text():
@@ -56,6 +58,39 @@ def test_featurizer_no_text():
     tf.fit(X)
     X_t = tf.transform(X)
     assert len(X_t.columns) == 2
+
+
+def test_some_missing_col_names(text_df, caplog):
+    X = text_df
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2', 'col_3'])
+
+    with caplog.at_level(logging.WARNING):
+        tf.fit(X)
+    assert "Columns ['col_3'] were not found in the given DataFrame, ignoring" in caplog.messages
+
+    expected_col_names = set(['DIVERSITY_SCORE(col_1)',
+                              'DIVERSITY_SCORE(col_2)',
+                              'LSA(col_1)[0]',
+                              'LSA(col_1)[1]',
+                              'LSA(col_2)[0]',
+                              'LSA(col_2)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(col_1)',
+                              'MEAN_CHARACTERS_PER_WORD(col_2)',
+                              'POLARITY_SCORE(col_1)',
+                              'POLARITY_SCORE(col_2)'])
+    X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
+    assert len(X_t.columns) == 10
+    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+
+
+def test_all_missing_col_names(text_df):
+    X = text_df
+    tf = TextFeaturizer(text_columns=['col_3', 'col_4'])
+
+    error_msg = "None of the provided text column names match the columns in the given DataFrame"
+    with pytest.raises(AttributeError, match=error_msg):
+        tf.fit(X)
 
 
 def test_empty_text_column():
@@ -94,7 +129,7 @@ def test_no_null_output():
     tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
-    assert not X_t.isnull().any().any()
+    assert not X_t.to_dataframe().isnull().any().any()
 
 
 def test_index_col_names():
@@ -117,7 +152,7 @@ def test_index_col_names():
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert X_t.dtypes.all() == np.float64
+    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_float_col_names():
@@ -144,7 +179,7 @@ def test_float_col_names():
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert X_t.dtypes.all() == np.float64
+    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_output_null():
@@ -159,7 +194,7 @@ def test_output_null():
     tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
-    assert not X_t.isnull().any().any()
+    assert not X_t.to_dataframe().isnull().any().any()
 
 
 def test_diversity_primitive_output():
@@ -170,10 +205,10 @@ def test_diversity_primitive_output():
     tf = TextFeaturizer()
     tf.fit(X)
 
-    expected_features = [1.0, 0.5, 0.75]
+    expected_features = pd.Series([1.0, 0.5, 0.75], name='DIVERSITY_SCORE(diverse)')
     X_t = tf.transform(X)
-    features = X_t['DIVERSITY_SCORE(diverse)']
-    np.testing.assert_almost_equal(features, expected_features)
+    features = X_t['DIVERSITY_SCORE(diverse)'].to_series()
+    assert_series_equal(expected_features, features)
 
 
 def test_lsa_primitive_output():
@@ -184,13 +219,13 @@ def test_lsa_primitive_output():
     tf = TextFeaturizer()
     tf.fit(X)
 
-    expected_features = [[0.832, 0.],
-                         [0., 1.],
-                         [0.832, 0.]]
+    expected_features = pd.DataFrame([[0.832, 0.],
+                                      [0., 1.],
+                                      [0.832, 0.]], columns=['LSA(lsa)[0]', 'LSA(lsa)[1]'])
     X_t = tf.transform(X)
     cols = [col for col in X_t.columns if 'LSA' in col]
     features = X_t[cols]
-    np.testing.assert_almost_equal(features, expected_features, decimal=3)
+    assert_frame_equal(expected_features, features.to_dataframe(), atol=1e-3)
 
 
 def test_mean_characters_primitive_output():
@@ -201,10 +236,10 @@ def test_mean_characters_primitive_output():
     tf = TextFeaturizer()
     tf.fit(X)
 
-    expected_features = [4.11764705882352, 3.45, 3.72727272727]
+    expected_features = pd.Series([4.11764705882352, 3.45, 3.72727272727], name='MEAN_CHARACTERS_PER_WORD(mean_characters)')
     X_t = tf.transform(X)
     features = X_t['MEAN_CHARACTERS_PER_WORD(mean_characters)']
-    np.testing.assert_almost_equal(features, expected_features)
+    assert_series_equal(expected_features, features.to_series())
 
 
 def test_polarity_primitive_output():
@@ -215,10 +250,10 @@ def test_polarity_primitive_output():
     tf = TextFeaturizer()
     tf.fit(X)
 
-    expected_features = [0.0, -0.214, 0.602]
+    expected_features = pd.Series([0.0, -0.214, 0.602], name='POLARITY_SCORE(polarity)')
     X_t = tf.transform(X)
     features = X_t['POLARITY_SCORE(polarity)']
-    np.testing.assert_almost_equal(features, expected_features)
+    assert_series_equal(expected_features, features.to_series())
 
 
 def test_featurizer_with_custom_indices(text_df):
@@ -227,4 +262,4 @@ def test_featurizer_with_custom_indices(text_df):
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
     tf.fit(X)
     X_t = tf.transform(X)
-    assert not X_t.isnull().any().any()
+    assert not X_t.to_dataframe().isnull().any().any()

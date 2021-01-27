@@ -36,6 +36,30 @@ Utilities to preprocess data before using evalml.
     split_data
 
 
+.. currentmodule:: evalml.exceptions
+
+Exceptions
+=============
+
+.. autosummary::
+    :toctree: generated
+    :template: class.rst
+    :nosignatures:
+
+    MethodPropertyNotFoundError
+    PipelineNotFoundError
+    ObjectiveNotFoundError
+    IllFormattedClassNameError
+    MissingComponentError
+    ComponentNotYetFittedError
+    PipelineNotYetFittedError
+    AutoMLSearchException
+    EnsembleMissingPipelinesError
+    PipelineScoreError
+    DataCheckInitError
+    NullsInColumnWarning
+
+
 .. currentmodule:: evalml.automl
 
 AutoML
@@ -229,6 +253,7 @@ Classifiers are components that output a predicted class label.
     BaselineClassifier
     StackedEnsembleClassifier
     DecisionTreeClassifier
+    KNeighborsClassifier
 
 Regressors
 -----------
@@ -247,7 +272,7 @@ Regressors are components that output a predicted target value.
     RandomForestRegressor
     XGBoostRegressor
     BaselineRegressor
-    TimeSeriesBaselineRegressor
+    TimeSeriesBaselineEstimator
     StackedEnsembleRegressor
     DecisionTreeRegressor
     LightGBMRegressor
@@ -272,6 +297,8 @@ Utility Methods
     get_prediction_vs_actual_over_time_data
     partial_dependence
     get_prediction_vs_actual_data
+    get_linear_coefficients
+    t_sne
 
 
 Graph Utility Methods
@@ -289,6 +316,7 @@ Graph Utility Methods
     graph_prediction_vs_actual
     graph_prediction_vs_actual_over_time
     graph_partial_dependence
+    graph_t_sne
 
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
@@ -316,7 +344,7 @@ Objective Base Classes
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_base_class.rst
     :nosignatures:
 
     ObjectiveBase
@@ -324,12 +352,13 @@ Objective Base Classes
     MulticlassClassificationObjective
     RegressionObjective
 
+
 Domain-Specific Objectives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     FraudCost
@@ -342,7 +371,7 @@ Classification Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     AccuracyBinary
@@ -377,7 +406,7 @@ Regression Objectives
 
 .. autosummary::
     :toctree: generated
-    :template: class.rst
+    :template: objective_class.rst
     :nosignatures:
 
     R2
@@ -476,6 +505,7 @@ Data Check Classes
     OutliersDataCheck
     NoVarianceDataCheck
     ClassImbalanceDataCheck
+    MulticollinearityDataCheck
 
 
 .. autosummary::
@@ -539,3 +569,4 @@ General Utils
     pad_with_nans
     drop_rows_with_nans
     infer_feature_types
+    save_plot

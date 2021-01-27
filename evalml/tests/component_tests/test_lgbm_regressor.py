@@ -29,31 +29,9 @@ def test_lightgbm_regressor_random_state_bounds_seed(X_y_regression):
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
     clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, LightGBMRegressor)
     clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
-    clf.fit(X, y)
-
-
-def test_lightgbm_regressor_random_state_bounds_rng(X_y_regression):
-    """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for lightgbm is in lightgbm's supported range"""
-
-    def make_mock_random_state(return_value):
-
-        class MockRandomState(np.random.RandomState):
-
-            def randint(self, min_bound, max_bound):
-                return return_value
-        return MockRandomState()
-
-    X, y = X_y_regression
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
-    rng = make_mock_random_state(LightGBMRegressor.SEED_MIN)
-    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=rng)
-    clf.fit(X, y)
-    rng = make_mock_random_state(LightGBMRegressor.SEED_MAX)
-    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=rng)
     clf.fit(X, y)
 
 
@@ -68,7 +46,7 @@ def test_fit_predict_regression(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=3)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
 
 
 def test_feature_importance(X_y_regression):
@@ -102,7 +80,7 @@ def test_fit_string_features(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=3)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')

@@ -38,7 +38,6 @@ class LightGBMClassifier(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, bagging_fraction=0.9, bagging_freq=0, **kwargs):
-        # lightGBM's current release doesn't currently support numpy.random.RandomState as the random_state value so we convert to int instead
         random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
 
         parameters = {"boosting_type": boosting_type,
@@ -91,7 +90,8 @@ class LightGBMClassifier(Estimator):
         return X_encoded
 
     def _encode_labels(self, y):
-        y_encoded = pd.Series(y)
+        y_encoded = _convert_to_woodwork_structure(y)
+        y_encoded = _convert_woodwork_types_wrapper(y_encoded.to_series())
         # change only if dtype isn't int
         if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()
@@ -106,9 +106,10 @@ class LightGBMClassifier(Estimator):
     def predict(self, X):
         X_encoded = self._encode_categories(X)
         predictions = super().predict(X_encoded)
-        if self._label_encoder:
-            predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
-        return predictions
+        if not self._label_encoder:
+            return predictions
+        predictions = pd.Series(self._label_encoder.inverse_transform(predictions.to_series().astype(np.int64)))
+        return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
         X_encoded = self._encode_categories(X)

@@ -18,7 +18,7 @@ class DFSTransformer(Transformer):
         Arguments:
             index (string): The name of the column that contains the indices. If no column with this name exists,
                 then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
-            random_state (int, np.random.RandomState): seed for the random number generator
+            random_state (int): Seed for the random number generator
         """
         parameters = {"index": index}
         if not isinstance(index, str):
@@ -31,7 +31,7 @@ class DFSTransformer(Transformer):
                          random_state=random_state)
 
     def _make_entity_set(self, X):
-        """Helper method that creates and returns the entity set given an input pandas DataFrame"""
+        """Helper method that creates and returns the entity set given the input data"""
         ft_es = EntitySet()
         if self.index not in X.columns:
             es = ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index=self.index, make_index=True)
@@ -40,11 +40,14 @@ class DFSTransformer(Transformer):
         return es
 
     def fit(self, X, y=None):
-        """Fits the DFSTransformer Transformer component
+        """Fits the DFSTransformer Transformer component.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+
+        Returns:
+            self
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -60,10 +63,14 @@ class DFSTransformer(Transformer):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): Ignored.
+
+        Returns:
+            ww.DataTable: Feature matrix
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X.columns = X.columns.astype(str)
         es = self._make_entity_set(X)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return feature_matrix
+        return _convert_to_woodwork_structure(feature_matrix)

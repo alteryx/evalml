@@ -3,7 +3,6 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['message_type'] %}
    {% set special_methods = ['__str__', '__eq__'] %}
 
 

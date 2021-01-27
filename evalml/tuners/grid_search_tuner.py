@@ -21,9 +21,9 @@ class GridSearchTuner(Tuner):
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            n_points: The number of points to sample from along each dimension
+            n_points (int): The number of points to sample from along each dimension
                 defined in the ``space`` argument
-            random_state: Unused in this class
+            random_state (int): Seed for random number generator. Unused in this class, defaults to 0.
         """
         super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
         raw_dimensions = list()
@@ -48,8 +48,6 @@ class GridSearchTuner(Tuner):
                     range_values = [int((x * delta) + low) for x in range(n_points)]
                 else:
                     range_values = [(x * delta) + low for x in range(n_points)]
-            else:
-                raise TypeError("Invalid dimension type in tuner")
             raw_dimensions.append(range_values)
         self._grid_points = itertools.product(*raw_dimensions)
         self.curr_params = None

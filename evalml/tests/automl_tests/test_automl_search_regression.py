@@ -1,3 +1,4 @@
+import pickle
 import time
 from unittest.mock import MagicMock, patch
 
@@ -8,9 +9,17 @@ from evalml import AutoMLSearch
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
-from evalml.pipelines import MeanBaselineRegressionPipeline, PipelineBase
+from evalml.pipelines import (
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesRegression,
+    MeanBaselineRegressionPipeline,
+    PipelineBase,
+    RegressionPipeline,
+    TimeSeriesBaselineRegressionPipeline
+)
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
+from evalml.preprocessing import TimeSeriesSplit
 from evalml.problem_types import ProblemTypes
 
 
@@ -280,3 +289,62 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regression):
+    X, y = X_y_regression
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration,
+                          max_batches=2)
+    automl.search()
+    assert isinstance(automl.data_splitter, TimeSeriesSplit)
+    for result in automl.results['pipeline_results'].values():
+        if result["id"] == 0:
+            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline
+            continue
+
+        assert result['parameters']['Delayed Feature Transformer'] == configuration
+        assert result['parameters']['pipeline'] == configuration
+
+
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score')
+def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression_fit, X_y_regression):
+    class RegressionPipelineCustoms(RegressionPipeline):
+        custom_name = "Custom Regression Name"
+        component_graph = ["Imputer", "Linear Regressor"]
+        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
+
+    X, y = X_y_regression
+    pipeline = GeneratedPipelineRegression
+
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
+    a.search()
+    a.add_to_rankings(RegressionPipelineCustoms({}))
+    seen_name = False
+    for i, row in a.rankings.iterrows():
+        automl_pipeline = a.get_pipeline(row['id'])
+        assert automl_pipeline.__class__ == pipeline
+        assert pickle.loads(pickle.dumps(automl_pipeline))
+        if automl_pipeline.custom_name == RegressionPipelineCustoms.custom_name:
+            seen_name = True
+            assert automl_pipeline.custom_hyperparameters == RegressionPipelineCustoms.custom_hyperparameters
+            assert automl_pipeline.component_graph == RegressionPipelineCustoms.component_graph
+    assert seen_name
+
+
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
+def test_automl_time_series_regression_pickle_generated_pipeline(mock_fit, mock_score, X_y_regression):
+    X, y = X_y_regression
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration)
+    a.search()
+
+    for i, row in a.rankings.iterrows():
+        assert a.get_pipeline(row['id']).__class__ == GeneratedPipelineTimeSeriesRegression
+        assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))

@@ -20,6 +20,7 @@ from evalml.model_understanding.graphs import (
     confusion_matrix,
     decision_tree_data_from_estimator,
     decision_tree_data_from_pipeline,
+    get_linear_coefficients,
     get_prediction_vs_actual_data,
     get_prediction_vs_actual_over_time_data,
     graph_binary_objective_vs_threshold,
@@ -30,23 +31,29 @@ from evalml.model_understanding.graphs import (
     graph_prediction_vs_actual,
     graph_prediction_vs_actual_over_time,
     graph_roc_curve,
+    graph_t_sne,
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
     roc_curve,
+    t_sne,
     visualize_decision_tree
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ClassificationPipeline,
+    DecisionTreeRegressor,
+    ElasticNetRegressor,
+    LinearRegressor,
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    get_random_state
 )
 
 
@@ -203,7 +210,7 @@ def test_confusion_matrix_labels(data_type, make_data_type):
 @pytest.fixture
 def binarized_ys(X_y_multi):
     _, y_true = X_y_multi
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_tr = label_binarize(y_true, classes=[0, 1, 2])
     y_pred_proba = y_tr * rs.random(y_tr.shape)
     return y_true, y_tr, y_pred_proba
@@ -245,7 +252,7 @@ def test_precision_recall_curve(data_type, make_data_type):
 def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     X = make_data_type(data_type, X)
     y_true = make_data_type(data_type, y_true)
@@ -265,7 +272,7 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
 def test_graph_precision_recall_curve_title_addition(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_precision_recall_curve(y_true, y_pred_proba, title_addition='with added title text')
     assert isinstance(fig, type(go.Figure()))
@@ -298,12 +305,8 @@ def test_roc_curve_binary(data_type, make_data_type):
 
     y_true = np.array([1, 1, 0, 0])
     y_predict_proba = np.array([[0.9, 0.1], [0.6, 0.4], [0.65, 0.35], [0.2, 0.8]])
-    if data_type != 'np':
-        y_true = pd.Series(y_true)
-        y_predict_proba = pd.DataFrame(y_predict_proba)
-    if data_type == 'ww':
-        y_true = ww.DataColumn(y_true)
-        y_predict_proba = ww.DataTable(y_predict_proba)
+    y_predict_proba = make_data_type(data_type, y_predict_proba)
+    y_true = make_data_type(data_type, y_true)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]
     fpr_rates = roc_curve_data.get('fpr_rates')
@@ -349,6 +352,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
     y_true_unique = y_true
     if data_type == 'ww':
         y_true_unique = y_true.to_series()
+
     for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
         tpr_rates = roc_curve_data[i].get('tpr_rates')
@@ -367,7 +371,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
 def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     y_true = make_data_type(data_type, y_true)
     y_pred_proba = make_data_type(data_type, y_pred_proba)
@@ -444,7 +448,7 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
 def test_graph_roc_curve_title_addition(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
     fig = graph_roc_curve(y_true, y_pred_proba, title_addition='with added title text')
     assert isinstance(fig, type(go.Figure()))
@@ -456,7 +460,7 @@ def test_graph_roc_curve_title_addition(X_y_binary):
 def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     y_true = make_data_type(data_type, y_true)
     y_pred = make_data_type(data_type, y_pred)
@@ -487,7 +491,7 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
 def test_graph_confusion_matrix_norm_disabled(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred, normalize_method=None)
     assert isinstance(fig, type(go.Figure()))
@@ -511,7 +515,7 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary):
 def test_graph_confusion_matrix_title_addition(X_y_binary):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y_true = X_y_binary
-    rs = np.random.RandomState(42)
+    rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
     fig = graph_confusion_matrix(y_true, y_pred, title_addition='with added title text')
     assert isinstance(fig, type(go.Figure()))
@@ -521,7 +525,7 @@ def test_graph_confusion_matrix_title_addition(X_y_binary):
 
 def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = linear_regression_pipeline_class(parameters={}, random_state=42)
     with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
         calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
@@ -534,7 +538,7 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
     y = make_data_type(data_type, y)
 
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=np.random.RandomState(42))
+                                                         random_state=42)
     pipeline.fit(X, y)
     for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -546,7 +550,7 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
                                                multiclass_core_objectives):
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                             random_state=np.random.RandomState(42))
+                                                             random_state=42)
     pipeline.fit(X, y)
     for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -558,7 +562,7 @@ def test_get_permutation_importance_regression(linear_regression_pipeline_class,
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
-                                                random_state=np.random.RandomState(42))
+                                                random_state=42)
     pipeline.fit(X, y)
 
     for objective in regression_core_objectives:
@@ -573,7 +577,7 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     X["correlated"] = y * 2
     X["not correlated"] = [-1, -1, -1, 0]
     y = y.astype(bool)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=np.random.RandomState(42))
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=42)
     pipeline.fit(X, y)
     importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=0)
     assert list(importance.columns) == ["feature", "importance"]
@@ -727,7 +731,7 @@ def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=20):
 def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X_y_multi, X_y_regression,
                                           logistic_regression_binary_pipeline_class,
                                           logistic_regression_multiclass_pipeline_class,
-                                          linear_regression_pipeline_class):
+                                          linear_regression_pipeline_class, make_data_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -740,40 +744,18 @@ def test_partial_dependence_problem_types(data_type, problem_type, X_y_binary, X
         X, y = X_y_regression
         pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
 
-    if data_type != "np":
-        X = pd.DataFrame(X)
-    if data_type == "ww":
-        X = ww.DataTable(X)
-
+    X = make_data_type(data_type, X)
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().any(axis=None)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
-
-
-@patch('evalml.model_understanding.graphs.sk_partial_dependence')
-def test_partial_dependence_error_still_deletes_attributes(mock_part_dep, X_y_binary, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    pipeline.fit(X, y)
-    mock_part_dep.side_effect = Exception()
-    with pytest.raises(Exception):
-        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
-    with pytest.raises(AttributeError):
-        pipeline._estimator_type
-    with pytest.raises(AttributeError):
-        pipeline.feature_importances_
 
 
 def test_partial_dependence_string_feature_name(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, feature="mean radius", grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features="mean radius", grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
     assert len(part_dep["partial_dependence"]) == 20
     assert len(part_dep["feature_values"]) == 20
@@ -788,13 +770,13 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
     y = [0, 0.2, 1.4, 1]
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, feature='numeric')
+    part_dep = partial_dependence(pipeline, X, features='numeric')
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 4
     assert len(part_dep["feature_values"]) == 4
     assert not part_dep.isnull().any(axis=None)
 
-    part_dep = partial_dependence(pipeline, X, feature='string')
+    part_dep = partial_dependence(pipeline, X, features='string')
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 3
     assert len(part_dep["feature_values"]) == 3
@@ -810,7 +792,7 @@ def test_partial_dependence_baseline():
     pipeline = BaselineTestPipeline({})
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Partial dependence plots are not supported for Baseline pipelines"):
-        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=20)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -832,7 +814,7 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi, has_mi
 
         pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
-        part_dep = partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
         check_partial_dependence_dataframe(pipeline, part_dep)
         assert not part_dep.isnull().all().all()
 
@@ -840,7 +822,7 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi, has_mi
         X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
         pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y_small)
-        part_dep = partial_dependence(pipeline, X, feature='string')
+        part_dep = partial_dependence(pipeline, X, features='string')
         check_partial_dependence_dataframe(pipeline, part_dep, grid_size=3)
         assert not part_dep.isnull().all().all()
 
@@ -870,20 +852,49 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
     X = X.rename(columns={0: '<[0]'})
     pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, feature="<[0]", grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features="<[0]", grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
-    part_dep = partial_dependence(pipeline, X, feature=1, grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
+
+
+def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
+    X, y = load_wine()
+    pipeline = logistic_regression_multiclass_pipeline_class(
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+
+    num_classes = y.to_series().nunique()
+    grid_resolution = 20
+
+    one_way_part_dep = partial_dependence(pipeline=pipeline,
+                                          X=X,
+                                          features="magnesium",
+                                          grid_resolution=grid_resolution)
+    assert "class_label" in one_way_part_dep.columns
+    assert one_way_part_dep["class_label"].nunique() == num_classes
+    assert len(one_way_part_dep.index) == num_classes * grid_resolution
+    assert list(one_way_part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+
+    two_way_part_dep = partial_dependence(pipeline=pipeline,
+                                          X=X,
+                                          features=("magnesium", "alcohol"),
+                                          grid_resolution=grid_resolution)
+
+    assert "class_label" in two_way_part_dep.columns
+    assert two_way_part_dep["class_label"].nunique() == num_classes
+    assert len(two_way_part_dep.index) == num_classes * grid_resolution
+    assert len(two_way_part_dep.columns) == grid_resolution + 1
 
 
 def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     with pytest.raises(ValueError, match="Pipeline to calculate partial dependence for must be fitted"):
-        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=20)
 
 
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
@@ -892,10 +903,23 @@ def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
-        partial_dependence(pipeline, X, feature=0, grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=20)
 
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
-        partial_dependence(pipeline, X, feature='a', grid_resolution=20)
+        partial_dependence(pipeline, X, features='a', grid_resolution=20)
+
+
+def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
+    X = pd.DataFrame({'a': [2, None, 2, 2], 'b': [1, 2, 2, 1], 'c': [0, 0, 0, 0]})
+    y = pd.Series([0, 1, 0, 1])
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+
+    with pytest.raises(ValueError, match="Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported."):
+        partial_dependence(pipeline, X, features=('a', 'b', 'c'), grid_resolution=20)
+
+    with pytest.raises(ValueError, match="Features provided must be a tuple entirely of integers or strings, not a mixture of both."):
+        partial_dependence(pipeline, X, features=(0, 'b'))
 
 
 def test_graph_partial_dependence(test_pipeline):
@@ -904,16 +928,35 @@ def test_graph_partial_dependence(test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
+    fig = graph_partial_dependence(clf, X, features='mean radius', grid_resolution=20)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius'"
     assert len(fig_dict['data']) == 1
     assert fig_dict['data'][0]['name'] == "Partial Dependence"
 
-    part_dep_data = partial_dependence(clf, X, feature='mean radius', grid_resolution=20)
+    part_dep_data = partial_dependence(clf, X, features='mean radius', grid_resolution=20)
     assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data['feature_values'])
     assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data['partial_dependence'].values)
+
+
+def test_graph_two_way_partial_dependence(test_pipeline):
+    X, y = load_breast_cancer()
+
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    clf = test_pipeline
+    clf.fit(X, y)
+    fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius' vs. 'mean area'"
+    assert len(fig_dict['data']) == 1
+    assert fig_dict['data'][0]['name'] == "Partial Dependence"
+
+    part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data.index)
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data.columns)
+    assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data.values)
 
 
 def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
@@ -921,9 +964,11 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     X, y = load_wine()
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
-    fig = graph_partial_dependence(pipeline, X, feature='magnesium', grid_resolution=20)
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
+
+    # Test one-way without class labels
+    fig_one_way_no_class_labels = graph_partial_dependence(pipeline, X, features='magnesium', grid_resolution=20)
+    assert isinstance(fig_one_way_no_class_labels, go.Figure)
+    fig_dict = fig_one_way_no_class_labels.to_dict()
     assert len(fig_dict['data']) == len(pipeline.classes_)
     for data, label in zip(fig_dict['data'], pipeline.classes_):
         assert len(data['x']) == 20
@@ -935,10 +980,10 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
         for axis_type in ['x', 'y']:
             assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
-    fig = graph_partial_dependence(pipeline, X, feature='magnesium', class_label='class_1', grid_resolution=20)
-
-    assert isinstance(fig, go.Figure)
-    fig_dict = fig.to_dict()
+    # Test one-way with class labels
+    fig_one_way_class_labels = graph_partial_dependence(pipeline, X, features='magnesium', class_label='class_1', grid_resolution=20)
+    assert isinstance(fig_one_way_class_labels, go.Figure)
+    fig_dict = fig_one_way_class_labels.to_dict()
     assert len(fig_dict['data']) == 1
     assert len(fig_dict['data'][0]['x']) == 20
     assert len(fig_dict['data'][0]['y']) == 20
@@ -946,7 +991,34 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
     with pytest.raises(ValueError, match=msg):
-        graph_partial_dependence(pipeline, X, feature='alcohol', class_label='wine')
+        graph_partial_dependence(pipeline, X, features='alcohol', class_label='wine')
+
+    # Test two-way without class labels
+    fig_two_way_no_class_labels = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), grid_resolution=20)
+    assert isinstance(fig_two_way_no_class_labels, go.Figure)
+    fig_dict = fig_two_way_no_class_labels.to_dict()
+    assert len(fig_dict['data']) == 3, "Figure does not have partial dependence data for each class."
+    assert all([len(fig_dict["data"][i]['x']) == 20 for i in range(3)])
+    assert all([len(fig_dict["data"][i]['y']) == 20 for i in range(3)])
+    assert [fig_dict["data"][i]['name'] for i in range(3)] == ["class_0", "class_1", "class_2"]
+
+    # Check that all the subplots axes have the same range
+    for suplot_1_axis, suplot_2_axis in [('axis2', 'axis3'), ('axis2', 'axis4'), ('axis3', 'axis4')]:
+        for axis_type in ['x', 'y']:
+            assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
+
+    # Test two-way with class labels
+    fig_two_way_class_labels = graph_partial_dependence(pipeline, X, features=('magnesium', 'alcohol'), class_label='class_1', grid_resolution=20)
+    assert isinstance(fig_two_way_class_labels, go.Figure)
+    fig_dict = fig_two_way_class_labels.to_dict()
+    assert len(fig_dict['data']) == 1
+    assert len(fig_dict['data'][0]['x']) == 20
+    assert len(fig_dict['data'][0]['y']) == 20
+    assert fig_dict['data'][0]['name'] == 'class_1'
+
+    msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
+    with pytest.raises(ValueError, match=msg):
+        graph_partial_dependence(pipeline, X, features='alcohol', class_label='wine')
 
 
 @patch('evalml.model_understanding.graphs.jupyter_check')
@@ -967,15 +1039,15 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, feature=0, grid_resolution=20)
-        assert len(graph_valid) == 0
+        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
+        assert len(graph_valid) == 1  # scikit-learn partial_dependence warning
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
         graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm)
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
-        rs = np.random.RandomState(42)
+        rs = get_random_state(42)
         y_pred_proba = y * rs.random(y.shape)
         graph_precision_recall_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
@@ -989,7 +1061,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
-        rs = np.random.RandomState(42)
+        rs = get_random_state(42)
         y_pred_proba = y * rs.random(y.shape)
         graph_roc_curve(y, y_pred_proba)
         assert len(graph_valid) == 0
@@ -997,7 +1069,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
 
     Xr, yr = X_y_regression
     with pytest.warns(None) as graph_valid:
-        rs = np.random.RandomState(42)
+        rs = get_random_state(42)
         y_preds = yr * rs.random(yr.shape)
         graph_prediction_vs_actual(yr, y_preds)
         assert len(graph_valid) == 0
@@ -1284,7 +1356,7 @@ def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
     est_class, _ = fitted_tree_estimators
     filepath = os.path.join(str(tmpdir), 'test_0.xyz')
     with pytest.raises(ValueError, match=f"Unknown format 'xyz'. Make sure your format is one of the following: "
-                                         f"{graphviz.backend.FORMATS}"):
+                       f"{graphviz.backend.FORMATS}"):
         visualize_decision_tree(estimator=est_class, filepath=filepath)
 
 
@@ -1327,3 +1399,108 @@ def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
     src = visualize_decision_tree(estimator=est_reg, filled=True, max_depth=2)
     assert src.format == 'pdf'
     assert isinstance(src, graphviz.Source)
+
+
+def test_linear_coefficients_errors():
+    dt = DecisionTreeRegressor()
+
+    with pytest.raises(ValueError, match="Linear coefficients are only available for linear family models"):
+        get_linear_coefficients(dt)
+
+    lin = LinearRegressor()
+
+    with pytest.raises(ValueError, match="This linear estimator is not fitted yet."):
+        get_linear_coefficients(lin)
+
+
+@pytest.mark.parametrize("estimator", [LinearRegressor, ElasticNetRegressor])
+def test_linear_coefficients_output(estimator):
+    X = pd.DataFrame([[1, 2, 3, 5],
+                      [3, 5, 2, 1],
+                      [5, 2, 2, 2],
+                      [3, 2, 3, 3]], columns=['First', 'Second', 'Third', 'Fourth'])
+    y = pd.Series([2, 1, 3, 4])
+
+    est_ = estimator()
+    est_.fit(X, y)
+
+    output_ = get_linear_coefficients(est_, features=['First', 'Second', 'Third', 'Fourth'])
+
+    if estimator.name == 'Linear Regressor':
+        assert (output_.index == ['Intercept', 'Second', 'Fourth', 'First', 'Third']).all()
+    elif estimator.name == 'Elastic Net Regressor':
+        assert (output_.index == ['Intercept', 'Second', 'Third', 'Fourth', 'First']).all()
+    assert output_.shape[0] == X.shape[1] + 1
+    assert (pd.Series(est_._component_obj.intercept_, index=['Intercept']).append(pd.Series(est_.feature_importance).sort_values()) == output_.values).all()
+
+
+@pytest.mark.parametrize("n_components", [2.0, -2, 0])
+def test_t_sne_errors_n_components(n_components):
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter n_components must be of type integer and greater than 0"):
+        t_sne(X, n_components=n_components)
+
+
+@pytest.mark.parametrize("perplexity", [-2, -1.2])
+def test_t_sne_errors_perplexity(perplexity):
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter perplexity must be non-negative"):
+        t_sne(X, perplexity=perplexity)
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_t_sne(data_type):
+    if data_type == 'np':
+        X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'pd':
+        X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'ww':
+        X = ww.DataTable(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
+
+    output_ = t_sne(X, n_components=2, perplexity=50, learning_rate=200.0)
+    assert isinstance(output_, np.ndarray)
+
+
+@pytest.mark.parametrize("marker_line_width", [-2, -1.2])
+def test_t_sne_errors_marker_line_width(marker_line_width, has_minimal_dependencies):
+    if has_minimal_dependencies:
+        pytest.skip("Skipping plotting test because plotly not installed")
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter marker_line_width must be non-negative"):
+        graph_t_sne(X, marker_line_width=marker_line_width)
+
+
+@pytest.mark.parametrize("marker_size", [-2, -1.2])
+def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
+    if has_minimal_dependencies:
+        pytest.skip("Skipping plotting test because plotly not installed")
+    X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+
+    with pytest.raises(ValueError, match=f"The parameter marker_size must be non-negative"):
+        graph_t_sne(X, marker_size=marker_size)
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("perplexity", [0, 4.6, 100])
+@pytest.mark.parametrize("learning_rate", [100.0, -15, 0])
+def test_graph_t_sne(data_type, perplexity, learning_rate):
+    go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+    if data_type == 'np':
+        X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'pd':
+        X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+    elif data_type == 'ww':
+        X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
+        X = _convert_to_woodwork_structure(X)
+
+    for width_, size_ in [(3, 2), (2, 3), (1, 4)]:
+        fig = graph_t_sne(X, n_components=2, perplexity=perplexity, learning_rate=learning_rate, marker_line_width=width_, marker_size=size_)
+        assert isinstance(fig, go.Figure)
+        fig_dict_data = fig.to_dict()['data'][0]
+        assert fig_dict_data['marker']['line']['width'] == width_
+        assert fig_dict_data['marker']['size'] == size_
+        assert fig_dict_data['mode'] == 'markers'
+        assert fig_dict_data['type'] == 'scatter'

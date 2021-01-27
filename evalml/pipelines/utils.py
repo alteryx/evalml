@@ -1,6 +1,14 @@
 import json
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .generated_pipelines import (
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression
+)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -30,7 +38,11 @@ from evalml.pipelines.components import (  # noqa: F401
     TextFeaturizer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_time_series
+)
 from evalml.utils import get_logger
 from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
@@ -67,7 +79,7 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
-    if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+    if is_time_series(problem_type):
         pp_components.append(DelayedFeatureTransformer)
 
     categorical_cols = X.select('category')
@@ -135,6 +147,26 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     return GeneratedPipeline
 
 
+def get_generated_pipeline_class(problem_type):
+    """Returns the class for the generated pipeline based on the problem type
+
+    Arguments:
+        problem_type (ProblemTypes): The problem_type that the pipeline is for
+
+    Returns:
+        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
+    """
+    try:
+        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
+                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
+                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
+                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
+                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
+                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
+    except KeyError:
+        raise ValueError("ProblemType {} not recognized".format(problem_type))
+
+
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
     """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
@@ -145,7 +177,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
-        random_state (int or np.random.RandomState): Random state used to intialize the pipeline.
+        random_state (int): Random seed used to intialize the pipeline.
 
     Returns:
         Pipeline instance with component instances and specified estimator created from given random state.
@@ -190,7 +222,7 @@ def generate_pipeline_code(element):
     if isinstance(element.component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
 
-    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element._component_graph])
+    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element])
     code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []
@@ -220,7 +252,7 @@ def generate_pipeline_code(element):
     return "\n".join(code_strings)
 
 
-def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=0):
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, random_state=0):
     """
     Creates a pipeline with a stacked ensemble estimator.
 
@@ -228,15 +260,18 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
+        n_jobs (int or None): Integer describing level of parallelism used for pipelines.
+            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+            Defaults to -1.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Classification Pipeline",
                                              random_state=random_state)
     else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
                                              random_state=random_state)

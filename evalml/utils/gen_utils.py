@@ -105,18 +105,6 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
     return random_state
 
 
-def check_random_state_equality(random_state, other_random_state):
-    """Method to check for equality of two numpy.random.RandomState objects"""
-    for self_rs_attr, other_rs_attr in zip(random_state.get_state(), other_random_state.get_state()):
-        if isinstance(self_rs_attr, np.ndarray) and isinstance(other_rs_attr, np.ndarray):
-            if not (self_rs_attr == other_rs_attr).all():
-                return False
-        else:
-            if not (self_rs_attr == other_rs_attr):
-                return False
-    return True
-
-
 class classproperty:
     """Allows function to be accessed as a class level property.
         Example:
@@ -167,11 +155,12 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineRegressor',
+_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineEstimator',
                        'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
-                       'TimeSeriesBaselineRegressionPipeline'}
+                       'TimeSeriesBaselineRegressionPipeline', 'TimeSeriesBaselineBinaryPipeline',
+                       'TimeSeriesBaselineMulticlassPipeline', 'KNeighborsClassifier'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
@@ -219,7 +208,7 @@ def _rename_column_names_to_numeric(X):
         Transformed X where column names are renamed to numerical values
     """
     X_t = X
-    if isinstance(X, np.ndarray):
+    if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
     if isinstance(X, ww.DataTable):
         X_t = X.to_dataframe()

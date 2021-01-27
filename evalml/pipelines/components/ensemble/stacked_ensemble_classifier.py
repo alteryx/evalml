@@ -19,7 +19,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     _default_cv = StratifiedKFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
-                 cv=None, n_jobs=1, random_state=0, **kwargs):
+                 cv=None, n_jobs=-1, random_state=0, **kwargs):
         """Stacked ensemble classifier.
 
         Arguments:
@@ -29,6 +29,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. Defaults to None.
                 Possible inputs for cv are:
+
                 - None: 3-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object
@@ -37,7 +38,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
                 Defaults to None.
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
-            random_state (int, np.random.RandomState): seed for the random number generator
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
                          cv=cv, n_jobs=n_jobs, random_state=random_state, **kwargs)

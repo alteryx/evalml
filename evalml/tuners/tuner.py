@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from skopt.space import Categorical, Integer, Real
+
 
 class Tuner(ABC):
     """Defines API for Tuners.
@@ -12,7 +14,7 @@ class Tuner(ABC):
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state (int, np.random.RandomState): The random state
+            random_state (int): The random state. Defaults to 0.
         """
         self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
         self._parameter_names_map = dict()
@@ -28,6 +30,8 @@ class Tuner(ABC):
                 if parameter_range is None:
                     raise ValueError('pipeline_hyperparameter_ranges has invalid dimensions for ' +
                                      '{} parameter {}: None.'.format(component_name, parameter_name))
+                if not isinstance(parameter_range, (Real, Integer, Categorical, list, tuple)):
+                    continue
                 flat_parameter_name = '{}: {}'.format(component_name, parameter_name)
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)
@@ -53,7 +57,7 @@ class Tuner(ABC):
 
     @abstractmethod
     def add(self, pipeline_parameters, score):
-        """ Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.
+        """Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.
 
         Arguments:
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
@@ -68,12 +72,11 @@ class Tuner(ABC):
         """Returns a suggested set of parameters to train and score a pipeline with, based off the search space dimensions and prior samples.
 
         Returns:
-            dict: proposed pipeline parameters
+            dict: Proposed pipeline parameters
         """
 
     def is_search_space_exhausted(self):
-        """ Optional. If possible search space for tuner is finite, this method indicates
-        whether or not all possible parameters have been scored.
+        """Optional. If possible search space for tuner is finite, this method indicates whether or not all possible parameters have been scored.
 
         Returns:
             bool: Returns true if all possible parameters in a search space has been scored.

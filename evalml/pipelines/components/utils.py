@@ -9,7 +9,10 @@ from evalml.model_family.utils import handle_model_family
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_logger
-from evalml.utils.gen_utils import get_importable_subclasses
+from evalml.utils.gen_utils import (
+    _convert_woodwork_types_wrapper,
+    get_importable_subclasses
+)
 
 logger = get_logger(__file__)
 
@@ -119,6 +122,11 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
+        self._estimator_type = "classifier"
+        if pipeline._is_fitted:
+            self.feature_importances_ = pipeline.feature_importance
+            self._is_fitted = True
+            self.classes_ = pipeline.classes_
 
     def fit(self, X, y):
         """Fits component to data
@@ -141,24 +149,25 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame): Features
 
         Returns:
-            pd.Series: Predicted values
+            np.ndarray: Predicted values
         """
         check_is_fitted(self, 'is_fitted_')
-        return self.pipeline.predict(X).to_numpy()
+
+        return _convert_woodwork_types_wrapper(self.pipeline.predict(X).to_series()).to_numpy()
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame): Features
 
         Returns:
-            pd.DataFrame: Probability estimates
+            np.ndarray: Probability estimates
         """
-        return self.pipeline.predict_proba(X).to_numpy()
+        return _convert_woodwork_types_wrapper(self.pipeline.predict_proba(X).to_dataframe()).to_numpy()
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):
@@ -172,13 +181,17 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
+        self._estimator_type = "regressor"
+        if pipeline._is_fitted:
+            self.feature_importances_ = pipeline.feature_importance
+            self._is_fitted = True
 
     def fit(self, X, y):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -190,12 +203,12 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Features
+            X (ww.DataTable, pd.DataFrame): Features
 
         Returns:
-            pd.Series: Predicted values
+            np.ndarray: Predicted values
         """
-        return self.pipeline.predict(X).to_numpy()
+        return self.pipeline.predict(X).to_series().to_numpy()
 
 
 def scikit_learn_wrapped_estimator(evalml_obj):

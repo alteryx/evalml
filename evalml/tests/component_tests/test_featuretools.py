@@ -4,6 +4,7 @@ import featuretools as ft
 import pandas as pd
 import pytest
 import woodwork as ww
+from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import DFSTransformer
 
@@ -27,13 +28,14 @@ def test_numeric_columns(X_y_multi):
 
 @patch('evalml.pipelines.components.transformers.preprocessing.featuretools.dfs')
 @patch('evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix')
-def test_index(mock_dfs, mock_calculate_feature_matrix, X_y_multi):
+def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     X, y = X_y_multi
     X_pd = pd.DataFrame(X)
     X_new_index = X_pd.copy()
     index = [i for i in range(len(X))]
     new_index = [i * 2 for i in index]
     X_new_index['index'] = new_index
+    mock_calculate_feature_matrix.return_value = pd.DataFrame({})
 
     # check if _make_entity_set keeps the intended index
     feature = DFSTransformer()
@@ -61,13 +63,13 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         X_pd.columns = X_pd.columns.astype(str)
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id="X", dataframe=X_pd, index='index', make_index=True)
-        matrix, features = ft.dfs(entityset=es, target_entity="X")
+        feature_matrix, features = ft.dfs(entityset=es, target_entity="X")
 
         feature = DFSTransformer()
         feature.fit(X)
-        X_feature_matrix = feature.transform(X)
+        X_t = feature.transform(X)
 
-        pd.testing.assert_frame_equal(matrix, X_feature_matrix)
+        assert_frame_equal(feature_matrix, X_t.to_dataframe())
         assert features == feature.features
 
         feature.fit(X, y)
@@ -89,10 +91,10 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
 
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id="X", dataframe=X_transform, index='index', make_index=True)
-        matrix, features = ft.dfs(entityset=es, target_entity="X")
+        feature_matrix, features = ft.dfs(entityset=es, target_entity="X")
 
         feature = DFSTransformer()
         feature.fit(X_fit)
-        X_feature_matrix = feature.transform(X_transform)
+        X_t = feature.transform(X_transform)
 
-        pd.testing.assert_frame_equal(matrix, X_feature_matrix)
+        assert_frame_equal(feature_matrix, X_t.to_dataframe())
