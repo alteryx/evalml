@@ -7,6 +7,7 @@ Release Notes
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
     * Fixes
+        * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
     * Documentation Changes
