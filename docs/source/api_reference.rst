@@ -298,6 +298,7 @@ Utility Methods
     partial_dependence
     get_prediction_vs_actual_data
     get_linear_coefficients
+    t_sne
 
 
 Graph Utility Methods
@@ -315,6 +316,7 @@ Graph Utility Methods
     graph_prediction_vs_actual
     graph_prediction_vs_actual_over_time
     graph_partial_dependence
+    graph_t_sne
 
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations

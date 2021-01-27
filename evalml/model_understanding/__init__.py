@@ -13,10 +13,12 @@ from .graphs import (
     graph_prediction_vs_actual,
     graph_prediction_vs_actual_over_time,
     graph_roc_curve,
+    graph_t_sne,
     normalize_confusion_matrix,
     partial_dependence,
     precision_recall_curve,
-    roc_curve
+    roc_curve,
+    t_sne
 )
 from .prediction_explanations import (
     explain_prediction,

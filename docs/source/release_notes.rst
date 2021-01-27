@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
     * Fixes
     * Changes
