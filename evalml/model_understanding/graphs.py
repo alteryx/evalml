@@ -894,10 +894,10 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
 
 def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
-    """Get the transformed output after fitting X to the embedded space.
+    """Get the transformed output after fitting X to the embedded space using t-SNE.
 
      Arguments:
-        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed.
+        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
         algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
@@ -921,10 +921,10 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
 
 
 def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7, **kwargs):
-    """Visualization tool for high dimensional data.
+    """Plot high dimensional data into lower dimensional space using t-SNE .
 
     Arguments:
-        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed.
+        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
         algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
@@ -939,8 +939,6 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
 
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
-    if jupyter_check():
-        import_or_raise("ipywidgets", warning=True)
 
     if not marker_line_width >= 0:
         raise ValueError("The parameter marker_line_width must be non-negative")
@@ -949,13 +947,10 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
 
     X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
 
-    xx, yy = np.meshgrid(X, X)
-    color = xx.ravel()
     fig = _go.Figure()
     fig.add_trace(_go.Scatter(
         x=X_embedded[:, 0], y=X_embedded[:, 1],
-        mode='markers',
-        marker_color=color
+        mode='markers'
     ))
     fig.update_traces(mode='markers', marker_line_width=marker_line_width, marker_size=marker_size)
     fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)

@@ -1483,7 +1483,6 @@ def test_graph_t_sne(data_type, perplexity, learning_rate):
     elif data_type == 'ww':
         X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
     for width_, size_ in [(3, 2), (2, 3), (1, 4)]:
         fig = graph_t_sne(X, n_components=2, perplexity=perplexity, learning_rate=learning_rate, marker_line_width=width_, marker_size=size_)
