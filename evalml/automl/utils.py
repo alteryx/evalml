@@ -64,4 +64,3 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             raise ValueError("problem_configuration is required for time series problem types")
         return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
                                max_delay=problem_configuration.get('max_delay'))
-    return None
