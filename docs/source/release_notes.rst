@@ -36,7 +36,7 @@ Release Notes
         * Fixed stacking argument ``n_jobs`` for IterativeAlgorithm :pr:`1706`
         * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
-        * Remove ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
+        * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
