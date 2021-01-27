@@ -13,6 +13,10 @@ from evalml.utils import (
     import_or_raise
 )
 
+from evalml.utils import get_random_seed, import_or_raise
+from evalml.pipelines.components.transformers import PCA, LinearDiscriminantAnalysis
+from evalml.pipelines.components.utils import all_components
+
 
 class ComponentGraph:
     def __init__(self, component_dict=None, random_state=0):
@@ -33,6 +37,7 @@ class ComponentGraph:
             self.component_instances[component_name] = component_class
         self.compute_order = self.generate_order(self.component_dict)
         self.input_feature_names = {}
+        self._feature_provenance = {}
         self._i = 0
 
     @classmethod
@@ -177,6 +182,7 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
         output_cache = {}
+        provenance = {}
         for component_name in component_list:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
@@ -214,6 +220,15 @@ class ComponentGraph:
                     output = component_instance.fit_transform(input_x, input_y)
                 else:
                     output = component_instance.transform(input_x, input_y)
+                component_provenance = component_instance._get_feature_provenance()
+                for input_feature, output_features in component_provenance.items():
+                    if input_feature not in provenance:
+                        provenance[input_feature] = set(output_features)
+                    else:
+                        provenance[input_feature].union(set(output_features))
+                    for in_feature, out_feature in provenance.items():
+                        if input_feature in out_feature:
+                            provenance[in_feature] = out_feature.union(set(output_features))
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
                 else:
@@ -229,6 +244,18 @@ class ComponentGraph:
                 else:
                     output = None
                 output_cache[component_name] = output
+        input_feauture_names = set(X.columns)
+        final_estimator_features = set(self.input_feature_names[self.compute_order[-1]])
+        to_delete = set([])
+        for feature in provenance.keys():
+            if feature not in final_estimator_features and feature not in input_feauture_names:
+               to_delete.add(feature)
+        for feature in to_delete:
+            if feature in provenance:
+                del provenance[feature]
+        for feature in provenance:
+            provenance[feature] = provenance[feature].difference(to_delete)
+        self._feature_provenance = provenance
         return output_cache
 
     @staticmethod

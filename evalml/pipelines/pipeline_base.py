@@ -10,8 +10,8 @@ from collections import OrderedDict
 import cloudpickle
 import pandas as pd
 
-from .components import Estimator
-from .components.utils import handle_component_class
+from .components import Estimator, PCA, LinearDiscriminantAnalysis
+from .components.utils import handle_component_class, all_components
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
@@ -498,3 +498,17 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def __next__(self):
         return next(self._component_graph)
+
+    def _get_feature_provenance(self):
+        return self._component_graph._feature_provenance
+
+    @property
+    def _supports_fast_permutation_importance(self):
+        has_more_than_one_estimator = sum(isinstance(c, Estimator) for c in self._component_graph) > 1
+        _all_components = set(all_components())
+        has_custom_components = any(c.__class__ not in _all_components for c in self._component_graph)
+        has_dim_reduction = any(isinstance(c, PCA) or isinstance(c, LinearDiscriminantAnalysis) for c in
+                                self._component_graph)
+        if has_more_than_one_estimator or has_custom_components or has_dim_reduction:
+            return False
+        return True

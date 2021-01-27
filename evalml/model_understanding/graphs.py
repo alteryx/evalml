@@ -21,6 +21,8 @@ from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
+from joblib import Parallel
+from joblib import delayed
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
@@ -283,6 +285,82 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     return _go.Figure(layout=layout, data=graph_data)
 
 
+def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, objective, col_name,
+                                       random_seed, n_repeats, scorer, baseline_score):
+    """Calculate score when `col_idx` is permuted."""
+
+    random_state = np.random.RandomState(random_seed)
+
+    scores = np.zeros(n_repeats)
+
+    # Assume the column was dropped by DropColumns transformer
+    if col_name not in precomputed_features.columns and col_name not in pipeline._get_feature_provenance():
+        print("Got Dropped")
+        return scores + baseline_score
+
+    if col_name in precomputed_features.columns:
+        col_idx = precomputed_features.columns.get_loc(col_name)
+    else:
+        col_idx = [precomputed_features.columns.get_loc(col) for col in pipeline._get_feature_provenance()[col_name]]
+
+    # This is what sk_permutation_importance does. Useful for thread safety
+    X_permuted = precomputed_features.copy()
+
+    shuffling_idx = np.arange(precomputed_features.shape[0])
+    for n_round in range(n_repeats):
+        random_state.shuffle(shuffling_idx)
+        if hasattr(X_permuted, "iloc"):
+            col = X_permuted.iloc[shuffling_idx, col_idx]
+            col.index = X_permuted.index
+            X_permuted.iloc[:, col_idx] = col
+        else:
+            X_permuted[:, col_idx] = X_permuted[shuffling_idx, col_idx]
+        feature_score = scorer(pipeline, X_permuted, y, objective)
+        scores[n_round] = feature_score
+
+    return scores
+
+
+def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
+    """Calculates permutation importance for features.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (ww.DataTable, pd.DataFrame): The input data used to score and compute permutation importance
+        y (ww.DataColumn, pd.Series): The target data
+        objective (str, ObjectiveBase): Objective to score on
+        n_repeats (int): Number of times to permute a feature. Defaults to 5.
+        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
+            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+        random_state (int): The random seed. Defaults to 0.
+
+    Returns:
+        Mean feature importance scores over 5 shuffles.
+    """
+
+    #if not hasattr(X, "iloc"):
+    #    X = check_array(X, force_all_finite='allow-nan', dtype=None)
+
+    precomputed_features = pipeline.compute_estimator_features(X, y)
+
+    def scorer(pipeline, features, y, objective):
+        if objective.score_needs_proba:
+            preds = pipeline.estimator.predict_proba(features)
+        else:
+            preds = pipeline.estimator.predict(features)
+        score = objective.score(y, preds, X)
+        return score if objective.greater_is_better else -score
+
+    baseline_score = scorer(pipeline, precomputed_features, y, objective)
+
+    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
+        pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
+    ) for col_name in X.columns)
+
+    importances = baseline_score - np.array(scores)
+    return {'importances_mean': np.mean(importances, axis=1)}
+
+
 def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
     """Calculates permutation importance for features.
 
@@ -308,10 +386,14 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
-    def scorer(pipeline, X, y):
-        scores = pipeline.score(X, y, objectives=[objective])
-        return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-    perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
+    if pipeline._supports_fast_permutation_importance:
+        print("HERE!")
+        perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs, random_seed=random_state)
+    else:
+        def scorer(pipeline, X, y):
+            scores = pipeline.score(X, y, objectives=[objective])
+            return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
+        perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
     mean_perm_importance = perm_importance["importances_mean"]
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)

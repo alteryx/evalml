@@ -32,6 +32,7 @@ class TextFeaturizer(TextTransformer):
                        nlp_primitives.PolarityScore]
         self._features = None
         self._lsa = LSA(text_columns=text_columns, random_state=random_state)
+        self._primitives_provenance = {}
         super().__init__(text_columns=text_columns,
                          random_state=random_state,
                          **kwargs)
@@ -86,6 +87,18 @@ class TextFeaturizer(TextTransformer):
         self._lsa.fit(X)
         return self
 
+    @staticmethod
+    def _get_primitives_provenance(features):
+        provenance = {}
+        for feature in features:
+            input_col = feature.base_features[0].get_name()
+            output_features = feature.get_feature_names()
+            if input_col not in provenance:
+                provenance[input_col] = output_features
+            else:
+                provenance[input_col] += output_features
+        return provenance
+
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing text columns
 
@@ -109,3 +122,15 @@ class TextFeaturizer(TextTransformer):
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
         return _convert_to_woodwork_structure(X_t)
+
+    def _get_feature_provenance(self):
+        if self._features:
+            provenance = self._get_primitives_provenance(self._features)
+        else:
+            provenance = {}
+        for col, lsa_features in self._lsa._get_feature_provenance().items():
+            if col in provenance:
+                provenance[col] += lsa_features
+            else:
+                provenance[col] = lsa_features
+        return provenance
