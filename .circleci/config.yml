@@ -92,6 +92,17 @@ jobs:
       - setup_remote_docker:
           version: 19.03.12
       - build_pkg
+  build_conda_pkg_test:
+    working_directory: ~/evalml/
+    executor:
+      name: python
+      python_version: "3.6"
+    steps:
+      - checkout
+      - install_dependencies_test
+      - setup_remote_docker:
+          version: 19.03.12
+      - build_pkg
   lint_test:
       parameters:
         python_version:
