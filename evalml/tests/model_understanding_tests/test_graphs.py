@@ -927,19 +927,27 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
 
 
 def test_partial_dependence_more_categories_than_grid_resolution(logistic_regression_binary_pipeline_class):
+    def round_dict_keys(dictionary, places=6):
+        """ Function to round all keys of a dictionary that has floats as keys. """
+        dictionary_rounded = {}
+        for key in dictionary:
+            dictionary_rounded[round(key, places)] = dictionary[key]
+        return dictionary_rounded
 
     X, y = load_fraud(1000)
     X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, 'currency')
+    part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
+    part_dep_dict_rounded = round_dict_keys(part_dep_dict)
 
-    assert dict(part_dep["partial_dependence"].value_counts()) == {0.1424060057413758: 154, 0.006837318701999957: 1,
-                                                                   0.24445532203317386: 1, 0.15637574440029903: 1,
-                                                                   0.11676042311300606: 1, 0.13434069071819482: 1,
-                                                                   0.1502609021969637: 1, 0.14486201259150977: 1,
-                                                                   0.16687406140200164: 1, 0.06815227785761911: 1,
-                                                                   0.0791821060634158: 1}
+    part_dep_ans = {0.1424060057413758: 154, 0.006837318701999957: 1, 0.24445532203317386: 1, 0.15637574440029903: 1,
+                    0.11676042311300606: 1, 0.13434069071819482: 1, 0.1502609021969637: 1, 0.14486201259150977: 1,
+                    0.16687406140200164: 1, 0.06815227785761911: 1, 0.0791821060634158: 1}
+    part_dep_ans_rounded = round_dict_keys(part_dep_ans)
+
+    assert part_dep_ans_rounded == part_dep_dict_rounded
 
 
 def test_graph_partial_dependence(test_pipeline):
