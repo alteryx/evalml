@@ -25,44 +25,46 @@ class Transformer(ComponentBase):
     model_family = ModelFamily.NONE
 
     def transform(self, X, y=None):
-        """Transforms data X
+        """Transforms data X.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Target data
+            X (ww.DataTable, pd.DataFrame): Data to transform.
+            y (ww.DataColumn, pd.Series, optional): Target data.
+
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         try:
-            X_t = self._component_obj.transform(X)
+            X = _convert_to_woodwork_structure(X)
+            X = _convert_woodwork_types_wrapper(X.to_dataframe())
+            if y is not None:
+                y = _convert_to_woodwork_structure(y)
+                y = _convert_woodwork_types_wrapper(y.to_series())
+            X_t = self._component_obj.transform(X, y)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
-        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            return pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return pd.DataFrame(X_t)
+        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
+        return _convert_to_woodwork_structure(X_t_df)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
 
         Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd. DataFrame): Target data
+            X (ww.DataTable, pd.DataFrame): Data to fit and transform
+            y (ww.DataColumn, pd.Series): Target data
+
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         try:
-            X2 = _convert_to_woodwork_structure(X)
-            y2 = _convert_to_woodwork_structure(y)
-            X2 = _convert_woodwork_types_wrapper(X2.to_dataframe())
-            y2 = _convert_woodwork_types_wrapper(y2.to_series())
-            X_t = self._component_obj.fit_transform(X2, y2)
+            X_ww = _convert_to_woodwork_structure(X)
+            y_ww = _convert_to_woodwork_structure(y)
+            X_pd = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+            y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
+            X_t = self._component_obj.fit_transform(X_pd, y_pd)
         except AttributeError:
             try:
-                self.fit(X, y)
-                X_t = self.transform(X, y)
+                X_t = self.fit(X, y).transform(X, y)
             except MethodPropertyNotFoundError as e:
                 raise e
-
-        if not isinstance(X_t, pd.DataFrame) and isinstance(X, pd.DataFrame):
-            return pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return pd.DataFrame(X_t)
+        return _convert_to_woodwork_structure(X_t)

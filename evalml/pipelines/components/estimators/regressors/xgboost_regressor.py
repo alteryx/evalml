@@ -46,8 +46,7 @@ class XGBoostRegressor(Estimator):
 
     def predict(self, X):
         X = _rename_column_names_to_numeric(X)
-        predictions = super().predict(X)
-        return predictions
+        return super().predict(X)
 
     @property
     def feature_importance(self):

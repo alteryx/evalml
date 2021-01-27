@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from pandas.testing import assert_frame_equal
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
@@ -160,7 +161,7 @@ def test_handle_unknown():
 
     encoder = OneHotEncoder(handle_unknown='error')
     encoder.fit(X)
-    assert isinstance(encoder.transform(X), pd.DataFrame)
+    assert isinstance(encoder.transform(X), ww.DataTable)
 
     X = pd.DataFrame({"col_1": ["x", "b", "c", "d", "e", "f", "g"],
                       "col_2": ["a", "c", "d", "b", "e", "e", "f"],
@@ -319,7 +320,7 @@ def test_categorical_dtype():
 
     encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
-    X_t = encoder.transform(X)
+    X_t = encoder.transform(X).to_dataframe()
 
     expected_col_names = set(["col_1_f", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
                               "col_2_d", "col_2_e", "col_2_a", "col_3_a",
@@ -335,11 +336,11 @@ def test_all_numerical_dtype():
                       "col_2": [3, 2, 5, 1, 3],
                       "col_3": [0, 0, 1, 3, 2],
                       "col_4": [2, 4, 1, 4, 0]})
-
+    X_expected = X.astype("Int64")
     encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert X.equals(X_t)
+    assert_frame_equal(X_expected, X_t.to_dataframe())
 
 
 def test_numpy_input():
@@ -347,7 +348,7 @@ def test_numpy_input():
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
-    pd.testing.assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
+    assert_frame_equal(pd.DataFrame(X), X_t.to_dataframe(), check_dtype=False)
 
 
 def test_large_number_of_categories():
@@ -380,7 +381,7 @@ def test_data_types(data_type):
         X = ww.DataTable(pd.DataFrame(["a", "b", "c"]))
     encoder = OneHotEncoder()
     encoder.fit(X)
-    X_t = encoder.transform(X)
+    X_t = encoder.transform(X).to_dataframe()
     assert list(X_t.columns) == ['0_a', '0_b', '0_c']
     np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
 
@@ -394,7 +395,7 @@ def test_ohe_preserves_custom_index(index):
     df = pd.DataFrame({"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
                       index=index)
     ohe = OneHotEncoder()
-    new_df = ohe.fit_transform(df)
+    new_df = ohe.fit_transform(df).to_dataframe()
     pd.testing.assert_index_equal(new_df.index, df.index)
     assert not new_df.isna().any(axis=None)
 
@@ -431,7 +432,7 @@ def test_ohe_features_to_encode():
 
     encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1'])
     encoder.fit(X)
-    X_t = encoder.transform(X)
+    X_t = encoder.transform(X).to_dataframe()
     expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2', 'col_2'])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
@@ -439,7 +440,7 @@ def test_ohe_features_to_encode():
 
     encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1', 'col_2'])
     encoder.fit(X)
-    X_t = encoder.transform(X)
+    X_t = encoder.transform(X).to_dataframe()
     expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2',
                               'col_2_a', 'col_2_b', 'col_2_c', 'col_2_d'])
     col_names = set(X_t.columns)
@@ -461,7 +462,7 @@ def test_ohe_features_to_encode_no_col_names():
     X = pd.DataFrame([["b", 0], ["a", 1]])
     encoder = OneHotEncoder(top_n=5, features_to_encode=[0])
     encoder.fit(X)
-    X_t = encoder.transform(X)
+    X_t = encoder.transform(X).to_dataframe()
     expected_col_names = set([1, "0_a", "0_b"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
@@ -474,9 +475,9 @@ def test_ohe_top_n_categories_always_the_same():
 
     def check_df_equality(random_state):
         ohe = OneHotEncoder(top_n=4, random_state=random_state)
-        df1 = ohe.fit_transform(df)
-        df2 = ohe.fit_transform(df)
-        pd.testing.assert_frame_equal(df1, df2)
+        df1 = ohe.fit_transform(df).to_dataframe()
+        df2 = ohe.fit_transform(df).to_dataframe()
+        assert_frame_equal(df1, df2)
 
     check_df_equality(5)
     check_df_equality(get_random_seed(5))

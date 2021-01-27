@@ -3,7 +3,7 @@ from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
+from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
@@ -42,7 +42,16 @@ class DelayedFeatureTransformer(Transformer):
         super().__init__(parameters=parameters, random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits the DelayFeatureTransformer."""
+        """Fits the DelayFeatureTransformer.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+
+        Returns:
+            self
+        """
+        return self
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
@@ -71,11 +80,11 @@ class DelayedFeatureTransformer(Transformer):
         If y is not None, it will also compute the delayed values for the target variable.
 
         Arguments:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
-            y (pd.Series, None): Target.
+            X (ww.DataTable, pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (ww.DataColumn, pd.Series, or None): Target.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
         if X is None:
             X = pd.DataFrame()
@@ -103,4 +112,4 @@ class DelayedFeatureTransformer(Transformer):
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return X
+        return _convert_to_woodwork_structure(X)

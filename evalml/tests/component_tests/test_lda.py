@@ -28,8 +28,8 @@ def test_lda_numeric(data_type, make_data_type):
                                  [1.3401547523131798],
                                  [3.659653362085993]],
                                 columns=["component_0"])
-    X_t = pd.DataFrame(lda.fit_transform(X, y))
-    assert_frame_equal(X_t, expected_X_t)
+    X_t = lda.fit_transform(X, y)
+    assert_frame_equal(expected_X_t, X_t.to_dataframe())
 
 
 def test_lda_array():
@@ -47,8 +47,8 @@ def test_lda_array():
                                  [-0.4751798337481819, -0.7065437888758568]],
                                 columns=[f"component_{i}" for i in range(2)])
     lda.fit(X, y)
-    X_t = pd.DataFrame(lda.transform(X))
-    assert_frame_equal(X_t, expected_X_t)
+    X_t = lda.transform(X)
+    assert_frame_equal(expected_X_t, X_t.to_dataframe())
 
 
 def test_lda_invalid():
@@ -93,11 +93,11 @@ def test_n_components():
     y = [0, 3, 3, 1, 2, 0, 2]
 
     lda = LinearDiscriminantAnalysis(n_components=3)
-    X_t = pd.DataFrame(lda.fit_transform(X, y))
+    X_t = lda.fit_transform(X, y)
     assert X_t.shape[1] == 3
 
     lda = LinearDiscriminantAnalysis(n_components=1)
-    X_t = pd.DataFrame(lda.fit_transform(X, y))
+    X_t = lda.fit_transform(X, y)
     assert X_t.shape[1] == 1
 
 

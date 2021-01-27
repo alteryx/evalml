@@ -10,6 +10,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
+from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
@@ -293,7 +294,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int): The random seed. Defaults to 0.
+        random_state (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         Mean feature importance scores over 5 shuffles.
@@ -483,19 +484,13 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        pipeline._estimator_type = "classifier"
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        pipeline._estimator_type = "regressor"
-    pipeline.feature_importances_ = pipeline.feature_importance
+
     if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
-    try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=features, grid_resolution=grid_resolution)
-    finally:
-        # Delete scikit-learn attributes that were temporarily set
-        del pipeline._estimator_type
-        del pipeline.feature_importances_
+
+    wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
         classes = [pipeline.classes_[1]]
@@ -870,7 +865,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-        plotly.Figure showing the prediction vs actual over time.
+        plotly.Figure: Showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
@@ -890,3 +885,91 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
                         yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)
+
+
+def get_linear_coefficients(estimator, features=None):
+    """Returns a dataframe showing the features with the greatest predictive power for a linear model.
+
+    Arguments:
+        estimator (Estimator): Fitted linear model family estimator.
+        features (list[str]): List of feature names associated with the underlying data.
+
+    Returns:
+        pd.DataFrame: Displaying the features by importance.
+    """
+    if not estimator.model_family == ModelFamily.LINEAR_MODEL:
+        raise ValueError("Linear coefficients are only available for linear family models")
+    if not estimator._is_fitted:
+        raise NotFittedError("This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    coef_ = estimator.feature_importance
+    coef_ = pd.Series(coef_, name='Coefficients', index=features)
+    coef_ = coef_.sort_values()
+    coef_ = pd.Series(estimator._component_obj.intercept_, index=['Intercept']).append(coef_)
+
+    return coef_
+
+
+def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
+    """Get the transformed output after fitting X to the embedded space using t-SNE.
+
+     Arguments:
+        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed. Must be numeric.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+
+    Returns:
+        np.ndarray (n_samples, n_components)
+    """
+    if not isinstance(n_components, int) or not n_components > 0:
+        raise ValueError("The parameter n_components must be of type integer and greater than 0")
+    if not perplexity >= 0:
+        raise ValueError("The parameter perplexity must be non-negative")
+
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
+    X_new = t_sne_.fit_transform(X)
+    return X_new
+
+
+def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7, **kwargs):
+    """Plot high dimensional data into lower dimensional space using t-SNE .
+
+    Arguments:
+        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed. Must be numeric.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        marker_line_width (int, optional): Determines the line width of the marker boundary.
+        marker_size (int, optional): Determines the size of the marker.
+
+    Returns:
+        plotly.Figure representing the transformed data
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+    if not marker_line_width >= 0:
+        raise ValueError("The parameter marker_line_width must be non-negative")
+    if not marker_size >= 0:
+        raise ValueError("The parameter marker_size must be non-negative")
+
+    X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
+
+    fig = _go.Figure()
+    fig.add_trace(_go.Scatter(
+        x=X_embedded[:, 0], y=X_embedded[:, 1],
+        mode='markers'
+    ))
+    fig.update_traces(mode='markers', marker_line_width=marker_line_width, marker_size=marker_size)
+    fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)
+
+    return fig

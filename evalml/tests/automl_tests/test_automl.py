@@ -305,6 +305,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     assert "Search Results" not in str_rep
 
     mock_score.return_value = {automl.objective.name: 1.0}
+    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame([[1.0, 0.0], [0.0, 1.0]]))
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -410,19 +411,6 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[DataChecks([]), 1])
     with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
-
-
-@patch('evalml.pipelines.RegressionPipeline.fit')
-@patch('evalml.pipelines.RegressionPipeline.predict')
-@patch('evalml.data_checks.InvalidTargetDataCheck')
-def test_automl_passes_correct_objective_name_to_invalid_target_data_checks(mock_obj, mock_predict, mock_fit, X_y_regression):
-    X, y = X_y_regression
-    mock_obj.objective_name.return_value = "R2"
-    automl = AutoMLSearch(X, y, max_iterations=1, problem_type=ProblemTypes.REGRESSION)
-    automl.search()
-    mock_fit.assert_called()
-    mock_predict.assert_called()
-    assert automl.objective.name == mock_obj.objective_name.return_value
 
 
 class MockDataCheckObjective(DataCheck):
@@ -1265,7 +1253,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, n_jobs=1)
+                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,

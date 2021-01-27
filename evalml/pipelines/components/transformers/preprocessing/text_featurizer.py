@@ -24,7 +24,7 @@ class TextFeaturizer(TextTransformer):
 
         Arguments:
             text_columns (list): list of feature names which should be treated as text features.
-            random_state (int): Seed for the random number generator.
+            random_state (int): Seed for the random number generator. Defaults to 0.
 
         """
         self._trans = [nlp_primitives.DiversityScore,
@@ -66,8 +66,8 @@ class TextFeaturizer(TextTransformer):
         """Fits component to data
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training labels of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training labels of length [n_samples]
 
         Returns:
             self
@@ -90,22 +90,22 @@ class TextFeaturizer(TextTransformer):
         """Transforms data X by creating new features using existing text columns
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if self._features is None or len(self._features) == 0:
             return X
-
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
-        X_lsa = self._lsa.transform(X[text_columns])
+        X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
-        return pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
+        X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
+        return _convert_to_woodwork_structure(X_t)
