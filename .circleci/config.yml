@@ -78,6 +78,9 @@ commands:
             export UPLOAD_PACKAGES=False
             export HOST_USER_ID=$(id -u)
             export FEEDSTOCK_NAME=evalml-core-feedstock
+            echo "THREADS BEFORE $OMP_NUM_THREADS"
+            export OMP_NUM_THREADS=8
+            echo "THREADS AFTER $OMP_NUM_THREADS"
             docker run -t -e CONFIG -e HOST_USER_ID -e UPLOAD_PACKAGES -e GIT_BRANCH -e UPLOAD_ON_BRANCH -e CI -e FEEDSTOCK_NAME -e CPU_COUNT -e BINSTAR_TOKEN -e FEEDSTOCK_TOKEN -e STAGING_BINSTAR_TOKEN psalter/build:latest bash /home/conda/feedstock_root/.scripts/build_steps.sh
 
 jobs:
