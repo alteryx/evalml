@@ -870,7 +870,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-        plotly.Figure showing the prediction vs actual over time.
+        plotly.Figure: Showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
@@ -900,7 +900,7 @@ def get_linear_coefficients(estimator, features=None):
         features (list[str]): List of feature names associated with the underlying data.
 
     Returns:
-        pd.DataFrame displaying the features by importance.
+        pd.DataFrame: Displaying the features by importance.
     """
     if not estimator.model_family == ModelFamily.LINEAR_MODEL:
         raise ValueError("Linear coefficients are only available for linear family models")
