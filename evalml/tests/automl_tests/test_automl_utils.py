@@ -75,30 +75,28 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.max_delay == 7
 
 
-def test_make_data_splitter_parameters():
+@pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
+                                                                  (ProblemTypes.BINARY, StratifiedKFold),
+                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
+def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
                       'target': list(range(n))})
     y = X.pop('target')
     random_state = 42
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.REGRESSION, n_splits=5, shuffle=False, random_state=random_state)
-    assert isinstance(data_splitter, KFold)
+    data_splitter = make_data_splitter(X, y, problem_type, n_splits=5, random_state=random_state)
+    assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
-    assert not data_splitter.shuffle
+    assert data_splitter.shuffle
     assert data_splitter.random_state == random_state
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.BINARY, n_splits=5, shuffle=False, random_state=random_state)
-    assert isinstance(data_splitter, StratifiedKFold)
-    assert data_splitter.n_splits == 5
-    assert not data_splitter.shuffle
-    assert data_splitter.random_state == random_state
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.MULTICLASS, n_splits=5, shuffle=False, random_state=random_state)
-    assert isinstance(data_splitter, StratifiedKFold)
-    assert data_splitter.n_splits == 5
-    assert not data_splitter.shuffle
-    assert data_splitter.random_state == random_state
+def test_make_data_splitter_parameters_time_series():
+    n = 10
+    X = pd.DataFrame({'col_0': list(range(n)),
+                      'target': list(range(n))})
+    y = X.pop('target')
 
     for problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
         data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
@@ -115,6 +113,23 @@ def test_make_data_splitter_error():
     y = X.pop('target')
 
     with pytest.raises(ValueError, match="problem_configuration is required for time series problem types"):
-        make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION, n_splits=5, shuffle=False)
+        make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION)
     with pytest.raises(KeyError, match="Problem type 'XYZ' does not exist"):
-        make_data_splitter(X, y, 'XYZ', n_splits=5, shuffle=False)
+        make_data_splitter(X, y, 'XYZ')
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("large_data", [True, False])
+def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data):
+    n = 10
+    if large_data:
+        n = _LARGE_DATA_ROW_THRESHOLD + 1
+    X = pd.DataFrame({'col_0': list(range(n)),
+                      'target': list(range(n))})
+    y = X.pop('target')
+
+    if large_data:
+        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)
+    else:
+        with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
+            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)

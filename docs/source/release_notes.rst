@@ -5,8 +5,10 @@ Release Notes
     * Enhancements
         * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
+        * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
     * Fixes
     * Changes
+        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
     * Testing Changes
@@ -14,7 +16,9 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
         * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
+
 
 **v0.18.0 Jan. 26, 2021**
     * Enhancements
@@ -23,7 +27,7 @@ Release Notes
         * Added time series support for ``make_pipeline`` :pr:`1566`
         * Added target name for output of pipeline ``predict`` method :pr:`1578`
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
-        * Support graphviz 0.16 :pr:`1657`
+        * Added support for ``graphviz`` ``v0.16`` :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
         * Added KNN Classifier to estimators. :pr:`1650`
         * Added support for list inputs for objectives :pr:`1663`
@@ -55,7 +59,6 @@ Release Notes
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
-        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
         * Capped LightGBM version limit to remove bug in docs :pr:`1711`
         * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
