@@ -7,9 +7,14 @@ Release Notes
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
     * Fixes
     * Changes
+        * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
     * Testing Changes
 
+.. warning::
+
+    **Breaking Changes**
+    * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
 
 **v0.18.0 Jan. 26, 2021**
     * Enhancements
