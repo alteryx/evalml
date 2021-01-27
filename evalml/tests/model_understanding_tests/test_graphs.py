@@ -767,8 +767,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
     X = pd.DataFrame({'numeric': [1, 2, 3, 0],
                       'also numeric': [2, 3, 4, 1],
                       'string': ['a', 'b', 'a', 'c'],
-                      'also string': ['c', 'b', 'a', 'd'],
-                      'bigger strings': ["GOG", "TSL", "MMM", "KOK"]})
+                      'also string': ['c', 'b', 'a', 'd']})
     if data_type == "ww":
         X = ww.DataTable(X)
     y = [0, 0.2, 1.4, 1]
