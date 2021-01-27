@@ -786,7 +786,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
     assert len(part_dep["feature_values"]) == 3
     assert not part_dep.isnull().any(axis=None)
 
-    part_dep = partial_dependence(pipeline, X, feature='bigger strings')
+    part_dep = partial_dependence(pipeline, X, features='bigger strings')
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 4
     assert len(part_dep["feature_values"]) == 4
@@ -943,27 +943,13 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
         partial_dependence(pipeline, X, features=(0, 'b'))
 
 def test_partial_dependence_input_error(logistic_regression_binary_pipeline_class):
-    X2 = pd.DataFrame({'numeric': [1, 2, 3, 0],
-                      'also numeric': [2, 3, 4, 1],
-                      'string': ['a', 'b', 'a', 'c'],
-                      'also string': ['c', 'b', 'a', 'd'],
-                      'bigger strings': ["GOG", "TSL", "MMM", "KOK"]})
-    import pdb; pdb.set_trace()
-    y2 = [0, 0.2, 1.4, 1]
-    # pipeline = logistic_regression_binary_pipeline_class({})
-    # pipeline.fit(X2, y2)
-    # part_dep = partial_dependence(pipeline, X2, feature='bigger strings')
 
     X, y = load_fraud(1000)
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, 'currency')
-
-    # with pytest.raises(ValueError) as execinfo:
-    #     part_dep = partial_dependence(pipeline, X, 'currency')
-    # assert "Partial dependence is not supported for categorical features" in str(execinfo.value)
 
 def test_graph_partial_dependence(test_pipeline):
     X, y = load_breast_cancer()
