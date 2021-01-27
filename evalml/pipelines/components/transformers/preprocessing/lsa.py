@@ -60,12 +60,8 @@ class LSA(TextTransformer):
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
         X = _convert_to_woodwork_structure(X)
-<<<<<<< HEAD
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if len(self._text_columns) == 0:
-=======
-        if len(self._all_text_columns) == 0:
->>>>>>> main
             return X
 
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -74,11 +70,6 @@ class LSA(TextTransformer):
             transformed = self._lsa_pipeline.transform(X[col])
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
-<<<<<<< HEAD
 
         X_t = X_t.drop(columns=self._text_columns)
-        return X_t
-=======
-        X_t = X_t.drop(columns=text_columns)
         return _convert_to_woodwork_structure(X_t)
->>>>>>> main
