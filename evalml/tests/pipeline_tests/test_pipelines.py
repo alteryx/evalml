@@ -1446,22 +1446,6 @@ def test_clone_fitted(is_linear, X_y_binary, logistic_regression_binary_pipeline
     assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
 
 
-def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = nonlinear_binary_pipeline_class(parameters={}, random_state=42)
-    pipeline.fit(X, y)
-    X_t = pipeline.predict_proba(X)
-
-    pipeline_clone = pipeline.clone()
-    assert pipeline_clone.random_state == pipeline.random_state
-    assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(PipelineNotYetFittedError):
-        pipeline_clone.predict(X)
-    pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict_proba(X)
-    assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
-
-
 def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
