@@ -6,6 +6,7 @@ Release Notes
         * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
+        * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
     * Fixes
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
