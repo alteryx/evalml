@@ -170,15 +170,13 @@ jobs:
               conda config --add channels conda-forge
               conda activate curr_py
               conda install pystan -c conda-forge
-              conda install gcc
-              conda install fbprophet -c conda-forge 
       - run:
           name: Install EvalML
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               python -m pip install --upgrade pip
-              python -m pip install . --ignore-installed pystan fbprophet
+              python -m pip install .
               python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
