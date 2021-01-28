@@ -338,9 +338,6 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
         Mean feature importance scores over 5 shuffles.
     """
 
-    #if not hasattr(X, "iloc"):
-    #    X = check_array(X, force_all_finite='allow-nan', dtype=None)
-
     precomputed_features = pipeline.compute_estimator_features(X, y)
 
     def scorer(pipeline, features, y, objective):
@@ -387,7 +384,6 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
     if pipeline._supports_fast_permutation_importance:
-        print("HERE!")
         perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs, random_seed=random_state)
     else:
         def scorer(pipeline, X, y):
