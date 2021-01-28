@@ -15,7 +15,6 @@ from evalml.pipelines import (
     StackedEnsembleRegressor
 )
 from evalml.pipelines.components import Estimator
-from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
 
 
