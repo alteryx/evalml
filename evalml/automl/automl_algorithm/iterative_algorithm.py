@@ -31,8 +31,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
-            pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
+            random_state (int): Seed for the random number generator. Defaults to 0.
+            pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.

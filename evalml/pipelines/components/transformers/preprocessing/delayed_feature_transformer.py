@@ -3,7 +3,7 @@ from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
+from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
@@ -27,8 +27,7 @@ class DelayedFeatureTransformer(Transformer):
                 when the target is collected. For example, if you are predicting the next time step's target, gap=1.
                 This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
                 at 1.
-            random_state (int, np.random.RandomState): Seed for the random number generator. There is no randomness
-                in this transformer.
+            random_state (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
         """
         self.max_delay = max_delay
         self.delay_features = delay_features
@@ -43,7 +42,16 @@ class DelayedFeatureTransformer(Transformer):
         super().__init__(parameters=parameters, random_state=random_state)
 
     def fit(self, X, y=None):
-        """Fits the DelayFeatureTransformer."""
+        """Fits the DelayFeatureTransformer.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+
+        Returns:
+            self
+        """
+        return self
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
@@ -72,11 +80,11 @@ class DelayedFeatureTransformer(Transformer):
         If y is not None, it will also compute the delayed values for the target variable.
 
         Arguments:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
-            y (pd.Series, None): Target.
+            X (ww.DataTable, pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (ww.DataColumn, pd.Series, or None): Target.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
         if X is None:
             X = pd.DataFrame()
@@ -104,4 +112,4 @@ class DelayedFeatureTransformer(Transformer):
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return X
+        return _convert_to_woodwork_structure(X)

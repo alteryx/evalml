@@ -4,7 +4,6 @@ from .gen_utils import (
     import_or_raise,
     convert_to_seconds,
     get_random_state,
-    check_random_state_equality,
     get_random_seed,
     SEED_BOUNDS,
     jupyter_check,

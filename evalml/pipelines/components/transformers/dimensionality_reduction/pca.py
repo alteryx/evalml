@@ -20,9 +20,9 @@ class PCA(Transformer):
         """Initalizes an transformer that reduces the number of features using PCA."
 
         Arguments:
-            variance (float): the percentage of the original data variance that should be preserved when reducing the
+            variance (float): The percentage of the original data variance that should be preserved when reducing the
                               number of features.
-            n_components (int): the number of features to maintain after computing SVD. Defaults to None, but will override
+            n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override
                                 variance variable if set.
         """
         parameters = {"variance": variance,
@@ -50,7 +50,8 @@ class PCA(Transformer):
             raise ValueError("PCA input must be all numeric")
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = self._component_obj.transform(X)
-        return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
+        X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
+        return _convert_to_woodwork_structure(X_t)
 
     def fit_transform(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
@@ -58,4 +59,5 @@ class PCA(Transformer):
             raise ValueError("PCA input must be all numeric")
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = self._component_obj.fit_transform(X, y)
-        return pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
+        X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
+        return _convert_to_woodwork_structure(X_t)

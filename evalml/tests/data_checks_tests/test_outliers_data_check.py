@@ -9,17 +9,8 @@ from evalml.data_checks import (
     DataCheckWarning,
     OutliersDataCheck
 )
-from evalml.utils import get_random_state
 
 outliers_data_check_name = OutliersDataCheck.name
-
-
-def test_outliers_data_check_init():
-    outliers_check = OutliersDataCheck()
-    assert outliers_check.random_state.get_state()[0] == get_random_state(0).get_state()[0]
-
-    outliers_check = OutliersDataCheck(random_state=2)
-    assert outliers_check.random_state.get_state()[0] == get_random_state(2).get_state()[0]
 
 
 def test_outliers_data_check_warnings():

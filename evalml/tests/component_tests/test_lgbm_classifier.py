@@ -37,29 +37,6 @@ def test_lightgbm_classifier_random_state_bounds_seed(X_y_binary):
     clf.fit(X, y)
 
 
-def test_lightgbm_classifier_random_state_bounds_rng(X_y_binary):
-    """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for lightgbm is in lightgbm's supported range"""
-
-    def make_mock_random_state(return_value):
-
-        class MockRandomState(np.random.RandomState):
-
-            def randint(self, min_bound, max_bound):
-                return return_value
-        return MockRandomState()
-
-    X, y = X_y_binary
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
-    rng = make_mock_random_state(LightGBMClassifier.SEED_MIN)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng, n_jobs=1)
-    clf.fit(X, y)
-    rng = make_mock_random_state(LightGBMClassifier.SEED_MAX)
-    clf = LightGBMClassifier(n_estimators=1, max_depth=1, random_state=rng, n_jobs=1)
-    clf.fit(X, y)
-
-
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
@@ -73,8 +50,8 @@ def test_fit_predict_binary(X_y_binary):
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
 
 
 def test_fit_predict_multi(X_y_multi):
@@ -90,8 +67,8 @@ def test_fit_predict_multi(X_y_multi):
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
 
 
 def test_feature_importance(X_y_binary):
@@ -127,8 +104,8 @@ def test_fit_string_features(X_y_binary):
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')

@@ -1,6 +1,14 @@
 import json
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .generated_pipelines import (
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression
+)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -140,6 +148,26 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     return GeneratedPipeline
 
 
+def get_generated_pipeline_class(problem_type):
+    """Returns the class for the generated pipeline based on the problem type
+
+    Arguments:
+        problem_type (ProblemTypes): The problem_type that the pipeline is for
+
+    Returns:
+        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
+    """
+    try:
+        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
+                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
+                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
+                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
+                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
+                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
+    except KeyError:
+        raise ValueError("ProblemType {} not recognized".format(problem_type))
+
+
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
     """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
@@ -150,7 +178,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
-        random_state (int or np.random.RandomState): Random state used to intialize the pipeline.
+        random_state (int): Random seed used to intialize the pipeline.
 
     Returns:
         Pipeline instance with component instances and specified estimator created from given random state.

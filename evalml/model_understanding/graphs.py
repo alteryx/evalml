@@ -10,6 +10,7 @@ from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
+from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
@@ -293,7 +294,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+        random_state (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         Mean feature importance scores over 5 shuffles.
@@ -433,81 +434,113 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def partial_dependence(pipeline, X, feature, grid_resolution=100):
-    """Calculates partial dependence.
+def partial_dependence(pipeline, X, features, grid_resolution=100):
+    """Calculates one or two-way partial dependence.  If a single integer or
+    string is given for features, one-way partial dependence is calculated. If
+    a tuple of two integers or strings is given, two-way partial dependence
+    is calculated with the first feature in the y-axis and second feature in the
+    x-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target features for which to create the partial dependence plot for.
-            If feature is an int, it must be the index of the feature to use.
-            If feature is a string, it must be a valid column name in X.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
+            If features is an int, it must be the index of the feature to use.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions. The dataframe will
-            contain two columns: "feature_values" (grid points at which the partial dependence was calculated) and
-            "partial_dependence" (the partial dependence at that feature value). For classification problems, there
-            will be a third column called "class_label" (the class label for which the partial
-            dependence was calculated). For binary classification, the partial dependence is only calculated for the
-            "positive" class.
+            over all samples of X and the values used to calculate those predictions.
 
+            In the one-way case: The dataframe will contain two columns, "feature_values" (grid points at which the
+            partial dependence was calculated) and "partial_dependence" (the partial dependence at that feature value).
+            For classification problems, there will be a third column called "class_label" (the class label for which
+            the partial dependence was calculated). For binary classification, the partial dependence is only calculated
+            for the "positive" class.
+
+            In the two-way case: The data frame will contain grid_resolution number of columns and rows where the
+            index and column headers are the sampled values of the first and second features, respectively, used to make
+            the partial dependence contour. The values of the data frame contain the partial dependence data for each
+            feature value pair.
+
+    Raises:
+        ValueError: if the user provides a tuple of not exactly two features.
+        ValueError: if the provided pipeline isn't fitted.
+        ValueError: if the provided pipeline is a Baseline pipeline.
     """
     X = _convert_to_woodwork_structure(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
+    if isinstance(features, (list, tuple)):
+        if len(features) != 2:
+            raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial "
+                             "dependence is supported.")
+        if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
+            raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        pipeline._estimator_type = "classifier"
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        pipeline._estimator_type = "regressor"
-    pipeline.feature_importances_ = pipeline.feature_importance
-    if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
+
+    if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
-    try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
-    finally:
-        # Delete scikit-learn attributes that were temporarily set
-        del pipeline._estimator_type
-        del pipeline.feature_importances_
+
+    wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
         classes = [pipeline.classes_[1]]
     elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         classes = pipeline.classes_
 
-    data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
-                         "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    if isinstance(features, (int, str)):
+        data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
+                             "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    elif isinstance(features, (list, tuple)):
+        data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
+        data.columns = values[1]
+        data.index = np.tile(values[0], avg_pred.shape[0])
+
     if classes is not None:
         data['class_label'] = np.repeat(classes, len(values[0]))
-
     return data
 
 
-def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolution=100):
-    """Create an one-way partial dependence plot.
+def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resolution=100):
+    """Create an one-way or two-way partial dependence plot.  Passing a single integer or
+    string as features will create a one-way partial dependence plot with the feature values
+    plotted against the partial dependence.  Passing features a tuple of int/strings will create
+    a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
+    in the x-axis and the partial dependence in the z-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target feature for which to create the partial dependence plot for.
-            If feature is an int, it must be the index of the feature to use.
-            If feature is a string, it must be a valid column name in X.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
+            If features is an int, it must be the index of the feature to use.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of strings, it must contain valid column int/names in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
 
     Returns:
-        pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions.
+        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
 
+    Raises:
+        ValueError: if a graph is requested for a class name that isn't present in the pipeline
     """
+    if isinstance(features, (list, tuple)):
+        mode = "two-way"
+    elif isinstance(features, (int, str)):
+        mode = "one-way"
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -516,13 +549,21 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
             msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
             raise ValueError(msg)
 
-    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
-    feature_name = str(feature)
-    title = f"Partial Dependence of '{feature_name}'"
-    layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}'},
-                        yaxis={'title': 'Partial Dependence'},
-                        showlegend=False)
+    part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
+
+    if mode == "two-way":
+        title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
+        layout = _go.Layout(title={'text': title},
+                            xaxis={'title': f'{features[0]}'},
+                            yaxis={'title': f'{features[1]}'},
+                            showlegend=False)
+    elif mode == "one-way":
+        feature_name = str(features)
+        title = f"Partial Dependence of '{feature_name}'"
+        layout = _go.Layout(title={'text': title},
+                            xaxis={'title': f'{feature_name}'},
+                            yaxis={'title': 'Partial Dependence'},
+                            showlegend=False)
     if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")
@@ -534,21 +575,42 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
-
-            # Plotly trace indexing begins at 1 so we add 1 to i
-            fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
-                                      y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
-                                      line=dict(width=3),
-                                      name=label),
-                          row=(i + 2) // 2, col=(i % 2) + 1)
+            label_df = part_dep.loc[part_dep.class_label == label]
+            if mode == "two-way":
+                x = label_df.index
+                y = np.array([col for col in label_df.columns if isinstance(col, (int, float))])
+                z = label_df.values
+                fig.add_trace(_go.Contour(x=x, y=y, z=z, name=label, coloraxis="coloraxis"),
+                              row=(i + 2) // 2, col=(i % 2) + 1)
+            elif mode == "one-way":
+                x = label_df['feature_values']
+                y = label_df['partial_dependence']
+                fig.add_trace(_go.Scatter(x=x, y=y, line=dict(width=3), name=label),
+                              row=(i + 2) // 2, col=(i % 2) + 1)
         fig.update_layout(layout)
-        fig.update_xaxes(title=f'{feature_name}', range=_calculate_axis_range(part_dep['feature_values']))
-        fig.update_yaxes(range=_calculate_axis_range(part_dep['partial_dependence']))
+
+        if mode == "two-way":
+            title = f'{features[0]}'
+            xrange = _calculate_axis_range(part_dep.index)
+            yrange = _calculate_axis_range(np.array([x for x in part_dep.columns if isinstance(x, (int, float))]))
+            fig.update_layout(coloraxis=dict(colorscale='Bluered_r'), showlegend=False)
+        elif mode == "one-way":
+            title = f'{feature_name}'
+            xrange = _calculate_axis_range(part_dep['feature_values'])
+            yrange = _calculate_axis_range(part_dep['partial_dependence'])
+        fig.update_xaxes(title=title, range=xrange)
+        fig.update_yaxes(range=yrange)
     else:
-        trace = _go.Scatter(x=part_dep['feature_values'],
-                            y=part_dep['partial_dependence'],
-                            name='Partial Dependence',
-                            line=dict(width=3))
+        if mode == "two-way":
+            trace = _go.Contour(x=part_dep.index,
+                                y=part_dep.columns,
+                                z=part_dep.values,
+                                name="Partial Dependence")
+        elif mode == "one-way":
+            trace = _go.Scatter(x=part_dep['feature_values'],
+                                y=part_dep['partial_dependence'],
+                                name='Partial Dependence',
+                                line=dict(width=3))
         fig = _go.Figure(layout=layout, data=[trace])
 
     return fig
@@ -803,7 +865,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-        plotly.Figure showing the prediction vs actual over time.
+        plotly.Figure: Showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
@@ -823,3 +885,91 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
                         yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)
+
+
+def get_linear_coefficients(estimator, features=None):
+    """Returns a dataframe showing the features with the greatest predictive power for a linear model.
+
+    Arguments:
+        estimator (Estimator): Fitted linear model family estimator.
+        features (list[str]): List of feature names associated with the underlying data.
+
+    Returns:
+        pd.DataFrame: Displaying the features by importance.
+    """
+    if not estimator.model_family == ModelFamily.LINEAR_MODEL:
+        raise ValueError("Linear coefficients are only available for linear family models")
+    if not estimator._is_fitted:
+        raise NotFittedError("This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    coef_ = estimator.feature_importance
+    coef_ = pd.Series(coef_, name='Coefficients', index=features)
+    coef_ = coef_.sort_values()
+    coef_ = pd.Series(estimator._component_obj.intercept_, index=['Intercept']).append(coef_)
+
+    return coef_
+
+
+def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
+    """Get the transformed output after fitting X to the embedded space using t-SNE.
+
+     Arguments:
+        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed. Must be numeric.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+
+    Returns:
+        np.ndarray (n_samples, n_components)
+    """
+    if not isinstance(n_components, int) or not n_components > 0:
+        raise ValueError("The parameter n_components must be of type integer and greater than 0")
+    if not perplexity >= 0:
+        raise ValueError("The parameter perplexity must be non-negative")
+
+    X = _convert_to_woodwork_structure(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
+    X_new = t_sne_.fit_transform(X)
+    return X_new
+
+
+def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7, **kwargs):
+    """Plot high dimensional data into lower dimensional space using t-SNE .
+
+    Arguments:
+        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed. Must be numeric.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        marker_line_width (int, optional): Determines the line width of the marker boundary.
+        marker_size (int, optional): Determines the size of the marker.
+
+    Returns:
+        plotly.Figure representing the transformed data
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+    if not marker_line_width >= 0:
+        raise ValueError("The parameter marker_line_width must be non-negative")
+    if not marker_size >= 0:
+        raise ValueError("The parameter marker_size must be non-negative")
+
+    X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
+
+    fig = _go.Figure()
+    fig.add_trace(_go.Scatter(
+        x=X_embedded[:, 0], y=X_embedded[:, 1],
+        mode='markers'
+    ))
+    fig.update_traces(mode='markers', marker_line_width=marker_line_width, marker_size=marker_size)
+    fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)
+
+    return fig

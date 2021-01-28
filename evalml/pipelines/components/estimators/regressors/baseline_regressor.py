@@ -24,8 +24,8 @@ class BaselineRegressor(Estimator):
         """Baseline regressor that uses a simple strategy to make predictions.
 
         Arguments:
-            strategy (str): method used to predict. Valid options are "mean", "median". Defaults to "mean".
-            random_state (int, np.random.RandomState): seed for the random number generator
+            strategy (str): Method used to predict. Valid options are "mean", "median". Defaults to "mean".
+            random_state (int): Seed for the random number generator. Defaults to 0.
 
         """
         if strategy not in ["mean", "median"]:
@@ -43,7 +43,6 @@ class BaselineRegressor(Estimator):
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_to_woodwork_structure(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -56,15 +55,15 @@ class BaselineRegressor(Estimator):
 
     def predict(self, X):
         X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        return pd.Series([self._prediction_value] * len(X))
+        predictions = pd.Series([self._prediction_value] * len(X))
+        return _convert_to_woodwork_structure(predictions)
 
     @property
     def feature_importance(self):
         """Returns importance associated with each feature. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.ndarray (float): an array of zeroes
+            np.ndarray (float): An array of zeroes
 
         """
         return np.zeros(self._num_features)

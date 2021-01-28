@@ -3,6 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
@@ -13,7 +14,6 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import check_random_state_equality
 
 
 def test_stacked_model_family():
@@ -65,7 +65,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logisti
 
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred).all()
+    assert not np.isnan(y_pred.to_series()).all()
 
 
 def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_binary_pipeline_class):
@@ -82,7 +82,7 @@ def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_bi
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred).all()
+    assert not np.isnan(y_pred.to_series()).all()
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
@@ -92,9 +92,9 @@ def test_stacked_ensemble_does_not_overwrite_pipeline_random_state(mock_stack,
                        logistic_regression_binary_pipeline_class(parameters={}, random_state=4)]
     clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, random_state=5, n_jobs=1)
     estimators_used_in_ensemble = mock_stack.call_args[1]['estimators']
-    assert check_random_state_equality(clf.random_state, np.random.RandomState(5))
-    assert check_random_state_equality(estimators_used_in_ensemble[0][1].pipeline.random_state, np.random.RandomState(3))
-    assert check_random_state_equality(estimators_used_in_ensemble[1][1].pipeline.random_state, np.random.RandomState(4))
+    assert clf.random_state == 5
+    assert estimators_used_in_ensemble[0][1].pipeline.random_state == 3
+    assert estimators_used_in_ensemble[1][1].pipeline.random_state == 4
 
 
 def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
@@ -108,7 +108,7 @@ def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred).all()
+    assert not np.isnan(y_pred.to_series()).all()
 
 
 def test_stacked_problem_types():
@@ -134,25 +134,25 @@ def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_cla
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, pd.Series)
-    assert not np.isnan(y_pred).all()
+    assert isinstance(y_pred, ww.DataColumn)
+    assert not np.isnan(y_pred.to_series()).all()
 
     y_pred_proba = clf.predict_proba(X)
-    assert isinstance(y_pred_proba, pd.DataFrame)
+    assert isinstance(y_pred_proba, ww.DataTable)
     assert y_pred_proba.shape == (len(y), num_classes)
-    assert not np.isnan(y_pred_proba).all().all()
+    assert not np.isnan(y_pred_proba.to_dataframe()).all().all()
 
     clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, final_estimator=RandomForestClassifier(), n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, pd.Series)
-    assert not np.isnan(y_pred).all()
+    assert isinstance(y_pred, ww.DataColumn)
+    assert not np.isnan(y_pred.to_series()).all()
 
     y_pred_proba = clf.predict_proba(X)
     assert y_pred_proba.shape == (len(y), num_classes)
-    assert isinstance(y_pred_proba, pd.DataFrame)
-    assert not np.isnan(y_pred_proba).all().all()
+    assert isinstance(y_pred_proba, ww.DataTable)
+    assert not np.isnan(y_pred_proba.to_dataframe()).all().all()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

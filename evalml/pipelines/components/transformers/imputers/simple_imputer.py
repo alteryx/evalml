@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
@@ -52,42 +51,38 @@ class SimpleImputer(Transformer):
         if (X.dtypes == bool).all():
             X = X.astype('category')
 
-        # Convert None to np.nan, since None cannot be properly handled
-        X = X.fillna(value=np.nan)
-
         self._component_obj.fit(X, y)
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Transforms input by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data to transform
             y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        # Convert None to np.nan, since None cannot be properly handled
-        X = X.fillna(value=np.nan)
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
-            return X
+            return _convert_to_woodwork_structure(X)
+
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
-        category_cols = X_null_dropped.select_dtypes(include=['category']).columns
         X_t = self._component_obj.transform(X)
         if X_null_dropped.empty:
-            return pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
+            return _convert_to_woodwork_structure(X_t)
+
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        if len(category_cols) > 0:
-            X_t[category_cols] = X_t[category_cols].astype('category')
-        return X_t
+        X_t = X_t.infer_objects()
+        X_t.index = X_null_dropped.index
+        return _convert_to_woodwork_structure(X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -97,6 +92,6 @@ class SimpleImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): Target data.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         return self.fit(X, y).transform(X, y)

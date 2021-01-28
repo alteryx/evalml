@@ -55,7 +55,7 @@ class DateTimeFeaturizer(Transformer):
             features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour".
             encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
                 This allows OneHotEncoders to encode these features.
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
@@ -83,18 +83,18 @@ class DateTimeFeaturizer(Transformer):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X_t = X
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
-            return X_t
+            return _convert_to_woodwork_structure(X_t)
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
@@ -102,13 +102,14 @@ class DateTimeFeaturizer(Transformer):
                 X_t[name] = features
                 if categories:
                     self._categories[name] = categories
-        return X_t.drop(self._date_time_col_names, axis=1)
+        X_t = X_t.drop(self._date_time_col_names, axis=1)
+        return _convert_to_woodwork_structure(X_t)
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.
 
         Returns:
-           Dict. Each key-value pair is a column name and a dictionary mapping the unique feature values to their
-           integer encoding.
+           Dictionary, where each key-value pair is a column name and a dictionary
+           mapping the unique feature values to their integer encoding.
         """
         return self._categories
