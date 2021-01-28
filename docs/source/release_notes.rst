@@ -10,6 +10,7 @@ Release Notes
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
+        * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
     * Documentation Changes
     * Testing Changes
 
