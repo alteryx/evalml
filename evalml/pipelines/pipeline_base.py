@@ -463,10 +463,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return cloudpickle.load(f)
 
     def clone(self):
-        """Constructs a new pipeline with the same parameters and components.
+        """Constructs a new pipeline with the same components, parameters, and random state.
 
         Returns:
-            A new instance of this pipeline with identical parameters and components
+            A new instance of this pipeline with identical components, parameters, and random state.
         """
         return self.__class__(self.parameters, random_state=self.random_state)
 

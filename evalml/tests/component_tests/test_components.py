@@ -447,15 +447,15 @@ def test_clone_fitted(X_y_binary):
     X, y = X_y_binary
     params = {'param_a': 3, 'param_b': 7}
     clf = MockFitComponent(**params)
-
     clf.fit(X, y)
     predicted = clf.predict(X)
 
     clf_clone = clf.clone()
     assert clf_clone.random_state == clf.random_state
+    assert clf.parameters == clf_clone.parameters
+
     with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         clf_clone.predict(X)
-    assert clf.parameters == clf_clone.parameters
 
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)

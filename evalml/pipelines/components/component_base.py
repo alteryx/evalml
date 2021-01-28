@@ -71,10 +71,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return cls._default_parameters
 
     def clone(self):
-        """Constructs a new component with the same parameters
+        """Constructs a new component with the same parameters and random state.
 
         Returns:
-            A new instance of this component with identical parameters
+            A new instance of this component with identical parameters and random state.
         """
         return self.__class__(**self.parameters, random_state=self.random_state)
 
