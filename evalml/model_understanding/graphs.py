@@ -345,7 +345,7 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
             preds = pipeline.estimator.predict_proba(features)
         else:
             preds = pipeline.estimator.predict(features)
-        score = objective.score(y, preds, X)
+        score = pipeline._score(X, y, preds, objective)
         return score if objective.greater_is_better else -score
 
     baseline_score = scorer(pipeline, precomputed_features, y, objective)

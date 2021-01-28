@@ -92,7 +92,8 @@ class TextFeaturizer(TextTransformer):
         provenance = {}
         for feature in features:
             input_col = feature.base_features[0].get_name()
-            output_features = feature.get_feature_names()
+            # Return a copy because `get_feature_names` returns a reference to the names
+            output_features = [name for name in feature.get_feature_names()]
             if input_col not in provenance:
                 provenance[input_col] = output_features
             else:
