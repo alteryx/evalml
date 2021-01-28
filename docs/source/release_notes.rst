@@ -11,6 +11,7 @@ Release Notes
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
     * Changes
+        * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
     * Documentation Changes
     * Testing Changes
@@ -59,7 +60,6 @@ Release Notes
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
         * Make AutoMLSearch pipelines pickle-able :pr:`1721`
     * Changes
-        * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
