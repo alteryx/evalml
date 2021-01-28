@@ -244,16 +244,6 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         assert any([p != logistic_regression_binary_pipeline_class.default_parameters for p in all_parameters])
 
 
-def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class):
-    class MockTextClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = [TextFeaturizer, dummy_classifier_estimator_class]
-
-    algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline])
-    pipeline = algo.next_batch()[0]
-    assert isinstance(pipeline[0], TextFeaturizer)
-    assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']
-
-
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
