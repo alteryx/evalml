@@ -13,6 +13,7 @@ Release Notes
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
     * Documentation Changes
+        * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
 
 
