@@ -8,6 +8,7 @@ Release Notes
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
     * Fixes
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
+        * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Dropped support for Python version 3.6 :pr:`1751`
