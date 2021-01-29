@@ -101,6 +101,7 @@ class LightGBMClassifier(Estimator):
     def fit(self, X, y=None):
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
+        X_encoded.columns = list(map('_'.join, X_encoded.columns.values))
         return super().fit(X_encoded, y_encoded)
 
     def predict(self, X):
