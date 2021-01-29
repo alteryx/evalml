@@ -36,6 +36,7 @@ Release Notes
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
+        * Added SVM Classifier and Regressor to estimators :pr:`1714`
         * Added 2-way dependence plots. :pr:`1690`
         * Added ability to directly iterate through components within Pipelines :pr:`1583`
     * Fixes
