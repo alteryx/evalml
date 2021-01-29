@@ -273,7 +273,7 @@ class AutoMLSearch:
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
         self.y_train = _convert_to_woodwork_structure(y_train)
-        self.sampler = sampler
+        self.sampler = sampler if (sampler is not None and sampler != 'None')
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, sampler=self.sampler, random_state=self.random_state)
         self.data_splitter = self.data_splitter or default_data_splitter
