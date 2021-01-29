@@ -15,7 +15,8 @@ from .components import (
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
-    StackedEnsembleRegressor, StackedEnsembleClassifier
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
 )
 from .components.utils import all_components, handle_component_class
 
