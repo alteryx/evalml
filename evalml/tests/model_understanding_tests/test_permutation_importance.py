@@ -144,7 +144,11 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
 
 @pytest.mark.parametrize('pipeline_class, parameters', test_cases)
 @patch('evalml.pipelines.PipelineBase._supports_fast_permutation_importance', new_callable=PropertyMock)
-def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_importance, pipeline_class, parameters):
+def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_importance, pipeline_class, parameters,
+                                                            has_minimal_dependencies):
+    if has_minimal_dependencies and pipeline_class == LinearPipelineWithTargetEncoderAndOHE:
+        pytest.skip("Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
+                    "dependency not installed.")
     X, y = load_fraud(100)
 
     # Do this to make sure we use the same int as sklearn under the hood
