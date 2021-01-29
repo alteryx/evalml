@@ -13,14 +13,15 @@ Release Notes
     * Changes
         * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
+        * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
     * Testing Changes
-
 
 .. warning::
 
     **Breaking Changes**
         * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
+        * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
 
 
 **v0.18.0 Jan. 26, 2021**
