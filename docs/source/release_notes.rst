@@ -12,15 +12,16 @@ Release Notes
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
+        * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
         * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
-
 
 .. warning::
 
     **Breaking Changes**
         * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
+        * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
 
 
 **v0.18.0 Jan. 26, 2021**
