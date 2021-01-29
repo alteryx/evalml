@@ -37,9 +37,6 @@ class ModelFamily(Enum):
     BASELINE = 'baseline'
     """Baseline model family."""
 
-    PROPHET = 'prophet'
-    """Prophet model family."""
-
     NONE = 'none'
     """None"""
 
@@ -55,7 +52,6 @@ class ModelFamily(Enum):
                              ModelFamily.DECISION_TREE.name: "Decision Tree",
                              ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.ENSEMBLE.name: "Ensemble",
-                             ModelFamily.PROPHET.name: "Prophet",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
 
