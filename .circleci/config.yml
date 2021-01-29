@@ -169,7 +169,9 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda config --add channels conda-forge
               conda activate curr_py
-              conda install pystan -c conda-forge
+              conda install libpython m2w64-toolchain -c msys2
+              conda install numpy cython -c conda-forge
+              python -m pip install pystan
       - run:
           name: Install EvalML
           command: |
