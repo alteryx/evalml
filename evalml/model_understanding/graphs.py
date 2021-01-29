@@ -286,7 +286,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 
 def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, objective, col_name,
                                        random_seed, n_repeats, scorer, baseline_score):
-    """Calculate score when `col_idx` is permuted."""
+    """Calculate the permutation score when `col_name` is permuted."""
 
     random_state = np.random.RandomState(random_seed)
 
