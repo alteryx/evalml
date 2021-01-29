@@ -11,7 +11,7 @@ from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
-from evalml.demos import load_breast_cancer, load_wine
+from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.graphs import (
@@ -763,8 +763,11 @@ def test_partial_dependence_string_feature_name(logistic_regression_binary_pipel
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_partial_dependence_with_non_numeric_columns(data_type, linear_regression_pipeline_class):
-    X = pd.DataFrame({'numeric': [1, 2, 3, 0], 'also numeric': [2, 3, 4, 1], 'string': ['a', 'b', 'a', 'c'], 'also string': ['c', 'b', 'a', 'd']})
+def test_partial_dependence_with_non_numeric_columns(data_type, linear_regression_pipeline_class, logistic_regression_binary_pipeline_class):
+    X = pd.DataFrame({'numeric': [1, 2, 3, 0],
+                      'also numeric': [2, 3, 4, 1],
+                      'string': ['a', 'b', 'a', 'c'],
+                      'also string': ['c', 'b', 'a', 'd']})
     if data_type == "ww":
         X = ww.DataTable(X)
     y = [0, 0.2, 1.4, 1]
@@ -920,6 +923,42 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
 
     with pytest.raises(ValueError, match="Features provided must be a tuple entirely of integers or strings, not a mixture of both."):
         partial_dependence(pipeline, X, features=(0, 'b'))
+
+
+def test_partial_dependence_more_categories_than_grid_resolution(logistic_regression_binary_pipeline_class):
+    def round_dict_keys(dictionary, places=6):
+        """ Function to round all keys of a dictionary that has floats as keys. """
+        dictionary_rounded = {}
+        for key in dictionary:
+            dictionary_rounded[round(key, places)] = dictionary[key]
+        return dictionary_rounded
+
+    X, y = load_fraud(1000)
+    X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
+    pipeline = logistic_regression_binary_pipeline_class({})
+    pipeline.fit(X, y)
+    num_cat_features = len(set(X["currency"].to_series()))
+    assert num_cat_features == 164
+
+    part_dep_ans = {0.1424060057413758: 154, 0.006837318701999957: 1, 0.24445532203317386: 1, 0.15637574440029903: 1,
+                    0.11676042311300606: 1, 0.13434069071819482: 1, 0.1502609021969637: 1, 0.14486201259150977: 1,
+                    0.16687406140200164: 1, 0.06815227785761911: 1, 0.0791821060634158: 1}
+    part_dep_ans_rounded = round_dict_keys(part_dep_ans)
+
+    # Check the case where grid_resolution < number of categorical features
+    part_dep = partial_dependence(pipeline, X, 'currency', grid_resolution=round(num_cat_features / 2))
+    part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
+    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+
+    # Check the case where grid_resolution == number of categorical features
+    part_dep = partial_dependence(pipeline, X, 'currency', grid_resolution=round(num_cat_features))
+    part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
+    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
+
+    # Check the case where grid_resolution > number of categorical features
+    part_dep = partial_dependence(pipeline, X, 'currency', grid_resolution=round(num_cat_features * 2))
+    part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
+    assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
 
 def test_graph_partial_dependence(test_pipeline):

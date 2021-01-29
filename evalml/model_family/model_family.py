@@ -10,6 +10,9 @@ class ModelFamily(Enum):
     RANDOM_FOREST = 'random_forest'
     """Random Forest model family."""
 
+    SVM = 'svm'
+    """SVM model family."""
+
     XGBOOST = 'xgboost'
     """XGBoost model family."""
 
@@ -34,12 +37,16 @@ class ModelFamily(Enum):
     BASELINE = 'baseline'
     """Baseline model family."""
 
+    PROPHET = 'prophet'
+    """Prophet model family."""
+
     NONE = 'none'
     """None"""
 
     def __str__(self):
         model_family_dict = {ModelFamily.K_NEIGHBORS.name: "K Nearest Neighbors",
                              ModelFamily.RANDOM_FOREST.name: "Random Forest",
+                             ModelFamily.SVM.name: "SVM",
                              ModelFamily.XGBOOST.name: "XGBoost",
                              ModelFamily.LIGHTGBM.name: "LightGBM",
                              ModelFamily.LINEAR_MODEL.name: "Linear",
@@ -48,6 +55,7 @@ class ModelFamily(Enum):
                              ModelFamily.DECISION_TREE.name: "Decision Tree",
                              ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.ENSEMBLE.name: "Ensemble",
+                             ModelFamily.PROPHET.name: "Prophet",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
 
