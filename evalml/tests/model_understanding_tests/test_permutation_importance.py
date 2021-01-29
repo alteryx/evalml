@@ -190,13 +190,19 @@ class PipelineWithCustomComponent(BinaryClassificationPipeline):
     component_graph = [DoubleColumns, 'Logistic Regression Classifier']
 
 
-pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS, PipelineWithCustomComponent,
-                                                             EnsembleDag]
+class StackedEnsemblePipeline(BinaryClassificationPipeline):
+    component_graph = ['Stacked Ensemble Classifier']
+
+
+pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS,
+                                                             PipelineWithCustomComponent,
+                                                             EnsembleDag, StackedEnsemblePipeline]
 
 
 @pytest.mark.parametrize('pipeline_class', pipelines_that_do_not_support_fast_permutation_importance)
 def test_supports_fast_permutation_importance(pipeline_class):
-    assert not pipeline_class({})._supports_fast_permutation_importance
+    params = {'Stacked Ensemble Classifier': {'input_pipelines': [PipelineWithDFS({})]}}
+    assert not pipeline_class(params)._supports_fast_permutation_importance
 
 
 def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
