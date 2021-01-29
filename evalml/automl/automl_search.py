@@ -99,6 +99,7 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 sampler=None,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -272,9 +273,9 @@ class AutoMLSearch:
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
         self.y_train = _convert_to_woodwork_structure(y_train)
-
+        self.sampler = sampler
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
-                                                   n_splits=3, shuffle=True, random_state=self.random_state)
+                                                   n_splits=3, shuffle=True, sampler=self.sampler, random_state=self.random_state)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
 
@@ -682,7 +683,7 @@ class AutoMLSearch:
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            if not self.data_splitter_provided:
+            if not self.sampler:
                 X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
                 y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
             else:

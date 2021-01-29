@@ -3,7 +3,11 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
-    TrainingValidationSplit
+    TrainingValidationSplit,
+    KMeansSMOTETVSplit,
+    KMeansSMOTECVSplit,
+    SMOTETomekTVSplit,
+    SMOTETomekCVSplit
 )
 from evalml.problem_types import (
     ProblemTypes,
@@ -35,7 +39,7 @@ def get_default_primary_search_objective(problem_type):
     return get_objective(objective_name, return_instance=True)
 
 
-def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, random_state=0):
+def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, sampler=None, random_state=0):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
@@ -51,16 +55,24 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     Returns:
         sklearn.model_selection.BaseCrossValidator: Data splitting method.
     """
-    problem_type = handle_problem_types(problem_type)
-    if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-        return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
+    if sampler is None:
+        problem_type = handle_problem_types(problem_type)
+        if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
+            return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
 
-    if problem_type == ProblemTypes.REGRESSION:
-        return KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
-    elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
-    elif is_time_series(problem_type):
-        if not problem_configuration:
-            raise ValueError("problem_configuration is required for time series problem types")
-        return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                               max_delay=problem_configuration.get('max_delay'))
+        if problem_type == ProblemTypes.REGRESSION:
+            return KFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
+        elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            return StratifiedKFold(n_splits=n_splits, random_state=random_state, shuffle=shuffle)
+        elif is_time_series(problem_type):
+            if not problem_configuration:
+                raise ValueError("problem_configuration is required for time series problem types")
+            return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
+                                max_delay=problem_configuration.get('max_delay'))
+    else:
+        return {
+            "KMeansSMOTETVSplit": KMeansSMOTETVSplit(),
+            "KMeansSMOTECVSplit": KMeansSMOTECVSplit(),
+            "SMOTETomekTVSplit": SMOTETomekTVSplit(),
+            "SMOTETomekCVSplit": SMOTETomekCVSplit()
+        }[sampler]
