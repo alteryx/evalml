@@ -477,13 +477,10 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     X = _convert_to_woodwork_structure(X)
     # Dynamically set the grid resolution to the maximum number of categories
     # in the categorical variables if there are more categories than resolution cells
-    try:
-        max_num_cats = max(X.select("categorical").describe().loc["nunique"])
-        if max_num_cats > grid_resolution:
-            grid_resolution = max_num_cats + 1
-    except ValueError as e:
-        if "max() arg is an empty sequence" in str(e):
-            pass
+    X_cats =  X.select("categorical")
+    if X_cats.shape[1] != 0:
+        max_num_cats = max(X_cats.describe().loc["nunique"])
+        grid_resolution = max([max_num_cats + 1, grid_resolution])
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
     if isinstance(features, (list, tuple)):
