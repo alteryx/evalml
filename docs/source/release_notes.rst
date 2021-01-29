@@ -16,6 +16,7 @@ Release Notes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
+        * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
 
 .. warning::
