@@ -192,6 +192,7 @@ class AutoMLSearch:
         self.add_result_callback = add_result_callback
         self.error_callback = error_callback or log_error_callback
         self.data_splitter = data_splitter
+        self.data_splitter_provided = True if data_splitter is not None else False
         self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
@@ -558,6 +559,8 @@ class AutoMLSearch:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_state=self.random_state)
+                if getattr(self.data_splitter, "transform", None):
+                    X_train, y_train = self.data_splitter.transform(X_train, y_train)
                 self._best_pipeline.fit(X_train, y_train)
                 self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
@@ -679,8 +682,12 @@ class AutoMLSearch:
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
-            y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
+            if not self.data_splitter_provided:
+                X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
+                y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
+            else:
+                X_train, y_train = train[0], train[1]
+                X_valid, y_valid = valid[0], valid[1]
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
                 diff_train = set(np.setdiff1d(self.y_train.to_series(), y_train.to_series()))
                 diff_valid = set(np.setdiff1d(self.y_train.to_series(), y_valid.to_series()))

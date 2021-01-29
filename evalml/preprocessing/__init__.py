@@ -10,5 +10,7 @@ from .data_splitters import (
     TimeSeriesSplit,
     KMeansSMOTETVSplit,
     KMeansSMOTECVSplit,
+    SMOTETomekTVSplit,
+    SMOTETomekCVSplit,
     RandomUnderSamplerSplit
 )
