@@ -7,14 +7,19 @@ from evalml.pipelines import BinaryClassificationPipeline, Transformer
 from evalml.pipelines.components import TextFeaturizer, OneHotEncoder, DateTimeFeaturizer
 from evalml.demos import load_fraud
 
-X, y = load_fraud(100)
-
 
 class DoubleColumns(Transformer):
+    """Custom transformer for testing permutation importance implementation.
+
+    We don't have any transformers that create features that you can repeatedly "stack" on the previous output.
+    That being said, I want to test that our implementation can handle that case in the event we add a transformer like
+    that in the future.
+    """
     name = "DoubleColumns"
 
-    def __init__(self, random_state=0):
+    def __init__(self, drop_old_columns=True, random_state=0):
         self._provenance = {}
+        self.drop_old_columns = drop_old_columns
         super().__init__(parameters={}, component_obj=None, random_state=random_state)
 
     def fit(self, X, y):
@@ -23,7 +28,9 @@ class DoubleColumns(Transformer):
     def transform(self, X, y=None):
         self._provenance = {col: [f"{col}_doubled"] for col in X.columns}
         new_X = X.assign(**{f"{col}_doubled": 2 * X.loc[:, col] for col in X.columns})
-        return new_X.drop(columns=X.columns)
+        if self.drop_old_columns:
+            new_X = new_X.drop(columns=X.columns)
+        return new_X
 
     def fit_transform(self, X, y=None):
         self.fit(X, y)
@@ -50,10 +57,10 @@ class LinearPipelineTwoEncoders(BinaryClassificationPipeline):
 
 
 class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
-    component_graph = ['Select Columns Transformer', TextFeaturizer, 'Random Forest Classifier']
+    component_graph = ['Imputer', 'Drop Columns Transformer', TextFeaturizer, OneHotEncoder, 'Random Forest Classifier']
 
 
-class LinearPipelineWithDoubling(BinaryClassificationPipeline):
+class LinearPipelineWithDoublingDropped(BinaryClassificationPipeline):
     component_graph = ['Select Columns Transformer', DoubleColumns, DoubleColumns, DoubleColumns, 'Random Forest Classifier']
 
 
@@ -89,9 +96,11 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
               (LinearPipelineSameFeatureUsedByTwoComponents, {'DateTime Featurization Component': {'encode_as_categories': True}}),
               (LinearPipelineTwoEncoders, {'One Hot Encoder': {'features_to_encode': ['currency', 'expiration_date', 'provider']},
                                            'One Hot Encoder_2': {'features_to_encode': ['region', 'country']}}),
-              (LinearPipelineWithTextFeatures, {'Select Columns Transformer': {'columns': ['amount', 'provider']},
+              (LinearPipelineWithTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']},
                                                 'Text Featurization Component': {'text_columns': ['provider']}}),
-              (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']}}),
+              (LinearPipelineWithDoublingDropped, {'Select Columns Transformer': {'columns': ['amount']}}),
+              (LinearPipelineWithDoublingDropped, {'Select Columns Transformer': {'columns': ['amount']},
+                                                   'DoubleColumns': {'drop_old_columns': True}}),
               (DagTwoEncoders, {'SelectNumeric': {'columns': ['card_id', 'store_id', 'datetime', 'amount', 'customer_present', 'lat', 'lng']},
                                 'SelectCategorical1': {'columns': ['currency', 'expiration_date', 'provider']},
                                 'SelectCategorical2': {'columns': ['region', 'country']},
@@ -109,6 +118,7 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
 @pytest.mark.parametrize('pipeline_class, parameters', test_cases)
 @patch('evalml.pipelines.PipelineBase._supports_fast_permutation_importance', new_callable=PropertyMock)
 def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_importance, pipeline_class, parameters):
+    X, y = load_fraud(100)
 
     # Do this to make sure we use the same int as sklearn under the hood
     random_state = np.random.RandomState(0)

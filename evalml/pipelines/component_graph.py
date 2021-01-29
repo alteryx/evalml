@@ -97,7 +97,12 @@ class ComponentGraph:
             X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
         """
+        if isinstance(X, ww.DataTable):
+            X = X.to_dataframe()
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
         self._compute_features(self.compute_order, X, y, fit=True)
+        self._feature_provenance = self._get_feature_provenance(self.compute_order, X.columns)
         return self
 
     def fit_features(self, X, y):
@@ -182,7 +187,6 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
         output_cache = {}
-        provenance = {}
         for component_name in component_list:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
@@ -220,15 +224,6 @@ class ComponentGraph:
                     output = component_instance.fit_transform(input_x, input_y)
                 else:
                     output = component_instance.transform(input_x, input_y)
-                component_provenance = component_instance._get_feature_provenance()
-                for input_feature, output_features in component_provenance.items():
-                    if input_feature not in provenance:
-                        provenance[input_feature] = set(output_features)
-                    else:
-                        provenance[input_feature].union(set(output_features))
-                    for in_feature, out_feature in provenance.items():
-                        if input_feature in out_feature:
-                            provenance[in_feature] = out_feature.union(set(output_features))
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
                 else:
@@ -244,19 +239,27 @@ class ComponentGraph:
                 else:
                     output = None
                 output_cache[component_name] = output
-        input_feauture_names = set(X.columns)
-        final_estimator_features = set(self.input_feature_names[self.compute_order[-1]])
-        to_delete = set([])
-        for feature in provenance.keys():
-            if feature not in final_estimator_features and feature not in input_feauture_names:
-               to_delete.add(feature)
-        for feature in to_delete:
-            if feature in provenance:
-                del provenance[feature]
-        for feature in provenance:
-            provenance[feature] = provenance[feature].difference(to_delete)
-        self._feature_provenance = provenance
         return output_cache
+
+    def _get_feature_provenance(self, component_list, input_feature_names):
+        provenance = {col: set([]) for col in input_feature_names}
+        intermediate_features = set([])
+        transformers = filter(lambda c: isinstance(c, Transformer), [self.get_component(c) for c in component_list])
+        for component_instance in transformers:
+            component_provenance = component_instance._get_feature_provenance()
+            for component_input, component_output in component_provenance.items():
+                if component_input in provenance:
+                    provenance[component_input] = provenance[component_input].union(set(component_output))
+                else:
+                    for in_feature, out_feature in provenance.items():
+                        if component_input in out_feature:
+                            provenance[in_feature] = out_feature.union(set(component_output))
+                            intermediate_features.add(component_input)
+        estimator_features = set(self.input_feature_names[component_list[-1]])
+        for feature in provenance:
+            provenance[feature] = provenance[feature].intersection(estimator_features)
+
+        return {feature: children for feature, children in provenance.items() if len(children)}
 
     @staticmethod
     def _consolidate_inputs(x_inputs, y_input, X, y):
