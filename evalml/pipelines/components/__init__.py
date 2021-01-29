@@ -21,6 +21,7 @@ from .estimators import (
     DecisionTreeRegressor,
     TimeSeriesBaselineEstimator,
     KNeighborsClassifier,
+    ProphetRegressor,
     SVMClassifier,
     SVMRegressor
 )

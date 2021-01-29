@@ -277,6 +277,7 @@ Regressors are components that output a predicted target value.
     StackedEnsembleRegressor
     DecisionTreeRegressor
     LightGBMRegressor
+    ProphetRegressor
     SVMRegressor
 
 .. currentmodule:: evalml.model_understanding

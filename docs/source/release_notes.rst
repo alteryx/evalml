@@ -9,6 +9,7 @@ Release Notes
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
         * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
     * Fixes
+        * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
     * Changes
@@ -40,6 +41,7 @@ Release Notes
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
         * Added 2-way dependence plots. :pr:`1690`
         * Added ability to directly iterate through components within Pipelines :pr:`1583`
+        * Added Facebook's Prophet as a time series regressor :pr:`1704`
     * Fixes
         * Fixed inconsistent attributes and added Exceptions to docs :pr:`1673`
         * Fixed ``TargetLeakageDataCheck`` to use Woodwork ``mutual_information`` rather than using Pandas' Pearson Correlation :pr:`1616`
