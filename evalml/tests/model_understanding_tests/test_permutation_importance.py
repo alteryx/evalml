@@ -177,7 +177,7 @@ class EnsembleDag(BinaryClassificationPipeline):
         'DT_1': ['DateTime Featurization Component', 'OHE_1'],
         'DT_2': ['DateTime Featurization Component', 'OHE_2'],
         'Estimator_1': ['Random Forest Classifier', 'DT_1'],
-        'Estimator_2': ['XGBoost Classifier', 'DT_2'],
+        'Estimator_2': ['Extra Trees Classifier', 'DT_2'],
         'Ensembler': ['Logistic Regression Classifier', 'Estimator_1', 'Estimator_2']
     }
 
