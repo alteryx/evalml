@@ -9,3 +9,4 @@ from .baseline_regressor import BaselineRegressor
 from .decision_tree_regressor import DecisionTreeRegressor
 from .time_series_baseline_estimator import TimeSeriesBaselineEstimator
 from .prophet_regressor import ProphetRegressor
+from .svm_regressor import SVMRegressor

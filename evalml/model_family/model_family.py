@@ -10,6 +10,9 @@ class ModelFamily(Enum):
     RANDOM_FOREST = 'random_forest'
     """Random Forest model family."""
 
+    SVM = 'svm'
+    """SVM model family."""
+
     XGBOOST = 'xgboost'
     """XGBoost model family."""
 
@@ -43,6 +46,7 @@ class ModelFamily(Enum):
     def __str__(self):
         model_family_dict = {ModelFamily.K_NEIGHBORS.name: "K Nearest Neighbors",
                              ModelFamily.RANDOM_FOREST.name: "Random Forest",
+                             ModelFamily.SVM.name: "SVM",
                              ModelFamily.XGBOOST.name: "XGBoost",
                              ModelFamily.LIGHTGBM.name: "LightGBM",
                              ModelFamily.LINEAR_MODEL.name: "Linear",

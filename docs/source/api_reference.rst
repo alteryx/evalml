@@ -254,6 +254,7 @@ Classifiers are components that output a predicted class label.
     StackedEnsembleClassifier
     DecisionTreeClassifier
     KNeighborsClassifier
+    SVMClassifier
 
 Regressors
 -----------
@@ -277,6 +278,7 @@ Regressors are components that output a predicted target value.
     DecisionTreeRegressor
     LightGBMRegressor
     ProphetRegressor
+    SVMRegressor
 
 .. currentmodule:: evalml.model_understanding
 
