@@ -13,10 +13,6 @@ from evalml.utils import (
     import_or_raise
 )
 
-from evalml.utils import get_random_seed, import_or_raise
-from evalml.pipelines.components.transformers import PCA, LinearDiscriminantAnalysis
-from evalml.pipelines.components.utils import all_components
-
 
 class ComponentGraph:
     def __init__(self, component_dict=None, random_state=0):
@@ -242,23 +238,53 @@ class ComponentGraph:
         return output_cache
 
     def _get_feature_provenance(self, component_list, input_feature_names):
+        """Get the feature provenance for each feature in the input_feature_names.
+
+        The provenance is a mapping from the original feature names in the dataset to a list of
+        features that were created from that original feature.
+
+        For example, after fitting a OHE on a feature called 'cats', with categories 'a' and 'b', the
+        provenance, would have the following entry: {'cats': ['a', 'b']}.
+
+        If a feature is then calculated from feature 'a', e.g. 'a_squared', then the provenance would instead
+        be {'cats': ['a', 'a_squared', 'b']}.
+
+        Arguments:
+            component_list (list(str)): Names of components in topological order.
+            input_feature_names (list(str)): Names of the features in the input dataframe.
+
+        Returns:
+           dictionary: mapping of feature name of set feature names that were created from that feature.
+        """
+        if not component_list:
+            return {}
+
+        # Every feature comes from one of the original features so
+        # each one starts with an empty set
         provenance = {col: set([]) for col in input_feature_names}
-        intermediate_features = set([])
+
         transformers = filter(lambda c: isinstance(c, Transformer), [self.get_component(c) for c in component_list])
         for component_instance in transformers:
             component_provenance = component_instance._get_feature_provenance()
             for component_input, component_output in component_provenance.items():
+
+                # Case 1: The transformer created features from one of the original features
                 if component_input in provenance:
                     provenance[component_input] = provenance[component_input].union(set(component_output))
+
+                # Case 2: The transformer created features from a feature created from an original feature.
+                # Add it to the provenance of the original feature it was created from
                 else:
                     for in_feature, out_feature in provenance.items():
                         if component_input in out_feature:
                             provenance[in_feature] = out_feature.union(set(component_output))
-                            intermediate_features.add(component_input)
-        estimator_features = set(self.input_feature_names[component_list[-1]])
-        for feature in provenance:
-            provenance[feature] = provenance[feature].intersection(estimator_features)
 
+        # Get rid of features that are not in the dataset the final estimator uses
+        final_estimator_features = set(self.input_feature_names.get(component_list[-1], []))
+        for feature in provenance:
+            provenance[feature] = provenance[feature].intersection(final_estimator_features)
+
+        # Delete features that weren't used to create other features
         return {feature: children for feature, children in provenance.items() if len(children)}
 
     @staticmethod

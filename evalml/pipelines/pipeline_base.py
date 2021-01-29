@@ -10,8 +10,13 @@ from collections import OrderedDict
 import cloudpickle
 import pandas as pd
 
-from .components import Estimator, PCA, LinearDiscriminantAnalysis
-from .components.utils import handle_component_class, all_components
+from .components import (
+    PCA,
+    DFSTransformer,
+    Estimator,
+    LinearDiscriminantAnalysis
+)
+from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
@@ -509,6 +514,5 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         has_custom_components = any(c.__class__ not in _all_components for c in self._component_graph)
         has_dim_reduction = any(isinstance(c, PCA) or isinstance(c, LinearDiscriminantAnalysis) for c in
                                 self._component_graph)
-        if has_more_than_one_estimator or has_custom_components or has_dim_reduction:
-            return False
-        return True
+        has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
+        return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs])

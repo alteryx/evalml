@@ -6,6 +6,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from joblib import Parallel, delayed
 from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
@@ -21,8 +22,6 @@ from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
-from joblib import Parallel
-from joblib import delayed
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
@@ -293,9 +292,8 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
 
     scores = np.zeros(n_repeats)
 
-    # Assume the column was dropped by DropColumns transformer
+    # If column is not in the features or provenance, assume the column was dropped
     if col_name not in precomputed_features.columns and col_name not in pipeline._get_feature_provenance():
-        print("Got Dropped")
         return scores + baseline_score
 
     if col_name in precomputed_features.columns:
@@ -309,12 +307,10 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
     shuffling_idx = np.arange(precomputed_features.shape[0])
     for n_round in range(n_repeats):
         random_state.shuffle(shuffling_idx)
-        if hasattr(X_permuted, "iloc"):
-            col = X_permuted.iloc[shuffling_idx, col_idx]
-            col.index = X_permuted.index
-            X_permuted.iloc[:, col_idx] = col
-        else:
-            X_permuted[:, col_idx] = X_permuted[shuffling_idx, col_idx]
+        col = X_permuted.iloc[shuffling_idx, col_idx]
+        col.index = X_permuted.index
+        X_permuted.iloc[:, col_idx] = col
+
         feature_score = scorer(pipeline, X_permuted, y, objective)
         scores[n_round] = feature_score
 
@@ -322,7 +318,9 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
 
 
 def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
-    """Calculates permutation importance for features.
+    """Calculate permutation importance faster by onlu computing the estimator features once.
+
+    Only used for pipelines that support this optimization.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
@@ -335,16 +333,18 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
         random_state (int): The random seed. Defaults to 0.
 
     Returns:
-        Mean feature importance scores over 5 shuffles.
+        Mean feature importance scores over n_repeats number of shuffles.
     """
 
-    precomputed_features = pipeline.compute_estimator_features(X, y)
+    precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
 
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
             preds = pipeline.estimator.predict_proba(features)
+            preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
         else:
             preds = pipeline.estimator.predict(features)
+            preds = _convert_woodwork_types_wrapper(preds.to_series())
         score = pipeline._score(X, y, preds, objective)
         return score if objective.greater_is_better else -score
 

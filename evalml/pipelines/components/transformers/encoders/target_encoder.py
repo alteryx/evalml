@@ -68,3 +68,6 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             np.array: The feature names after encoding
         """
         return self._component_obj.get_feature_names()
+
+    def _get_feature_provenance(self):
+        return {col: col for col in self.get_feature_names()}

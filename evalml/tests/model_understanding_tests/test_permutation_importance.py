@@ -1,11 +1,23 @@
-import pytest
-from unittest.mock import patch, PropertyMock
-import pandas as pd
+from unittest.mock import PropertyMock, patch
+
 import numpy as np
+import pandas as pd
+import pytest
+
+from evalml.demos import load_fraud
 from evalml.model_understanding.graphs import calculate_permutation_importance
 from evalml.pipelines import BinaryClassificationPipeline, Transformer
-from evalml.pipelines.components import TextFeaturizer, OneHotEncoder, DateTimeFeaturizer
-from evalml.demos import load_fraud
+from evalml.pipelines.components import (
+    PCA,
+    DateTimeFeaturizer,
+    DFSTransformer,
+    OneHotEncoder,
+    TextFeaturizer
+)
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class DoubleColumns(Transformer):
@@ -27,10 +39,11 @@ class DoubleColumns(Transformer):
 
     def transform(self, X, y=None):
         self._provenance = {col: [f"{col}_doubled"] for col in X.columns}
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         new_X = X.assign(**{f"{col}_doubled": 2 * X.loc[:, col] for col in X.columns})
         if self.drop_old_columns:
             new_X = new_X.drop(columns=X.columns)
-        return new_X
+        return _convert_to_woodwork_structure(new_X)
 
     def fit_transform(self, X, y=None):
         self.fit(X, y)
@@ -60,35 +73,43 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
     component_graph = ['Imputer', 'Drop Columns Transformer', TextFeaturizer, OneHotEncoder, 'Random Forest Classifier']
 
 
-class LinearPipelineWithDoublingDropped(BinaryClassificationPipeline):
+class LinearPipelineWithDoubling(BinaryClassificationPipeline):
     component_graph = ['Select Columns Transformer', DoubleColumns, DoubleColumns, DoubleColumns, 'Random Forest Classifier']
+
+
+class LinearPipelineWithTargetEncoderAndOHE(BinaryClassificationPipeline):
+    component_graph = ['Imputer', DateTimeFeaturizer, OneHotEncoder, OneHotEncoder, "Random Forest Classifier"]
+
+
+class LinearPipelineCreateFeatureThenDropIt(BinaryClassificationPipeline):
+    component_graph = ['Select Columns Transformer', DoubleColumns, 'Drop Columns Transformer', 'Random Forest Classifier']
 
 
 class DagTwoEncoders(BinaryClassificationPipeline):
     component_graph = {
-            'Imputer': ['Imputer'],
-            'SelectNumeric': ["Select Columns Transformer", "Imputer"],
-            'SelectCategorical1': ["Select Columns Transformer", "Imputer"],
-            'SelectCategorical2': ["Select Columns Transformer", "Imputer"],
-            'OHE_1': ['One Hot Encoder', 'SelectCategorical1'],
-            'OHE_2': ['One Hot Encoder', 'SelectCategorical2'],
-            'DT': ['DateTime Featurization Component', "SelectNumeric"],
-            'Estimator': ['Random Forest Classifier', 'DT', 'OHE_1', 'OHE_2'],
-        }
+        'Imputer': ['Imputer'],
+        'SelectNumeric': ["Select Columns Transformer", "Imputer"],
+        'SelectCategorical1': ["Select Columns Transformer", "Imputer"],
+        'SelectCategorical2': ["Select Columns Transformer", "Imputer"],
+        'OHE_1': ['One Hot Encoder', 'SelectCategorical1'],
+        'OHE_2': ['One Hot Encoder', 'SelectCategorical2'],
+        'DT': ['DateTime Featurization Component', "SelectNumeric"],
+        'Estimator': ['Random Forest Classifier', 'DT', 'OHE_1', 'OHE_2'],
+    }
 
 
 class DagReuseFeatures(BinaryClassificationPipeline):
     component_graph = {
-            'Imputer': ['Imputer'],
-            'SelectNumeric': ["Select Columns Transformer", "Imputer"],
-            'SelectCategorical1': ["Select Columns Transformer", "Imputer"],
-            'SelectCategorical2': ["Select Columns Transformer", "Imputer"],
-            'OHE_1': ['One Hot Encoder', 'SelectCategorical1'],
-            'OHE_2': ['One Hot Encoder', 'SelectCategorical2'],
-            'DT': ['DateTime Featurization Component', "SelectNumeric"],
-            'OHE_3': ['One Hot Encoder', 'DT'],
-            'Estimator': ['Random Forest Classifier', 'OHE_3', 'OHE_1', 'OHE_2'],
-        }
+        'Imputer': ['Imputer'],
+        'SelectNumeric': ["Select Columns Transformer", "Imputer"],
+        'SelectCategorical1': ["Select Columns Transformer", "Imputer"],
+        'SelectCategorical2': ["Select Columns Transformer", "Imputer"],
+        'OHE_1': ['One Hot Encoder', 'SelectCategorical1'],
+        'OHE_2': ['One Hot Encoder', 'SelectCategorical2'],
+        'DT': ['DateTime Featurization Component', "SelectNumeric"],
+        'OHE_3': ['One Hot Encoder', 'DT'],
+        'Estimator': ['Random Forest Classifier', 'OHE_3', 'OHE_1', 'OHE_2'],
+    }
 
 
 test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'columns': ['country']}}),
@@ -98,20 +119,25 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
                                            'One Hot Encoder_2': {'features_to_encode': ['region', 'country']}}),
               (LinearPipelineWithTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']},
                                                 'Text Featurization Component': {'text_columns': ['provider']}}),
-              (LinearPipelineWithDoublingDropped, {'Select Columns Transformer': {'columns': ['amount']}}),
-              (LinearPipelineWithDoublingDropped, {'Select Columns Transformer': {'columns': ['amount']},
-                                                   'DoubleColumns': {'drop_old_columns': True}}),
+              (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']}}),
+              (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']},
+                                            'DoubleColumns': {'drop_old_columns': False}}),
               (DagTwoEncoders, {'SelectNumeric': {'columns': ['card_id', 'store_id', 'datetime', 'amount', 'customer_present', 'lat', 'lng']},
                                 'SelectCategorical1': {'columns': ['currency', 'expiration_date', 'provider']},
                                 'SelectCategorical2': {'columns': ['region', 'country']},
                                 'OHE_1': {'features_to_encode': ['currency', 'expiration_date', 'provider']},
                                 'OHE_2': {'features_to_encode': ['region', 'country']}}),
               (DagReuseFeatures, {'SelectNumeric': {'columns': ['card_id', 'store_id', 'datetime', 'amount', 'customer_present', 'lat', 'lng']},
-                                'SelectCategorical1': {'columns': ['currency', 'expiration_date', 'provider']},
-                                'SelectCategorical2': {'columns': ['region', 'country']},
-                                'OHE_1': {'features_to_encode': ['currency', 'expiration_date', 'provider']},
-                                'OHE_2': {'features_to_encode': ['region', 'country']},
-                                'DT': {'encode_as_categories': True}})
+                                  'SelectCategorical1': {'columns': ['currency', 'expiration_date', 'provider']},
+                                  'SelectCategorical2': {'columns': ['region', 'country']},
+                                  'OHE_1': {'features_to_encode': ['currency', 'expiration_date', 'provider']},
+                                  'OHE_2': {'features_to_encode': ['region', 'country']},
+                                  'DT': {'encode_as_categories': True}}),
+              (LinearPipelineWithTargetEncoderAndOHE, {'One Hot Encoder': {'features_to_encode': ['currency', 'expiration_date', 'provider']},
+                                                       'Target Encoder': {'cols': ['region', 'country']}}),
+              (LinearPipelineCreateFeatureThenDropIt, {'Select Columns Transformer': {'columns': ['amount']},
+                                                       'DoubleColumns': {'drop_old_columns': False},
+                                                       'Drop Columns Transformer': {'columns': ['amount_doubled']}})
               ]
 
 
@@ -125,6 +151,7 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
     random_seed = random_state.randint(np.iinfo(np.int32).max + 1)
 
     mock_supports_fast_importance.return_value = True
+    parameters['Random Forest Classifier'] = {'n_jobs': 1}
     pipeline = pipeline_class(parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
@@ -135,6 +162,41 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
                                                    random_state=0)
 
     pd.testing.assert_frame_equal(fast_scores, slow_scores)
+
+
+class PipelineWithDimReduction(BinaryClassificationPipeline):
+    component_graph = [PCA, 'Logistic Regression Classifier']
+
+
+class EnsembleDag(BinaryClassificationPipeline):
+    component_graph = {
+        'Imputer_1': ['Imputer'],
+        'Imputer_2': ['Imputer'],
+        'OHE_1': ['One Hot Encoder', 'Imputer_1'],
+        'OHE_2': ['One Hot Encoder', 'Imputer_2'],
+        'DT_1': ['DateTime Featurization Component', 'OHE_1'],
+        'DT_2': ['DateTime Featurization Component', 'OHE_2'],
+        'Estimator_1': ['Random Forest Classifier', 'DT_1'],
+        'Estimator_2': ['XGBoost Classifier', 'DT_2'],
+        'Ensembler': ['Logistic Regression Classifier', 'Estimator_1', 'Estimator_2']
+    }
+
+
+class PipelineWithDFS(BinaryClassificationPipeline):
+    component_graph = [DFSTransformer, 'Logistic Regression Classifier']
+
+
+class PipelineWithCustomComponent(BinaryClassificationPipeline):
+    component_graph = [DoubleColumns, 'Logistic Regression Classifier']
+
+
+pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS, PipelineWithCustomComponent,
+                                                             EnsembleDag]
+
+
+@pytest.mark.parametrize('pipeline_class', pipelines_that_do_not_support_fast_permutation_importance)
+def test_supports_fast_permutation_importance(pipeline_class):
+    assert not pipeline_class({})._supports_fast_permutation_importance
 
 
 def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
