@@ -450,7 +450,7 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
-            does not exceed the maximum number of categories present in categorical data within X, it will be
+            is less than the maximum number of categories present in categorical data within X, it will be
             set to the max number of categories + 1.
 
     Returns:
