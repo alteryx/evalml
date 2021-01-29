@@ -125,13 +125,11 @@ class TextFeaturizer(TextTransformer):
         return _convert_to_woodwork_structure(X_t)
 
     def _get_feature_provenance(self):
-        if self._features:
-            provenance = self._get_primitives_provenance(self._features)
+        if not self._all_text_columns:
+            return {}
         else:
-            provenance = {}
-        for col, lsa_features in self._lsa._get_feature_provenance().items():
-            if col in provenance:
-                provenance[col] += lsa_features
-            else:
-                provenance[col] = lsa_features
+            provenance = self._get_primitives_provenance(self._features)
+            for col, lsa_features in self._lsa._get_feature_provenance().items():
+                if col in provenance:
+                    provenance[col] += lsa_features
         return provenance

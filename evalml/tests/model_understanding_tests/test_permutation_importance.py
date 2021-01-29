@@ -78,7 +78,7 @@ class LinearPipelineWithDoubling(BinaryClassificationPipeline):
 
 
 class LinearPipelineWithTargetEncoderAndOHE(BinaryClassificationPipeline):
-    component_graph = ['Imputer', DateTimeFeaturizer, OneHotEncoder, OneHotEncoder, "Random Forest Classifier"]
+    component_graph = ['Imputer', DateTimeFeaturizer, OneHotEncoder, 'Target Encoder', "Random Forest Classifier"]
 
 
 class LinearPipelineCreateFeatureThenDropIt(BinaryClassificationPipeline):
@@ -119,6 +119,7 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
                                            'One Hot Encoder_2': {'features_to_encode': ['region', 'country']}}),
               (LinearPipelineWithTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']},
                                                 'Text Featurization Component': {'text_columns': ['provider']}}),
+              (LinearPipelineWithTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']}}),
               (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']}}),
               (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']},
                                             'DoubleColumns': {'drop_old_columns': False}}),

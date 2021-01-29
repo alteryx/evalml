@@ -25,7 +25,7 @@ import evalml
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
@@ -338,6 +338,9 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
 
     precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
 
+    if is_classification(pipeline.problem_type):
+        y = pipeline._encode_targets(y)
+
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
             preds = pipeline.estimator.predict_proba(features)
@@ -391,8 +394,6 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
             return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
         perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
     mean_perm_importance = perm_importance["importances_mean"]
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
     feature_names = list(X.columns)
     mean_perm_importance = list(zip(feature_names, mean_perm_importance))
     mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
