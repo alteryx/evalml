@@ -14,7 +14,6 @@ from .gen_utils import (
     pad_with_nans,
     infer_feature_types,
     _get_rows_without_nans,
-    suppress_stdout_stderr,
     save_plot
 )
 from .cli_utils import print_info, get_evalml_root, get_installed_packages, get_sys_info, print_sys_info, print_deps
