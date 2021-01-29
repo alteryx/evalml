@@ -20,4 +20,5 @@ from .regressors import (LinearRegressor,
                          BaselineRegressor,
                          TimeSeriesBaselineEstimator,
                          DecisionTreeRegressor,
+                         ProphetRegressor,
                          SVMRegressor)
