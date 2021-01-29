@@ -7,7 +7,7 @@ Release Notes
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
-        * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:``
+        * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
     * Fixes
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
