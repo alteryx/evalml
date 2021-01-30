@@ -50,6 +50,8 @@ from evalml.pipelines.components import (
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    SVMClassifier,
+    SVMRegressor,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -189,6 +191,8 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
+    svm_classifier = SVMClassifier()
+    svm_regressor = SVMRegressor()
     assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
     assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}
@@ -199,6 +203,8 @@ def test_describe_component():
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
     assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False, 'n_jobs': -1}}
+    assert svm_classifier.describe(return_dict=True) == {'name': 'SVM Classifier', 'parameters': {'C': 1.0, 'kernel': 'rbf', 'gamma': 'scale', 'probability': True}}
+    assert svm_regressor.describe(return_dict=True) == {'name': 'SVM Regressor', 'parameters': {'C': 1.0, 'kernel': 'rbf', 'gamma': 'scale'}}
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         xgb_regressor = XGBoostRegressor(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
