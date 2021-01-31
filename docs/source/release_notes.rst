@@ -7,13 +7,17 @@ Release Notes
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
+        * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
     * Fixes
+        * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
+        * Remove ``ProphetRegressor`` from main as windows tests were flaky :pr:`1764`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
+        * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
 
 .. warning::
@@ -36,7 +40,6 @@ Release Notes
         * Added support for list inputs for objectives :pr:`1663`
         * Added support for ``AutoMLSearch`` to handle time series classification pipelines :pr:`1666`
         * Enhanced ``DelayedFeaturesTransformer`` to encode categorical features and targets before delaying them :pr:`1691`
-        * Added SVM Classifier and Regressor to estimators :pr:`1714`
         * Added 2-way dependence plots. :pr:`1690`
         * Added ability to directly iterate through components within Pipelines :pr:`1583`
     * Fixes
