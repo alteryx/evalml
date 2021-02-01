@@ -20,7 +20,9 @@ from .estimators import (
     DecisionTreeClassifier,
     DecisionTreeRegressor,
     TimeSeriesBaselineEstimator,
-    KNeighborsClassifier
+    KNeighborsClassifier,
+    SVMClassifier,
+    SVMRegressor
 )
 from .transformers import (
     Transformer,

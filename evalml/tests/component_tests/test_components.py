@@ -50,6 +50,8 @@ from evalml.pipelines.components import (
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    SVMClassifier,
+    SVMRegressor,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -189,6 +191,8 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
+    svm_classifier = SVMClassifier()
+    svm_regressor = SVMRegressor()
     assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
     assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}
@@ -199,6 +203,8 @@ def test_describe_component():
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
     assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False, 'n_jobs': -1}}
+    assert svm_classifier.describe(return_dict=True) == {'name': 'SVM Classifier', 'parameters': {'C': 1.0, 'kernel': 'rbf', 'gamma': 'scale', 'probability': True}}
+    assert svm_regressor.describe(return_dict=True) == {'name': 'SVM Regressor', 'parameters': {'C': 1.0, 'kernel': 'rbf', 'gamma': 'scale'}}
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         xgb_regressor = XGBoostRegressor(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
@@ -440,13 +446,6 @@ def test_clone_init():
     clf = MockFitComponent(**params)
     clf_clone = clf.clone()
     assert clf.parameters == clf_clone.parameters
-
-
-def test_clone_random_state():
-    params = {'param_a': 1, 'param_b': 1}
-
-    clf = MockFitComponent(**params, random_state=42)
-    clf_clone = clf.clone(random_state=42)
     assert clf_clone.random_state == clf.random_state
 
 
@@ -454,16 +453,15 @@ def test_clone_fitted(X_y_binary):
     X, y = X_y_binary
     params = {'param_a': 3, 'param_b': 7}
     clf = MockFitComponent(**params)
-    random_state_first_val = clf.random_state
-
     clf.fit(X, y)
     predicted = clf.predict(X)
 
     clf_clone = clf.clone()
-    assert clf_clone.random_state == random_state_first_val
+    assert clf_clone.random_state == clf.random_state
+    assert clf.parameters == clf_clone.parameters
+
     with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         clf_clone.predict(X)
-    assert clf.parameters == clf_clone.parameters
 
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)

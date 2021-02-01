@@ -1401,39 +1401,12 @@ def test_drop_columns_in_pipeline():
     assert list(pipeline_with_drop_col.feature_importance["feature"]) == ['other col']
 
 
-def test_clone_init(linear_regression_pipeline_class):
-    parameters = {
-        'Imputer': {
-            "categorical_impute_strategy": "most_frequent",
-            "numeric_impute_strategy": "mean",
-        },
-        'Linear Regressor': {
-            'fit_intercept': True,
-            'normalize': True,
-        }
-    }
-    pipeline = linear_regression_pipeline_class(parameters=parameters)
-    pipeline_clone = pipeline.clone()
-    assert pipeline.parameters == pipeline_clone.parameters
-
-
-def test_nonlinear_clone_init(nonlinear_regression_pipeline_class):
-    parameters = {
-        'Imputer': {
-            "categorical_impute_strategy": "most_frequent",
-            "numeric_impute_strategy": "mean",
-        },
-        'Linear Regressor': {
-            'fit_intercept': True,
-            'normalize': True,
-        }
-    }
-    pipeline = nonlinear_regression_pipeline_class(parameters=parameters)
-    pipeline_clone = pipeline.clone()
-    assert pipeline.parameters == pipeline_clone.parameters
-
-
-def test_clone_random_state(linear_regression_pipeline_class):
+@pytest.mark.parametrize("is_linear", [True, False])
+def test_clone_init(is_linear, linear_regression_pipeline_class, nonlinear_regression_pipeline_class):
+    if is_linear:
+        pipeline_class = linear_regression_pipeline_class
+    else:
+        pipeline_class = nonlinear_regression_pipeline_class
     parameters = {
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
@@ -1444,46 +1417,31 @@ def test_clone_random_state(linear_regression_pipeline_class):
             'normalize': True,
         }
     }
-    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=42)
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state == pipeline.random_state
-
-    pipeline = linear_regression_pipeline_class(parameters=parameters, random_state=2)
-    pipeline_clone = pipeline.clone(random_state=2)
-    assert pipeline_clone.random_state == pipeline.random_state
+    pipeline = pipeline_class(parameters=parameters, random_state=42)
+    pipeline_clone = pipeline.clone()
+    assert pipeline.parameters == pipeline_clone.parameters
+    assert pipeline.random_state == pipeline_clone.random_state
 
 
-def test_clone_fitted(X_y_binary, logistic_regression_binary_pipeline_class):
+@pytest.mark.parametrize("is_linear", [True, False])
+def test_clone_fitted(is_linear, X_y_binary, logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=42)
-    random_state_first_val = pipeline.random_state
+    if is_linear:
+        pipeline_class = logistic_regression_binary_pipeline_class
+    else:
+        pipeline_class = nonlinear_binary_pipeline_class
+    pipeline = pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_state=42)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state == random_state_first_val
+    pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
+    assert pipeline.random_state == pipeline_clone.random_state
+
     with pytest.raises(PipelineNotYetFittedError):
         pipeline_clone.predict(X)
     pipeline_clone.fit(X, y)
-    X_t_clone = pipeline_clone.predict_proba(X)
-    assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
 
-
-def test_nonlinear_clone_fitted(X_y_binary, nonlinear_binary_pipeline_class):
-    X, y = X_y_binary
-    pipeline = nonlinear_binary_pipeline_class(parameters={}, random_state=42)
-    random_state_first_val = pipeline.random_state
-    pipeline.fit(X, y)
-    X_t = pipeline.predict_proba(X)
-
-    pipeline_clone = pipeline.clone(random_state=42)
-    assert pipeline_clone.random_state == random_state_first_val
-    assert pipeline.parameters == pipeline_clone.parameters
-    with pytest.raises(PipelineNotYetFittedError):
-        pipeline_clone.predict(X)
-    pipeline_clone.fit(X, y)
     X_t_clone = pipeline_clone.predict_proba(X)
     assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
 

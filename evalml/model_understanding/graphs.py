@@ -449,7 +449,9 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
-        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
+            is less than the maximum number of categories present in categorical data within X, it will be
+            set to the max number of categories + 1.
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
@@ -471,7 +473,14 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         ValueError: if the provided pipeline isn't fitted.
         ValueError: if the provided pipeline is a Baseline pipeline.
     """
+
     X = _convert_to_woodwork_structure(X)
+    # Dynamically set the grid resolution to the maximum number of categories
+    # in the categorical variables if there are more categories than resolution cells
+    X_cats = X.select("categorical")
+    if X_cats.shape[1] != 0:
+        max_num_cats = max(X_cats.describe().loc["nunique"])
+        grid_resolution = max([max_num_cats + 1, grid_resolution])
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
     if isinstance(features, (list, tuple)):
