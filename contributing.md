@@ -86,6 +86,25 @@ If your work includes a [breaking change](https://en.wiktionary.org/wiki/breakin
     * Description of your breaking change
 ```
 
+### 4. Updating our conda package
+
+Some pull requests, in particular those that add new dependencies, may require editing our conda [package](https://anaconda.org/conda-forge/evalml).
+For those new to conda, packages are updated by editing something called a recipe file.
+Here is evalml's [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml).
+Note that the recipe specifies two outputs: `evalml-core` and `evalml`, where `evalml-core` only includes the core dependencies.
+
+To update our package perform the following steps:
+
+* Fork our [feedstock repo](https://github.com/conda-forge/evalml-core-feedstock). This is where the recipe lives.
+* Create a branch in your personal fork and make the changes to the recipe. To add a new dependency, simply add a line to
+the `run` section of the requirements for `evalml-core` or `evaml`. 
+* Push your changes and open a PR where the source branch is your fork's branch. 
+Make sure the [allow edits from maintainers](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork) checkbox is checked.
+It should be by default. This is needed for rerendering in the next step. 
+* The PR description is populated with a pre-merge todo list. The most important is rerendering by commenting `@conda-forge-admin, please rerender` in the PR.
+
+One of the package maintainers will then review your PR!
+
 ## Code Style Guide
 
 * Keep things simple. Any complexity must be justified in order to pass code review.
