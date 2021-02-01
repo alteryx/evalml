@@ -18,6 +18,7 @@ Release Notes
         * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
         * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
+        * Add Twitter and Github link to documentation toolbar :pr:`1754`
         * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
 
