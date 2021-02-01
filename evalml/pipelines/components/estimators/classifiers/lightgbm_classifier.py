@@ -76,6 +76,8 @@ class LightGBMClassifier(Estimator):
         """Encodes each categorical feature using ordinal encoding."""
         X_encoded = _convert_to_woodwork_structure(X)
         X_encoded = _rename_column_names_to_numeric(X_encoded)
+        if pd.api.types.is_iterator(X_encoded.columns.values):
+            X_encoded.columns = list(map('_'.join, X_encoded.columns.values))
         cat_cols = list(X_encoded.select('category').columns)
         X_encoded = _convert_woodwork_types_wrapper(X_encoded.to_dataframe())
         if len(cat_cols) == 0:
@@ -101,7 +103,6 @@ class LightGBMClassifier(Estimator):
     def fit(self, X, y=None):
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
-        X_encoded.columns = list(map('_'.join, X_encoded.columns.values))
         return super().fit(X_encoded, y_encoded)
 
     def predict(self, X):
