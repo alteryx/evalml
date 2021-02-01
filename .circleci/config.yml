@@ -179,7 +179,7 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
               python -m pip install --upgrade pip
-              python -m pip install . --ignore-installed fbprophet
+              python -m pip install . --ignore-installed numpy cython matplotlib scipy pandas pystan fbprophet
               python -m pip install -r test-requirements.txt
       - run:
           name: Run Unit Tests
