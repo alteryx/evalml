@@ -246,6 +246,10 @@ class _SectionMaker(abc.ABC):
     def make_dict(self, *args, **kwargs):
         """Makes the report section formatted as a dictionary."""
 
+    @abc.abstractmethod
+    def make_dataframe(self, *args, **kwargs):
+        """Makes the report section formatted as a dictionary."""
+
 
 class _Heading(_SectionMaker):
 
@@ -268,6 +272,9 @@ class _Heading(_SectionMaker):
         prefix = self.prefixes[(rank // self.n_indices)]
         rank = rank % self.n_indices
         return {"prefix": prefix, "index": rank + 1}
+
+    def make_dataframe(self, rank):
+        return {"index": rank + 1}
 
 
 class _ClassificationPredictedValues(_SectionMaker):
@@ -304,6 +311,9 @@ class _ClassificationPredictedValues(_SectionMaker):
                 "error_value": _make_json_serializable(scores.iloc[index]),
                 "index_id": _make_json_serializable(dataframe_index.iloc[index])}
 
+    def make_dataframe(self, index, y_pred, y_true, scores, dataframe_index):
+        return self.make_dict(index, y_pred, y_true, scores, dataframe_index)
+
 
 class _RegressionPredictedValues(_SectionMaker):
     def __init__(self, error_name, y_pred_values=None):
@@ -325,6 +335,11 @@ class _RegressionPredictedValues(_SectionMaker):
                 "target_value": round(y_true.iloc[index], 3), "error_name": self.error_name,
                 "error_value": round(scores.iloc[index], 3),
                 "index_id": _make_json_serializable(dataframe_index.iloc[index])}
+
+    def make_dataframe(self, index, y_pred, y_true, scores, dataframe_index):
+        dict_output = self.make_dict(index, y_pred, y_true, scores, dataframe_index)
+        dict_output.pop("probabilities")
+        return dict_output
 
 
 class _SHAPTable(_SectionMaker):
@@ -356,6 +371,10 @@ class _SHAPTable(_SectionMaker):
                                                          include_shap_values=self.include_shap_values,
                                                          output_format="dict")
         return json_output
+
+    def make_dataframe(self, index, pipeline, input_features):
+        data = self.make_dict(index, pipeline, input_features)['explanations']
+        return pd.concat(map(pd.DataFrame, data)).reset_index(drop=True)
 
 
 class _ReportMaker:
@@ -423,3 +442,54 @@ class _ReportMaker:
                                                                  data.input_features)["explanations"]
             report.append(section)
         return {"explanations": report}
+
+    def make_dataframe(self, data):
+        report = []
+        for rank, index in enumerate(data.index_list):
+            shap_table = self.table_maker.make_dataframe(index, data.pipeline, data.input_features)
+            if self.heading_maker:
+                heading = self.make_predicted_values_maker.make_dataframe(index, data.y_pred, data.y_true, data.errors,
+                                                                          pd.Series(data.input_features.index))
+                for key, value in heading.items():
+                    if key == "probabilities":
+                        for class_name, probability in value.items():
+                            shap_table[f'label_{class_name}_probability'] = probability
+                    else:
+                        shap_table[key] = value
+            shap_table['rank'] = rank
+            report.append(shap_table)
+
+        return pd.concat(report).reset_index(drop=True)
+
+    @staticmethod
+    def _explanation_to_pandas_row(explanation, index):
+        probabilities = None
+        pandas_row = {"predicted_value": explanation['predicted_values']['predicted_value']}
+        if explanation["predicted_values"]["probabilities"]:
+            probabilities = {f'label_{class_name}_probability': v for class_name, v in
+                             explanation['predicted_values']["probabilities"].items()}
+            pandas_row.update(probabilities)
+
+        return {"prefix": explanation['rank']['prefix'],
+                "rank": explanation['rank']['index'],
+                **probabilities,
+                "predicted_value": explanation['predicted_values']['predicted_value'],
+                "target_value": explanation['predicted_values']['target_value'],
+                "error_metric": explanation['predicted_values']['error_name'],
+                "error_value": explanation['predicted_values']['error_value'],
+                "index_in_data": explanation['predicted_values']['index_id']}
+
+    def _explanation_to_pandas_rows(self, explanation):
+        rows = []
+        for label in explanation['explanations']:
+            for fn, fv, ql, qt in zip(label['feature_names'], label['feature_values'],
+                                      label['qualitative_explanation'], label['quantitative_explanation']):
+                d = self._explanation_to_pandas_row(explanation)
+                if label['class_name']:
+                    d['class_name'] = label['class_name']
+                d['feature_names'] = fn
+                d['feature_values'] = fv
+                d['qualitative_explanation'] = ql
+                d['quantitative_explanation'] = qt
+                rows.append(d)
+        return rows
