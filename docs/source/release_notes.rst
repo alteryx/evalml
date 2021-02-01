@@ -15,6 +15,7 @@ Release Notes
         * Remove ``ProphetRegressor`` from main as windows tests were flaky :pr:`1764`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
+        * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
         * Dropped support for Python version 3.6 :pr:`1751`
     * Documentation Changes
         * Added Open Graph info to documentation :pr:`1758`
