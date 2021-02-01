@@ -12,7 +12,7 @@ from evalml.utils.gen_utils import (
 class Estimator(ComponentBase):
     """A component that fits and predicts given data.
 
-    To implement a new Transformer, define your own class which is a subclass of Transformer, including
+    To implement a new Estimator, define your own class which is a subclass of Estimator, including
     a name and a list of acceptable ranges for any parameters to be tuned during the automl search (hyperparameters).
     Define an `__init__` method which sets up any necessary state and objects. Make sure your `__init__` only
     uses standard keyword arguments and calls `super().__init__()` with a parameters dict. You may also override the
@@ -29,6 +29,23 @@ class Estimator(ComponentBase):
     @abstractmethod
     def supported_problem_types(cls):
         """Problem types this estimator supports"""
+
+    def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
+        self.input_feature_names = None
+        super().__init__(parameters=parameters, component_obj=component_obj, random_state=random_state, **kwargs)
+
+    def fit(self, X, y=None):
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        self.input_feature_names = list(X.columns)
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
+        try:
+            self._component_obj.fit(X, y)
+            return self
+        except AttributeError:
+            raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
 
     def predict(self, X):
         """Make predictions using selected features.

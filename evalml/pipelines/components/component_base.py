@@ -90,6 +90,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        self.input_feature_names = X.columns.values()
         if y is not None:
             y = _convert_to_woodwork_structure(y)
             y = _convert_woodwork_types_wrapper(y.to_series())

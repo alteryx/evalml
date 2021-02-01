@@ -31,12 +31,16 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             X = get_random_state(clf.random_state).random((X.shape[0], len(string.printable)))
             col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
             X = pd.DataFrame(X, columns=col_names)
+            assert clf.input_feature_names is None
             clf.fit(X, y)
             assert len(clf.feature_importance) == len(X.columns)
             assert not np.isnan(clf.feature_importance).all().all()
             predictions = clf.predict(X).to_series()
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
+            if not (clf.input_feature_names == col_names):
+                import pdb; pdb.set_trace()
+            assert (clf.input_feature_names == col_names)
 
 
 def test_binary_classification_estimators_predict_proba_col_order(helper_functions):

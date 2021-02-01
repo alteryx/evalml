@@ -4,7 +4,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
-from evalml.utils.gen_utils import _rename_column_names_to_numeric
+from evalml.utils.gen_utils import _rename_column_names_to_numeric, _convert_to_woodwork_structure
 
 
 class XGBoostClassifier(Estimator):
@@ -42,6 +42,7 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        X = _convert_to_woodwork_structure(X)
         X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
