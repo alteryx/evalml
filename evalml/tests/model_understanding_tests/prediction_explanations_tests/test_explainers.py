@@ -599,7 +599,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     else:
         assert best_worst_report == answer
 
-    report = explain_predictions(pipeline, input_features, output_format=output_format)
+    report = explain_predictions(pipeline, input_features, output_format=output_format,
+                                 training_data=input_features)
     if output_format == "text":
         compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
     elif output_format == "dataframe":
