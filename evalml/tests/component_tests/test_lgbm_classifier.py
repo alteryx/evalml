@@ -283,3 +283,20 @@ def test_binary_goss(X_y_binary):
     clf.fit(X, y)
     assert clf.parameters['bagging_freq'] == 0
     assert clf.parameters['bagging_fraction'] == 0.9
+
+
+def test_lightgbm_multiindex(X_y_binary):
+    X, y = X_y_binary
+
+    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
+    sk_clf.fit(X, y)
+    y_pred_sk = sk_clf.predict(X)
+    y_pred_proba_sk = sk_clf.predict_proba(X)
+
+    clf = LightGBMClassifier()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    y_pred_proba = clf.predict_proba(X)
+
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)

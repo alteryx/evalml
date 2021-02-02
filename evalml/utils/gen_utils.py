@@ -218,16 +218,16 @@ def _rename_column_names_to_numeric(X):
             new_t = []
             for t in col:
                 new_t.append(str(i))
-                i  += 1
+                i += 1
             name_to_col_dict[col] = tuple(new_t)
         else:
             name_to_col_dict[col] = i
-            i+= 1
+            i += 1
 
     # name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
     # import pdb; pdb.set_trace()
     X_renamed = X_t.rename(columns=name_to_col_dict)
-    
+
     return X_renamed
 
 
