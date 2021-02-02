@@ -473,21 +473,3 @@ class _ReportMaker:
             report.append(shap_table)
         df = pd.concat(report).reset_index(drop=True)
         return df
-
-    @staticmethod
-    def _explanation_to_pandas_row(explanation, index):
-        probabilities = None
-        pandas_row = {"predicted_value": explanation['predicted_values']['predicted_value']}
-        if explanation["predicted_values"]["probabilities"]:
-            probabilities = {f'label_{class_name}_probability': v for class_name, v in
-                             explanation['predicted_values']["probabilities"].items()}
-            pandas_row.update(probabilities)
-
-        return {"prefix": explanation['rank']['prefix'],
-                "rank": explanation['rank']['index'],
-                **probabilities,
-                "predicted_value": explanation['predicted_values']['predicted_value'],
-                "target_value": explanation['predicted_values']['target_value'],
-                "error_metric": explanation['predicted_values']['error_name'],
-                "error_value": explanation['predicted_values']['error_value'],
-                "index_in_data": explanation['predicted_values']['index_id']}
