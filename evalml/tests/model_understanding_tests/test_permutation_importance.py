@@ -159,18 +159,12 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
     parameters['Random Forest Classifier'] = {'n_jobs': 1}
     pipeline = pipeline_class(parameters=parameters)
     pipeline.fit(X, y)
-    import time
-    start = time.time()
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
                                                    random_state=random_seed)
-    time_fast = time.time() - start
     mock_supports_fast_importance.return_value = False
-    start = time.time()
     slow_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
                                                    random_state=0)
-    time_slow = time.time() - start
     pd.testing.assert_frame_equal(fast_scores, slow_scores)
-    assert time_fast <= time_slow
 
 
 class PipelineWithDimReduction(BinaryClassificationPipeline):
