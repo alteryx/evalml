@@ -318,7 +318,7 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
 
 
 def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
-    """Calculate permutation importance faster by onlu computing the estimator features once.
+    """Calculate permutation importance faster by only computing the estimator features once.
 
     Only used for pipelines that support this optimization.
 

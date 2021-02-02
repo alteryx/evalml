@@ -93,10 +93,8 @@ class ComponentGraph:
             X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
         """
-        if isinstance(X, ww.DataTable):
-            X = X.to_dataframe()
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+        X = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(self.compute_order, X.columns)
         return self
