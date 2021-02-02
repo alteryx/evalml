@@ -80,8 +80,27 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
+# def check_compatible(old_logical_type, pandas_dtype):
+#     pandas_dtyp
+
 def reconvert(old_logical_types, new_dataframe):
     """
     Helper method in EvalML which will take old datatable, new dataframe and return new datatable,
     handling updates in logical types.
     """
+    col_intersection = set(old_logical_types.keys()).intersection(set(new_dataframe.columns))
+    # for col in col_intersection:
+    #     if old_logical_types[col] 
+
+
+
+
+            # if (X[col].logical_type != input_x[col].logical_type and
+            #         "numeric" not in X[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
+            #     try:
+            #         input_x = input_x.set_types({col: X[col].logical_type})
+            #     except TypeError:
+            #         # if there is a column whose type has been converted s.t. it cannot be converted back, keep as is.
+            #         # example: StandardScaler could convert a boolean column to a float column. This is expected, and we should not
+            #         # try to convert back to boolean.
+            #         continue

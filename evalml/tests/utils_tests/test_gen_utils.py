@@ -9,7 +9,7 @@ import woodwork as ww
 
 from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
-from evalml.utils import (
+from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     _rename_column_names_to_numeric,
     classproperty,

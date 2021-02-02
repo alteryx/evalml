@@ -3,11 +3,12 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
+from evalml.utils.gen_utils import (
     _rename_column_names_to_numeric,
     get_random_seed,
     import_or_raise
 )
+
 
 
 class XGBoostRegressor(Estimator):

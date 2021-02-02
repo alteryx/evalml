@@ -572,3 +572,5 @@ General Utils
     drop_rows_with_nans
     infer_feature_types
     save_plot
+    is_all_numeric
+    get_importable_subclasses
