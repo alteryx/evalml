@@ -6,6 +6,9 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+from evalml.model_understanding.prediction_explanations.explainers import (
+    explain_prediction
+)
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -367,11 +370,11 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
-@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),])
+@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"), ])
                                                            # (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
                                                            # (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
 def test_explain_predic(pipeline_class,
-                          estimator_name, include_delayed_features, only_use_y, ts_data):
+                        estimator_name, include_delayed_features, only_use_y, ts_data):
 
     if only_use_y and (not include_delayed_features):
         pytest.skip("This would result in an empty feature dataframe.")
@@ -389,6 +392,5 @@ def test_explain_predic(pipeline_class,
         pl.fit(None, y)
     else:
         pl.fit(X, y)
-    from evalml.model_understanding.prediction_explanations.explainers import explain_prediction
     table = explain_prediction(pl, input_features=X.iloc[3:4],
                                output_format="text", top_k=2, training_data=X)
