@@ -265,7 +265,7 @@ regression_best_worst_answer = """Test Pipeline Name
 
                 Predicted Value: 1
                 Target Value: 2
-                Absolute Difference: 1
+                Absolute Difference: 1.0
                 Index ID: {index_0}
 
                 table goes here
@@ -275,7 +275,7 @@ regression_best_worst_answer = """Test Pipeline Name
 
                 Predicted Value: 2
                 Target Value: 3
-                Absolute Difference: 4
+                Absolute Difference: 4.0
                 Index ID: {index_1}
 
                 table goes here
@@ -287,11 +287,11 @@ regression_best_worst_answer_dict = {
     "explanations": [
         {"rank": {"prefix": "best", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 1, "target_value": 2,
-                              "error_name": "Absolute Difference", "error_value": 1},
+                              "error_name": "Absolute Difference", "error_value": 1.},
          "explanations": ["explanation_dictionary_goes_here"]},
         {"rank": {"prefix": "worst", "index": 1},
          "predicted_values": {"probabilities": None, "predicted_value": 2, "target_value": 3,
-                              "error_name": "Absolute Difference", "error_value": 4},
+                              "error_name": "Absolute Difference", "error_value": 4.},
          "explanations": ["explanation_dictionary_goes_here"]}
     ]
 }
@@ -305,7 +305,7 @@ regression_best_worst_answer_df = pd.DataFrame({
     "predicted_value": [1, 2],
     "target_value": [2, 3],
     "error_name": ["Absolute Difference"] * 2,
-    "error_value": [1, 4],
+    "error_value": [1., 4.],
     "prefix": ["best", "worst"],
 })
 
@@ -557,7 +557,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
 
     if problem_type == ProblemTypes.REGRESSION:
         abs_error_mock = MagicMock(__name__="abs_error")
-        abs_error_mock.return_value = pd.Series([4, 1], dtype="int")
+        abs_error_mock.return_value = pd.Series([4., 1.], dtype="float64")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
         y_true = pd.Series([3, 2], index=custom_index)
