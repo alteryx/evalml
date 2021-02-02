@@ -8,7 +8,7 @@ from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
     TextTransformer
 )
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )

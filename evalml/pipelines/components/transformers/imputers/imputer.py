@@ -1,6 +1,6 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )

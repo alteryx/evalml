@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as SkLDA
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     is_all_numeric

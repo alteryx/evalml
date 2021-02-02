@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA as SkPCA
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     is_all_numeric

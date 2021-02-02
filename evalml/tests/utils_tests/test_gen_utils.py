@@ -9,10 +9,8 @@ import woodwork as ww
 
 from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     SEED_BOUNDS,
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
     classproperty,
     convert_to_seconds,
@@ -20,7 +18,6 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     import_or_raise,
-    infer_feature_types,
     jupyter_check,
     pad_with_nans,
     save_plot

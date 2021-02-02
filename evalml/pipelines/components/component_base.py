@@ -6,15 +6,13 @@ import cloudpickle
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
     classproperty,
     get_logger,
     get_random_seed,
     log_subtitle,
     safe_repr
-)
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
 )
 
 logger = get_logger(__file__)

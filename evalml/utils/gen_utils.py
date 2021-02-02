@@ -17,8 +17,6 @@ from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
-numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
-
 
 def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.

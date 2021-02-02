@@ -1,6 +1,9 @@
 
+import numpy as np
 import pandas as pd
 import woodwork as ww
+
+numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
 
 
 def infer_feature_types(data, feature_types=None):

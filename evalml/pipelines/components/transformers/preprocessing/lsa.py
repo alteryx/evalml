@@ -6,7 +6,7 @@ from sklearn.pipeline import make_pipeline
 from evalml.pipelines.components.transformers.preprocessing import (
     TextTransformer
 )
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )

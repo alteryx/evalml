@@ -43,8 +43,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_time_series
 )
-from evalml.utils import get_logger
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import _convert_to_woodwork_structure, get_logger
 
 logger = get_logger(__file__)
 

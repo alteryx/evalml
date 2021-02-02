@@ -7,7 +7,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series
 )
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import _convert_to_woodwork_structure
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):

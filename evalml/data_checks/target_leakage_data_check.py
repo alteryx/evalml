@@ -5,7 +5,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
+from evalml.utils.woodwork_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     numeric_and_boolean_ww

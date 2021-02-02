@@ -2,7 +2,7 @@ import inspect
 
 from evalml.data_checks import DataCheck
 from evalml.exceptions import DataCheckInitError
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import _convert_to_woodwork_structure
 
 
 def _has_defaults_for_all_args(init):

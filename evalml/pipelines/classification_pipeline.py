@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )

@@ -1,7 +1,7 @@
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )

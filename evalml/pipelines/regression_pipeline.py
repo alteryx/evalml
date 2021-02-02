@@ -2,7 +2,7 @@
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
