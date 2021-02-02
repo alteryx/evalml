@@ -1,4 +1,3 @@
-import pandas as pd
 from imblearn.over_sampling import KMeansSMOTE
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
@@ -40,7 +39,7 @@ class KMeansSMOTETVSplit(BaseCrossValidator):
                 y (pd.Series): Series of points to split
 
             Returns:
-                tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data. 
+                tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
         """
         X, y = self._to_woodwork(X, y)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_state)
@@ -82,7 +81,7 @@ class KMeansSMOTECVSplit(StratifiedKFold):
                 y (pd.Series): Series of points to split
 
             Returns:
-                tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data. 
+                tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
         """
         X, y = self._to_woodwork(X, y)
         for i, (train_indices, test_indices) in enumerate(super().split(X, y)):

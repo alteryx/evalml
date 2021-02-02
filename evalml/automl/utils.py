@@ -4,6 +4,8 @@ from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
     KMeansSMOTECVSplit,
     KMeansSMOTETVSplit,
+    RandomUnderSamplerCVSplit,
+    RandomUnderSamplerTVSplit,
     SMOTETomekCVSplit,
     SMOTETomekTVSplit,
     TimeSeriesSplit,
@@ -74,5 +76,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             "KMeansSMOTETVSplit": KMeansSMOTETVSplit(),
             "KMeansSMOTECVSplit": KMeansSMOTECVSplit(),
             "SMOTETomekTVSplit": SMOTETomekTVSplit(),
-            "SMOTETomekCVSplit": SMOTETomekCVSplit()
+            "SMOTETomekCVSplit": SMOTETomekCVSplit(),
+            "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit(),
+            "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit()
         }[sampler]

@@ -7,10 +7,6 @@ from evalml.preprocessing.data_splitters import (
     KMeansSMOTECVSplit,
     KMeansSMOTETVSplit
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
 
 pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
 

@@ -465,7 +465,6 @@ def test_automl_str_no_param_search(X_y_binary):
         'Add Result Callback': 'None',
         'Random State': 0,
         'n_jobs': '-1',
-        'Verbose': 'True',
         'Optimize Thresholds': 'False'
     }
 

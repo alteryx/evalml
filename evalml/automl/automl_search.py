@@ -92,7 +92,6 @@ class AutoMLSearch:
                  random_state=0,
                  n_jobs=-1,
                  tuner_class=None,
-                 verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
                  max_batches=None,
@@ -163,8 +162,6 @@ class AutoMLSearch:
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
-            verbose (boolean): If True, turn verbosity on. Defaults to True.
-
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
                 If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
@@ -193,8 +190,6 @@ class AutoMLSearch:
         self.add_result_callback = add_result_callback
         self.error_callback = error_callback or log_error_callback
         self.data_splitter = data_splitter
-        self.data_splitter_provided = True if data_splitter is not None else False
-        self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
         if objective == 'auto':
@@ -322,7 +317,6 @@ class AutoMLSearch:
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
             f"Random State: {self.random_state}\n"
             f"n_jobs: {self.n_jobs}\n"
-            f"Verbose: {self.verbose}\n"
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
@@ -705,7 +699,7 @@ class AutoMLSearch:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_state=self.random_state)
-                cv_pipeline = pipeline.clone(pipeline.random_state)
+                cv_pipeline = pipeline.clone()
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")

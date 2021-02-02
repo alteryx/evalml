@@ -2,7 +2,7 @@ catboost==0.24.4
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
-featuretools==0.23.0
+featuretools==0.23.1
 graphviz==0.16
 ipywidgets==7.6.3
 kaleido==0.1.0
@@ -10,14 +10,15 @@ lightgbm==3.0.0
 matplotlib==3.3.4
 networkx==2.5
 nlp-primitives==1.1.0
-numpy==1.19.5
+numpy==1.20.0
 pandas==1.1.5
 plotly==4.14.3
 psutil==5.8.0
+pyzmq==21.0.2
 requirements-parser==0.2.0
 scikit-learn==0.24.1
 scikit-optimize==0.8.1
-scipy==1.5.4
+scipy==1.6.0
 seaborn==0.11.1
 shap==0.38.1
 texttable==1.6.3
