@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from imblearn.combine import SMOTETomek
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 from evalml.preprocessing.data_splitters import (
@@ -8,7 +7,7 @@ from evalml.preprocessing.data_splitters import (
     SMOTETomekTVSplit
 )
 
-pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+im = pytest.importorskip('imblearn.combine', reason='Skipping plotting test because imblearn not installed')
 
 
 def test_kmeans_smote_nsplits():
@@ -22,7 +21,7 @@ def test_smote_tomek_tv_default(data_type, make_data_type, X_y_binary):
     X, y = X_y_binary
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-    st = SMOTETomek(random_state=0)
+    st = im.SMOTETomek(random_state=0)
     X_resample, y_resample = st.fit_resample(X_train, y_train)
     initial_results = [(X_resample, y_resample), (X_test, y_test)]
     X_transform, y_transform = st.fit_resample(X, y)
@@ -47,7 +46,7 @@ def test_smote_tomek_tv_default(data_type, make_data_type, X_y_binary):
 def test_smote_tomek_cv_default(data_type, make_data_type, X_y_binary):
     X, y = X_y_binary
     skf = StratifiedKFold(shuffle=True, n_splits=3, random_state=0)
-    st = SMOTETomek(random_state=0)
+    st = im.SMOTETomek(random_state=0)
     initial_results = []
     for i, (train_indices, test_indices) in enumerate(skf.split(X, y)):
         X_resample, y_resample = st.fit_resample(X[train_indices], y[train_indices])

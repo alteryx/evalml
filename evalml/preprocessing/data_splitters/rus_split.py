@@ -1,7 +1,7 @@
-from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
+from evalml.utils import import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -14,7 +14,9 @@ class RandomUnderSamplerTVSplit(BaseCrossValidator):
 
     def __init__(self, sampling_strategy='auto', test_size=None, replacement=False, random_state=0):
         super().__init__()
-        self.rus = RandomUnderSampler(sampling_strategy=sampling_strategy, replacement=False, random_state=random_state)
+        error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
+        im = import_or_raise("imblearn.under_sampling", error_msg=error_msg)
+        self.rus = im.RandomUnderSampler(sampling_strategy=sampling_strategy, replacement=False, random_state=random_state)
         self.test_size = test_size
         self.random_state = random_state
 
@@ -61,7 +63,9 @@ class RandomUnderSamplerCVSplit(StratifiedKFold):
 
     def __init__(self, sampling_strategy='auto', replacement=False, n_splits=3, shuffle=True, random_state=0):
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        self.rus = RandomUnderSampler(sampling_strategy=sampling_strategy, replacement=False, random_state=random_state)
+        error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
+        im = import_or_raise("imblearn.under_sampling", error_msg=error_msg)
+        self.rus = im.RandomUnderSampler(sampling_strategy=sampling_strategy, replacement=False, random_state=random_state)
         self.random_state = random_state
         self.n_splits = n_splits
 
