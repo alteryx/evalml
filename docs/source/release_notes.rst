@@ -3,6 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+**v0.18.1 Feb. 1, 2021**
+    * Enhancements
         * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
