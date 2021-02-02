@@ -1,3 +1,4 @@
+import string
 from unittest.mock import patch
 
 import numpy as np
@@ -9,7 +10,7 @@ from pytest import importorskip
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS
+from evalml.utils import SEED_BOUNDS, get_random_state
 
 lgbm = importorskip('lightgbm', reason='Skipping test because lightgbm not installed')
 
@@ -285,18 +286,20 @@ def test_binary_goss(X_y_binary):
     assert clf.parameters['bagging_fraction'] == 0.9
 
 
-def test_lightgbm_multiindex(X_y_binary):
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_lightgbm_multiindex(data_type, X_y_binary, make_data_type):
     X, y = X_y_binary
-
-    sk_clf = lgbm.sklearn.LGBMClassifier(random_state=0)
-    sk_clf.fit(X, y)
-    y_pred_sk = sk_clf.predict(X)
-    y_pred_proba_sk = sk_clf.predict_proba(X)
+    X = pd.DataFrame(X)
+    categorical_col = pd.Series([1] * int(len(X[0]) / 2) + [0] * int(len(X[0]) - len(X[0]) / 2), dtype='category')
+    X['cat'] = categorical_col
+    col_names = [('column_{}'.format(num), '{}'.format(num)) for num in range(len(X.columns))]
+    X.columns = pd.MultiIndex.from_tuples(col_names)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
 
     clf = LightGBMClassifier()
     clf.fit(X, y)
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
-
-    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
+    assert not y_pred.to_series().isnull().values.any()
+    assert not y_pred_proba.to_dataframe().isnull().values.any().any()

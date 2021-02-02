@@ -211,23 +211,13 @@ def _rename_column_names_to_numeric(X):
     X_t = X
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
-    name_to_col_dict = {}
-    i = 0
-    for col in list(X.columns):
-        if isinstance(col, tuple):
-            new_t = []
-            for t in col:
-                new_t.append(str(i))
-                i += 1
-            name_to_col_dict[col] = tuple(new_t)
-        else:
-            name_to_col_dict[col] = i
-            i += 1
 
-    # name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    # import pdb; pdb.set_trace()
-    X_renamed = X_t.rename(columns=name_to_col_dict)
+    if len(X_t.columns) > 0 and isinstance(X_t.columns[0], tuple):
+        flat_col_names = list(map(str, X_t.columns))
+        X_t.columns = flat_col_names
 
+    rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+    X_renamed = X_t.rename(columns=rename_cols_dict)
     return X_renamed
 
 

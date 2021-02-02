@@ -185,3 +185,18 @@ def test_regression_goss(X_y_regression):
     clf.fit(X, y)
     assert clf.parameters['bagging_freq'] == 0
     assert clf.parameters['bagging_fraction'] == 0.9
+
+
+# @pytest.mark.parametrize("data_type", ['pd', 'ww'])
+# def test_lightgbm_multiindex(data_type, X_y_regression, make_data_type):
+#     X, y = X_y_regression
+#     X = pd.DataFrame(X)
+#     col_names = [('column_{}'.format(num), '{}'.format(num)) for num in range(len(X.columns))]
+#     X.columns = pd.MultiIndex.from_tuples(col_names)
+#     X = make_data_type(data_type, X)
+#     y = make_data_type(data_type, y)
+
+#     clf = LightGBMRegressor()
+#     clf.fit(X, y)
+#     y_pred = clf.predict(X)
+#     assert not y_pred.to_series().isnull().values.any()

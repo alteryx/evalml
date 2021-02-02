@@ -42,6 +42,7 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
+        X_encoded = _convert_to_woodwork_structure(X)
         X = _rename_column_names_to_numeric(X)
         return super().fit(X, y)
 
