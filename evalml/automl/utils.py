@@ -72,11 +72,14 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
                                    max_delay=problem_configuration.get('max_delay'))
     else:
-        return {
-            "KMeansSMOTETVSplit": KMeansSMOTETVSplit(),
-            "KMeansSMOTECVSplit": KMeansSMOTECVSplit(),
-            "SMOTETomekTVSplit": SMOTETomekTVSplit(),
-            "SMOTETomekCVSplit": SMOTETomekCVSplit(),
-            "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit(),
-            "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit()
-        }[sampler]
+        try:
+            return {
+                "KMeansSMOTETVSplit": KMeansSMOTETVSplit(),
+                "KMeansSMOTECVSplit": KMeansSMOTECVSplit(),
+                "SMOTETomekTVSplit": SMOTETomekTVSplit(),
+                "SMOTETomekCVSplit": SMOTETomekCVSplit(),
+                "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit(),
+                "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit()
+            }[sampler]
+        except KeyError:
+            raise ValueError("Provided key {} does not exist for samplers".format(sampler))

@@ -2179,12 +2179,19 @@ def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_mu
             assert automl.get_pipeline(row['id']).random_state == random_state
 
 
-@pytest.mark.parametrize("sampler", ["KMeansSMOTETVSplit", "KMeansSMOTECVSplit", "SMOTETomekCVSplit", "SMOTETomekTVSplit"])
+@pytest.mark.parametrize("sampler", ["KMeansSMOTETVSplit", "KMeansSMOTECVSplit", "SMOTETomekCVSplit", "SMOTETomekTVSplit", "RandomUnderSamplerCVSplit", "RandomUnderSamplerTVSplit", "None", "Nope"])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
     pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_state=0, n_jobs=1, max_iterations=1)
-    automl.search()
-    assert automl.data_splitter.__class__.__name__ == sampler
+    if sampler == "Nope":
+        with pytest.raises(ValueError, match="not exist"):
+            automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_state=0, n_jobs=1, max_iterations=1)
+    else:
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_state=0, n_jobs=1, max_iterations=1)
+        automl.search()
+        if sampler != "None":
+            assert automl.data_splitter.__class__.__name__ == sampler
+        else:
+            assert automl.data_splitter.__class__.__name__ == "StratifiedKFold"
