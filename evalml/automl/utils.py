@@ -2,12 +2,12 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit,
-    KMeansSMOTETVSplit,
     KMeansSMOTECVSplit,
+    KMeansSMOTETVSplit,
+    SMOTETomekCVSplit,
     SMOTETomekTVSplit,
-    SMOTETomekCVSplit
+    TimeSeriesSplit,
+    TrainingValidationSplit
 )
 from evalml.problem_types import (
     ProblemTypes,
@@ -68,7 +68,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             if not problem_configuration:
                 raise ValueError("problem_configuration is required for time series problem types")
             return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                                max_delay=problem_configuration.get('max_delay'))
+                                   max_delay=problem_configuration.get('max_delay'))
     else:
         return {
             "KMeansSMOTETVSplit": KMeansSMOTETVSplit(),

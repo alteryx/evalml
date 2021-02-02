@@ -1,13 +1,19 @@
 import numpy as np
 import pytest
 from imblearn.over_sampling import KMeansSMOTE
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
-from evalml.preprocessing.data_splitters import KMeansSMOTETVSplit, KMeansSMOTECVSplit
+from evalml.preprocessing.data_splitters import (
+    KMeansSMOTECVSplit,
+    KMeansSMOTETVSplit
+)
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
+
+pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+
 
 def test_kmeans_smote_nsplits():
     assert KMeansSMOTETVSplit().get_n_splits() == 1
@@ -66,5 +72,3 @@ def test_kmeans_cv_default(data_type, make_data_type, X_y_binary):
     X_kmsplit, y_kmsplit = kmsplit.transform(X, y)
     np.testing.assert_equal(X_transform, X_kmsplit.to_dataframe().values)
     np.testing.assert_equal(y_transform, y_kmsplit.to_series().values)
-
-    

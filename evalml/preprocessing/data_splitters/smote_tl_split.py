@@ -1,6 +1,7 @@
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.model_selection._split import BaseCrossValidator
 from imblearn.combine import SMOTETomek
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection._split import BaseCrossValidator
+
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -40,19 +41,18 @@ class SMOTETomekTVSplit(BaseCrossValidator):
 
             Returns:
                 tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data. 
-        """ 
+        """
         X, y = self._to_woodwork(X, y)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_state)
         X_train_resample, y_train_resample = self.stl.fit_resample(X_train, y_train)
         X_train_resample, y_train_resample = self._to_woodwork(X_train_resample, y_train_resample, to_pandas=False)
         X_test, y_test = self._to_woodwork(X_test, y_test, to_pandas=False)
         return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
-    
+
     def transform(self, X, y):
         X_pd, y_pd = self._to_woodwork(X, y)
         X_transformed, y_transformed = self.stl.fit_resample(X_pd, y_pd)
         return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
-
 
 
 class SMOTETomekCVSplit(StratifiedKFold):

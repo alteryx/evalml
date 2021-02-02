@@ -1,6 +1,7 @@
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
-from imblearn.under_sampling import RandomUnderSampler
+
 
 class RandomUnderSamplerSplit(BaseCrossValidator):
     """Split the training data into training and validation sets. Uses RandomUnderSampler to balance the training data,

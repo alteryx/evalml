@@ -1,7 +1,7 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn.model_selection._split import BaseCrossValidator
 from imblearn.over_sampling import KMeansSMOTE
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
@@ -53,8 +53,6 @@ class KMeansSMOTETVSplit(BaseCrossValidator):
         X_pd, y_pd = self._to_woodwork(X, y)
         X_transformed, y_transformed = self.kmsmote.fit_resample(X_pd, y_pd)
         return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
-
-
 
 
 class KMeansSMOTECVSplit(StratifiedKFold):

@@ -1,13 +1,19 @@
 import numpy as np
 import pytest
 from imblearn.combine import SMOTETomek
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
-from evalml.preprocessing.data_splitters import SMOTETomekTVSplit, SMOTETomekCVSplit
+from evalml.preprocessing.data_splitters import (
+    SMOTETomekCVSplit,
+    SMOTETomekTVSplit
+)
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
 )
+
+pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+
 
 def test_kmeans_smote_nsplits():
     assert SMOTETomekTVSplit().get_n_splits() == 1

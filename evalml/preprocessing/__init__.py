@@ -11,6 +11,5 @@ from .data_splitters import (
     KMeansSMOTETVSplit,
     KMeansSMOTECVSplit,
     SMOTETomekTVSplit,
-    SMOTETomekCVSplit,
-    RandomUnderSamplerSplit
+    SMOTETomekCVSplit
 )
