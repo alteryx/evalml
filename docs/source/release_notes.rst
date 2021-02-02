@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added support to ``explain_predictions`` for time-series data :pr`1782`
         * Added "dataframe" output format for prediction explanations :pr:`1781`
         * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
         * Sped up permutation importance for some pipelines :pr:`1762`
