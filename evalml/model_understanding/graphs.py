@@ -321,19 +321,6 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     """Calculate permutation importance faster by only computing the estimator features once.
 
     Only used for pipelines that support this optimization.
-
-    Arguments:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (ww.DataTable, pd.DataFrame): The input data used to score and compute permutation importance
-        y (ww.DataColumn, pd.Series): The target data
-        objective (str, ObjectiveBase): Objective to score on
-        n_repeats (int): Number of times to permute a feature. Defaults to 5.
-        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
-            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int): The random seed. Defaults to 0.
-
-    Returns:
-        Mean feature importance scores over n_repeats number of shuffles.
     """
 
     precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
@@ -375,7 +362,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         random_state (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
-        Mean feature importance scores over 5 shuffles.
+        pd.DataFrame, Mean feature importance scores over 5 shuffles.
     """
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
