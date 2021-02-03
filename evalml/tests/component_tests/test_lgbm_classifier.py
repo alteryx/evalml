@@ -1,4 +1,3 @@
-import string
 from unittest.mock import patch
 
 import numpy as np
@@ -10,7 +9,7 @@ from pytest import importorskip
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMClassifier
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, get_random_state
+from evalml.utils import SEED_BOUNDS
 
 lgbm = importorskip('lightgbm', reason='Skipping test because lightgbm not installed')
 
