@@ -220,6 +220,8 @@ def _rename_column_names_to_numeric(X):
 
     rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
     X_renamed = X_t.rename(columns=rename_cols_dict)
+    if isinstance(X, ww.DataTable):
+        X_renamed = ww.DataTable(X_renamed)
     return X_renamed
 
 
