@@ -474,7 +474,7 @@ class _ReportMaker:
                 shap_table['rank'] = heading['index']
                 shap_table['prefix'] = heading['prefix']
             else:
-              shap_table['prediction_number'] = rank
+                shap_table['prediction_number'] = rank
 
             report.append(shap_table)
         df = pd.concat(report).reset_index(drop=True)
