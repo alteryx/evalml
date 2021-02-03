@@ -53,7 +53,15 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import TrainingValidationSplit
+from evalml.preprocessing.data_splitters import (
+    KMeansSMOTECVSplit,
+    KMeansSMOTETVSplit,
+    RandomUnderSamplerCVSplit,
+    RandomUnderSamplerTVSplit,
+    SMOTETomekCVSplit,
+    SMOTETomekTVSplit,
+    TrainingValidationSplit
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import get_random_seed
@@ -2195,3 +2203,15 @@ def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
             assert automl.data_splitter.__class__.__name__ == sampler
         else:
             assert automl.data_splitter.__class__.__name__ == "StratifiedKFold"
+
+
+@pytest.mark.parametrize("sampler", [KMeansSMOTETVSplit, KMeansSMOTECVSplit, SMOTETomekCVSplit, SMOTETomekTVSplit, RandomUnderSamplerCVSplit, RandomUnderSamplerTVSplit])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_sampler_instance(mock_fit, mock_score, sampler, X_y_binary):
+    pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+    X, y = X_y_binary
+    sampler = sampler()
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=sampler, random_state=0, n_jobs=1, max_iterations=1)
+    automl.search()
+    assert automl.data_splitter.__class__.__name__ == sampler.__class__.__name__

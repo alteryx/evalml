@@ -17,8 +17,12 @@ def test_kmeans_smote_nsplits():
 
 
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
-def test_smote_tomek_tv_default(data_type, make_data_type, X_y_binary):
-    X, y = X_y_binary
+@pytest.mark.parametrize('dataset', [0, 1])
+def test_smote_tomek_tv_default(data_type, make_data_type, dataset, X_y_binary, X_y_multi):
+    if dataset == 0:
+        X, y = X_y_binary
+    else:
+        X, y = X_y_multi
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
     st = im.SMOTETomek(random_state=0)
@@ -43,8 +47,12 @@ def test_smote_tomek_tv_default(data_type, make_data_type, X_y_binary):
 
 
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
-def test_smote_tomek_cv_default(data_type, make_data_type, X_y_binary):
-    X, y = X_y_binary
+@pytest.mark.parametrize('dataset', [0, 1])
+def test_smote_tomek_cv_default(data_type, make_data_type, dataset, X_y_binary, X_y_multi):
+    if dataset == 0:
+        X, y = X_y_binary
+    else:
+        X, y = X_y_multi
     skf = StratifiedKFold(shuffle=True, n_splits=3, random_state=0)
     st = im.SMOTETomek(random_state=0)
     initial_results = []

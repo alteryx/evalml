@@ -677,7 +677,7 @@ class AutoMLSearch:
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            if not self.sampler:
+            if not self.sampler and not getattr(self.data_splitter, "transform", None):
                 X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
                 y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
             else:
