@@ -208,7 +208,7 @@ def _rename_column_names_to_numeric(X):
     Returns:
         Transformed X where column names are renamed to numerical values
     """
-    X_t = X
+    X_t = X.copy()
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
     if isinstance(X, ww.DataTable):
@@ -217,8 +217,9 @@ def _rename_column_names_to_numeric(X):
     if len(X_t.columns) > 0 and isinstance(X_t.columns[0], tuple):
         flat_col_names = list(map(str, X_t.columns))
         X_t.columns = flat_col_names
-
-    rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+        rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
+    else:
+        rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
     X_renamed = X_t.rename(columns=rename_cols_dict)
     if isinstance(X, ww.DataTable):
         X_renamed = ww.DataTable(X_renamed)
