@@ -113,3 +113,6 @@ class DelayedFeatureTransformer(Transformer):
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
         return _convert_to_woodwork_structure(X)
+
+    def fit_transform(self, X, y):
+        return self.fit(X, y).transform(X, y)
