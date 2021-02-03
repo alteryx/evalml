@@ -42,15 +42,15 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().fit(X, y)
 
     def predict(self, X):
-        X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().predict(X)
 
     def predict_proba(self, X):
-        X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().predict_proba(X)
 
     @property
