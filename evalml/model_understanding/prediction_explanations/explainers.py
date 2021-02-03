@@ -24,7 +24,7 @@ _ReportData = namedtuple("ReportData", ["pipeline", "input_features", "training_
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
-def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=None, include_shap_values=False,
+def explain_prediction(pipeline, input_features, y=None, top_k_features=3, training_data=None, include_shap_values=False,
                        output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -33,7 +33,7 @@ def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
-        top_k (int): How many of the highest/lowest features to include in the table.
+        top_k_features (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
             Also required for time series problems utilizing Delayed Feature Transformer.
@@ -55,7 +55,7 @@ def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
 
-    return _make_single_prediction_shap_table(pipeline, input_features, y=y, top_k=top_k,
+    return _make_single_prediction_shap_table(pipeline, input_features, y=y, top_k=top_k_features,
                                               training_data=training_data, include_shap_values=include_shap_values,
                                               output_format=output_format)
 
@@ -93,7 +93,7 @@ DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
                    ProblemTypes.REGRESSION: abs_error}
 
 
-def explain_predictions(pipeline, input_features, training_data=None, top_k_features=3, include_shap_values=False,
+def explain_predictions(pipeline, input_features, top_k_features=3, training_data=None, include_shap_values=False,
                         output_format="text"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
@@ -102,11 +102,11 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
+            data point.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
             Also required for time series problems utilizing Delayed Feature Transformer.
-        top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
-            data point.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
         output_format (str): Either "text" or "dict". Default is "text".
 
@@ -133,8 +133,8 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     return report_creator(data)
 
 
-def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
-                                   include_shap_values=False, metric=None, output_format="text", training_data=None):
+def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3, training_data=None,
+                                   include_shap_values=False, metric=None, output_format="text"):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -142,13 +142,13 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Input data to evaluate the pipeline on.
-        training_data (pd.DataFrame): Training data the pipeline was fit on.
-            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
-            Also required for time series problems utilizing Delayed Feature Transformer.
         y_true (ww.DataColumn, pd.Series): True labels for the input data.
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
+        training_data (pd.DataFrame): Training data the pipeline was fit on.
+            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
+            Also required for time series problems utilizing Delayed Feature Transformer.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
         metric (callable): The metric used to identify the best and worst points in the dataset. Function must accept
             the true labels and predicted value or probabilities as the only arguments and lower values

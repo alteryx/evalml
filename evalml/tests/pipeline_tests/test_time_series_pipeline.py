@@ -396,9 +396,8 @@ def test_explain_predic(pipeline_class,
     else:
         pl.fit(X, y)
     table = explain_prediction(pl, input_features=X.iloc[3:4],
-                               output_format="text", top_k=2, training_data=X)
+                               output_format="text", top_k_features=2, training_data=X)
     print(table)
     table2 = explain_predictions(pl, input_features=X.iloc[3:4],
                                  output_format="text", top_k_features=2, training_data=X)
     print(table2)
-    import pdb; pdb.set_trace()

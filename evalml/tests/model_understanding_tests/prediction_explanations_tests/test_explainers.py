@@ -199,7 +199,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     if input_type == "ww":
         features = ww.DataTable(features)
         training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=training_data)
+    table = explain_prediction(pipeline, features, output_format=output_format, top_k_features=2, training_data=training_data)
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
