@@ -54,7 +54,7 @@ commands:
             pip install -r core-requirements.txt
             pip install -r test-requirements.txt
             # "!" negates return code. exit nonzero if any of these deps are found
-            ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+            ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders|imbalanced-learn"
             exit $?
   build_pkg:
     steps:
