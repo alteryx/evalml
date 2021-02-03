@@ -36,6 +36,7 @@ def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=
         top_k (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
+            Also required for time series problems utilizing Delayed Feature Transformer.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
         output_format (str): Either "text" or "dict". Default is "text".
@@ -45,7 +46,7 @@ def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=
     """
     input_features = _convert_to_woodwork_structure(input_features)
     if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
-        raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
+        raise ValueError("Features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
     if training_data is not None:
         training_data = _convert_to_woodwork_structure(training_data)
@@ -54,6 +55,8 @@ def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     if "Delayed Feature Transformer" in pipeline.component_graph:
+        if training_data is None:
+            raise ValueError(f"Training data must be provided for time series data.")
         input_features_idx = training_data.index.get_loc(input_features.index[0])
         input_features = training_data.iloc[0:input_features_idx + 1]
     return _make_single_prediction_shap_table(pipeline, input_features, y=y, top_k=top_k,
