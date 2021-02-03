@@ -5,7 +5,8 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    is_all_numeric
+    is_all_numeric,
+    reconvert
 )
 
 
@@ -46,23 +47,23 @@ class LinearDiscriminantAnalysis(Transformer):
         return self
 
     def transform(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X_ww = _convert_to_woodwork_structure(X)
 
-        if not is_all_numeric(X):
+        if not is_all_numeric(X_ww):
             raise ValueError("LDA input must be all numeric")
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.transform(X)
         X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        if not is_all_numeric(X):
+        X_ww = _convert_to_woodwork_structure(X)
+        if not is_all_numeric(X_ww):
             raise ValueError("LDA input must be all numeric")
         y = _convert_to_woodwork_structure(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         X_t = self._component_obj.fit_transform(X, y)
         X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)

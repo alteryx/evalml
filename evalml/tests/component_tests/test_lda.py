@@ -4,7 +4,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import LinearDiscriminantAnalysis
-
+ 
 
 def test_lda_invalid_init():
     with pytest.raises(ValueError, match="Invalid number of compponents for Linear Discriminant Analysis"):
