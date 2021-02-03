@@ -210,10 +210,12 @@ def _rename_column_names_to_numeric(X):
     """
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
-    if isinstance(X, ww.DataTable):
-        X = X.to_dataframe()
 
-    X_t = X.copy()
+    if isinstance(X, ww.DataTable):
+        X_t = X.to_dataframe()
+    else:
+        X_t = X.copy()
+
     if len(X_t.columns) > 0 and isinstance(X_t.columns[0], tuple):
         flat_col_names = list(map(str, X_t.columns))
         X_t.columns = flat_col_names
