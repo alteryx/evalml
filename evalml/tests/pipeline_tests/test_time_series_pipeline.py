@@ -369,35 +369,35 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
         binary_pipeline.predict(X, y, "precision micro")
     mock_transform.assert_called()
 
-
-@pytest.mark.parametrize("only_use_y", [True, False])
-@pytest.mark.parametrize("include_delayed_features", [True, False])
-@pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"), ])
-                                                           # (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
-                                                           # (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
-def test_explain_predic(pipeline_class,
-                        estimator_name, include_delayed_features, only_use_y, ts_data):
-
-    if only_use_y and (not include_delayed_features):
-        pytest.skip("This would result in an empty feature dataframe.")
-
-    X, y = ts_data
-
-    class Pipeline(pipeline_class):
-        component_graph = ["Delayed Feature Transformer", estimator_name]
-        name = pipeline_class.name
-
-    pl = Pipeline({"Delayed Feature Transformer": {"delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features},
-                   "pipeline": {"gap": 0, "max_delay": 0}})
-
-    if only_use_y:
-        pl.fit(None, y)
-    else:
-        pl.fit(X, y)
-    table = explain_prediction(pl, input_features=X.iloc[3:4],
-                               output_format="text", top_k_features=2, training_data=X)
-    print(table)
-    table2 = explain_predictions(pl, input_features=X.iloc[3:4],
-                                 output_format="text", top_k_features=2, training_data=X)
-    print(table2)
+#
+# @pytest.mark.parametrize("only_use_y", [True, False])
+# @pytest.mark.parametrize("include_delayed_features", [True, False])
+# @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+#                                                            (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+#                                                            (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
+# def test_explain_predic(pipeline_class,
+#                         estimator_name, include_delayed_features, only_use_y, ts_data):
+#
+#     if only_use_y and (not include_delayed_features):
+#         pytest.skip("This would result in an empty feature dataframe.")
+#
+#     X, y = ts_data
+#
+#     class Pipeline(pipeline_class):
+#         component_graph = ["Delayed Feature Transformer", estimator_name]
+#         name = pipeline_class.name
+#
+#     pl = Pipeline({"Delayed Feature Transformer": {"delay_features": include_delayed_features,
+#                                                    "delay_target": include_delayed_features},
+#                    "pipeline": {"gap": 0, "max_delay": 0}})
+#
+#     if only_use_y:
+#         pl.fit(None, y)
+#     else:
+#         pl.fit(X, y)
+#     table = explain_prediction(pl, input_features=X.iloc[3:4],
+#                                output_format="text", top_k_features=2, training_data=X)
+#     print(table)
+#     table2 = explain_predictions(pl, input_features=X.iloc[3:4],
+#                                  output_format="text", top_k_features=2, training_data=X)
+#     print(table2)

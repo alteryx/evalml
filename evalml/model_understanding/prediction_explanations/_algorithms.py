@@ -83,6 +83,8 @@ def _compute_shap_values(pipeline, features, training_data=None, y=None):
         # More than 100 datapoints can negatively impact runtime according to SHAP
         # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
         sampled_training_data_features = pipeline.compute_estimator_features(X=shap.sample(training_data, 100), y=y).to_dataframe()
+        if "Delayed Feature Transformer" in pipeline.component_graph:
+            sampled_training_data_features.dropna(inplace=True)
         sampled_training_data_features = check_array(sampled_training_data_features)
 
         if pipeline.problem_type == ProblemTypes.REGRESSION:
