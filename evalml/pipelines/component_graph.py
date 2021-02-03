@@ -96,7 +96,7 @@ class ComponentGraph:
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._compute_features(self.compute_order, X, y, fit=True)
-        self._feature_provenance = self._get_feature_provenance(self.compute_order, X.columns)
+        self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
 
     def fit_features(self, X, y):
@@ -235,33 +235,32 @@ class ComponentGraph:
                 output_cache[component_name] = output
         return output_cache
 
-    def _get_feature_provenance(self, component_list, input_feature_names):
+    def _get_feature_provenance(self, input_feature_names):
         """Get the feature provenance for each feature in the input_feature_names.
 
         The provenance is a mapping from the original feature names in the dataset to a list of
         features that were created from that original feature.
 
         For example, after fitting a OHE on a feature called 'cats', with categories 'a' and 'b', the
-        provenance, would have the following entry: {'cats': ['a', 'b']}.
+        provenance would have the following entry: {'cats': ['a', 'b']}.
 
         If a feature is then calculated from feature 'a', e.g. 'a_squared', then the provenance would instead
         be {'cats': ['a', 'a_squared', 'b']}.
 
         Arguments:
-            component_list (list(str)): Names of components in topological order.
             input_feature_names (list(str)): Names of the features in the input dataframe.
 
         Returns:
-           dictionary: mapping of feature name of set feature names that were created from that feature.
+           dictionary: mapping of feature name to set feature names that were created from that feature.
         """
-        if not component_list:
+        if not self.compute_order:
             return {}
 
         # Every feature comes from one of the original features so
         # each one starts with an empty set
         provenance = {col: set([]) for col in input_feature_names}
 
-        transformers = filter(lambda c: isinstance(c, Transformer), [self.get_component(c) for c in component_list])
+        transformers = filter(lambda c: isinstance(c, Transformer), [self.get_component(c) for c in self.compute_order])
         for component_instance in transformers:
             component_provenance = component_instance._get_feature_provenance()
             for component_input, component_output in component_provenance.items():
@@ -278,7 +277,7 @@ class ComponentGraph:
                             provenance[in_feature] = out_feature.union(set(component_output))
 
         # Get rid of features that are not in the dataset the final estimator uses
-        final_estimator_features = set(self.input_feature_names.get(component_list[-1], []))
+        final_estimator_features = set(self.input_feature_names.get(self.compute_order[-1], []))
         for feature in provenance:
             provenance[feature] = provenance[feature].intersection(final_estimator_features)
 
