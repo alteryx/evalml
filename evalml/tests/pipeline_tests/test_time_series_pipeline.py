@@ -7,7 +7,9 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.model_understanding.prediction_explanations.explainers import (
-    explain_prediction, explain_predictions, explain_predictions_best_worst
+    explain_prediction,
+    explain_predictions,
+    explain_predictions_best_worst
 )
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -383,6 +385,7 @@ def test_explain_predic(pipeline_class,
 
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
+        name = pipeline_class.name
 
     pl = Pipeline({"Delayed Feature Transformer": {"delay_features": include_delayed_features,
                                                    "delay_target": include_delayed_features},
@@ -394,5 +397,8 @@ def test_explain_predic(pipeline_class,
         pl.fit(X, y)
     table = explain_prediction(pl, input_features=X.iloc[3:4],
                                output_format="text", top_k=2, training_data=X)
-    table = explain_predictions(pl, input_features=X.iloc[3:4],
-                               output_format="text", top_k_features=2, training_data=X)
+    print(table)
+    table2 = explain_predictions(pl, input_features=X.iloc[3:4],
+                                 output_format="text", top_k_features=2, training_data=X)
+    print(table2)
+    import pdb; pdb.set_trace()

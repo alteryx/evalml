@@ -20,7 +20,7 @@ from evalml.utils import (
 )
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
-_ReportData = namedtuple("ReportData", ["pipeline", "input_features",
+_ReportData = namedtuple("ReportData", ["pipeline", "input_features", "training_data",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
@@ -54,11 +54,7 @@ def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=
 
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
-    if "Delayed Feature Transformer" in pipeline.component_graph:
-        if training_data is None:
-            raise ValueError(f"Training data must be provided for time series data.")
-        input_features_idx = training_data.index.get_loc(input_features.index[0])
-        input_features = training_data.iloc[0:input_features_idx + 1]
+
     return _make_single_prediction_shap_table(pipeline, input_features, y=y, top_k=top_k,
                                               training_data=training_data, include_shap_values=include_shap_values,
                                               output_format=output_format)
@@ -127,7 +123,7 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
-    data = _ReportData(pipeline, input_features, y_true=None, y_pred=None,
+    data = _ReportData(pipeline, input_features, training_data=training_data, y_true=None, y_pred=None,
                        y_pred_values=None, errors=None, index_list=range(input_features.shape[0]), metric=None)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions",
