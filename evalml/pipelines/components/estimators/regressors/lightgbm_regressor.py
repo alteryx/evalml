@@ -78,7 +78,6 @@ class LightGBMRegressor(Estimator):
         rename_cols_dict = dict(zip(X.columns, X_encoded.columns))
         cat_cols = [rename_cols_dict[col] for col in cat_cols]
 
-
         if len(cat_cols) == 0:
             return X_encoded
         if fit:
