@@ -29,7 +29,7 @@ test_features = [[1], np.ones((15, 1)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2
 
 @pytest.mark.parametrize("test_features", test_features)
 def test_explain_prediction_value_error(test_features):
-    with pytest.raises(ValueError, match="features must be stored in a dataframe or datatable with exactly one row."):
+    with pytest.raises(ValueError, match="Features must be stored in a dataframe or datatable with exactly one row."):
         explain_prediction(None, input_features=test_features, training_data=None)
 
 
@@ -704,5 +704,5 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
                                                 num_to_explain=1, output_format="dict")
     assert json.loads(json.dumps(best_worst)) == best_worst
 
-    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
+    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), training_data=X, output_format="dict")
     assert json.loads(json.dumps(report)) == report

@@ -102,8 +102,9 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
-        training_data (ww.DataTable, pd.DataFrame): Dataframe of data the pipeline was fit on. This can be omitted for pipelines
-            with tree-based estimators.
+        training_data (pd.DataFrame): Training data the pipeline was fit on.
+            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
+            Also required for time series problems utilizing Delayed Feature Transformer.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
@@ -133,7 +134,7 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
-                                   include_shap_values=False, metric=None, output_format="text"):
+                                   include_shap_values=False, metric=None, output_format="text", training_data=None):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported.
@@ -141,6 +142,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Input data to evaluate the pipeline on.
+        training_data (pd.DataFrame): Training data the pipeline was fit on.
+            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
+            Also required for time series problems utilizing Delayed Feature Transformer.
         y_true (ww.DataColumn, pd.Series): True labels for the input data.
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
@@ -192,7 +196,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     worst = sorted_scores.index[-num_to_explain:]
     index_list = best.tolist() + worst.tolist()
 
-    data = _ReportData(pipeline, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
+    data = _ReportData(pipeline, input_features, training_data, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,
