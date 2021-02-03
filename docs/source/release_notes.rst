@@ -3,6 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+**v0.18.1 Feb. 1, 2021**
+    * Enhancements
         * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
@@ -18,7 +23,9 @@ Release Notes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
         * Dropped support for Python version 3.6 :pr:`1751`
+        * Removed deprecated ``verbose`` flag from ``AutoMLSearch`` parameters :pr:`1772`
     * Documentation Changes
+        * Add Twitter and Github link to documentation toolbar :pr:`1754`
         * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
 
@@ -27,6 +34,7 @@ Release Notes
     **Breaking Changes**
         * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
         * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
+        * Deprecated ``verbose`` flag is removed for ``AutoMLSearch`` :pr:`1772`
 
 
 **v0.18.0 Jan. 26, 2021**
