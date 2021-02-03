@@ -10,7 +10,6 @@ from evalml.utils.gen_utils import (
 )
 
 
-
 class XGBoostRegressor(Estimator):
     """XGBoost Regressor."""
     name = "XGBoost Regressor"

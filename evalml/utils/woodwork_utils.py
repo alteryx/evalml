@@ -80,7 +80,6 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
-
 def reconvert(old_datatable, new_dataframe):
     """
     Helper method in EvalML which will take old datatable, new dataframe and return new datatable,
@@ -91,27 +90,13 @@ def reconvert(old_datatable, new_dataframe):
     physical_types = old_datatable.physical_types
     logical_types = old_datatable.logical_types
     for col in new_dataframe.columns:
-        if col in old_datatable.columns: # column existed 
+        if col in old_datatable.columns:  # column existed
             old_ptype = physical_types[col]
             if isinstance(old_ptype, pd.CategoricalDtype):
                 old_ptype = pd.CategoricalDtype()
             try:
-                col_new = new_dataframe[col].astype(logical_types[col].pandas_dtype)
+                new_dataframe[col].astype(logical_types[col].pandas_dtype)  # maybe using this will somehow save time?
                 okay[col] = old_datatable[col].logical_type
             except (ValueError, TypeError):
                 pass
     return ww.DataTable(new_dataframe, logical_types=okay)
-
-
-
-
-
-            # if (X[col].logical_type != input_x[col].logical_type and
-            #         "numeric" not in X[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
-            #     try:
-            #         input_x = input_x.set_types({col: X[col].logical_type})
-            #     except TypeError:
-            #         # if there is a column whose type has been converted s.t. it cannot be converted back, keep as is.
-            #         # example: StandardScaler could convert a boolean column to a float column. This is expected, and we should not
-            #         # try to convert back to boolean.
-            #         continue

@@ -15,7 +15,10 @@ from evalml.utils.gen_utils import (
     get_random_seed,
     import_or_raise
 )
-from evalml.utils.woodwork_utils import _convert_to_woodwork_structure,  _convert_woodwork_types_wrapper
+from evalml.utils.woodwork_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class LightGBMClassifier(Estimator):

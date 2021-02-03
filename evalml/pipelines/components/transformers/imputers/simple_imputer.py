@@ -4,7 +4,8 @@ from sklearn.impute import SimpleImputer as SkImputer
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    reconvert
 )
 
 
@@ -63,10 +64,10 @@ class SimpleImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+        ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
@@ -82,7 +83,7 @@ class SimpleImputer(Transformer):
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
         X_t = X_t.infer_objects()
         X_t.index = X_null_dropped.index
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

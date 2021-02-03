@@ -8,7 +8,8 @@ from evalml.pipelines.components.transformers.preprocessing import (
 )
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    reconvert
 )
 
 
@@ -52,11 +53,11 @@ class LSA(TextTransformer):
             ww.DataTable: Transformed X. The original column is removed and replaced with two columns of the
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
-        X = _convert_to_woodwork_structure(X)
+        X_ww = _convert_to_woodwork_structure(X)
         if len(self._all_text_columns) == 0:
             return X
 
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X.copy()
         text_columns = self._get_text_columns(X)
         for col in text_columns:
@@ -64,4 +65,4 @@ class LSA(TextTransformer):
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
         X_t = X_t.drop(columns=text_columns)
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)

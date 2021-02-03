@@ -9,12 +9,14 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
-
     _rename_column_names_to_numeric,
     get_random_seed,
     import_or_raise
 )
-from evalml.utils.woodwork_utils import     _convert_to_woodwork_structure, _convert_woodwork_types_wrapper
+from evalml.utils.woodwork_utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper
+)
 
 
 class LightGBMRegressor(Estimator):
