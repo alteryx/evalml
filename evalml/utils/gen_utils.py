@@ -211,6 +211,8 @@ def _rename_column_names_to_numeric(X):
     X_t = X
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
+    if isinstance(X, ww.DataTable):
+        X_t = X_t.to_dataframe()
 
     if len(X_t.columns) > 0 and isinstance(X_t.columns[0], tuple):
         flat_col_names = list(map(str, X_t.columns))
