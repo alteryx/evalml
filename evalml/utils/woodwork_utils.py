@@ -90,7 +90,12 @@ def reconvert(old_datatable, new_dataframe):
     physical_types = old_datatable.physical_types
     logical_types = old_datatable.logical_types
     for col in new_dataframe.columns:
-        if col in old_datatable.columns:  # column existed
+        if col not in old_datatable.columns:
+            continue
+        old_np = old_datatable[col].to_series().values
+        new_np = new_dataframe[col].values
+        is_equal = np.array_equal(old_np, new_np)
+        if is_equal and col in old_datatable.columns:  # column existed
             old_ptype = physical_types[col]
             if isinstance(old_ptype, pd.CategoricalDtype):
                 old_ptype = pd.CategoricalDtype()

@@ -1,7 +1,8 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    reconvert
 )
 
 
@@ -89,8 +90,8 @@ class DateTimeFeaturizer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
@@ -103,7 +104,7 @@ class DateTimeFeaturizer(Transformer):
                 if categories:
                     self._categories[name] = categories
         X_t = X_t.drop(self._date_time_col_names, axis=1)
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.

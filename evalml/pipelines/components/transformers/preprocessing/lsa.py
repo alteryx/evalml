@@ -55,7 +55,7 @@ class LSA(TextTransformer):
         """
         X_ww = _convert_to_woodwork_structure(X)
         if len(self._all_text_columns) == 0:
-            return X
+            return X_ww
 
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X.copy()

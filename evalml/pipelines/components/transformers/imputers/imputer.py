@@ -5,7 +5,6 @@ from evalml.utils import (
     _convert_woodwork_types_wrapper,
     reconvert
 )
-from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 
 
 class Imputer(Transformer):
@@ -114,6 +113,5 @@ class Imputer(Transformer):
             X_categorical = X_null_dropped[self._categorical_cols]
             imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
             X_null_dropped[X_categorical.columns] = imputed
-
         X_null_dropped = reconvert(X_ww, X_null_dropped)
         return X_null_dropped

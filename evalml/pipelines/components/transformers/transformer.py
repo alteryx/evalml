@@ -5,7 +5,8 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    reconvert
 )
 
 
@@ -34,17 +35,17 @@ class Transformer(ComponentBase):
         Returns:
             ww.DataTable: Transformed X
         """
+        X_ww = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
         try:
-            X = _convert_to_woodwork_structure(X)
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
-            if y is not None:
-                y = _convert_to_woodwork_structure(y)
-                y = _convert_woodwork_types_wrapper(y.to_series())
             X_t = self._component_obj.transform(X, y)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _convert_to_woodwork_structure(X_t_df)
+        return reconvert(X_ww, X_t_df)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -56,15 +57,16 @@ class Transformer(ComponentBase):
         Returns:
             ww.DataTable: Transformed X
         """
-        try:
-            X_ww = _convert_to_woodwork_structure(X)
+        X_ww = _convert_to_woodwork_structure(X)
+        X_pd = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        if y is not None:
             y_ww = _convert_to_woodwork_structure(y)
-            X_pd = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
             y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
+        try:
             X_t = self._component_obj.fit_transform(X_pd, y_pd)
+            return reconvert(X_ww, X_t)
         except AttributeError:
             try:
-                X_t = self.fit(X, y).transform(X, y)
+                return self.fit(X, y).transform(X, y)
             except MethodPropertyNotFoundError as e:
                 raise e
-        return _convert_to_woodwork_structure(X_t)
