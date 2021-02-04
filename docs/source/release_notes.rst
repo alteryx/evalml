@@ -30,6 +30,7 @@ Release Notes
         * Add Twitter and Github link to documentation toolbar :pr:`1754`
         * Added Open Graph info to documentation :pr:`1758`
         * Added section on conda to the contributing guide :pr:`1771`
+        * Updated release process to reflect freezing `main` before perf tests :pr:`1787`
     * Testing Changes
 
 .. warning::
