@@ -252,16 +252,16 @@ def test_simple_imputer_does_not_reset_index():
 
 
 def test_simple_imputer_with_none():
-    # X = pd.DataFrame({"int with None": [1, 0, 5, None],
-    #                   "float with None": [0.1, 0.0, 0.5, None],
-    #                   "all None": [None, None, None, None]})
-    # y = pd.Series([0, 0, 1, 0, 1])
-    # imputer = SimpleImputer(impute_strategy="mean")
-    # imputer.fit(X, y)
-    # transformed = imputer.transform(X, y)
-    # expected = pd.DataFrame({"int with None": [1, 0, 5, 2],
-    #                          "float with None": [0.1, 0.0, 0.5, 0.2]})
-    # assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
+    X = pd.DataFrame({"int with None": [1, 0, 5, None],
+                      "float with None": [0.1, 0.0, 0.5, None],
+                      "all None": [None, None, None, None]})
+    y = pd.Series([0, 0, 1, 0, 1])
+    imputer = SimpleImputer(impute_strategy="mean")
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({"int with None": [1, 0, 5, 2],
+                             "float with None": [0.1, 0.0, 0.5, 0.2]})
+    assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
 
     X = pd.DataFrame({"category with None": pd.Series(["b", "a", "a", None], dtype='category'),
                       "boolean with None": pd.Series([True, None, False, True], dtype='boolean'),  # otherwise, becomes cat
