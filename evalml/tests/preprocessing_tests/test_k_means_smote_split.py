@@ -16,6 +16,14 @@ def test_kmeans_smote_nsplits():
     assert KMeansSMOTECVSplit(n_splits=5).get_n_splits() == 5
 
 
+def test_kmeans_kwargs():
+    km = KMeansSMOTECVSplit(cluster_balance_threshold=0.01)
+    assert km.kmsmote.cluster_balance_threshold == 0.01
+
+    km = KMeansSMOTETVSplit(cluster_balance_threshold=0.01)
+    assert km.kmsmote.cluster_balance_threshold == 0.01
+
+
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
 @pytest.mark.parametrize('dataset', [0, 1])
 def test_kmeans_tv_default(data_type, make_data_type, dataset, X_y_binary, X_y_multi):
