@@ -38,8 +38,8 @@ class RandomUnderSamplerTVSplit(BaseCrossValidator):
         """Divides the data into training and testing sets
 
             Arguments:
-                X (pd.DataFrame): Dataframe of points to split
-                y (pd.Series): Series of points to split
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
 
             Returns:
                 tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
@@ -52,6 +52,15 @@ class RandomUnderSamplerTVSplit(BaseCrossValidator):
         return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
 
     def transform(self, X, y):
+        """Transforms the input data with the balancing strategy.
+
+            Arguments:
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
+
+            Returns:
+                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation
+        """
         X_pd, y_pd = self._to_woodwork(X, y)
         X_transformed, y_transformed = self.rus.fit_resample(X_pd, y_pd)
         return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
@@ -82,8 +91,8 @@ class RandomUnderSamplerCVSplit(StratifiedKFold):
         """Divides the data into training and testing sets
 
             Arguments:
-                X (pd.DataFrame): Dataframe of points to split
-                y (pd.Series): Series of points to split
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
 
             Returns:
                 tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
@@ -97,6 +106,15 @@ class RandomUnderSamplerCVSplit(StratifiedKFold):
             yield iter(((X_train_resample, y_train_resample), (X_test, y_test)))
 
     def transform(self, X, y):
+        """Transforms the input data with the balancing strategy.
+
+            Arguments:
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
+
+            Returns:
+                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation
+        """
         X_pd, y_pd = self._to_woodwork(X, y)
         X_transformed, y_transformed = self.rus.fit_resample(X_pd, y_pd)
         return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
