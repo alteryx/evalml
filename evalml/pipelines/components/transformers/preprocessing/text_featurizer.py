@@ -10,7 +10,8 @@ from evalml.pipelines.components.transformers.preprocessing import (
 )
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    reconvert
 )
 
 
@@ -96,10 +97,10 @@ class TextFeaturizer(TextTransformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
+        X_ww = _convert_to_woodwork_structure(X)
         if self._features is None or len(self._features) == 0:
-            return X
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+            return X_ww
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
@@ -108,4 +109,4 @@ class TextFeaturizer(TextTransformer):
         X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)
