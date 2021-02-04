@@ -10,7 +10,7 @@ from evalml.utils.gen_utils import (
 
 class SMOTETomekTVSplit(BaseCrossValidator):
     """Splits the data into training and validation sets and uses SMOTE + Tomek's link bbalance the training data.
-       Keeps the validation data the same"""
+       Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', test_size=None, n_jobs=-1, random_state=0):
         super().__init__()
@@ -68,7 +68,7 @@ class SMOTETomekTVSplit(BaseCrossValidator):
 
 class SMOTETomekCVSplit(StratifiedKFold):
     """Split the data into KFold cross validation sets and uses SMOTE + Tomek's link to balance the training data.
-       Keeps the validation data the same"""
+       Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', n_splits=3, shuffle=True, n_jobs=-1, random_state=0):
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)

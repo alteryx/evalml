@@ -10,7 +10,7 @@ from evalml.utils.gen_utils import (
 
 class KMeansSMOTETVSplit(BaseCrossValidator):
     """Splits the data into training and validation sets and balances the training data using K-Means SMOTE.
-       Keeps the validation data the same"""
+       Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', k_neighbors=2, test_size=None, random_state=0, **kwargs):
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
@@ -67,7 +67,7 @@ class KMeansSMOTETVSplit(BaseCrossValidator):
 
 class KMeansSMOTECVSplit(StratifiedKFold):
     """Split the data into KFold cross validation sets and balances the training data using K-Means SMOTE.
-       Keeps the validation data the same"""
+       Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', k_neighbors=2, n_splits=3, shuffle=True, random_state=0, **kwargs):
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)

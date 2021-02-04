@@ -9,8 +9,8 @@ from evalml.utils.gen_utils import (
 
 
 class RandomUnderSamplerTVSplit(BaseCrossValidator):
-    """Split the data into training and validation sets and uses SMOTE + Tomek's link to balance the training data.
-       Keeps the validation data the same"""
+    """Split the data into training and validation sets and uses RandomUnderSampler to balance the training data.
+       Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', test_size=None, replacement=False, random_state=0):
         super().__init__()
@@ -67,8 +67,8 @@ class RandomUnderSamplerTVSplit(BaseCrossValidator):
 
 
 class RandomUnderSamplerCVSplit(StratifiedKFold):
-    """Split the training data into KFold cross validation sets and uses SMOTE + Tomek's link to balance the training data.
-       Keeps the validation data the same"""
+    """Split the training data into KFold cross validation sets and uses RandomUnderSampler to balance the training data.
+       Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', replacement=False, n_splits=3, shuffle=True, random_state=0):
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
