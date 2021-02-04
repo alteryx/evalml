@@ -91,8 +91,7 @@ class DateTimeFeaturizer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_t = X
+        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return _convert_to_woodwork_structure(X_t)

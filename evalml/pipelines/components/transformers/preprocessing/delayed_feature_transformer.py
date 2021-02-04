@@ -91,7 +91,6 @@ class DelayedFeatureTransformer(Transformer):
             X = pd.DataFrame()
         # Normalize the data into pandas objects
         X_ww = _convert_to_woodwork_structure(X)
-
         categorical_columns = self._get_categorical_columns(X_ww)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 

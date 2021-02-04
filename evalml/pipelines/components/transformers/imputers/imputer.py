@@ -97,9 +97,7 @@ class Imputer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-
-        X_null_dropped = X.copy()
+        X_null_dropped = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:
             return reconvert(X_ww, X_null_dropped)

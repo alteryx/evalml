@@ -116,7 +116,7 @@ def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_simple_imputer_bool_dtype_object(data_type, make_data_type):
+def test_simple_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True], dtype='boolean')
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype='boolean')
@@ -264,7 +264,7 @@ def test_simple_imputer_with_none():
     assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
 
     X = pd.DataFrame({"category with None": pd.Series(["b", "a", "a", None], dtype='category'),
-                      "boolean with None": pd.Series([True, None, False, True], dtype='boolean'),  # otherwise, becomes cat
+                      "boolean with None": pd.Series([True, None, False, True], dtype='boolean'),
                       "object with None": ["b", "a", "a", None],
                       "all None": [None, None, None, None]})
     y = pd.Series([0, 0, 1, 0, 1])
