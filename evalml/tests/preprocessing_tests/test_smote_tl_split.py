@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -10,10 +11,25 @@ from evalml.preprocessing.data_splitters import (
 im = pytest.importorskip('imblearn.combine', reason='Skipping plotting test because imblearn not installed')
 
 
-def test_kmeans_smote_nsplits():
+def test_smote_tomek_nsplits():
     assert SMOTETomekTVSplit().get_n_splits() == 1
     assert SMOTETomekCVSplit().get_n_splits() == 3
     assert SMOTETomekCVSplit(n_splits=5).get_n_splits() == 5
+
+
+@pytest.mark.parametrize("value", [np.nan, "hello"])
+@pytest.mark.parametrize("splitter", [SMOTETomekTVSplit, SMOTETomekCVSplit])
+def test_smotenc_error(splitter, value, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    X.iloc[0, :] = value
+    stl = splitter()
+    with pytest.raises(ValueError, match="Values not all numeric or there are null values"):
+        # handles both TV and CV iterations
+        next(stl.split(X, y))
+    with pytest.raises(ValueError, match="Values not all numeric or there are null values"):
+        stl.transform(X, y)
 
 
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])

@@ -4,7 +4,8 @@ from sklearn.model_selection._split import BaseCrossValidator
 from evalml.utils import import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    is_all_numeric
 )
 
 
@@ -22,6 +23,8 @@ class KMeansSMOTETVSplit(BaseCrossValidator):
     def _to_woodwork(self, X, y, to_pandas=True):
         """Convert the data to woodwork datatype"""
         X_ww = _convert_to_woodwork_structure(X)
+        if not is_all_numeric(X_ww):
+            raise ValueError('Values not all numeric or there are null values provided in the dataset')
         y_ww = _convert_to_woodwork_structure(y)
         if to_pandas:
             X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
@@ -80,6 +83,8 @@ class KMeansSMOTECVSplit(StratifiedKFold):
     def _to_woodwork(self, X, y, to_pandas=True):
         """Convert the data to woodwork datatype"""
         X_ww = _convert_to_woodwork_structure(X)
+        if not is_all_numeric(X_ww):
+            raise ValueError('Values not all numeric or there are null values provided in the dataset')
         y_ww = _convert_to_woodwork_structure(y)
         if to_pandas:
             X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())

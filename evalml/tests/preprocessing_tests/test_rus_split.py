@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -14,6 +15,21 @@ def test_rus_nsplits():
     assert RandomUnderSamplerTVSplit().get_n_splits() == 1
     assert RandomUnderSamplerCVSplit().get_n_splits() == 3
     assert RandomUnderSamplerCVSplit(n_splits=5).get_n_splits() == 5
+
+
+@pytest.mark.parametrize("value", [np.nan, "hello"])
+@pytest.mark.parametrize("splitter", [RandomUnderSamplerTVSplit, RandomUnderSamplerCVSplit])
+def test_smotenc_error(splitter, value, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    X.iloc[0, :] = value
+    stl = splitter()
+    with pytest.raises(ValueError, match="Values not all numeric or there are null values"):
+        # handles both TV and CV iterations
+        next(stl.split(X, y))
+    with pytest.raises(ValueError, match="Values not all numeric or there are null values"):
+        stl.transform(X, y)
 
 
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
