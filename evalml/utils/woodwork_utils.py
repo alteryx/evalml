@@ -96,9 +96,9 @@ def reconvert(old_datatable, new_dataframe):
         new_np = new_dataframe[col].values
         is_equal = np.array_equal(old_np, new_np)
         if is_equal and col in old_datatable.columns:  # column existed
-            old_ptype = physical_types[col]
-            if isinstance(old_ptype, pd.CategoricalDtype):
-                old_ptype = pd.CategoricalDtype()
+            # old_ptype = physical_types[col]
+            # if isinstance(old_ptype, pd.CategoricalDtype):
+            #     old_ptype = pd.CategoricalDtype()
             try:
                 new_dataframe[col].astype(logical_types[col].pandas_dtype)  # maybe using this will somehow save time?
                 okay[col] = old_datatable[col].logical_type
