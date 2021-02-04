@@ -2,6 +2,7 @@ import string
 
 import numpy as np
 import pandas as pd
+import pytest
 from pytest import importorskip
 
 from evalml.pipelines.components import XGBoostRegressor
@@ -36,3 +37,18 @@ def test_xgboost_feature_name_with_random_ascii(X_y_regression):
 
     assert len(clf.feature_importance) == len(X.columns)
     assert not np.isnan(clf.feature_importance).all().all()
+
+
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_xgboost_multiindex(data_type, X_y_regression, make_data_type):
+    X, y = X_y_regression
+    X = pd.DataFrame(X)
+    col_names = [('column_{}'.format(num), '{}'.format(num)) for num in range(len(X.columns))]
+    X.columns = pd.MultiIndex.from_tuples(col_names)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    clf = XGBoostRegressor()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    assert not y_pred.to_series().isnull().values.any()

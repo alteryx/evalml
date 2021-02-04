@@ -51,3 +51,20 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
 
     assert len(clf.feature_importance) == len(X.columns)
     assert not np.isnan(clf.feature_importance).all().all()
+
+
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    col_names = [('column_{}'.format(num), '{}'.format(num)) for num in range(len(X.columns))]
+    X.columns = pd.MultiIndex.from_tuples(col_names)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    clf = XGBoostClassifier()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    y_pred_proba = clf.predict_proba(X)
+    assert not y_pred.to_series().isnull().values.any()
+    assert not y_pred_proba.to_dataframe().isnull().values.any().any()
