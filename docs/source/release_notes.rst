@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple sampling methods for data splitters for imbalanced classification :pr:`1775`
+        * Added "dataframe" output format for prediction explanations :pr:`1781`
     * Fixes
     * Changes
     * Documentation Changes
