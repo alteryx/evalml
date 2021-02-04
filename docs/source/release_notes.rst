@@ -9,7 +9,6 @@ Release Notes
     * Changes
     * Documentation Changes
 
-
 **v0.18.1 Feb. 1, 2021**
     * Enhancements
         * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
