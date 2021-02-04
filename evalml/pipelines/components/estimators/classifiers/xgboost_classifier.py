@@ -34,23 +34,23 @@ class XGBoostClassifier(Estimator):
         parameters.update(kwargs)
         xgb_error_msg = "XGBoost is not installed. Please install using `pip install xgboost.`"
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_classifier = xgb.XGBClassifier(**parameters,
-                                           random_state=random_seed)
+        xgb_classifier = xgb.XGBClassifier(random_state=random_seed,
+                                           **parameters)
 
         super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().fit(X, y)
 
     def predict(self, X):
-        X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().predict(X)
 
     def predict_proba(self, X):
-        X = _rename_column_names_to_numeric(X)
+        X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().predict_proba(X)
 
     @property
