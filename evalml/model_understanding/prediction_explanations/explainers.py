@@ -24,7 +24,7 @@ _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
-def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
+def explain_prediction(pipeline, input_features, y=None, top_k=3, training_data=None, include_shap_values=False,
                        output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -53,7 +53,8 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
 
     if output_format not in {"text", "dict"}:
         raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
-    return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values,
+    return _make_single_prediction_shap_table(pipeline, input_features, y=y, top_k=top_k,
+                                              training_data=training_data, include_shap_values=include_shap_values,
                                               output_format=output_format)
 
 

@@ -195,7 +195,7 @@ class _MultiClassSHAPTable(_TableMaker):
         return {"explanations": json_output}
 
 
-def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, training_data=None,
+def _make_single_prediction_shap_table(pipeline, input_features, y=None, top_k=3, training_data=None,
                                        include_shap_values=False, output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -212,7 +212,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
         str: Table
     """
     pipeline_features = pipeline.compute_estimator_features(input_features).to_dataframe()
-    shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
+    shap_values = _compute_shap_values(pipeline, pipeline_features, y=y, training_data=training_data)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
     class_names = None
