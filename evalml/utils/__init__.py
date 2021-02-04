@@ -8,14 +8,12 @@ from .gen_utils import (
     SEED_BOUNDS,
     jupyter_check,
     safe_repr,
-
     drop_rows_with_nans,
     pad_with_nans,
-    infer_feature_types,
     _get_rows_without_nans,
     save_plot,
     is_all_numeric,
     get_importable_subclasses
 )
 from .cli_utils import print_info, get_evalml_root, get_installed_packages, get_sys_info, print_sys_info, print_deps
-from .woodwork_utils import _convert_woodwork_types_wrapper, _convert_to_woodwork_structure, reconvert
+from .woodwork_utils import _convert_woodwork_types_wrapper, _convert_to_woodwork_structure, reconvert, infer_feature_types

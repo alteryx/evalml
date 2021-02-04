@@ -23,7 +23,7 @@ from evalml.pipelines.components import (
     StandardScaler,
     Transformer
 )
-from evalml.utils.gen_utils import infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class DummyTransformer(Transformer):
