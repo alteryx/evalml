@@ -54,11 +54,9 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_lightgbm_multiindex(data_type, X_y_binary, make_data_type):
+def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
     X, y = X_y_binary
     X = pd.DataFrame(X)
-    categorical_col = pd.Series([1] * int(len(X[0]) / 2) + [0] * int(len(X[0]) - len(X[0]) / 2), dtype='category')
-    X['cat'] = categorical_col
     col_names = [('column_{}'.format(num), '{}'.format(num)) for num in range(len(X.columns))]
     X.columns = pd.MultiIndex.from_tuples(col_names)
     X = make_data_type(data_type, X)
