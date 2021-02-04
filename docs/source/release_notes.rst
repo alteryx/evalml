@@ -10,6 +10,7 @@ Release Notes
     * Documentation Changes
         * Added section on conda to the contributing guide :pr:`1771`
         * Updated release process to reflect freezing `main` before perf tests :pr:`1787`
+        * Moving some prs to the right section of the release notes :pr:`1789`
 
 **v0.18.1 Feb. 1, 2021**
     * Enhancements
