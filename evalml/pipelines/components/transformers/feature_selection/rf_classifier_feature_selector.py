@@ -4,7 +4,7 @@ from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real
 
 from .feature_selector import FeatureSelector
-
+from evalml.utils import deprecate_arg
 
 class RFClassifierSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest classifier."""
@@ -15,7 +15,10 @@ class RFClassifierSelectFromModel(FeatureSelector):
     }
 
     def __init__(self, number_features=None, n_estimators=10, max_depth=None,
-                 percent_features=0.5, threshold=-np.inf, n_jobs=-1, random_state=0, **kwargs):
+                 percent_features=0.5, threshold=-np.inf, n_jobs=-1,
+                 random_state=None, random_seed=0,
+                 **kwargs):
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
         parameters = {"number_features": number_features,
                       "n_estimators": n_estimators,
                       "max_depth": max_depth,
@@ -24,7 +27,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
                       "n_jobs": n_jobs}
         parameters.update(kwargs)
 
-        estimator = SKRandomForestClassifier(random_state=random_state,
+        estimator = SKRandomForestClassifier(random_state=random_seed,
                                              n_estimators=n_estimators,
                                              max_depth=max_depth,
                                              n_jobs=n_jobs)
@@ -35,4 +38,4 @@ class RFClassifierSelectFromModel(FeatureSelector):
                                      **kwargs)
         super().__init__(parameters=parameters,
                          component_obj=feature_selection,
-                         random_state=random_state)
+                         random_state=random_seed)

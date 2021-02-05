@@ -16,7 +16,7 @@ class PCA(Transformer):
     hyperparameter_ranges = {
         "variance": Real(0.25, 1)}
 
-    def __init__(self, variance=0.95, n_components=None, random_state=0, **kwargs):
+    def __init__(self, variance=0.95, n_components=None, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer that reduces the number of features using PCA."
 
         Arguments:
@@ -34,7 +34,8 @@ class PCA(Transformer):
             pca = SkPCA(n_components=variance, **kwargs)
         super().__init__(parameters=parameters,
                          component_obj=pca,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)

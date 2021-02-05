@@ -1,8 +1,9 @@
 import importlib
+from inspect import signature
 import os
 import warnings
 from collections import namedtuple
-from functools import reduce
+from functools import reduce, wraps
 
 import numpy as np
 import pandas as pd
@@ -511,3 +512,25 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
 
     if return_filepath:
         return filepath
+
+
+def deprecate_arg(old_arg, new_arg, old_value, new_value, version_of_deprecation):
+    """Decorator for methods that issues warnings for positional arguments.
+
+    Using the keyword-only argument syntax in pep 3102, arguments after the
+    * will issue a warning when passed as a positional argument.
+
+    Parameters
+    ----------
+    func : callable, default=None
+        Function to check arguments on.
+    version : callable, default="1.0 (renaming of 0.25)"
+        The version when positional arguments will result in error.
+    """
+    value_to_use = new_value
+    if old_value is not None:
+        warnings.warn(f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}' "
+                      f"as of version {version_of_deprecation}. Passing '{old_arg}' in future "
+                      "versions will result in an error.")
+        value_to_use = old_value
+    return value_to_use

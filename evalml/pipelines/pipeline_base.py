@@ -27,7 +27,7 @@ from evalml.utils import (
     _convert_to_woodwork_structure,
     classproperty,
     get_logger,
-    get_random_seed,
+    deprecate_arg,
     import_or_raise,
     jupyter_check,
     log_subtitle,
@@ -55,7 +55,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_state=0):
+    def __init__(self, parameters, random_state=None, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -66,11 +66,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_state = get_random_seed(random_state)
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
         if isinstance(self.component_graph, list):  # Backwards compatibility
-            self._component_graph = ComponentGraph().from_list(self.component_graph, random_state=self.random_state)
+            self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:
-            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_state=self.random_state)
+            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
@@ -475,12 +475,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(self.parameters, random_state=self.random_state)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = self.random_state == other.random_state
+        random_state_eq = self.random_seed == other.random_seed
         if not random_state_eq:
             return False
         attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']

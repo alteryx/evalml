@@ -8,7 +8,8 @@ from evalml.pipelines.components.transformers.preprocessing import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    deprecate_arg
 )
 
 
@@ -17,17 +18,20 @@ class LSA(TextTransformer):
     name = "LSA Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, text_columns=None, random_state=0, **kwargs):
+    def __init__(self, text_columns=None, random_state=None, random_seed=0, **kwargs):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
             text_columns (list): List of feature names which should be treated as text features.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
+        self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_seed))
         self._provenance = {}
         super().__init__(text_columns=text_columns,
-                         random_state=random_state,
+                         random_state=None,
+                         random_seed=random_seed,
                          **kwargs)
 
     def fit(self, X, y=None):

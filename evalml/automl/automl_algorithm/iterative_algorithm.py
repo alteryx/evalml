@@ -19,7 +19,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  max_iterations=None,
                  tuner_class=None,
                  text_columns=None,
-                 random_state=0,
+                 random_seed=0,
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
@@ -41,7 +41,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
                          tuner_class=tuner_class,
-                         random_state=random_state)
+                         random_seed=random_seed)
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
@@ -50,7 +50,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
-        self._random_state = random_state
+        self._random_state = random_seed
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -65,7 +65,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_state=self.random_state)
+            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_seed=self.random_seed)
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
@@ -77,9 +77,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params),
-                                                      random_state=self.random_state))
+                                                      random_seed=self.random_seed))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
-                                                       random_state=self.random_state,
+                                                       random_seed=self.random_seed,
                                                        n_jobs=self.n_jobs)
 
             next_batch.append(ensemble)
@@ -90,7 +90,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
-                next_batch.append(pipeline_class(parameters=pl_parameters, random_state=self.random_state))
+                next_batch.append(pipeline_class(parameters=pl_parameters, random_seed=self.random_seed))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch

@@ -10,7 +10,8 @@ from evalml.pipelines.components.transformers.preprocessing import (
 )
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    deprecate_arg
 )
 
 
@@ -19,22 +20,24 @@ class TextFeaturizer(TextTransformer):
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
-    def __init__(self, text_columns=None, random_state=0, **kwargs):
+    def __init__(self, text_columns=None, random_state=None, random_seed=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
             text_columns (list): list of feature names which should be treated as text features.
-            random_state (int): Seed for the random number generator. Defaults to 0.
-
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
         self._trans = [nlp_primitives.DiversityScore,
                        nlp_primitives.MeanCharactersPerWord,
                        nlp_primitives.PolarityScore]
         self._features = None
-        self._lsa = LSA(text_columns=text_columns, random_state=random_state)
+        self._lsa = LSA(text_columns=text_columns, random_state=None, random_seed=random_seed)
         self._primitives_provenance = {}
         super().__init__(text_columns=text_columns,
-                         random_state=random_state,
+                         random_state=None,
+                         random_seed=random_seed,
                          **kwargs)
 
     def _clean_text(self, X):

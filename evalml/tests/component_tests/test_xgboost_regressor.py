@@ -27,7 +27,7 @@ def test_xgboost_regressor_random_state_bounds_seed(X_y_regression):
 def test_xgboost_feature_name_with_random_ascii(X_y_regression):
     X, y = X_y_regression
     clf = XGBoostRegressor()
-    X = get_random_state(clf.random_state).random((X.shape[0], len(string.printable)))
+    X = get_random_state(clf.random_seed).random((X.shape[0], len(string.printable)))
     col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
     X = pd.DataFrame(X, columns=col_names)
     clf.fit(X, y)

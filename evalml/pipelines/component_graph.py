@@ -9,20 +9,19 @@ from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    get_random_seed,
     import_or_raise
 )
 
 
 class ComponentGraph:
-    def __init__(self, component_dict=None, random_state=0):
+    def __init__(self, component_dict=None, random_seed=0):
         """ Initializes a component graph for a pipeline as a directed acyclic graph (DAG).
 
         Example:
             >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
            """
-        self.random_state = get_random_seed(random_state)
+        self.random_seed = random_seed
         self.component_dict = component_dict or {}
         self.component_instances = {}
         self._is_instantiated = False
@@ -37,7 +36,7 @@ class ComponentGraph:
         self._i = 0
 
     @classmethod
-    def from_list(cls, component_list, random_state=0):
+    def from_list(cls, component_list, random_seed=0):
         """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
         Arguments:
@@ -57,7 +56,7 @@ class ComponentGraph:
             if previous_component is not None:
                 component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
-        return cls(component_dict, random_state=random_state)
+        return cls(component_dict, random_seed=random_seed)
 
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
@@ -76,7 +75,7 @@ class ComponentGraph:
             component_parameters = parameters.get(component_name, {})
 
             try:
-                new_component = component_class(**component_parameters, random_state=self.random_state)
+                new_component = component_class(**component_parameters, random_state=self.random_seed)
             except (ValueError, TypeError) as e:
                 self._is_instantiated = False
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)

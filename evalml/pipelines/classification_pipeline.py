@@ -13,7 +13,7 @@ from evalml.utils.gen_utils import (
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
-    def __init__(self, parameters, random_state=0):
+    def __init__(self, parameters, random_state=None, random_seed=0):
         """Machine learning classification pipeline made out of transformers and a classifier.
 
         Required Class Variables:
@@ -22,10 +22,11 @@ class ClassificationPipeline(PipelineBase):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_state (int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self._encoder = LabelEncoder()
-        super().__init__(parameters, random_state)
+        super().__init__(parameters, random_state=random_state, random_seed=random_seed)
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted

@@ -65,9 +65,9 @@ class BaselineClassifier(Estimator):
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            predictions = get_random_state(self.random_state).choice(self._classes, len(X))
+            predictions = get_random_state(self.random_seed).choice(self._classes, len(X))
         else:
-            predictions = get_random_state(self.random_state).choice(self._classes, len(X), p=self._percentage_freq)
+            predictions = get_random_state(self.random_seed).choice(self._classes, len(X), p=self._percentage_freq)
         return _convert_to_woodwork_structure(predictions)
 
     def predict_proba(self, X):
