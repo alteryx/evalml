@@ -379,8 +379,6 @@ class _SHAPTable(_SectionMaker):
         Handling the differences in how the table is formatted between regression and classification problems
         is delegated to the _make_single_prediction_shap_table
         """
-
-
         input_feature = input_features.iloc[index:(index + 1)]
         if "Delayed Feature Transformer" in pipeline.component_graph:
             input_features_idx = self.training_data.index.get_loc(input_feature.index[0])

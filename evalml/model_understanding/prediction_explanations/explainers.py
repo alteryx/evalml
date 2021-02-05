@@ -39,7 +39,7 @@ def explain_prediction(pipeline, input_features, y=None, top_k_features=3, train
             Also required for time series problems utilizing Delayed Feature Transformer.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
-        output_format (str): Either "text" or "dict". Default is "text".
+        output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
         str or dict - A report explaining the most positive/negative contributing features to the predictions.
@@ -113,7 +113,7 @@ def explain_predictions(pipeline, input_features, top_k_features=3, training_dat
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
             Also required for time series problems utilizing Delayed Feature Transformer.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
-        output_format (str): Either "text" or "dict". Default is "text".
+        output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
         str or dict - A report explaining the top contributing features to each prediction for each row of input_features.
@@ -160,7 +160,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             the true labels and predicted value or probabilities as the only arguments and lower values
             must be better. By default, this will be the absolute error for regression problems and cross entropy loss
             for classification problems.
-        output_format (str): Either "text" or "dict". Default is "text".
+        output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
         str or dict - A report explaining the top contributing features for the best/worst predictions in the input_features.
