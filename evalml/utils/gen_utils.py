@@ -355,6 +355,26 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
+def _to_woodwork(X, y, to_pandas=True):
+    """Convert numeric and non-null data to woodwork or pandas datatype. Raises ValueError if there is null or non-numeric data.
+    Used with data sampler strategies.
+
+    Arguments:
+        X (pd.DataFrame, np.ndarray, ww.DataTable): Data to transform
+        y (pd.Series, np.ndarray, ww.DataColumn): Target data
+
+    Returns:
+        Tuple(ww.DataTable, ww.DataColumn) or Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
+    X_ww = _convert_to_woodwork_structure(X)
+    if not is_all_numeric(X_ww):
+        raise ValueError('Values not all numeric or there are null values provided in the dataset')
+    y_ww = _convert_to_woodwork_structure(y)
+    if to_pandas:
+        X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
+    return X_ww, y_ww
+
+
 def pad_with_nans(pd_data, num_to_pad):
     """Pad the beginning num_to_pad rows with nans.
 
