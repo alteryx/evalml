@@ -10,8 +10,15 @@ from collections import OrderedDict
 import cloudpickle
 import pandas as pd
 
-from .components import Estimator
-from .components.utils import handle_component_class
+from .components import (
+    PCA,
+    DFSTransformer,
+    Estimator,
+    LinearDiscriminantAnalysis,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
+from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
@@ -498,3 +505,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def __next__(self):
         return next(self._component_graph)
+
+    def _get_feature_provenance(self):
+        return self._component_graph._feature_provenance
+
+    @property
+    def _supports_fast_permutation_importance(self):
+        has_more_than_one_estimator = sum(isinstance(c, Estimator) for c in self._component_graph) > 1
+        _all_components = set(all_components())
+        has_custom_components = any(c.__class__ not in _all_components for c in self._component_graph)
+        has_dim_reduction = any(isinstance(c, (PCA, LinearDiscriminantAnalysis)) for c in self._component_graph)
+        has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
+        has_stacked_ensembler = any(isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor)) for c in self._component_graph)
+        return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs, has_stacked_ensembler])
