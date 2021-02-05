@@ -72,6 +72,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                          component_obj=None,
                          random_state=random_state)
         self._initial_state = self.random_state
+        self._provenance = {}
 
     @staticmethod
     def _get_cat_cols(X):
@@ -208,8 +209,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         """
         unique_names = []
         seen_before = set([])
+        provenance = {}
         for col_index, col in enumerate(self.features_to_encode):
             column_categories = self.categories(col)
+            unique_encoded_columns = []
             for cat_index, category in enumerate(column_categories):
 
                 # Drop categories specified by the user
@@ -222,5 +225,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
 
                 unique_names.append(proposed_name)
+                unique_encoded_columns.append(proposed_name)
                 seen_before.add(proposed_name)
+            provenance[col] = unique_encoded_columns
+        self._provenance = provenance
         return unique_names
+
+    def _get_feature_provenance(self):
+        return self._provenance
