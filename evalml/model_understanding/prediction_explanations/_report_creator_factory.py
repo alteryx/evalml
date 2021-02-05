@@ -30,14 +30,13 @@ def _report_creator_factory(data, report_type, output_format, top_k_features, in
     """
     if report_type == "explain_predictions" and output_format == "text":
         heading = _Heading([""], data.input_features.shape[0])
-        predicted_values = None
         shap_table = _SHAPTable(top_k_features, include_shap_values, data.training_data)
-        report_maker = _ReportMaker(heading, predicted_values, shap_table).make_text
+        report_maker = _ReportMaker(heading, None, shap_table).make_text
     elif report_type == "explain_predictions" and output_format == "dict":
         shap_table = _SHAPTable(top_k_features, include_shap_values, data.training_data)
         report_maker = _ReportMaker(None, None, shap_table).make_dict
     elif report_type == "explain_predictions" and output_format == "dataframe":
-        shap_table = _SHAPTable(top_k_features, include_shap_values, data.input_features) # Probably need to change this.
+        shap_table = _SHAPTable(top_k_features, include_shap_values, data.training_data) # Probably need to change this.
         report_maker = _ReportMaker(None, None, shap_table).make_dataframe
     elif report_type == "explain_predictions_best_worst" and output_format == "text":
         heading_maker = _Heading(["Best ", "Worst "], n_indices=num_to_explain)

@@ -218,7 +218,9 @@ def _make_single_prediction_shap_table(pipeline, input_features, y=None, top_k=3
     Returns:
         str: Table
     """
-
+    if "Delayed Feature Transformer" in pipeline.component_graph:
+        td_idx = training_data.index.get_loc(input_features.index[0])
+        input_features = training_data.iloc[0:td_idx + 1]
     pipeline_features = pipeline.compute_estimator_features(input_features, y=y).to_dataframe()
     if "Delayed Feature Transformer" in pipeline.component_graph:
         pipeline_features = pipeline_features.iloc[[-1]]

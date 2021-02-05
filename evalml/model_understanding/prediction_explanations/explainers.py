@@ -55,11 +55,11 @@ def explain_prediction(pipeline, input_features, y=None, top_k_features=3, train
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
 
-    if "Delayed Feature Transformer" in pipeline.component_graph:
-        if y is not None and training_data is None:
-            raise ValueError(f"Training data must be provided for time series data.")
-        input_features_idx = training_data.index.get_loc(input_features.index[0])
-        input_features = training_data.iloc[0:input_features_idx + 1]
+    # if "Delayed Feature Transformer" in pipeline.component_graph:
+    #     if y is not None and training_data is None:
+    #         raise ValueError(f"Training data must be provided for time series data.")
+    #     input_features_idx = training_data.index.get_loc(input_features.index[0])
+    #     input_features = training_data.iloc[0:input_features_idx + 1]
     return _make_single_prediction_shap_table(pipeline, input_features, y=y, top_k=top_k_features,
                                               training_data=training_data, include_shap_values=include_shap_values,
                                               output_format=output_format)
@@ -130,6 +130,14 @@ def explain_predictions(pipeline, input_features, top_k_features=3, training_dat
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
 
+    # For the case of Time Series,
+    # if "Delayed Feature Transformer" in pipeline.component_graph:
+    #     time_supported_input_features = []
+    #     indices = []
+    #     for idx in input_features.index:
+    #         td_idx = training_data.index.get_loc(idx)
+    #         time_supported_input_features.append(training_data.iloc[0:td_idx + 1])
+    #     import pdb; pdb.set_trace()
     data = _ReportData(pipeline, input_features, training_data=training_data, y_true=None, y_pred=None,
                        y_pred_values=None, errors=None, index_list=range(input_features.shape[0]), metric=None)
 
