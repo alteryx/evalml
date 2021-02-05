@@ -218,16 +218,18 @@ def _make_single_prediction_shap_table(pipeline, input_features, y=None, top_k=3
     Returns:
         str: Table
     """
-    if "Delayed Feature Transformer" in pipeline.component_graph:
-        if training_data is None:
-            raise ValueError(f"Training data must be provided for time series data.")
-        input_features_idx = training_data.index.get_loc(input_features.index[0])
-        input_features = training_data.iloc[0:input_features_idx + 1]
-    pipeline_features = pipeline.compute_estimator_features(input_features).to_dataframe()
+
+    pipeline_features = pipeline.compute_estimator_features(input_features, y=y).to_dataframe()
     if "Delayed Feature Transformer" in pipeline.component_graph:
         pipeline_features = pipeline_features.iloc[[-1]]
-    shap_values = _compute_shap_values(pipeline, pipeline_features, y=y, training_data=training_data)
-    normalized_shap_values = _normalize_shap_values(shap_values)
+    try:
+        shap_values = _compute_shap_values(pipeline, pipeline_features, y=y, training_data=training_data)
+    except:
+        shap_values = [{key: [999] for key in pipeline_features} for i in range(len(pipeline.classes_))]
+    try:
+        normalized_shap_values = _normalize_shap_values(shap_values)
+    except:
+        normalized_shap_values = [{key: [999] for key in pipeline_features} for i in range(len(pipeline.classes_))]
 
     class_names = None
     if hasattr(pipeline, "classes_"):
@@ -377,7 +379,13 @@ class _SHAPTable(_SectionMaker):
         Handling the differences in how the table is formatted between regression and classification problems
         is delegated to the _make_single_prediction_shap_table
         """
-        table = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
+
+
+        input_feature = input_features.iloc[index:(index + 1)]
+        if "Delayed Feature Transformer" in pipeline.component_graph:
+            input_features_idx = self.training_data.index.get_loc(input_feature.index[0])
+            input_features = self.training_data.iloc[0:input_features_idx + 1]
+        table = _make_single_prediction_shap_table(pipeline, input_features,
                                                    training_data=self.training_data, top_k=self.top_k_features,
                                                    include_shap_values=self.include_shap_values, output_format="text")
         table = table.splitlines()

@@ -209,7 +209,6 @@ def test_explain_prediction(mock_normalize_shap_values,
 
 
 def test_error_metrics():
-
     pd.testing.assert_series_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), pd.Series([3, 1, 3]))
     pd.testing.assert_series_equal(cross_entropy(pd.Series([1, 0]),
                                                  pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
@@ -230,7 +229,6 @@ def test_explain_predictions_best_worst_value_errors(input_features, y_true, err
 
 def test_explain_predictions_raises_pipeline_score_error():
     with pytest.raises(PipelineScoreError, match="Division by zero!"):
-
         def raise_zero_division(input_features):
             raise ZeroDivisionError("Division by zero!")
 
@@ -515,7 +513,7 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                           (ProblemTypes.MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, [17, 235]),
                           (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, ["2020-10", "2020-11"]),
                           (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, ["2020-15", "2020-15"]),
-                          (ProblemTypes.MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, ["2020-15", "2020-15"]),
+                          (ProblemTypes.MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, ["2020-15", "2020-15"])
                           ])
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
@@ -657,7 +655,6 @@ regression_custom_metric_answer_dict = {
                           ("dict", regression_custom_metric_answer_dict)])
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
 def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_format, answer):
-
     mock_make_table.return_value = "table goes here" if output_format == "text" else {"explanations": ["explanation_dictionary_goes_here"]}
     pipeline = MagicMock()
     pipeline.parameters = "Parameters go here"
@@ -684,7 +681,6 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
 def test_json_serialization(problem_type, X_y_regression, linear_regression_pipeline_class,
                             X_y_binary, logistic_regression_binary_pipeline_class,
                             X_y_multi, logistic_regression_multiclass_pipeline_class):
-
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
         y = pd.Series(y)
@@ -704,10 +700,14 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
                                                 num_to_explain=1, output_format="dict")
     assert json.loads(json.dumps(best_worst)) == best_worst
 
-    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), training_data=X, output_format="dict")
+    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), training_data=X, output_format="text")
     assert json.loads(json.dumps(report)) == report
 
-from evalml.pipelines import TimeSeriesRegressionPipeline, TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline
+
+from evalml.pipelines import TimeSeriesRegressionPipeline, TimeSeriesBinaryClassificationPipeline, \
+    TimeSeriesMulticlassClassificationPipeline
+
+
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
@@ -715,7 +715,6 @@ from evalml.pipelines import TimeSeriesRegressionPipeline, TimeSeriesBinaryClass
                                                            (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
 def test_explain_predic(pipeline_class,
                         estimator_name, include_delayed_features, only_use_y, ts_data):
-
     if only_use_y and (not include_delayed_features):
         pytest.skip("This would result in an empty feature dataframe.")
 
@@ -730,12 +729,45 @@ def test_explain_predic(pipeline_class,
                    "pipeline": {"gap": 0, "max_delay": 0}})
 
     if only_use_y:
-        pl.fit(None, y)
+        pl.fit(None, y)  # If fit on only y, then computed features will be 6.
+        y.name = "target"
+        table = explain_prediction(pl, input_features=pd.DataFrame(y.iloc[3:4]), y=None,
+                                   output_format="text", top_k_features=2, training_data=pd.DataFrame(y))
     else:
         pl.fit(X, y)
-    table = explain_prediction(pl, input_features=X.iloc[3:4],
-                               output_format="text", top_k_features=2, training_data=X)
+        table = explain_prediction(pl, input_features=X.iloc[3:4], y=y,
+                                   output_format="text", top_k_features=2, training_data=X)
     print(table)
-    table2 = explain_predictions(pl, input_features=X.iloc[3:4],
-                                 output_format="text", top_k_features=2, training_data=X)
-    print(table2)
+
+
+@pytest.mark.parametrize("only_use_y", [True, False])
+@pytest.mark.parametrize("include_delayed_features", [True, False])
+@pytest.mark.parametrize("pipeline_class,estimator_name",
+                         [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                          (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+                          (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
+def test_explain_predics(pipeline_class,
+                         estimator_name, include_delayed_features, only_use_y, ts_data):
+    if only_use_y and (not include_delayed_features):
+        pytest.skip("This would result in an empty feature dataframe.")
+
+    X, y = ts_data
+
+    class Pipeline(pipeline_class):
+        component_graph = ["Delayed Feature Transformer", estimator_name]
+        name = pipeline_class.name
+
+    pl = Pipeline({"Delayed Feature Transformer": {"delay_features": include_delayed_features,
+                                                   "delay_target": include_delayed_features},
+                   "pipeline": {"gap": 0, "max_delay": 0}})
+
+    if only_use_y:
+        pl.fit(None, y)  # If fit on only y, then computed features will be 6.
+        y.name = "target"
+        table = explain_predictions(pl, input_features=pd.DataFrame(y.iloc[3:4]),
+                                    output_format="text", top_k_features=2, training_data=pd.DataFrame(y))
+    else:
+        pl.fit(X, y)
+        table = explain_predictions(pl, input_features=X.iloc[3:4],
+                                    output_format="text", top_k_features=2, training_data=X)
+    print(table)
