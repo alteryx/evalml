@@ -57,7 +57,8 @@ class LSA(TextTransformer):
         if len(self._all_text_columns) == 0:
             return X_ww
 
-        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X_t = X.copy()
         text_columns = self._get_text_columns(X)
         for col in text_columns:
             transformed = self._lsa_pipeline.transform(X[col])

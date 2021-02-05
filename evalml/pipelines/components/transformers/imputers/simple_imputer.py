@@ -67,14 +67,15 @@ class SimpleImputer(Transformer):
         ww.DataTable: Transformed X
         """
         X_ww = _convert_to_woodwork_structure(X)
-        X_null_dropped = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (X_null_dropped.dtypes == bool).all():
-            return X_ww
+        if (X.dtypes == bool).all():
+            return _convert_to_woodwork_structure(X)
 
-        X_t = self._component_obj.transform(X_null_dropped)
+        X_null_dropped = X.copy()
+        X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
+        X_t = self._component_obj.transform(X)
         if X_null_dropped.empty:
             X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
             return _convert_to_woodwork_structure(X_t)
