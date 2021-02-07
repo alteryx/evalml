@@ -13,5 +13,7 @@ from .data_splitters import (
     SMOTETomekTVSplit,
     SMOTETomekCVSplit,
     RandomUnderSamplerCVSplit,
-    RandomUnderSamplerTVSplit
+    RandomUnderSamplerTVSplit,
+    SMOTENCCVSplit,
+    SMOTENCTVSplit
 )

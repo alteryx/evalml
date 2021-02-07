@@ -1,29 +1,24 @@
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
+from evalml.preprocessing.data_splitters.base_splitters import BaseTVSplit, BaseCVSplit
 from evalml.utils import import_or_raise
-from evalml.utils.gen_utils import _convert_to_woodwork_structure, _to_woodwork
 
 
-class SMOTETomekTVSplit(BaseCrossValidator):
+class SMOTETomekTVSplit(BaseTVSplit):
     """Splits the data into training and validation sets and uses SMOTE + Tomek's link bbalance the training data.
        Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', test_size=None, n_jobs=-1, random_state=0):
-        super().__init__()
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.combine", error_msg=error_msg)
         self.stl = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_state)
+        super().__init__(sampler=self.stl, test_size=test_size, random_state=random_state)
         self.test_size = test_size
         self.random_state = random_state
 
-    @staticmethod
-    def get_n_splits():
-        """Returns the number of splits of this object"""
-        return 1
-
     def split(self, X, y=None):
-        """Divides the data into training and testing sets
+        """Divides the data into training and testing sets.
 
             Arguments:
                 X (ww.DataTable): DataTable of points to split
@@ -32,12 +27,7 @@ class SMOTETomekTVSplit(BaseCrossValidator):
             Returns:
                 tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
         """
-        X, y = _to_woodwork(X, y)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_state)
-        X_train_resample, y_train_resample = self.stl.fit_resample(X_train, y_train)
-        X_train_resample, y_train_resample = _to_woodwork(X_train_resample, y_train_resample, to_pandas=False)
-        X_test, y_test = _to_woodwork(X_test, y_test, to_pandas=False)
-        return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
+        return super().fix_data(X, y)
 
     def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
@@ -47,27 +37,25 @@ class SMOTETomekTVSplit(BaseCrossValidator):
                 y (ww.DataTable): DataColumn of points to split
 
             Returns:
-                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation
+                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
         """
-        X_pd, y_pd = _to_woodwork(X, y)
-        X_transformed, y_transformed = self.stl.fit_resample(X_pd, y_pd)
-        return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
+        return super().transform_data(X, y)
 
 
-class SMOTETomekCVSplit(StratifiedKFold):
+class SMOTETomekCVSplit(BaseCVSplit):
     """Split the data into KFold cross validation sets and uses SMOTE + Tomek's link to balance the training data.
        Keeps the validation data the same. Works only on continuous, numeric data."""
 
     def __init__(self, sampling_strategy='auto', n_splits=3, shuffle=True, n_jobs=-1, random_state=0):
-        super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.combine", error_msg=error_msg)
         self.stl = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_state)
+        super().__init__(sampler=self.stl, n_splits=n_splits, shuffle=shuffle, random_state=random_state)
         self.random_state = random_state
         self.n_splits = n_splits
 
     def split(self, X, y=None):
-        """Divides the data into training and testing sets
+        """Divides the data into training and testing sets.
 
             Arguments:
                 X (ww.DataTable): DataTable of points to split
@@ -76,13 +64,8 @@ class SMOTETomekCVSplit(StratifiedKFold):
             Returns:
                 tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
         """
-        X, y = _to_woodwork(X, y)
-        for i, (train_indices, test_indices) in enumerate(super().split(X, y)):
-            X_train, X_test, y_train, y_test = X.iloc[train_indices], X.iloc[test_indices], y.iloc[train_indices], y.iloc[test_indices]
-            X_train_resample, y_train_resample = self.stl.fit_resample(X_train, y_train)
-            X_train_resample, y_train_resample = _to_woodwork(X_train_resample, y_train_resample, to_pandas=False)
-            X_test, y_test = _to_woodwork(X_test, y_test, to_pandas=False)
-            yield iter(((X_train_resample, y_train_resample), (X_test, y_test)))
+        for data in super().fix_data(X, y):
+            yield data
 
     def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
@@ -92,8 +75,6 @@ class SMOTETomekCVSplit(StratifiedKFold):
                 y (ww.DataTable): DataColumn of points to split
 
             Returns:
-                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation
+                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
         """
-        X_pd, y_pd = _to_woodwork(X, y)
-        X_transformed, y_transformed = self.stl.fit_resample(X_pd, y_pd)
-        return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
+        return super().transform_data(X, y)

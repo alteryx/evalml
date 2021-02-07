@@ -8,6 +8,8 @@ from evalml.preprocessing.data_splitters import (
     RandomUnderSamplerTVSplit,
     SMOTETomekCVSplit,
     SMOTETomekTVSplit,
+    SMOTENCCVSplit,
+    SMOTENCTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )

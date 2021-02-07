@@ -60,6 +60,8 @@ from evalml.preprocessing.data_splitters import (
     RandomUnderSamplerTVSplit,
     SMOTETomekCVSplit,
     SMOTETomekTVSplit,
+    SMOTENCCVSplit,
+    SMOTENCTVSplit,
     TrainingValidationSplit
 )
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -2187,7 +2189,11 @@ def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_mu
             assert automl.get_pipeline(row['id']).random_state == random_state
 
 
-@pytest.mark.parametrize("sampler", ["KMeansSMOTETVSplit", "KMeansSMOTECVSplit", "SMOTETomekCVSplit", "SMOTETomekTVSplit", "RandomUnderSamplerCVSplit", "RandomUnderSamplerTVSplit", "None", "Nope"])
+@pytest.mark.parametrize("sampler",
+                         ["KMeansSMOTETVSplit", "KMeansSMOTECVSplit",
+                          "SMOTETomekCVSplit", "SMOTETomekTVSplit",
+                          "RandomUnderSamplerCVSplit", "RandomUnderSamplerTVSplit",
+                          "None", "Nope"])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
@@ -2212,6 +2218,18 @@ def test_automl_sampler_instance(mock_fit, mock_score, sampler, X_y_binary):
     pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
     X, y = X_y_binary
     sampler = sampler()
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=sampler, random_state=0, n_jobs=1, max_iterations=1)
+    automl.search()
+    assert automl.data_splitter.__class__.__name__ == sampler.__class__.__name__
+
+
+@pytest.mark.parametrize("sampler", [SMOTENCCVSplit, SMOTENCTVSplit])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_smotenc_sampler(mock_fit, mock_score, sampler, X_y_binary):
+    pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+    X, y = X_y_binary
+    sampler = sampler(categorical_features=[0])
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=sampler, random_state=0, n_jobs=1, max_iterations=1)
     automl.search()
     assert automl.data_splitter.__class__.__name__ == sampler.__class__.__name__
