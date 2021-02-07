@@ -139,3 +139,36 @@ def test_datetime_featurizer_numpy_array_input():
     assert list(datetime_transformer.transform(X).columns) == ["0_year", "0_month", "0_day_of_week", "0_hour"]
     assert datetime_transformer.get_feature_names() == {'0_month': {'February': 1, 'June': 5, 'May': 4},
                                                         '0_day_of_week': {'Saturday': 6, 'Tuesday': 2}}
+
+
+import woodwork as ww
+from woodwork.logical_types import Integer, Double, Categorical, NaturalLanguage, Datetime
+
+@pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
+(ww.logical_types.Integer,pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="Float64"))),
+(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
+(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+])
+@pytest.mark.parametrize("with_datetime_col", [True, False])
+def test_dt_woodwork_custom_overrides_returned_by_components(logical_type, X_df, with_datetime_col):
+    types_to_test = [Integer, Double, Categorical, NaturalLanguage, Datetime]
+    if with_datetime_col:
+        X_df['datetime col'] = pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')
+    for l in types_to_test:
+        override_dict = {0: l}
+        try:
+            X = ww.DataTable(X_df, logical_types=override_dict)
+        except TypeError:
+            continue
+        print ("testing override", logical_type, "with", l)
+        datetime_transformer = DateTimeFeaturizer()
+        datetime_transformer.fit(X)
+        transformed = datetime_transformer.transform(X)
+        assert isinstance(transformed, ww.DataTable)
+        input_logical_types = {0:l}
+        print ("transformed", transformed.logical_types.items())
+        print ("expected", input_logical_types.items())
+        if l != Datetime:
+            assert all(item in transformed.logical_types.items() for item in input_logical_types.items())
+            # assert transformed.logical_types

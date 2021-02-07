@@ -98,3 +98,34 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         X_t = feature.transform(X_transform)
 
         assert_frame_equal(feature_matrix, X_t.to_dataframe())
+
+
+from woodwork.logical_types import Integer, Double, Categorical, NaturalLanguage, Boolean, Datetime
+import woodwork as ww
+@pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
+(ww.logical_types.Integer,pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="Float64"))),
+(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
+(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+])
+def test_ft_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+    y = pd.Series([1, 2, 1])
+    types_to_test = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
+    for l in types_to_test:
+        X = None
+        override_dict = {0: l}
+        try:
+            X = ww.DataTable(X_df.copy(), logical_types=override_dict)
+            assert X.logical_types[0] == l
+        except TypeError:
+            continue
+        print ("testing override", logical_type, "with", l)
+        dft = DFSTransformer()
+        dft.fit(X, y)
+        transformed = dft.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        input_logical_types = {'0':l}
+        print ("transformed", transformed.logical_types.items())
+        print ("expected", input_logical_types.items())
+
+        assert transformed.logical_types == {'0': l}

@@ -51,4 +51,6 @@ class DropNullColumns(Transformer):
             ww.DataTable: Transformed X
         """
         X_t = _convert_to_woodwork_structure(X)
+        if len(self._cols_to_drop) == 0:
+            return X_t
         return X_t.drop(self._cols_to_drop)

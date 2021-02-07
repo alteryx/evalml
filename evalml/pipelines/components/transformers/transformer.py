@@ -8,6 +8,7 @@ from evalml.utils import (
     _convert_woodwork_types_wrapper,
     reconvert
 )
+from woodwork.logical_types import Categorical
 
 
 class Transformer(ComponentBase):
@@ -45,7 +46,7 @@ class Transformer(ComponentBase):
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return reconvert(X_ww, X_t_df)
+        return reconvert(X_ww, X_t_df, to_ignore=[Categorical])
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

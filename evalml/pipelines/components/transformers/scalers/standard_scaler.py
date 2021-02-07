@@ -7,6 +7,7 @@ from evalml.utils import (
     _convert_woodwork_types_wrapper,
     reconvert
 )
+from woodwork.logical_types import Integer
 
 
 class StandardScaler(Transformer):
@@ -28,7 +29,7 @@ class StandardScaler(Transformer):
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return reconvert(X_ww, X_t_df)
+        return reconvert(X_ww, X_t_df, to_ignore=[Integer])
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)

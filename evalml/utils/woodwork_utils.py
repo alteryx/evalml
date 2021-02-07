@@ -80,22 +80,28 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
-def reconvert(old_datatable, new_dataframe):
+def reconvert(old_datatable, new_dataframe, to_ignore=None):
     """
     Helper method in EvalML which will take old datatable, new dataframe and return new datatable,
     handling updates in logical types.
     """
     okay = {}
+    if to_ignore is None:
+        to_ignore = [] # logical types to ignore
     # col_intersection = set(old_logical_types.keys()).intersection(set(new_dataframe.columns))
     physical_types = old_datatable.physical_types
     logical_types = old_datatable.logical_types
     for col in new_dataframe.columns:
         if col not in old_datatable.columns:
             continue
-        old_np = old_datatable[col].to_series().values
-        new_np = new_dataframe[col].values
-        is_equal = np.array_equal(old_np, new_np)
-        if is_equal and col in old_datatable.columns:  # column existed
+        # old_np = old_datatable[col].to_series().values
+        # new_np = new_dataframe[col].values
+        # is_equal = np.array_equal(old_np, new_np)
+        # if is_equal and col in old_datatable.columns:  # column existed
+        if col in old_datatable.columns:
+            if logical_types[col] in to_ignore:
+                continue
+            # if 
             # old_ptype = physical_types[col]
             # if isinstance(old_ptype, pd.CategoricalDtype):
             #     old_ptype = pd.CategoricalDtype()

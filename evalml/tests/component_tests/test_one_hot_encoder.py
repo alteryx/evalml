@@ -493,3 +493,36 @@ def test_ohe_column_names_unique():
     # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
     # category 1 in A_x_y gets mapped to A_x_y_1_2 because A_x_y_1_1 already exists
     assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_2", "A_x_y_y"}
+
+from woodwork.logical_types import Integer, Double, Categorical, NaturalLanguage, Boolean, Datetime
+
+
+@pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
+(ww.logical_types.Integer,pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="Float64"))),
+(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
+(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+])
+def test_ohe_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+    y = pd.Series([1, 2, 1])
+    types_to_test = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
+    for l in types_to_test:
+        X = None
+        override_dict = {0: l}
+        try:
+            X = ww.DataTable(X_df, logical_types=override_dict)
+            assert X.logical_types[0] == l
+        except TypeError:
+            continue
+        print ("testing override", logical_type, "with", l)
+        imputer = OneHotEncoder()
+        imputer.fit(X, y)
+        transformed = imputer.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        input_logical_types = {0:l}
+        print ("transformed", transformed.logical_types.items())
+        print ("expected", input_logical_types.items())
+        if l == Categorical:
+            pass
+        else:
+            assert transformed.logical_types == {0: l}
