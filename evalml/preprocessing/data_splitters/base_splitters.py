@@ -11,7 +11,7 @@ class BaseTVSplit(BaseCrossValidator):
         self.sampler = sampler
         self.test_size = test_size
         self.random_state = random_state
-        
+
     @staticmethod
     def get_n_splits():
         """Returns the number of splits of this object."""

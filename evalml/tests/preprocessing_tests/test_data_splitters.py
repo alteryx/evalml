@@ -6,12 +6,12 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 from evalml.preprocessing.data_splitters import (
     KMeansSMOTECVSplit,
     KMeansSMOTETVSplit,
-    SMOTETomekCVSplit,
-    SMOTETomekTVSplit,
     RandomUnderSamplerCVSplit,
     RandomUnderSamplerTVSplit,
     SMOTENCCVSplit,
-    SMOTENCTVSplit
+    SMOTENCTVSplit,
+    SMOTETomekCVSplit,
+    SMOTETomekTVSplit
 )
 
 im_os = pytest.importorskip('imblearn.over_sampling', reason='Skipping data splitter test because imblearn not installed')

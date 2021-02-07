@@ -1,7 +1,7 @@
-from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.model_selection._split import BaseCrossValidator
-
-from evalml.preprocessing.data_splitters.base_splitters import BaseTVSplit, BaseCVSplit
+from evalml.preprocessing.data_splitters.base_splitters import (
+    BaseCVSplit,
+    BaseTVSplit
+)
 from evalml.utils import import_or_raise
 
 

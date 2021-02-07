@@ -1,7 +1,7 @@
-from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.model_selection._split import BaseCrossValidator
-
-from evalml.preprocessing.data_splitters.base_splitters import BaseTVSplit, BaseCVSplit
+from evalml.preprocessing.data_splitters.base_splitters import (
+    BaseCVSplit,
+    BaseTVSplit
+)
 from evalml.utils import import_or_raise
 
 
@@ -28,7 +28,6 @@ class KMeansSMOTETVSplit(BaseTVSplit):
                 tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
         """
         return super().fix_data(X, y)
-
 
     def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
