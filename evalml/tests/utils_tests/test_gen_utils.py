@@ -11,10 +11,10 @@ from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
+    _convert_numeric_dataset,
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
-    _convert_numeric_dataset,
     classproperty,
     convert_to_seconds,
     drop_rows_with_nans,

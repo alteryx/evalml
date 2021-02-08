@@ -1,7 +1,10 @@
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
-from evalml.utils.gen_utils import _convert_to_woodwork_structure, _convert_numeric_dataset
+from evalml.utils.gen_utils import (
+    _convert_numeric_dataset,
+    _convert_to_woodwork_structure
+)
 
 
 class BaseTVSplit(BaseCrossValidator):
