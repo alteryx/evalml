@@ -10,10 +10,10 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     get_random_seed,
-    import_or_raise
+    import_or_raise,
+    infer_feature_types
 )
 
 
@@ -62,10 +62,10 @@ class CatBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -76,14 +76,14 @@ class CatBoostClassifier(Estimator):
         return self
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()
         if self._label_encoder:
             predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     @property
     def feature_importance(self):

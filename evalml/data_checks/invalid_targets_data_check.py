@@ -9,8 +9,8 @@ from evalml.data_checks import (
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils.woodwork_utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    infer_feature_types,
     numeric_and_boolean_ww
 )
 
@@ -65,7 +65,7 @@ class InvalidTargetDataCheck(DataCheck):
         if y is None:
             raise ValueError("y cannot be None")
 
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
         if not is_supported_type:
             messages["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"

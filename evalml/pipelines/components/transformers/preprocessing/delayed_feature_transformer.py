@@ -4,9 +4,9 @@ from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -90,7 +90,7 @@ class DelayedFeatureTransformer(Transformer):
         if X is None:
             X = pd.DataFrame()
         # Normalize the data into pandas objects
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         categorical_columns = self._get_categorical_columns(X_ww)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
@@ -104,7 +104,7 @@ class DelayedFeatureTransformer(Transformer):
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
             if y.logical_type == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             else:

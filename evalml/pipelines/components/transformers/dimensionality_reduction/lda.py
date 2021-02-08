@@ -3,9 +3,9 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as SkLDA
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types,
     is_all_numeric
 )
 
@@ -31,10 +31,10 @@ class LinearDiscriminantAnalysis(Transformer):
                          random_state=random_state)
 
     def fit(self, X, y):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if not is_all_numeric(X):
             raise ValueError("LDA input must be all numeric")
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         n_features = X.shape[1]
@@ -47,7 +47,7 @@ class LinearDiscriminantAnalysis(Transformer):
         return self
 
     def transform(self, X, y=None):
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("LDA input must be all numeric")
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
@@ -56,10 +56,10 @@ class LinearDiscriminantAnalysis(Transformer):
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("LDA input must be all numeric")
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
 

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import _convert_to_woodwork_structure
+from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
@@ -46,16 +46,16 @@ class ColumnSelector(Transformer):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         self._check_input_for_columns(X)
         return self
 
     def transform(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         self._check_input_for_columns(X)
         cols = self.parameters.get("columns") or []
         modified_cols = self._modify_columns(cols, X, y)
-        return _convert_to_woodwork_structure(modified_cols)
+        return infer_feature_types(modified_cols)
 
 
 class DropColumns(ColumnSelector):

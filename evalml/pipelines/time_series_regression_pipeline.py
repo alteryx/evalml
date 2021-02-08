@@ -4,9 +4,9 @@ from evalml.objectives import get_objective
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     drop_rows_with_nans,
+    infer_feature_types,
     pad_with_nans
 )
 
@@ -50,8 +50,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         if X is None:
             X = pd.DataFrame()
 
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         X_t = self._compute_features_during_fit(X, y)
@@ -75,8 +75,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         """
         if X is None:
             X = pd.DataFrame()
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
         features = self.compute_estimator_features(X, y)
@@ -88,7 +88,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         predictions = self.estimator.predict(features_no_nan, y_arg).to_series()
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
-        return _convert_to_woodwork_structure(padded)
+        return infer_feature_types(padded)
 
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.
@@ -104,9 +104,9 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         # Only converting X for the call to _score_all_objectives
         if X is None:
             X = pd.DataFrame()
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         y_predicted = self.predict(X, y)

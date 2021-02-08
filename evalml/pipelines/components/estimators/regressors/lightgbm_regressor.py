@@ -9,11 +9,11 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
     get_random_seed,
-    import_or_raise
+    import_or_raise,
+    infer_feature_types
 )
 
 
@@ -72,7 +72,7 @@ class LightGBMRegressor(Estimator):
 
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 

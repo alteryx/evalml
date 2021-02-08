@@ -14,10 +14,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     TextFeaturizer
 )
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class DoubleColumns(Transformer):
@@ -43,7 +40,7 @@ class DoubleColumns(Transformer):
         new_X = X.assign(**{f"{col}_doubled": 2 * X.loc[:, col] for col in X.columns})
         if self.drop_old_columns:
             new_X = new_X.drop(columns=X.columns)
-        return _convert_to_woodwork_structure(new_X)
+        return infer_feature_types(new_X)
 
     def fit_transform(self, X, y=None):
         self.fit(X, y)

@@ -4,10 +4,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -56,7 +53,7 @@ class IDColumnsDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
 
         col_names = [col for col in X.columns]
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"

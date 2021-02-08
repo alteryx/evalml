@@ -9,9 +9,9 @@ from evalml.pipelines.components.transformers.preprocessing import (
     TextTransformer
 )
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -76,7 +76,7 @@ class TextFeaturizer(TextTransformer):
         """
         if len(self._all_text_columns) == 0:
             return self
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         text_columns = self._get_text_columns(X)
@@ -111,7 +111,7 @@ class TextFeaturizer(TextTransformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         if self._features is None or len(self._features) == 0:
             return X_ww
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())

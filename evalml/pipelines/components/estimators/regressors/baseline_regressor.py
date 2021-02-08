@@ -4,10 +4,7 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class BaselineRegressor(Estimator):
@@ -42,8 +39,8 @@ class BaselineRegressor(Estimator):
     def fit(self, X, y=None):
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.parameters["strategy"] == "mean":
@@ -54,9 +51,9 @@ class BaselineRegressor(Estimator):
         return self
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         predictions = pd.Series([self._prediction_value] * len(X))
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     @property
     def feature_importance(self):

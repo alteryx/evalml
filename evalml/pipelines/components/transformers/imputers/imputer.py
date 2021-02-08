@@ -1,9 +1,9 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -64,7 +64,7 @@ class Imputer(Transformer):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         cat_cols = list(X.select(['category', 'boolean']).columns)
         numeric_cols = list(X.select('numeric').columns)
 
@@ -96,7 +96,7 @@ class Imputer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         X_null_dropped = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:

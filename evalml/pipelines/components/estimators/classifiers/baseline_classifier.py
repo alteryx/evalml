@@ -6,9 +6,9 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    get_random_state
+    get_random_state,
+    infer_feature_types
 )
 
 
@@ -45,8 +45,8 @@ class BaselineClassifier(Estimator):
     def fit(self, X, y=None):
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         vals, counts = np.unique(y, return_counts=True)
@@ -60,7 +60,7 @@ class BaselineClassifier(Estimator):
         return self
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
@@ -68,10 +68,10 @@ class BaselineClassifier(Estimator):
             predictions = get_random_state(self.random_state).choice(self._classes, len(X))
         else:
             predictions = get_random_state(self.random_state).choice(self._classes, len(X), p=self._percentage_freq)
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
@@ -81,7 +81,7 @@ class BaselineClassifier(Estimator):
         else:
             proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
         predictions = pd.DataFrame(proba_arr, columns=self._classes)
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     @property
     def feature_importance(self):

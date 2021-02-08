@@ -3,10 +3,7 @@ from abc import abstractmethod
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class Estimator(ComponentBase):
@@ -40,12 +37,12 @@ class Estimator(ComponentBase):
             ww.DataColumn: Predicted values
         """
         try:
-            X = _convert_to_woodwork_structure(X)
+            X = infer_feature_types(X)
             X = _convert_woodwork_types_wrapper(X.to_dataframe())
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -57,12 +54,12 @@ class Estimator(ComponentBase):
             ww.DataTable: Probability estimates
         """
         try:
-            X = _convert_to_woodwork_structure(X)
+            X = infer_feature_types(X)
             X = _convert_woodwork_types_wrapper(X.to_dataframe())
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
-        return _convert_to_woodwork_structure(pred_proba)
+        return infer_feature_types(pred_proba)
 
     @property
     def feature_importance(self):

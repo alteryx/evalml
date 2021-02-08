@@ -4,10 +4,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -68,9 +65,9 @@ class NoVarianceDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()

@@ -24,11 +24,11 @@ from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     classproperty,
     get_logger,
     get_random_seed,
     import_or_raise,
+    infer_feature_types,
     jupyter_check,
     log_subtitle,
     log_title,
@@ -223,11 +223,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             ww.DataColumn: Predicted values.
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         predictions = self._component_graph.predict(X)
         predictions_series = predictions.to_series()
         predictions_series.name = self.input_target_name
-        return _convert_to_woodwork_structure(predictions_series)
+        return infer_feature_types(predictions_series)
 
     @abstractmethod
     def score(self, X, y, objectives):

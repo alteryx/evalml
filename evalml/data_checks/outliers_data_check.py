@@ -5,10 +5,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class OutliersDataCheck(DataCheck):
@@ -46,7 +43,7 @@ class OutliersDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = X.select('numeric')
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 

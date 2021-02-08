@@ -3,9 +3,9 @@ import pandas as pd
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -31,7 +31,7 @@ class FeatureSelector(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         self.input_feature_names = list(X.columns.values)
 

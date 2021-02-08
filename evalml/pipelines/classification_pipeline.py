@@ -4,10 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class ClassificationPipeline(PipelineBase):
@@ -39,8 +36,8 @@ class ClassificationPipeline(PipelineBase):
             self
 
         """
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         self._encoder.fit(y)
         y = self._encode_targets(y)
@@ -92,7 +89,7 @@ class ClassificationPipeline(PipelineBase):
         """
         predictions = self._predict(X, objective).to_series()
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -106,7 +103,7 @@ class ClassificationPipeline(PipelineBase):
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
         proba.columns = self._encoder.classes_
-        return _convert_to_woodwork_structure(proba)
+        return infer_feature_types(proba)
 
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives
@@ -119,7 +116,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)

@@ -7,10 +7,10 @@ from networkx.exception import NetworkXUnfeasible
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     get_random_seed,
-    import_or_raise
+    import_or_raise,
+    infer_feature_types
 )
 
 
@@ -93,7 +93,7 @@ class ComponentGraph:
             X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
@@ -136,7 +136,7 @@ class ComponentGraph:
             ww.DataTable: Transformed values.
         """
         if len(self.compute_order) <= 1:
-            return _convert_to_woodwork_structure(X)
+            return infer_feature_types(X)
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
@@ -144,10 +144,10 @@ class ComponentGraph:
             if isinstance(parent_output, ww.DataColumn):
                 parent_output = parent_output.to_series()
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = _convert_to_woodwork_structure(parent_output)
+                parent_output = infer_feature_types(parent_output)
             final_component_inputs.append(parent_output)
         concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
-        return _convert_to_woodwork_structure(concatted)
+        return infer_feature_types(concatted)
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -159,10 +159,10 @@ class ComponentGraph:
             ww.DataColumn: Predicted values.
         """
         if len(self.compute_order) == 0:
-            return _convert_to_woodwork_structure(X)
+            return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return _convert_to_woodwork_structure(outputs.get(final_component, outputs.get(f'{final_component}.x')))
+        return infer_feature_types(outputs.get(final_component, outputs.get(f'{final_component}.x')))
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -177,7 +177,7 @@ class ComponentGraph:
         Returns:
             dict: Outputs from each component
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if len(component_list) == 0:
             return X
         output_cache = {}
@@ -293,9 +293,9 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = _convert_to_woodwork_structure(return_x)
+        return_x = infer_feature_types(return_x)
         if return_y is not None:
-            return_y = _convert_to_woodwork_structure(return_y)
+            return_y = infer_feature_types(return_y)
         return return_x, return_y
 
     def get_component(self, component_name):

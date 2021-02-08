@@ -51,10 +51,10 @@ from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     convert_to_seconds,
-    get_random_seed
+    get_random_seed,
+    infer_feature_types
 )
 from evalml.utils.logger import (
     get_logger,
@@ -266,8 +266,8 @@ class AutoMLSearch:
         self._searched = False
 
         # make everything ww objects
-        self.X_train = _convert_to_woodwork_structure(X_train)
-        self.y_train = _convert_to_woodwork_structure(y_train)
+        self.X_train = infer_feature_types(X_train)
+        self.y_train = infer_feature_types(y_train)
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_state=self.random_state)

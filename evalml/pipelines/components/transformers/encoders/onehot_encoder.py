@@ -5,9 +5,9 @@ from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -82,7 +82,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X)
 
@@ -133,7 +133,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             ww.DataTable: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        X_ww = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         X_copy = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_copy = self._handle_parameter_handle_missing(X_copy)
 

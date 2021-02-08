@@ -26,7 +26,6 @@ from .cli_utils import (
 )
 from .woodwork_utils import (
     _convert_woodwork_types_wrapper,
-    _convert_to_woodwork_structure,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )

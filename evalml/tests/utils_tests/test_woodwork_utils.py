@@ -2,11 +2,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 def test_convert_woodwork_types_wrapper_with_nan():
@@ -86,40 +82,40 @@ def test_convert_woodwork_types_wrapper_dataframe():
     pd.testing.assert_frame_equal(X_expected, _convert_woodwork_types_wrapper(X))
 
 
-def test_convert_to_woodwork_structure():
+def testinfer_feature_types():
     X_dt = ww.DataTable(pd.DataFrame([[1, 2], [3, 4]]))
-    pd.testing.assert_frame_equal(X_dt.to_dataframe(), _convert_to_woodwork_structure(X_dt).to_dataframe())
+    pd.testing.assert_frame_equal(X_dt.to_dataframe(), infer_feature_types(X_dt).to_dataframe())
 
     X_dc = ww.DataColumn(pd.Series([1, 2, 3, 4]))
-    pd.testing.assert_series_equal(X_dc.to_series(), _convert_to_woodwork_structure(X_dc).to_series())
+    pd.testing.assert_series_equal(X_dc.to_series(), infer_feature_types(X_dc).to_series())
 
     X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
                          1: pd.Series([3, 4], dtype="Int64")})
-    pd.testing.assert_frame_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_dataframe())
+    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe())
 
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    pd.testing.assert_series_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_series())
+    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd).to_series())
 
     X_list = [1, 2, 3, 4]
     X_expected = ww.DataColumn(pd.Series(X_list))
-    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_list).to_series())
+    pd.testing.assert_series_equal(X_expected.to_series(), infer_feature_types(X_list).to_series())
     assert X_list == [1, 2, 3, 4]
 
     X_np = np.array([1, 2, 3, 4])
     X_expected = ww.DataColumn(pd.Series(X_np))
-    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_np).to_series())
+    pd.testing.assert_series_equal(X_expected.to_series(), infer_feature_types(X_np).to_series())
     assert np.array_equal(X_np, np.array([1, 2, 3, 4]))
 
     X_np = np.array([[1, 2], [3, 4]])
     X_expected = ww.DataTable(pd.DataFrame(X_np))
-    pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
+    pd.testing.assert_frame_equal(X_expected.to_dataframe(), infer_feature_types(X_np).to_dataframe())
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
 
 
-def test_convert_to_woodwork_structure_series_name():
+def testinfer_feature_types_series_name():
     name = "column with name"
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64", name=name)
-    X_dc = _convert_to_woodwork_structure(X_pd)
+    X_dc = infer_feature_types(X_pd)
     assert X_dc.name == name
     pd.testing.assert_series_equal(X_pd, X_dc.to_series())
 
