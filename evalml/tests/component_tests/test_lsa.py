@@ -201,4 +201,4 @@ def test_lsa_woodwork_custom_overrides_returned_by_components(X_df, with_text_co
         if with_text_col:
             assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}
         else:
-            assert transformed.logical_types == {0: logical_type, 'text col': NaturalLanguage}
+            assert transformed.logical_types == {0: logical_type}
