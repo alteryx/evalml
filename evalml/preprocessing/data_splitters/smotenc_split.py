@@ -17,30 +17,6 @@ class SMOTENCTVSplit(BaseTVSplit):
                               n_jobs=n_jobs, random_state=random_state)
         super().__init__(sampler=self.snc, test_size=test_size, random_state=random_state)
 
-    def split(self, X, y):
-        """Divides the data into training and testing sets.
-
-            Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
-
-            Returns:
-                tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
-        """
-        return super().fix_data(X, y)
-
-    def transform(self, X, y):
-        """Transforms the input data with the balancing strategy.
-
-            Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
-
-            Returns:
-                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
-        """
-        return super().transform_data(X, y)
-
 
 class SMOTENCCVSplit(BaseCVSplit):
     """Split the data into KFold cross validation sets and uses SMOTENC to balance the training data.
@@ -53,30 +29,3 @@ class SMOTENCCVSplit(BaseCVSplit):
                               sampling_strategy=sampling_strategy,
                               n_jobs=n_jobs, random_state=random_state)
         super().__init__(sampler=self.snc, n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        # self.random_state = random_state
-        # self.n_splits = n_splits
-
-    def split(self, X, y):
-        """Divides the data into cross-validation data.
-
-            Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
-
-            Returns:
-                tuple(list): A tuple containing the resulting X_train, X_valid, y_train, y_valid data.
-        """
-        for data in super().fix_data(X, y):
-            yield data
-
-    def transform(self, X, y):
-        """Transforms the input data with the balancing strategy.
-
-            Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
-
-            Returns:
-                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
-        """
-        return super().transform_data(X, y)

@@ -17,7 +17,7 @@ class BaseTVSplit(BaseCrossValidator):
         """Returns the number of splits of this object."""
         return 1
 
-    def fix_data(self, X, y):
+    def split(self, X, y):
         """Splits and returns the data using the data sampler provided.
 
         Arguments:
@@ -34,7 +34,7 @@ class BaseTVSplit(BaseCrossValidator):
         X_test, y_test = _to_woodwork(X_test, y_test, to_pandas=False)
         return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
 
-    def transform_data(self, X, y):
+    def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
 
             Arguments:
@@ -56,7 +56,7 @@ class BaseCVSplit(StratifiedKFold):
         self.sampler = sampler
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
 
-    def fix_data(self, X, y):
+    def split(self, X, y):
         """Splits using K-fold cross-validation and returns the data using the data sampler provided.
 
         Arguments:
@@ -74,7 +74,7 @@ class BaseCVSplit(StratifiedKFold):
             X_test, y_test = _to_woodwork(X_test, y_test, to_pandas=False)
             yield iter(((X_train_resample, y_train_resample), (X_test, y_test)))
 
-    def transform_data(self, X, y):
+    def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
 
             Arguments:
