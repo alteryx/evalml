@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -270,3 +271,17 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
     not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
     assert correlated_importance_val > not_correlated_importance_val
+
+
+@patch('evalml.model_understanding.graphs._fast_permutation_importance')
+def test_permutation_importance_raises_deprecated_random_state_warning(mock_fast_permutation_importance,
+                                                                       X_y_binary,
+                                                                       logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_seed=2)
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=15)
+        _, kwargs = mock_fast_permutation_importance.call_args_list[0]
+        assert kwargs['random_seed'] == 15
+        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -9,7 +10,7 @@ from skopt.space import Integer, Real
 from evalml.tuners import ParameterError, Tuner
 from evalml.tuners.skopt_tuner import SKOptTuner
 
-random_state = 0
+random_seed = 0
 
 
 def test_tuner_init():
@@ -48,7 +49,7 @@ def test_skopt_tuner_basic():
         'parameter g': ['option a', 'option b', 100, np.inf]
     }}
 
-    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_state)
+    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     assert isinstance(tuner, Tuner)
     proposed_params = tuner.propose()
     assert proposed_params == {
@@ -70,20 +71,20 @@ def test_skopt_tuner_invalid_ranges():
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
         'param c': ['option a', 'option b', 'option c']
-    }}, random_seed=random_state)
+    }}, random_seed=random_seed)
 
     with pytest.raises(ValueError, match="Invalid dimension \\[\\]. Read the documentation for supported types."):
         SKOptTuner({'Mock Classifier': {
             'param a': Integer(0, 10),
             'param b': Real(0, 10),
             'param c': []
-        }}, random_seed=random_state)
+        }}, random_seed=random_seed)
     with pytest.raises(ValueError, match="pipeline_hyperparameter_ranges has invalid dimensions for Mock Classifier parameter param c"):
         SKOptTuner({'Mock Classifier': {
             'param a': Integer(0, 10),
             'param b': Real(0, 10),
             'param c': None
-        }}, random_seed=random_state)
+        }}, random_seed=random_seed)
 
 
 def test_skopt_tuner_single_value():
@@ -91,11 +92,11 @@ def test_skopt_tuner_single_value():
         'param a': Integer(0, 10),
         'param b': Real(0, 10),
         'param c': 'Value'
-    }}, random_seed=random_state)
+    }}, random_seed=random_seed)
 
     tuner = SKOptTuner({'Mock Classifier': {
         'param c': 10
-    }}, random_seed=random_state)
+    }}, random_seed=random_seed)
 
     proposed_params = tuner.propose()
     assert proposed_params == {'Mock Classifier': {}}
@@ -107,7 +108,7 @@ def test_skopt_tuner_invalid_parameters_score():
         'param b': Real(0, 10),
         'param c': ['option a', 'option b', 'option c']
     }}
-    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_state)
+    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     with pytest.raises(TypeError, match='Pipeline parameters missing required field "param a" for component "Mock Classifier"'):
         tuner.add({}, 0.5)
     with pytest.raises(TypeError, match='Pipeline parameters missing required field "param a" for component "Mock Classifier"'):
@@ -146,7 +147,7 @@ def test_skopt_tuner_propose():
         'param b': Real(0, 10),
         'param c': ['option a', 'option b', 'option c']
     }}
-    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_state)
+    tuner = SKOptTuner(pipeline_hyperparameter_ranges, random_seed=random_seed)
     tuner.add({'Mock Classifier': {'param a': 0, 'param b': 1.0, 'param c': 'option a'}}, 0.5)
     parameters = tuner.propose()
     assert parameters == {
@@ -156,3 +157,16 @@ def test_skopt_tuner_propose():
             'param c': 'option c'
         }
     }
+
+
+def test_grid_search_tuner_raises_deprecated_random_state_warning():
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        pipeline_hyperparameter_ranges = {'Mock Classifier': {
+            'param a': Integer(0, 10),
+            'param b': Real(0, 10),
+            'param c': ['option a', 'option b', 'option c']
+        }}
+        SKOptTuner(pipeline_hyperparameter_ranges, random_state=random_seed)
+        assert str(warn[0].message).startswith(
+            "Argument 'random_state' has been deprecated in favor of 'random_seed'")

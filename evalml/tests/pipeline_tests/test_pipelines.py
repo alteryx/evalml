@@ -1,4 +1,5 @@
 import os
+import warnings
 from unittest.mock import patch
 
 import cloudpickle
@@ -2397,3 +2398,24 @@ def test_get_generated_pipeline_class(problem_type, resulting_class):
     else:
         with pytest.raises(ValueError, match="not recognized"):
             get_generated_pipeline_class(problem_type)
+
+
+def test_pipelines_raise_deprecated_random_state_warning(dummy_binary_pipeline_class,
+                                                         dummy_multiclass_pipeline_class,
+                                                         dummy_regression_pipeline_class,
+                                                         dummy_time_series_regression_pipeline_class,
+                                                         dummy_ts_binary_pipeline_class,
+                                                         time_series_multiclass_classification_pipeline_class):
+    def test_pipeline_class(pipeline_class):
+        with warnings.catch_warnings(record=True) as warn:
+            warnings.simplefilter("always")
+            pipeline = pipeline_class({"pipeline": {"gap": 3, "max_delay": 2}}, random_state=31)
+            assert pipeline.random_seed == 31
+            assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+    test_pipeline_class(dummy_binary_pipeline_class)
+    test_pipeline_class(dummy_multiclass_pipeline_class)
+    test_pipeline_class(dummy_regression_pipeline_class)
+    test_pipeline_class(dummy_time_series_regression_pipeline_class)
+    test_pipeline_class(dummy_ts_binary_pipeline_class)
+    test_pipeline_class(time_series_multiclass_classification_pipeline_class)

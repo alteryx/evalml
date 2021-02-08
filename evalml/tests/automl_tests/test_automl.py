@@ -1,4 +1,5 @@
 import os
+import warnings
 from itertools import product
 from unittest.mock import MagicMock, patch
 
@@ -2182,3 +2183,12 @@ def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_mult
     for i, row in automl.rankings.iterrows():
         if 'Base' not in list(row['parameters'].keys())[0]:
             assert automl.get_pipeline(row['id']).random_seed == random_seed
+
+
+def test_automl_raises_deprecated_random_state_warning(X_y_multi):
+    X, y = X_y_multi
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
+        assert automl.random_seed == 10
+        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")

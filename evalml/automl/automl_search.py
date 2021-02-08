@@ -244,7 +244,7 @@ class AutoMLSearch:
             'search_order': [],
             'errors': []
         }
-        self.random_seed = deprecate_arg("random_state", "random_arg", random_state, random_seed)
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self.n_jobs = n_jobs
 
         self.plot = None
