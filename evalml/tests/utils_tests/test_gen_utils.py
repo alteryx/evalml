@@ -14,7 +14,7 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
-    _to_woodwork,
+    _convert_numeric_dataset,
     classproperty,
     convert_to_seconds,
     drop_rows_with_nans,
@@ -637,7 +637,7 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
                          ])
 @pytest.mark.parametrize("to_pandas", [True, False])
 @pytest.mark.parametrize("datatype", ["np", "pd", "ww"])
-def test_to_woodwork(datatype, to_pandas, value, error, make_data_type):
+def test_convert_numeric_dataset(datatype, to_pandas, value, error, make_data_type):
     if datatype == "np" and value == "hello":
         pytest.skip("Unsupported configuration")
 
@@ -648,9 +648,9 @@ def test_to_woodwork(datatype, to_pandas, value, error, make_data_type):
 
     if error:
         with pytest.raises(ValueError, match="Values not all numeric or there are null"):
-            _to_woodwork(X, y, to_pandas=to_pandas)
+            _convert_numeric_datasetX, y, to_pandas=to_pandas)
     else:
-        X_transformed, y_transformed = _to_woodwork(X, y, to_pandas=to_pandas)
+        X_transformed, y_transformed = _convert_numeric_datasetX, y, to_pandas=to_pandas)
         X_ww = _convert_to_woodwork_structure(X)
         y_ww = _convert_to_woodwork_structure(y)
 
