@@ -46,7 +46,7 @@ class UniquenessDataCheck(DataCheck):
             ...    'regression_unique_enough': [float(x) for x in range(100)],
             ...    'regression_not_unique_enough': [float(1) for x in range(100)]
             ... })
-            >>> uniqueness_check = UniquenessDataCheck(threshold=0.8)
+            >>> uniqueness_check = UniquenessDataCheck(problem_type="regression", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {"errors": [],\
                                                    "warnings": [{"message": "Input columns (regression_not_unique_enough) for regression problem type are not unique enough.",\
                                                                  "data_check_name": "UniquenessDataCheck",\
@@ -62,13 +62,7 @@ class UniquenessDataCheck(DataCheck):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-        def uniqueness_score(col):
-            norm_counts = col.value_counts() / col.value_counts().sum()
-            square_counts = norm_counts ** 2
-            score = 1 - square_counts.sum()
-            return score
-
-        res = X.apply(uniqueness_score)
+        res = X.apply(UniquenessDataCheck.uniqueness_score)
 
         if self.problem_type == ProblemTypes.REGRESSION:
             not_unique_enough_cols = list(res.index[res < self.threshold])
@@ -87,3 +81,10 @@ class UniquenessDataCheck(DataCheck):
                                                           details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                          for col_name in too_unique_cols])
         return messages
+
+    @staticmethod
+    def uniqueness_score(col):
+        norm_counts = col.value_counts() / col.value_counts().sum()
+        square_counts = norm_counts ** 2
+        score = 1 - square_counts.sum()
+        return score

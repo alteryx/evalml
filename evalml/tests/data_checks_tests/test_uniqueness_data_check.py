@@ -29,9 +29,28 @@ def test_uniqueness_data_check_init():
         UniquenessDataCheck("regression", threshold=1.1)
 
 
+def test_uniqueness_data_check_uniqueness_score():
+    data = pd.DataFrame({'most_unique': [float(x) for x in range(10)],  # [0,1,2,3,4,5,6,7,8,9]
+                         'more_unique': [x % 5 for x in range(10)],  # [0,1,2,3,4,0,1,2,3,4]
+                         'unique': [x % 3 for x in range(10)],  # [0,1,2,0,1,2,0,1,2,0]
+                         'less_unique': [x % 2 for x in range(10)],  # [0,1,0,1,0,1,0,1,0,1]
+                         'not_unique': [float(1) for x in range(10)]})  # [1,1,1,1,1,1,1,1,1,1]
+    uniqueness_score = UniquenessDataCheck.uniqueness_score
+    scores = data.apply(uniqueness_score)
+
+    ans = pd.Series({'most_unique': 0.90,
+                     'more_unique': 0.80,
+                     'unique': 0.66,
+                     'less_unique': 0.50,
+                     'not_unique': 0.00})
+
+    assert scores.round(7).equals(ans)
+
+
 def test_uniqueness_data_check_warnings():
     data = pd.DataFrame({'regression_unique_enough': [float(x) for x in range(100)],
                          'regression_not_unique_enough': [float(1) for x in range(100)]})
+
     uniqueness_check = UniquenessDataCheck(problem_type="regression")
     assert uniqueness_check.validate(data) == {
         "warnings": [DataCheckWarning(
