@@ -19,7 +19,7 @@ class SparsityDataCheck(DataCheck):
         """Checks each column in the input to determine the sparsity of the values in those columns.
         Arguments:
             problem_type (str or ProblemTypes): The specific problem type to data check for.
-                'binary', 'multiclass' are the only accepted problem types.
+                'multiclass' or 'time series multiclass' is the only accepted problem type.
             threshold (float): The threshold value, or percentage of each column's unique values,
                 below which, a column exhibits sparsity.  Should be between 0 and 1.
             unique_count_threshold (int): The minimum number of times a unique
