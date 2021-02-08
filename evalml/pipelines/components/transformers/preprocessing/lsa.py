@@ -9,7 +9,7 @@ from evalml.pipelines.components.transformers.preprocessing import (
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -69,7 +69,7 @@ class LSA(TextTransformer):
             provenance[col] = ['LSA({})[0]'.format(col), 'LSA({})[1]'.format(col)]
         self._provenance = provenance
         X_t = X_t.drop(columns=text_columns)
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _get_feature_provenance(self):
         return self._provenance

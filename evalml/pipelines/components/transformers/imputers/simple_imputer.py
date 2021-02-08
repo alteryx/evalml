@@ -5,7 +5,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -84,7 +84,7 @@ class SimpleImputer(Transformer):
         # X_t = X_t.infer_objects()
         X_t.index = X_null_dropped.index
 
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

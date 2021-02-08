@@ -7,7 +7,7 @@ from evalml.pipelines.components import ComponentBase
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -46,7 +46,7 @@ class Transformer(ComponentBase):
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return reconvert(X_ww, X_t_df, to_ignore=[Categorical])
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, to_ignore=[Categorical])
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -65,7 +65,7 @@ class Transformer(ComponentBase):
             y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
         try:
             X_t = self._component_obj.fit_transform(X_pd, y_pd)
-            return reconvert(X_ww, X_t)
+            return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
         except AttributeError:
             try:
                 return self.fit(X, y).transform(X, y)

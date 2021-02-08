@@ -6,7 +6,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -29,7 +29,7 @@ class StandardScaler(Transformer):
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return reconvert(X_ww, X_t_df, to_ignore=[Integer])
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, to_ignore=[Integer])
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)

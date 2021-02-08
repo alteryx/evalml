@@ -3,13 +3,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Double,
-    Integer,
-    NaturalLanguage
-)
+from woodwork.logical_types import Double, Integer
 
 from evalml.pipelines.components import PCA
 
@@ -125,21 +119,15 @@ def test_n_components():
     assert X_t.shape[1] == 1
 
 
-@pytest.mark.parametrize("logical_type, X_df", [
-(ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
-(ww.logical_types.Boolean, pd.DataFrame(pd.Series([True, False, True], dtype="boolean")))
-
-])
-def test_pca_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean"))])
+def test_pca_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double]
-    for l in override_types:
-        X = None
-        override_dict = {0: l}
+    for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types=override_dict)
-            assert X.logical_types[0] == l
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
         except TypeError:
             continue
 
@@ -147,6 +135,4 @@ def test_pca_woodwork_custom_overrides_returned_by_components(logical_type, X_df
         pca.fit(X)
         transformed = pca.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0: l}
-
         assert transformed.logical_types == {'component_0': ww.logical_types.Double}

@@ -154,8 +154,7 @@ def test_datetime_featurizer_numpy_array_input():
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-])
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 @pytest.mark.parametrize("with_datetime_col", [True, False])
 def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(X_df, with_datetime_col):
     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime]

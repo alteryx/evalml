@@ -508,27 +508,19 @@ def test_ohe_column_names_unique():
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-])
-def test_ohe_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
-    for l in override_types:
-        X = None
-        override_dict = {0: l}
+    for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types=override_dict)
-            assert X.logical_types[0] == l
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
         except TypeError:
             continue
 
-        imputer = OneHotEncoder()
-        imputer.fit(X, y)
-        transformed = imputer.transform(X, y)
+        ohe = OneHotEncoder()
+        ohe.fit(X, y)
+        transformed = ohe.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0: l}
-
-        if l == Categorical:
-            pass
-        else:
-            assert transformed.logical_types == {0: l}
+        if logical_type != Categorical:
+            assert transformed.logical_types == {0: logical_type}

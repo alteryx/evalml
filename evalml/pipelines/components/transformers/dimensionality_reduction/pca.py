@@ -6,8 +6,8 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    is_all_numeric,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork,
+    is_all_numeric
 )
 
 
@@ -52,7 +52,7 @@ class PCA(Transformer):
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.transform(X)
         X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
         X_ww = _convert_to_woodwork_structure(X)
@@ -61,4 +61,4 @@ class PCA(Transformer):
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.fit_transform(X, y)
         X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)

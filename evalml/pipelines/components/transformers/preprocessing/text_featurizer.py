@@ -11,7 +11,7 @@ from evalml.pipelines.components.transformers.preprocessing import (
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -123,7 +123,7 @@ class TextFeaturizer(TextTransformer):
         X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _get_feature_provenance(self):
         if not self._all_text_columns:

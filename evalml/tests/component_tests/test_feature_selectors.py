@@ -1,13 +1,7 @@
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Double,
-    Integer,
-    NaturalLanguage
-)
+from woodwork.logical_types import Boolean, Double, Integer
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components import (
@@ -91,8 +85,7 @@ def test_feature_selector_component_obj_missing_transform():
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-])
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df):
     rf_classifier, rf_regressor = make_rf_feature_selectors()
     y = pd.Series([1, 2, 1])

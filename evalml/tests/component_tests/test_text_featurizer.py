@@ -8,7 +8,6 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 from woodwork.logical_types import (
     Boolean,
     Categorical,
-    Datetime,
     Double,
     Integer,
     NaturalLanguage
@@ -275,8 +274,7 @@ def test_featurizer_with_custom_indices(text_df):
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-])
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 @pytest.mark.parametrize("with_text_col", [True, False])
 def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, with_text_col):
     y = pd.Series([1, 2, 1])

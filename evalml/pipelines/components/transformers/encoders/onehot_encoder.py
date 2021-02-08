@@ -7,7 +7,7 @@ from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -152,7 +152,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _handle_parameter_handle_missing(self, X):
         """Helper method to handle the `handle_missing` parameter."""

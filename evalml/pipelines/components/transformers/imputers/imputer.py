@@ -3,7 +3,7 @@ from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -100,7 +100,7 @@ class Imputer(Transformer):
         X_null_dropped = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:
-            return reconvert(X_ww, X_null_dropped)
+            return _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
@@ -111,5 +111,5 @@ class Imputer(Transformer):
             X_categorical = X_null_dropped[self._categorical_cols]
             imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
             X_null_dropped[X_categorical.columns] = imputed
-        X_null_dropped = reconvert(X_ww, X_null_dropped)
+        X_null_dropped = _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
         return X_null_dropped

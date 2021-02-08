@@ -5,7 +5,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -44,7 +44,7 @@ class FeatureSelector(Transformer):
         selected_col_names = self.get_names()
         col_types = {key: X_dtypes[key] for key in selected_col_names}
         features = pd.DataFrame(X_t, columns=selected_col_names, index=X.index).astype(col_types)
-        return reconvert(X_ww, features)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, features)
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)

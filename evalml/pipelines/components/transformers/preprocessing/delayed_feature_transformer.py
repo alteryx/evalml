@@ -6,7 +6,7 @@ from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -112,7 +112,7 @@ class DelayedFeatureTransformer(Transformer):
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return reconvert(X_ww, X)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X)
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)

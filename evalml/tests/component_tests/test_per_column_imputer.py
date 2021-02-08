@@ -185,13 +185,11 @@ def test_transform_drop_all_nan_columns_empty():
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
 
-@pytest.mark.parametrize("X_df", [
-pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
-pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
-pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")),
-])
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
     y = pd.Series([1, 2, 1])

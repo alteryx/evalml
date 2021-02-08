@@ -80,7 +80,7 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
-def reconvert(old_datatable, new_dataframe, to_ignore=None):
+def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, to_ignore=None):
     """
     Helper method in EvalML which will take old datatable, new dataframe and return new datatable,
     handling updates in logical types.

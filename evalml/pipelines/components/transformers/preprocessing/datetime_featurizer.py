@@ -2,7 +2,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    reconvert
+    _retain_custom_types_and_initalize_woodwork
 )
 
 
@@ -103,7 +103,7 @@ class DateTimeFeaturizer(Transformer):
                 if categories:
                     self._categories[name] = categories
         X_t = X_t.drop(self._date_time_col_names, axis=1)
-        return reconvert(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.
