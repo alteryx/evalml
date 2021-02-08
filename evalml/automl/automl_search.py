@@ -265,7 +265,6 @@ class AutoMLSearch:
         self._best_pipeline = None
         self._searched = False
 
-        # make everything ww objects
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
 

@@ -636,6 +636,7 @@ def test_transformer_check_for_fit(X_y_binary):
 
     trans.fit(X, y)
     trans.transform(X)
+    trans.fit_transform(X, y)
 
 
 def test_transformer_check_for_fit_with_overrides(X_y_binary):
