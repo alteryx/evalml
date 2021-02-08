@@ -11,39 +11,41 @@ sparsity_data_check_name = SparsityDataCheck.name
 
 
 def test_sparsity_data_check_init():
-    sparsity_check = SparsityDataCheck("binary", threshold=0.4)
-    assert sparsity_check.threshold == .4
 
     sparsity_check = SparsityDataCheck("multiclass", threshold=4 / 15)
     assert sparsity_check.threshold == 4 / 15
 
-    sparsity_check = SparsityDataCheck("binary", threshold=0.2)
+    sparsity_check = SparsityDataCheck("multiclass", threshold=0.2)
     assert sparsity_check.unique_count_threshold == 10
 
     sparsity_check = SparsityDataCheck("multiclass", threshold=.1, unique_count_threshold=5)
     assert sparsity_check.unique_count_threshold == 5
 
     with pytest.raises(ValueError, match="Threshold must be a float between 0 and 1, inclusive."):
-        SparsityDataCheck("binary", threshold=-0.1)
+        SparsityDataCheck("multiclass", threshold=-0.1)
     with pytest.raises(ValueError, match="Threshold must be a float between 0 and 1, inclusive."):
         SparsityDataCheck("multiclass", threshold=1.1)
 
-    with pytest.raises(ValueError, match="Sparsity is only defined for binary or multiclass problem types."):
+    with pytest.raises(ValueError, match="Sparsity is only defined for multiclass problem types."):
+        SparsityDataCheck("binary", threshold=.5)
+    with pytest.raises(ValueError, match="Sparsity is only defined for multiclass problem types."):
+        SparsityDataCheck("time series binary", threshold=.5)
+    with pytest.raises(ValueError, match="Sparsity is only defined for multiclass problem types."):
         SparsityDataCheck("regression", threshold=.5)
-    with pytest.raises(ValueError, match="Sparsity is only defined for binary or multiclass problem types."):
+    with pytest.raises(ValueError, match="Sparsity is only defined for multiclass problem types."):
         SparsityDataCheck("time series regression", threshold=.5)
 
     with pytest.raises(ValueError, match="Unique count threshold must be positive integer."):
-        SparsityDataCheck("binary", threshold=.5, unique_count_threshold=-1)
+        SparsityDataCheck("multiclass", threshold=.5, unique_count_threshold=-1)
     with pytest.raises(ValueError, match="Unique count threshold must be positive integer."):
-        SparsityDataCheck("binary", threshold=.5, unique_count_threshold=2.3)
+        SparsityDataCheck("multiclass", threshold=.5, unique_count_threshold=2.3)
 
 
 def test_sparsity_data_check_sparsity_score():
     # Application to a Series
     data = pd.Series([x % 3 for x in range(10)])  # [0,1,2,0,1,2,0,1,2,0]
     scores = SparsityDataCheck.sparsity_score(data, count_threshold=3)
-    assert round(scores, 6) == round(1 / 3, 6)
+    assert round(scores, 6) == round(1 / 3, 6), "Sparsity Series check failed."
 
     # Application to an entire DataFrame
     data = pd.DataFrame({'most_sparse': [float(x) for x in range(10)],  # [0,1,2,3,4,5,6,7,8,9]
@@ -58,7 +60,7 @@ def test_sparsity_data_check_sparsity_score():
                      'sparse': 0.333333,
                      'less_sparse': 1.000000,
                      'not_sparse': 1.000000})
-    assert scores.round(6).equals(ans)
+    assert scores.round(6).equals(ans), "Sparsity DataFrame check failed."
 
 
 def test_sparsity_data_check_warnings():
@@ -69,7 +71,7 @@ def test_sparsity_data_check_warnings():
                          'not_sparse': [float(1) for x in range(10)]})  # [1,1,1,1,1,1,1,1,1,1]
 
     sparsity_check = SparsityDataCheck(problem_type="multiclass",
-                                       threshold=.2,
+                                       threshold=.4,
                                        unique_count_threshold=3)
 
     assert sparsity_check.validate(data) == {
@@ -84,6 +86,12 @@ def test_sparsity_data_check_warnings():
             data_check_name=sparsity_data_check_name,
             message_code=DataCheckMessageCode.TOO_SPARSE,
             details={"column": "more_sparse",
-                     'sparsity_score': 0}).to_dict()],
+                     'sparsity_score': 0}).to_dict(),
+                     DataCheckWarning(
+            message="Input columns (sparse) for multiclass problem type are too sparse.",
+            data_check_name=sparsity_data_check_name,
+            message_code=DataCheckMessageCode.TOO_SPARSE,
+            details={"column": "sparse",
+                     'sparsity_score': 0.33333333333333337}).to_dict()],
         "errors": []
     }

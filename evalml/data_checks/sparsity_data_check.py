@@ -20,11 +20,14 @@ class SparsityDataCheck(DataCheck):
         Arguments:
             problem_type (str or ProblemTypes): The specific problem type to data check for.
                 'binary', 'multiclass' are the only accepted problem types.
-            threshold(float): The threshold value, below which, a data field is considered "sparse."
+            threshold (float): The threshold value, or percentage of each column's unique values,
+                below which, a column exhibits sparsity.  Should be between 0 and 1.
+            unique_count_threshold (int): The minimum number of times a unique
+                value has to be present in a column to not be considered "sparse."
         """
         self.problem_type = handle_problem_types(problem_type)
-        if self.problem_type not in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
-            raise ValueError("Sparsity is only defined for binary or multiclass problem types.")
+        if self.problem_type not in [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]:
+            raise ValueError("Sparsity is only defined for multiclass problem types.")
         self.threshold = threshold
         if threshold < 0 or threshold > 1:
             raise ValueError("Threshold must be a float between 0 and 1, inclusive.")
@@ -33,9 +36,9 @@ class SparsityDataCheck(DataCheck):
             raise ValueError("Unique count threshold must be positive integer.")
 
     def validate(self, X, y=None):
-        """Checks if there are any sparse columns in the input.
+        """Calculates what percentage of each column's unique values fail to exceed the count threshold.
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
         Returns:
             dict: dict with a DataCheckWarning if there are any sparse columns.
@@ -47,11 +50,11 @@ class SparsityDataCheck(DataCheck):
             ... })
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
             >>> assert sparsity_check.validate(df) == {"errors": [],\
-                                                         "warnings": [{"message": "Input columns (sparse) for multiclass problem type are too sparse.",\
-                                                                 "data_check_name": "SparsityDataCheck",\
-                                                                 "level": "warning",\
-                                                                 "code": "TOO_SPARSE",\
-                                                                 "details": {"column": "sparse", 'sparsity_score': 0.0}}]}
+                                                       "warnings": [{"message": "Input columns (sparse) for multiclass problem type are too sparse.",\
+                                                            "data_check_name": "SparsityDataCheck",\
+                                                            "level": "warning",\
+                                                            "code": "TOO_SPARSE",\
+                                                            "details": {"column": "sparse", 'sparsity_score': 0.0}}]}
         """
         messages = {
             "warnings": [],
@@ -60,8 +63,7 @@ class SparsityDataCheck(DataCheck):
 
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        #
-        # res = SparsityDataCheck.sparsity_score(X, count_threshold=self.unique_count_threshold)
+
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
         messages["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
@@ -74,11 +76,13 @@ class SparsityDataCheck(DataCheck):
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):
-        """
-            This function calculates a sparsity score for the given value counts by finding values with fewer than n=10
-            occurrences, normalizing by the number of categories, and subtracting this value from 1.
-            :param counts: result of value_counts on column
-            :return: calculated sparsity score
+        """This function calculates a sparsity score for the given value counts by calculating the percentage of
+        values that fail to exceed the count_threshold.
+        Arguments:
+            col (pd.Series): Feature values.
+            count_threshold (int): The number of instances below which a value is considered sparse.
+        Returns:
+            (float): Sparsity score, or the percentage of the unique values that fail to exceed count_threshold.
         """
         counts = col.value_counts()
         score = 1 - (sum(counts <= count_threshold) / counts.size)
