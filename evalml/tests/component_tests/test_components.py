@@ -52,7 +52,6 @@ from evalml.pipelines.components import (
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
-    TargetEncoder,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -71,7 +70,6 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
-from evalml.utils.woodwork_utils import infer_feature_types
 
 
 @pytest.fixture(scope="module")
@@ -1012,82 +1010,3 @@ def test_generate_code_custom(test_classes):
     expected_code = "mockTransformer = MockTransformer(**{})"
     component_code = generate_component_code(MockTransformer())
     assert component_code == expected_code
-
-
-def test_ange_TO_REMOVE_woodwork_custom_overrides_returned_by_components():
-    X_df = pd.DataFrame({'datetime': pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'),
-                         'float': [1.0, 2.0, 3.14],
-                         'int': [0, 1, 2],
-                         'categorical': ['a', 'b', 'a'],
-                         'nat lang': ['this will be a natural language column because length', 'yay', 'hay']})
-    # override_dict = {'datetime': 'categorical'}
-    X = infer_feature_types(X_df, {'datetime': 'datetime'})
-    y = pd.Series([1, 2, 1])
-    for component_class in _all_transformers():
-        print('Testing transformer {}'.format(component_class.name))
-        component = component_class()
-
-        #also try fit_transform
-        if isinstance(component, (DFSTransformer, DelayedFeatureTransformer)):
-            continue
-        if isinstance(component, DateTimeFeaturizer):
-            continue  # datetime col disappears --> DONE
-        if isinstance(component, (PCA, LinearDiscriminantAnalysis, SelectColumns)):
-            continue  # must be all numeric
-        if isinstance(component, StandardScaler):
-            continue  # special case, datetime doesnt work --> DONE
-        if isinstance(component, (PerColumnImputer)):
-            continue  # doesnt' support datetime
-        if isinstance(component, (RFRegressorSelectFromModel, RFClassifierSelectFromModel)):
-            continue  # doesnt' support datetime  --> DONE
-        if isinstance(component, TargetEncoder):
-            continue  # categorical --> float  --> DONE
-        if isinstance(component, OneHotEncoder):
-            continue  # col dropped and replaced. --> DONE
-
-        component.fit(X, y=y)
-        transform_output = component.transform(X, y=y)
-        assert isinstance(transform_output, ww.DataTable)
-        input_logical_types = {'datetime': ww.logical_types.Datetime,
-                               'float': ww.logical_types.Double,
-                               'int': ww.logical_types.Integer,
-                               'categorical': ww.logical_types.Categorical,
-                               'nat lang': ww.logical_types.NaturalLanguage}
-        print (transform_output.logical_types.items())
-        print (input_logical_types.items())
-        assert all(item in transform_output.logical_types.items() for item in input_logical_types.items())
-
-            # component.fit(X, y=y)
-            # transform_output = component.transform(X, y=y)
-            # assert isinstance(transform_output, ww.DataTable)
-
-            # if isinstance(component, SelectColumns):
-            #     assert transform_output.shape == (X.shape[0], 0)
-            # elif isinstance(component, PCA) or isinstance(component, LinearDiscriminantAnalysis):
-            #     assert transform_output.shape[0] == X.shape[0]
-            #     assert transform_output.shape[1] <= X.shape[1]
-            # elif isinstance(component, DFSTransformer):
-            #     assert transform_output.shape[0] == X.shape[0]
-            #     assert transform_output.shape[1] >= X.shape[1]
-            # elif isinstance(component, DelayedFeatureTransformer):
-            #     # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
-            #     # The dataframe shape and index are checked in test_delayed_features_transformer.py
-            #     continue
-            # else:
-            #     assert transform_output.shape == X.shape
-            #     assert (list(transform_output.columns) == list(X_cols_expected))
-
-            # transform_output = component.fit_transform(X, y=y)
-            # assert isinstance(transform_output, ww.DataTable)
-
-            # if isinstance(component, SelectColumns):
-            #     assert transform_output.shape == (X.shape[0], 0)
-            # elif isinstance(component, PCA) or isinstance(component, LinearDiscriminantAnalysis):
-            #     assert transform_output.shape[0] == X.shape[0]
-            #     assert transform_output.shape[1] <= X.shape[1]
-            # elif isinstance(component, DFSTransformer):
-            #     assert transform_output.shape[0] == X.shape[0]
-            #     assert transform_output.shape[1] >= X.shape[1]
-            # else:
-            #     assert transform_output.shape == X.shape
-            #     assert (list(transform_output.columns) == list(X_cols_expected))

@@ -1,5 +1,4 @@
 import pandas as pd
-from woodwork.logical_types import Categorical
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
@@ -46,7 +45,7 @@ class Transformer(ComponentBase):
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, to_ignore=[Categorical])
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

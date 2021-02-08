@@ -1,11 +1,17 @@
 import pandas as pd
+from woodwork.logical_types import Categorical
 
 from ..transformer import Transformer
 
 from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
     OneHotEncoderMeta
 )
-from evalml.utils import import_or_raise
+from evalml.utils import (
+    _convert_to_woodwork_structure,
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    import_or_raise
+)
 
 
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
@@ -57,6 +63,16 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if isinstance(y, pd.Series):
             y.reset_index(drop=True, inplace=True)
         return super().fit(X, y)
+
+    def transform(self, X, y=None):
+        X_ww = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
+        X_t = self._component_obj.transform(X, y)
+        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Categorical])
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)

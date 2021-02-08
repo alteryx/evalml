@@ -7,8 +7,7 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
-    Integer,
-    NaturalLanguage
+    Integer
 )
 
 from evalml.pipelines import DelayedFeatureTransformer
@@ -287,18 +286,15 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
                                   pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
-                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-])
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
+    override_types = [Integer, Double, Categorical, Datetime, Boolean]
     for logical_type in override_types:
         try:
             X = ww.DataTable(X_df, logical_types={0: logical_type})
         except TypeError:
             continue
-        print ("overriding", X_df[0].dtype, "with ", logical_type)
         dft = DelayedFeatureTransformer(max_delay=1, gap=11)
         dft.fit(X, y)
         transformed = dft.transform(X, y)
@@ -308,7 +304,6 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
                                                  '0_delay_1': Double,
                                                  'target_delay_0': Integer,
                                                  'target_delay_1': Double}
-
         else:
             assert transformed.logical_types == {0: logical_type,
                                                  '0_delay_1': logical_type,

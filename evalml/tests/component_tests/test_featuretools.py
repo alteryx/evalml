@@ -10,8 +10,7 @@ from woodwork.logical_types import (
     Categorical,
     Datetime,
     Double,
-    Integer,
-    NaturalLanguage
+    Integer
 )
 
 from evalml.pipelines.components import DFSTransformer
@@ -111,19 +110,13 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
                                   pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
-                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
-                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-])
-def test_ft_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))])
+def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
-    for l in override_types:
-        X = None
-        override_dict = {0: l}
+    override_types = [Integer, Double, Categorical, Datetime, Boolean]
+    for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df.copy(), logical_types=override_dict)
-            assert X.logical_types[0] == l
+            X = ww.DataTable(X_df.copy(), logical_types={0: logical_type})
         except TypeError:
             continue
 
@@ -131,7 +124,7 @@ def test_ft_woodwork_custom_overrides_returned_by_components(logical_type, X_df)
         dft.fit(X, y)
         transformed = dft.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {'0': l}
-
-        # import pdb; pdb.set_trace()
-        assert transformed.logical_types == {'0': l}
+        if logical_type == Datetime:
+            assert transformed.logical_types == {'DAY(0)': Integer, 'MONTH(0)': Integer, 'WEEKDAY(0)': Integer, 'YEAR(0)': Integer}
+        else:
+            assert transformed.logical_types == {'0': logical_type}
