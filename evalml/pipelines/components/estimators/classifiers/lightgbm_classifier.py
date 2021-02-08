@@ -77,8 +77,8 @@ class LightGBMClassifier(Estimator):
         X = _convert_to_woodwork_structure(X)
         cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        self.input_feature_names = list(X.columns)
-
+        if fit:
+            self.input_feature_names = list(X.columns)
         X_encoded = _rename_column_names_to_numeric(X)
         rename_cols_dict = dict(zip(X.columns, X_encoded.columns))
         cat_cols = [rename_cols_dict[col] for col in cat_cols]
@@ -105,7 +105,6 @@ class LightGBMClassifier(Estimator):
 
     def fit(self, X, y=None):
         X_encoded = _convert_to_woodwork_structure(X)
-        self.input_feature_names = list(X_encoded.columns)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
         return super().fit(X_encoded, y_encoded)

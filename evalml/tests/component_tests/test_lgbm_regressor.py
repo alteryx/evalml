@@ -84,7 +84,7 @@ def test_fit_string_features(X_y_regression):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_correct_args(mock_fit, mock_predict, X_y_regression):
     X, y = X_y_regression
     X = pd.DataFrame(X)
@@ -116,7 +116,7 @@ def test_correct_args(mock_fit, mock_predict, X_y_regression):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_categorical_data_subset(mock_fit, mock_predict, X_y_regression):
     X = pd.DataFrame({"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]})
     y = pd.Series([1, 1, 0, 0, 0, 1])
@@ -139,7 +139,7 @@ def test_categorical_data_subset(mock_fit, mock_predict, X_y_regression):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_multiple_fit(mock_fit, mock_predict):
     y = pd.Series([1] * 4)
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})

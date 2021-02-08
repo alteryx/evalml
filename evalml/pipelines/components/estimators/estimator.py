@@ -41,11 +41,8 @@ class Estimator(ComponentBase):
         if y is not None:
             y = _convert_to_woodwork_structure(y)
             y = _convert_woodwork_types_wrapper(y.to_series())
-        try:
-            self._component_obj.fit(X, y)
-            return self
-        except AttributeError:
-            raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
+        self._component_obj.fit(X, y)
+        return self
 
     def predict(self, X):
         """Make predictions using selected features.

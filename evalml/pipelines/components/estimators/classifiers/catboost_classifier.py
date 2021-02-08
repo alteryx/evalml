@@ -64,9 +64,8 @@ class CatBoostClassifier(Estimator):
         cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self.input_feature_names = list(X.columns)
-        if y is not None:
-            y = _convert_to_woodwork_structure(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_to_woodwork_structure(y)
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:

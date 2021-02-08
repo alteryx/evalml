@@ -110,13 +110,14 @@ def test_fit_string_features(X_y_binary):
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X, y = X_y_binary
     X2 = pd.DataFrame(X)
     X2.columns = np.arange(len(X2.columns))
     clf = LightGBMClassifier(n_jobs=1)
     clf.fit(X, y)
+
     arg_X = mock_fit.call_args[0][0]
     np.testing.assert_array_equal(arg_X, X2)
 
@@ -131,7 +132,7 @@ def test_fit_no_categories(mock_fit, mock_predict, mock_predict_proba, X_y_binar
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -168,7 +169,7 @@ def test_correct_args(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
 def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y_binary):
     X = pd.DataFrame({"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]})
     y = pd.Series([1, 1, 0, 0, 0, 1])
@@ -196,7 +197,7 @@ def test_categorical_data_subset(mock_fit, mock_predict, mock_predict_proba, X_y
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict_proba')
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
     y = pd.Series([1] * 4)
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
@@ -228,7 +229,7 @@ def test_multiple_fit(mock_fit, mock_predict, mock_predict_proba):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
     X, y = X_y_multi
     y_numeric = pd.Series(y, dtype='int64')
@@ -243,12 +244,11 @@ def test_multiclass_label(mock_fit, mock_predict, X_y_multi):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
+@patch('evalml.pipelines.components.estimators.estimator.Estimator.fit')
 def test_binary_label_encoding(mock_fit, mock_predict, X_y_binary):
     X, y = X_y_binary
     y_numeric = pd.Series(y, dtype='int64')
     y_alpha = pd.Series(y_numeric.copy().replace({0: "no", 1: "yes"}))
-
     clf = LightGBMClassifier()
     clf.fit(X, y_alpha)
     y_arg = mock_fit.call_args[0][1]
