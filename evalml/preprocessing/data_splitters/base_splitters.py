@@ -18,7 +18,15 @@ class BaseTVSplit(BaseCrossValidator):
         return 1
 
     def fix_data(self, X, y):
-        """Splits and returns the data using the data sampler provided"""
+        """Splits and returns the data using the data sampler provided.
+        
+        Arguments:
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
+
+        Returns:
+            tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
+        """
         X, y = _to_woodwork(X, y)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_state)
         X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
@@ -42,14 +50,22 @@ class BaseTVSplit(BaseCrossValidator):
 
 
 class BaseCVSplit(StratifiedKFold):
-    """Base class for training validation data splitter."""
+    """Base class for K-fold cross-validation data splitter."""
 
     def __init__(self, sampler=None, n_splits=3, shuffle=True, random_state=0):
         self.sampler = sampler
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
 
     def fix_data(self, X, y):
-        """Splits and returns the data using the data sampler provided"""
+        """Splits using K-fold cross-validation and returns the data using the data sampler provided.
+        
+        Arguments:
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
+
+        Returns:
+            tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
+        """
         X, y = _to_woodwork(X, y)
         for i, (train_indices, test_indices) in enumerate(super().split(X, y)):
             X_train, X_test, y_train, y_test = X.iloc[train_indices], X.iloc[test_indices], y.iloc[train_indices], y.iloc[test_indices]

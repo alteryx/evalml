@@ -50,6 +50,8 @@ Data splitter classes for imbalanced classification datasets.
     SMOTETomekTVSplit
     RandomUnderSamplerCVSplit
     RandomUnderSamplerTVSplit
+    SMOTENCCVSplit
+    SMOTENCTVSplit
     
 
 .. currentmodule:: evalml.exceptions

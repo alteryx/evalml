@@ -19,8 +19,8 @@ class SMOTENCTVSplit(BaseTVSplit):
         self.test_size = test_size
         self.random_state = random_state
 
-    def split(self, X, y=None):
-        """Divides the data into training and testing sets
+    def split(self, X, y):
+        """Divides the data into training and testing sets.
 
             Arguments:
                 X (ww.DataTable): DataTable of points to split
@@ -39,7 +39,7 @@ class SMOTENCTVSplit(BaseTVSplit):
                 y (ww.DataTable): DataColumn of points to split
 
             Returns:
-                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation
+                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
         """
         return super().transform_data(X, y)
 
@@ -58,8 +58,8 @@ class SMOTENCCVSplit(BaseCVSplit):
         self.random_state = random_state
         self.n_splits = n_splits
 
-    def split(self, X, y=None):
-        """Divides the data into training and testing sets
+    def split(self, X, y):
+        """Divides the data into cross-validation data.
 
             Arguments:
                 X (ww.DataTable): DataTable of points to split
@@ -79,6 +79,6 @@ class SMOTENCCVSplit(BaseCVSplit):
                 y (ww.DataTable): DataColumn of points to split
 
             Returns:
-                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation
+                tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
         """
         return super().transform_data(X, y)

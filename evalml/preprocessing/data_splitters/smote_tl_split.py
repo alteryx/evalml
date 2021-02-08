@@ -17,7 +17,7 @@ class SMOTETomekTVSplit(BaseTVSplit):
         self.test_size = test_size
         self.random_state = random_state
 
-    def split(self, X, y=None):
+    def split(self, X, y):
         """Divides the data into training and testing sets.
 
             Arguments:
@@ -54,8 +54,8 @@ class SMOTETomekCVSplit(BaseCVSplit):
         self.random_state = random_state
         self.n_splits = n_splits
 
-    def split(self, X, y=None):
-        """Divides the data into training and testing sets.
+    def split(self, X, y):
+        """Divides the data into cross-validation splits.
 
             Arguments:
                 X (ww.DataTable): DataTable of points to split
