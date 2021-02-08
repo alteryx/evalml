@@ -30,20 +30,34 @@ def test_uniqueness_data_check_init():
 
 
 def test_uniqueness_data_check_uniqueness_score():
+    uniqueness_score = UniquenessDataCheck.uniqueness_score
+
+    # Test uniqueness for a simple series.
+    # [0,1,2,0,1,2,0,1,2,0]
+    data = pd.Series([x % 3 for x in range(10)])
+    scores = uniqueness_score(data)
+    ans = 0.66
+    assert scores == ans
+
+    # Test uniqueness for the same series, repeated.  Should be the score.
+    # [0,1,2,0,1,2,0,1,2,0,0,1,2,0,1,2,0,1,2,0]
+    data = pd.Series([x % 3 for x in range(10)] * 2)
+    scores = uniqueness_score(data)
+    ans = 0.66
+    assert scores == ans
+
+    # Test uniqueness in each column of a DataFrame
     data = pd.DataFrame({'most_unique': [float(x) for x in range(10)],  # [0,1,2,3,4,5,6,7,8,9]
                          'more_unique': [x % 5 for x in range(10)],  # [0,1,2,3,4,0,1,2,3,4]
                          'unique': [x % 3 for x in range(10)],  # [0,1,2,0,1,2,0,1,2,0]
                          'less_unique': [x % 2 for x in range(10)],  # [0,1,0,1,0,1,0,1,0,1]
                          'not_unique': [float(1) for x in range(10)]})  # [1,1,1,1,1,1,1,1,1,1]
-    uniqueness_score = UniquenessDataCheck.uniqueness_score
     scores = data.apply(uniqueness_score)
-
     ans = pd.Series({'most_unique': 0.90,
                      'more_unique': 0.80,
                      'unique': 0.66,
                      'less_unique': 0.50,
                      'not_unique': 0.00})
-
     assert scores.round(7).equals(ans)
 
 

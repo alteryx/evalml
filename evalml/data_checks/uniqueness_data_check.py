@@ -14,7 +14,8 @@ warning_too_unique = "Input columns ({}) for {} problem type are too unique."
 
 
 class UniquenessDataCheck(DataCheck):
-    """Checks if there are any highly-null columns in the input."""
+    """Checks if there are any columns in the input that are either too unique for categorical problems
+    or not unique enough for regression problems."""
 
     def __init__(self, problem_type, threshold=0.50):
         """Checks each column in the input to determine the uniqueness of the values in those columns.
@@ -22,7 +23,8 @@ class UniquenessDataCheck(DataCheck):
         Arguments:
             problem_type (str or ProblemTypes): The specific problem type to data check for.
                 e.g. 'binary', 'multiclass', 'regression, 'time series regression'
-            threshold(float): Defaults to 0.50.
+            threshold(float): The threshold to set as either an upper or lower bound on uniqueness.
+                Defaults to 0.50.
 
         """
         self.problem_type = handle_problem_types(problem_type)
@@ -31,10 +33,11 @@ class UniquenessDataCheck(DataCheck):
         self.threshold = threshold
 
     def validate(self, X, y=None):
-        """Checks if there are any highly-null columns in the input.
+        """Checks if there are any columns in the input that are too unique in the case of categorical
+        problems or not unique enough in the case of regression problems.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features
+            X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
@@ -84,6 +87,13 @@ class UniquenessDataCheck(DataCheck):
 
     @staticmethod
     def uniqueness_score(col):
+        """This function calculates a uniqueness score for the provided field.
+
+        Arguments:
+            col (pd.Series): Feature values.
+        Returns:
+            (float): Uniqueness score.
+        """
         norm_counts = col.value_counts() / col.value_counts().sum()
         square_counts = norm_counts ** 2
         score = 1 - square_counts.sum()
