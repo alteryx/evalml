@@ -159,7 +159,7 @@ def test_skopt_tuner_propose():
     }
 
 
-def test_grid_search_tuner_raises_deprecated_random_state_warning():
+def test_skopt_tuner_raises_deprecated_random_state_warning():
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
         pipeline_hyperparameter_ranges = {'Mock Classifier': {
@@ -167,6 +167,6 @@ def test_grid_search_tuner_raises_deprecated_random_state_warning():
             'param b': Real(0, 10),
             'param c': ['option a', 'option b', 'option c']
         }}
-        SKOptTuner(pipeline_hyperparameter_ranges, random_state=random_seed)
-        assert str(warn[0].message).startswith(
-            "Argument 'random_state' has been deprecated in favor of 'random_seed'")
+        SKOptTuner(pipeline_hyperparameter_ranges, random_state=15)
+        assert any(str(w.message).startswith(
+            "Argument 'random_state' has been deprecated in favor of 'random_seed'") for w in warn)
