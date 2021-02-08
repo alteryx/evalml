@@ -126,11 +126,7 @@ def test_pca_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double]
     for logical_type in override_types:
-        try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
-            continue
-
+        X = ww.DataTable(X_df, logical_types={0: logical_type})
         pca = PCA(n_components=1)
         pca.fit(X)
         transformed = pca.transform(X, y)

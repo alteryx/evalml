@@ -104,9 +104,11 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
     for col in col_intersection:
         if logical_types[col] in ltypes_to_ignore:
             continue
-        try:
-            new_dataframe[col].astype(logical_types[col].pandas_dtype)
-            retained_logical_types[col] = old_datatable[col].logical_type
-        except (ValueError, TypeError):
-            pass
+        # import pdb; pdb.set_trace()
+        if str(new_dataframe[col].dtype) != logical_types[col].pandas_dtype:
+            try:
+                new_dataframe[col].astype(logical_types[col].pandas_dtype)
+                retained_logical_types[col] = old_datatable[col].logical_type
+            except (ValueError, TypeError):
+                pass
     return ww.DataTable(new_dataframe, logical_types=retained_logical_types)

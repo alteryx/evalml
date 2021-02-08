@@ -139,10 +139,7 @@ def test_lda_woodwork_custom_overrides_returned_by_components():
     y = pd.Series([0, 1, 0, 1, 1])
     override_types = [Integer, Double]
     for logical_type in override_types:
-        try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type, 1: logical_type, 2: logical_type, 3: logical_type})
-        except TypeError:
-            continue
+        X = ww.DataTable(X_df, logical_types={0: logical_type, 1: logical_type, 2: logical_type, 3: logical_type})
         lda = LinearDiscriminantAnalysis(n_components=1)
         lda.fit(X, y)
         transformed = lda.transform(X, y)
