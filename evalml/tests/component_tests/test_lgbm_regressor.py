@@ -141,7 +141,6 @@ def test_multiple_fit(mock_predict):
 
     clf = LightGBMRegressor()
     clf.fit(X1_fit, y)
-    clf._is_fitted = True
     clf.predict(X1_predict)
     assert_frame_equal(X1_predict_expected, mock_predict.call_args[0][0])
 
@@ -152,7 +151,6 @@ def test_multiple_fit(mock_predict):
 
     clf = LightGBMRegressor()
     clf.fit(X2_fit, y)
-    clf._is_fitted = True
     clf.predict(X2_predict)
     assert_frame_equal(X2_predict_expected, mock_predict.call_args[0][0])
 
