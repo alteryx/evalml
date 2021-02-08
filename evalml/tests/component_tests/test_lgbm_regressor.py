@@ -1,4 +1,4 @@
-from unittest.mock import PropertyMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -136,7 +136,6 @@ def test_categorical_data_subset(mock_predict, X_y_regression):
 def test_multiple_fit(mock_predict):
     y = pd.Series([1] * 4)
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
-    X1_fit_expected = pd.DataFrame({0: [0.0, 1.0, 2.0, 2.0]}, dtype='category')
     X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
     X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype='category')
 
@@ -148,7 +147,6 @@ def test_multiple_fit(mock_predict):
 
     # Check if it will fit a different dataset with new variable
     X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
-    X2_fit_expected = pd.DataFrame({0: [2.0, 1.0, 0.0, 3.0]}, dtype='category')
     X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
     X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype='category')
 

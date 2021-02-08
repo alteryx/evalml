@@ -44,8 +44,6 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             predictions = clf.predict(X).to_series()
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
-            if clf.input_feature_names != col_names:
-                import pdb; pdb.set_trace()
             assert (clf.input_feature_names == col_names)
 
 
