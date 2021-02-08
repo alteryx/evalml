@@ -19,7 +19,7 @@ class BaseTVSplit(BaseCrossValidator):
 
     def fix_data(self, X, y):
         """Splits and returns the data using the data sampler provided.
-        
+
         Arguments:
                 X (ww.DataTable): DataTable of points to split
                 y (ww.DataTable): DataColumn of points to split
@@ -58,7 +58,7 @@ class BaseCVSplit(StratifiedKFold):
 
     def fix_data(self, X, y):
         """Splits using K-fold cross-validation and returns the data using the data sampler provided.
-        
+
         Arguments:
                 X (ww.DataTable): DataTable of points to split
                 y (ww.DataTable): DataColumn of points to split
