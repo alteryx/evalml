@@ -68,3 +68,6 @@ class Transformer(ComponentBase):
             except MethodPropertyNotFoundError as e:
                 raise e
         return _convert_to_woodwork_structure(X_t)
+
+    def _get_feature_provenance(self):
+        return {}

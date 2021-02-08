@@ -198,27 +198,35 @@ def get_importable_subclasses(base_class, used_in_automl=True):
     return classes
 
 
-def _rename_column_names_to_numeric(X):
-    """Used in LightGBM classifier class and XGBoost classifier and regressor classes to rename column names
-        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
+def _rename_column_names_to_numeric(X, flatten_tuples=True):
+    """Used in LightGBM and XGBoost estimator classes to rename column names
+        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <)
+        that these estimators cannot natively handle.
 
     Arguments:
-        X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+        X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+        flatten_tuples (bool): Whether to flatten MultiIndex or tuple column names. LightGBM cannot handle columns with tuple names.
 
     Returns:
         Transformed X where column names are renamed to numerical values
     """
-    X_t = X
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
+
     if isinstance(X, ww.DataTable):
         X_t = X.to_dataframe()
-        logical_types = X.logical_types
-    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    X_renamed = X_t.rename(columns=name_to_col_num, inplace=False)
+    else:
+        X_t = X.copy()
+
+    if flatten_tuples and (len(X_t.columns) > 0 and isinstance(X_t.columns, pd.MultiIndex)):
+        flat_col_names = list(map(str, X_t.columns))
+        X_t.columns = flat_col_names
+        rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
+    else:
+        rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+    X_renamed = X_t.rename(columns=rename_cols_dict)
     if isinstance(X, ww.DataTable):
-        renamed_logical_types = dict((name_to_col_num[col], logical_types[col]) for col in logical_types)
-        return ww.DataTable(X_renamed, logical_types=renamed_logical_types)
+        X_renamed = ww.DataTable(X_renamed)
     return X_renamed
 
 

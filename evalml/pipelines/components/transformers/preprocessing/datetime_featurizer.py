@@ -113,3 +113,11 @@ class DateTimeFeaturizer(Transformer):
            mapping the unique feature values to their integer encoding.
         """
         return self._categories
+
+    def _get_feature_provenance(self):
+        provenance = {}
+        for col_name in self._date_time_col_names:
+            provenance[col_name] = []
+            for feature in self.parameters['features_to_extract']:
+                provenance[col_name].append(f'{col_name}_{feature}')
+        return provenance
