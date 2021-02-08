@@ -71,3 +71,6 @@ class Transformer(ComponentBase):
                 return self.fit(X, y).transform(X, y)
             except MethodPropertyNotFoundError as e:
                 raise e
+
+    def _get_feature_provenance(self):
+        return {}

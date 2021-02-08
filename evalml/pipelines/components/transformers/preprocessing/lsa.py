@@ -26,6 +26,7 @@ class LSA(TextTransformer):
             random_state (int): Seed for the random number generator. Defaults to 0.
         """
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
+        self._provenance = {}
         super().__init__(text_columns=text_columns,
                          random_state=random_state,
                          **kwargs)
@@ -60,9 +61,15 @@ class LSA(TextTransformer):
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X.copy()
         text_columns = self._get_text_columns(X)
+        provenance = {}
         for col in text_columns:
             transformed = self._lsa_pipeline.transform(X[col])
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
+            provenance[col] = ['LSA({})[0]'.format(col), 'LSA({})[1]'.format(col)]
+        self._provenance = provenance
         X_t = X_t.drop(columns=text_columns)
         return reconvert(X_ww, X_t)
+
+    def _get_feature_provenance(self):
+        return self._provenance
