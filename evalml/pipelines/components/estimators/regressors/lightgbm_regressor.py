@@ -92,7 +92,11 @@ class LightGBMRegressor(Estimator):
 
     def fit(self, X, y=None):
         X_encoded = self._encode_categories(X, fit=True)
-        return super().fit(X_encoded, y)
+        if y is not None:
+            y = _convert_to_woodwork_structure(y)
+            y = _convert_woodwork_types_wrapper(y.to_series())
+        self._component_obj.fit(X_encoded, y)
+        return self
 
     def predict(self, X):
         X_encoded = self._encode_categories(X)

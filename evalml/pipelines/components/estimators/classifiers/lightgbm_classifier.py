@@ -107,7 +107,8 @@ class LightGBMClassifier(Estimator):
         X_encoded = _convert_to_woodwork_structure(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
-        return super().fit(X_encoded, y_encoded)
+        self._component_obj.fit(X_encoded, y_encoded)
+        return self
 
     def predict(self, X):
         X_encoded = self._encode_categories(X)
