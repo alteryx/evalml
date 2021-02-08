@@ -355,7 +355,7 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
-def _to_woodwork(X, y, to_pandas=True):
+def _convert_numeric_dataset(X, y, to_pandas=True):
     """Convert numeric and non-null data to woodwork or pandas datatype. Raises ValueError if there is null or non-numeric data.
     Used with data sampler strategies.
 

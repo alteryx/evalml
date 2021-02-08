@@ -648,9 +648,9 @@ def test_convert_numeric_dataset(datatype, to_pandas, value, error, make_data_ty
 
     if error:
         with pytest.raises(ValueError, match="Values not all numeric or there are null"):
-            _convert_numeric_datasetX, y, to_pandas=to_pandas)
+            _convert_numeric_dataset(X, y, to_pandas=to_pandas)
     else:
-        X_transformed, y_transformed = _convert_numeric_datasetX, y, to_pandas=to_pandas)
+        X_transformed, y_transformed = _convert_numeric_dataset(X, y, to_pandas=to_pandas)
         X_ww = _convert_to_woodwork_structure(X)
         y_ww = _convert_to_woodwork_structure(y)
 
