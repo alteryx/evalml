@@ -57,3 +57,6 @@ class DataCheckMessageCode(Enum):
 
     IS_MULTICOLLINEAR = "is_multicollinear"
     """Message code for when data is potentially multicollinear."""
+
+    TOO_SPARSE = "too sparse"
+    """Message code for when binary or multiclass data has values that are too sparsely populated."""
