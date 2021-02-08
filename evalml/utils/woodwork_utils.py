@@ -110,38 +110,3 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
         except (ValueError, TypeError):
             pass
     return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
-
-
-# def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, ltypes_to_ignore=None):
-#     """
-#     Helper method which will take an old Woodwork DataTable and a new pandas DataFrame and return a
-#     new DataTable that will try to retain as many logical types from the old DataTable that exist in the new
-#     pandas DataFrame as possible.
-
-#     Arguments:
-#         old_datatable (ww.DataTable): Woodwork DataTable to use
-#         new_dataframe (pd.DataFrame): Pandas data structure
-#         ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataTable that have a logical type
-#         specified in this list will not have their logical types carried over to the new DataTable returned
-
-#     Returns:
-#         A new DataTable where any of the columns that exist in the old input DataTable and the new DataFrame try to retain
-#         the original logical type, if possible and not specified to be ignored.
-#     """
-#     okay = {}
-#     if ltypes_to_ignore is None:
-#         ltypes_to_ignore = []  # logical types to ignore
-#     # col_intersection = set().intersection(set(new_dataframe.columns))
-#     logical_types = old_datatable.logical_types
-#     for col in new_dataframe.columns:
-#         if col not in old_datatable.columns:
-#             continue
-#         if col in old_datatable.columns:
-#             if logical_types[col] in ltypes_to_ignore:
-#                 continue
-#             try:
-#                 new_dataframe[col].astype(logical_types[col].pandas_dtype)  # maybe using this will somehow save time?
-#                 okay[col] = old_datatable[col].logical_type
-#             except (ValueError, TypeError):
-#                 pass
-#     return ww.DataTable(new_dataframe, logical_types=okay)
