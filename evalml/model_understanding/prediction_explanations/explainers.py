@@ -51,8 +51,8 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
         training_data = _convert_to_woodwork_structure(training_data)
         training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
 
-    if output_format not in {"text", "dict"}:
-        raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
+    if output_format not in {"text", "dict", "dataframe"}:
+        raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     return _make_single_prediction_shap_table(pipeline, input_features, top_k, training_data, include_shap_values,
                                               output_format=output_format)
 
@@ -118,8 +118,8 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
 
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
-    if output_format not in {"text", "dict"}:
-        raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
+    if output_format not in {"text", "dict", "dataframe"}:
+        raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     data = _ReportData(pipeline, input_features, y_true=None, y_pred=None,
                        y_pred_values=None, errors=None, index_list=range(input_features.shape[0]), metric=None)
 
@@ -166,8 +166,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     if y_true.shape[0] != input_features.shape[0]:
         raise ValueError("Parameters y_true and input_features must have the same number of data points. Received: "
                          f"true labels: {y_true.shape[0]} and {input_features.shape[0]}")
-    if output_format not in {"text", "dict"}:
-        raise ValueError(f"Parameter output_format must be either text or dict. Received {output_format}")
+    if output_format not in {"text", "dict", "dataframe"}:
+        raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
 

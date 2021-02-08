@@ -15,7 +15,12 @@ EvalML uses [semantic versioning](https://semver.org/). Every release has a majo
 
 If you'd like to create a development release, which won't be deployed to pypi and conda and marked as a generally-available production release, please add a "dev" prefix to the patch version, i.e. `X.X.devX`. Note this claims the patch number--if the previous release was `0.12.0`, a subsequent dev release would be `0.12.dev1`, and the following release would be `0.12.2`, *not* `0.12.1`. Development releases deploy to [test.pypi.org](https://test.pypi.org/project/evalml/) instead of to [pypi.org](https://pypi.org/project/evalml).
 
-## 1. Create release PR to update version and release notes
+## 1. Freeze `main` and run perf tests
+After confirming the release is ready to go in step 0, we'll freeze the `main` branch and kick off the release performance tests.
+
+Once a perf test document has been reviewed and approved by the team, we'll move forward with the release.
+
+## 2. Create release PR to update version and release notes
 Please use the following pattern for the release PR branch name: "release_vX.X.X". Doing so will bypass our release notes checkin test which requires all other PRs to add a release note entry.
 
 Create a release PR with the following changes:
@@ -35,7 +40,7 @@ Checklist before merging:
 
 After merging, verify again that ReadtheDocs "latest" is correct.
 
-## 2. Create GitHub Release
+## 3. Create GitHub Release
 After the release pull request has been merged into the main branch, it is time to draft the GitHub release. [Here's GitHub's documentation](https://help.github.com/en/github/administering-a-repository/managing-releases-in-a-repository#creating-a-release) on how to do that. Include the following when creating the release:
 * The target should be the main branch, which is the default value.
 * The tag should be the version number with a "v" prefix (e.g. "vX.X.X").
@@ -48,7 +53,7 @@ Save the release as a draft and make sure it looks correct. You could start the 
 
 When it's ready to go, hit "Publish release." This will create a "vX.X.X" tag for the release, which tells ReadtheDocs to build and update the "stable" version. This will also deploy the release [to pypi](https://pypi.org/project/evalml/), making it publicly accessible!
 
-## 3. Make Documentation Public for Release Version
+## 4. Make Documentation Public for Release Version
 Creating the GitHub release should have updated the default `stable` docs branch to point at the new version. You'll now need to activate the new release version on ReadtheDocs so its publicly visible in the list of versions. This is important so users can view old documentation versions which match their installed version.
 
 Please do the following:
@@ -58,7 +63,7 @@ Please do the following:
 * Verify "vX.X.X" is now visible as a version on our ReadtheDocs page. You may have to do an "empty cache and hard reset" in your browser to see updates.
 * Verify "stable" corresponds with the new version, which should've been done in step 2.
 
-## 4. Verify the release package has been deployed
+## 5. Verify the release package has been deployed
 Now that the release has been made in the repo, to pypi and in our documentation, the final step is making sure the new release is publicly pip-installable via pypi.
 
 In a fresh virtualenv, install evalml via pip and ensure it installs successfully:
@@ -75,7 +80,7 @@ pip freeze | grep evalml
 
 Note: make sure when you do this that you're in a virtualenv, your current working directory isn't in the evalml repo, and that you haven't added your repo to the `PYTHONPATH`, because in both cases python could pick up the repo instead, even in a virtualenv.
 
-## 5. Publish Our New Conda Package
+## 6. Publish Our New Conda Package
 
 A couple of hours after you publish the GitHub release, a bot will open a PR to our [feedstock](https://github.com/conda-forge/evalml-core-feedstock) that automatically
 bumps the recipe to use the latest version of the package.

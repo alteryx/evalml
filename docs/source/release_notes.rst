@@ -3,6 +3,18 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added "dataframe" output format for prediction explanations :pr:`1781`
+        * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
+        * Sped up permutation importance for some pipelines :pr:`1762`
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Added section on conda to the contributing guide :pr:`1771`
+        * Updated release process to reflect freezing `main` before perf tests :pr:`1787`
+        * Moving some prs to the right section of the release notes :pr:`1789`
+
+**v0.18.1 Feb. 1, 2021**
+    * Enhancements
         * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
         * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
@@ -17,7 +29,9 @@ Release Notes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
         * Dropped support for Python version 3.6 :pr:`1751`
+        * Removed deprecated ``verbose`` flag from ``AutoMLSearch`` parameters :pr:`1772`
     * Documentation Changes
+        * Add Twitter and Github link to documentation toolbar :pr:`1754`
         * Added Open Graph info to documentation :pr:`1758`
     * Testing Changes
 
@@ -26,6 +40,7 @@ Release Notes
     **Breaking Changes**
         * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
         * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
+        * Deprecated ``verbose`` flag is removed for ``AutoMLSearch`` :pr:`1772`
 
 
 **v0.18.0 Jan. 26, 2021**
