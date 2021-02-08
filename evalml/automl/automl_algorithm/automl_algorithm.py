@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 
 from evalml.tuners import SKOptTuner
-from evalml.utils import get_random_seed
 
 
 class AutoMLAlgorithmException(Exception):

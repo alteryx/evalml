@@ -29,9 +29,9 @@ from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    deprecate_arg,
     import_or_raise,
-    jupyter_check,
-    deprecate_arg
+    jupyter_check
 )
 
 

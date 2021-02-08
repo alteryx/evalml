@@ -7,8 +7,8 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
     classproperty,
-    get_logger,
     deprecate_arg,
+    get_logger,
     log_subtitle,
     safe_repr
 )

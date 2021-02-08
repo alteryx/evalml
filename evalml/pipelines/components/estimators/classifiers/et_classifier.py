@@ -6,6 +6,7 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import deprecate_arg
 
+
 class ExtraTreesClassifier(Estimator):
     """Extra Trees Classifier."""
     name = "Extra Trees Classifier"

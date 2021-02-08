@@ -5,7 +5,6 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils import deprecate_arg
 
 
 class StackedEnsembleRegressor(StackedEnsembleBase):

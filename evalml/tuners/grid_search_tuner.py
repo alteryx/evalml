@@ -4,6 +4,7 @@ from skopt.space import Integer, Real
 
 from .tuner import Tuner
 from .tuner_exceptions import NoParamsException
+
 from evalml.utils import deprecate_arg
 
 

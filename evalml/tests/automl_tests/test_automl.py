@@ -56,7 +56,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
-from evalml.utils.gen_utils import get_random_seed
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

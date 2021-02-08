@@ -26,8 +26,8 @@ from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
     _convert_to_woodwork_structure,
     classproperty,
-    get_logger,
     deprecate_arg,
+    get_logger,
     import_or_raise,
     jupyter_check,
     log_subtitle,

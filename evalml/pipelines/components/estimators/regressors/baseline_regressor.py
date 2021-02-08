@@ -6,8 +6,7 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    deprecate_arg
+    _convert_woodwork_types_wrapper
 )
 
 

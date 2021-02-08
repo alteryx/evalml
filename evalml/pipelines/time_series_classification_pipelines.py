@@ -7,7 +7,7 @@ from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     drop_rows_with_nans,
-    pad_with_nans,
+    pad_with_nans
 )
 
 

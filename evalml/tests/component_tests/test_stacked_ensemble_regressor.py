@@ -88,7 +88,7 @@ def test_stacked_ensemble_n_jobs_negative_one(X_y_regression, linear_regression_
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor._stacking_estimator_class')
 def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed(mock_stack,
-                                                                   linear_regression_pipeline_class):
+                                                                  linear_regression_pipeline_class):
     input_pipelines = [linear_regression_pipeline_class(parameters={}, random_seed=3),
                        linear_regression_pipeline_class(parameters={}, random_seed=4)]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, random_seed=5, n_jobs=1)

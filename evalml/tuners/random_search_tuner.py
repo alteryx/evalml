@@ -1,7 +1,7 @@
 from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner
-from evalml.utils import get_random_state, deprecate_arg
+from evalml.utils import deprecate_arg, get_random_state
 
 
 class RandomSearchTuner(Tuner):
