@@ -39,20 +39,6 @@ class UniquenessDataCheck(DataCheck):
 
         Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns.
-
-        Example:
-            >>> import pandas as pd
-            >>> df = pd.DataFrame({
-            ...    'regression_unique_enough': [float(x) for x in range(100)],
-            ...    'regression_not_unique_enough': [float(1) for x in range(100)]
-            ... })
-            >>> uniqueness_check = UniquenessDataCheck(problem_type="regression", threshold=0.8)
-            >>> assert uniqueness_check.validate(df) == {"errors": [],\
-                                                   "warnings": [{"message": "Input columns (regression_not_unique_enough) for regression problem type are not unique enough.",\
-                                                                 "data_check_name": "UniquenessDataCheck",\
-                                                                 "level": "warning",\
-                                                                 "code": "NOT_UNIQUE_ENOUGH",\
-                                                                 "details": {"column": "regression_not_unique_enough"}}]}
         """
         messages = {
             "warnings": [],
