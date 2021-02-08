@@ -20,8 +20,8 @@ from evalml.pipelines.components import StandardScaler
 ])
 def test_standard_scaler_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
     y = pd.Series([1, 2, 1])
-    types_to_test = [Integer, Double, Categorical, Boolean]
-    for l in types_to_test:
+    override_types = [Integer, Double, Categorical, Boolean]
+    for l in override_types:
         X = None
         override_dict = {0: l}
         try:
@@ -29,14 +29,13 @@ def test_standard_scaler_woodwork_custom_overrides_returned_by_components(logica
             assert X.logical_types[0] == l
         except TypeError:
             continue
-        print ("testing override", logical_type, "with", l)
+
         std_scaler = StandardScaler()
         std_scaler.fit(X, y)
         transformed = std_scaler.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
         input_logical_types = {0: l}
-        print ("transformed", transformed.logical_types.items())
-        print ("expected", input_logical_types.items())
+
         if l == Categorical:
             assert transformed.logical_types == {0: ww.logical_types.Categorical}
         else:

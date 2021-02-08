@@ -9,6 +9,7 @@ from pytest import importorskip
 from woodwork.logical_types import (
     Boolean,
     Categorical,
+    Datetime,
     Double,
     Integer,
     NaturalLanguage
@@ -180,33 +181,29 @@ def test_pandas_numpy(mock_fit, X_y_binary):
     encoder.fit(X_numpy, y)
 
 
-@pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
-                                                (ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-                                                (ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
-                                                (ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
-                                                (ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+
+                                  ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")),
 ])
-def test_target_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
-    types_to_test = [Integer, Double, Categorical, NaturalLanguage]
-    for l in types_to_test:
-        X = None
-        override_dict = {0: l}
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean, Datetime]
+    for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types=override_dict)
-            assert X.logical_types[0] == l
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
         except TypeError:
             continue
-        print ("testing override", logical_type, "with", l)
-        encoder = TargetEncoder()
 
+        encoder = TargetEncoder()
         encoder.fit(X, y)
         transformed = encoder.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0: l}
-        print ("transformed", transformed.logical_types.items())
-        print ("expected", input_logical_types.items())
-        if l == Categorical:
+
+        if logical_type == Categorical:
             assert transformed.logical_types == {0: Double}
         else:
-            assert transformed.logical_types == {0: l}
+            assert transformed.logical_types == {0: logical_type}

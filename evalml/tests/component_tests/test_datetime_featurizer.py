@@ -149,31 +149,32 @@ def test_datetime_featurizer_numpy_array_input():
                                                         '0_day_of_week': {'Saturday': 6, 'Tuesday': 2}}
 
 
-@pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
-                                                (ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-                                                (ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
-                                                (ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
-                                                (ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
 ])
 @pytest.mark.parametrize("with_datetime_col", [True, False])
-def test_dt_woodwork_custom_overrides_returned_by_components(logical_type, X_df, with_datetime_col):
-    types_to_test = [Integer, Double, Categorical, NaturalLanguage, Datetime]
+def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(X_df, with_datetime_col):
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime]
     if with_datetime_col:
-        X_df['datetime col'] = pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')
-    for l in types_to_test:
-        override_dict = {0: l}
+        X_df['datetime col'] = pd.to_datetime(['20200101', '20200519', '20190607'], format='%Y%m%d')
+    for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types=override_dict)
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
         except TypeError:
             continue
-        print ("testing override", logical_type, "with", l)
         datetime_transformer = DateTimeFeaturizer()
         datetime_transformer.fit(X)
         transformed = datetime_transformer.transform(X)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0: l}
-        print ("transformed", transformed.logical_types.items())
-        print ("expected", input_logical_types.items())
-        if l != Datetime:
-            assert all(item in transformed.logical_types.items() for item in input_logical_types.items())
-            # assert transformed.logical_types
+        if with_datetime_col:
+            datetime_col_transformed = {'datetime col_year': Integer, 'datetime col_month': Integer, 'datetime col_day_of_week': Integer, 'datetime col_hour': Integer}
+            assert all(item in transformed.logical_types.items() for item in datetime_col_transformed.items())
+        if logical_type == Datetime:
+            col_transformed = {'0_year': Integer, '0_month': Integer, '0_day_of_week': Integer, '0_hour': Integer}
+            assert all(item in transformed.logical_types.items() for item in col_transformed.items())
+        else:
+            assert transformed.logical_types[0] == logical_type

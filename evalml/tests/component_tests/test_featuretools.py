@@ -108,16 +108,17 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         assert_frame_equal(feature_matrix, X_t.to_dataframe())
 
 
-@pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
-                                                (ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-                                                (ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
-                                                (ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
-                                                (ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
 ])
 def test_ft_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
     y = pd.Series([1, 2, 1])
-    types_to_test = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
-    for l in types_to_test:
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
+    for l in override_types:
         X = None
         override_dict = {0: l}
         try:
@@ -125,13 +126,12 @@ def test_ft_woodwork_custom_overrides_returned_by_components(logical_type, X_df)
             assert X.logical_types[0] == l
         except TypeError:
             continue
-        print ("testing override", logical_type, "with", l)
+
         dft = DFSTransformer()
         dft.fit(X, y)
         transformed = dft.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
         input_logical_types = {'0': l}
-        print ("transformed", transformed.logical_types.items())
-        print ("expected", input_logical_types.items())
+
         # import pdb; pdb.set_trace()
         assert transformed.logical_types == {'0': l}

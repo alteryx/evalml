@@ -133,8 +133,8 @@ def test_n_components():
 ])
 def test_pca_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
     y = pd.Series([1, 2, 1])
-    types_to_test = [Integer, Double]
-    for l in types_to_test:
+    override_types = [Integer, Double]
+    for l in override_types:
         X = None
         override_dict = {0: l}
         try:
@@ -142,12 +142,11 @@ def test_pca_woodwork_custom_overrides_returned_by_components(logical_type, X_df
             assert X.logical_types[0] == l
         except TypeError:
             continue
-        print ("testing override", logical_type, "with", l)
+
         pca = PCA(n_components=1)
         pca.fit(X)
         transformed = pca.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
         input_logical_types = {0: l}
-        print ("transformed", transformed.logical_types.items())
-        print ("expected", input_logical_types.items())
+
         assert transformed.logical_types == {'component_0': ww.logical_types.Double}

@@ -4,6 +4,7 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
+    Boolean,
     Categorical,
     Double,
     Integer,
@@ -284,32 +285,27 @@ def test_simple_imputer_with_none():
     assert_frame_equal(expected, transformed.to_dataframe(), check_dtype=False)
 
 
-@pytest.mark.parametrize("logical_type, X_df", [
-(ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
-(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
-(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+@pytest.mark.parametrize("X_df", [
+pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")),
 ])
 @pytest.mark.parametrize("has_nan", [True, False])
-def test_simple_imputer_woodwork_custom_overrides_returned_by_components(logical_type, X_df, has_nan):
+def test_simple_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
     y = pd.Series([1, 2, 1])
     if has_nan:
         X_df.iloc[len(X_df) - 1, 0] = np.nan
-    types_to_test = [Integer, Double, Categorical, NaturalLanguage]
-    for l in types_to_test:
-        X = None
-        override_dict = {0: l}
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
+    for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types=override_dict)
-            assert X.logical_types[0] == l
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
         except TypeError:
             continue
-        print ("testing override", logical_type, "with", l)
+
         imputer = SimpleImputer()
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0: l}
-        print ("transformed", transformed.logical_types.items())
-        print ("expected", input_logical_types.items())
-        assert all(item in transformed.logical_types.items() for item in input_logical_types.items())
+        assert transformed.logical_types == {0: logical_type}
