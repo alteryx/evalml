@@ -183,11 +183,12 @@ def test_lsa_with_custom_indices(text_df):
 def test_lsa_woodwork_custom_overrides_returned_by_components(X_df, with_text_col):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, Boolean, NaturalLanguage]
-    lsa = LSA(text_columns=[])
+    X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
 
     if with_text_col:
-        X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
         lsa = LSA(text_columns=['text col'])
+    else:
+        lsa = LSA(text_columns=[])
 
     for logical_type in override_types:
         try:
@@ -201,4 +202,4 @@ def test_lsa_woodwork_custom_overrides_returned_by_components(X_df, with_text_co
         if with_text_col:
             assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}
         else:
-            assert transformed.logical_types == {0: logical_type}
+            assert transformed.logical_types == {0: logical_type, 'text col': NaturalLanguage}
