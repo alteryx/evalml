@@ -23,6 +23,7 @@ Release Notes
         * Confirmed support for threshold tuning for binary time series classification problems :pr:`1803`
     * Fixes
     * Changes
+        * Added ``random_seed`` as an argument to our automl/pipeline/component api. Using ``random_state`` will raise a warning :pr:`1798`
     * Documentation Changes
         * Added section on conda to the contributing guide :pr:`1771`
         * Updated release process to reflect freezing `main` before perf tests :pr:`1787`
