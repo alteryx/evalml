@@ -2197,7 +2197,7 @@ def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_mu
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
-    pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+    pytest.importorskip('imblearn', reason='Skipping data splitter test because imblearn not installed')
     X, y = X_y_binary
     if sampler == "Nope":
         with pytest.raises(ValueError, match="not exist"):
@@ -2219,7 +2219,7 @@ def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_sampler_instance(mock_fit, mock_score, sampler, X_y_binary):
-    pytest.importorskip('imblearn', reason='Skipping plotting test because imblearn not installed')
+    pytest.importorskip('imblearn', reason='Skipping data splitter test because imblearn not installed')
     X, y = X_y_binary
     if 'SMOTENC' in sampler.__name__:
         sampler = sampler(categorical_features=[0])
