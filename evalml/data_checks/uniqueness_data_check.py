@@ -76,7 +76,7 @@ class UniquenessDataCheck(DataCheck):
                                                                                                    self.problem_type),
                                                           data_check_name=self.name,
                                                           message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
-                                                          details={"column": col_name}).to_dict()
+                                                          details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                          for col_name in not_unique_enough_cols])
         elif self.problem_type == ProblemTypes.MULTICLASS:
             too_unique_cols = list(res.index[res > self.threshold])
@@ -84,6 +84,6 @@ class UniquenessDataCheck(DataCheck):
                                                                                             self.problem_type),
                                                           data_check_name=self.name,
                                                           message_code=DataCheckMessageCode.TOO_UNIQUE,
-                                                          details={"column": col_name}).to_dict()
+                                                          details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                          for col_name in too_unique_cols])
         return messages

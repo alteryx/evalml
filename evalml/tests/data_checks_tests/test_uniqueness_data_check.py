@@ -29,15 +29,17 @@ def test_uniqueness_data_check_init():
         UniquenessDataCheck("regression", threshold=1.1)
 
 
-def test_highly_null_data_check_warnings():
+def test_uniqueness_data_check_warnings():
     data = pd.DataFrame({'regression_unique_enough': [float(x) for x in range(100)],
                          'regression_not_unique_enough': [float(1) for x in range(100)]})
     uniqueness_check = UniquenessDataCheck(problem_type="regression")
     assert uniqueness_check.validate(data) == {
-        "warnings": [DataCheckWarning(message="Input columns (regression_not_unique_enough) for regression problem type are not unique enough.",
-                                      data_check_name=uniqueness_data_check_name,
-                                      message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
-                                      details={"column": "regression_not_unique_enough"}).to_dict()],
+        "warnings": [DataCheckWarning(
+            message="Input columns (regression_not_unique_enough) for regression problem type are not unique enough.",
+            data_check_name=uniqueness_data_check_name,
+            message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
+            details={"column": "regression_not_unique_enough",
+                     'uniqueness_score': 0.0}).to_dict()],
         "errors": []
     }
 
@@ -49,6 +51,7 @@ def test_highly_null_data_check_warnings():
             message="Input columns (multiclass_too_unique) for multiclass problem type are too unique.",
             data_check_name=uniqueness_data_check_name,
             message_code=DataCheckMessageCode.TOO_UNIQUE,
-            details={"column": "multiclass_too_unique"}).to_dict()],
+            details={"column": "multiclass_too_unique",
+                     'uniqueness_score': 0.7999999999999999}).to_dict()],
         "errors": []
     }
