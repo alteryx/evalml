@@ -19,18 +19,20 @@ def infer_feature_types(data, feature_types=None):
     Returns:
         A Woodwork data structure where the data type of each column was either specified or inferred.
     """
-    ww_data = _convert_to_woodwork_structure(data)
-    if feature_types is not None:
-        if len(ww_data.shape) == 1:
-            ww_data = ww_data.set_logical_type(feature_types)
-        else:
-            ww_data = ww_data.set_types(logical_types=feature_types)
-    return ww_data
+    return _convert_to_woodwork_structure(data, feature_types)
 
-
-def _convert_to_woodwork_structure(data):
+def _convert_to_woodwork_structure(data, feature_types=None):
     """
     Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
+
+    Arguments:
+        data (pd.Series, pd.DataFrame, pd.ExtensionArray): List, numpy, or pandas data structure to convert to Woodwork.
+        feature_types (string, ww.logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
+            mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
+            a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
+
+    Returns:
+        ww.DataTable or ww.DataColumn: new Woodwork data structure
     """
     ww_data = data
     if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
@@ -41,8 +43,8 @@ def _convert_to_woodwork_structure(data):
     ww_data = ww_data.copy()
     if len(ww_data.shape) == 1:
         name = ww_data.name if isinstance(ww_data, pd.Series) else None
-        return ww.DataColumn(ww_data, name=name)
-    return ww.DataTable(ww_data)
+        return ww.DataColumn(ww_data, name=name, logical_type=feature_types)
+    return ww.DataTable(ww_data, logical_types=feature_types)
 
 
 def _convert_woodwork_types_wrapper(pd_data):
@@ -104,7 +106,6 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
     for col in col_intersection:
         if logical_types[col] in ltypes_to_ignore:
             continue
-        # import pdb; pdb.set_trace()
         if str(new_dataframe[col].dtype) != logical_types[col].pandas_dtype:
             try:
                 new_dataframe[col].astype(logical_types[col].pandas_dtype)
