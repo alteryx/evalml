@@ -4,7 +4,8 @@ from evalml.pipelines.components.transformers.imputers.simple_imputer import (
 )
 from evalml.utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    reconvert
 )
 
 
@@ -75,8 +76,8 @@ class PerColumnImputer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = _convert_to_woodwork_structure(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():
@@ -86,4 +87,4 @@ class PerColumnImputer(Transformer):
             else:
                 X_t[column] = transformed[column]
         X_t = X_t.drop(cols_to_drop, axis=1)
-        return _convert_to_woodwork_structure(X_t)
+        return reconvert(X_ww, X_t)

@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import DateTimeFeaturizer
 
@@ -141,14 +149,11 @@ def test_datetime_featurizer_numpy_array_input():
                                                         '0_day_of_week': {'Saturday': 6, 'Tuesday': 2}}
 
 
-import woodwork as ww
-from woodwork.logical_types import Integer, Double, Categorical, NaturalLanguage, Datetime
-
 @pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
-(ww.logical_types.Integer,pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="Float64"))),
-(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
-(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+                                                (ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+                                                (ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
+                                                (ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
+                                                (ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
 ])
 @pytest.mark.parametrize("with_datetime_col", [True, False])
 def test_dt_woodwork_custom_overrides_returned_by_components(logical_type, X_df, with_datetime_col):
@@ -166,7 +171,7 @@ def test_dt_woodwork_custom_overrides_returned_by_components(logical_type, X_df,
         datetime_transformer.fit(X)
         transformed = datetime_transformer.transform(X)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0:l}
+        input_logical_types = {0: l}
         print ("transformed", transformed.logical_types.items())
         print ("expected", input_logical_types.items())
         if l != Datetime:

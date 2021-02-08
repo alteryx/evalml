@@ -83,7 +83,6 @@ class SimpleImputer(Transformer):
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
         # X_t = X_t.infer_objects()
         X_t.index = X_null_dropped.index
-        # import pdb; pdb.set_trace()
 
         return reconvert(X_ww, X_t)
 

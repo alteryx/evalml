@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import PCA
 
@@ -115,3 +123,31 @@ def test_n_components():
     pca = PCA(n_components=1)
     X_t = pca.fit_transform(X)
     assert X_t.shape[1] == 1
+
+
+@pytest.mark.parametrize("logical_type, X_df", [
+(ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
+(ww.logical_types.Boolean, pd.DataFrame(pd.Series([True, False, True], dtype="boolean")))
+
+])
+def test_pca_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
+    y = pd.Series([1, 2, 1])
+    types_to_test = [Integer, Double]
+    for l in types_to_test:
+        X = None
+        override_dict = {0: l}
+        try:
+            X = ww.DataTable(X_df, logical_types=override_dict)
+            assert X.logical_types[0] == l
+        except TypeError:
+            continue
+        print ("testing override", logical_type, "with", l)
+        pca = PCA(n_components=1)
+        pca.fit(X)
+        transformed = pca.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        input_logical_types = {0: l}
+        print ("transformed", transformed.logical_types.items())
+        print ("expected", input_logical_types.items())
+        assert transformed.logical_types == {'component_0': ww.logical_types.Double}

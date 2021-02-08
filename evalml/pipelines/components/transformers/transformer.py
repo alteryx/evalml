@@ -1,4 +1,5 @@
 import pandas as pd
+from woodwork.logical_types import Categorical
 
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
@@ -8,7 +9,6 @@ from evalml.utils import (
     _convert_woodwork_types_wrapper,
     reconvert
 )
-from woodwork.logical_types import Categorical
 
 
 class Transformer(ComponentBase):

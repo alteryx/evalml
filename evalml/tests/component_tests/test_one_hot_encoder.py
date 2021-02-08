@@ -3,6 +3,14 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
@@ -494,14 +502,12 @@ def test_ohe_column_names_unique():
     # category 1 in A_x_y gets mapped to A_x_y_1_2 because A_x_y_1_1 already exists
     assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_2", "A_x_y_y"}
 
-from woodwork.logical_types import Integer, Double, Categorical, NaturalLanguage, Boolean, Datetime
-
 
 @pytest.mark.parametrize("logical_type, X_df", [(ww.logical_types.Datetime, pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'))),
-(ww.logical_types.Integer,pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
-(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="Float64"))),
-(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
-(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+                                                (ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+                                                (ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
+                                                (ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
+                                                (ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
 ])
 def test_ohe_woodwork_custom_overrides_returned_by_components(logical_type, X_df):
     y = pd.Series([1, 2, 1])
@@ -519,7 +525,7 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(logical_type, X_df
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        input_logical_types = {0:l}
+        input_logical_types = {0: l}
         print ("transformed", transformed.logical_types.items())
         print ("expected", input_logical_types.items())
         if l == Categorical:

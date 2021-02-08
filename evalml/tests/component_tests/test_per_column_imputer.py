@@ -1,7 +1,14 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import PerColumnImputer
 
@@ -175,3 +182,35 @@ def test_transform_drop_all_nan_columns_empty():
     transformer.fit(X)
     assert transformer.transform(X).to_dataframe().empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
+
+
+@pytest.mark.parametrize("logical_type, X_df", [
+(ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
+(ww.logical_types.Categorical, pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))),
+(ww.logical_types.NaturalLanguage, pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))),
+])
+@pytest.mark.parametrize("has_nan", [True, False])
+def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(logical_type, X_df, has_nan):
+    y = pd.Series([1, 2, 1])
+    if has_nan:
+        X_df.iloc[len(X_df) - 1, 0] = np.nan
+    types_to_test = [Integer, Double, Categorical, NaturalLanguage]
+    for l in types_to_test:
+        X = None
+        override_dict = {0: l}
+        try:
+            X = ww.DataTable(X_df, logical_types=override_dict)
+            assert X.logical_types[0] == l
+        except TypeError:
+            continue
+        print ("testing override", logical_type, "with", l)
+        strategies = {'0': {"impute_strategy": "most_frequent"}}
+        imputer = PerColumnImputer(impute_strategies=strategies)
+        imputer.fit(X, y)
+        transformed = imputer.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        input_logical_types = {0: l}
+        print ("transformed", transformed.logical_types.items())
+        print ("expected", input_logical_types.items())
+        assert all(item in transformed.logical_types.items() for item in input_logical_types.items())

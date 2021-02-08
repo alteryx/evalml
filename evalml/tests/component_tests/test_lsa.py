@@ -5,6 +5,14 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import LSA
 
@@ -164,3 +172,36 @@ def test_lsa_with_custom_indices(text_df):
     lsa.fit(X)
     X_t = lsa.transform(X)
     assert not X_t.to_dataframe().isnull().any().any()
+
+
+@pytest.mark.parametrize("logical_type, X_df", [
+(ww.logical_types.Integer, pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64"))),
+(ww.logical_types.Double, pd.DataFrame(pd.Series([1., 2., 3.], dtype="float"))),
+(ww.logical_types.Boolean, pd.DataFrame(pd.Series([True, False, True], dtype="boolean")))
+])
+@pytest.mark.parametrize("with_text_col", [True, False])
+
+def test_lsa_woodwork_custom_overrides_returned_by_components(logical_type, X_df, with_text_col):
+    y = pd.Series([1, 2, 1])
+    types_to_test = [Integer, Double, Categorical, Boolean]
+    lsa = LSA(text_columns=[])
+    if with_text_col:
+        X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
+        lsa = LSA(text_columns=['text col'])
+
+    for l in types_to_test:
+        X = None
+        override_dict = {0: l}
+        try:
+            X = ww.DataTable(X_df, logical_types=override_dict)
+            assert X.logical_types[0] == l
+        except TypeError:
+            continue
+        print ("testing override", logical_type, "with", l)
+        lsa.fit(X)
+        transformed = lsa.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        input_logical_types = {0: l}
+        print ("transformed", transformed.logical_types.items())
+        print ("expected", input_logical_types.items())
+        assert transformed.logical_types[0] == l

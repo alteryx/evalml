@@ -52,6 +52,7 @@ from evalml.pipelines.components import (
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
+    TargetEncoder,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -70,6 +71,7 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 @pytest.fixture(scope="module")
@@ -1011,8 +1013,7 @@ def test_generate_code_custom(test_classes):
     component_code = generate_component_code(MockTransformer())
     assert component_code == expected_code
 
-from evalml.utils.woodwork_utils import infer_feature_types
-from evalml.pipelines.components import RFClassifierSelectFromModel, RFRegressorSelectFromModel, TargetEncoder
+
 def test_ange_TO_REMOVE_woodwork_custom_overrides_returned_by_components():
     X_df = pd.DataFrame({'datetime': pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d'),
                          'float': [1.0, 2.0, 3.14],
@@ -1030,37 +1031,31 @@ def test_ange_TO_REMOVE_woodwork_custom_overrides_returned_by_components():
         if isinstance(component, (DFSTransformer, DelayedFeatureTransformer)):
             continue
         if isinstance(component, DateTimeFeaturizer):
-            continue # datetime col disappears --> DONE
+            continue  # datetime col disappears --> DONE
         if isinstance(component, (PCA, LinearDiscriminantAnalysis, SelectColumns)):
-            continue # must be all numeric
+            continue  # must be all numeric
         if isinstance(component, StandardScaler):
-            continue # special case, datetime doesnt work --> DONE
+            continue  # special case, datetime doesnt work --> DONE
         if isinstance(component, (PerColumnImputer)):
-            continue # doesnt' support datetime
+            continue  # doesnt' support datetime
         if isinstance(component, (RFRegressorSelectFromModel, RFClassifierSelectFromModel)):
-            continue # doesnt' support datetime  --> DONE
+            continue  # doesnt' support datetime  --> DONE
         if isinstance(component, TargetEncoder):
-            continue # categorical --> float  --> DONE
+            continue  # categorical --> float  --> DONE
         if isinstance(component, OneHotEncoder):
-            continue # col dropped and replaced. --> DONE
-
+            continue  # col dropped and replaced. --> DONE
 
         component.fit(X, y=y)
         transform_output = component.transform(X, y=y)
         assert isinstance(transform_output, ww.DataTable)
         input_logical_types = {'datetime': ww.logical_types.Datetime,
-        'float': ww.logical_types.Double,
-        'int': ww.logical_types.Integer,
-        'categorical': ww.logical_types.Categorical,
-        'nat lang': ww.logical_types.NaturalLanguage}
+                               'float': ww.logical_types.Double,
+                               'int': ww.logical_types.Integer,
+                               'categorical': ww.logical_types.Categorical,
+                               'nat lang': ww.logical_types.NaturalLanguage}
         print (transform_output.logical_types.items())
         print (input_logical_types.items())
         assert all(item in transform_output.logical_types.items() for item in input_logical_types.items())
-
-
-
-
-
 
             # component.fit(X, y=y)
             # transform_output = component.transform(X, y=y)

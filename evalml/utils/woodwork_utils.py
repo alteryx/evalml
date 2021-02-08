@@ -87,7 +87,7 @@ def reconvert(old_datatable, new_dataframe, to_ignore=None):
     """
     okay = {}
     if to_ignore is None:
-        to_ignore = [] # logical types to ignore
+        to_ignore = []  # logical types to ignore
     # col_intersection = set(old_logical_types.keys()).intersection(set(new_dataframe.columns))
     physical_types = old_datatable.physical_types
     logical_types = old_datatable.logical_types
@@ -101,7 +101,7 @@ def reconvert(old_datatable, new_dataframe, to_ignore=None):
         if col in old_datatable.columns:
             if logical_types[col] in to_ignore:
                 continue
-            # if 
+            # if
             # old_ptype = physical_types[col]
             # if isinstance(old_ptype, pd.CategoricalDtype):
             #     old_ptype = pd.CategoricalDtype()

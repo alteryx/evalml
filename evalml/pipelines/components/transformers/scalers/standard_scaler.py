@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
+from woodwork.logical_types import Integer
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
@@ -7,7 +8,6 @@ from evalml.utils import (
     _convert_woodwork_types_wrapper,
     reconvert
 )
-from woodwork.logical_types import Integer
 
 
 class StandardScaler(Transformer):
