@@ -12,7 +12,13 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     get_estimators
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_binary,
+    is_multiclass,
+    is_regression
+)
 from evalml.utils import get_random_state
 
 
@@ -21,11 +27,11 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
-            if problem_type == ProblemTypes.BINARY:
+            if is_binary(problem_type):
                 X, y = X_y_binary
-            elif problem_type == ProblemTypes.MULTICLASS:
+            elif is_multiclass(problem_type):
                 X, y = X_y_multi
-            elif problem_type == ProblemTypes.REGRESSION:
+            elif is_regression(problem_type):
                 X, y = X_y_regression
 
             X = get_random_state(clf.random_state).random((X.shape[0], len(string.printable)))
@@ -38,8 +44,6 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             predictions = clf.predict(X).to_series()
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
-            if not (clf.input_feature_names == col_names):
-                import pdb; pdb.set_trace()
             assert (clf.input_feature_names == col_names)
 
 
