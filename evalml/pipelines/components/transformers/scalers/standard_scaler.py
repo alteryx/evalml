@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler as SkScaler
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
 )
 
 
@@ -13,14 +13,15 @@ class StandardScaler(Transformer):
     name = "Standard Scaler"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=0, **kwargs):
+    def __init__(self, random_state=None, random_seed=0, **kwargs):
         parameters = {}
         parameters.update(kwargs)
 
         scaler = SkScaler(**parameters)
         super().__init__(parameters=parameters,
                          component_obj=scaler,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def transform(self, X, y=None):
         X = _convert_to_woodwork_structure(X)

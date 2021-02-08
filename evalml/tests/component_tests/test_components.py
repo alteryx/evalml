@@ -111,7 +111,7 @@ class MockFitComponent(ComponentBase):
         parameters = {'param_a': param_a, 'param_b': param_b}
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=0)
+                         random_seed=0)
 
     def fit(self, X, y=None):
         pass
@@ -305,7 +305,7 @@ def test_component_fit(X_y_binary):
             est = MockEstimator()
             super().__init__(parameters=parameters,
                              component_obj=est,
-                             random_state=0)
+                             random_seed=0)
 
     est = MockComponent()
     assert isinstance(est.fit(X, y), ComponentBase)
@@ -325,7 +325,7 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     class MockTransformerWithFitTransformButError(Transformer):
         name = "Mock Transformer"
@@ -338,7 +338,7 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     class MockTransformerWithFitAndTransform(Transformer):
         name = "Mock Transformer"
@@ -354,7 +354,7 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     class MockTransformerWithOnlyFit(Transformer):
         name = "Mock Transformer"
@@ -367,7 +367,7 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     # convert data to pd DataFrame, because the component classes don't
     # standardize to pd DataFrame
@@ -597,7 +597,7 @@ def test_estimator_check_for_fit(X_y_binary):
 
         def __init__(self, parameters=None, component_obj=None, random_state=0):
             est = MockEstimatorObj()
-            super().__init__(parameters=parameters, component_obj=est, random_state=random_state)
+            super().__init__(parameters=parameters, component_obj=est, random_seed=random_state)
 
     X, y = X_y_binary
     est = MockEstimator()
@@ -627,7 +627,7 @@ def test_transformer_check_for_fit(X_y_binary):
 
         def __init__(self, parameters=None, component_obj=None, random_state=0):
             transformer = MockTransformerObj()
-            super().__init__(parameters=parameters, component_obj=transformer, random_state=random_state)
+            super().__init__(parameters=parameters, component_obj=transformer, random_seed=random_state)
 
     X, y = X_y_binary
     trans = MockTransformer()
@@ -845,7 +845,7 @@ def test_component_equality():
             parameters.update(kwargs)
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=random_state)
+                             random_seed=random_state)
 
         def fit(self, X, y=None):
             return self
@@ -959,7 +959,7 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
             est = MockEstimator()
             super().__init__(parameters=parameters,
                              component_obj=est,
-                             random_state=0)
+                             random_seed=0)
 
     assert MockComponent(agg_type="mean").fit(X, y)
     assert MockComponent(agg_type="moat", category="blue").fit(X, y)

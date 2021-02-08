@@ -8,7 +8,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
+from evalml.utils import SEED_BOUNDS, deprecate_arg, import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -36,8 +36,8 @@ class CatBoostClassifier(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=True,
-                 allow_writing_files=False, random_state=0, **kwargs):
-        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
+                 allow_writing_files=False, random_state=None, random_seed=0, **kwargs):
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,
@@ -57,7 +57,7 @@ class CatBoostClassifier(Estimator):
                                                     random_seed=random_seed)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)

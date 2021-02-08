@@ -176,10 +176,10 @@ def test_categorical_classification(X_y_categorical_classification):
 def test_random_state(X_y_binary):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_state=0, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_seed=0, n_jobs=1)
     automl.search()
 
-    automl_1 = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_state=0, n_jobs=1)
+    automl_1 = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_seed=0, n_jobs=1)
     automl_1.search()
     assert automl.rankings.equals(automl_1.rankings)
 
@@ -343,14 +343,14 @@ def test_max_time_units(X_y_binary):
 def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_seed=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_seed=0)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5,
                           allowed_model_families=['linear_model'], patience=2, tolerance=0.05,
-                          random_state=0, n_jobs=1)
+                          random_seed=0, n_jobs=1)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}

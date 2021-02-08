@@ -217,8 +217,8 @@ def dummy_classifier_estimator_class():
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
-        def __init__(self, a=1, b=0, random_state=0):
-            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed)
 
         def fit(self, X, y):
             return self
@@ -257,8 +257,8 @@ def dummy_regressor_estimator_class():
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
-        def __init__(self, a=1, b=0, random_state=0):
-            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed)
 
         def fit(self, X, y):
             return self
@@ -284,8 +284,8 @@ def dummy_time_series_regressor_estimator_class():
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
-        def __init__(self, a=1, b=0, random_state=0):
-            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed)
 
     return MockTimeSeriesRegressor
 

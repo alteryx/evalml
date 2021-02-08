@@ -4,6 +4,7 @@ from skopt.space import Integer, Real
 
 from .tuner import Tuner
 from .tuner_exceptions import NoParamsException
+from evalml.utils import deprecate_arg
 
 
 class GridSearchTuner(Tuner):
@@ -16,16 +17,18 @@ class GridSearchTuner(Tuner):
         >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
     """
 
-    def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_state=0):
+    def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_state=None, random_seed=0):
         """ Generate all of the possible points to search for in the grid
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
             n_points (int): The number of points to sample from along each dimension
                 defined in the ``space`` argument
-            random_state (int): Seed for random number generator. Unused in this class, defaults to 0.
+            random_state (int): Deprecated. Use random_seed instead.
+            random_seed (int): Seed for random number generator. Unused in this class, defaults to 0.
         """
-        super().__init__(pipeline_hyperparameter_ranges, random_state=random_state)
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         raw_dimensions = list()
         for dimension in self._search_space_ranges:
             # Categorical dimension

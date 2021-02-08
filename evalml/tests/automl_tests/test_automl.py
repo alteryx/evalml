@@ -286,7 +286,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],
-        'Random State': 0,
+        'Random Seed': 0,
         'n_jobs': search_params['n_jobs'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
@@ -434,7 +434,7 @@ def test_validate_data_check_n_splits():
     X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
                                         n_informative=3, n_redundant=2, random_state=0)
 
-    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_seed=42)
     automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
     with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
         automl.search()
@@ -463,7 +463,7 @@ def test_automl_str_no_param_search(X_y_binary):
             'Precision'],
         'Start Iteration Callback': 'None',
         'Add Result Callback': 'None',
-        'Random State': 0,
+        'Random Seed': 0,
         'n_jobs': '-1',
         'Optimize Thresholds': 'False'
     }
@@ -1807,6 +1807,7 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
     automl.search()
     assert automl._pipelines_per_batch == 2
     assert automl._automl_algorithm.pipelines_per_batch == 2
+    assert automl._automl_algorithm.pipelines_per_batch == 2
     assert total_pipelines(automl, 1, 2) == len(automl.full_rankings)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2, _pipelines_per_batch=10)
@@ -1831,7 +1832,7 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
             is_diff_random_state = not (random_seed == 42)
             self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_state
-            super().__init__(parameters, random_seed)
+            super().__init__(parameters, random_seed=random_seed)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=[DummyPipeline],
                           random_seed=42, max_iterations=10)

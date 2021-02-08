@@ -43,7 +43,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_time_series
 )
-from evalml.utils import get_logger
+from evalml.utils import get_logger, deprecate_arg
 from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 logger = get_logger(__file__)
@@ -168,7 +168,7 @@ def get_generated_pipeline_class(problem_type):
         raise ValueError("ProblemType {} not recognized".format(problem_type))
 
 
-def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
+def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=None, random_seed=0):
     """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
     untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
@@ -178,7 +178,8 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
-        random_state (int): Random seed used to intialize the pipeline.
+        random_state(int): Deprecated. Use random_seed instead.
+        random_seed (int): Random seed used to intialize the pipeline.
 
     Returns:
         Pipeline instance with component instances and specified estimator created from given random state.
@@ -189,6 +190,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         >>> pipeline.describe()
 
     """
+    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
     for i, component in enumerate(component_instances):
         if not isinstance(component, ComponentBase):
             raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
@@ -203,7 +205,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_state=random_state)
+    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_seed=random_seed)
 
 
 def generate_pipeline_code(element):
@@ -271,8 +273,8 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Classification Pipeline",
-                                             random_state=random_seed)
+                                             random_seed=random_seed)
     else:
         return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
-                                             random_state=random_seed)
+                                             random_seed=random_seed)

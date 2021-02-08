@@ -86,11 +86,11 @@ def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_bi
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
-def test_stacked_ensemble_does_not_overwrite_pipeline_random_state(mock_stack,
+def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed(mock_stack,
                                                                    logistic_regression_binary_pipeline_class):
-    input_pipelines = [logistic_regression_binary_pipeline_class(parameters={}, random_state=3),
-                       logistic_regression_binary_pipeline_class(parameters={}, random_state=4)]
-    clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, random_state=5, n_jobs=1)
+    input_pipelines = [logistic_regression_binary_pipeline_class(parameters={}, random_seed=3),
+                       logistic_regression_binary_pipeline_class(parameters={}, random_seed=4)]
+    clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, random_seed=5, n_jobs=1)
     estimators_used_in_ensemble = mock_stack.call_args[1]['estimators']
     assert clf.random_seed == 5
     assert estimators_used_in_ensemble[0][1].pipeline.random_seed == 3

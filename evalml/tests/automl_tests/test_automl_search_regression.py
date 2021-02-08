@@ -47,11 +47,11 @@ def test_init(X_y_regression):
 
 def test_random_state(X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_state=0,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_seed=0,
                           n_jobs=1)
     automl.search()
 
-    automl_1 = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_state=0,
+    automl_1 = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_seed=0,
                             n_jobs=1)
     automl_1.search()
 
@@ -61,7 +61,7 @@ def test_random_state(X_y_regression):
 
 def test_categorical_regression(X_y_categorical_regression):
     X, y = X_y_categorical_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_state=0,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_seed=0,
                           n_jobs=1)
     automl.search()
     assert not automl.rankings['score'].isnull().all()
@@ -97,7 +97,7 @@ def test_early_stopping(caplog, linear_regression_pipeline_class, X_y_regression
     patience = 2
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='mse', max_time='60 seconds',
                           patience=patience, tolerance=tolerance,
-                          allowed_model_families=['linear_model'], random_state=0, n_jobs=1)
+                          allowed_model_families=['linear_model'], random_seed=0, n_jobs=1)
 
     mock_results = {
         'search_order': [0, 1, 2],
@@ -149,7 +149,7 @@ def test_plot_iterations_max_time(X_y_regression):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     X, y = X_y_regression
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=10, random_state=1, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=10, random_seed=1, n_jobs=1)
     automl.search(show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]

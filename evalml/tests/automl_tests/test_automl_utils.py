@@ -85,7 +85,7 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     y = X.pop('target')
     random_state = 42
 
-    data_splitter = make_data_splitter(X, y, problem_type, n_splits=5, random_state=random_state)
+    data_splitter = make_data_splitter(X, y, problem_type, n_splits=5, random_seed=random_state)
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
@@ -129,7 +129,7 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
     y = X.pop('target')
 
     if large_data:
-        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)
+        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
     else:
         with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
-            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)
+            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)

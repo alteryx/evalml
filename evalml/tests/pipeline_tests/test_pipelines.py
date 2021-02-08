@@ -389,10 +389,10 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
         make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
 
-    imp = Imputer(numeric_impute_strategy='median', random_state=5)
-    est = RandomForestClassifier(random_state=7)
+    imp = Imputer(numeric_impute_strategy='median', random_seed=5)
+    est = RandomForestClassifier(random_seed=7)
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
-                                             random_state=15)
+                                             random_seed=15)
     assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
     assert [(c.random_seed == 15) for c in pipeline]
     assert pipeline.problem_type == ProblemTypes.BINARY
@@ -416,19 +416,20 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
         model_family = "foo"
         supported_problem_types = [ProblemTypes.BINARY]
         parameters = {'bar': 'baz'}
-    random_state = 42
-    pipeline = make_pipeline_from_components([DummyEstimator(random_state=3)], ProblemTypes.BINARY, random_state=random_state)
+    random_seed = 42
+    pipeline = make_pipeline_from_components([DummyEstimator(random_seed=3)], ProblemTypes.BINARY,
+                                             random_seed=random_seed)
     components_list = [c for c in pipeline]
     assert len(components_list) == 1
     assert isinstance(components_list[0], DummyEstimator)
-    assert components_list[0].random_seed == random_state
+    assert components_list[0].random_seed == random_seed
     expected_parameters = {'Dummy!': {'bar': 'baz'}}
     assert pipeline.parameters == expected_parameters
-    assert pipeline.random_seed == random_state
+    assert pipeline.random_seed == random_seed
 
     X, y = X_y_binary
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=42)
+                                                         random_seed=42)
     component_instances = [c for c in pipeline]
     new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
     pipeline.fit(X, y)
@@ -1113,7 +1114,7 @@ def test_no_default_parameters():
             'a': [0, 1, 2]
         }
 
-        def __init__(self, a, b=1, c='2', random_state=0):
+        def __init__(self, a, b=1, c='2', random_seed=0):
             self.a = a
             self.b = b
             self.c = c
@@ -1310,8 +1311,8 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         hyperparameter_ranges = {}
 
-        def __init__(self, random_state=0):
-            super().__init__(parameters={}, component_obj=None, random_state=random_state)
+        def __init__(self, random_seed=0):
+            super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator]
@@ -1417,7 +1418,7 @@ def test_clone_init(is_linear, linear_regression_pipeline_class, nonlinear_regre
             'normalize': True,
         }
     }
-    pipeline = pipeline_class(parameters=parameters, random_state=42)
+    pipeline = pipeline_class(parameters=parameters, random_seed=42)
     pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
     assert pipeline.random_seed == pipeline_clone.random_seed
@@ -1430,7 +1431,7 @@ def test_clone_fitted(is_linear, X_y_binary, logistic_regression_binary_pipeline
         pipeline_class = logistic_regression_binary_pipeline_class
     else:
         pipeline_class = nonlinear_binary_pipeline_class
-    pipeline = pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_state=42)
+    pipeline = pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42)
     pipeline.fit(X, y)
     X_t = pipeline.predict_proba(X)
 
@@ -1814,9 +1815,9 @@ def test_pipeline_equality(mock_fit, pipeline_class):
     # Test defaults
     assert MockPipeline(parameters={}) == MockPipeline(parameters={})
 
-    # Test random_state
-    assert MockPipeline(parameters={}, random_state=10) == MockPipeline(parameters={}, random_state=10)
-    assert MockPipeline(parameters={}, random_state=10) != MockPipeline(parameters={}, random_state=0)
+    # Test random_seed
+    assert MockPipeline(parameters={}, random_seed=10) == MockPipeline(parameters={}, random_seed=10)
+    assert MockPipeline(parameters={}, random_seed=10) != MockPipeline(parameters={}, random_seed=0)
 
     # Test parameters
     assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
@@ -1882,9 +1883,9 @@ def test_nonlinear_pipeline_equality(pipeline_class):
     # Test defaults
     assert MockPipeline(parameters={}) == MockPipeline(parameters={})
 
-    # Test random_state
-    assert MockPipeline(parameters={}, random_state=10) == MockPipeline(parameters={}, random_state=10)
-    assert MockPipeline(parameters={}, random_state=10) != MockPipeline(parameters={}, random_state=0)
+    # Test random_seed
+    assert MockPipeline(parameters={}, random_seed=10) == MockPipeline(parameters={}, random_seed=10)
+    assert MockPipeline(parameters={}, random_seed=10) != MockPipeline(parameters={}, random_seed=0)
 
     # Test parameters
     assert MockPipeline(parameters=parameters) != MockPipeline(parameters=different_parameters)
@@ -2082,13 +2083,13 @@ def test_generate_code_pipeline_json_errors():
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         model_family = ModelFamily.NONE
 
-        def __init__(self, random_arg=False, numpy_arg=[], random_state=0):
+        def __init__(self, random_arg=False, numpy_arg=[], random_seed=0):
             parameters = {'random_arg': random_arg,
                           'numpy_arg': numpy_arg}
 
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=random_state)
+                             random_seed=random_seed)
 
     class MockBinaryPipelineTransformer(BinaryClassificationPipeline):
         name = "Mock Binary Pipeline with Transformer"
@@ -2183,12 +2184,12 @@ def test_generate_code_pipeline_custom():
         name = "My Custom Transformer"
         hyperparameter_ranges = {}
 
-        def __init__(self, random_state=0):
+        def __init__(self, random_seed=0):
             parameters = {}
 
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=random_state)
+                             random_seed=random_seed)
 
     class CustomEstimator(Estimator):
         name = "My Custom Estimator"
@@ -2196,12 +2197,12 @@ def test_generate_code_pipeline_custom():
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         model_family = ModelFamily.NONE
 
-        def __init__(self, random_arg=False, random_state=0):
+        def __init__(self, random_arg=False, random_seed=0):
             parameters = {'random_arg': random_arg}
 
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=random_state)
+                             random_seed=random_seed)
 
     class MockBinaryPipelineTransformer(BinaryClassificationPipeline):
         name = "Mock Binary Pipeline with Transformer"

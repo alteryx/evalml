@@ -50,10 +50,10 @@ def dummy_binary_pipeline_classes():
             else:
                 hyperparameter_ranges = {'dummy_parameter': [hyperparameters]}
 
-            def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
+            def __init__(self, dummy_parameter='default', n_jobs=-1, random_seed=0, **kwargs):
                 super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
                                              'n_jobs': n_jobs},
-                                 component_obj=None, random_state=random_state)
+                                 component_obj=None, random_seed=random_seed)
 
         class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
             estimator = MockEstimator
@@ -325,7 +325,7 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
                               pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
                                                'Mock Classifier': {'dummy_parameter': parameters}},
-                              random_state=0)
+                              random_seed=0)
 
     next_batch = algo.next_batch()
     if isinstance(parameters, (Real, Integer)):
@@ -355,7 +355,7 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
                               pipeline_params={'Mock Classifier': {'dummy_parameter': "dummy", 'fake_param': 'fake'}},
-                              random_state=0)
+                              random_seed=0)
 
     next_batch = algo.next_batch()
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": "dummy", "n_jobs": -1, "fake_param": "fake"} for p in next_batch])

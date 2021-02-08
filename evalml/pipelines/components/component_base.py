@@ -25,7 +25,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     _default_parameters = None
 
     def __init__(self, parameters=None, component_obj=None, random_state=None, random_seed=0, **kwargs):
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._component_obj = component_obj
         self._parameters = parameters or {}
         self._is_fitted = False

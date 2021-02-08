@@ -5,6 +5,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
+from evalml.utils import deprecate_arg
 
 
 class StackedEnsembleRegressor(StackedEnsembleBase):
@@ -18,7 +19,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     _default_cv = KFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
-                 cv=None, n_jobs=-1, random_state=0, **kwargs):
+                 cv=None, n_jobs=-1, random_state=None, random_seed=0, **kwargs):
         """Stacked ensemble regressor.
 
         Arguments:
@@ -37,7 +38,8 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
                 Defaults to None.
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator, cv=cv,
-                         n_jobs=n_jobs, random_state=random_state, **kwargs)
+                         n_jobs=n_jobs, random_state=random_state, random_seed=random_seed, **kwargs)

@@ -75,7 +75,7 @@ class ComponentGraph:
             component_parameters = parameters.get(component_name, {})
 
             try:
-                new_component = component_class(**component_parameters, random_state=self.random_seed)
+                new_component = component_class(**component_parameters, random_seed=self.random_seed)
             except (ValueError, TypeError) as e:
                 self._is_instantiated = False
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)

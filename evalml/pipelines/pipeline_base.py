@@ -66,7 +66,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         if isinstance(self.component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:

@@ -514,7 +514,7 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         return filepath
 
 
-def deprecate_arg(old_arg, new_arg, old_value, new_value, version_of_deprecation):
+def deprecate_arg(old_arg, new_arg, old_value, new_value):
     """Decorator for methods that issues warnings for positional arguments.
 
     Using the keyword-only argument syntax in pep 3102, arguments after the
@@ -529,8 +529,7 @@ def deprecate_arg(old_arg, new_arg, old_value, new_value, version_of_deprecation
     """
     value_to_use = new_value
     if old_value is not None:
-        warnings.warn(f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}' "
-                      f"as of version {version_of_deprecation}. Passing '{old_arg}' in future "
-                      "versions will result in an error.")
+        warnings.warn(f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}'. "
+                      f"Passing '{old_arg}' in future versions will result in an error.")
         value_to_use = old_value
     return value_to_use

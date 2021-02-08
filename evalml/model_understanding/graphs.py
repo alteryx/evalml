@@ -30,7 +30,8 @@ from evalml.utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     import_or_raise,
-    jupyter_check
+    jupyter_check,
+    deprecate_arg
 )
 
 
@@ -348,7 +349,8 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     return {'importances_mean': np.mean(importances, axis=1)}
 
 
-def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
+def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None,
+                                     random_state=None, random_seed=0):
     """Calculates permutation importance for features.
 
     Arguments:
@@ -359,8 +361,8 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int): Seed for the random number generator. Defaults to 0.
-
+        random_state (None, int): Deprecated - use random_seed instead.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
         pd.DataFrame, Mean feature importance scores over 5 shuffles.
     """
@@ -369,17 +371,21 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     y = _convert_woodwork_types_wrapper(y.to_series())
 
+    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
     if pipeline._supports_fast_permutation_importance:
-        perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs, random_seed=random_state)
+        perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs,
+                                                       random_seed=random_seed)
     else:
         def scorer(pipeline, X, y):
             scores = pipeline.score(X, y, objectives=[objective])
             return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-        perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
+        perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs,
+                                                    random_state=random_seed)
     mean_perm_importance = perm_importance["importances_mean"]
     feature_names = list(X.columns)
     mean_perm_importance = list(zip(feature_names, mean_perm_importance))

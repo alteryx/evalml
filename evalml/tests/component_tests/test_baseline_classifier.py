@@ -52,7 +52,7 @@ def test_baseline_binary_mode(data_type, make_data_type):
 def test_baseline_binary_random(X_y_binary):
     X, y = X_y_binary
     values = np.unique(y)
-    clf = BaselineClassifier(strategy="random", random_state=0)
+    clf = BaselineClassifier(strategy="random", random_seed=0)
     clf.fit(X, y)
     assert clf.classes_ == [0, 1]
 
@@ -74,7 +74,7 @@ def test_baseline_binary_random_weighted(X_y_binary):
     percent_freq = counts.astype(float) / len(y)
     assert percent_freq.sum() == 1.0
 
-    clf = BaselineClassifier(strategy="random_weighted", random_state=0)
+    clf = BaselineClassifier(strategy="random_weighted", random_seed=0)
     clf.fit(X, y)
 
     assert clf.classes_ == [0, 1]
@@ -112,7 +112,7 @@ def test_baseline_multiclass_mode():
 def test_baseline_multiclass_random(X_y_multi):
     X, y = X_y_multi
     values = np.unique(y)
-    clf = BaselineClassifier(strategy="random", random_state=0)
+    clf = BaselineClassifier(strategy="random", random_seed=0)
     clf.fit(X, y)
 
     assert clf.classes_ == [0, 1, 2]
@@ -131,7 +131,7 @@ def test_baseline_multiclass_random_weighted(X_y_multi):
     values, counts = np.unique(y, return_counts=True)
     percent_freq = counts.astype(float) / len(y)
     assert percent_freq.sum() == 1.0
-    clf = BaselineClassifier(strategy="random_weighted", random_state=0)
+    clf = BaselineClassifier(strategy="random_weighted", random_seed=0)
     clf.fit(X, y)
 
     assert clf.classes_ == [0, 1, 2]

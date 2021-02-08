@@ -7,7 +7,8 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    pad_with_nans
+    pad_with_nans,
+    deprecate_arg
 )
 
 
@@ -23,7 +24,7 @@ class TimeSeriesBaselineEstimator(Estimator):
                                ProblemTypes.TIME_SERIES_MULTICLASS]
     predict_uses_y = True
 
-    def __init__(self, gap=1, random_state=0, **kwargs):
+    def __init__(self, gap=1, random_state=None, random_seed=0, **kwargs):
         """Baseline time series estimator that predicts using the naive forecasting approach.
 
         Arguments:
@@ -41,9 +42,10 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         parameters = {"gap": gap}
         parameters.update(kwargs)
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         if X is None:

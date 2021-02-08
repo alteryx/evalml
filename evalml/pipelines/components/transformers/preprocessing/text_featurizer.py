@@ -28,15 +28,14 @@ class TextFeaturizer(TextTransformer):
             random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed, "0.18.1")
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._trans = [nlp_primitives.DiversityScore,
                        nlp_primitives.MeanCharactersPerWord,
                        nlp_primitives.PolarityScore]
         self._features = None
-        self._lsa = LSA(text_columns=text_columns, random_state=None, random_seed=random_seed)
+        self._lsa = LSA(text_columns=text_columns, random_seed=random_seed)
         self._primitives_provenance = {}
         super().__init__(text_columns=text_columns,
-                         random_state=None,
                          random_seed=random_seed,
                          **kwargs)
 

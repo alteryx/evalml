@@ -21,7 +21,7 @@ class TextTransformer(Transformer):
         self._all_text_columns = text_columns or []
         super().__init__(parameters=parameters,
                          component_obj=component_obj,
-                         random_state=None,
+                         random_state=random_state,
                          random_seed=random_seed)
 
     def _get_text_columns(self, X):

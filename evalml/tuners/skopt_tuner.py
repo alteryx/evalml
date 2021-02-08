@@ -7,6 +7,7 @@ from .tuner import Tuner
 from .tuner_exceptions import ParameterError
 
 from evalml.utils.logger import get_logger
+from evalml.utils import deprecate_arg
 
 logger = get_logger(__file__)
 
@@ -14,13 +15,14 @@ logger = get_logger(__file__)
 class SKOptTuner(Tuner):
     """Bayesian Optimizer."""
 
-    def __init__(self, pipeline_hyperparameter_ranges, random_seed=0):
+    def __init__(self, pipeline_hyperparameter_ranges, random_state=None, random_seed=0):
         """Init SkOptTuner
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): A set of hyperparameter ranges corresponding to a pipeline's parameters
             random_state (int): The random state. Defaults to 0.
         """
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         self.opt = Optimizer(self._search_space_ranges, "ET", acq_optimizer="sampling", random_state=random_seed)
 
