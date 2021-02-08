@@ -14,8 +14,6 @@ class SMOTETomekTVSplit(BaseTVSplit):
         im = import_or_raise("imblearn.combine", error_msg=error_msg)
         self.stl = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_state)
         super().__init__(sampler=self.stl, test_size=test_size, random_state=random_state)
-        self.test_size = test_size
-        self.random_state = random_state
 
     def split(self, X, y):
         """Divides the data into training and testing sets.
@@ -51,8 +49,6 @@ class SMOTETomekCVSplit(BaseCVSplit):
         im = import_or_raise("imblearn.combine", error_msg=error_msg)
         self.stl = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_state)
         super().__init__(sampler=self.stl, n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        self.random_state = random_state
-        self.n_splits = n_splits
 
     def split(self, X, y):
         """Divides the data into cross-validation splits.

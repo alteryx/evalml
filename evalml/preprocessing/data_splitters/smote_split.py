@@ -14,8 +14,6 @@ class KMeansSMOTETVSplit(BaseTVSplit):
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         self.kmsmote = im.KMeansSMOTE(sampling_strategy=sampling_strategy, k_neighbors=k_neighbors, random_state=random_state, **kwargs)
         super().__init__(sampler=self.kmsmote, test_size=test_size, random_state=random_state)
-        self.test_size = test_size
-        self.random_state = random_state
 
     def split(self, X, y):
         """Divides the data into training and testing sets.
@@ -51,8 +49,6 @@ class KMeansSMOTECVSplit(BaseCVSplit):
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         self.kmsmote = im.KMeansSMOTE(sampling_strategy=sampling_strategy, k_neighbors=k_neighbors, random_state=random_state, **kwargs)
         super().__init__(sampler=self.kmsmote, n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-        self.random_state = random_state
-        self.n_splits = n_splits
 
     def split(self, X, y):
         """Divides the data into cross-validation splits.
