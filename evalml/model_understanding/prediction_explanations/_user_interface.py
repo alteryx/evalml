@@ -218,10 +218,15 @@ def _make_single_prediction_shap_table(pipeline, input_features, index_to_explai
 
     Returns:
         str: Table
+
+    Raises:
+        ValueError: if requested index results in a NaN in the computed features.
     """
     pipeline_features = pipeline.compute_estimator_features(input_features).to_dataframe()
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
-    shap_values = _compute_shap_values(pipeline, pipeline_features, training_data=pipeline_features_row)
+    if pipeline_features_row.isna().any(axis=None):
+        raise ValueError(f"Requested index ({index_to_explain}) produces NaN in features.")
+    shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features_row)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
     class_names = None
@@ -239,7 +244,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, index_to_explai
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
-    return table_maker(shap_values, normalized_shap_values, pipeline_features, top_k, include_shap_values)
+    return table_maker(shap_values, normalized_shap_values, pipeline_features_row, top_k, include_shap_values)
 
 
 class _SectionMaker(abc.ABC):

@@ -13,7 +13,7 @@ from evalml.model_understanding.prediction_explanations._report_creator_factory 
 from evalml.model_understanding.prediction_explanations._user_interface import (
     _make_single_prediction_shap_table
 )
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_regression
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
@@ -80,7 +80,10 @@ def cross_entropy(y_true, y_pred_proba):
 
 DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
                    ProblemTypes.MULTICLASS: cross_entropy,
-                   ProblemTypes.REGRESSION: abs_error}
+                   ProblemTypes.REGRESSION: abs_error,
+                   ProblemTypes.TIME_SERIES_BINARY: cross_entropy,
+                   ProblemTypes.TIME_SERIES_MULTICLASS: cross_entropy,
+                   ProblemTypes.TIME_SERIES_REGRESSION: abs_error}
 
 
 def explain_predictions(pipeline, input_features, indices_to_explain, top_k_features=3, include_shap_values=False,
@@ -109,6 +112,8 @@ def explain_predictions(pipeline, input_features, indices_to_explain, top_k_feat
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
+    if any([x < 0 or x >= len(input_features) for x in indices_to_explain]):
+        raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
     data = _ReportData(pipeline, input_features, y_true=None, y_pred=None,
                        y_pred_values=None, errors=None, index_list=indices_to_explain, metric=None)
 
@@ -161,7 +166,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         metric = DEFAULT_METRICS[pipeline.problem_type]
 
     try:
-        if pipeline.problem_type == ProblemTypes.REGRESSION:
+        if is_regression(pipeline.problem_type):
             y_pred = pipeline.predict(input_features).to_series()
             y_pred_values = None
             errors = metric(y_true, y_pred)

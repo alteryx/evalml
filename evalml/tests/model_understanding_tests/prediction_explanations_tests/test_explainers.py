@@ -15,7 +15,7 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions_best_worst
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_binary
-
+from evalml.pipelines import TimeSeriesRegressionPipeline, TimeSeriesBinaryClassificationPipeline
 
 def compare_two_tables(table_1, table_2):
     assert len(table_1) == len(table_2)
@@ -254,6 +254,15 @@ def test_explain_predictions_raises_pipeline_score_error():
 def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
         explain_predictions(None, pd.DataFrame(), indices_to_explain=[0])
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), indices_to_explain=[5])
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), indices_to_explain=[1, 5])
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_predictions(None, pd.DataFrame({"a": [0,1,2,3,4]}), indices_to_explain=[-1])
 
 
 def test_output_format_checked():
@@ -628,7 +637,6 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
 
     report = explain_predictions(pipeline, input_features, indices_to_explain=[0, 1], output_format=output_format)
     if output_format == "text":
-        # import pdb; pdb.set_trace()
         compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
     elif output_format == "dataframe":
         assert report.columns.tolist() == explain_predictions_answer.columns.tolist()
@@ -636,16 +644,16 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     else:
         assert report == explain_predictions_answer
 
-    # best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
-    #                                                    num_to_explain=1, output_format=output_format)
-    # if output_format == "text":
-    #     compare_two_tables(best_worst_report.splitlines(), answer.splitlines())
-    # elif output_format == "dataframe":
-    #     # Check dataframes equal without caring about column order
-    #     assert sorted(best_worst_report.columns.tolist()) == sorted(answer.columns.tolist())
-    #     pd.testing.assert_frame_equal(best_worst_report, answer[best_worst_report.columns])
-    # else:
-    #     assert best_worst_report == answer
+    best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
+                                                       num_to_explain=1, output_format=output_format)
+    if output_format == "text":
+        compare_two_tables(best_worst_report.splitlines(), answer.splitlines())
+    elif output_format == "dataframe":
+        # Check dataframes equal without caring about column order
+        assert sorted(best_worst_report.columns.tolist()) == sorted(answer.columns.tolist())
+        pd.testing.assert_frame_equal(best_worst_report, answer[best_worst_report.columns])
+    else:
+        assert best_worst_report == answer
 
 
 
@@ -718,6 +726,28 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
         compare_two_tables(best_worst_report.splitlines(), regression_custom_metric_answer.splitlines())
     else:
         assert best_worst_report == answer
+
+def test_explain_predictions_time_series(X_y_regression):
+    X, y = X_y_regression
+
+    class TSPipeline(TimeSeriesRegressionPipeline):
+        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+        name = "time series pipeline"
+
+    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
+
+    tspipeline.fit(X,y)
+
+    exp = explain_predictions(pipeline=tspipeline, input_features=X,
+                                      indices_to_explain=[5,11], output_format="dict")
+
+    # Check that the computed features to be explained aren't NaN.
+    for exp_idx in range(len(exp["explanations"])):
+        assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
+
+    with pytest.raises(ValueError, match="Requested index"):
+        explain_predictions(pipeline=tspipeline, input_features=X,
+                            indices_to_explain=[1,11], output_format="text")
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
