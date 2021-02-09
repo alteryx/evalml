@@ -214,6 +214,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
+        output_format (str): The desired format of the output.  Can be "text", "dict", or "dataframe".
 
     Returns:
         str: Table
@@ -228,7 +229,10 @@ def _make_single_prediction_shap_table(pipeline, input_features, top_k=3, traini
 
     table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(),
                     ProblemTypes.BINARY: _BinarySHAPTable(class_names),
-                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(class_names)}
+                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(class_names),
+                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(),
+                    ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(class_names),
+                    ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(class_names)}
 
     table_maker_class = table_makers[pipeline.problem_type]
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,

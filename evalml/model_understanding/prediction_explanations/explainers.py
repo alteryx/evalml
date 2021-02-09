@@ -21,7 +21,7 @@ _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
-def explain_prediction(pipeline, input_features, top_k=3, training_data=None, include_shap_values=False,
+def explain_prediction(pipeline, input_features, index_to_keep, top_k=3, training_data=None, include_shap_values=False,
                        output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -30,6 +30,7 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
+        index_to_keep (int): The index of the row to explain in the input features.
         top_k (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
@@ -44,6 +45,7 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
         raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    input_features = pd.DataFrame(input_features.iloc[index_to_keep])
     if training_data is not None:
         training_data = infer_feature_types(training_data)
         training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())

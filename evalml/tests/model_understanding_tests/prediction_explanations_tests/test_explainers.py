@@ -27,12 +27,6 @@ test_features = [[1], np.ones((15, 1)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2
                  pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}), pd.DataFrame()]
 
 
-@pytest.mark.parametrize("test_features", test_features)
-def test_explain_prediction_value_error(test_features):
-    with pytest.raises(ValueError, match="features must be stored in a dataframe or datatable with exactly one row."):
-        explain_prediction(None, input_features=test_features, training_data=None)
-
-
 explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
                                =========================================================
                                  d           40.00          +++++
@@ -142,6 +136,23 @@ explain_prediction_multiclass_df_answer = pd.DataFrame({
                            {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
                            explain_predictions_regression_df_answer
                            ),
+                          (ProblemTypes.TIME_SERIES_REGRESSION,
+                           "text",
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           explain_prediction_answer),
+                          (ProblemTypes.TIME_SERIES_REGRESSION,
+                           "dict",
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           explain_prediction_regression_dict_answer
+                           ),
+                          (ProblemTypes.TIME_SERIES_REGRESSION,
+                           "dataframe",
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           explain_predictions_regression_df_answer
+                           ),
                           (ProblemTypes.BINARY,
                            "text",
                            [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
@@ -199,7 +210,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     if input_type == "ww":
         features = ww.DataTable(features)
         training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=training_data)
+    table = explain_prediction(pipeline, features, output_format=output_format, index_to_keep=0, top_k=2, training_data=training_data)
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
@@ -250,7 +261,7 @@ def test_output_format_checked():
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
         explain_predictions(None, input_features, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, training_data=None, output_format="xml")
+        explain_prediction(None, input_features=input_features, index_to_keep=0, training_data=None, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
