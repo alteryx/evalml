@@ -151,9 +151,9 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             assert pipeline.random_seed == algo.random_seed
             stack_args = mock_stack.call_args[1]['estimators']
             estimators_used_in_ensemble = [args[1] for args in stack_args]
-            random_states_the_same = [(estimator.pipeline.random_seed == algo.random_seed)
-                                      for estimator in estimators_used_in_ensemble]
-            assert all(random_states_the_same)
+            random_seeds_the_same = [(estimator.pipeline.random_seed == algo.random_seed)
+                                     for estimator in estimators_used_in_ensemble]
+            assert all(random_seeds_the_same)
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])

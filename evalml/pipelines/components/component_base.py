@@ -76,7 +76,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             A new instance of this component with identical parameters and random state.
         """
-        return self.__class__(**self.parameters, random_state=self.random_seed)
+        return self.__class__(**self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y=None):
         """Fits component to data
@@ -149,8 +149,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = self.random_seed == other.random_seed
-        if not random_state_eq:
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
             return False
         attributes_to_check = ['_parameters', '_is_fitted']
         for attribute in attributes_to_check:

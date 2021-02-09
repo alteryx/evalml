@@ -45,7 +45,7 @@ def test_init(X_y_regression):
     assert isinstance(automl.get_pipeline(0), PipelineBase)
 
 
-def test_random_state(X_y_regression):
+def test_random_seed(X_y_regression):
     X, y = X_y_regression
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_seed=0,
                           n_jobs=1)

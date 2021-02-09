@@ -1829,9 +1829,9 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
         num_pipelines_init = 0
 
         def __init__(self, parameters, random_seed):
-            is_diff_random_state = not (random_seed == 42)
+            is_diff_random_seed = not (random_seed == 42)
             self.__class__.num_pipelines_init += 1
-            self.__class__.num_pipelines_different_seed += is_diff_random_state
+            self.__class__.num_pipelines_different_seed += is_diff_random_seed
             super().__init__(parameters, random_seed=random_seed)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=[DummyPipeline],

@@ -173,7 +173,7 @@ def test_categorical_classification(X_y_categorical_classification):
     assert not automl.rankings['score'].isnull().all()
 
 
-def test_random_state(X_y_binary):
+def test_random_seed(X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_seed=0, n_jobs=1)

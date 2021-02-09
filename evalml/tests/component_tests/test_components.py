@@ -107,7 +107,7 @@ class MockFitComponent(ComponentBase):
     model_family = ModelFamily.NONE
     name = 'Mock Fit Component'
 
-    def __init__(self, param_a=2, param_b=10, random_state=0):
+    def __init__(self, param_a=2, param_b=10, random_seed=0):
         parameters = {'param_a': param_a, 'param_b': param_b}
         super().__init__(parameters=parameters,
                          component_obj=None,
@@ -496,10 +496,10 @@ def test_components_init_kwargs():
             assert component != component_with_different_kwargs
 
 
-def test_component_has_random_state():
+def test_component_has_random_seed():
     for component_class in all_components():
         params = inspect.signature(component_class.__init__).parameters
-        assert "random_state" in params
+        assert "random_seed" in params
 
 
 def test_transformer_transform_output_type(X_y_binary):
@@ -595,9 +595,9 @@ def test_estimator_check_for_fit(X_y_binary):
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
 
-        def __init__(self, parameters=None, component_obj=None, random_state=0):
+        def __init__(self, parameters=None, component_obj=None, random_seed=0):
             est = MockEstimatorObj()
-            super().__init__(parameters=parameters, component_obj=est, random_seed=random_state)
+            super().__init__(parameters=parameters, component_obj=est, random_seed=random_seed)
 
     X, y = X_y_binary
     est = MockEstimator()
@@ -625,9 +625,9 @@ def test_transformer_check_for_fit(X_y_binary):
     class MockTransformer(Transformer):
         name = "Mock Transformer"
 
-        def __init__(self, parameters=None, component_obj=None, random_state=0):
+        def __init__(self, parameters=None, component_obj=None, random_seed=0):
             transformer = MockTransformerObj()
-            super().__init__(parameters=parameters, component_obj=transformer, random_seed=random_state)
+            super().__init__(parameters=parameters, component_obj=transformer, random_seed=random_seed)
 
     X, y = X_y_binary
     trans = MockTransformer()
@@ -805,9 +805,9 @@ def test_estimators_accept_all_kwargs(estimator_class,
         params = estimator.parameters
     else:
         params = estimator._component_obj.get_params()
-    if estimator_class.model_family == ModelFamily.CATBOOST:
-        # Deleting because we call it random_state in our api
-        del params["random_seed"]
+    # if estimator_class.model_family == ModelFamily.CATBOOST:
+    #     # Deleting because we call it random_state in our api
+    #     del params["random_seed"]
     estimator_class(**params)
 
 
@@ -839,13 +839,14 @@ def test_component_equality():
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
-        def __init__(self, param_1=0, param_2=0, random_state=0, **kwargs):
+        def __init__(self, param_1=0, param_2=0, random_seed=0, random_state=None, **kwargs):
             parameters = {"param_1": param_1,
                           "param_2": param_2}
             parameters.update(kwargs)
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_seed=random_state)
+                             random_seed=random_seed,
+                             random_state=random_state)
 
         def fit(self, X, y=None):
             return self
@@ -856,7 +857,9 @@ def test_component_equality():
     # Test defaults
     assert MockComponent() == MockComponent()
 
-    # Test random_state
+    # Test random_state and random_seed
+    assert MockComponent(random_seed=10) == MockComponent(random_seed=10)
+    assert MockComponent(random_seed=10) != MockComponent(random_seed=0)
     assert MockComponent(random_state=10) == MockComponent(random_state=10)
     assert MockComponent(random_state=10) != MockComponent(random_state=0)
 
@@ -910,7 +913,7 @@ def test_mock_component_repr():
     component = MockFitComponent()
     assert repr(component) == 'MockFitComponent(param_a=2, param_b=10)'
 
-    component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
+    component_with_params = MockFitComponent(param_a=29, param_b=None, random_seed=42)
     assert repr(component_with_params) == 'MockFitComponent(param_a=29, param_b=None)'
 
     component_with_nan = MockFitComponent(param_a=np.nan, param_b=float('nan'))
