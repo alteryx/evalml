@@ -602,7 +602,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     report = explain_predictions(pipeline, input_features, output_format=output_format,
                                  training_data=input_features)
     if output_format == "text":
-_        compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
+        compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
     elif output_format == "dataframe":
         assert report.columns.tolist() == explain_predictions_answer.columns.tolist()
         pd.testing.assert_frame_equal(report, explain_predictions_answer[report.columns])

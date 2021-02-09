@@ -202,7 +202,7 @@ def test_estimator_manage_woodwork(X_y_binary):
     est = MockEstimator()
     X, y = est._manage_woodwork(X_ww, y=None)
     assert isinstance(X, pd.DataFrame)
-    assert y == None
+    assert y is None
 
     # Test y = not None case
     X, y = est._manage_woodwork(X_ww, y_ww)
