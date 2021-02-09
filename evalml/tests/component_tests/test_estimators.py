@@ -184,3 +184,27 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
     est_subclass.fit(X, y)
     est_subclass.predict(X)
     est_subclass.predict_proba(X)
+
+
+def test_estimator_manage_woodwork(X_y_binary):
+    X_df = pd.DataFrame({"foo": [1, 2, 3], "bar": [4, 5, 6], "baz": [7, 8, 9]})
+    X_ww = ww.DataTable(X_df)
+
+    y_series = pd.Series([1, 2, 3])
+    y_ww = ww.DataColumn(y_series)
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator Subclass"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+    # Test y = None case
+    est = MockEstimator()
+    X, y = est._manage_woodwork(X_ww, y=None)
+    assert isinstance(X, pd.DataFrame)
+    assert y is None
+
+    # Test y = not None case
+    X, y = est._manage_woodwork(X_ww, y_ww)
+    assert isinstance(X, pd.DataFrame)
+    assert isinstance(y, pd.Series)
