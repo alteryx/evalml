@@ -6,7 +6,7 @@ Release Notes
         * Added "dataframe" output format for prediction explanations :pr:`1781`
         * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
         * Sped up permutation importance for some pipelines :pr:`1762`
-        * Confirmed support for threshold tuning for binary time series classification problems :pr:``
+        * Confirmed support for threshold tuning for binary time series classification problems :pr:`1803`
     * Fixes
     * Changes
     * Documentation Changes
