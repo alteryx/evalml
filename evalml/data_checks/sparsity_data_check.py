@@ -4,7 +4,6 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.problem_types import (
-    ProblemTypes,
     handle_problem_types,
     is_multiclass
 )
