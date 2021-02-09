@@ -125,8 +125,8 @@ def _normalize_values_dict(values):
         >>> assert normalized_values == {"a": [1/5, -1/6, 3/7], "b": [3/5, -2/6, 0/7], "c": [-1/5, 3/6, 4/7]}
     """
 
-    sorted_feature_names = sorted(values)
     # Store in matrix of shape (len(values), n_features)
+    sorted_feature_names = list(values.keys())
     all_values = np.stack([values[feature_name] for feature_name in sorted_feature_names]).T
 
     if not all_values.any():
