@@ -9,6 +9,8 @@ class LeadScoring(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = math.inf
+    # Range (-Inf, Inf)
+    is_bounded_like_percentage = False
 
     def __init__(self, true_positives=1, false_positives=-1):
         """Create instance.
