@@ -88,12 +88,13 @@ def test_data_splitter_tv_default(splitter, sampler, data_type, make_data_type, 
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
-    for idx, tup in enumerate(data_splitter.split(X, y)): # for each (X, y) in split
-        for jdx, val in enumerate(tup): # for each array in (X, y) pair
-            if jdx == 1:
-                np.testing.assert_equal(val.to_series().values, initial_results[idx][jdx])
-            else:
-                np.testing.assert_equal(val.to_dataframe().values, initial_results[idx][jdx])
+    for i, j in enumerate(data_splitter.split(X, y)):
+        for idx, tup in enumerate(j):  # for each (X, y) in split
+            for jdx, val in enumerate(tup):  # for each array in (X, y) pair
+                if jdx == 1:
+                    np.testing.assert_equal(val.to_series().values, initial_results[idx][jdx])
+                else:
+                    np.testing.assert_equal(val.to_dataframe().values, initial_results[idx][jdx])
 
     X_data_split, y_data_split = data_splitter.transform(X, y)
     np.testing.assert_equal(X_transform, X_data_split.to_dataframe().values)
@@ -127,9 +128,9 @@ def test_data_splitter_cv_default(splitter, sampler, data_type, make_data_type, 
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
-    for i, j in enumerate(data_splitter.split(X, y)): # for each split
-        for idx, tup in enumerate(j): # for each (X, y) pair
-            for jdx, val in enumerate(tup): # for each array in (X, y)
+    for i, j in enumerate(data_splitter.split(X, y)):  # for each split
+        for idx, tup in enumerate(j):  # for each (X, y) pair
+            for jdx, val in enumerate(tup):  # for each array in (X, y)
                 if jdx == 1:
                     np.testing.assert_equal(val.to_series().values, initial_results[i][idx][jdx])
                 else:
