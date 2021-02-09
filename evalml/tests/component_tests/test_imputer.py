@@ -338,7 +338,7 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
 
 
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series([1., 2., 4.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
                                   pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
@@ -361,7 +361,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan,
         assert isinstance(transformed, ww.DataTable)
         if numeric_impute_strategy == "most_frequent":
             assert transformed.logical_types == {0: logical_type}
-        elif logical_type in [Categorical, NaturalLanguage]:
+        elif logical_type in [Categorical, NaturalLanguage] or not has_nan:
             assert transformed.logical_types == {0: logical_type}
         else:
             assert transformed.logical_types == {0: Double}

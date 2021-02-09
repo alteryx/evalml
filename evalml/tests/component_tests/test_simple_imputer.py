@@ -311,7 +311,8 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(X_df, h
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        if impute_strategy_to_use == "most_frequent":
+        if impute_strategy_to_use == "most_frequent" or not has_nan:
             assert transformed.logical_types == {0: logical_type}
         else:
             assert transformed.logical_types == {0: Double}
+ 
