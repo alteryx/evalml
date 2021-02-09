@@ -15,3 +15,4 @@ from .no_variance_data_check import NoVarianceDataCheck
 from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .high_variance_cv_data_check import HighVarianceCVDataCheck
 from .multicollinearity_data_check import MulticollinearityDataCheck
+from .sparsity_data_check import SparsityDataCheck
