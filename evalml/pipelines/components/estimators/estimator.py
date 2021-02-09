@@ -34,7 +34,7 @@ class Estimator(ComponentBase):
         self.input_feature_names = None
         super().__init__(parameters=parameters, component_obj=component_obj, random_state=random_state, **kwargs)
 
-    def _foo(self, X, y=None):
+    def _manage_woodwork(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if y is not None:
@@ -43,7 +43,7 @@ class Estimator(ComponentBase):
         return X, y
 
     def fit(self, X, y=None):
-        X, y = self._foo(X, y)
+        X, y = self._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
         self._component_obj.fit(X, y)
         return self
