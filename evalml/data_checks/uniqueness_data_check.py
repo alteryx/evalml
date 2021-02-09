@@ -41,7 +41,8 @@ class UniquenessDataCheck(DataCheck):
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
-            dict: dict with a DataCheckWarning if there are any highly-null columns.
+            dict: dict with a DataCheckWarning if there are any too unique or not
+                unique enough columns.
 
         Example:
             >>> import pandas as pd
