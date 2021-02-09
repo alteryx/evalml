@@ -3,7 +3,11 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    handle_problem_types,
+    is_multiclass,
+    is_regression
+)
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -68,7 +72,7 @@ class UniquenessDataCheck(DataCheck):
 
         res = X.apply(UniquenessDataCheck.uniqueness_score)
 
-        if self.problem_type == ProblemTypes.REGRESSION:
+        if is_regression(self.problem_type):
             not_unique_enough_cols = list(res.index[res < self.threshold])
             messages["warnings"].extend([DataCheckWarning(message=warning_not_unique_enough.format(col_name,
                                                                                                    self.problem_type),
@@ -76,7 +80,7 @@ class UniquenessDataCheck(DataCheck):
                                                           message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
                                                           details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                          for col_name in not_unique_enough_cols])
-        elif self.problem_type == ProblemTypes.MULTICLASS:
+        elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
             messages["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
                                                                                             self.problem_type),
