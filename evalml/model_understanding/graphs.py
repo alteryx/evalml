@@ -898,7 +898,7 @@ def visualize_decision_tree(estimator, max_depth=None, rotate=False, filled=Fals
         else:
             graph_format = 'pdf'  # If the filepath has no extension default to pdf
 
-    dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled)
+    dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled, feature_names=estimator.input_feature_names)
     source_obj = graphviz.Source(source=dot_data, format=graph_format)
     if filepath:
         source_obj.render(filename=path_and_name, cleanup=True)
