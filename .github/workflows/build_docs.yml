@@ -1,0 +1,36 @@
+name: Build Docs
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build_docs:
+    name: Build Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Install with Docs Requirements
+        run: |
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps-docs
+      - name: Install Pandoc and Graphviz
+        run: |
+          sudo apt update
+          sudo apt install -y pandoc
+          sudo apt install -y graphviz
+      - name: Build HTML Docs
+        run: |
+          source test_python/bin/activate
+          make -C docs/ html
+      - name: List Docs Built
+        run: ls docs/build/html

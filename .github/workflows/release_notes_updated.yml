@@ -1,0 +1,45 @@
+name: Release Notes Updated
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  release_notes_updated:
+    working-directory: ~/evalml/
+    docker:
+      - image: busybox:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    name: Release Notes Updated
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: env.BRANCH_REF
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
+        name: Check if release notes were updated
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
+      - run: | # debugging info
+          if [[ $(expr match "${BRANCH_REF}" "release_v[0-9.]\+") -gt 0 ]]; then
+            echo This is a release PR;
+          elif [[ $(expr match "${BRANCH_REF}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+            echo This is a dependency update PR;
+          else
+            echo This is a regular PR;
+          fi
+          echo "${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}"
+      - run: |
+          # for release PRs: if the branch name matches a release regex, skip the check
+          if [[ $(expr match "${BRANCH_REF}" "release_v[0-9.]\+") -gt 0 ]]; then
+            exit 0;
+          elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+            exit 0;
+          fi
+          cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
