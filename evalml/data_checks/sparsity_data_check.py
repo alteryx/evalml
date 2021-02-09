@@ -3,10 +3,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.problem_types import (
-    handle_problem_types,
-    is_multiclass
-)
+from evalml.problem_types import handle_problem_types, is_multiclass
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
