@@ -58,5 +58,11 @@ class DataCheckMessageCode(Enum):
     IS_MULTICOLLINEAR = "is_multicollinear"
     """Message code for when data is potentially multicollinear."""
 
+    NOT_UNIQUE_ENOUGH = "not_unique_enough"
+    """Message code for when data does not possess enough unique values."""
+
+    TOO_UNIQUE = "too_unique"
+    """Message code for when data possesses too many unique values."""
+
     TOO_SPARSE = "too sparse"
     """Message code for when multiclass data has values that are too sparsely populated."""
