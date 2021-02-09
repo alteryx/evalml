@@ -9,8 +9,8 @@ from evalml.problem_types import (
     is_regression
 )
 from evalml.utils.woodwork_utils import (
-    infer_feature_types,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    infer_feature_types
 )
 
 warning_not_unique_enough = "Input columns ({}) for {} problem type are not unique enough."
