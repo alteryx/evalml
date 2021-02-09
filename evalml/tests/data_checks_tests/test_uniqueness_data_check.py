@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -42,6 +43,13 @@ def test_uniqueness_data_check_uniqueness_score():
     # Test uniqueness for the same series, repeated.  Should be the score.
     # [0,1,2,0,1,2,0,1,2,0,0,1,2,0,1,2,0,1,2,0]
     data = pd.Series([x % 3 for x in range(10)] * 2)
+    scores = uniqueness_score(data)
+    ans = 0.66
+    assert scores == ans
+
+    # Test uniqueness for a simple series with NaN.
+    # [0,1,2,0,1,2,0,1,2,0]
+    data = pd.Series([x % 3 for x in range(10)] + [np.nan])
     scores = uniqueness_score(data)
     ans = 0.66
     assert scores == ans
