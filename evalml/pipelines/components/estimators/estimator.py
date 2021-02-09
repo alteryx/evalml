@@ -35,6 +35,7 @@ class Estimator(ComponentBase):
         super().__init__(parameters=parameters, component_obj=component_obj, random_state=random_state, **kwargs)
 
     def _manage_woodwork(self, X, y=None):
+        """Function to convert the input and target data to Pandas data structures."""
         X = _convert_to_woodwork_structure(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if y is not None:
