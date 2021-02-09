@@ -2228,3 +2228,14 @@ def test_automl_sampler_instance(mock_fit, mock_score, sampler, X_y_binary):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=sampler, random_state=0, n_jobs=1, max_iterations=1)
     automl.search()
     assert automl.data_splitter.__class__.__name__ == sampler.__class__.__name__
+
+
+@pytest.mark.parametrize("sampler", ["KMeansSMOTETVSplit", "SMOTETomekTVSplit"])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_data_splitter_overrides_sampler(mock_fit, mock_score, sampler, X_y_binary):
+    pytest.importorskip('imblearn', reason='Skipping data splitter test because imblearn not installed')
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=TrainingValidationSplit(), sampler=sampler, random_state=0, n_jobs=1, max_iterations=1)
+    automl.search()
+    assert automl.data_splitter.__class__.__name__ == "TrainingValidationSplit"

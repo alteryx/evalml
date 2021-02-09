@@ -139,7 +139,7 @@ class AutoMLSearch:
                 to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
                 this parameter will be ignored.
 
-            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
+            data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Takes precedence to the `sampler` arg. Defaults to StratifiedKFold.
 
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
@@ -173,7 +173,7 @@ class AutoMLSearch:
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
-            sampler (str or None): The sampler to use for the data splitting strategy. Defaults to None.
+            sampler (str or None): The sampler to use for the data splitting strategy. Ignored if `data_splitter` provided. Defaults to None.
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -679,7 +679,7 @@ class AutoMLSearch:
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            if not self.sampler and not getattr(self.data_splitter, "transform", None):
+            if not getattr(self.data_splitter, "transform", None):
                 X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
                 y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
             else:
