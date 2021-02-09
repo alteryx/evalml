@@ -3,9 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added uniqueness score data check :pr:`1785`
         * Added "dataframe" output format for prediction explanations :pr:`1781`
         * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
         * Sped up permutation importance for some pipelines :pr:`1762`
+        * Added sparsity data check :pr:`1797`
         * Confirmed support for threshold tuning for binary time series classification problems :pr:`1803`
     * Fixes
     * Changes
