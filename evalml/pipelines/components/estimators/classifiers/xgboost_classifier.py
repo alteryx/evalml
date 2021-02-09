@@ -46,13 +46,9 @@ class XGBoostClassifier(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X, y = super()._foo(X, y)
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
-        if y is not None:
-            y = _convert_to_woodwork_structure(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
         self._component_obj.fit(X, y)
         return self
 
