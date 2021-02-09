@@ -22,7 +22,4 @@ def test_standard_scaler_woodwork_custom_overrides_returned_by_components(X_df):
         std_scaler.fit(X, y)
         transformed = std_scaler.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        if logical_type == Categorical:
-            assert transformed.logical_types == {0: Categorical}
-        else:
-            assert transformed.logical_types == {0: Double}
+        assert transformed.logical_types == {0: Double}

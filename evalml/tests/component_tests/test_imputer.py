@@ -343,7 +343,8 @@ def test_imputer_multitype_with_one_bool(data_type, make_data_type):
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
                                   pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 @pytest.mark.parametrize("has_nan", [True, False])
-def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
+@pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent"])
+def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan, numeric_impute_strategy):
     y = pd.Series([1, 2, 1])
     if has_nan:
         X_df.iloc[len(X_df) - 1, 0] = np.nan
@@ -354,12 +355,13 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan)
         except TypeError:
             continue
 
-        imputer = Imputer()
+        imputer = Imputer(numeric_impute_strategy=numeric_impute_strategy)
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-
-        if logical_type == Integer:
-            assert transformed.logical_types == {0: Double}
-        else:
+        if numeric_impute_strategy == "most_frequent":
             assert transformed.logical_types == {0: logical_type}
+        elif logical_type in [Categorical, NaturalLanguage]:
+            assert transformed.logical_types == {0: logical_type}
+        else:
+            assert transformed.logical_types == {0: Double}
