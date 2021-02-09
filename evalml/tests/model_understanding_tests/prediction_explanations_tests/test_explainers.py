@@ -210,7 +210,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     if input_type == "ww":
         features = ww.DataTable(features)
         training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, index_to_keep=0, top_k=2, training_data=training_data)
+    table = explain_prediction(pipeline, features, output_format=output_format, index_to_explain=0, top_k=2, training_data=training_data)
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
@@ -527,6 +527,33 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                           (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, ["2020-10", "2020-11"]),
                           (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, ["2020-15", "2020-15"]),
                           (ProblemTypes.MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, ["2020-15", "2020-15"]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dataframe", regression_best_worst_answer_df, no_best_worst_answer_df, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, [4, 23]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, [4, 10]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dataframe", regression_best_worst_answer_df, no_best_worst_answer_df, [4, 10]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, ["foo", "bar"]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, ["foo", "bar"]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dataframe", regression_best_worst_answer_df, no_best_worst_answer_df, ["foo", "bar"]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "text", binary_best_worst_answer, no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dataframe", binary_best_worst_answer_df, no_best_worst_answer_df, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "text", binary_best_worst_answer, no_best_worst_answer, [7, 11]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, [7, 11]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dataframe", binary_best_worst_answer_df, no_best_worst_answer_df, [7, 11]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "text", binary_best_worst_answer, no_best_worst_answer, ["first", "second"]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, ["first", "second"]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dataframe", binary_best_worst_answer_df, no_best_worst_answer_df, ["first", "second"]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, [19, 103]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, [17, 235]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, [17, 235]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, ["2020-10", "2020-11"]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, ["2020-15", "2020-15"]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, ["2020-15", "2020-15"]),
                           ])
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
