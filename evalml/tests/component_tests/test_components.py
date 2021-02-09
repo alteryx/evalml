@@ -805,9 +805,6 @@ def test_estimators_accept_all_kwargs(estimator_class,
         params = estimator.parameters
     else:
         params = estimator._component_obj.get_params()
-    # if estimator_class.model_family == ModelFamily.CATBOOST:
-    #     # Deleting because we call it random_state in our api
-    #     del params["random_seed"]
     estimator_class(**params)
 
 

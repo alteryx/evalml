@@ -514,17 +514,16 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
 
 
 def deprecate_arg(old_arg, new_arg, old_value, new_value):
-    """Decorator for methods that issues warnings for positional arguments.
+    """Helper to raise warnings when a deprecated arg is used.
 
-    Using the keyword-only argument syntax in pep 3102, arguments after the
-    * will issue a warning when passed as a positional argument.
+    Arguments:
+        old_arg (str): Name of old/deprecated argument.
+        new_arg (str): Name of new argument.
+        old_value (Any): Value the user passed in for the old argument.
+        new_value (Any): Value the user passed in for the new argument.
 
-    Parameters
-    ----------
-    func : callable, default=None
-        Function to check arguments on.
-    version : callable, default="1.0 (renaming of 0.25)"
-        The version when positional arguments will result in error.
+    Returns:
+        old_value if not None, else new_value
     """
     value_to_use = new_value
     if old_value is not None:
