@@ -21,7 +21,7 @@ class BaseTVSplit(BaseCrossValidator):
         return 1
 
     def split(self, X, y):
-        """Splits and returns the data using the data sampler provided.
+        """Splits and returns the sampled training data using the data sampler provided.
 
         Arguments:
                 X (ww.DataTable): DataTable of points to split
@@ -60,7 +60,7 @@ class BaseCVSplit(StratifiedKFold):
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
 
     def split(self, X, y):
-        """Splits using K-fold cross-validation and returns the data using the data sampler provided.
+        """Splits using K-fold cross-validation and returns the sampled training data using the data sampler provided.
 
         Arguments:
                 X (ww.DataTable): DataTable of points to split
