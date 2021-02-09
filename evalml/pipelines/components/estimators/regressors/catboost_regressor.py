@@ -6,10 +6,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 
 class CatBoostRegressor(Estimator):
@@ -57,10 +54,8 @@ class CatBoostRegressor(Estimator):
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)
         cat_cols = list(X.select('category').columns)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self.input_feature_names = list(X.columns)
-        y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        X, y = super()._manage_woodwork(X, y)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 

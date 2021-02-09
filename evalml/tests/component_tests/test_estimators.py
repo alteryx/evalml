@@ -198,13 +198,13 @@ def test_estimator_manage_woodwork(X_y_binary):
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
 
-    # Test y = None case
+    # Test y is None case
     est = MockEstimator()
     X, y = est._manage_woodwork(X_ww, y=None)
     assert isinstance(X, pd.DataFrame)
     assert y is None
 
-    # Test y = not None case
+    # Test y is not None case
     X, y = est._manage_woodwork(X_ww, y_ww)
     assert isinstance(X, pd.DataFrame)
     assert isinstance(y, pd.Series)

@@ -4,11 +4,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_seed, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    _rename_column_names_to_numeric
-)
+from evalml.utils.gen_utils import _rename_column_names_to_numeric
 
 
 class XGBoostRegressor(Estimator):
@@ -45,13 +41,9 @@ class XGBoostRegressor(Estimator):
                          random_state=random_state)
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X, y = super()._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
-        if y is not None:
-            y = _convert_to_woodwork_structure(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
         self._component_obj.fit(X, y)
         return self
 
