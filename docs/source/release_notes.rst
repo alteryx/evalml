@@ -6,6 +6,7 @@ Release Notes
         * Added "dataframe" output format for prediction explanations :pr:`1781`
         * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
         * Sped up permutation importance for some pipelines :pr:`1762`
+        * Confirmed support for threshold tuning for binary time series classification problems :pr:``
     * Fixes
     * Changes
     * Documentation Changes
@@ -14,6 +15,7 @@ Release Notes
         * Moving some prs to the right section of the release notes :pr:`1789`
         * Tweak README.md. :pr:`1800`
         * Fixed back arrow on install page docs :pr:`1795`
+    * Testing Changes
 
 **v0.18.1 Feb. 1, 2021**
     * Enhancements

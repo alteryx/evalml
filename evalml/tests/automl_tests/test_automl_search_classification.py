@@ -765,3 +765,31 @@ def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary
     for i, row in a.rankings.iterrows():
         assert a.get_pipeline(row['id']).__class__ == pipeline
         assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
+
+
+@pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary'])
+@pytest.mark.parametrize("optimize", [True, False])
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
+def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binary_score, mock_predict_proba, mock_optimize_threshold,
+                                                     optimize, objective, X_y_binary):
+    X, y = X_y_binary
+    mock_binary_score.return_value = {objective: 0.4}
+    problem_type = 'time series binary'
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    mock_optimize_threshold.return_value = 0.62
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
+                          problem_configuration=configuration, objective=objective, optimize_thresholds=optimize,
+                          max_batches=2)
+    automl.search()
+    assert isinstance(automl.data_splitter, TimeSeriesSplit)
+    if optimize and objective == 'F1':
+        mock_optimize_threshold.assert_called()
+        assert automl.best_pipeline.threshold == 0.62
+    else:
+        mock_optimize_threshold.assert_not_called()
+        assert automl.best_pipeline.threshold == 0.5
