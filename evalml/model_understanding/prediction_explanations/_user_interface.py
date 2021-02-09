@@ -202,7 +202,7 @@ class _MultiClassSHAPTable(_TableMaker):
         return {"explanations": json_output}
 
 
-def _make_single_prediction_shap_table(pipeline, input_features, index_to_explain, top_k=3, training_data=None,
+def _make_single_prediction_shap_table(pipeline, input_features, index_to_explain, top_k=3,
                                        include_shap_values=False, output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -220,8 +220,8 @@ def _make_single_prediction_shap_table(pipeline, input_features, index_to_explai
         str: Table
     """
     pipeline_features = pipeline.compute_estimator_features(input_features).to_dataframe()
-    pipeline_features = pipeline_features.iloc[[index_to_explain]]
-    shap_values = _compute_shap_values(pipeline, pipeline_features, training_data)
+    pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
+    shap_values = _compute_shap_values(pipeline, pipeline_features, training_data=pipeline_features_row)
     normalized_shap_values = _normalize_shap_values(shap_values)
 
     class_names = None
@@ -372,8 +372,9 @@ class _SHAPTable(_SectionMaker):
         Handling the differences in how the table is formatted between regression and classification problems
         is delegated to the _make_single_prediction_shap_table
         """
-        table = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
-                                                   training_data=self.training_data, top_k=self.top_k_features,
+        table = _make_single_prediction_shap_table(pipeline, input_features,
+                                                   index_to_explain=index,
+                                                   top_k=self.top_k_features,
                                                    include_shap_values=self.include_shap_values, output_format="text")
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
@@ -381,16 +382,18 @@ class _SHAPTable(_SectionMaker):
 
     def make_dict(self, index, pipeline, input_features):
         """Makes the SHAP table section formatted as a dictionary."""
-        json_output = _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
-                                                         training_data=self.training_data, top_k=self.top_k_features,
+        json_output = _make_single_prediction_shap_table(pipeline, input_features,
+                                                         index_to_explain=index,
+                                                         top_k=self.top_k_features,
                                                          include_shap_values=self.include_shap_values,
                                                          output_format="dict")
         return json_output
 
     def make_dataframe(self, index, pipeline, input_features):
         """Makes the SHAP table section formatted as a dataframe."""
-        return _make_single_prediction_shap_table(pipeline, input_features.iloc[index:(index + 1)],
-                                                  training_data=self.training_data, top_k=self.top_k_features,
+        return _make_single_prediction_shap_table(pipeline, input_features,
+                                                  index_to_explain=index,
+                                                  top_k=self.top_k_features,
                                                   include_shap_values=self.include_shap_values,
                                                   output_format="dataframe")
 

@@ -14,7 +14,7 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions,
     explain_predictions_best_worst
 )
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_regression, is_binary
 
 
 def compare_two_tables(table_1, table_2):
@@ -210,7 +210,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     if input_type == "ww":
         features = ww.DataTable(features)
         training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, index_to_explain=0, top_k=2, training_data=training_data)
+    table = explain_prediction(pipeline, features, output_format=output_format, index_to_explain=0, top_k=2)
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
@@ -253,15 +253,15 @@ def test_explain_predictions_raises_pipeline_score_error():
 
 def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
-        explain_predictions(None, pd.DataFrame())
+        explain_predictions(None, pd.DataFrame(), indices_to_explain=[0])
 
 
 def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
-        explain_predictions(None, input_features, output_format="bar")
+        explain_predictions(None, input_features, indices_to_explain=0, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, index_to_keep=0, training_data=None, output_format="xml")
+        explain_prediction(None, input_features=input_features, index_to_explain=0,  output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
@@ -593,7 +593,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
             answer["explanations"][1]["predicted_values"]["index_id"] = index_worst
         return answer
 
-    if problem_type == ProblemTypes.REGRESSION:
+    if is_regression(problem_type):
         abs_error_mock = MagicMock(__name__="abs_error")
         abs_error_mock.return_value = pd.Series([4., 1.], dtype="float64")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
@@ -601,7 +601,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         y_true = pd.Series([3, 2], index=custom_index)
         answer = _add_custom_index(answer, index_best=custom_index[1],
                                    index_worst=custom_index[0], output_format=output_format)
-    elif problem_type == ProblemTypes.BINARY:
+    elif is_binary(problem_type):
         pipeline.classes_.return_value = ["benign", "malignant"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
@@ -626,8 +626,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         answer = _add_custom_index(answer, index_best=custom_index[0],
                                    index_worst=custom_index[1], output_format=output_format)
 
-    report = explain_predictions(pipeline, input_features, indices_to_explain=[0,1], output_format=output_format,
-                                 training_data=input_features)
+    report = explain_predictions(pipeline, input_features, indices_to_explain=[0, 1], output_format=output_format)
     if output_format == "text":
         # import pdb; pdb.set_trace()
         compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
@@ -745,5 +744,5 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
                                                 num_to_explain=1, output_format="dict")
     assert json.loads(json.dumps(best_worst)) == best_worst
 
-    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
+    report = explain_predictions(pipeline, pd.DataFrame(X), output_format="dict", indices_to_explain=[0])
     assert json.loads(json.dumps(report)) == report
