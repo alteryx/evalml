@@ -8,8 +8,8 @@ from evalml.problem_types import (
     is_multiclass,
     is_regression
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils.woodwork_utils import (
+    infer_feature_types,
     _convert_woodwork_types_wrapper
 )
 
@@ -67,7 +67,7 @@ class UniquenessDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         res = X.apply(UniquenessDataCheck.uniqueness_score)

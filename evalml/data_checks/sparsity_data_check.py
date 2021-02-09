@@ -4,8 +4,8 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.problem_types import handle_problem_types, is_multiclass
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils.woodwork_utils import (
+    infer_feature_types,
     _convert_woodwork_types_wrapper
 )
 
@@ -63,7 +63,7 @@ class SparsityDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)
