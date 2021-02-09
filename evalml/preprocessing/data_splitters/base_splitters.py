@@ -35,7 +35,7 @@ class BaseTVSplit(BaseCrossValidator):
         X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
         X_train_resample, y_train_resample = _convert_numeric_dataset(X_train_resample, y_train_resample, to_pandas=False)
         X_test, y_test = _convert_numeric_dataset(X_test, y_test, to_pandas=False)
-        return iter(((X_train_resample, y_train_resample), (X_test, y_test)))
+        return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
 
     def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
