@@ -3,7 +3,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import ProblemTypes, handle_problem_types, is_multiclass
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -24,9 +24,10 @@ class SparsityDataCheck(DataCheck):
                 below which, a column exhibits sparsity.  Should be between 0 and 1.
             unique_count_threshold (int): The minimum number of times a unique
                 value has to be present in a column to not be considered "sparse."
+                Default is 10.
         """
         self.problem_type = handle_problem_types(problem_type)
-        if self.problem_type not in [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]:
+        if not is_multiclass(self.problem_type):
             raise ValueError("Sparsity is only defined for multiclass problem types.")
         self.threshold = threshold
         if threshold < 0 or threshold > 1:
@@ -36,7 +37,8 @@ class SparsityDataCheck(DataCheck):
             raise ValueError("Unique count threshold must be positive integer.")
 
     def validate(self, X, y=None):
-        """Calculates what percentage of each column's unique values fail to exceed the count threshold.
+        """Calculates what percentage of each column's unique values exceed the count threshold and compare
+        that percentage to the sparsity threshold stored in the class instance.
         Arguments:
             X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
             y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
@@ -77,14 +79,15 @@ class SparsityDataCheck(DataCheck):
     @staticmethod
     def sparsity_score(col, count_threshold=10):
         """This function calculates a sparsity score for the given value counts by calculating the percentage of
-        values that fail to exceed the count_threshold.
+        unique values that exceed the count_threshold.
         Arguments:
             col (pd.Series): Feature values.
             count_threshold (int): The number of instances below which a value is considered sparse.
+                Default is 10.
         Returns:
-            (float): Sparsity score, or the percentage of the unique values that fail to exceed count_threshold.
+            (float): Sparsity score, or the percentage of the unique values that exceed count_threshold.
         """
         counts = col.value_counts()
-        score = 1 - (sum(counts <= count_threshold) / counts.size)
+        score = sum(counts > count_threshold) / counts.size
 
         return score

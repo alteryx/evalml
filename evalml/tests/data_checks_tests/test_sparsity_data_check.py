@@ -43,9 +43,22 @@ def test_sparsity_data_check_init():
 
 def test_sparsity_data_check_sparsity_score():
     # Application to a Series
+    # Here, only 0 exceedes the count_threshold of 3.  0 is 1/3 unique values.  So the score is 1/3.
     data = pd.Series([x % 3 for x in range(10)])  # [0,1,2,0,1,2,0,1,2,0]
     scores = SparsityDataCheck.sparsity_score(data, count_threshold=3)
     assert round(scores, 6) == round(1 / 3, 6), "Sparsity Series check failed."
+
+    # Another application to a Series
+    # Here, 1 exceeds the count_threshold of 3.  1 is 1/1 unique values, so the score is 1.
+    data = pd.Series([1, 1, 1, 1, 1, 1, 1, 1])
+    scores = SparsityDataCheck.sparsity_score(data, count_threshold=3)
+    assert scores == 1
+
+    # Another application to a Series
+    # Here, 1 does not exceed the count_threshold of 10.  1 is 1/1 unique values, so the score is 0.
+    data = pd.Series([1, 1, 1, 1, 1, 1, 1, 1])
+    scores = SparsityDataCheck.sparsity_score(data, count_threshold=10)
+    assert scores == 0
 
     # Application to an entire DataFrame
     data = pd.DataFrame({'most_sparse': [float(x) for x in range(10)],  # [0,1,2,3,4,5,6,7,8,9]
@@ -92,6 +105,6 @@ def test_sparsity_data_check_warnings():
             data_check_name=sparsity_data_check_name,
             message_code=DataCheckMessageCode.TOO_SPARSE,
             details={"column": "sparse",
-                     'sparsity_score': 0.33333333333333337}).to_dict()],
+                     'sparsity_score': 0.3333333333333333}).to_dict()],
         "errors": []
     }
