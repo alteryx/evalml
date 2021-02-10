@@ -819,7 +819,7 @@ def decision_tree_data_from_estimator(estimator):
         raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
                              "before using this estimator.")
     est = estimator._component_obj
-    feature_names = est.input_feature_names
+    feature_names = estimator.input_feature_names
     return _tree_parse(est, feature_names)
 
 

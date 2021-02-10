@@ -1217,7 +1217,7 @@ def test_decision_tree_data_from_estimator(fitted_tree_estimators):
     # TODO
     est_class, est_reg = fitted_tree_estimators
 
-    formatted_ = decision_tree_data_from_estimator(est_reg, feature_names=[f'Testing_{col_}' for col_ in range(est_reg._component_obj.n_features_)])
+    formatted_ = decision_tree_data_from_estimator(est_reg)
     tree_ = est_reg._component_obj.tree_
 
     assert isinstance(formatted_, OrderedDict)
