@@ -149,5 +149,5 @@ class InvalidTargetDataCheck(DataCheck):
                 messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices.",
                                                              data_check_name=self.name,
                                                              message_code=DataCheckMessageCode.MISMATCHED_INDICES,
-                                                             details={}).to_dict())
+                                                             details={"feature_index": X_df.index, "target_index": y_df.index}).to_dict())
         return messages

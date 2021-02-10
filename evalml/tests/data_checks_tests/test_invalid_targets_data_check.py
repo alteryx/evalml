@@ -27,7 +27,7 @@ def test_invalid_target_data_check_invalid_n_unique():
 
 
 def test_invalid_target_data_check_nan_error():
-    X = pd.DataFrame()
+    X = pd.DataFrame({"col": [1, 2, 3]})
     invalid_targets_check = InvalidTargetDataCheck("regression", get_default_primary_search_objective("regression"))
 
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": []}
@@ -41,15 +41,17 @@ def test_invalid_target_data_check_nan_error():
 
 
 def test_invalid_target_data_check_numeric_binary_classification_valid_float():
-    X = pd.DataFrame()
+    y = pd.Series([0.0, 1.0, 0.0, 1.0])
+    X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    assert invalid_targets_check.validate(X, y=pd.Series([0.0, 1.0, 0.0, 1.0])) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
 
 
 def test_invalid_target_data_check_numeric_binary_classification_error():
-    X = pd.DataFrame()
+    y = pd.Series([1, 5, 1, 5, 1, 1])
+    X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    assert invalid_targets_check.validate(X, y=pd.Series([1, 5, 1, 5, 1, 1])) == {
+    assert invalid_targets_check.validate(X, y) == {
         "warnings": [DataCheckWarning(
             message="Numerical binary classification target classes must be [0, 1], got [1, 5] instead",
             data_check_name=invalid_targets_data_check_name,
@@ -57,7 +59,10 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
             details={"target_values": [1, 5]}).to_dict()],
         "errors": []
     }
-    assert invalid_targets_check.validate(X, y=pd.Series([0, 5, np.nan, np.nan])) == {
+
+    y = pd.Series([0, 5, np.nan, np.nan])
+    X = pd.DataFrame({"col": range(len(y))})
+    assert invalid_targets_check.validate(X, y) == {
         "warnings": [DataCheckWarning(
             message="Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead",
             data_check_name=invalid_targets_data_check_name,
@@ -68,7 +73,10 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                   details={"num_null_rows": 2, "pct_null_rows": 50}).to_dict()]
     }
-    assert invalid_targets_check.validate(X, y=pd.Series([0, 1, 1, 0, 1, 2])) == {
+
+    y = pd.Series([0, 1, 1, 0, 1, 2])
+    X = pd.DataFrame({"col": range(len(y))})
+    assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
@@ -78,20 +86,24 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
 
 
 def test_invalid_target_data_check_multiclass_two_examples_per_class():
-    X = pd.DataFrame()
+    y = pd.Series([0] + [1] * 19 + [2] * 80)
+    X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("binary"))
     expected_message = "Target does not have at least two instances per class which is required for multiclass classification"
 
     # with 1 class not having min 2 instances
-    assert invalid_targets_check.validate(X, y=pd.Series([0] + [1] * 19 + [2] * 80)) == {
+    assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
                                   details={"least_populated_class_labels": [0]}).to_dict()]
     }
+
+    y = pd.Series([0] + [1] + [2] * 98)
+    X = pd.DataFrame({"col": range(len(y))})
     # with 2 classes not having min 2 instances
-    assert invalid_targets_check.validate(X, y=pd.Series([0] + [1] + [2] * 98)) == {
+    assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
@@ -102,13 +114,17 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
 
 @pytest.mark.parametrize("pd_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool'])
 def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
-    X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     y = pd.Series([0, 1, 0, 0, 1, 0, 1, 0])
     y = y.astype(pd_type)
+    X = pd.DataFrame({"col": range(len(y))})
+
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
+
     assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
 
     y = pd.Series(pd.date_range('2000-02-03', periods=5, freq='W'))
+    X = pd.DataFrame({"col": range(len(y))})
+
     unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
@@ -133,9 +149,9 @@ def test_invalid_target_y_none():
 
 def test_invalid_target_data_input_formats():
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    X = pd.DataFrame()
 
     # test empty pd.Series
+    X = pd.DataFrame()
     messages = invalid_targets_check.validate(X, pd.Series())
     assert messages == {
         "warnings": [],
@@ -145,7 +161,9 @@ def test_invalid_target_data_input_formats():
                                   details={"target_values": []}).to_dict()]
     }
     #  test Woodwork
-    messages = invalid_targets_check.validate(X, pd.Series([None, None, None, 0]))
+    y = pd.Series([None, None, None, 0])
+    X = pd.DataFrame({"col": range(len(y))})
+    messages = invalid_targets_check.validate(X, y)
     assert messages == {
         "warnings": [],
         "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
@@ -159,7 +177,10 @@ def test_invalid_target_data_input_formats():
     }
 
     #  test list
-    messages = invalid_targets_check.validate(X, [None, None, None, 0])
+    y = [None, None, None, 0]
+    X = pd.DataFrame({"col": range(len(y))})
+
+    messages = invalid_targets_check.validate(X, y)
     assert messages == {
         "warnings": [],
         "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
@@ -173,7 +194,10 @@ def test_invalid_target_data_input_formats():
     }
 
     # test np.array
-    messages = invalid_targets_check.validate(X, np.array([None, None, None, 0]))
+    y = np.array([None, None, None, 0])
+    X = pd.DataFrame({"col": range(len(y))})
+
+    messages = invalid_targets_check.validate(X, y)
     assert messages == {
         "warnings": [],
         "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
@@ -188,12 +212,12 @@ def test_invalid_target_data_input_formats():
 
 
 def test_invalid_target_data_check_n_unique():
-    X = pd.DataFrame()
-    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-
-    # Test default value of n_unique
     y = pd.Series(list(range(100, 200)) + list(range(200)))
     unique_values = y.value_counts().index.tolist()[:100]  # n_unique defaults to 100
+    X = pd.DataFrame({"col": range(len(y))})
+
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
+    # Test default value of n_unique
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
@@ -204,6 +228,8 @@ def test_invalid_target_data_check_n_unique():
 
     # Test number of unique values < n_unique
     y = pd.Series(range(20))
+    X = pd.DataFrame({"col": range(len(y))})
+
     unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
@@ -217,6 +243,8 @@ def test_invalid_target_data_check_n_unique():
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"),
                                                    n_unique=None)
     y = pd.Series(range(150))
+    X = pd.DataFrame({"col": range(len(y))})
+
     unique_values = y.value_counts().index.tolist()
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
@@ -325,7 +353,6 @@ def test_invalid_target_data_check_initialize_with_none_objective():
 @pytest.mark.parametrize("problem_type",
                          ['regression'])
 def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_type):
-    X = pd.DataFrame()
     y_categorical = pd.Series(["Peace", "Is", "A", "Lie"] * 100)
     y_mixed_cat_numeric = pd.Series(["Peace", 2, "A", 4] * 100)
     y_integer = pd.Series([1, 2, 3, 4])
@@ -339,15 +366,14 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
         details={}).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
-    assert invalid_targets_check.validate(X, y=y_categorical) == {"warnings": [], "errors": [data_check_error]}
-    assert invalid_targets_check.validate(X, y=y_mixed_cat_numeric) == {"warnings": [], "errors": [data_check_error]}
-    assert invalid_targets_check.validate(X, y=y_integer) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X, y=y_float) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X, y=y_numeric) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical) == {"warnings": [], "errors": [data_check_error]}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}), y=y_mixed_cat_numeric) == {"warnings": [], "errors": [data_check_error]}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_float))}), y=y_float) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_numeric))}), y=y_numeric) == {"warnings": [], "errors": []}
 
 
 def test_invalid_target_data_check_multiclass_problem_binary_data():
-    X = pd.DataFrame()
     y_multiclass = pd.Series([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3] * 25)
     y_binary = pd.Series([0, 1, 1, 1, 0, 0] * 25)
 
@@ -358,15 +384,14 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
         details={"num_classes": len(set(y_binary))}).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
-    assert invalid_targets_check.validate(X, y=y_multiclass) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X, y=y_binary) == {"warnings": [], "errors": [data_check_error]}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_multiclass))}), y=y_multiclass) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary) == {"warnings": [], "errors": [data_check_error]}
 
 
 def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
-    X = pd.DataFrame()
     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
-
     y_multiclass_high_classes = pd.Series(list(range(0, 100)) * 3)  # 100 classes, 300 samples, .33 class/sample ratio
+    X = pd.DataFrame({"col": range(len(y_multiclass_high_classes))})
     data_check_error = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
@@ -376,6 +401,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
                                                                               "errors": []}
 
     y_multiclass_med_classes = pd.Series(list(range(0, 5)) * 20)  # 5 classes, 100 samples, .05 class/sample ratio
+    X = pd.DataFrame({"col": range(len(y_multiclass_med_classes))})
     data_check_error = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
@@ -385,4 +411,5 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
                                                                              "errors": []}
 
     y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
+    X = pd.DataFrame({"col": range(len(y_multiclass_low_classes))})
     assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {"warnings": [], "errors": []}
