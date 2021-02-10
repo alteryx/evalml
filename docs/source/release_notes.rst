@@ -9,6 +9,7 @@ Release Notes
         * Sped up permutation importance for some pipelines :pr:`1762`
         * Added sparsity data check :pr:`1797`
         * Confirmed support for threshold tuning for binary time series classification problems :pr:`1803`
+        * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
     * Fixes
     * Changes
     * Documentation Changes
