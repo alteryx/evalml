@@ -5,6 +5,7 @@ Release Notes
     * Enhancements
         * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
+        * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
     * Fixes
     * Changes
     * Documentation Changes
