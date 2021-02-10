@@ -14,7 +14,6 @@ from evalml.utils import (
 )
 
 
-
 class CatBoostRegressor(Estimator):
     """
     CatBoost Regressor, a regressor that uses gradient-boosting on decision trees.

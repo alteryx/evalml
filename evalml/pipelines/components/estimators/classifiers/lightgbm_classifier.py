@@ -106,7 +106,7 @@ class LightGBMClassifier(Estimator):
         return y_encoded
 
     def fit(self, X, y=None):
-        X_encoded = _convert_to_woodwork_structure(X)
+        X_encoded = infer_feature_types(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
         self._component_obj.fit(X_encoded, y_encoded)
