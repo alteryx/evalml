@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:``
     * Fixes
     * Changes
     * Documentation Changes
