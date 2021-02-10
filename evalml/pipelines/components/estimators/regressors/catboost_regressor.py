@@ -14,6 +14,7 @@ from evalml.utils import (
 )
 
 
+
 class CatBoostRegressor(Estimator):
     """
     CatBoost Regressor, a regressor that uses gradient-boosting on decision trees.
@@ -59,11 +60,8 @@ class CatBoostRegressor(Estimator):
     def fit(self, X, y=None):
         X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
-        y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
-
+        self.input_feature_names = list(X.columns)
+        X, y = super()._manage_woodwork(X, y)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
