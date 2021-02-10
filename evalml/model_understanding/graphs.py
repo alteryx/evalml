@@ -804,12 +804,11 @@ def _tree_parse(est, feature_names):
     return recurse(0)
 
 
-def decision_tree_data_from_estimator(estimator, feature_names=None):
+def decision_tree_data_from_estimator(estimator):
     """Return data for a fitted tree in a restructured format
 
     Arguments:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
-        feature_names (List): A list of feature names to replace column index values.
 
     Returns:
         OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
@@ -820,14 +819,7 @@ def decision_tree_data_from_estimator(estimator, feature_names=None):
         raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
                              "before using this estimator.")
     est = estimator._component_obj
-
-    if feature_names:
-        if not isinstance(feature_names, list):
-            feature_names = list(feature_names)
-        if len(feature_names) != est.n_features_:
-            raise ValueError("Length mismatch: Expected features has length {} but got list with length {}"
-                             .format(est.n_features_, len(feature_names)))
-
+    feature_names = est.input_feature_names
     return _tree_parse(est, feature_names)
 
 

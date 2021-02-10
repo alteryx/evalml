@@ -1213,18 +1213,8 @@ def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
         decision_tree_data_from_estimator(est_logit)
 
 
-def test_decision_tree_data_from_estimator_feature_length(fitted_tree_estimators):
-    est_class, _ = fitted_tree_estimators
-    with pytest.raises(ValueError, match="Length mismatch: Expected features has length {} but got list with length {}"
-                                         .format(est_class._component_obj.n_features_, 3)):
-        decision_tree_data_from_estimator(est_class, feature_names=["First", "Second", "Third"])
-
-    features_array = tuple([f'Testing_{col_}' for col_ in range(est_class._component_obj.n_features_)])
-    formatted_ = decision_tree_data_from_estimator(est_class, feature_names=features_array)
-    assert isinstance(formatted_, OrderedDict)
-
-
 def test_decision_tree_data_from_estimator(fitted_tree_estimators):
+    # TODO
     est_class, est_reg = fitted_tree_estimators
 
     formatted_ = decision_tree_data_from_estimator(est_reg, feature_names=[f'Testing_{col_}' for col_ in range(est_reg._component_obj.n_features_)])
