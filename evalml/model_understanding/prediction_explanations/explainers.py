@@ -13,8 +13,9 @@ from evalml.model_understanding.prediction_explanations._report_creator_factory 
 from evalml.model_understanding.prediction_explanations._user_interface import (
     _make_single_prediction_shap_table
 )
-from evalml.problem_types import ProblemTypes, is_regression
+from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils.gen_utils import drop_rows_with_nans
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
 _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
@@ -58,9 +59,9 @@ def abs_error(y_true, y_pred):
         y_pred (pd.Series): Predicted values.
 
     Returns:
-       pd.Series
+        np.ndarray
     """
-    return np.abs(y_true - y_pred)
+    return np.abs(y_true.values - y_pred.values)
 
 
 def cross_entropy(y_true, y_pred_proba):
@@ -71,11 +72,11 @@ def cross_entropy(y_true, y_pred_proba):
         y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
 
     Returns:
-       pd.Series
+        np.ndarray
     """
     n_data_points = y_pred_proba.shape[0]
     log_likelihood = -np.log(y_pred_proba.values[range(n_data_points), y_true.values.astype("int")])
-    return pd.Series(log_likelihood)
+    return log_likelihood
 
 
 DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
@@ -167,21 +168,31 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
 
     try:
         if is_regression(pipeline.problem_type):
-            y_pred = pipeline.predict(input_features).to_series()
+            if is_time_series(pipeline.problem_type):
+                y_pred = pipeline.predict(input_features, y=y_true).to_series()
+            else:
+                y_pred = pipeline.predict(input_features).to_series()
             y_pred_values = None
-            errors = metric(y_true, y_pred)
+            y_true_no_nan, y_pred_no_nan = drop_rows_with_nans(y_true, y_pred)
+            errors = metric(y_true_no_nan, y_pred_no_nan)
         else:
-            y_pred = pipeline.predict_proba(input_features).to_dataframe()
-            y_pred_values = pipeline.predict(input_features).to_series()
-            errors = metric(pipeline._encode_targets(y_true), y_pred)
+            if is_time_series(pipeline.problem_type):
+                y_pred = pipeline.predict_proba(input_features, y=y_true).to_dataframe()
+                y_pred_values = pipeline.predict(input_features, y=y_true).to_series()
+            else:
+                y_pred = pipeline.predict_proba(input_features).to_dataframe()
+                y_pred_values = pipeline.predict(input_features).to_series()
+            y_true_no_nan, y_pred_no_nan, y_pred_values_no_nan = drop_rows_with_nans(y_true, y_pred, y_pred_values)
+            errors = metric(pipeline._encode_targets(y_true_no_nan), y_pred_no_nan)
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])
         raise PipelineScoreError(exceptions={metric.__name__: (e, tb)}, scored_successfully={})
 
+    errors = pd.Series(errors, index=y_pred_no_nan.index)
     sorted_scores = errors.sort_values()
-    best = sorted_scores.index[:num_to_explain]
-    worst = sorted_scores.index[-num_to_explain:]
-    index_list = best.tolist() + worst.tolist()
+    best_indices = sorted_scores.index[:num_to_explain]
+    worst_indices = sorted_scores.index[-num_to_explain:]
+    index_list = best_indices.tolist() + worst_indices.tolist()
 
     data = _ReportData(pipeline, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 

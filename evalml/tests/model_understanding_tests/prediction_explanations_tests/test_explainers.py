@@ -14,8 +14,12 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions,
     explain_predictions_best_worst
 )
-from evalml.problem_types import ProblemTypes, is_regression, is_binary
-from evalml.pipelines import TimeSeriesRegressionPipeline, TimeSeriesBinaryClassificationPipeline
+from evalml.pipelines import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesRegressionPipeline
+)
+from evalml.problem_types import ProblemTypes, is_binary, is_regression
+
 
 def compare_two_tables(table_1, table_2):
     assert len(table_1) == len(table_2)
@@ -220,10 +224,10 @@ def test_explain_prediction(mock_normalize_shap_values,
 
 def test_error_metrics():
 
-    pd.testing.assert_series_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), pd.Series([3, 1, 3]))
-    pd.testing.assert_series_equal(cross_entropy(pd.Series([1, 0]),
+    np.testing.assert_array_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), np.array([3, 1, 3]))
+    np.testing.assert_array_equal(cross_entropy(pd.Series([1, 0]),
                                                  pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
-                                   pd.Series([-np.log(0.9), -np.log(0.2)]))
+                                   np.array([-np.log(0.9), -np.log(0.2)]))
 
 
 input_features_and_y_true = [([[1]], pd.Series([1]), "^Input features must be a dataframe with more than 10 rows!"),
@@ -261,7 +265,7 @@ def test_explain_predictions_value_errors():
         explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0,1,2,3,4]}), y=None, indices_to_explain=[-1])
+        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[-1])
 
 
 def test_output_format_checked():
@@ -269,7 +273,7 @@ def test_output_format_checked():
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
         explain_predictions(None, input_features, y=None, indices_to_explain=0, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, y=None, index_to_explain=0,  output_format="xml")
+        explain_prediction(None, input_features=input_features, y=None, index_to_explain=0, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
@@ -747,6 +751,27 @@ def test_explain_predictions_time_series(ts_data):
         explain_predictions(pipeline=tspipeline, input_features=X, y=y,
                             indices_to_explain=[1, 11], output_format="text")
 
+@pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"), (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
+def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, ts_data):
+    X, y = ts_data
+
+    if is_binary(pipeline_class.problem_type):
+        y = y % 2
+
+    class TSPipeline(pipeline_class):
+        component_graph = ["Delayed Feature Transformer", estimator]
+        name = "time series pipeline"
+
+    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
+
+    tspipeline.fit(X, y)
+
+    exp = explain_predictions_best_worst(pipeline=tspipeline, input_features=X, y_true=y,
+                                         output_format="dict")
+
+    # Check that the computed features to be explained aren't NaN.
+    for exp_idx in range(len(exp["explanations"])):
+        assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_json_serialization(problem_type, X_y_regression, linear_regression_pipeline_class,

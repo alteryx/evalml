@@ -226,7 +226,7 @@ def _make_single_prediction_shap_table(pipeline, input_features, y, index_to_exp
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     if pipeline_features_row.isna().any(axis=None):
         raise ValueError(f"Requested index ({index_to_explain}) produces NaN in features.")
-    shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features_row)
+    shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0))
     normalized_shap_values = _normalize_shap_values(shap_values)
 
     class_names = None
@@ -326,7 +326,7 @@ class _ClassificationPredictedValues(_SectionMaker):
                 "predicted_value": _make_json_serializable(self.predicted_values[index]),
                 "target_value": _make_json_serializable(y_true.iloc[index]),
                 "error_name": self.error_name,
-                "error_value": _make_json_serializable(scores.iloc[index]),
+                "error_value": _make_json_serializable(scores[index]),
                 "index_id": _make_json_serializable(dataframe_index.iloc[index])}
 
     def make_dataframe(self, index, y_pred, y_true, scores, dataframe_index):
@@ -352,7 +352,7 @@ class _RegressionPredictedValues(_SectionMaker):
         """Makes the predicted values section for regression problem best/worst reports formatted as a dictionary."""
         return {"probabilities": None, "predicted_value": round(y_pred.iloc[index], 3),
                 "target_value": round(y_true.iloc[index], 3), "error_name": self.error_name,
-                "error_value": round(scores.iloc[index], 3),
+                "error_value": round(scores[index], 3),
                 "index_id": _make_json_serializable(dataframe_index.iloc[index])}
 
     def make_dataframe(self, index, y_pred, y_true, scores, dataframe_index):
