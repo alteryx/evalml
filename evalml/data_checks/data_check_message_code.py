@@ -66,3 +66,6 @@ class DataCheckMessageCode(Enum):
 
     TOO_SPARSE = "too sparse"
     """Message code for when multiclass data has values that are too sparsely populated."""
+
+    MISMATCHED_INDICES = "mismatched_indices"
+    """Message code for when input target and features have mismatched indices."""
