@@ -267,6 +267,8 @@ class AutoMLSearch:
         # make everything ww objects
         self.X_train = _convert_to_woodwork_structure(X_train)
         self.y_train = _convert_to_woodwork_structure(y_train)
+        self.X_ensemble = None
+        self.y_ensemble = None
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_state=self.random_state)
@@ -387,6 +389,44 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
+    def _check_ensembling(self):
+        """Checks whether or not we can ensemble the search. Only run if `ensembling=True` is passed in."""
+        run_ensembling = self.ensembling
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
+            run_ensembling = False
+
+        if run_ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
+            if self.max_iterations < first_ensembling_iteration:
+                run_ensembling = False
+                logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
+            else:
+                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
+
+        if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
+            if run_ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    run_ensembling = False
+                    logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
+                else:
+                    logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
+
+                self.max_iterations = (1 + len(self.allowed_pipelines) +
+                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
+                                       num_ensemble_batches)
+            else:
+                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
+        if self.ensembling != run_ensembling:
+            logger.info(f"Changing ensembling to {run_ensembling}")
+            self.ensembling = run_ensembling
+        if self.ensembling:
+            self.X_train, self.X_ensemble, self.y_train, self.y_ensemble = split_data(self.X_train, self.y_train, problem_type=self.problem_type, test_size=0.25)
+
     def search(self, data_checks="auto", show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
@@ -436,35 +476,7 @@ class AutoMLSearch:
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
 
-        run_ensembling = self.ensembling
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
-            if self.max_iterations < first_ensembling_iteration:
-                run_ensembling = False
-                logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
-            else:
-                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
-
-        if self.max_batches and self.max_iterations is None:
-            self.show_batch_output = True
-            if run_ensembling:
-                ensemble_nth_batch = len(self.allowed_pipelines) + 1
-                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
-                if num_ensemble_batches == 0:
-                    logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
-                else:
-                    logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
-
-                self.max_iterations = (1 + len(self.allowed_pipelines) +
-                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
-                                       num_ensemble_batches)
-            else:
-                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
+        self._check_ensembling()
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -483,7 +495,7 @@ class AutoMLSearch:
             n_jobs=self.n_jobs,
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling,
+            ensembling=self.ensembling,
             pipeline_params=pipeline_params
         )
 
@@ -664,9 +676,14 @@ class AutoMLSearch:
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
-
-        X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
-        y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
+        if pipeline.model_family == ModelFamily.ENSEMBLE and self.ensembling:
+            X_input = self.X_ensemble
+            y_input = self.y_ensemble
+        else:
+            X_input = self.X_train
+            y_input = self.y_train
+        X_pd = _convert_woodwork_types_wrapper(X_input.to_dataframe())
+        y_pd = _convert_woodwork_types_wrapper(y_input.to_series())
         for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):
 
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
@@ -674,11 +691,11 @@ class AutoMLSearch:
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
-            y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
+            X_train, X_valid = X_input.iloc[train], X_input.iloc[valid]
+            y_train, y_valid = y_input.iloc[train], y_input.iloc[valid]
             if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                diff_train = set(np.setdiff1d(self.y_train.to_series(), y_train.to_series()))
-                diff_valid = set(np.setdiff1d(self.y_train.to_series(), y_valid.to_series()))
+                diff_train = set(np.setdiff1d(y_input.to_series(), y_train.to_series()))
+                diff_valid = set(np.setdiff1d(y_input.to_series(), y_valid.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
                 if diff_string:

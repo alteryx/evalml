@@ -53,7 +53,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import TrainingValidationSplit
+from evalml.preprocessing import TrainingValidationSplit, split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 from evalml.utils.gen_utils import get_random_seed
@@ -1400,12 +1400,15 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
     pipeline_names = automl.rankings['pipeline_name']
     if max_iterations < _get_first_stacked_classifier_no():
         assert not pipeline_names.str.contains('Ensemble').any()
+        assert not automl.X_ensemble
     elif use_ensembling:
         assert pipeline_names.str.contains('Ensemble').any()
         assert f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration" in caplog.text
+        assert automl.X_ensemble
 
     else:
         assert not pipeline_names.str.contains('Ensemble').any()
+        assert not automl.X_ensemble
 
 
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
@@ -1463,6 +1466,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.RANDOM_FOREST], ensembling=True)
     automl.search(data_checks=None)
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
+    assert "Changing ensembling to False" in caplog.text
 
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
@@ -1474,7 +1478,8 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
-
+    assert not automl.X_ensemble
+    assert "Changing ensembling to False" in caplog.text
     # Check that ensembling runs when len(allowed_model_families) == 1 but len(allowed_pipelines) > 1
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
@@ -1482,6 +1487,8 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     pipeline_names = automl.rankings['pipeline_name']
     assert pipeline_names.str.contains('Ensemble').any()
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." not in caplog.text
+    assert automl.X_ensemble
+    assert "Changing ensembling to False" not in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1492,9 +1499,11 @@ def test_automl_max_iterations_less_than_ensembling_disabled(mock_pipeline_fit, 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations - 1, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
     automl.search(data_checks=None)
     assert f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {max_iterations} to run ensembling." in caplog.text
+    assert "Changing ensembling to False" in caplog.text
 
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
+    assert not automl.X_ensemble
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1505,9 +1514,11 @@ def test_automl_max_batches_less_than_ensembling_disabled(mock_pipeline_fit, moc
     automl.search(data_checks=None)
     first_ensemble_batch = 1 + len(automl.allowed_pipelines) + 1  # First batch + each pipeline batch
     assert f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {first_ensemble_batch} to run ensembling." in caplog.text
+    assert "Changing ensembling to False" in caplog.text
 
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
+    assert not automl.X_ensemble
 
 
 @pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
@@ -2177,3 +2188,27 @@ def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_mu
     for i, row in automl.rankings.iterrows():
         if 'Base' not in list(row['parameters'].keys())[0]:
             assert automl.get_pipeline(row['id']).random_state == random_state
+
+
+@pytest.mark.parametrize("ensembling", [True, False])
+@patch('evalml.automl.automl_search.split_data')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensembling, X_y_binary):
+    X, y = X_y_binary
+    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=0.25)
+    mock_split_data.return_value = (X_train, X_ensemble, y_train, y_ensemble)
+    # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=ensembling, train_best_pipeline=False, optimize_thresholds=False)
+    automl.search()
+    if ensembling:
+        assert automl.ensembling
+        # check that the X_train data is all used for the length
+        assert len(X_train) == (len(mock_fit.call_args_list[-2][0][0]) + len(mock_score.call_args_list[-2][0][0]))
+        # last call will be the stacking ensembler
+        assert len(X_ensemble) == (len(mock_fit.call_args_list[-1][0][0]) + len(mock_score.call_args_list[-1][0][0]))
+    else:
+        # verify that there is use nor creation of ensembling CV data
+        assert not automl.X_ensemble
+        for i in [-1, -2]:
+            assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
