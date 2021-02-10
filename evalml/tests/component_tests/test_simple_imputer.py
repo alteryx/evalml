@@ -315,4 +315,3 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(X_df, h
             assert transformed.logical_types == {0: logical_type}
         else:
             assert transformed.logical_types == {0: Double}
- 
