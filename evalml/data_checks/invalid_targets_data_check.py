@@ -145,7 +145,7 @@ class InvalidTargetDataCheck(DataCheck):
         if X is not None:
             X = _convert_to_woodwork_structure(X)
             X_df = X.to_dataframe()
-            if X_df.index != y_df.index:
+            if not X_df.index.equals(y_df.index):
                 messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices.",
                                                              data_check_name=self.name,
                                                              message_code=DataCheckMessageCode.MISMATCHED_INDICES,
