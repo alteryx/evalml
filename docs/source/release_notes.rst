@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
     * Fixes
     * Changes
     * Documentation Changes
