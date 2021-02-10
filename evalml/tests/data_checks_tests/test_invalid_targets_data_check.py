@@ -413,3 +413,20 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
     y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_low_classes))})
     assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {"warnings": [], "errors": []}
+
+
+def test_invalid_target_data_check_mismatched_indices():
+    X = pd.DataFrame({"col": [1, 2, 3]})
+    y_same_index = pd.Series([1, 2, 3])
+    y_diff_len = pd.Series([0])
+    y_diff_index = pd.Series([1, 2, 3], index=[1, 5, 10])
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
+    assert invalid_targets_check.validate(X, y_diff_len)) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y_diff_index)) == {
+        "warnings": [],
+        "errors": [DataCheckError(message="3 row(s) (100.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()]
+    }
+    # test Index vs RangeIndex
