@@ -7,7 +7,6 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,
-    _convert_woodwork_types_wrapper,
     get_random_seed,
     import_or_raise,
     infer_feature_types
