@@ -226,8 +226,8 @@ def test_error_metrics():
 
     np.testing.assert_array_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), np.array([3, 1, 3]))
     np.testing.assert_array_equal(cross_entropy(pd.Series([1, 0]),
-                                                 pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
-                                   np.array([-np.log(0.9), -np.log(0.2)]))
+                                                pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
+                                  np.array([-np.log(0.9), -np.log(0.2)]))
 
 
 input_features_and_y_true = [([[1]], pd.Series([1]), "^Input features must be a dataframe with more than 10 rows!"),
@@ -751,6 +751,7 @@ def test_explain_predictions_time_series(ts_data):
         explain_predictions(pipeline=tspipeline, input_features=X, y=y,
                             indices_to_explain=[1, 11], output_format="text")
 
+
 @pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"), (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
 def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, ts_data):
     X, y = ts_data
@@ -772,6 +773,7 @@ def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, t
     # Check that the computed features to be explained aren't NaN.
     for exp_idx in range(len(exp["explanations"])):
         assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
+
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_json_serialization(problem_type, X_y_regression, linear_regression_pipeline_class,
