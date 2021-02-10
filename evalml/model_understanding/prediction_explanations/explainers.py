@@ -21,7 +21,7 @@ _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
-def explain_prediction(pipeline, input_features, index_to_explain, top_k=3, include_shap_values=False,
+def explain_prediction(pipeline, input_features, y, index_to_explain, top_k=3, include_shap_values=False,
                        output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -46,7 +46,7 @@ def explain_prediction(pipeline, input_features, index_to_explain, top_k=3, incl
 
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
-    return _make_single_prediction_shap_table(pipeline, input_features, index_to_explain, top_k, include_shap_values,
+    return _make_single_prediction_shap_table(pipeline, input_features, y, index_to_explain, top_k, include_shap_values,
                                               output_format=output_format)
 
 
@@ -86,7 +86,7 @@ DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
                    ProblemTypes.TIME_SERIES_REGRESSION: abs_error}
 
 
-def explain_predictions(pipeline, input_features, indices_to_explain, top_k_features=3, include_shap_values=False,
+def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_features=3, include_shap_values=False,
                         output_format="text"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
@@ -114,7 +114,7 @@ def explain_predictions(pipeline, input_features, indices_to_explain, top_k_feat
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     if any([x < 0 or x >= len(input_features) for x in indices_to_explain]):
         raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
-    data = _ReportData(pipeline, input_features, y_true=None, y_pred=None,
+    data = _ReportData(pipeline, input_features, y_true=y, y_pred=None,
                        y_pred_values=None, errors=None, index_list=indices_to_explain, metric=None)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions",

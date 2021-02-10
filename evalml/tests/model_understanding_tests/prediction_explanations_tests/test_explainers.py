@@ -209,8 +209,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     training_data = pd.DataFrame()
     if input_type == "ww":
         features = ww.DataTable(features)
-        training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, index_to_explain=0, top_k=2)
+    table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0, top_k=2)
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
@@ -253,24 +252,24 @@ def test_explain_predictions_raises_pipeline_score_error():
 
 def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
-        explain_predictions(None, pd.DataFrame(), indices_to_explain=[0])
+        explain_predictions(None, pd.DataFrame(), y=None, indices_to_explain=[0])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), indices_to_explain=[5])
+        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), indices_to_explain=[1, 5])
+        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0,1,2,3,4]}), indices_to_explain=[-1])
+        explain_predictions(None, pd.DataFrame({"a": [0,1,2,3,4]}), y=None, indices_to_explain=[-1])
 
 
 def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
-        explain_predictions(None, input_features, indices_to_explain=0, output_format="bar")
+        explain_predictions(None, input_features, y=None, indices_to_explain=0, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, index_to_explain=0,  output_format="xml")
+        explain_prediction(None, input_features=input_features, y=None, index_to_explain=0,  output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
@@ -635,7 +634,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         answer = _add_custom_index(answer, index_best=custom_index[0],
                                    index_worst=custom_index[1], output_format=output_format)
 
-    report = explain_predictions(pipeline, input_features, indices_to_explain=[0, 1], output_format=output_format)
+    report = explain_predictions(pipeline, input_features, y=y_true, indices_to_explain=[0, 1], output_format=output_format)
     if output_format == "text":
         compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
     elif output_format == "dataframe":
@@ -654,8 +653,6 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         pd.testing.assert_frame_equal(best_worst_report, answer[best_worst_report.columns])
     else:
         assert best_worst_report == answer
-
-
 
 
 regression_custom_metric_answer = """Test Pipeline Name
@@ -727,8 +724,9 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
     else:
         assert best_worst_report == answer
 
-def test_explain_predictions_time_series(X_y_regression):
-    X, y = X_y_regression
+
+def test_explain_predictions_time_series(ts_data):
+    X, y = ts_data
 
     class TSPipeline(TimeSeriesRegressionPipeline):
         component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
@@ -736,18 +734,18 @@ def test_explain_predictions_time_series(X_y_regression):
 
     tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
 
-    tspipeline.fit(X,y)
+    tspipeline.fit(X, y)
 
-    exp = explain_predictions(pipeline=tspipeline, input_features=X,
-                                      indices_to_explain=[5,11], output_format="dict")
+    exp = explain_predictions(pipeline=tspipeline, input_features=X, y=y,
+                              indices_to_explain=[5, 11], output_format="dict")
 
     # Check that the computed features to be explained aren't NaN.
     for exp_idx in range(len(exp["explanations"])):
         assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
 
     with pytest.raises(ValueError, match="Requested index"):
-        explain_predictions(pipeline=tspipeline, input_features=X,
-                            indices_to_explain=[1,11], output_format="text")
+        explain_predictions(pipeline=tspipeline, input_features=X, y=y,
+                            indices_to_explain=[1, 11], output_format="text")
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -774,5 +772,5 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
                                                 num_to_explain=1, output_format="dict")
     assert json.loads(json.dumps(best_worst)) == best_worst
 
-    report = explain_predictions(pipeline, pd.DataFrame(X), output_format="dict", indices_to_explain=[0])
+    report = explain_predictions(pipeline, pd.DataFrame(X), y=y, output_format="dict", indices_to_explain=[0])
     assert json.loads(json.dumps(report)) == report
