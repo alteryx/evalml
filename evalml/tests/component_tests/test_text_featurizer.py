@@ -277,6 +277,7 @@ def test_featurizer_with_custom_indices(text_df):
                                   pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 @pytest.mark.parametrize("with_text_col", [True, False])
 def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, with_text_col):
+    X_df = X_df.copy()
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, Boolean, NaturalLanguage]
     tf = TextFeaturizer(text_columns=[])
@@ -298,4 +299,4 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, 
             assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double,
                                                  'DIVERSITY_SCORE(text col)': Double, 'MEAN_CHARACTERS_PER_WORD(text col)': Double, 'POLARITY_SCORE(text col)': Double}
         else:
-            assert transformed.logical_types == {0: logical_type, 'text col': NaturalLanguage}
+            assert transformed.logical_types == {0: logical_type}
