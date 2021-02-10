@@ -12,7 +12,13 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     get_estimators
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_binary,
+    is_multiclass,
+    is_regression
+)
 from evalml.utils import get_random_state
 
 
@@ -21,22 +27,24 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
-            if problem_type == ProblemTypes.BINARY:
+            if is_binary(problem_type):
                 X, y = X_y_binary
-            elif problem_type == ProblemTypes.MULTICLASS:
+            elif is_multiclass(problem_type):
                 X, y = X_y_multi
-            elif problem_type == ProblemTypes.REGRESSION:
+            elif is_regression(problem_type):
                 X, y = X_y_regression
 
             X = get_random_state(clf.random_state).random((X.shape[0], len(string.printable)))
             col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
             X = pd.DataFrame(X, columns=col_names)
+            assert clf.input_feature_names is None
             clf.fit(X, y)
             assert len(clf.feature_importance) == len(X.columns)
             assert not np.isnan(clf.feature_importance).all().all()
             predictions = clf.predict(X).to_series()
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
+            assert (clf.input_feature_names == col_names)
 
 
 def test_binary_classification_estimators_predict_proba_col_order(helper_functions):
@@ -176,3 +184,27 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
     est_subclass.fit(X, y)
     est_subclass.predict(X)
     est_subclass.predict_proba(X)
+
+
+def test_estimator_manage_woodwork(X_y_binary):
+    X_df = pd.DataFrame({"foo": [1, 2, 3], "bar": [4, 5, 6], "baz": [7, 8, 9]})
+    X_ww = ww.DataTable(X_df)
+
+    y_series = pd.Series([1, 2, 3])
+    y_ww = ww.DataColumn(y_series)
+
+    class MockEstimator(Estimator):
+        name = "Mock Estimator Subclass"
+        model_family = ModelFamily.LINEAR_MODEL
+        supported_problem_types = ['binary']
+
+    # Test y is None case
+    est = MockEstimator()
+    X, y = est._manage_woodwork(X_ww, y=None)
+    assert isinstance(X, pd.DataFrame)
+    assert y is None
+
+    # Test y is not None case
+    X, y = est._manage_woodwork(X_ww, y_ww)
+    assert isinstance(X, pd.DataFrame)
+    assert isinstance(y, pd.Series)
