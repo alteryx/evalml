@@ -390,7 +390,7 @@ class AutoMLSearch:
                 leading_char = ""
 
     def _check_ensembling(self):
-        """Checks whether or not we can ensemble the search. Only run if `ensembling=True` is passed in."""
+        """Checks whether or not we can ensemble the search and set the max_iterations"""
         run_ensembling = self.ensembling
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
