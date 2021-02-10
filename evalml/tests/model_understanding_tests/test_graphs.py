@@ -1214,7 +1214,6 @@ def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
 
 
 def test_decision_tree_data_from_estimator(fitted_tree_estimators):
-    # TODO
     est_class, est_reg = fitted_tree_estimators
 
     formatted_ = decision_tree_data_from_estimator(est_reg)
