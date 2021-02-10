@@ -3,6 +3,14 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.18.2 Feb. 10, 2021**
+    * Enhancements
         * Added uniqueness score data check :pr:`1785`
         * Added "dataframe" output format for prediction explanations :pr:`1781`
         * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
