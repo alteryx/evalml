@@ -13,7 +13,7 @@ class SimpleImputer(Transformer):
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0, **kwargs):
+    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -31,7 +31,8 @@ class SimpleImputer(Transformer):
         self._all_null_cols = None
         super().__init__(parameters=parameters,
                          component_obj=imputer,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are

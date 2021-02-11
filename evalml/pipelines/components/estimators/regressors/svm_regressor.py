@@ -5,6 +5,7 @@ from skopt.space import Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import deprecate_arg
 
 
 class SVMRegressor(Estimator):
@@ -22,7 +23,8 @@ class SVMRegressor(Estimator):
                  C=1.0,
                  kernel="rbf",
                  gamma="scale",
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  **kwargs):
         parameters = {"C": C,
                       "kernel": kernel,
@@ -31,9 +33,10 @@ class SVMRegressor(Estimator):
 
         # SVR doesn't take a random_state arg
         svm_regressor = SVR(**parameters)
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(parameters=parameters,
                          component_obj=svm_regressor,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     @property
     def feature_importance(self):

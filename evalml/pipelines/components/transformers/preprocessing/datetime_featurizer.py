@@ -48,14 +48,15 @@ class DateTimeFeaturizer(Transformer):
                           "day_of_week": _extract_day_of_week,
                           "hour": _extract_hour}
 
-    def __init__(self, features_to_extract=None, encode_as_categories=False, random_state=0, **kwargs):
+    def __init__(self, features_to_extract=None, encode_as_categories=False, random_state=None, random_seed=0, **kwargs):
         """Extracts features from DateTime columns
 
         Arguments:
             features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour".
             encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
                 This allows OneHotEncoders to encode these features.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_state (int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
@@ -72,7 +73,8 @@ class DateTimeFeaturizer(Transformer):
         self.encode_as_categories = encode_as_categories
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         X = _convert_to_woodwork_structure(X)

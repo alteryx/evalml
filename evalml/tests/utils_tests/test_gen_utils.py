@@ -1,5 +1,6 @@
 import inspect
 import os
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -16,6 +17,7 @@ from evalml.utils.gen_utils import (
     _rename_column_names_to_numeric,
     classproperty,
     convert_to_seconds,
+    deprecate_arg,
     drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
@@ -626,3 +628,17 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
     assert os.path.exists(output_)
     assert isinstance(output_, str)
     assert os.path.basename(output_) == 'test_plot.png'
+
+
+def test_deprecate_arg():
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        assert deprecate_arg("foo", "bar", None, 5) == 5
+        assert not warn
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        assert deprecate_arg("foo", "bar", 4, 7) == 4
+        assert len(warn) == 1
+        assert str(warn[0].message).startswith("Argument 'foo' has been deprecated in favor of 'bar'")

@@ -29,8 +29,8 @@ from evalml.utils.gen_utils import infer_feature_types
 class DummyTransformer(Transformer):
     name = "Dummy Transformer"
 
-    def __init__(self, parameters={}, random_state=0):
-        super().__init__(parameters=parameters, component_obj=None, random_state=random_state)
+    def __init__(self, parameters={}, random_seed=0):
+        super().__init__(parameters=parameters, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y):
         return self
@@ -53,8 +53,8 @@ class DummyEstimator(Estimator):
     model_family = None
     supported_problem_types = None
 
-    def __init__(self, parameters={}, random_state=0):
-        super().__init__(parameters=parameters, component_obj=None, random_state=random_state)
+    def __init__(self, parameters={}, random_seed=0):
+        super().__init__(parameters=parameters, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y):
         return self

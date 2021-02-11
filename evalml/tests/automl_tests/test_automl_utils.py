@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
@@ -83,13 +85,13 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     X = pd.DataFrame({'col_0': list(range(n)),
                       'target': list(range(n))})
     y = X.pop('target')
-    random_state = 42
+    random_seed = 42
 
-    data_splitter = make_data_splitter(X, y, problem_type, n_splits=5, random_state=random_state)
+    data_splitter = make_data_splitter(X, y, problem_type, n_splits=5, random_seed=random_seed)
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
-    assert data_splitter.random_state == random_state
+    assert data_splitter.random_state == random_seed
 
 
 def test_make_data_splitter_parameters_time_series():
@@ -129,7 +131,17 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
     y = X.pop('target')
 
     if large_data:
-        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)
+        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
     else:
         with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
-            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_state=42)
+            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
+
+
+def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
+    X, y = X_y_binary
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        splitter = make_data_splitter(X, y, "binary", n_splits=5, shuffle=True, random_state=15)
+        assert splitter.random_state == 15
+        assert str(warn[0].message).startswith(
+            "Argument 'random_state' has been deprecated in favor of 'random_seed'")
