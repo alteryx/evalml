@@ -210,7 +210,6 @@ def test_explain_prediction(mock_normalize_shap_values,
     # By the time we call transform, we are looking at only one row of the input data.
     pipeline.compute_estimator_features.return_value = ww.DataTable(pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]}))
     features = pd.DataFrame({"a": [1], "b": [2]})
-    training_data = pd.DataFrame()
     if input_type == "ww":
         features = ww.DataTable(features)
     table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0, top_k=2)
@@ -225,9 +224,9 @@ def test_explain_prediction(mock_normalize_shap_values,
 def test_error_metrics():
 
     np.testing.assert_array_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), np.array([3, 1, 3]))
-    np.testing.assert_array_equal(cross_entropy(pd.Series([1, 0]),
-                                                pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
-                                  np.array([-np.log(0.9), -np.log(0.2)]))
+    np.testing.assert_allclose(cross_entropy(pd.Series([1, 0]),
+                                             pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
+                               np.array([-np.log(0.9), -np.log(0.2)]))
 
 
 input_features_and_y_true = [([[1]], pd.Series([1]), "^Input features must be a dataframe with more than 10 rows!"),
