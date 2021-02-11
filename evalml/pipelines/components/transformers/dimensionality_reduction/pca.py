@@ -3,10 +3,11 @@ from sklearn.decomposition import PCA as SkPCA
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
     _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
     deprecate_arg,
+    infer_feature_types,
     is_all_numeric
 )
 
@@ -39,7 +40,7 @@ class PCA(Transformer):
                          random_seed=random_seed)
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -47,19 +48,19 @@ class PCA(Transformer):
         return self
 
     def transform(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        if not is_all_numeric(X):
+        X_ww = infer_feature_types(X)
+        if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.transform(X)
         X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
-        return _convert_to_woodwork_structure(X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
-        if not is_all_numeric(X):
+        X_ww = infer_feature_types(X)
+        if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.fit_transform(X, y)
         X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
-        return _convert_to_woodwork_structure(X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)

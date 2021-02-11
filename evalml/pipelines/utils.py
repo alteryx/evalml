@@ -43,8 +43,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_time_series
 )
-from evalml.utils import deprecate_arg, get_logger
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import deprecate_arg, get_logger, infer_feature_types
 
 logger = get_logger(__file__)
 
@@ -125,8 +124,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
 
     """
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
 
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):

@@ -8,10 +8,11 @@ from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
     TextTransformer
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
     _convert_woodwork_types_wrapper,
-    deprecate_arg
+    _retain_custom_types_and_initalize_woodwork,
+    deprecate_arg,
+    infer_feature_types
 )
 
 
@@ -77,7 +78,7 @@ class TextFeaturizer(TextTransformer):
         """
         if len(self._all_text_columns) == 0:
             return self
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         text_columns = self._get_text_columns(X)
@@ -112,10 +113,10 @@ class TextFeaturizer(TextTransformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         if self._features is None or len(self._features) == 0:
-            return X
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+            return X_ww
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
@@ -124,7 +125,7 @@ class TextFeaturizer(TextTransformer):
         X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        return _convert_to_woodwork_structure(X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _get_feature_provenance(self):
         if not self._all_text_columns:

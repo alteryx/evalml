@@ -4,7 +4,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import infer_feature_types
 
 
 class MulticollinearityDataCheck(DataCheck):
@@ -35,7 +35,7 @@ class MulticollinearityDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         mutual_info_df = X.mutual_information()
         if mutual_info_df.empty:
             return messages

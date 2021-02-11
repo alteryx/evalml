@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import DateTimeFeaturizer
 
@@ -139,3 +147,41 @@ def test_datetime_featurizer_numpy_array_input():
     assert list(datetime_transformer.transform(X).columns) == ["0_year", "0_month", "0_day_of_week", "0_hour"]
     assert datetime_transformer.get_feature_names() == {'0_month': {'February': 1, 'June': 5, 'May': 4},
                                                         '0_day_of_week': {'Saturday': 6, 'Tuesday': 2}}
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+@pytest.mark.parametrize("with_datetime_col", [True, False])
+@pytest.mark.parametrize("encode_as_categories", [True, False])
+def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(with_datetime_col, encode_as_categories, X_df):
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime]
+    if with_datetime_col:
+        X_df['datetime col'] = pd.to_datetime(['20200101', '20200519', '20190607'], format='%Y%m%d')
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df.copy(), logical_types={0: logical_type})
+        except TypeError:
+            continue
+        datetime_transformer = DateTimeFeaturizer(encode_as_categories=encode_as_categories)
+        datetime_transformer.fit(X)
+        transformed = datetime_transformer.transform(X)
+        assert isinstance(transformed, ww.DataTable)
+
+        if with_datetime_col:
+            if encode_as_categories:
+                datetime_col_transformed = {'datetime col_year': Integer, 'datetime col_month': Categorical, 'datetime col_day_of_week': Categorical, 'datetime col_hour': Integer}
+            else:
+                datetime_col_transformed = {'datetime col_year': Integer, 'datetime col_month': Integer, 'datetime col_day_of_week': Integer, 'datetime col_hour': Integer}
+            assert all(item in transformed.logical_types.items() for item in datetime_col_transformed.items())
+
+        if logical_type == Datetime:
+            if encode_as_categories:
+                col_transformed = {'0_year': Integer, '0_month': Categorical, '0_day_of_week': Categorical, '0_hour': Integer}
+            else:
+                col_transformed = {'0_year': Integer, '0_month': Integer, '0_day_of_week': Integer, '0_hour': Integer}
+            assert all(item in transformed.logical_types.items() for item in col_transformed.items())
+        else:
+            assert transformed.logical_types[0] == logical_type

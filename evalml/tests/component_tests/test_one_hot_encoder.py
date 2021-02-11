@@ -3,13 +3,21 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    get_random_seed
+    get_random_seed,
+    infer_feature_types
 )
 
 
@@ -260,7 +268,7 @@ def test_more_top_n_unique_values():
     X_t = encoder.transform(X)
 
     # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
-    X = _convert_to_woodwork_structure(X)
+    X = infer_feature_types(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
@@ -295,7 +303,7 @@ def test_more_top_n_unique_values_large():
     X_t = encoder.transform(X)
 
     # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
-    X = _convert_to_woodwork_structure(X)
+    X = infer_feature_types(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
@@ -492,3 +500,26 @@ def test_ohe_column_names_unique():
     # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
     # category 1 in A_x_y gets mapped to A_x_y_1_2 because A_x_y_1_1 already exists
     assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_2", "A_x_y_y"}
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        ohe = OneHotEncoder()
+        ohe.fit(X, y)
+        transformed = ohe.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        if logical_type != Categorical:
+            assert transformed.logical_types == {0: logical_type}

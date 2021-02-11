@@ -1,6 +1,14 @@
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer
+)
 
 from evalml.pipelines import DelayedFeatureTransformer
 
@@ -217,9 +225,9 @@ def test_target_delay_when_gap_is_0(gap, delayed_features_data):
     assert_frame_equal(expected, transformer.fit_transform(None, y).to_dataframe())
 
 
-@pytest.mark.parametrize('data_type', ['ww', 'pd'])
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
+@pytest.mark.parametrize('data_type', ['ww', 'pd'])
 def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode_y_as_str, data_type, make_data_type,
                                                          delayed_features_data):
     X, y = delayed_features_data
@@ -272,3 +280,36 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
                            "feature_delay_1": X.feature.shift(1),
                            })
     assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y=None).to_dataframe())
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+@pytest.mark.parametrize('fit_transform', [True, False])
+def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(X_df, fit_transform):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, Datetime, Boolean]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
+        except TypeError:
+            continue
+        dft = DelayedFeatureTransformer(max_delay=1, gap=11)
+        if fit_transform:
+            transformed = dft.fit_transform(X, y)
+        else:
+            dft.fit(X, y)
+            transformed = dft.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        if logical_type in [Integer, Double, Categorical]:
+            assert transformed.logical_types == {0: logical_type,
+                                                 '0_delay_1': Double,
+                                                 'target_delay_0': Integer,
+                                                 'target_delay_1': Double}
+        else:
+            assert transformed.logical_types == {0: logical_type,
+                                                 '0_delay_1': logical_type,
+                                                 'target_delay_0': Integer,
+                                                 'target_delay_1': Double}

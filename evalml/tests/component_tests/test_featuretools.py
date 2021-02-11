@@ -5,6 +5,13 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer
+)
 
 from evalml.pipelines.components import DFSTransformer
 
@@ -98,3 +105,26 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         X_t = feature.transform(X_transform)
 
         assert_frame_equal(feature_matrix, X_t.to_dataframe())
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))])
+def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, Datetime, Boolean]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df.copy(), logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        dft = DFSTransformer()
+        dft.fit(X, y)
+        transformed = dft.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        if logical_type == Datetime:
+            assert transformed.logical_types == {'DAY(0)': Integer, 'MONTH(0)': Integer, 'WEEKDAY(0)': Integer, 'YEAR(0)': Integer}
+        else:
+            assert transformed.logical_types == {'0': logical_type}
