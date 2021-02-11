@@ -69,12 +69,7 @@ from evalml.pipelines.components.utils import (
     generate_component_code
 )
 from evalml.pipelines.utils import make_pipeline_from_components
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_regression
-)
+from evalml.problem_types import ProblemTypes
 
 
 @pytest.fixture(scope="module")
