@@ -152,10 +152,21 @@ class InvalidTargetDataCheck(DataCheck):
                 messages["warnings"].append(DataCheckWarning(message="Input target and features have different lengths",
                                                              data_check_name=self.name,
                                                              message_code=DataCheckMessageCode.MISMATCHED_LENGTHS,
-                                                             details={"features_length": X_length, "target_length": y_length}).to_dict())            
-            elif X_index != y_index:
-                messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices",
-                                                             data_check_name=self.name,
-                                                             message_code=DataCheckMessageCode.MISMATCHED_INDICES,
-                                                             details={"index_difference": set(X_index) - set(y_index)}).to_dict())
+                                                             details={"features_length": X_length, "target_length": y_length}).to_dict())
+
+            if X_index != y_index:
+                if set(X_index) == set(y_index):
+                    messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices order",
+                                                                 data_check_name=self.name,
+                                                                 message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
+                                                                 details={}).to_dict())
+                else:
+                    index_diff_not_in_X = list(set(y_index) - set(X_index))[:10]
+                    index_diff_not_in_y = list(set(X_index) - set(y_index))[:10]
+                    messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices",
+                                                                 data_check_name=self.name,
+                                                                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
+                                                                 details={"indices_not_in_features": index_diff_not_in_X,
+                                                                          "indices_not_in_target": index_diff_not_in_y}).to_dict())
+
         return messages

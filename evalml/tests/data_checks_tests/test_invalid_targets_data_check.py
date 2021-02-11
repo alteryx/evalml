@@ -418,20 +418,57 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
 def test_invalid_target_data_check_mismatched_indices():
     X = pd.DataFrame({"col": [1, 2, 3]})
     y_same_index = pd.Series([1, 0, 1])
-    y_diff_len = pd.Series([0, 1])
     y_diff_index = pd.Series([0, 1, 0], index=[1, 5, 10])
+    y_diff_index_order = pd.Series([0, 1, 0], index=[0, 2, 1])
+
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
     assert invalid_targets_check.validate(X=None, y=y_same_index) == {"warnings": [], "errors": []}
     assert invalid_targets_check.validate(X, y_same_index) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X, y_diff_len) == {"warnings": [DataCheckWarning(message="Input target and features have mismatched indices",
-                                                                                           data_check_name=invalid_targets_data_check_name,
-                                                                                           message_code=DataCheckMessageCode.MISMATCHED_INDICES,
-                                                                                           details={"feature_index": list(X.index), "target_index": list(y_diff_len.index)}).to_dict()],
-                                                             "errors": []}
+
+    X_index_missing = list(set(y_diff_index.index) - set(X.index))
+    y_index_missing = list(set(X.index) - set(y_diff_index.index))
     assert invalid_targets_check.validate(X, y_diff_index) == {
         "warnings": [DataCheckWarning(message="Input target and features have mismatched indices",
                                       data_check_name=invalid_targets_data_check_name,
                                       message_code=DataCheckMessageCode.MISMATCHED_INDICES,
-                                      details={"feature_index": list(X.index), "target_index": list(y_diff_index.index)}).to_dict()],
+                                      details={"indices_not_in_features": X_index_missing,
+                                               "indices_not_in_target": y_index_missing}).to_dict()],
         "errors": []
     }
+    assert invalid_targets_check.validate(X, y_diff_index_order) == {
+        "warnings": [DataCheckWarning(message="Input target and features have mismatched indices order",
+                                      data_check_name=invalid_targets_data_check_name,
+                                      message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
+                                      details={}).to_dict()],
+        "errors": []
+    }
+
+    # Test that we only store ten mismatches when there are more than 10 differences in indices found
+    X_large = pd.DataFrame({"col": range(20)})
+    y_more_than_ten_diff_indices = pd.Series([0, 1] * 10, index=range(20, 40))
+    X_index_missing = list(set(y_more_than_ten_diff_indices.index) - set(X.index))
+    y_index_missing = list(set(X_large.index) - set(y_more_than_ten_diff_indices.index))
+    assert invalid_targets_check.validate(X_large, y_more_than_ten_diff_indices) == {
+        "warnings": [DataCheckWarning(message="Input target and features have mismatched indices",
+                                      data_check_name=invalid_targets_data_check_name,
+                                      message_code=DataCheckMessageCode.MISMATCHED_INDICES,
+                                      details={"indices_not_in_features": X_index_missing[:10],
+                                               "indices_not_in_target": y_index_missing[:10]}).to_dict()],
+        "errors": []
+    }
+
+
+def test_invalid_target_data_check_different_lengths():
+    X = pd.DataFrame({"col": [1, 2, 3]})
+    y_diff_len = pd.Series([0, 1])
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
+    assert invalid_targets_check.validate(X, y_diff_len) == {"warnings": [DataCheckWarning(message="Input target and features have different lengths",
+                                                                                           data_check_name=invalid_targets_data_check_name,
+                                                                                           message_code=DataCheckMessageCode.MISMATCHED_LENGTHS,
+                                                                                           details={"features_length": len(X.index), "target_length": len(y_diff_len.index)}).to_dict(),
+                                                                          DataCheckWarning(message="Input target and features have mismatched indices",
+                                                                                           data_check_name=invalid_targets_data_check_name,
+                                                                                           message_code=DataCheckMessageCode.MISMATCHED_INDICES,
+                                                                                           details={"indices_not_in_features": [],
+                                                                                                    "indices_not_in_target": [2]}).to_dict()],
+                                                             "errors": []}
