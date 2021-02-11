@@ -30,9 +30,9 @@ class Estimator(ComponentBase):
     def supported_problem_types(cls):
         """Problem types this estimator supports"""
 
-    def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
+    def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         self.input_feature_names = None
-        super().__init__(parameters=parameters, component_obj=component_obj, random_state=random_state, **kwargs)
+        super().__init__(parameters=parameters, component_obj=component_obj, random_seed=random_seed, **kwargs)
 
     def _manage_woodwork(self, X, y=None):
         """Function to convert the input and target data to Pandas data structures."""

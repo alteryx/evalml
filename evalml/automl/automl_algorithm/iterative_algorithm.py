@@ -50,7 +50,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
-        self._random_state = random_seed
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -147,9 +146,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 for param_name, value in self._pipeline_params[component_class.name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
-                        component_parameters[param_name] = value.rvs(random_state=self._random_state)[0]
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
                     elif isinstance(value, Categorical):
-                        component_parameters[param_name] = value.rvs(random_state=self._random_state)
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)
                     elif isinstance(value, (list, tuple)):
                         component_parameters[param_name] = value[0]
                     else:

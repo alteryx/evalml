@@ -158,7 +158,7 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (None, int): Deprecated - use random_seed instead.
+            random_state (int): Deprecated - use random_seed instead.
 
             random_seed (int): Seed for the random number generator. Defaults to 0.
 

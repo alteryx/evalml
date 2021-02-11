@@ -1807,7 +1807,6 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
     automl.search()
     assert automl._pipelines_per_batch == 2
     assert automl._automl_algorithm.pipelines_per_batch == 2
-    assert automl._automl_algorithm.pipelines_per_batch == 2
     assert total_pipelines(automl, 1, 2) == len(automl.full_rankings)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2, _pipelines_per_batch=10)

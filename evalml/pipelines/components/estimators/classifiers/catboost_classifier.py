@@ -8,7 +8,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, deprecate_arg, import_or_raise
+from evalml.utils import deprecate_arg, import_or_raise
 from evalml.utils.gen_utils import (
     _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper
@@ -31,9 +31,6 @@ class CatBoostClassifier(Estimator):
     model_family = ModelFamily.CATBOOST
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
-
-    SEED_MIN = 0
-    SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=True,
                  allow_writing_files=False, random_state=None, random_seed=0, **kwargs):
