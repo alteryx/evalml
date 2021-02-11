@@ -68,3 +68,19 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             raise ValueError("problem_configuration is required for time series problem types")
         return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
                                max_delay=problem_configuration.get('max_delay'))
+
+
+def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):
+    """Tunes the threshold of a binary pipeline to the X and y thresholding data
+
+    Arguments:
+        pipeline (Pipeline): Pipeline instance to threshold
+        X_threshold_tuning (ww.DataTable): X data to tune pipeline to
+        y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
+    """
+    if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and self.objective.can_optimize_threshold:
+        pipeline.threshold = 0.5
+        if X_threshold_tuning:
+            y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+            y_predict_proba = y_predict_proba.iloc[:, 1]
+            pipeline.threshold = objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)

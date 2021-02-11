@@ -14,7 +14,8 @@ from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engines import SequentialEngine
 from evalml.automl.utils import (
     get_default_primary_search_objective,
-    make_data_splitter
+    make_data_splitter,
+    tune_binary_threshold
 )
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -521,31 +522,13 @@ class AutoMLSearch:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
                 X_train, y_train = self.X_train, self.y_train
-                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
+                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
+                   and self.optimize_thresholds and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_seed=self.random_seed)
                 self._best_pipeline.fit(X_train, y_train)
-                self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
-
-    def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
-        """Tunes the threshold of a binary pipeline to the X and y thresholding data
-
-        Arguments:
-            pipeline (Pipeline): Pipeline instance to threshold
-            X_threshold_tuning (ww.DataTable): X data to tune pipeline to
-            y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
-
-        Returns:
-            Trained pipeline instance
-        """
-        if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and is_binary(self.problem_type):
-            pipeline.threshold = 0.5
-            if X_threshold_tuning:
-                y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                y_predict_proba = y_predict_proba.iloc[:, 1]
-                pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-        return pipeline
+                tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
 
     def _check_stopping_condition(self, start):
         should_continue = True
