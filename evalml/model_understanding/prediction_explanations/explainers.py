@@ -42,16 +42,15 @@ def explain_prediction(pipeline, input_features, y, index_to_explain, top_k_feat
         str, dict, or pd.DataFrame - A report explaining the most positive/negative contributing features to the predictions.
 
     Raises:
-        ValueError: if input_features is not a one-row DataFrame or DataTable.
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     input_features = infer_feature_types(input_features)
-    if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
-        raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
 
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
+    if any([x < 0 or x >= len(input_features) for x in [index_to_explain]]):
+        raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
     return _make_single_prediction_shap_table(pipeline, input_features, y, index_to_explain, top_k_features, include_shap_values,
                                               output_format=output_format)
 
