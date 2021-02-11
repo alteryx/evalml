@@ -13,7 +13,7 @@ def test_model_family():
 
 
 def test_en_parameters():
-    clf = ElasticNetRegressor(alpha=0.75, l1_ratio=0.5, random_state=2)
+    clf = ElasticNetRegressor(alpha=0.75, l1_ratio=0.5, random_seed=2)
     expected_parameters = {
         "alpha": 0.75,
         "l1_ratio": 0.5,

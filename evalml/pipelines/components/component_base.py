@@ -8,8 +8,8 @@ from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     classproperty,
+    deprecate_arg,
     get_logger,
-    get_random_seed,
     infer_feature_types,
     log_subtitle,
     safe_repr
@@ -22,8 +22,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components."""
     _default_parameters = None
 
-    def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
-        self.random_state = get_random_seed(random_state)
+    def __init__(self, parameters=None, component_obj=None, random_state=None, random_seed=0, **kwargs):
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._component_obj = component_obj
         self._parameters = parameters or {}
         self._is_fitted = False
@@ -74,7 +74,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             A new instance of this component with identical parameters and random state.
         """
-        return self.__class__(**self.parameters, random_state=self.random_state)
+        return self.__class__(**self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y=None):
         """Fits component to data
@@ -147,8 +147,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = self.random_state == other.random_state
-        if not random_state_eq:
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
             return False
         attributes_to_check = ['_parameters', '_is_fitted']
         for attribute in attributes_to_check:

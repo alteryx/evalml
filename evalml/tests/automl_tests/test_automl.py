@@ -1,4 +1,5 @@
 import os
+import warnings
 from itertools import product
 from unittest.mock import MagicMock, patch
 
@@ -56,7 +57,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
-from evalml.utils.gen_utils import get_random_seed
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -286,7 +286,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],
-        'Random State': 0,
+        'Random Seed': 0,
         'n_jobs': search_params['n_jobs'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
@@ -434,7 +434,7 @@ def test_validate_data_check_n_splits():
     X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
                                         n_informative=3, n_redundant=2, random_state=0)
 
-    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_seed=42)
     automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
     with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
         automl.search()
@@ -463,7 +463,7 @@ def test_automl_str_no_param_search(X_y_binary):
             'Precision'],
         'Start Iteration Callback': 'None',
         'Add Result Callback': 'None',
-        'Random State': 0,
+        'Random Seed': 0,
         'n_jobs': '-1',
         'Optimize Thresholds': 'False'
     }
@@ -1731,8 +1731,8 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         hyperparameter_ranges = {}
 
-        def __init__(self, n_jobs=-1, random_state=0):
-            super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_state=random_state)
+        def __init__(self, n_jobs=-1, random_seed=0):
+            super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_seed=random_seed)
 
     class Pipeline1(BinaryClassificationPipeline):
         name = "Pipeline 1"
@@ -1818,9 +1818,8 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
+def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
 
-    expected_random_state = get_random_seed(42)
     X, y = X_y_binary
 
     class DummyPipeline(BinaryClassificationPipeline):
@@ -1828,15 +1827,14 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
         num_pipelines_different_seed = 0
         num_pipelines_init = 0
 
-        def __init__(self, parameters, random_state):
-            random_state = get_random_seed(random_state)
-            is_diff_random_state = not (random_state == expected_random_state)
+        def __init__(self, parameters, random_seed):
+            is_diff_random_seed = not (random_seed == 42)
             self.__class__.num_pipelines_init += 1
-            self.__class__.num_pipelines_different_seed += is_diff_random_state
-            super().__init__(parameters, random_state)
+            self.__class__.num_pipelines_different_seed += is_diff_random_seed
+            super().__init__(parameters, random_seed=random_seed)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=[DummyPipeline],
-                          random_state=expected_random_state, max_iterations=10)
+                          random_seed=42, max_iterations=10)
     automl.search()
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
 
@@ -2045,9 +2043,9 @@ def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, moc
         X, y = X_y_regression
 
     data_splitters = []
-    random_state = [0, 0, 1]
-    for state in random_state:
-        a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, random_state=state, max_iterations=1)
+    random_seed = [0, 0, 1]
+    for seed in random_seed:
+        a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, random_seed=seed, max_iterations=1)
         a.search()
         data_splitters.append([[set(train), set(test)] for train, test in a.data_splitter.split(X, y)])
     # append split from last random state again, should be referencing same datasplit object
@@ -2173,14 +2171,23 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 1
 
 
-@pytest.mark.parametrize("random_state", [0, 1, 9])
+@pytest.mark.parametrize("random_seed", [0, 1, 9])
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_automl_pipeline_random_state(mock_fit, mock_score, random_state, X_y_multi):
+def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_multi):
     X, y = X_y_multi
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=random_state, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_seed=random_seed, n_jobs=1)
     automl.search()
 
     for i, row in automl.rankings.iterrows():
         if 'Base' not in list(row['parameters'].keys())[0]:
-            assert automl.get_pipeline(row['id']).random_state == random_state
+            assert automl.get_pipeline(row['id']).random_seed == random_seed
+
+
+def test_automl_raises_deprecated_random_state_warning(X_y_multi):
+    X, y = X_y_multi
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
+        assert automl.random_seed == 10
+        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")

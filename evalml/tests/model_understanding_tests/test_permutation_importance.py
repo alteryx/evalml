@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -26,10 +27,10 @@ class DoubleColumns(Transformer):
     """
     name = "DoubleColumns"
 
-    def __init__(self, drop_old_columns=True, random_state=0):
+    def __init__(self, drop_old_columns=True, random_seed=0):
         self._provenance = {}
         self.drop_old_columns = drop_old_columns
-        super().__init__(parameters={}, component_obj=None, random_state=random_state)
+        super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y):
         return self
@@ -157,10 +158,10 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
     pipeline = pipeline_class(parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
-                                                   random_state=random_seed)
+                                                   random_seed=random_seed)
     mock_supports_fast_importance.return_value = False
     slow_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
-                                                   random_state=0)
+                                                   random_seed=0)
     pd.testing.assert_frame_equal(fast_scores, slow_scores)
 
 
@@ -207,7 +208,7 @@ def test_supports_fast_permutation_importance(pipeline_class):
 
 def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_state=42)
+    pipeline = linear_regression_pipeline_class(parameters={}, random_seed=42)
     with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
         calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
@@ -220,7 +221,7 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
     y = make_data_type(data_type, y)
 
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=42)
+                                                         random_seed=42)
     pipeline.fit(X, y)
     for objective in binary_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -232,7 +233,7 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
                                                multiclass_core_objectives):
     X, y = X_y_multi
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                             random_state=42)
+                                                             random_seed=42)
     pipeline.fit(X, y)
     for objective in multiclass_core_objectives:
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
@@ -244,7 +245,7 @@ def test_get_permutation_importance_regression(linear_regression_pipeline_class,
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
-                                                random_state=42)
+                                                random_seed=42)
     pipeline.fit(X, y)
 
     for objective in regression_core_objectives:
@@ -259,11 +260,25 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     X["correlated"] = y * 2
     X["not correlated"] = [-1, -1, -1, 0]
     y = y.astype(bool)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=42)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_seed=42)
     pipeline.fit(X, y)
-    importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=0)
+    importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_seed=0)
     assert list(importance.columns) == ["feature", "importance"]
     assert not importance.isnull().all().all()
     correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
     not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
     assert correlated_importance_val > not_correlated_importance_val
+
+
+@patch('evalml.model_understanding.graphs._fast_permutation_importance')
+def test_permutation_importance_raises_deprecated_random_state_warning(mock_fast_permutation_importance,
+                                                                       X_y_binary,
+                                                                       logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_seed=2)
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=15)
+        _, kwargs = mock_fast_permutation_importance.call_args_list[0]
+        assert kwargs['random_seed'] == 15
+        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")

@@ -15,14 +15,15 @@ class StandardScaler(Transformer):
     name = "Standard Scaler"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=0, **kwargs):
+    def __init__(self, random_state=None, random_seed=0, **kwargs):
         parameters = {}
         parameters.update(kwargs)
 
         scaler = SkScaler(**parameters)
         super().__init__(parameters=parameters,
                          component_obj=scaler,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def transform(self, X, y=None):
         X_ww = infer_feature_types(X)

@@ -5,7 +5,7 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import (
     _rename_column_names_to_numeric,
-    get_random_seed,
+    deprecate_arg,
     import_or_raise
 )
 
@@ -28,8 +28,9 @@ class XGBoostClassifier(Estimator):
     SEED_MIN = -2**31
     SEED_MAX = 2**31 - 1
 
-    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=0, **kwargs):
-        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
+    def __init__(self, eta=0.1, max_depth=6, min_child_weight=1, n_estimators=100, random_state=None,
+                 random_seed=0, **kwargs):
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         parameters = {"eta": eta,
                       "max_depth": max_depth,
                       "min_child_weight": min_child_weight,
@@ -42,7 +43,7 @@ class XGBoostClassifier(Estimator):
 
         super().__init__(parameters=parameters,
                          component_obj=xgb_classifier,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         X, y = super()._manage_woodwork(X, y)

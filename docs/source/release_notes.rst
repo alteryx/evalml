@@ -10,6 +10,7 @@ Release Notes
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
+        * Added ``random_seed`` as an argument to our automl/pipeline/component api. Using ``random_state`` will raise a warning :pr:`1798`
     * Documentation Changes
     * Testing Changes
 

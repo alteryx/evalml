@@ -14,7 +14,8 @@ from .gen_utils import (
     save_plot,
     is_all_numeric,
     get_importable_subclasses,
-    _rename_column_names_to_numeric
+    _rename_column_names_to_numeric,
+    deprecate_arg
 )
 from .cli_utils import (
     get_evalml_root,

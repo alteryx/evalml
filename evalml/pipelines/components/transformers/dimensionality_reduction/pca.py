@@ -6,6 +6,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
+    deprecate_arg,
     infer_feature_types,
     is_all_numeric
 )
@@ -17,7 +18,7 @@ class PCA(Transformer):
     hyperparameter_ranges = {
         "variance": Real(0.25, 1)}
 
-    def __init__(self, variance=0.95, n_components=None, random_state=0, **kwargs):
+    def __init__(self, variance=0.95, n_components=None, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer that reduces the number of features using PCA."
 
         Arguments:
@@ -29,13 +30,14 @@ class PCA(Transformer):
         parameters = {"variance": variance,
                       "n_components": n_components}
         parameters.update(kwargs)
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         if n_components:
-            pca = SkPCA(n_components=n_components, **kwargs)
+            pca = SkPCA(n_components=n_components, random_state=random_seed, **kwargs)
         else:
-            pca = SkPCA(n_components=variance, **kwargs)
+            pca = SkPCA(n_components=variance, random_state=random_seed, **kwargs)
         super().__init__(parameters=parameters,
                          component_obj=pca,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
