@@ -72,8 +72,13 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
-        str or dict - A report explaining the top contributing features to each prediction for each row of input_features.
+        str, dict, or pd.DataFrame - A report explaining the top contributing features to each prediction for each row of input_features.
             The report will include the feature names, prediction contribution, and SHAP Value (optional).
+
+    Raises:
+        ValueError: if input_features is empty.
+        ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
+        ValueError: if the requested index falls outside the input_feature's boundaries.
     """
     input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
@@ -114,9 +119,14 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         output_format (str): Either "text" or "dict". Default is "text".
 
     Returns:
-        str or dict - A report explaining the top contributing features for the best/worst predictions in the input_features.
+        str, dict, or pd.DataFrame - A report explaining the top contributing features for the best/worst predictions in the input_features.
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
             feature names, prediction contribution, and SHAP Value (optional) will be listed.
+
+    Raises:
+        ValueError: if input_features does not have more than twice the requested features to explain.
+        ValueError: if y_true and input_features have mismatched lengths.
+        ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())

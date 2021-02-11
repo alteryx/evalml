@@ -220,6 +220,7 @@ def test_explain_prediction(mock_normalize_shap_values,
     else:
         assert table == answer
 
+
 def test_explain_prediction_errors():
     with pytest.raises(ValueError, match="Explained indices should be between"):
         explain_prediction(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
