@@ -27,8 +27,8 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
     """
     tuples = [(value[0], feature_name) for feature_name, value in normalized_values.items()]
 
-    # Sort the features s.t the top_k w the largest shap value magnitudes are the first
-    # top_k elements
+    # Sort the features s.t the top_k_features w the largest shap value magnitudes are the first
+    # top_k_features elements
     tuples = sorted(tuples, key=lambda x: abs(x[0]), reverse=True)
 
     # Then sort such that the SHAP values go from most positive to most negative
@@ -204,7 +204,7 @@ class _MultiClassSHAPTable(_TableMaker):
 
 def _make_single_prediction_shap_table(pipeline, input_features, y, index_to_explain, top_k=3,
                                        include_shap_values=False, output_format="text"):
-    """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
+    """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.

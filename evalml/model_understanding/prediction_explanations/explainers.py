@@ -22,7 +22,7 @@ _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
-def explain_prediction(pipeline, input_features, y, index_to_explain, top_k=3, include_shap_values=False,
+def explain_prediction(pipeline, input_features, y, index_to_explain, top_k_features=3, include_shap_values=False,
                        output_format="text"):
     """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
 
@@ -31,14 +31,19 @@ def explain_prediction(pipeline, input_features, y, index_to_explain, top_k=3, i
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
+        y (ww.DataColumn, pd.Series): Labels for the input data.
         index_to_explain (int): The index of the row to explain in the input features.
-        top_k (int): How many of the highest/lowest features to include in the table.
+        top_k_features (int): How many of the highest/lowest features to include in the table.  Default is 3.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
-        output_format (str): Either "text" or "dict". Default is "text".
+        output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
-        str or dict - A report explaining the most positive/negative contributing features to the predictions.
+        str, dict, or pd.DataFrame - A report explaining the most positive/negative contributing features to the predictions.
+
+    Raises:
+        ValueError: if input_features is not a one-row DataFrame or DataTable.
+        ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     input_features = infer_feature_types(input_features)
     if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
@@ -47,44 +52,8 @@ def explain_prediction(pipeline, input_features, y, index_to_explain, top_k=3, i
 
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
-    return _make_single_prediction_shap_table(pipeline, input_features, y, index_to_explain, top_k, include_shap_values,
+    return _make_single_prediction_shap_table(pipeline, input_features, y, index_to_explain, top_k_features, include_shap_values,
                                               output_format=output_format)
-
-
-def abs_error(y_true, y_pred):
-    """Computes the absolute error per data point for regression problems.
-
-    Arguments:
-        y_true (pd.Series): True labels.
-        y_pred (pd.Series): Predicted values.
-
-    Returns:
-        np.ndarray
-    """
-    return np.abs(y_true.values - y_pred.values)
-
-
-def cross_entropy(y_true, y_pred_proba):
-    """Computes Cross Entropy Loss per data point for classification problems.
-
-    Arguments:
-        y_true (pd.Series): True labels encoded as ints.
-        y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
-
-    Returns:
-        np.ndarray
-    """
-    n_data_points = y_pred_proba.shape[0]
-    log_likelihood = -np.log(y_pred_proba.values[range(n_data_points), y_true.values.astype("int")])
-    return log_likelihood
-
-
-DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
-                   ProblemTypes.MULTICLASS: cross_entropy,
-                   ProblemTypes.REGRESSION: abs_error,
-                   ProblemTypes.TIME_SERIES_BINARY: cross_entropy,
-                   ProblemTypes.TIME_SERIES_MULTICLASS: cross_entropy,
-                   ProblemTypes.TIME_SERIES_REGRESSION: abs_error}
 
 
 def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_features=3, include_shap_values=False,
@@ -96,11 +65,12 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (ww.DataTable, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        y (ww.DataColumn, pd.Series): Labels for the input data.
         indices_to_explain (list(int)): List of integer indices to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
-            data point.
+            data point.  Default is 3.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
-        output_format (str): Either "text" or "dict". Default is "text".
+        output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
         str or dict - A report explaining the top contributing features to each prediction for each row of input_features.
@@ -200,3 +170,39 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
     return report_creator(data)
+
+
+def abs_error(y_true, y_pred):
+    """Computes the absolute error per data point for regression problems.
+
+    Arguments:
+        y_true (pd.Series): True labels.
+        y_pred (pd.Series): Predicted values.
+
+    Returns:
+        np.ndarray
+    """
+    return np.abs(y_true.values - y_pred.values)
+
+
+def cross_entropy(y_true, y_pred_proba):
+    """Computes Cross Entropy Loss per data point for classification problems.
+
+    Arguments:
+        y_true (pd.Series): True labels encoded as ints.
+        y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
+
+    Returns:
+        np.ndarray
+    """
+    n_data_points = y_pred_proba.shape[0]
+    log_likelihood = -np.log(y_pred_proba.values[range(n_data_points), y_true.values.astype("int")])
+    return log_likelihood
+
+
+DEFAULT_METRICS = {ProblemTypes.BINARY: cross_entropy,
+                   ProblemTypes.MULTICLASS: cross_entropy,
+                   ProblemTypes.REGRESSION: abs_error,
+                   ProblemTypes.TIME_SERIES_BINARY: cross_entropy,
+                   ProblemTypes.TIME_SERIES_MULTICLASS: cross_entropy,
+                   ProblemTypes.TIME_SERIES_REGRESSION: abs_error}
