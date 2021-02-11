@@ -69,3 +69,6 @@ class DataCheckMessageCode(Enum):
 
     MISMATCHED_INDICES = "mismatched_indices"
     """Message code for when input target and features have mismatched indices."""
+
+    MISMATCHED_LENGTHS = "mismatched_lengths"
+    """Message code for when input target and features have different lengths."""

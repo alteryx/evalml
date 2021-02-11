@@ -146,9 +146,16 @@ class InvalidTargetDataCheck(DataCheck):
             X = _convert_to_woodwork_structure(X)
             X_index = list(X.to_dataframe().index)
             y_index = list(y_df.index)
-            if X_index != y_index:
+            X_length = len(X_index)
+            y_length = len(y_index)
+            if X_length != y_length:
+                messages["warnings"].append(DataCheckWarning(message="Input target and features have different lengths",
+                                                             data_check_name=self.name,
+                                                             message_code=DataCheckMessageCode.MISMATCHED_LENGTHS,
+                                                             details={"features_length": X_length, "target_length": y_length}).to_dict())            
+            elif X_index != y_index:
                 messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices",
                                                              data_check_name=self.name,
                                                              message_code=DataCheckMessageCode.MISMATCHED_INDICES,
-                                                             details={"feature_index": X_index, "target_index": y_index}).to_dict())
+                                                             details={"index_difference": set(X_index) - set(y_index)}).to_dict())
         return messages
