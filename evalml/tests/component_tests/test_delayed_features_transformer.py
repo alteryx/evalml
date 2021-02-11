@@ -225,9 +225,9 @@ def test_target_delay_when_gap_is_0(gap, delayed_features_data):
     assert_frame_equal(expected, transformer.fit_transform(None, y).to_dataframe())
 
 
-@pytest.mark.parametrize('data_type', ['ww', 'pd'])
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
 @pytest.mark.parametrize('encode_y_as_str', [True, False])
+@pytest.mark.parametrize('data_type', ['ww', 'pd'])
 def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode_y_as_str, data_type, make_data_type,
                                                          delayed_features_data):
     X, y = delayed_features_data
@@ -287,7 +287,8 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
-def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(X_df):
+@pytest.mark.parametrize('fit_transform', [True, False])
+def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(X_df, fit_transform):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, Datetime, Boolean]
     for logical_type in override_types:
@@ -296,8 +297,11 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         except TypeError:
             continue
         dft = DelayedFeatureTransformer(max_delay=1, gap=11)
-        dft.fit(X, y)
-        transformed = dft.transform(X, y)
+        if fit_transform:
+            transformed = dft.fit_transform(X, y)
+        else:
+            dft.fit(X, y)
+            transformed = dft.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
         if logical_type in [Integer, Double, Categorical]:
             assert transformed.logical_types == {0: logical_type,

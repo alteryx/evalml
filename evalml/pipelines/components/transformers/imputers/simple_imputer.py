@@ -64,7 +64,7 @@ class SimpleImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-        ww.DataTable: Transformed X
+            ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
