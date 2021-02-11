@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import Double, Integer
 
 from evalml.pipelines.components import PCA
 
@@ -115,3 +117,18 @@ def test_n_components():
     pca = PCA(n_components=1)
     X_t = pca.fit_transform(X)
     assert X_t.shape[1] == 1
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean"))])
+def test_pca_woodwork_custom_overrides_returned_by_components(X_df):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double]
+    for logical_type in override_types:
+        X = ww.DataTable(X_df, logical_types={0: logical_type})
+        pca = PCA(n_components=1)
+        pca.fit(X)
+        transformed = pca.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        assert transformed.logical_types == {'component_0': ww.logical_types.Double}

@@ -3,9 +3,10 @@ from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -90,10 +91,9 @@ class DelayedFeatureTransformer(Transformer):
         if X is None:
             X = pd.DataFrame()
         # Normalize the data into pandas objects
-        X = _convert_to_woodwork_structure(X)
-
-        categorical_columns = self._get_categorical_columns(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = infer_feature_types(X)
+        categorical_columns = self._get_categorical_columns(X_ww)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(X[categorical_columns])
@@ -105,7 +105,7 @@ class DelayedFeatureTransformer(Transformer):
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
             if y.logical_type == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             else:
@@ -113,4 +113,7 @@ class DelayedFeatureTransformer(Transformer):
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return _convert_to_woodwork_structure(X)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X)
+
+    def fit_transform(self, X, y):
+        return self.fit(X, y).transform(X, y)

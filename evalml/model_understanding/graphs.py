@@ -27,10 +27,10 @@ from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
     deprecate_arg,
     import_or_raise,
+    infer_feature_types,
     jupyter_check
 )
 
@@ -46,8 +46,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
-    y_true = _convert_to_woodwork_structure(y_true)
-    y_predicted = _convert_to_woodwork_structure(y_predicted)
+    y_true = infer_feature_types(y_true)
+    y_predicted = infer_feature_types(y_predicted)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
     y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series()).to_numpy()
     labels = unique_labels(y_true, y_predicted)
@@ -68,7 +68,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
-    conf_mat = _convert_to_woodwork_structure(conf_mat)
+    conf_mat = infer_feature_types(conf_mat)
     conf_mat = _convert_woodwork_types_wrapper(conf_mat.to_dataframe())
     col_names = conf_mat.columns
 
@@ -154,8 +154,8 @@ def precision_recall_curve(y_true, y_pred_proba):
                   * `thresholds`: Threshold values used to produce the precision and recall.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = _convert_to_woodwork_structure(y_true)
-    y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    y_true = infer_feature_types(y_true)
+    y_pred_proba = infer_feature_types(y_pred_proba)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
 
@@ -209,8 +209,8 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = _convert_to_woodwork_structure(y_true)
-    y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    y_true = infer_feature_types(y_true)
+    y_pred_proba = infer_feature_types(y_pred_proba)
     if isinstance(y_pred_proba, ww.DataTable):
         y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
     else:
@@ -366,8 +366,8 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     Returns:
         pd.DataFrame, Mean feature importance scores over 5 shuffles.
     """
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     y = _convert_woodwork_types_wrapper(y.to_series())
 
@@ -546,7 +546,7 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         ValueError: if the provided pipeline is a Baseline pipeline.
     """
 
-    X = _convert_to_woodwork_structure(X)
+    X = infer_feature_types(X)
     # Dynamically set the grid resolution to the maximum number of categories
     # in the categorical variables if there are more categories than resolution cells
     X_cats = X.select("categorical")
@@ -725,9 +725,9 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
-    y_true = _convert_to_woodwork_structure(y_true)
+    y_true = infer_feature_types(y_true)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_pred = _convert_to_woodwork_structure(y_pred)
+    y_pred = infer_feature_types(y_pred)
     y_pred = _convert_woodwork_types_wrapper(y_pred.to_series())
 
     predictions = y_pred.reset_index(drop=True)
@@ -917,8 +917,8 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
        pd.DataFrame
     """
 
-    dates = _convert_to_woodwork_structure(dates)
-    y = _convert_to_woodwork_structure(y)
+    dates = infer_feature_types(dates)
+    y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
 
     dates = _convert_woodwork_types_wrapper(dates.to_series())
@@ -1003,7 +1003,7 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
     if not perplexity >= 0:
         raise ValueError("The parameter perplexity must be non-negative")
 
-    X = _convert_to_woodwork_structure(X)
+    X = infer_feature_types(X)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
     X_new = t_sne_.fit_transform(X)

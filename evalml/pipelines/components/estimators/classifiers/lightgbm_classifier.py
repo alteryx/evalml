@@ -9,12 +9,13 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
+    SEED_BOUNDS,
     _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
-    deprecate_arg
+    deprecate_arg,
+    import_or_raise,
+    infer_feature_types
 )
 
 
@@ -76,7 +77,7 @@ class LightGBMClassifier(Estimator):
 
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if fit:
@@ -97,7 +98,7 @@ class LightGBMClassifier(Estimator):
         return X_encoded
 
     def _encode_labels(self, y):
-        y_encoded = _convert_to_woodwork_structure(y)
+        y_encoded = infer_feature_types(y)
         y_encoded = _convert_woodwork_types_wrapper(y_encoded.to_series())
         # change only if dtype isn't int
         if not is_integer_dtype(y_encoded):
@@ -106,7 +107,7 @@ class LightGBMClassifier(Estimator):
         return y_encoded
 
     def fit(self, X, y=None):
-        X_encoded = _convert_to_woodwork_structure(X)
+        X_encoded = infer_feature_types(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
         self._component_obj.fit(X_encoded, y_encoded)
@@ -118,7 +119,7 @@ class LightGBMClassifier(Estimator):
         if not self._label_encoder:
             return predictions
         predictions = pd.Series(self._label_encoder.inverse_transform(predictions.to_series().astype(np.int64)))
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         X_encoded = self._encode_categories(X)

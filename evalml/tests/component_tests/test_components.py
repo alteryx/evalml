@@ -620,7 +620,10 @@ def test_transformer_check_for_fit(X_y_binary):
             return self
 
         def transform(self, X, y=None):
-            return ww.DataTable(X)
+            return X
+
+        def fit_transform(self, X, y=None):
+            return X
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
@@ -636,6 +639,7 @@ def test_transformer_check_for_fit(X_y_binary):
 
     trans.fit(X, y)
     trans.transform(X)
+    trans.fit_transform(X, y)
 
 
 def test_transformer_check_for_fit_with_overrides(X_y_binary):

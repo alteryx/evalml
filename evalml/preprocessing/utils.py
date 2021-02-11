@@ -7,10 +7,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    deprecate_arg
-)
+from evalml.utils import deprecate_arg, infer_feature_types
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
@@ -45,8 +42,8 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
     return X, y
 
 
@@ -66,9 +63,10 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
     Returns:
         ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
+
     random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
 
     data_splitter = None
     if is_time_series(problem_type):

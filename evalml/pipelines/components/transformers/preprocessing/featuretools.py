@@ -1,9 +1,10 @@
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -51,7 +52,7 @@ class DFSTransformer(Transformer):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         X.columns = X.columns.astype(str)
         es = self._make_entity_set(X)
@@ -70,9 +71,9 @@ class DFSTransformer(Transformer):
         Returns:
             ww.DataTable: Feature matrix
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X.columns = X.columns.astype(str)
-        es = self._make_entity_set(X)
+        X_ww = infer_feature_types(X)
+        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X_t.columns = X_t.columns.astype(str)
+        es = self._make_entity_set(X_t)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return _convert_to_woodwork_structure(feature_matrix)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, feature_matrix)

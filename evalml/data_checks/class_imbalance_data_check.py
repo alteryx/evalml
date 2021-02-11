@@ -5,10 +5,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class ClassImbalanceDataCheck(DataCheck):
@@ -64,7 +61,7 @@ class ClassImbalanceDataCheck(DataCheck):
             "errors": []
         }
 
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         fold_counts = y.value_counts(normalize=False)

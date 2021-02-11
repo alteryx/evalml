@@ -5,11 +5,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    deprecate_arg
-)
+from evalml.utils import deprecate_arg, import_or_raise, infer_feature_types
 
 
 class CatBoostRegressor(Estimator):
@@ -52,7 +48,7 @@ class CatBoostRegressor(Estimator):
                          random_seed=random_seed)
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
