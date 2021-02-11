@@ -37,6 +37,12 @@ class ObjectiveBase(ABC):
     def perfect_score(cls):
         """Returns the score obtained by evaluating this objective on a perfect model."""
 
+    @property
+    @classmethod
+    @abstractmethod
+    def is_bounded_like_percentage(cls):
+        """Returns whether this objective is bounded between 0 and 1, inclusive."""
+
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None):
@@ -131,25 +137,27 @@ class ObjectiveBase(ABC):
                 this is the score achieved on this objective with a baseline estimator.
 
         Returns:
-            float: The percent difference between the scores. This will be the difference normalized by the
-                baseline score.
+            float: The percent difference between the scores. Note that for objectives that can be interpreted
+                as percentages, this will be the difference between the reference score and score. For all other
+                objectives, the difference will be normalized by the reference score.
         """
 
         if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 
-        if np.isclose(baseline_score, 0, atol=1e-10):
-            return np.nan
-
-        if baseline_score == score:
+        if np.isclose(baseline_score - score, 0, atol=1e-10):
             return 0
+
+        # Return inf when dividing by 0
+        if np.isclose(baseline_score, 0, atol=1e-10) and not cls.is_bounded_like_percentage:
+            return np.inf
 
         decrease = False
         if (baseline_score > score and cls.greater_is_better) or (baseline_score < score and not cls.greater_is_better):
             decrease = True
 
         difference = (baseline_score - score)
-        change = difference / baseline_score
+        change = difference if cls.is_bounded_like_percentage else difference / baseline_score
         return 100 * (-1) ** (decrease) * np.abs(change)
 
     @classmethod
