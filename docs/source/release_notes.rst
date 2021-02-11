@@ -6,8 +6,10 @@ Release Notes
         * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
+        * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
     * Fixes
     * Changes
+        * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
     * Documentation Changes
     * Testing Changes
 
@@ -28,6 +30,7 @@ Release Notes
         * Moving some prs to the right section of the release notes :pr:`1789`
         * Tweak README.md. :pr:`1800`
         * Fixed back arrow on install page docs :pr:`1795`
+        * Fixed docstring for `ClassImbalanceDataCheck.validate()` :pr:`1817`
     * Testing Changes
 
 **v0.18.1 Feb. 1, 2021**

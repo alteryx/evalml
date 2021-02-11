@@ -1184,6 +1184,7 @@ class CustomClassificationObjective(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
+    is_bounded_like_percentage = False
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -1196,6 +1197,7 @@ class CustomRegressionObjective(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
+    is_bounded_like_percentage = False
     problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -1320,10 +1322,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
     mock_scores = {get_objective(obj).name: i for i, obj in enumerate(core_objectives)}
     mock_baseline_scores = {get_objective(obj).name: i + 1 for i, obj in enumerate(core_objectives)}
     answer = {}
+    baseline_percent_difference = {}
     for obj in core_objectives:
         obj_class = get_objective(obj)
         answer[obj_class.name] = obj_class.calculate_percent_difference(mock_scores[obj_class.name],
                                                                         mock_baseline_scores[obj_class.name])
+        baseline_percent_difference[obj_class.name] = 0
 
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
@@ -1338,8 +1342,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         automl.search(data_checks=None)
         assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
         pipeline_results = automl.results['pipeline_results'][1]
+        baseline_results = automl.results['pipeline_results'][0]
         assert pipeline_results["percent_better_than_baseline_all_objectives"] == answer
         assert pipeline_results['percent_better_than_baseline'] == pipeline_results["percent_better_than_baseline_all_objectives"][automl.objective.name]
+        # Check that baseline is 0% better than baseline
+        assert baseline_results["percent_better_than_baseline_all_objectives"] == baseline_percent_difference
 
 
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
