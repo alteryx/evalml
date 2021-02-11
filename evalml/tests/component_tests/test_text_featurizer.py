@@ -259,22 +259,17 @@ def test_featurizer_with_custom_indices(text_df):
     assert not X_t.to_dataframe().isnull().any().any()
 
 
-@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
-                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
-                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 10], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 10.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'ab'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
                                   pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
-@pytest.mark.parametrize("with_text_col", [True, False])
-def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, with_text_col):
+def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
     X_df = X_df.copy()
+    X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, Boolean, NaturalLanguage]
-    tf = TextFeaturizer(text_columns=[])
-
-    if with_text_col:
-        X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
-        tf = TextFeaturizer(text_columns=['text col'])
+    override_types = [Integer, Double, Categorical, Boolean]
+    tf = TextFeaturizer()
 
     for logical_type in override_types:
         try:
@@ -285,8 +280,8 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, 
         tf.fit(X)
         transformed = tf.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        if with_text_col:
-            assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double,
-                                                 'DIVERSITY_SCORE(text col)': Double, 'MEAN_CHARACTERS_PER_WORD(text col)': Double, 'POLARITY_SCORE(text col)': Double}
-        else:
-            assert transformed.logical_types == {0: logical_type}
+        assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double,
+                                             'LSA(text col)[1]': Double,
+                                             'DIVERSITY_SCORE(text col)': Double,
+                                             'MEAN_CHARACTERS_PER_WORD(text col)': Double,
+                                             'POLARITY_SCORE(text col)': Double}

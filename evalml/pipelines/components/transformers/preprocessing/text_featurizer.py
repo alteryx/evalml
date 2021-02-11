@@ -127,7 +127,7 @@ class TextFeaturizer(TextTransformer):
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _get_feature_provenance(self):
-        if not self._all_text_columns:
+        if not self._text_columns:
             return {}
         provenance = self._get_primitives_provenance(self._features)
         for col, lsa_features in self._lsa._get_feature_provenance().items():
