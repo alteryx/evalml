@@ -7,7 +7,10 @@ from evalml.problem_types import (
     is_regression,
     is_time_series
 )
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils.gen_utils import (
+    _convert_to_woodwork_structure,
+    deprecate_arg
+)
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
@@ -63,16 +66,17 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
     Returns:
         ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
+    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
     X = _convert_to_woodwork_structure(X)
     y = _convert_to_woodwork_structure(y)
 
     data_splitter = None
     if is_time_series(problem_type):
-        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_state)
+        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_seed)
     elif is_regression(problem_type):
-        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
     elif is_classification(problem_type):
-        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
 
     train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 
