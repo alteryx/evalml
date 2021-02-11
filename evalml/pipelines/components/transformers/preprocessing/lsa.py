@@ -6,9 +6,11 @@ from sklearn.pipeline import make_pipeline
 from evalml.pipelines.components.transformers.preprocessing import (
     TextTransformer
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    deprecate_arg,
+    infer_feature_types
 )
 
 
@@ -17,27 +19,21 @@ class LSA(TextTransformer):
     name = "LSA Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=0, **kwargs):
+    def __init__(self, random_state=None, random_seed=0, **kwargs):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_state))
-        super().__init__(random_state=random_state,
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_seed))
+        self._provenance = {}
+        super().__init__(random_seed=random_seed,
                          **kwargs)
 
     def fit(self, X, y=None):
-        """Fits component to data by applying the LSA pipeline.
-
-        Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
-
-        Returns:
-            self
-        """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         self._text_columns = self._get_text_columns(X)
         if len(self._text_columns) == 0:
             return self
@@ -59,16 +55,22 @@ class LSA(TextTransformer):
             ww.DataTable: Transformed X. The original column is removed and replaced with two columns of the
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
-        X = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         if len(self._text_columns) == 0:
-            return X
+            return X_ww
 
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X.copy()
+        provenance = {}
         for col in self._text_columns:
             transformed = self._lsa_pipeline.transform(X[col])
             X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
             X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
+            provenance[col] = ['LSA({})[0]'.format(col), 'LSA({})[1]'.format(col)]
+        self._provenance = provenance
 
         X_t = X_t.drop(columns=self._text_columns)
-        return _convert_to_woodwork_structure(X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+
+    def _get_feature_provenance(self):
+        return self._provenance

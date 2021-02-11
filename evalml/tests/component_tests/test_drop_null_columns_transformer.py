@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import DropNullColumns
 
@@ -121,3 +129,27 @@ def test_drop_null_transformer_np_array():
                                             [np.nan, 1, np.nan, 0],
                                             [np.nan, 2, np.nan, 0],
                                             [np.nan, 1, 1, 0]]))
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+@pytest.mark.parametrize("has_nan", [True, False])
+def test_drop_null_transformer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
+    y = pd.Series([1, 2, 1])
+    if has_nan:
+        X_df['all null'] = [np.nan, np.nan, np.nan]
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        drop_null_transformer = DropNullColumns()
+        drop_null_transformer.fit(X)
+        transformed = drop_null_transformer.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        assert transformed.logical_types == {0: logical_type}

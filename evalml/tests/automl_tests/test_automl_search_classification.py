@@ -33,7 +33,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import TimeSeriesSplit
+from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
 
 
@@ -173,13 +173,13 @@ def test_categorical_classification(X_y_categorical_classification):
     assert not automl.rankings['score'].isnull().all()
 
 
-def test_random_state(X_y_binary):
+def test_random_seed(X_y_binary):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_state=0, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_seed=0, n_jobs=1)
     automl.search()
 
-    automl_1 = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_state=0, n_jobs=1)
+    automl_1 = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=Precision(), max_iterations=5, random_seed=0, n_jobs=1)
     automl_1.search()
     assert automl.rankings.equals(automl_1.rankings)
 
@@ -343,14 +343,14 @@ def test_max_time_units(X_y_binary):
 def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_state=0)
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_seed=0)
 
     with pytest.raises(ValueError, match='tolerance value must be'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_state=0)
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_seed=0)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5,
                           allowed_model_families=['linear_model'], patience=2, tolerance=0.05,
-                          random_state=0, n_jobs=1)
+                          random_seed=0, n_jobs=1)
     mock_results = {
         'search_order': [0, 1, 2],
         'pipeline_results': {}
@@ -765,3 +765,36 @@ def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary
     for i, row in a.rankings.iterrows():
         assert a.get_pipeline(row['id']).__class__ == pipeline
         assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
+
+
+@pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary'])
+@pytest.mark.parametrize("optimize", [True, False])
+@patch('evalml.automl.automl_search.split_data')
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
+def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binary_score, mock_predict_proba, mock_optimize_threshold, mock_split_data,
+                                                     optimize, objective, X_y_binary):
+    X, y = X_y_binary
+    mock_binary_score.return_value = {objective: 0.4}
+    problem_type = 'time series binary'
+
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+
+    mock_optimize_threshold.return_value = 0.62
+    mock_split_data.return_value = split_data(X, y, problem_type, test_size=0.2, random_state=0)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
+                          problem_configuration=configuration, objective=objective, optimize_thresholds=optimize,
+                          max_batches=2)
+    automl.search()
+    assert isinstance(automl.data_splitter, TimeSeriesSplit)
+    if optimize and objective == 'F1':
+        mock_optimize_threshold.assert_called()
+        assert automl.best_pipeline.threshold == 0.62
+        mock_split_data.assert_called()
+        assert str(mock_split_data.call_args[0][2]) == problem_type
+    else:
+        mock_optimize_threshold.assert_not_called()
+        assert automl.best_pipeline.threshold == 0.5
+        mock_split_data.assert_not_called()

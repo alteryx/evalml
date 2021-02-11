@@ -17,8 +17,6 @@ from evalml.utils import get_logger
 
 logger = get_logger(__file__)
 
-numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
-
 
 def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name.
@@ -198,27 +196,35 @@ def get_importable_subclasses(base_class, used_in_automl=True):
     return classes
 
 
-def _rename_column_names_to_numeric(X):
-    """Used in LightGBM classifier class and XGBoost classifier and regressor classes to rename column names
-        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that XGBoost cannot natively handle.
+def _rename_column_names_to_numeric(X, flatten_tuples=True):
+    """Used in LightGBM and XGBoost estimator classes to rename column names
+        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <)
+        that these estimators cannot natively handle.
 
     Arguments:
-        X (pd.DataFrame): the input training data of shape [n_samples, n_features]
+        X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+        flatten_tuples (bool): Whether to flatten MultiIndex or tuple column names. LightGBM cannot handle columns with tuple names.
 
     Returns:
         Transformed X where column names are renamed to numerical values
     """
-    X_t = X
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
+
     if isinstance(X, ww.DataTable):
         X_t = X.to_dataframe()
-        logical_types = X.logical_types
-    name_to_col_num = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    X_renamed = X_t.rename(columns=name_to_col_num, inplace=False)
+    else:
+        X_t = X.copy()
+
+    if flatten_tuples and (len(X_t.columns) > 0 and isinstance(X_t.columns, pd.MultiIndex)):
+        flat_col_names = list(map(str, X_t.columns))
+        X_t.columns = flat_col_names
+        rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
+    else:
+        rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+    X_renamed = X_t.rename(columns=rename_cols_dict)
     if isinstance(X, ww.DataTable):
-        renamed_logical_types = dict((name_to_col_num[col], logical_types[col]) for col in logical_types)
-        return ww.DataTable(X_renamed, logical_types=renamed_logical_types)
+        X_renamed = ww.DataTable(X_renamed)
     return X_renamed
 
 
@@ -271,80 +277,6 @@ def is_all_numeric(dt):
     if dt.to_dataframe().isnull().any().any():
         return False
     return True
-
-
-def infer_feature_types(data, feature_types=None):
-    """Create a Woodwork structure from the given pandas or numpy input, with specified types for columns.
-        If a column's type is not specified, it will be inferred by Woodwork.
-
-    Arguments:
-        data (pd.DataFrame): Input data to convert to a Woodwork data structure.
-        feature_types (string, ww.logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
-            mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
-            a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
-
-    Returns:
-        A Woodwork data structure where the data type of each column was either specified or inferred.
-    """
-    ww_data = _convert_to_woodwork_structure(data)
-    if feature_types is not None:
-        if len(ww_data.shape) == 1:
-            ww_data = ww_data.set_logical_type(feature_types)
-        else:
-            ww_data = ww_data.set_types(logical_types=feature_types)
-    return ww_data
-
-
-def _convert_to_woodwork_structure(data):
-    """
-    Takes input data structure, and if it is not a Woodwork data structure already, will convert it to a Woodwork DataTable or DataColumn structure.
-    """
-    ww_data = data
-    if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
-        return ww_data
-    if isinstance(data, list):
-        ww_data = np.array(data)
-
-    ww_data = ww_data.copy()
-    if len(ww_data.shape) == 1:
-        name = ww_data.name if isinstance(ww_data, pd.Series) else None
-        return ww.DataColumn(ww_data, name=name)
-    return ww.DataTable(ww_data)
-
-
-def _convert_woodwork_types_wrapper(pd_data):
-    """
-    Converts a pandas data structure that may have extension or nullable dtypes to dtypes that numpy can understand and handle.
-
-    Arguments:
-        pd_data (pd.Series, pd.DataFrame, pd.ExtensionArray): Pandas data structure
-
-    Returns:
-        Modified pandas data structure (pd.DataFrame or pd.Series) with original data and dtypes that can be handled by numpy
-    """
-    nullable_to_numpy_mapping = {pd.Int64Dtype: 'int64',
-                                 pd.BooleanDtype: 'bool',
-                                 pd.StringDtype: 'object'}
-    nullable_to_numpy_mapping_nan = {pd.Int64Dtype: 'float64',
-                                     pd.BooleanDtype: 'object',
-                                     pd.StringDtype: 'object'}
-
-    if isinstance(pd_data, pd.api.extensions.ExtensionArray):
-        if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)])
-        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)])
-    if (isinstance(pd_data, pd.Series) and type(pd_data.dtype) in nullable_to_numpy_mapping):
-        if pd.isna(pd_data).any():
-            return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
-        return pd.Series(pd_data.to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping[type(pd_data.dtype)], index=pd_data.index, name=pd_data.name)
-    if isinstance(pd_data, pd.DataFrame):
-        for col_name, col in pd_data.iteritems():
-            if type(col.dtype) in nullable_to_numpy_mapping:
-                if pd.isna(pd_data[col_name]).any():
-                    pd_data[col_name] = pd.Series(pd_data[col_name].to_numpy(na_value=np.nan), dtype=nullable_to_numpy_mapping_nan[type(pd_data[col_name].dtype)])
-                else:
-                    pd_data[col_name] = pd_data[col_name].astype(nullable_to_numpy_mapping[type(col.dtype)])
-    return pd_data
 
 
 def pad_with_nans(pd_data, num_to_pad):
@@ -503,3 +435,23 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
 
     if return_filepath:
         return filepath
+
+
+def deprecate_arg(old_arg, new_arg, old_value, new_value):
+    """Helper to raise warnings when a deprecated arg is used.
+
+    Arguments:
+        old_arg (str): Name of old/deprecated argument.
+        new_arg (str): Name of new argument.
+        old_value (Any): Value the user passed in for the old argument.
+        new_value (Any): Value the user passed in for the new argument.
+
+    Returns:
+        old_value if not None, else new_value
+    """
+    value_to_use = new_value
+    if old_value is not None:
+        warnings.warn(f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}'. "
+                      f"Passing '{old_arg}' in future versions will result in an error.")
+        value_to_use = old_value
+    return value_to_use

@@ -50,10 +50,10 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
     _convert_woodwork_types_wrapper,
-    get_random_state
+    get_random_state,
+    infer_feature_types
 )
 
 
@@ -521,70 +521,6 @@ def test_graph_confusion_matrix_title_addition(X_y_binary):
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == 'Confusion matrix with added title text, normalized using method "true"'
-
-
-def test_get_permutation_importance_invalid_objective(X_y_regression, linear_regression_pipeline_class):
-    X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_state=42)
-    with pytest.raises(ValueError, match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'"):
-        calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
-
-
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
-def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
-                                           binary_core_objectives, make_data_type):
-    X, y = X_y_binary
-    X = make_data_type(data_type, X)
-    y = make_data_type(data_type, y)
-
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_state=42)
-    pipeline.fit(X, y)
-    for objective in binary_core_objectives:
-        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
-        assert list(permutation_importance.columns) == ["feature", "importance"]
-        assert not permutation_importance.isnull().all().all()
-
-
-def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
-                                               multiclass_core_objectives):
-    X, y = X_y_multi
-    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                             random_state=42)
-    pipeline.fit(X, y)
-    for objective in multiclass_core_objectives:
-        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
-        assert list(permutation_importance.columns) == ["feature", "importance"]
-        assert not permutation_importance.isnull().all().all()
-
-
-def test_get_permutation_importance_regression(linear_regression_pipeline_class, regression_core_objectives):
-    X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
-                                                random_state=42)
-    pipeline.fit(X, y)
-
-    for objective in regression_core_objectives:
-        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
-        assert list(permutation_importance.columns) == ["feature", "importance"]
-        assert not permutation_importance.isnull().all().all()
-
-
-def test_get_permutation_importance_correlated_features(logistic_regression_binary_pipeline_class):
-    y = pd.Series([1, 0, 1, 1])
-    X = pd.DataFrame()
-    X["correlated"] = y * 2
-    X["not correlated"] = [-1, -1, -1, 0]
-    y = y.astype(bool)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_state=42)
-    pipeline.fit(X, y)
-    importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary", random_state=0)
-    assert list(importance.columns) == ["feature", "importance"]
-    assert not importance.isnull().all().all()
-    correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
-    not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
-    assert correlated_importance_val > not_correlated_importance_val
 
 
 def test_graph_permutation_importance(X_y_binary, test_pipeline):
@@ -1224,7 +1160,7 @@ def test_graph_prediction_vs_actual_over_time():
         problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
         def predict(self, X, y):
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
             y = _convert_woodwork_types_wrapper(y.to_series())
             preds = y + 10
             preds.index = range(100, 161)
@@ -1277,21 +1213,10 @@ def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
         decision_tree_data_from_estimator(est_logit)
 
 
-def test_decision_tree_data_from_estimator_feature_length(fitted_tree_estimators):
-    est_class, _ = fitted_tree_estimators
-    with pytest.raises(ValueError, match="Length mismatch: Expected features has length {} but got list with length {}"
-                                         .format(est_class._component_obj.n_features_, 3)):
-        decision_tree_data_from_estimator(est_class, feature_names=["First", "Second", "Third"])
-
-    features_array = tuple([f'Testing_{col_}' for col_ in range(est_class._component_obj.n_features_)])
-    formatted_ = decision_tree_data_from_estimator(est_class, feature_names=features_array)
-    assert isinstance(formatted_, OrderedDict)
-
-
 def test_decision_tree_data_from_estimator(fitted_tree_estimators):
     est_class, est_reg = fitted_tree_estimators
 
-    formatted_ = decision_tree_data_from_estimator(est_reg, feature_names=[f'Testing_{col_}' for col_ in range(est_reg._component_obj.n_features_)])
+    formatted_ = decision_tree_data_from_estimator(est_reg)
     tree_ = est_reg._component_obj.tree_
 
     assert isinstance(formatted_, OrderedDict)
@@ -1533,7 +1458,7 @@ def test_graph_t_sne(data_type, perplexity, learning_rate):
         X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     elif data_type == 'ww':
         X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
 
     for width_, size_ in [(3, 2), (2, 3), (1, 4)]:
         fig = graph_t_sne(X, n_components=2, perplexity=perplexity, learning_rate=learning_rate, marker_line_width=width_, marker_size=size_)

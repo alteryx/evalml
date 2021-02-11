@@ -1,12 +1,12 @@
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
 
-    def __init__(self, columns=None, random_state=0, **kwargs):
+    def __init__(self, columns=None, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
 
         Arguments:
@@ -19,7 +19,8 @@ class ColumnSelector(Transformer):
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def _check_input_for_columns(self, X):
         cols = self.parameters.get("columns") or []
@@ -46,16 +47,16 @@ class ColumnSelector(Transformer):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         self._check_input_for_columns(X)
         return self
 
     def transform(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         self._check_input_for_columns(X)
         cols = self.parameters.get("columns") or []
         modified_cols = self._modify_columns(cols, X, y)
-        return _convert_to_woodwork_structure(modified_cols)
+        return infer_feature_types(modified_cols)
 
 
 class DropColumns(ColumnSelector):
