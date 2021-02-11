@@ -6,7 +6,7 @@ from evalml.utils.gen_utils import _convert_to_woodwork_structure
 
 class ColumnSelector(Transformer):
 
-    def __init__(self, columns=None, random_state=0, **kwargs):
+    def __init__(self, columns=None, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
 
         Arguments:
@@ -19,7 +19,8 @@ class ColumnSelector(Transformer):
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def _check_input_for_columns(self, X):
         cols = self.parameters.get("columns") or []

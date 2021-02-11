@@ -18,7 +18,8 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  smoothing=1.0,
                  handle_unknown='value',
                  handle_missing='value',
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  **kwargs):
         """Initializes a transformer that encodes categorical features into target encodings.
 
@@ -49,7 +50,8 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         category_encode = import_or_raise('category_encoders', error_msg='category_encoders not installed. Please install using `pip install category_encoders`')
         super().__init__(parameters=parameters,
                          component_obj=category_encode.target_encoder.TargetEncoder(**parameters),
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y):
         if isinstance(X, pd.DataFrame):

@@ -9,12 +9,12 @@ class Tuner(ABC):
     Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
     """
 
-    def __init__(self, pipeline_hyperparameter_ranges, random_state=0):
+    def __init__(self, pipeline_hyperparameter_ranges, random_seed=0):
         """Base Tuner class
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state (int): The random state. Defaults to 0.
+            random_seed (int): The random state. Defaults to 0.
         """
         self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
         self._parameter_names_map = dict()

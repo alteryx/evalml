@@ -16,7 +16,7 @@ class DelayedFeatureTransformer(Transformer):
     needs_fitting = False
 
     def __init__(self, max_delay=2, delay_features=True, delay_target=True, gap=1,
-                 random_state=0, **kwargs):
+                 random_state=None, random_seed=0, **kwargs):
         """Creates a DelayedFeatureTransformer.
 
         Arguments:
@@ -27,7 +27,8 @@ class DelayedFeatureTransformer(Transformer):
                 when the target is collected. For example, if you are predicting the next time step's target, gap=1.
                 This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
                 at 1.
-            random_state (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+            random_state (int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
         """
         self.max_delay = max_delay
         self.delay_features = delay_features
@@ -39,7 +40,7 @@ class DelayedFeatureTransformer(Transformer):
         parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
                       "gap": gap}
         parameters.update(kwargs)
-        super().__init__(parameters=parameters, random_state=random_state)
+        super().__init__(parameters=parameters, random_state=random_state, random_seed=random_seed)
 
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer.

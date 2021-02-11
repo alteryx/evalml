@@ -14,7 +14,7 @@ def delayed_features_data():
 
 def test_delayed_features_transformer_init():
     delayed_features = DelayedFeatureTransformer(max_delay=4, delay_features=True, delay_target=False,
-                                                 random_state=1)
+                                                 random_seed=1)
     assert delayed_features.parameters == {"max_delay": 4, "delay_features": True, "delay_target": False,
                                            "gap": 1}
 

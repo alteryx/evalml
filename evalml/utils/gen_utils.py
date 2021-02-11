@@ -511,3 +511,23 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
 
     if return_filepath:
         return filepath
+
+
+def deprecate_arg(old_arg, new_arg, old_value, new_value):
+    """Helper to raise warnings when a deprecated arg is used.
+
+    Arguments:
+        old_arg (str): Name of old/deprecated argument.
+        new_arg (str): Name of new argument.
+        old_value (Any): Value the user passed in for the old argument.
+        new_value (Any): Value the user passed in for the new argument.
+
+    Returns:
+        old_value if not None, else new_value
+    """
+    value_to_use = new_value
+    if old_value is not None:
+        warnings.warn(f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}'. "
+                      f"Passing '{old_arg}' in future versions will result in an error.")
+        value_to_use = old_value
+    return value_to_use

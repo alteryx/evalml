@@ -27,7 +27,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  drop=None,
                  handle_unknown="ignore",
                  handle_missing="error",
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  **kwargs):
         """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
 
@@ -70,8 +71,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
-        self._initial_state = self.random_state
+                         random_state=random_state,
+                         random_seed=random_seed)
+        self._initial_state = self.random_seed
         self._provenance = {}
 
     @staticmethod
@@ -108,8 +110,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
-                    new_random_state = self._initial_state
-                    value_counts = value_counts.sample(frac=1, random_state=new_random_state)
+                    value_counts = value_counts.sample(frac=1, random_state=self._initial_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)

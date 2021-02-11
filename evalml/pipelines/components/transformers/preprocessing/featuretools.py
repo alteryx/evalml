@@ -12,13 +12,14 @@ class DFSTransformer(Transformer):
     name = "DFS Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, index='index', random_state=0, **kwargs):
+    def __init__(self, index='index', random_state=None, random_seed=0, **kwargs):
         """Allows for featuretools to be used in EvalML
 
         Arguments:
             index (string): The name of the column that contains the indices. If no column with this name exists,
                 then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
-            random_state (int): Seed for the random number generator
+            random_state (int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator
         """
         parameters = {"index": index}
         if not isinstance(index, str):
@@ -28,7 +29,8 @@ class DFSTransformer(Transformer):
         self.features = None
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def _make_entity_set(self, X):
         """Helper method that creates and returns the entity set given the input data"""
