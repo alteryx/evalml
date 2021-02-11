@@ -27,6 +27,7 @@ Release Notes
         * Moving some prs to the right section of the release notes :pr:`1789`
         * Tweak README.md. :pr:`1800`
         * Fixed back arrow on install page docs :pr:`1795`
+        * Fixed docstring for `ClassImbalanceDataCheck.validate()` :pr:`1817`
     * Testing Changes
 
 **v0.18.1 Feb. 1, 2021**
