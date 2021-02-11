@@ -143,7 +143,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                      details=details).to_dict())
 
         if X is not None:
-            X = _convert_to_woodwork_structure(X)
+            X = infer_feature_types(X)
             X_index = list(X.to_dataframe().index)
             y_index = list(y_df.index)
             X_length = len(X_index)
