@@ -3,6 +3,8 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
+        * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
     * Fixes
     * Changes
     * Documentation Changes
@@ -35,7 +37,6 @@ Release Notes
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
         * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
-        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
     * Fixes
         * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
