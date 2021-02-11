@@ -69,7 +69,12 @@ from evalml.pipelines.components.utils import (
     generate_component_code
 )
 from evalml.pipelines.utils import make_pipeline_from_components
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_regression
+)
 
 
 @pytest.fixture(scope="module")
@@ -1027,3 +1032,82 @@ def test_components_raise_deprecated_random_state_warning(cls):
             if "random_state" in params:
                 assert params['random_state'] == 31
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+@pytest.mark.parametrize("transformer_class", _all_transformers())
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, transformer_class, X_y_binary):
+
+    check_names = True
+    if transformer_class == DFSTransformer:
+        check_names = False
+        if use_custom_index:
+            pytest.skip("The DFSTransformer changes the index so we skip it.")
+
+    X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    if use_custom_index:
+        gen = np.random.default_rng(seed=0)
+        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        X.index = custom_index
+        y.index = custom_index
+
+    X_original_index = X.index.copy()
+    y_original_index = y.index.copy()
+
+    transformer = transformer_class()
+
+    transformer.fit(X, y)
+    pd.testing.assert_index_equal(X.index, X_original_index)
+    pd.testing.assert_index_equal(y.index, y_original_index)
+
+    X_t = transformer.transform(X, y).to_dataframe()
+    pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
+    pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
+
+
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class,
+                                               X_y_binary, X_y_regression,
+                                               logistic_regression_binary_pipeline_class,
+                                               linear_regression_pipeline_class,
+                                               helper_functions):
+
+    if estimator_class == StackedEnsembleRegressor:
+        input_pipelines = [helper_functions.safe_init_pipeline_with_njobs_1(linear_regression_pipeline_class)]
+    elif estimator_class == StackedEnsembleClassifier:
+        input_pipelines = [helper_functions.safe_init_pipeline_with_njobs_1(logistic_regression_binary_pipeline_class)]
+    else:
+        input_pipelines = []
+
+    supported_problem_types = estimator_class.supported_problem_types
+
+    if ProblemTypes.REGRESSION in supported_problem_types or ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+        X, y = X_y_regression
+    else:
+        X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    if use_custom_index:
+        gen = np.random.default_rng(seed=0)
+        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        X.index = custom_index
+        y.index = custom_index
+
+    X_original_index = X.index.copy()
+    y_original_index = y.index.copy()
+
+    if input_pipelines:
+        estimator = estimator_class(n_jobs=1, input_pipelines=input_pipelines)
+    else:
+        estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
+
+    estimator.fit(X, y)
+    pd.testing.assert_index_equal(X.index, X_original_index)
+    pd.testing.assert_index_equal(y.index, y_original_index)
