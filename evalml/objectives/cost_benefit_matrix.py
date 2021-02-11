@@ -14,8 +14,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = np.inf
-    # Range (-Inf, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range (-Inf, Inf)
 
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
         """Create instance of CostBenefitMatrix.

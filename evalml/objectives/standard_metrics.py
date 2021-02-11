@@ -263,8 +263,7 @@ class LogLossBinary(BinaryClassificationObjective):
     greater_is_better = False
     score_needs_proba = True
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.log_loss(y_true, y_predicted)
@@ -276,8 +275,7 @@ class LogLossMulticlass(MulticlassClassificationObjective):
     greater_is_better = False
     score_needs_proba = True
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.log_loss(y_true, y_predicted)
@@ -289,8 +287,7 @@ class MCCBinary(BinaryClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
-    # Range [-1, 1]
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [-1, 1]1
 
     def objective_function(self, y_true, y_predicted, X=None):
         with warnings.catch_warnings():
@@ -305,8 +302,7 @@ class MCCMulticlass(MulticlassClassificationObjective):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
-    # Range [-1, 1]
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [-1, 1]
 
     def objective_function(self, y_true, y_predicted, X=None):
         with warnings.catch_warnings():
@@ -321,8 +317,7 @@ class RootMeanSquaredError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_error(y_true, y_predicted, squared=False)
@@ -337,8 +332,7 @@ class RootMeanSquaredLogError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
@@ -358,8 +352,7 @@ class MeanSquaredLogError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_log_error(y_true, y_predicted)
@@ -376,8 +369,7 @@ class R2(RegressionObjective):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1
-    # Range (-Inf, 1]
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range (-Inf, 1]
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.r2_score(y_true, y_predicted)
@@ -389,8 +381,7 @@ class MAE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = True
+    is_bounded_like_percentage = True  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_absolute_error(y_true, y_predicted)
@@ -405,8 +396,7 @@ class MAPE(TimeSeriesRegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         if (y_true == 0).any():
@@ -431,8 +421,7 @@ class MSE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.mean_squared_error(y_true, y_predicted)
@@ -444,8 +433,7 @@ class MedianAE(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.median_absolute_error(y_true, y_predicted)
@@ -457,8 +445,7 @@ class MaxError(RegressionObjective):
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
-    # Range [0, Inf)
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range [0, Inf)
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.max_error(y_true, y_predicted)
@@ -470,8 +457,7 @@ class ExpVariance(RegressionObjective):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
-    # Range (-Inf, 1]
-    is_bounded_like_percentage = False
+    is_bounded_like_percentage = False  # Range (-Inf, 1]
 
     def objective_function(self, y_true, y_predicted, X=None):
         return metrics.explained_variance_score(y_true, y_predicted)
