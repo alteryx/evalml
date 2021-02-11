@@ -48,7 +48,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         Example:
             >>> import pandas as pd
-            >>> X = pd.DataFrame({})
+            >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series([0, 1, None, None])
             >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
             >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
@@ -141,5 +141,32 @@ class InvalidTargetDataCheck(DataCheck):
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                                                      details=details).to_dict())
+
+        if X is not None:
+            X = infer_feature_types(X)
+            X_index = list(X.to_dataframe().index)
+            y_index = list(y_df.index)
+            X_length = len(X_index)
+            y_length = len(y_index)
+            if X_length != y_length:
+                messages["warnings"].append(DataCheckWarning(message="Input target and features have different lengths",
+                                                             data_check_name=self.name,
+                                                             message_code=DataCheckMessageCode.MISMATCHED_LENGTHS,
+                                                             details={"features_length": X_length, "target_length": y_length}).to_dict())
+
+            if X_index != y_index:
+                if set(X_index) == set(y_index):
+                    messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices order",
+                                                                 data_check_name=self.name,
+                                                                 message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
+                                                                 details={}).to_dict())
+                else:
+                    index_diff_not_in_X = list(set(y_index) - set(X_index))[:10]
+                    index_diff_not_in_y = list(set(X_index) - set(y_index))[:10]
+                    messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices",
+                                                                 data_check_name=self.name,
+                                                                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
+                                                                 details={"indices_not_in_features": index_diff_not_in_X,
+                                                                          "indices_not_in_target": index_diff_not_in_y}).to_dict())
 
         return messages
