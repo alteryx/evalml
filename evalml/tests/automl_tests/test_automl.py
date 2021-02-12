@@ -1311,7 +1311,11 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
                               additional_objectives=[], n_jobs=1)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
-        automl.search(data_checks=None)
+        if np.isnan(pipeline_scores).all():
+            with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
+                automl.search(data_checks=None)
+        else:
+            automl.search(data_checks=None)
         scores = dict(zip(automl.rankings.pipeline_name, automl.rankings.percent_better_than_baseline))
         baseline_name = next(name for name in automl.rankings.pipeline_name if name not in {"Pipeline1", "Pipeline2"})
         answers = {"Pipeline1": round(objective.calculate_percent_difference(pipeline_scores[0], baseline_score), 2),
