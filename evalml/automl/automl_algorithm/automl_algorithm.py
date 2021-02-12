@@ -56,7 +56,7 @@ class AutoMLAlgorithm(ABC):
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
         if pipeline.name not in self._tuners:
-            raise PipelineNotFoundError(f"No such pipeline allowed in this automl search: {pipeline.name}")
+            raise PipelineNotFoundError(f"No such pipeline allowed in this AutoML search: {pipeline.name}")
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
     @property

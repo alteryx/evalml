@@ -41,5 +41,5 @@ def test_automl_algorithm_dummy():
 def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline_class):
     algo = DummyAlgorithm()
     pipeline = dummy_regression_pipeline_class(parameters={})
-    with pytest.raises(PipelineNotFoundError, match="No such pipeline allowed in this automl search: Mock Regression Pipeline"):
+    with pytest.raises(PipelineNotFoundError, match="No such pipeline allowed in this AutoML search: Mock Regression Pipeline"):
         algo.add_result(0.1234, pipeline)
