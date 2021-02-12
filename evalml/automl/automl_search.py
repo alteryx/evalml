@@ -517,7 +517,7 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
-        while self.should_continue():
+        while self._should_continue():
             try:
                 if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
                     raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
@@ -574,7 +574,7 @@ class AutoMLSearch:
         """
         return len(self._results['pipeline_results'])
 
-    def should_continue(self):
+    def _should_continue(self):
         """Given the original stopping criterion and current state, should the search continue?
 
         Returns:
