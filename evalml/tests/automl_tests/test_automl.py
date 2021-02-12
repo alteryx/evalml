@@ -545,7 +545,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
 
     allowed_pipelines = [dummy_binary_pipeline_class]
     with pytest.raises(Exception, match='mock algo init'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
     assert mock_algo_init.call_count == 1
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_iterations'] == 10
@@ -553,7 +553,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
 
     allowed_model_families = [ModelFamily.RANDOM_FOREST]
     with pytest.raises(Exception, match='mock algo init'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_model_families=allowed_model_families, max_iterations=1)
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_model_families=allowed_model_families, max_iterations=1)
     assert mock_algo_init.call_count == 2
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_iterations'] == 1
