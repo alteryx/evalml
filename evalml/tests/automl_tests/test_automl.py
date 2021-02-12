@@ -1839,10 +1839,11 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
 
 
+@pytest.mark.parametrize("callbacks", [None, log_error_callback, silent_error_callback])
 @pytest.mark.parametrize("score_error", [True, False])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback_none(mock_fit, mock_score, score_error, X_y_binary, caplog):
+def test_automl_error_callback_simple(mock_fit, mock_score, score_error, callbacks, X_y_binary, caplog):
     X, y = X_y_binary
     if score_error:
         msg = "Score Error!"
@@ -1853,58 +1854,20 @@ def test_automl_error_callback_none(mock_fit, mock_score, score_error, X_y_binar
         msg = 'all your model are belong to us'
         mock_fit.side_effect = Exception(msg)
         message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=None, train_best_pipeline=False, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=callbacks, train_best_pipeline=False, n_jobs=1)
     automl.search()
     for messages in message_list:
-        assert messages in caplog.text
+        if callbacks == silent_error_callback:
+            assert messages not in caplog.text
+        else:
+            assert messages in caplog.text
 
 
+@pytest.mark.parametrize("callbacks", [raise_error_callback, raise_and_save_error_callback, log_and_save_error_callback])
 @pytest.mark.parametrize("score_error", [True, False])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback_silent(mock_fit, mock_score, score_error, X_y_binary, caplog):
-    X, y = X_y_binary
-    caplog.clear()
-    if score_error:
-        msg = "Score Error!"
-        mock_score.side_effect = Exception(msg)
-        message_list = [msg]
-    else:
-        mock_score.return_value = {"Log Loss Binary": 0.8}
-        msg = 'all your model are belong to us'
-        mock_fit.side_effect = Exception(msg)
-        message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=silent_error_callback, train_best_pipeline=False, n_jobs=1)
-    automl.search()
-    for messages in message_list:
-        assert messages not in caplog.text
-
-
-@pytest.mark.parametrize("score_error", [True, False])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback_log(mock_fit, mock_score, score_error, X_y_binary, caplog):
-    X, y = X_y_binary
-    if score_error:
-        msg = "Score Error!"
-        mock_score.side_effect = Exception(msg)
-        message_list = [msg]
-    else:
-        mock_score.return_value = {"Log Loss Binary": 0.8}
-        msg = 'all your model are belong to us'
-        mock_fit.side_effect = Exception(msg)
-        message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
-    caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
-    automl.search()
-    for messages in message_list:
-        assert messages in caplog.text
-
-
-@pytest.mark.parametrize("score_error", [True, False])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback_raise(mock_fit, mock_score, score_error, X_y_binary, caplog):
+def test_automl_error_callback_secondary(mock_fit, mock_score, score_error, callbacks, X_y_binary, caplog):
     X, y = X_y_binary
     if score_error:
         msg = "Score Error!"
@@ -1917,64 +1880,21 @@ def test_automl_error_callback_raise(mock_fit, mock_score, score_error, X_y_bina
         message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
 
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_error_callback, train_best_pipeline=False, n_jobs=1)
-    with pytest.raises(Exception, match=msg):
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=callbacks, train_best_pipeline=False, n_jobs=1)
+    if callbacks == log_and_save_error_callback:
         automl.search()
-    assert f"AutoMLSearch raised a fatal exception: {msg}" in caplog.text
-    for messages in message_list:
-        assert messages in caplog.text
-
-
-@pytest.mark.parametrize("score_error", [True, False])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback_log_and_save(mock_fit, mock_score, score_error, X_y_binary, caplog):
-    X, y = X_y_binary
-    if score_error:
-        msg = "Score Error!"
-        mock_score.side_effect = Exception(msg)
-        message_list = [msg]
+        assert f"AutoML search encountered an exception: {msg}" in caplog.text
+        # first automl batch, times 3 for 3-fold cross validation
+        assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
     else:
-        mock_score.return_value = {"Log Loss Binary": 0.8}
-        msg = 'all your model are belong to us'
-        mock_fit.side_effect = Exception(msg)
-        message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
-    caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
-    automl.search()
-    assert f"AutoML search encountered an exception: {msg}" in caplog.text
-    # first automl batch, times 3 for 3-fold cross validation
-    assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
-    for e in automl._results['errors']:
-        assert str(e) == msg
+        with pytest.raises(Exception, match=msg):
+            automl.search()
+        assert f"AutoMLSearch raised a fatal exception: {msg}" in caplog.text
     for messages in message_list:
         assert messages in caplog.text
-
-
-@pytest.mark.parametrize("score_error", [True, False])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback(mock_fit, mock_score, score_error, X_y_binary, caplog):
-    X, y = X_y_binary
-    if score_error:
-        msg = "Score Error!"
-        mock_score.side_effect = Exception(msg)
-        message_list = [msg]
-    else:
-        mock_score.return_value = {"Log Loss Binary": 0.8}
-        msg = 'all your model are belong to us'
-        mock_fit.side_effect = Exception(msg)
-        message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
-    caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=raise_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
-    with pytest.raises(Exception, match=msg):
-        automl.search()
-    assert f"AutoMLSearch raised a fatal exception: {msg}" in caplog.text
-    for messages in message_list:
-        assert messages in caplog.text
-    assert len(automl._results['errors']) == 1  # Raises exception at first error
-    for e in automl._results['errors']:
-        assert str(e) == msg
+    if callbacks != raise_error_callback:
+        for e in automl._results['errors']:
+            assert str(e) == msg
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
