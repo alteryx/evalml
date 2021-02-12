@@ -12,7 +12,7 @@ from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, is_binary
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
 from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
 from evalml.utils.logger import get_logger
 
@@ -65,7 +65,7 @@ class EngineBase(ABC):
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
             y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
-            if automl.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+            if is_binary(automl.problem_type) or is_multiclass(automl.problem_type):
                 diff_train = set(np.setdiff1d(full_y_train.to_series(), y_train.to_series()))
                 diff_valid = set(np.setdiff1d(full_y_train.to_series(), y_valid.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
@@ -113,7 +113,7 @@ class EngineBase(ABC):
             ordered_scores.update({"# Validation": y_valid.shape[0]})
 
             evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
-            if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
+            if is_binary(automl.problem_type) and cv_pipeline.threshold is not None:
                 evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
             cv_data.append(evaluation_entry)
         training_time = time.time() - start
