@@ -115,7 +115,7 @@ class EngineBase(ABC):
             ordered_scores.update({"# Validation": y_valid.shape[0]})
 
             evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
-            if is_binary(automl.problem_type) and cv_pipeline.threshold is not None:
+            if is_binary(automl.problem_type) and cv_pipeline is not None and cv_pipeline.threshold is not None:
                 evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
             cv_data.append(evaluation_entry)
         training_time = time.time() - start

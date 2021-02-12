@@ -1,7 +1,7 @@
 import os
 import warnings
 from itertools import product
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
 import numpy as np
@@ -1210,15 +1210,17 @@ def test_pipelines_in_batch_return_none(mock_rankings, mock_full_rankings, mock_
         automl.search()
 
 
-@patch('evalml.automl.automl_search.split_data')
+@patch('evalml.automl.engines.engine_base.split_data')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
+    # this method is called during pipeline eval for binary classification and will cause scores to be set to nan
     mock_split_data.side_effect = RuntimeError()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='Accuracy Binary', max_iterations=2, optimize_thresholds=True, train_best_pipeline=False)
-    automl.search()
+    with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
+        automl.search()
     for pipeline in automl.results['pipeline_results'].values():
         assert np.isnan(pipeline['score'])
 
