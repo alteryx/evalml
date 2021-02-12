@@ -39,7 +39,12 @@ from evalml.exceptions import (
     PipelineNotYetFittedError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost, BinaryClassificationObjective, RegressionObjective
+from evalml.objectives import (
+    BinaryClassificationObjective,
+    CostBenefitMatrix,
+    FraudCost,
+    RegressionObjective
+)
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
