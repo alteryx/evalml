@@ -941,21 +941,30 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
+        name = "Cool Binary Classification Pipeline"
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class, CoolBinaryClassificationPipeline])
     automl.search()
+    assert len(automl.rankings) == 1
+    assert len(automl.full_rankings) == 1
 
     mock_score.return_value = {'Log Loss Binary': 0.1234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
     automl.add_to_rankings(test_pipeline)
-
-    class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
-        name = "Cool Binary Classification Pipeline"
+    assert len(automl.rankings) == 2
+    assert len(automl.full_rankings) == 2
+    assert list(automl.rankings['score'].values).count(0.1234) == 1
+    assert list(automl.full_rankings['score'].values).count(0.1234) == 1
 
     mock_fit.return_value = CoolBinaryClassificationPipeline(parameters={})
     test_pipeline_trained = CoolBinaryClassificationPipeline(parameters={}).fit(X, y)
     automl.add_to_rankings(test_pipeline_trained)
-
+    assert len(automl.rankings) == 3
+    assert len(automl.full_rankings) == 3
     assert list(automl.rankings['score'].values).count(0.1234) == 2
+    assert list(automl.full_rankings['score'].values).count(0.1234) == 2
 
 
 def test_no_search(X_y_binary):
