@@ -449,7 +449,7 @@ class AutoMLSearch:
             elif choice == "n":
                 # So that the time in this loop does not count towards the time budget (if set)
                 time_in_loop = time.time() - start_of_loop
-                self.automl._start += time_in_loop
+                self._start += time_in_loop
                 return False
             else:
                 leading_char = ""
