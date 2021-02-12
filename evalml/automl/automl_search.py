@@ -263,7 +263,7 @@ class AutoMLSearch:
 
     def _make_callback(self, method):
         def callback(*args, **kwargs):
-            return method(self, *args, **kwargs)
+            return method(*args, **kwargs)
         return callback
 
     def _pre_evaluation_callback(self, pipeline):
