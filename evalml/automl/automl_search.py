@@ -416,11 +416,6 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        text_column_vals = self.X_train.select('natural_language')
-        text_columns = list(text_column_vals.to_dataframe().columns)
-        if len(text_columns) == 0:
-            text_columns = None
-
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
@@ -434,7 +429,7 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, text_columns=text_columns) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -481,7 +476,6 @@ class AutoMLSearch:
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
             tuner_class=self.tuner_class,
-            text_columns=text_columns,
             random_seed=self.random_seed,
             n_jobs=self.n_jobs,
             number_features=self.X_train.shape[1],
