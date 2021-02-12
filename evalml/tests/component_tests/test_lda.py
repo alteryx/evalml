@@ -1,7 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import Double, Integer
 
 from evalml.pipelines.components import LinearDiscriminantAnalysis
 
@@ -125,3 +127,21 @@ def test_invalid_n_components():
     lda_invalid = LinearDiscriminantAnalysis(n_components=4)
     with pytest.raises(ValueError, match="is too large"):
         lda_invalid.fit(X, y)
+
+
+def test_lda_woodwork_custom_overrides_returned_by_components():
+    y = pd.Series([1, 2, 1])
+    X_df = pd.DataFrame([[3, 0, 1, 6],
+                         [1, 2, 1, 6],
+                         [10, 2, 1, 6],
+                         [10, 2, 2, 5],
+                         [6, 2, 2, 5]])
+    y = pd.Series([0, 1, 0, 1, 1])
+    override_types = [Integer, Double]
+    for logical_type in override_types:
+        X = ww.DataTable(X_df, logical_types={0: logical_type, 1: logical_type, 2: logical_type, 3: logical_type})
+        lda = LinearDiscriminantAnalysis(n_components=1)
+        lda.fit(X, y)
+        transformed = lda.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        assert transformed.logical_types == {'component_0': ww.logical_types.Double}

@@ -8,9 +8,11 @@ from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
     TextTransformer
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    deprecate_arg,
+    infer_feature_types
 )
 
 
@@ -19,22 +21,23 @@ class TextFeaturizer(TextTransformer):
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
-    def __init__(self, text_columns=None, random_state=0, **kwargs):
+    def __init__(self, text_columns=None, random_state=None, random_seed=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
             text_columns (list): list of feature names which should be treated as text features.
-            random_state (int): Seed for the random number generator. Defaults to 0.
-
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._trans = [nlp_primitives.DiversityScore,
                        nlp_primitives.MeanCharactersPerWord,
                        nlp_primitives.PolarityScore]
         self._features = None
-        self._lsa = LSA(text_columns=text_columns, random_state=random_state)
+        self._lsa = LSA(text_columns=text_columns, random_seed=random_seed)
         self._primitives_provenance = {}
         super().__init__(text_columns=text_columns,
-                         random_state=random_state,
+                         random_seed=random_seed,
                          **kwargs)
 
     def _clean_text(self, X):
@@ -75,7 +78,7 @@ class TextFeaturizer(TextTransformer):
         """
         if len(self._all_text_columns) == 0:
             return self
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         text_columns = self._get_text_columns(X)
@@ -110,10 +113,10 @@ class TextFeaturizer(TextTransformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
+        X_ww = infer_feature_types(X)
         if self._features is None or len(self._features) == 0:
-            return X
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+            return X_ww
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         text_columns = self._get_text_columns(X)
         es = self._make_entity_set(X, text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
@@ -122,7 +125,7 @@ class TextFeaturizer(TextTransformer):
         X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        return _convert_to_woodwork_structure(X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _get_feature_provenance(self):
         if not self._all_text_columns:

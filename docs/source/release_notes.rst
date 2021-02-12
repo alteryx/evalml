@@ -3,9 +3,18 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+<<<<<<< HEAD
         * Added multiple sampling methods for data splitters for imbalanced classification :pr:`1775`
+=======
+        * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
+        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
+        * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
+        * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
+>>>>>>> main
     * Fixes
     * Changes
+        * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
+        * Added ``random_seed`` as an argument to our automl/pipeline/component api. Using ``random_state`` will raise a warning :pr:`1798`
     * Documentation Changes
     * Testing Changes
 
@@ -26,6 +35,7 @@ Release Notes
         * Moving some prs to the right section of the release notes :pr:`1789`
         * Tweak README.md. :pr:`1800`
         * Fixed back arrow on install page docs :pr:`1795`
+        * Fixed docstring for `ClassImbalanceDataCheck.validate()` :pr:`1817`
     * Testing Changes
 
 **v0.18.1 Feb. 1, 2021**
@@ -35,7 +45,6 @@ Release Notes
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
         * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
-        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
     * Fixes
         * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`

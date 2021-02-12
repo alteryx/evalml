@@ -50,10 +50,10 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
     _convert_woodwork_types_wrapper,
-    get_random_state
+    get_random_state,
+    infer_feature_types
 )
 
 
@@ -1160,7 +1160,7 @@ def test_graph_prediction_vs_actual_over_time():
         problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
         def predict(self, X, y):
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
             y = _convert_woodwork_types_wrapper(y.to_series())
             preds = y + 10
             preds.index = range(100, 161)
@@ -1213,21 +1213,10 @@ def test_decision_tree_data_from_estimator_wrong_type(logit_estimator):
         decision_tree_data_from_estimator(est_logit)
 
 
-def test_decision_tree_data_from_estimator_feature_length(fitted_tree_estimators):
-    est_class, _ = fitted_tree_estimators
-    with pytest.raises(ValueError, match="Length mismatch: Expected features has length {} but got list with length {}"
-                                         .format(est_class._component_obj.n_features_, 3)):
-        decision_tree_data_from_estimator(est_class, feature_names=["First", "Second", "Third"])
-
-    features_array = tuple([f'Testing_{col_}' for col_ in range(est_class._component_obj.n_features_)])
-    formatted_ = decision_tree_data_from_estimator(est_class, feature_names=features_array)
-    assert isinstance(formatted_, OrderedDict)
-
-
 def test_decision_tree_data_from_estimator(fitted_tree_estimators):
     est_class, est_reg = fitted_tree_estimators
 
-    formatted_ = decision_tree_data_from_estimator(est_reg, feature_names=[f'Testing_{col_}' for col_ in range(est_reg._component_obj.n_features_)])
+    formatted_ = decision_tree_data_from_estimator(est_reg)
     tree_ = est_reg._component_obj.tree_
 
     assert isinstance(formatted_, OrderedDict)
@@ -1469,7 +1458,7 @@ def test_graph_t_sne(data_type, perplexity, learning_rate):
         X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     elif data_type == 'ww':
         X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
 
     for width_, size_ in [(3, 2), (2, 3), (1, 4)]:
         fig = graph_t_sne(X, n_components=2, perplexity=perplexity, learning_rate=learning_rate, marker_line_width=width_, marker_size=size_)

@@ -5,6 +5,13 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import LSA
 
@@ -164,3 +171,35 @@ def test_lsa_with_custom_indices(text_df):
     lsa.fit(X)
     X_t = lsa.transform(X)
     assert not X_t.to_dataframe().isnull().any().any()
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+@pytest.mark.parametrize("with_text_col", [True, False])
+def test_lsa_woodwork_custom_overrides_returned_by_components(X_df, with_text_col):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, Boolean, NaturalLanguage]
+    X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
+
+    if with_text_col:
+        lsa = LSA(text_columns=['text col'])
+    else:
+        lsa = LSA(text_columns=[])
+
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        lsa.fit(X)
+        transformed = lsa.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        if with_text_col:
+            assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}
+        else:
+            assert transformed.logical_types == {0: logical_type, 'text col': NaturalLanguage}

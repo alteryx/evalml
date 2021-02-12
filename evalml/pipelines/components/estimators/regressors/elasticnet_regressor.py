@@ -4,6 +4,7 @@ from skopt.space import Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import deprecate_arg
 
 
 class ElasticNetRegressor(Estimator):
@@ -16,18 +17,19 @@ class ElasticNetRegressor(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, max_iter=1000, normalize=False, random_state=0, **kwargs):
+    def __init__(self, alpha=0.5, l1_ratio=0.5, max_iter=1000, normalize=False,
+                 random_state=None, random_seed=0, **kwargs):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio,
                       'max_iter': max_iter,
                       'normalize': normalize}
         parameters.update(kwargs)
-
-        en_regressor = SKElasticNet(random_state=random_state,
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        en_regressor = SKElasticNet(random_state=random_seed,
                                     **parameters)
         super().__init__(parameters=parameters,
                          component_obj=en_regressor,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     @property
     def feature_importance(self):

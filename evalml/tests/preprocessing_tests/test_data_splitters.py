@@ -77,10 +77,10 @@ def test_data_splitter_tv_default(splitter, sampler, data_type, make_data_type, 
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
     if "SMOTENC" not in splitter.__name__:
-        data_splitter = splitter(random_state=0, test_size=0.2)
+        data_splitter = splitter(random_seed=0, test_size=0.2)
         sample_method = sampler(random_state=0)
     else:
-        data_splitter = splitter(categorical_features=[0], random_state=0, test_size=0.2)
+        data_splitter = splitter(categorical_features=[0], random_seed=0, test_size=0.2)
         sample_method = sampler(categorical_features=[0], random_state=0)
     X_resample, y_resample = sample_method.fit_resample(X_train, y_train)
     initial_results = [(X_resample, y_resample), (X_test, y_test)]
@@ -115,10 +115,10 @@ def test_data_splitter_cv_default(splitter, sampler, data_type, make_data_type, 
         X, y = X_y_multi
     skf = StratifiedKFold(shuffle=True, n_splits=3, random_state=0)
     if "SMOTENC" not in splitter.__name__:
-        data_splitter = splitter(random_state=0)
+        data_splitter = splitter(random_seed=0)
         sample_method = sampler(random_state=0)
     else:
-        data_splitter = splitter(categorical_features=[0], random_state=0)
+        data_splitter = splitter(categorical_features=[0], random_seed=0)
         sample_method = sampler(categorical_features=[0], random_state=0)
     initial_results = []
     for i, (train_indices, test_indices) in enumerate(skf.split(X, y)):

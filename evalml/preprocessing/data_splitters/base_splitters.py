@@ -1,19 +1,26 @@
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
-from evalml.utils.gen_utils import (
-    _convert_numeric_dataset,
-    _convert_to_woodwork_structure
-)
+from evalml.utils import _convert_numeric_dataset, infer_feature_types
 
 
 class BaseTVSplit(BaseCrossValidator):
     """Base class for training validation data splitter."""
 
-    def __init__(self, sampler=None, test_size=None, random_state=0):
+    def __init__(self, sampler=None, test_size=None, random_seed=0):
+        """Create a training-validation data splitter instance
+
+        Arguments:
+            sampler (sampler instance): The sampler instance to use for resampling the training data. Must have a `fit_resample` method. Defaults to None.
+
+            test_size (float): What percentage of data points should be included in the validation
+                set. Defalts to the complement of `train_size` if `train_size` is set, and 0.25 otherwise.
+
+            random_seed (int): Random seed for the splitter. Defaults to 0
+        """
         self.sampler = sampler
         self.test_size = test_size
-        self.random_state = random_state
+        self.random_seed = random_seed
 
     @staticmethod
     def get_n_splits():
@@ -31,7 +38,7 @@ class BaseTVSplit(BaseCrossValidator):
             tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
         """
         X, y = _convert_numeric_dataset(X, y)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_state)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_seed)
         X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
         X_train_resample, y_train_resample = _convert_numeric_dataset(X_train_resample, y_train_resample, to_pandas=False)
         X_test, y_test = _convert_numeric_dataset(X_test, y_test, to_pandas=False)
@@ -49,15 +56,26 @@ class BaseTVSplit(BaseCrossValidator):
         """
         X_pd, y_pd = _convert_numeric_dataset(X, y)
         X_transformed, y_transformed = self.sampler.fit_resample(X_pd, y_pd)
-        return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
+        return (infer_feature_types(X_transformed), infer_feature_types(y_transformed))
 
 
 class BaseCVSplit(StratifiedKFold):
     """Base class for K-fold cross-validation data splitter."""
 
-    def __init__(self, sampler=None, n_splits=3, shuffle=True, random_state=0):
+    def __init__(self, sampler=None, n_splits=3, shuffle=True, random_seed=0):
+        """Create a cross-validation data splitter instance
+
+        Arguments:
+            sampler (sampler instance): The sampler instance to use for resampling the training data. Must have a `fit_resample` method. Defaults to None.
+
+            n_splits (int): How many CV folds to use. Defaults to 3.
+
+            shuffle (bool): Whether or not to shuffle the data. Defaults to True.
+
+            random_seed (int): Random seed for the splitter. Defaults to 0
+        """
         self.sampler = sampler
-        super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
+        super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)
 
     def split(self, X, y):
         """Splits using K-fold cross-validation and returns the sampled training data using the data sampler provided.
@@ -89,4 +107,4 @@ class BaseCVSplit(StratifiedKFold):
         """
         X_pd, y_pd = _convert_numeric_dataset(X, y)
         X_transformed, y_transformed = self.sampler.fit_resample(X_pd, y_pd)
-        return (_convert_to_woodwork_structure(X_transformed), _convert_to_woodwork_structure(y_transformed))
+        return (infer_feature_types(X_transformed), infer_feature_types(y_transformed))

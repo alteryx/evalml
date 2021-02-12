@@ -14,10 +14,7 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
     _make_single_prediction_shap_table
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
 _ReportData = namedtuple("ReportData", ["pipeline", "input_features",
@@ -43,12 +40,12 @@ def explain_prediction(pipeline, input_features, top_k=3, training_data=None, in
     Returns:
         str or dict - A report explaining the most positive/negative contributing features to the predictions.
     """
-    input_features = _convert_to_woodwork_structure(input_features)
+    input_features = infer_feature_types(input_features)
     if not (isinstance(input_features, ww.DataTable) and input_features.shape[0] == 1):
         raise ValueError("features must be stored in a dataframe or datatable with exactly one row.")
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
     if training_data is not None:
-        training_data = _convert_to_woodwork_structure(training_data)
+        training_data = infer_feature_types(training_data)
         training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
 
     if output_format not in {"text", "dict", "dataframe"}:
@@ -110,10 +107,10 @@ def explain_predictions(pipeline, input_features, training_data=None, top_k_feat
         str or dict - A report explaining the top contributing features to each prediction for each row of input_features.
             The report will include the feature names, prediction contribution, and SHAP Value (optional).
     """
-    input_features = _convert_to_woodwork_structure(input_features)
+    input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
     if training_data is not None:
-        training_data = _convert_to_woodwork_structure(training_data)
+        training_data = infer_feature_types(training_data)
         training_data = _convert_woodwork_types_wrapper(training_data.to_dataframe())
 
     if input_features.empty:
@@ -154,9 +151,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
             feature names, prediction contribution, and SHAP Value (optional) will be listed.
     """
-    input_features = _convert_to_woodwork_structure(input_features)
+    input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
-    y_true = _convert_to_woodwork_structure(y_true)
+    y_true = infer_feature_types(y_true)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
 
     if not (input_features.shape[0] >= num_to_explain * 2):
