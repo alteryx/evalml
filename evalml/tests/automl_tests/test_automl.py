@@ -879,6 +879,16 @@ def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_
     assert 0.1234 in automl.rankings['score'].values
 
 
+def test_add_to_rankings_invalid_pipeline(dummy_regression_pipeline_class):
+    X = pd.DataFrame({'col_0': [i for i in range(100)]})
+    y = pd.Series([i for i in range(100)])
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
+    test_pipeline = dummy_regression_pipeline_class(parameters={})
+    with pytest.raises(PipelineNotFoundError, match="No such pipeline allowed in this AutoML search: Mock Regression Pipeline"):
+        automl.add_to_rankings(test_pipeline)
+
+
 @patch('evalml.pipelines.RegressionPipeline.score')
 def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
