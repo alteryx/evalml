@@ -540,16 +540,19 @@ class AutoMLSearch:
         desc = desc.ljust(self._MAX_NAME_LEN)
         logger.info(desc)
 
-        best_pipeline = self.rankings.iloc[0]
-        best_pipeline_name = best_pipeline["pipeline_name"]
         self._find_best_pipeline()
-        logger.info(f"Best pipeline: {best_pipeline_name}")
-        logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+        if self._best_pipeline is not None:
+            best_pipeline = self.rankings.iloc[0]
+            best_pipeline_name = best_pipeline["pipeline_name"]
+            logger.info(f"Best pipeline: {best_pipeline_name}")
+            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
         self._searched = True
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings
         If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
+        if len(self.rankings) == 0:
+            return
         best_pipeline = self.rankings.iloc[0]
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
             self._best_pipeline = self.get_pipeline(best_pipeline['id'])
