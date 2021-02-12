@@ -299,6 +299,7 @@ def pad_with_nans(pd_data, num_to_pad):
     return padded.convert_dtypes(infer_objects=True, convert_string=False,
                                  convert_integer=False, convert_boolean=False)
 
+
 def _get_rows_without_nans(*data):
     """Compute a boolean array marking where all entries in the data are non-nan.
 
