@@ -370,6 +370,27 @@ class AutoMLSearch:
         else:
             return DataChecks(data_checks)
 
+    def _handle_keyboard_interrupt(self):
+        """Presents a prompt to the user asking if they want to stop the search.
+
+        Returns:
+            bool: If True, search should terminate early
+        """
+        leading_char = "\n"
+        start_of_loop = time.time()
+        while True:
+            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
+            if choice == "y":
+                logger.info("Exiting AutoMLSearch.")
+                return True
+            elif choice == "n":
+                # So that the time in this loop does not count towards the time budget (if set)
+                time_in_loop = time.time() - start_of_loop
+                self.automl._start += time_in_loop
+                return False
+            else:
+                leading_char = ""
+
     def search(self, data_checks="auto", show_iteration_plot=True, _engine=None):
         """Find the best pipeline for the data set.
 
@@ -525,27 +546,6 @@ class AutoMLSearch:
         logger.info(f"Best pipeline: {best_pipeline_name}")
         logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
         self._searched = True
-
-    def _handle_keyboard_interrupt(self):
-        """Presents a prompt to the user asking if they want to stop the search.
-
-        Returns:
-            bool: If True, search should terminate early
-        """
-        leading_char = "\n"
-        start_of_loop = time.time()
-        while True:
-            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
-            if choice == "y":
-                logger.info("Exiting AutoMLSearch.")
-                return True
-            elif choice == "n":
-                # So that the time in this loop does not count towards the time budget (if set)
-                time_in_loop = time.time() - start_of_loop
-                self.automl._start += time_in_loop
-                return False
-            else:
-                leading_char = ""
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings
