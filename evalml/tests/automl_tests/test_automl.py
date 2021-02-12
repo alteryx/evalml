@@ -544,18 +544,16 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     X, y = X_y_binary
 
     allowed_pipelines = [dummy_binary_pipeline_class]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
     with pytest.raises(Exception, match='mock algo init'):
-        automl.search()
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
     assert mock_algo_init.call_count == 1
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_iterations'] == 10
     assert kwargs['allowed_pipelines'] == allowed_pipelines
 
     allowed_model_families = [ModelFamily.RANDOM_FOREST]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_model_families=allowed_model_families, max_iterations=1)
     with pytest.raises(Exception, match='mock algo init'):
-        automl.search()
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_model_families=allowed_model_families, max_iterations=1)
     assert mock_algo_init.call_count == 2
     _, kwargs = mock_algo_init.call_args
     assert kwargs['max_iterations'] == 1
@@ -1958,7 +1956,7 @@ def test_automl_error_callback_log_and_save(mock_fit, mock_score, X_y_binary, ca
     mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
-    with pytest.raises(AutoMLSearchException, match="all pipelines in the current automl batch produced a score of np.nan on the primary objective"):
+    with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
         automl.search()
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged

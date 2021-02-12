@@ -519,16 +519,18 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
+        new_pipeline_ids = []
         loop_interrupted = False
         while self._should_continue():
-            if not loop_interrupted:
-                current_batch_pipelines = self._automl_algorithm.next_batch()
             try:
-                new_pipeline_ids = self._engine.evaluate_batch(current_batch_pipelines)
-                loop_interrupted = False
+                if not loop_interrupted:
+                    current_batch_pipelines = self._automl_algorithm.next_batch()
             except StopIteration:
                 logger.info('AutoML Algorithm out of recommendations, ending')
                 break
+            try:
+                new_pipeline_ids = self._engine.evaluate_batch(current_batch_pipelines)
+                loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
                 if self._handle_keyboard_interrupt():
