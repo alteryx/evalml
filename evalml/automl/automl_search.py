@@ -46,14 +46,15 @@ from evalml.pipelines import (
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    convert_to_seconds,
+    deprecate_arg,
+    infer_feature_types
 )
 from evalml.utils.logger import (
     get_logger,
@@ -89,10 +90,10 @@ class AutoMLSearch:
                  add_result_callback=None,
                  error_callback=None,
                  additional_objectives=None,
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
-                 verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
                  max_batches=None,
@@ -157,12 +158,12 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): Deprecated - use random_seed instead.
+
+            random_seed (int): Seed for the random number generator. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-
-            verbose (boolean): If True, turn verbosity on. Defaults to True.
 
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
                 If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
@@ -192,7 +193,6 @@ class AutoMLSearch:
         self.add_result_callback = add_result_callback
         self.error_callback = error_callback or log_error_callback
         self.data_splitter = data_splitter
-        self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
         if objective == 'auto':
@@ -244,8 +244,7 @@ class AutoMLSearch:
             'search_order': [],
             'errors': []
         }
-        self.random_state = get_random_state(random_state)
-        self.random_seed = get_random_seed(self.random_state)
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -269,12 +268,11 @@ class AutoMLSearch:
         self._best_pipeline = None
         self._searched = False
 
-        # make everything ww objects
-        self.X_train = _convert_to_woodwork_structure(X_train)
-        self.y_train = _convert_to_woodwork_structure(y_train)
+        self.X_train = infer_feature_types(X_train)
+        self.y_train = infer_feature_types(y_train)
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
-                                                   n_splits=3, shuffle=True, random_state=self.random_seed)
+                                                   n_splits=3, shuffle=True, random_seed=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
 
@@ -319,9 +317,8 @@ class AutoMLSearch:
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
-            f"Random State: {self.random_state}\n"
+            f"Random Seed: {self.random_seed}\n"
             f"n_jobs: {self.n_jobs}\n"
-            f"Verbose: {self.verbose}\n"
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
@@ -419,11 +416,6 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        text_column_vals = self.X_train.select('natural_language')
-        text_columns = list(text_column_vals.to_dataframe().columns)
-        if len(text_columns) == 0:
-            text_columns = None
-
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
@@ -437,7 +429,7 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, text_columns=text_columns) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -484,8 +476,7 @@ class AutoMLSearch:
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
             tuner_class=self.tuner_class,
-            text_columns=text_columns,
-            random_state=self.random_state,
+            random_seed=self.random_seed,
             n_jobs=self.n_jobs,
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
@@ -558,7 +549,7 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
-                                                                                          random_state=self.random_seed)
+                                                                                          random_seed=self.random_seed)
                 self._best_pipeline.fit(X_train, y_train)
                 self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
 
@@ -567,8 +558,8 @@ class AutoMLSearch:
 
         Arguments:
             pipeline (Pipeline): Pipeline instance to threshold
-            X_threshold_tuning (ww DataTable): X data to tune pipeline to
-            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
+            X_threshold_tuning (ww.DataTable): X data to tune pipeline to
+            y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
 
         Returns:
             Trained pipeline instance
@@ -577,10 +568,7 @@ class AutoMLSearch:
             pipeline.threshold = 0.5
             if X_threshold_tuning:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                if isinstance(y_predict_proba, pd.DataFrame):
-                    y_predict_proba = y_predict_proba.iloc[:, 1]
-                else:
-                    y_predict_proba = y_predict_proba[:, 1]
+                y_predict_proba = y_predict_proba.iloc[:, 1]
                 pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
         return pipeline
 
@@ -700,8 +688,8 @@ class AutoMLSearch:
                 if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
-                                                                                          random_state=self.random_seed)
-                cv_pipeline = pipeline.clone(pipeline.random_state)
+                                                                                          random_seed=self.random_seed)
+                cv_pipeline = pipeline.clone()
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
@@ -844,13 +832,12 @@ class AutoMLSearch:
 
         return current_batch_pipeline_scores
 
-    def get_pipeline(self, pipeline_id, random_state=0):
+    def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
         initialized with the parameters used to train that pipeline during automl search.
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
         Returns:
             PipelineBase: untrained pipeline instance associated with the provided ID
@@ -862,7 +849,11 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters, random_state=random_state)
+        pipeline = get_generated_pipeline_class(self.problem_type)
+        pipeline.custom_hyperparameters = pipeline_class.custom_hyperparameters
+        pipeline.custom_name = pipeline_class.name
+        pipeline.component_graph = pipeline_class.component_graph
+        return pipeline(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline

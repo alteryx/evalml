@@ -1,4 +1,5 @@
 import os
+import warnings
 from itertools import product
 from unittest.mock import MagicMock, patch
 
@@ -56,10 +57,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
-from evalml.utils.gen_utils import (
-    check_random_state_equality,
-    get_random_state
-)
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -289,7 +286,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
         'Additional Objectives': search_params['additional_objectives'],
-        'Random State': 'RandomState(MT19937)',
+        'Random Seed': 0,
         'n_jobs': search_params['n_jobs'],
         'Optimize Thresholds': search_params['optimize_thresholds']
     }
@@ -308,6 +305,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     assert "Search Results" not in str_rep
 
     mock_score.return_value = {automl.objective.name: 1.0}
+    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame([[1.0, 0.0], [0.0, 1.0]]))
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -415,19 +413,6 @@ def test_automl_bad_data_check_parameter_type():
         automl.search(data_checks=[MockDataCheckErrorAndWarning])
 
 
-@patch('evalml.pipelines.RegressionPipeline.fit')
-@patch('evalml.pipelines.RegressionPipeline.predict')
-@patch('evalml.data_checks.InvalidTargetDataCheck')
-def test_automl_passes_correct_objective_name_to_invalid_target_data_checks(mock_obj, mock_predict, mock_fit, X_y_regression):
-    X, y = X_y_regression
-    mock_obj.objective_name.return_value = "R2"
-    automl = AutoMLSearch(X, y, max_iterations=1, problem_type=ProblemTypes.REGRESSION)
-    automl.search()
-    mock_fit.assert_called()
-    mock_predict.assert_called()
-    assert automl.objective.name == mock_obj.objective_name.return_value
-
-
 class MockDataCheckObjective(DataCheck):
     def __init__(self, objective):
         self.objective_name = get_objective(objective).name
@@ -449,7 +434,7 @@ def test_validate_data_check_n_splits():
     X, y = datasets.make_classification(n_samples=21, n_features=6, n_classes=3,
                                         n_informative=3, n_redundant=2, random_state=0)
 
-    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_state=42)
+    data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_seed=42)
     automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
     with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
         automl.search()
@@ -478,9 +463,8 @@ def test_automl_str_no_param_search(X_y_binary):
             'Precision'],
         'Start Iteration Callback': 'None',
         'Add Result Callback': 'None',
-        'Random State': 'RandomState(MT19937)',
+        'Random Seed': 0,
         'n_jobs': '-1',
-        'Verbose': 'True',
         'Optimize Thresholds': 'False'
     }
 
@@ -1200,6 +1184,7 @@ class CustomClassificationObjective(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
+    is_bounded_like_percentage = False
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -1212,6 +1197,7 @@ class CustomRegressionObjective(ObjectiveBase):
     greater_is_better = True
     score_needs_proba = False
     perfect_score = 1.0
+    is_bounded_like_percentage = False
     problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -1268,7 +1254,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, n_jobs=1)
+                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
@@ -1336,10 +1322,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
     mock_scores = {get_objective(obj).name: i for i, obj in enumerate(core_objectives)}
     mock_baseline_scores = {get_objective(obj).name: i + 1 for i, obj in enumerate(core_objectives)}
     answer = {}
+    baseline_percent_difference = {}
     for obj in core_objectives:
         obj_class = get_objective(obj)
         answer[obj_class.name] = obj_class.calculate_percent_difference(mock_scores[obj_class.name],
                                                                         mock_baseline_scores[obj_class.name])
+        baseline_percent_difference[obj_class.name] = 0
 
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
@@ -1354,8 +1342,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         automl.search(data_checks=None)
         assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
         pipeline_results = automl.results['pipeline_results'][1]
+        baseline_results = automl.results['pipeline_results'][0]
         assert pipeline_results["percent_better_than_baseline_all_objectives"] == answer
         assert pipeline_results['percent_better_than_baseline'] == pipeline_results["percent_better_than_baseline_all_objectives"][automl.objective.name]
+        # Check that baseline is 0% better than baseline
+        assert baseline_results["percent_better_than_baseline_all_objectives"] == baseline_percent_difference
 
 
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
@@ -1740,8 +1731,8 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
         hyperparameter_ranges = {}
 
-        def __init__(self, n_jobs=-1, random_state=0):
-            super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_state=random_state)
+        def __init__(self, n_jobs=-1, random_seed=0):
+            super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_seed=random_seed)
 
     class Pipeline1(BinaryClassificationPipeline):
         name = "Pipeline 1"
@@ -1827,9 +1818,8 @@ def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
+def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_classifier_estimator_class):
 
-    expected_random_state = get_random_state(42)
     X, y = X_y_binary
 
     class DummyPipeline(BinaryClassificationPipeline):
@@ -1837,15 +1827,14 @@ def test_automl_respects_random_state(mock_fit, mock_score, X_y_binary, dummy_cl
         num_pipelines_different_seed = 0
         num_pipelines_init = 0
 
-        def __init__(self, parameters, random_state):
-            random_state = get_random_state(random_state)
-            is_diff_random_state = not check_random_state_equality(random_state, expected_random_state)
+        def __init__(self, parameters, random_seed):
+            is_diff_random_seed = not (random_seed == 42)
             self.__class__.num_pipelines_init += 1
-            self.__class__.num_pipelines_different_seed += is_diff_random_state
-            super().__init__(parameters, random_state)
+            self.__class__.num_pipelines_different_seed += is_diff_random_seed
+            super().__init__(parameters, random_seed=random_seed)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=[DummyPipeline],
-                          random_state=expected_random_state, max_iterations=10)
+                          random_seed=42, max_iterations=10)
     automl.search()
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
 
@@ -2054,9 +2043,9 @@ def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, moc
         X, y = X_y_regression
 
     data_splitters = []
-    random_state = [0, 0, 1]
-    for state in random_state:
-        a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, random_state=state, max_iterations=1)
+    random_seed = [0, 0, 1]
+    for seed in random_seed:
+        a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, random_seed=seed, max_iterations=1)
         a.search()
         data_splitters.append([[set(train), set(test)] for train, test in a.data_splitter.split(X, y)])
     # append split from last random state again, should be referencing same datasplit object
@@ -2179,4 +2168,26 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
             assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
-            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 2
+            assert row['parameters']['Decision Tree Classifier']['max_depth'] == 1
+
+
+@pytest.mark.parametrize("random_seed", [0, 1, 9])
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_multi):
+    X, y = X_y_multi
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_seed=random_seed, n_jobs=1)
+    automl.search()
+
+    for i, row in automl.rankings.iterrows():
+        if 'Base' not in list(row['parameters'].keys())[0]:
+            assert automl.get_pipeline(row['id']).random_seed == random_seed
+
+
+def test_automl_raises_deprecated_random_state_warning(X_y_multi):
+    X, y = X_y_multi
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
+        assert automl.random_seed == 10
+        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")

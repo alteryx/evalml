@@ -8,10 +8,11 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    deprecate_arg,
+    import_or_raise,
+    infer_feature_types
 )
 
 
@@ -32,12 +33,9 @@ class CatBoostClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
-    SEED_MIN = 0
-    SEED_MAX = SEED_BOUNDS.max_bound
-
     def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=True,
-                 allow_writing_files=False, random_state=0, **kwargs):
-        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
+                 allow_writing_files=False, random_state=None, random_seed=0, **kwargs):
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,
@@ -57,15 +55,13 @@ class CatBoostClassifier(Estimator):
                                                     random_seed=random_seed)
         super().__init__(parameters=parameters,
                          component_obj=cb_classifier,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
-
+        self.input_feature_names = list(X.columns)
+        X, y = super()._manage_woodwork(X, y)
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:
             self._label_encoder = LabelEncoder()
@@ -74,16 +70,14 @@ class CatBoostClassifier(Estimator):
         return self
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()
         if self._label_encoder:
             predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
-        if not isinstance(predictions, pd.Series):
-            predictions = pd.Series(predictions)
-        return predictions
+        return infer_feature_types(predictions)
 
     @property
     def feature_importance(self):

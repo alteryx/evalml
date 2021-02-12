@@ -1,8 +1,9 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -20,7 +21,8 @@ class Imputer(Transformer):
                  categorical_fill_value=None,
                  numeric_impute_strategy="mean",
                  numeric_fill_value=None,
-                 random_state=0, **kwargs):
+                 random_state=None,
+                 random_seed=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -50,21 +52,22 @@ class Imputer(Transformer):
         self._categorical_cols = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
-        cat_cols = list(X.select('category').columns)
+        X = infer_feature_types(X)
+        cat_cols = list(X.select(['category', 'boolean']).columns)
         numeric_cols = list(X.select('numeric').columns)
 
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -89,30 +92,26 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
-        X_null_dropped = X.copy()
+        X_ww = infer_feature_types(X)
+        X_null_dropped = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
         if X_null_dropped.empty:
-            return X_null_dropped
+            return _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
-            imputed = self._numeric_imputer.transform(X_numeric)
-            imputed.index = X_null_dropped.index
+            imputed = self._numeric_imputer.transform(X_numeric).to_dataframe()
             X_null_dropped[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X_null_dropped[self._categorical_cols]
-            imputed = self._categorical_imputer.transform(X_categorical)
-            imputed.index = X_null_dropped.index
+            imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
             X_null_dropped[X_categorical.columns] = imputed
-
+        X_null_dropped = _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
         return X_null_dropped

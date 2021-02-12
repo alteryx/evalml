@@ -217,8 +217,8 @@ def dummy_classifier_estimator_class():
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
-        def __init__(self, a=1, b=0, random_state=0):
-            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed)
 
         def fit(self, X, y):
             return self
@@ -257,8 +257,8 @@ def dummy_regressor_estimator_class():
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
-        def __init__(self, a=1, b=0, random_state=0):
-            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed)
 
         def fit(self, X, y):
             return self
@@ -284,8 +284,8 @@ def dummy_time_series_regressor_estimator_class():
         hyperparameter_ranges = {'a': Integer(0, 10),
                                  'b': Real(0, 10)}
 
-        def __init__(self, a=1, b=0, random_state=0):
-            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_state=random_state)
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed)
 
     return MockTimeSeriesRegressor
 
@@ -477,6 +477,8 @@ def fitted_tree_estimators(tree_estimators, X_y_binary, X_y_regression):
     est_clf, est_reg = tree_estimators
     X_b, y_b = X_y_binary
     X_r, y_r = X_y_regression
+    X_b = pd.DataFrame(X_b, columns=[f'Testing_{col}' for col in range(len(X_b[0]))])
+    X_r = pd.DataFrame(X_r, columns=[f'Testing_{col}' for col in range(len(X_r[0]))])
     est_clf.fit(X_b, y_b)
     est_reg.fit(X_r, y_r)
     return est_clf, est_reg

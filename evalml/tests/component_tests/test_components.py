@@ -8,6 +8,7 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from skopt.space import Categorical
 
 from evalml.exceptions import (
@@ -49,6 +50,8 @@ from evalml.pipelines.components import (
     SelectColumns,
     SimpleImputer,
     StandardScaler,
+    SVMClassifier,
+    SVMRegressor,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -61,7 +64,6 @@ from evalml.pipelines.components.ensemble import (
 )
 from evalml.pipelines.components.utils import (
     _all_estimators,
-    _all_estimators_used_in_search,
     _all_transformers,
     all_components,
     generate_component_code
@@ -105,11 +107,11 @@ class MockFitComponent(ComponentBase):
     model_family = ModelFamily.NONE
     name = 'Mock Fit Component'
 
-    def __init__(self, param_a=2, param_b=10, random_state=0):
+    def __init__(self, param_a=2, param_b=10, random_seed=0):
         parameters = {'param_a': param_a, 'param_b': param_b}
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=0)
+                         random_seed=0)
 
     def fit(self, X, y=None):
         pass
@@ -172,8 +174,8 @@ def test_describe_component():
     assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
                                                    'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
                                                                   'encode_as_categories': False}}
-    assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {'text_columns': None}}
-    assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {'text_columns': None}}
+    assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {}}
+    assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
@@ -189,6 +191,8 @@ def test_describe_component():
     rf_classifier = RandomForestClassifier(n_estimators=10, max_depth=3)
     rf_regressor = RandomForestRegressor(n_estimators=10, max_depth=3)
     linear_regressor = LinearRegressor()
+    svm_classifier = SVMClassifier()
+    svm_regressor = SVMRegressor()
     assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
     assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}
@@ -199,6 +203,8 @@ def test_describe_component():
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
     assert rf_regressor.describe(return_dict=True) == {'name': 'Random Forest Regressor', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
     assert linear_regressor.describe(return_dict=True) == {'name': 'Linear Regressor', 'parameters': {'fit_intercept': True, 'normalize': False, 'n_jobs': -1}}
+    assert svm_classifier.describe(return_dict=True) == {'name': 'SVM Classifier', 'parameters': {'C': 1.0, 'kernel': 'rbf', 'gamma': 'scale', 'probability': True}}
+    assert svm_regressor.describe(return_dict=True) == {'name': 'SVM Regressor', 'parameters': {'C': 1.0, 'kernel': 'rbf', 'gamma': 'scale'}}
     try:
         xgb_classifier = XGBoostClassifier(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
         xgb_regressor = XGBoostRegressor(eta=0.1, min_child_weight=1, max_depth=3, n_estimators=75)
@@ -253,7 +259,7 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         name = "Mock Transformer"
 
         def fit(self, X, y=None):
-            return X
+            return self
 
     component = MockComponent()
     with pytest.raises(MethodPropertyNotFoundError, match="Component requires a fit method or a component_obj that implements fit"):
@@ -299,7 +305,7 @@ def test_component_fit(X_y_binary):
             est = MockEstimator()
             super().__init__(parameters=parameters,
                              component_obj=est,
-                             random_state=0)
+                             random_seed=0)
 
     est = MockComponent()
     assert isinstance(est.fit(X, y), ComponentBase)
@@ -313,13 +319,13 @@ def test_component_fit_transform(X_y_binary):
         hyperparameter_ranges = {}
 
         def fit_transform(self, X, y=None):
-            return X
+            return ww.DataTable(X)
 
         def __init__(self):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     class MockTransformerWithFitTransformButError(Transformer):
         name = "Mock Transformer"
@@ -332,7 +338,7 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     class MockTransformerWithFitAndTransform(Transformer):
         name = "Mock Transformer"
@@ -342,13 +348,13 @@ def test_component_fit_transform(X_y_binary):
             return self
 
         def transform(self, X, y=None):
-            return X
+            return ww.DataTable(X)
 
         def __init__(self):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     class MockTransformerWithOnlyFit(Transformer):
         name = "Mock Transformer"
@@ -361,7 +367,7 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_state=0)
+                             random_seed=0)
 
     # convert data to pd DataFrame, because the component classes don't
     # standardize to pd DataFrame
@@ -369,14 +375,14 @@ def test_component_fit_transform(X_y_binary):
     y = pd.Series(y)
 
     component = MockTransformerWithFitTransform()
-    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
+    assert isinstance(component.fit_transform(X, y), ww.DataTable)
 
     component = MockTransformerWithFitTransformButError()
     with pytest.raises(RuntimeError):
         component.fit_transform(X, y)
 
     component = MockTransformerWithFitAndTransform()
-    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
+    assert isinstance(component.fit_transform(X, y), ww.DataTable)
 
     component = MockTransformerWithOnlyFit()
     with pytest.raises(MethodPropertyNotFoundError):
@@ -440,34 +446,22 @@ def test_clone_init():
     clf = MockFitComponent(**params)
     clf_clone = clf.clone()
     assert clf.parameters == clf_clone.parameters
-
-
-def test_clone_random_state():
-    params = {'param_a': 1, 'param_b': 1}
-
-    clf = MockFitComponent(**params, random_state=np.random.RandomState(42))
-    clf_clone = clf.clone(random_state=np.random.RandomState(42))
-    assert clf_clone.random_state.randint(2**30) == clf.random_state.randint(2**30)
-
-    clf = MockFitComponent(**params, random_state=2)
-    clf_clone = clf.clone(random_state=2)
-    assert clf_clone.random_state.randint(2**30) == clf.random_state.randint(2**30)
+    assert clf_clone.random_seed == clf.random_seed
 
 
 def test_clone_fitted(X_y_binary):
     X, y = X_y_binary
     params = {'param_a': 3, 'param_b': 7}
     clf = MockFitComponent(**params)
-    random_state_first_val = clf.random_state.randint(2**30)
-
     clf.fit(X, y)
     predicted = clf.predict(X)
 
     clf_clone = clf.clone()
-    assert clf_clone.random_state.randint(2**30) == random_state_first_val
+    assert clf_clone.random_seed == clf.random_seed
+    assert clf.parameters == clf_clone.parameters
+
     with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         clf_clone.predict(X)
-    assert clf.parameters == clf_clone.parameters
 
     clf_clone.fit(X, y)
     predicted_clone = clf_clone.predict(X)
@@ -502,10 +496,10 @@ def test_components_init_kwargs():
             assert component != component_with_different_kwargs
 
 
-def test_component_has_random_state():
+def test_component_has_random_seed():
     for component_class in all_components():
         params = inspect.signature(component_class.__init__).parameters
-        assert "random_state" in params
+        assert "random_seed" in params
 
 
 def test_transformer_transform_output_type(X_y_binary):
@@ -535,85 +529,38 @@ def test_transformer_transform_output_type(X_y_binary):
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
-            assert isinstance(transform_output, pd.DataFrame)
+            assert isinstance(transform_output, ww.DataTable)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
-                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, PCA) or isinstance(component, LinearDiscriminantAnalysis):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
-                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
-                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, DelayedFeatureTransformer):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
                 continue
             else:
                 assert transform_output.shape == X.shape
-                assert (transform_output.columns == X_cols_expected).all()
+                assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
-            assert isinstance(transform_output, pd.DataFrame)
+            assert isinstance(transform_output, ww.DataTable)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
-                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, PCA) or isinstance(component, LinearDiscriminantAnalysis):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] <= X.shape[1]
-                assert isinstance(transform_output.columns, pd.Index)
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
-                assert isinstance(transform_output.columns, pd.Index)
             else:
                 assert transform_output.shape == X.shape
-                assert (transform_output.columns == X_cols_expected).all()
-
-
-def test_estimator_predict_output_type(X_y_binary, helper_functions):
-    X_np, y_np = X_y_binary
-    assert isinstance(X_np, np.ndarray)
-    assert isinstance(y_np, np.ndarray)
-    y_list = list(y_np)
-    X_df_no_col_names = pd.DataFrame(X_np)
-    range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
-    X_df_with_col_names = pd.DataFrame(X_np, columns=['x' + str(i) for i in range(X_np.shape[1])])
-    y_series_no_name = pd.Series(y_np)
-    y_series_with_name = pd.Series(y_np, name='target')
-    datatype_combos = [(X_np, y_np, range_index, np.unique(y_np)),
-                       (X_np, y_list, range_index, np.unique(y_np)),
-                       (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
-                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
-
-    for component_class in _all_estimators_used_in_search():
-        for X, y, X_cols_expected, y_cols_expected in datatype_combos:
-            print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
-                  .format(component_class.name, type(X),
-                          X.columns if isinstance(X, pd.DataFrame) else None, type(y),
-                          y.name if isinstance(y, pd.Series) else None))
-            component = helper_functions.safe_init_component_with_njobs_1(component_class)
-            component.fit(X, y=y)
-            predict_output = component.predict(X)
-            assert isinstance(predict_output, pd.Series)
-            assert len(predict_output) == len(y)
-            assert predict_output.name is None
-
-            if not ((ProblemTypes.BINARY in component_class.supported_problem_types) or
-                    (ProblemTypes.MULTICLASS in component_class.supported_problem_types)):
-                continue
-            print('Checking output of predict_proba for estimator "{}" on X type {} cols {}, y type {} name {}'
-                  .format(component_class.name, type(X),
-                          X.columns if isinstance(X, pd.DataFrame) else None, type(y),
-                          y.name if isinstance(y, pd.Series) else None))
-            predict_proba_output = component.predict_proba(X)
-            assert isinstance(predict_proba_output, pd.DataFrame)
-            assert predict_proba_output.shape == (len(y), len(np.unique(y)))
-            assert (predict_proba_output.columns == y_cols_expected).all()
+                assert (list(transform_output.columns) == list(X_cols_expected))
 
 
 @pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
@@ -635,22 +582,22 @@ def test_estimator_check_for_fit(X_y_binary):
             pass
 
         def fit(self, X, y):
-            pass
+            return self
 
         def predict(self, X):
-            pass
+            return ww.DataColumn(pd.Series())
 
         def predict_proba(self, X):
-            pass
+            return ww.DataTable(pd.DataFrame())
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
         model_family = ModelFamily.LINEAR_MODEL
         supported_problem_types = ['binary']
 
-        def __init__(self, parameters=None, component_obj=None, random_state=0):
+        def __init__(self, parameters=None, component_obj=None, random_seed=0):
             est = MockEstimatorObj()
-            super().__init__(parameters=parameters, component_obj=est, random_state=random_state)
+            super().__init__(parameters=parameters, component_obj=est, random_seed=random_seed)
 
     X, y = X_y_binary
     est = MockEstimator()
@@ -664,70 +611,26 @@ def test_estimator_check_for_fit(X_y_binary):
     est.predict_proba(X)
 
 
-def test_estimator_check_for_fit_with_overrides(X_y_binary):
-    class MockEstimatorWithOverrides(Estimator):
-        name = "Mock Estimator"
-        model_family = ModelFamily.LINEAR_MODEL
-        supported_problem_types = ['binary']
-
-        def fit(self, X, y):
-            pass
-
-        def predict(self, X):
-            pass
-
-        def predict_proba(self, X):
-            pass
-
-    class MockEstimatorWithOverridesSubclass(Estimator):
-        name = "Mock Estimator Subclass"
-        model_family = ModelFamily.LINEAR_MODEL
-        supported_problem_types = ['binary']
-
-        def fit(self, X, y):
-            pass
-
-        def predict(self, X):
-            pass
-
-        def predict_proba(self, X):
-            pass
-
-    X, y = X_y_binary
-    est = MockEstimatorWithOverrides()
-    est_subclass = MockEstimatorWithOverridesSubclass()
-
-    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
-        est.predict(X)
-    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
-        est_subclass.predict(X)
-
-    est.fit(X, y)
-    est.predict(X)
-    est.predict_proba(X)
-
-    est_subclass.fit(X, y)
-    est_subclass.predict(X)
-    est_subclass.predict_proba(X)
-
-
 def test_transformer_check_for_fit(X_y_binary):
     class MockTransformerObj():
         def __init__(self):
             pass
 
         def fit(self, X, y):
-            pass
+            return self
 
-        def transform(self, X):
-            pass
+        def transform(self, X, y=None):
+            return X
+
+        def fit_transform(self, X, y=None):
+            return X
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
 
-        def __init__(self, parameters=None, component_obj=None, random_state=0):
+        def __init__(self, parameters=None, component_obj=None, random_seed=0):
             transformer = MockTransformerObj()
-            super().__init__(parameters=parameters, component_obj=transformer, random_state=random_state)
+            super().__init__(parameters=parameters, component_obj=transformer, random_seed=random_seed)
 
     X, y = X_y_binary
     trans = MockTransformer()
@@ -736,6 +639,7 @@ def test_transformer_check_for_fit(X_y_binary):
 
     trans.fit(X, y)
     trans.transform(X)
+    trans.fit_transform(X, y)
 
 
 def test_transformer_check_for_fit_with_overrides(X_y_binary):
@@ -743,19 +647,19 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         name = "Mock Transformer"
 
         def fit(self, X, y):
-            pass
+            return self
 
         def transform(self, X):
-            pass
+            return ww.DataTable(pd.DataFrame())
 
     class MockTransformerWithOverrideSubclass(Transformer):
         name = "Mock Transformer Subclass"
 
         def fit(self, X, y):
-            pass
+            return self
 
         def transform(self, X):
-            pass
+            return ww.DataTable(pd.DataFrame())
 
     X, y = X_y_binary
     transformer = MockTransformerWithOverride()
@@ -905,9 +809,6 @@ def test_estimators_accept_all_kwargs(estimator_class,
         params = estimator.parameters
     else:
         params = estimator._component_obj.get_params()
-    if estimator_class.model_family == ModelFamily.CATBOOST:
-        # Deleting because we call it random_state in our api
-        del params["random_seed"]
     estimator_class(**params)
 
 
@@ -939,12 +840,13 @@ def test_component_equality():
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
-        def __init__(self, param_1=0, param_2=0, random_state=0, **kwargs):
+        def __init__(self, param_1=0, param_2=0, random_seed=0, random_state=None, **kwargs):
             parameters = {"param_1": param_1,
                           "param_2": param_2}
             parameters.update(kwargs)
             super().__init__(parameters=parameters,
                              component_obj=None,
+                             random_seed=random_seed,
                              random_state=random_state)
 
         def fit(self, X, y=None):
@@ -956,7 +858,9 @@ def test_component_equality():
     # Test defaults
     assert MockComponent() == MockComponent()
 
-    # Test random_state
+    # Test random_state and random_seed
+    assert MockComponent(random_seed=10) == MockComponent(random_seed=10)
+    assert MockComponent(random_seed=10) != MockComponent(random_seed=0)
     assert MockComponent(random_state=10) == MockComponent(random_state=10)
     assert MockComponent(random_state=10) != MockComponent(random_state=0)
 
@@ -1010,7 +914,7 @@ def test_mock_component_repr():
     component = MockFitComponent()
     assert repr(component) == 'MockFitComponent(param_a=2, param_b=10)'
 
-    component_with_params = MockFitComponent(param_a=29, param_b=None, random_state=42)
+    component_with_params = MockFitComponent(param_a=29, param_b=None, random_seed=42)
     assert repr(component_with_params) == 'MockFitComponent(param_a=29, param_b=None)'
 
     component_with_nan = MockFitComponent(param_a=np.nan, param_b=float('nan'))
@@ -1059,7 +963,7 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
             est = MockEstimator()
             super().__init__(parameters=parameters,
                              component_obj=est,
-                             random_state=0)
+                             random_seed=0)
 
     assert MockComponent(agg_type="mean").fit(X, y)
     assert MockComponent(agg_type="moat", category="blue").fit(X, y)
@@ -1110,3 +1014,95 @@ def test_generate_code_custom(test_classes):
     expected_code = "mockTransformer = MockTransformer(**{})"
     component_code = generate_component_code(MockTransformer())
     assert component_code == expected_code
+
+
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
+def test_components_raise_deprecated_random_state_warning(cls):
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        component = cls(random_state=31)
+        assert component.random_seed == 31
+        if component._component_obj is not None:
+            params = component._component_obj.get_params()
+            if "random_state" in params:
+                assert params['random_state'] == 31
+        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+@pytest.mark.parametrize("transformer_class", _all_transformers())
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, transformer_class, X_y_binary):
+
+    check_names = True
+    if transformer_class == DFSTransformer:
+        check_names = False
+        if use_custom_index:
+            pytest.skip("The DFSTransformer changes the index so we skip it.")
+
+    X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    if use_custom_index:
+        gen = np.random.default_rng(seed=0)
+        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        X.index = custom_index
+        y.index = custom_index
+
+    X_original_index = X.index.copy()
+    y_original_index = y.index.copy()
+
+    transformer = transformer_class()
+
+    transformer.fit(X, y)
+    pd.testing.assert_index_equal(X.index, X_original_index)
+    pd.testing.assert_index_equal(y.index, y_original_index)
+
+    X_t = transformer.transform(X, y).to_dataframe()
+    pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
+    pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
+
+
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+@pytest.mark.parametrize("use_custom_index", [True, False])
+def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class,
+                                               X_y_binary, X_y_regression,
+                                               logistic_regression_binary_pipeline_class,
+                                               linear_regression_pipeline_class,
+                                               helper_functions):
+
+    if estimator_class == StackedEnsembleRegressor:
+        input_pipelines = [helper_functions.safe_init_pipeline_with_njobs_1(linear_regression_pipeline_class)]
+    elif estimator_class == StackedEnsembleClassifier:
+        input_pipelines = [helper_functions.safe_init_pipeline_with_njobs_1(logistic_regression_binary_pipeline_class)]
+    else:
+        input_pipelines = []
+
+    supported_problem_types = estimator_class.supported_problem_types
+
+    if ProblemTypes.REGRESSION in supported_problem_types or ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+        X, y = X_y_regression
+    else:
+        X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    if use_custom_index:
+        gen = np.random.default_rng(seed=0)
+        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        X.index = custom_index
+        y.index = custom_index
+
+    X_original_index = X.index.copy()
+    y_original_index = y.index.copy()
+
+    if input_pipelines:
+        estimator = estimator_class(n_jobs=1, input_pipelines=input_pipelines)
+    else:
+        estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
+
+    estimator.fit(X, y)
+    pd.testing.assert_index_equal(X.index, X_original_index)
+    pd.testing.assert_index_equal(y.index, y_original_index)

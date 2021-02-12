@@ -46,7 +46,7 @@ def get_core_objective_names():
     """Get a list of all valid core objectives.
 
     Returns:
-        list(str): Objective names.
+        list[str]: Objective names.
     """
     all_objectives = _all_objectives_dict()
     non_core = get_non_core_objectives()

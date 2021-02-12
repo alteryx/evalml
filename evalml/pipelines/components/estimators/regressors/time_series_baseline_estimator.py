@@ -4,9 +4,10 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
     _convert_woodwork_types_wrapper,
+    deprecate_arg,
+    infer_feature_types,
     pad_with_nans
 )
 
@@ -23,12 +24,13 @@ class TimeSeriesBaselineEstimator(Estimator):
                                ProblemTypes.TIME_SERIES_MULTICLASS]
     predict_uses_y = True
 
-    def __init__(self, gap=1, random_state=0, **kwargs):
+    def __init__(self, gap=1, random_state=None, random_seed=0, **kwargs):
         """Baseline time series estimator that predicts using the naive forecasting approach.
 
         Arguments:
-            gap (int): gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
-            random_state (int, np.random.RandomState): seed for the random number generator
+            gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
 
         """
 
@@ -41,39 +43,39 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         parameters = {"gap": gap}
         parameters.update(kwargs)
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         if X is None:
             X = pd.DataFrame()
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
+        X = infer_feature_types(X)
         self._num_features = X.shape[1]
         return self
 
     def predict(self, X, y=None):
         if y is None:
             raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.gap == 0:
             y = y.shift(periods=1)
 
-        return y
+        return infer_feature_types(y)
 
     def predict_proba(self, X, y=None):
         if y is None:
             raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-        preds = self.predict(X, y).dropna(axis=0, how='any').astype('int')
+        preds = self.predict(X, y).to_series().dropna(axis=0, how='any').astype('int')
         proba_arr = np.zeros((len(preds), y.max() + 1))
         proba_arr[np.arange(len(preds)), preds] = 1
-        return pad_with_nans(pd.DataFrame(proba_arr), len(y) - len(preds))
+        padded = pad_with_nans(pd.DataFrame(proba_arr), len(y) - len(preds))
+        return infer_feature_types(padded)
 
     @property
     def feature_importance(self):

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -122,7 +123,7 @@ def test_predict_pad_nans(mock_decode_targets,
                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     def mock_predict(df, y=None):
-        return pd.Series(range(200, 200 + df.shape[0]))
+        return ww.DataColumn(pd.Series(range(200, 200 + df.shape[0])))
 
     if isinstance(pl, TimeSeriesRegressionPipeline):
         mock_regressor_predict.side_effect = mock_predict
@@ -138,9 +139,9 @@ def test_predict_pad_nans(mock_decode_targets,
 
     # Check that the predictions have NaNs for the first n_delay dates
     if include_delayed_features:
-        assert np.isnan(preds.values[:max_delay]).all()
+        assert np.isnan(preds.to_series().values[:max_delay]).all()
     else:
-        assert not np.isnan(preds.values).any()
+        assert not np.isnan(preds.to_series().values).any()
 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
@@ -181,8 +182,8 @@ def test_score_drops_nans(mock_score, mock_encode_targets,
                                                    "delay_target": include_delayed_features},
                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
-    def mock_predict(df, y=None):
-        return pd.Series(range(200, 200 + df.shape[0]))
+    def mock_predict(X, y=None):
+        return ww.DataColumn(pd.Series(range(200, 200 + X.shape[0])))
 
     if isinstance(pl, TimeSeriesRegressionPipeline):
         mock_regressor_predict.side_effect = mock_predict
@@ -213,7 +214,7 @@ def test_score_drops_nans(mock_score, mock_encode_targets,
 def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_fit, pipeline_class, X_y_binary):
     X, y = X_y_binary
     y_series = pd.Series(y)
-    mock_predict.return_value = y_series
+    mock_predict.return_value = ww.DataColumn(y_series)
     X = pd.DataFrame({"feature": range(len(y))})
     y_encoded = y_series.map(lambda label: "positive" if label == 1 else "negative")
 
@@ -232,21 +233,22 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     df_passed_to_estimator, target_passed_to_estimator = mock_fit.call_args[0]
 
     # Check the features have target values encoded as ints.
-    pd.testing.assert_frame_equal(df_passed_to_estimator, answer)
+    assert_frame_equal(df_passed_to_estimator, answer)
 
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
-    pd.testing.assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
+    assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
 
     pl.predict(X, y_encoded)
     # Best way to get the argument since the api changes between 3.6/3.7 and 3.8
     df_passed_to_predict = mock_predict.call_args[0][0]
-    pd.testing.assert_frame_equal(df_passed_to_predict, answer)
+    assert_frame_equal(df_passed_to_predict, answer)
 
     mock_predict.reset_mock()
+
     # Since we mock score_all_objectives, the objective doesn't matter
     pl.score(X, y_encoded, objectives=['MCC Binary'])
     df_passed_to_predict = mock_predict.call_args[0][0]
-    pd.testing.assert_frame_equal(df_passed_to_predict, answer)
+    assert_frame_equal(df_passed_to_predict, answer)
 
 
 @pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),
@@ -257,8 +259,8 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
                                                        (TimeSeriesMulticlassClassificationPipeline, ["MCC Multiclass", "Log Loss Multiclass"]),
                                                        (TimeSeriesRegressionPipeline, ['R2']),
                                                        (TimeSeriesRegressionPipeline, ['R2', "Mean Absolute Percentage Error"])])
-@pytest.mark.parametrize("use_ww", [True, False])
-def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, X_y_regression):
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_multi, X_y_regression, make_data_type):
 
     preprocessing = ['Delayed Feature Transformer']
     if pipeline_class == TimeSeriesRegressionPipeline:
@@ -284,21 +286,21 @@ def test_score_works(pipeline_class, objectives, use_ww, X_y_binary, X_y_multi, 
         X, y = X_y_regression
         y = pd.Series(y)
         expected_unique_values = None
-    if use_ww:
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
 
     pl.fit(X, y)
     if expected_unique_values:
         # NaNs are expected because of padding due to max_delay
-        assert set(pl.predict(X, y).dropna().unique()) == expected_unique_values
+        assert set(pl.predict(X, y).to_series().dropna().unique()) == expected_unique_values
     pl.score(X, y, objectives)
 
 
 @patch('evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets')
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function')
-@patch('evalml.pipelines.components.Estimator.predict_proba', return_value=pd.DataFrame({0: [1.]}))
-@patch('evalml.pipelines.components.Estimator.predict', return_value=pd.Series([1.]))
+@patch('evalml.pipelines.components.Estimator.predict_proba', return_value=ww.DataTable(pd.DataFrame({0: [1.]})))
+@patch('evalml.pipelines.components.Estimator.predict', return_value=ww.DataColumn(pd.Series([1.])))
 def test_binary_classification_predictions_thresholded_properly(mock_predict, mock_predict_proba,
                                                                 mock_obj_decision, mock_decode,
                                                                 X_y_binary, dummy_ts_binary_pipeline_class):
@@ -322,7 +324,7 @@ def test_binary_classification_predictions_thresholded_properly(mock_predict, mo
 
     mock_objs = [mock_decode, mock_predict_proba]
     # test custom threshold set but no objective passed
-    mock_predict_proba.return_value = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
+    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame([[0.1, 0.2], [0.1, 0.2]]))
     binary_pipeline.threshold = 0.6
     binary_pipeline._encoder.classes_ = [0, 1]
     binary_pipeline.predict(X, y)
@@ -343,6 +345,7 @@ def test_binary_classification_predictions_thresholded_properly(mock_predict, mo
 
     # test custom threshold set and objective passed
     binary_pipeline.threshold = 0.6
+    mock_obj_decision.return_value = pd.Series([1.])
     binary_pipeline.predict(X, y, 'precision')
     for mock_obj in mock_objs:
         mock_obj.assert_called()

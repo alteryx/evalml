@@ -4,16 +4,13 @@ from sklearn.preprocessing import LabelEncoder
 
 from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
-    def __init__(self, parameters, random_state=0):
+    def __init__(self, parameters, random_state=None, random_seed=0):
         """Machine learning classification pipeline made out of transformers and a classifier.
 
         Required Class Variables:
@@ -22,10 +19,11 @@ class ClassificationPipeline(PipelineBase):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self._encoder = LabelEncoder()
-        super().__init__(parameters, random_state)
+        super().__init__(parameters, random_state=random_state, random_seed=random_seed)
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted
@@ -39,8 +37,8 @@ class ClassificationPipeline(PipelineBase):
             self
 
         """
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         self._encoder.fit(y)
         y = self._encode_targets(y)
@@ -72,11 +70,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Estimated labels
+            ww.DataColumn: Estimated labels
         """
         return self._component_graph.predict(X)
 
@@ -88,10 +86,11 @@ class ClassificationPipeline(PipelineBase):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series : Estimated labels
+            ww.DataColumn: Estimated labels
         """
-        predictions = self._predict(X, objective)
-        return pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+        predictions = self._predict(X, objective).to_series()
+        predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -100,12 +99,12 @@ class ClassificationPipeline(PipelineBase):
             X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            pd.DataFrame: Probability estimates
+            ww.DataTable: Probability estimates
         """
         X = self.compute_estimator_features(X, y=None)
-        proba = self.estimator.predict_proba(X)
+        proba = self.estimator.predict_proba(X).to_dataframe()
         proba.columns = self._encoder.classes_
-        return proba
+        return infer_feature_types(proba)
 
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives
@@ -118,21 +117,23 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y = self._encode_targets(y)
-        y_predicted, y_predicted_proba = self._compute_predictions(X, objectives)
-
+        y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
+        if y_predicted is not None:
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        if y_predicted_proba is not None:
+            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
-    def _compute_predictions(self, X, objectives):
-        """Scan through the objectives list and precompute"""
+    def _compute_predictions(self, X, y, objectives, time_series=False):
+        """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
-        for objective in objectives:
-            if objective.score_needs_proba and y_predicted_proba is None:
-                y_predicted_proba = self.predict_proba(X)
-            if not objective.score_needs_proba and y_predicted is None:
-                y_predicted = self._predict(X)
+        if any(o.score_needs_proba for o in objectives):
+            y_predicted_proba = self.predict_proba(X, y) if time_series else self.predict_proba(X)
+        if any(not o.score_needs_proba for o in objectives):
+            y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)
         return y_predicted, y_predicted_proba

@@ -4,8 +4,9 @@ from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -16,7 +17,7 @@ class DelayedFeatureTransformer(Transformer):
     needs_fitting = False
 
     def __init__(self, max_delay=2, delay_features=True, delay_target=True, gap=1,
-                 random_state=0, **kwargs):
+                 random_state=None, random_seed=0, **kwargs):
         """Creates a DelayedFeatureTransformer.
 
         Arguments:
@@ -27,8 +28,8 @@ class DelayedFeatureTransformer(Transformer):
                 when the target is collected. For example, if you are predicting the next time step's target, gap=1.
                 This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
                 at 1.
-            random_state (int, np.random.RandomState): Seed for the random number generator. There is no randomness
-                in this transformer.
+            random_state (int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
         """
         self.max_delay = max_delay
         self.delay_features = delay_features
@@ -40,10 +41,19 @@ class DelayedFeatureTransformer(Transformer):
         parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
                       "gap": gap}
         parameters.update(kwargs)
-        super().__init__(parameters=parameters, random_state=random_state)
+        super().__init__(parameters=parameters, random_state=random_state, random_seed=random_seed)
 
     def fit(self, X, y=None):
-        """Fits the DelayFeatureTransformer."""
+        """Fits the DelayFeatureTransformer.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+
+        Returns:
+            self
+        """
+        return self
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
@@ -72,19 +82,18 @@ class DelayedFeatureTransformer(Transformer):
         If y is not None, it will also compute the delayed values for the target variable.
 
         Arguments:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
-            y (pd.Series, None): Target.
+            X (ww.DataTable, pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (ww.DataColumn, pd.Series, or None): Target.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            ww.DataTable: Transformed X.
         """
         if X is None:
             X = pd.DataFrame()
         # Normalize the data into pandas objects
-        X = _convert_to_woodwork_structure(X)
-
-        categorical_columns = self._get_categorical_columns(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = infer_feature_types(X)
+        categorical_columns = self._get_categorical_columns(X_ww)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(X[categorical_columns])
@@ -96,7 +105,7 @@ class DelayedFeatureTransformer(Transformer):
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
             if y.logical_type == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             else:
@@ -104,4 +113,7 @@ class DelayedFeatureTransformer(Transformer):
             X = X.assign(**{f"target_delay_{t}": y.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return X
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X)
+
+    def fit_transform(self, X, y):
+        return self.fit(X, y).transform(X, y)

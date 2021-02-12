@@ -6,16 +6,13 @@ import cloudpickle
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
-    check_random_state_equality,
+    _convert_woodwork_types_wrapper,
     classproperty,
+    deprecate_arg,
     get_logger,
-    get_random_state,
+    infer_feature_types,
     log_subtitle,
     safe_repr
-)
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
 )
 
 logger = get_logger(__file__)
@@ -25,8 +22,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components."""
     _default_parameters = None
 
-    def __init__(self, parameters=None, component_obj=None, random_state=0, **kwargs):
-        self.random_state = get_random_state(random_state)
+    def __init__(self, parameters=None, component_obj=None, random_state=None, random_seed=0, **kwargs):
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._component_obj = component_obj
         self._parameters = parameters or {}
         self._is_fitted = False
@@ -71,16 +68,13 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         return cls._default_parameters
 
-    def clone(self, random_state=0):
-        """Constructs a new component with the same parameters
-
-        Arguments:
-            random_state (int, RandomState): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+    def clone(self):
+        """Constructs a new component with the same parameters and random state.
 
         Returns:
-            A new instance of this component with identical parameters
+            A new instance of this component with identical parameters and random state.
         """
-        return self.__class__(**self.parameters, random_state=random_state)
+        return self.__class__(**self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y=None):
         """Fits component to data
@@ -92,10 +86,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if y is not None:
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
             y = _convert_woodwork_types_wrapper(y.to_series())
         try:
             self._component_obj.fit(X, y)
@@ -153,8 +147,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
-        if not random_state_eq:
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
             return False
         attributes_to_check = ['_parameters', '_is_fitted']
         for attribute in attributes_to_check:

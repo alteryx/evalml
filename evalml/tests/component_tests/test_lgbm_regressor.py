@@ -22,39 +22,16 @@ def test_problem_types():
     assert set(LightGBMRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
 
 
-def test_lightgbm_regressor_random_state_bounds_seed(X_y_regression):
+def test_lightgbm_regressor_random_seed_bounds_seed(X_y_regression):
     """ensure lightgbm's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)
     y = pd.Series(y)
-    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.min_bound)
+    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.min_bound)
     fitted = clf.fit(X, y)
     assert isinstance(fitted, LightGBMRegressor)
-    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=SEED_BOUNDS.max_bound)
-    clf.fit(X, y)
-
-
-def test_lightgbm_regressor_random_state_bounds_rng(X_y_regression):
-    """when a RNG is inputted for random_state, ensure the sample we take to get a random seed for lightgbm is in lightgbm's supported range"""
-
-    def make_mock_random_state(return_value):
-
-        class MockRandomState(np.random.RandomState):
-
-            def randint(self, min_bound, max_bound):
-                return return_value
-        return MockRandomState()
-
-    X, y = X_y_regression
-    col_names = ["col_{}".format(i) for i in range(len(X[0]))]
-    X = pd.DataFrame(X, columns=col_names)
-    y = pd.Series(y)
-    rng = make_mock_random_state(LightGBMRegressor.SEED_MIN)
-    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=rng)
-    clf.fit(X, y)
-    rng = make_mock_random_state(LightGBMRegressor.SEED_MAX)
-    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_state=rng)
+    clf = LightGBMRegressor(n_estimators=1, max_depth=1, random_seed=SEED_BOUNDS.max_bound)
     clf.fit(X, y)
 
 
@@ -69,7 +46,7 @@ def test_fit_predict_regression(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=3)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
 
 
 def test_feature_importance(X_y_regression):
@@ -103,12 +80,11 @@ def test_fit_string_features(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=3)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
-def test_correct_args(mock_fit, mock_predict, X_y_regression):
+def test_correct_args(mock_predict, X_y_regression):
     X, y = X_y_regression
     X = pd.DataFrame(X)
 
@@ -130,8 +106,6 @@ def test_correct_args(mock_fit, mock_predict, X_y_regression):
 
     clf = LightGBMRegressor()
     clf.fit(X, y)
-    arg_X = mock_fit.call_args[0][0]
-    assert_frame_equal(X_expected, arg_X)
 
     clf.predict(X)
     arg_X = mock_predict.call_args[0][0]
@@ -139,8 +113,7 @@ def test_correct_args(mock_fit, mock_predict, X_y_regression):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
-def test_categorical_data_subset(mock_fit, mock_predict, X_y_regression):
+def test_categorical_data_subset(mock_predict, X_y_regression):
     X = pd.DataFrame({"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]})
     y = pd.Series([1, 1, 0, 0, 0, 1])
     X_expected = pd.DataFrame({0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]})
@@ -152,8 +125,6 @@ def test_categorical_data_subset(mock_fit, mock_predict, X_y_regression):
 
     clf = LightGBMRegressor()
     clf.fit(X, y)
-    arg_X = mock_fit.call_args[0][0]
-    assert_frame_equal(X_expected, arg_X)
 
     # determine whether predict and predict_proba perform as expected with the subset of categorical data
     clf.predict(X_subset)
@@ -162,29 +133,24 @@ def test_categorical_data_subset(mock_fit, mock_predict, X_y_regression):
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
-@patch('evalml.pipelines.components.component_base.ComponentBase.fit')
-def test_multiple_fit(mock_fit, mock_predict):
+def test_multiple_fit(mock_predict):
     y = pd.Series([1] * 4)
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
-    X1_fit_expected = pd.DataFrame({0: [0.0, 1.0, 2.0, 2.0]}, dtype='category')
     X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
     X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype='category')
 
     clf = LightGBMRegressor()
     clf.fit(X1_fit, y)
-    assert_frame_equal(X1_fit_expected, mock_fit.call_args[0][0])
     clf.predict(X1_predict)
     assert_frame_equal(X1_predict_expected, mock_predict.call_args[0][0])
 
     # Check if it will fit a different dataset with new variable
     X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
-    X2_fit_expected = pd.DataFrame({0: [2.0, 1.0, 0.0, 3.0]}, dtype='category')
     X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
     X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype='category')
 
     clf = LightGBMRegressor()
     clf.fit(X2_fit, y)
-    assert_frame_equal(X2_fit_expected, mock_fit.call_args[0][0])
     clf.predict(X2_predict)
     assert_frame_equal(X2_predict_expected, mock_predict.call_args[0][0])
 
@@ -208,3 +174,18 @@ def test_regression_goss(X_y_regression):
     clf.fit(X, y)
     assert clf.parameters['bagging_freq'] == 0
     assert clf.parameters['bagging_fraction'] == 0.9
+
+
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
+def test_lightgbm_multiindex(data_type, X_y_regression, make_data_type):
+    X, y = X_y_regression
+    X = pd.DataFrame(X)
+    col_names = [('column_{}'.format(num), '{}'.format(num)) for num in range(len(X.columns))]
+    X.columns = pd.MultiIndex.from_tuples(col_names)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    clf = LightGBMRegressor()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    assert not y_pred.to_series().isnull().values.any()
