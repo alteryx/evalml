@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for Python lint checks :pr:`1837`
         * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
         * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
