@@ -503,6 +503,7 @@ class AutoMLSearch:
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
+        self.search_iteration_plot = None
         if self.plot:
             self.search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
@@ -778,7 +779,7 @@ class AutoMLSearch:
             if pipeline.parameters == parameter:
                 return
 
-        self._evaluate_pipelines(pipeline)
+        self._engine.evaluate_batch([pipeline])
         self._find_best_pipeline()
 
     @property
