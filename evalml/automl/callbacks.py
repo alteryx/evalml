@@ -36,7 +36,7 @@ def log_error_callback(exception, traceback, automl, **kwargs):
     """Logs the exception thrown as an error. Will not throw. This is the default behavior for AutoMLSearch."""
     fold_num = kwargs.get('fold_num')
     pipeline = kwargs.get('pipeline')
-    trace = '\n'.join(traceback)
+    trace = "\n".join(traceback) if traceback else ""
     if isinstance(exception, PipelineScoreError):
         logger.info(f"\t\t\tFold {fold_num}: Encountered an error scoring the following objectives: {', '.join(exception.exceptions)}.")
         logger.info(f"\t\t\tFold {fold_num}: The scores for these objectives will be replaced with nan.")
