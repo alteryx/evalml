@@ -4,6 +4,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple sampling methods for data splitters for imbalanced classification :pr:`1775`
+        * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
         * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
         * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
@@ -12,7 +13,8 @@ Release Notes
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
-        * Added ``random_seed`` as an argument to our automl/pipeline/component api. Using ``random_state`` will raise a warning :pr:`1798`
+        * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
+        * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
     * Documentation Changes
     * Testing Changes
 
@@ -50,7 +52,7 @@ Release Notes
         * Remove ``ProphetRegressor`` from main as windows tests were flaky :pr:`1764`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
-        * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
+        * Updated ``clone()`` for pipelines and components to copy over random state automatically :pr:`1753`
         * Dropped support for Python version 3.6 :pr:`1751`
         * Removed deprecated ``verbose`` flag from ``AutoMLSearch`` parameters :pr:`1772`
     * Documentation Changes
