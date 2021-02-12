@@ -74,6 +74,7 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
 class LinearPipelineWithTextFeaturizerNoTextFeatures(LinearPipelineWithTextFeatures):
     """Testing a pipeline with TextFeaturizer but no text features."""
 
+
 class LinearPipelineWithDoubling(BinaryClassificationPipeline):
     component_graph = ['Select Columns Transformer', DoubleColumns, DoubleColumns, DoubleColumns, 'Random Forest Classifier']
 
