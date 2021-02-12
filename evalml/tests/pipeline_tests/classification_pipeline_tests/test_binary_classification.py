@@ -23,7 +23,7 @@ def test_binary_classification_pipeline_predict(mock_predict, mock_predict_proba
         mock_obj.reset_mock()
 
     # test objective passed but no custom threshold uses underlying estimator's predict method
-    binary_pipeline.predict(X, objective='precision')
+    binary_pipeline.predict(X, 'precision')
     for mock_obj in mock_objs:
         mock_obj.assert_called()
         mock_obj.reset_mock()

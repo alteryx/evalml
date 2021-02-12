@@ -743,7 +743,8 @@ def test_explain_predictions_time_series(ts_data):
         component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
         name = "time series pipeline"
 
-    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
+    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2},
+                             "Random Forest Regressor": {"n_jobs": 1}})
 
     tspipeline.fit(X, y)
 
