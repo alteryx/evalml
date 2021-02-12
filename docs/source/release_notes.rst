@@ -11,6 +11,7 @@ Release Notes
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
         * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
+        * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
@@ -230,7 +231,6 @@ Release Notes
         * Updated data check messages to include a `"code"` and `"details"` fields :pr:`1451`, :pr:`1462`
         * Added a ``TimeSeriesSplit`` data splitter for time series problems :pr:`1441`
         * Added a ``problem_configuration`` parameter to AutoMLSearch :pr:`1457`
-        * Added ``Engines`` pipeline processing API :pr:`1433`
     * Fixes
         * Fixed ``IndexError`` raised in ``AutoMLSearch`` when ``ensembling = True`` but only one pipeline to iterate over :pr:`1397`
         * Fixed stacked ensemble input bug and LightGBM warning and bug in ``AutoMLSearch`` :pr:`1388`
