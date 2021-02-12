@@ -257,14 +257,9 @@ class AutoMLSearch:
         self._interrupted = False
 
         self._engine = SequentialEngine(self,
-                                        should_continue_callback=self._make_callback(self._should_continue),
-                                        pre_evaluation_callback=self._make_callback(self._pre_evaluation_callback),
-                                        post_evaluation_callback=self._make_callback(self._post_evaluation_callback))
-
-    def _make_callback(self, method):
-        def callback(*args, **kwargs):
-            return method(*args, **kwargs)
-        return callback
+                                        should_continue_callback=self._should_continue,
+                                        pre_evaluation_callback=self._pre_evaluation_callback,
+                                        post_evaluation_callback=self._post_evaluation_callback)
 
     def _pre_evaluation_callback(self, pipeline):
         self._log_pipeline(pipeline)
