@@ -325,7 +325,6 @@ class AutoMLSearch:
             pipeline_params=pipeline_params
         )
 
-
     def _pre_evaluation_callback(self, pipeline):
         if self._start is not None:
             self._log_pipeline(pipeline)
