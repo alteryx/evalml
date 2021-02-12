@@ -60,10 +60,6 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
                          random_seed=random_seed)
 
     def fit(self, X, y):
-        if isinstance(X, pd.DataFrame):
-            X.reset_index(drop=True, inplace=True)
-        if isinstance(y, pd.Series):
-            y.reset_index(drop=True, inplace=True)
         return super().fit(X, y)
 
     def transform(self, X, y=None):
