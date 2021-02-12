@@ -868,9 +868,10 @@ def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     test_pipeline = dummy_regression_pipeline_class(parameters={})
+    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[test_pipeline],
+                          problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     mock_score.return_value = {automl.objective.name: 0.1234}
 
     automl.add_to_rankings(test_pipeline)
@@ -893,8 +894,9 @@ def test_add_to_rankings_invalid_pipeline(dummy_regression_pipeline_class):
 def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     test_pipeline = dummy_regression_pipeline_class(parameters={})
+    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[test_pipeline],
+                          problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 0.1234}
 
     automl.add_to_rankings(test_pipeline)
