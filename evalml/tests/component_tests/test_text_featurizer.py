@@ -1,24 +1,17 @@
-import logging
-
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Double,
-    Integer,
-    NaturalLanguage
-)
+from woodwork.logical_types import Boolean, Categorical, Double, Integer
 
 from evalml.pipelines.components import TextFeaturizer
+from evalml.utils import infer_feature_types
 
 
 def test_featurizer_only_text(text_df):
     X = text_df
-    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer()
     tf.fit(X)
 
     expected_col_names = set(['DIVERSITY_SCORE(col_1)',
@@ -40,7 +33,7 @@ def test_featurizer_only_text(text_df):
 def test_featurizer_with_nontext(text_df):
     X = text_df
     X['col_3'] = [73.7, 67.213, 92]
-    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer()
 
     tf.fit(X)
     expected_col_names = set(['DIVERSITY_SCORE(col_1)',
@@ -71,11 +64,6 @@ def test_featurizer_no_text():
 def test_some_missing_col_names(text_df, caplog):
     X = text_df
     tf = TextFeaturizer(text_columns=['col_1', 'col_2', 'col_3'])
-
-    with caplog.at_level(logging.WARNING):
-        tf.fit(X)
-    assert "Columns ['col_3'] were not found in the given DataFrame, ignoring" in caplog.messages
-
     expected_col_names = set(['DIVERSITY_SCORE(col_1)',
                               'DIVERSITY_SCORE(col_2)',
                               'LSA(col_1)[0]',
@@ -86,27 +74,22 @@ def test_some_missing_col_names(text_df, caplog):
                               'MEAN_CHARACTERS_PER_WORD(col_2)',
                               'POLARITY_SCORE(col_1)',
                               'POLARITY_SCORE(col_2)'])
+    tf.fit(X)
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
     assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
 
 
-def test_all_missing_col_names(text_df):
-    X = text_df
-    tf = TextFeaturizer(text_columns=['col_3', 'col_4'])
-
-    error_msg = "None of the provided text column names match the columns in the given DataFrame"
-    with pytest.raises(AttributeError, match=error_msg):
+def test_empty_text_column():
+    X = pd.DataFrame({'col_1': []})
+    X = infer_feature_types(X, {'col_1': 'NaturalLanguage'})
+    tf = TextFeaturizer()
+    with pytest.raises(ValueError, match="empty vocabulary; perhaps the documents only contain stop words"):
         tf.fit(X)
 
 
 def test_invalid_text_column():
-    X = pd.DataFrame({'col_1': []})
-    tf = TextFeaturizer(text_columns=['col_1'])
-    with pytest.raises(ValueError, match="empty vocabulary; perhaps the documents only contain stop words"):
-        tf.fit(X)
-
     # we assume this sort of data would fail to validate as text data up the stack
     # but just in case, make sure our component will convert non-str values to str
     X = pd.DataFrame(
@@ -117,7 +100,8 @@ def test_invalid_text_column():
             np.nan,
             None,
             'I\'m happy again!!! lalalalalalalalalalala']})
-    tf = TextFeaturizer(text_columns=['col_1'])
+    X = infer_feature_types(X, {'col_1': 'NaturalLanguage'})
+    tf = TextFeaturizer()
     tf.fit(X)
 
 
@@ -130,7 +114,7 @@ def test_no_null_output():
                    'I dreamed a dream in days gone by, when hope was high and life worth living Red, the blood of angry men - black, the dark of ages past',
                    ':)']
          })
-    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     assert not X_t.to_dataframe().isnull().any().any()
@@ -140,7 +124,7 @@ def test_index_col_names():
     X = np.array([['I\'m singing in the rain!$%^ do do do do do da do', 'do you hear the people sing?////////////////////////////////////'],
                   ['just singing in the rain.................. \n', 'singing the songs of angry men\n'],
                   ['\t\n\n\n\nWhat a glorious feelinggggggggggg, I\'m happy again!!! lalalalalalalalalalala', '\tIt is the music of a people who will NOT be slaves again!!!!!!!!!!!']])
-    tf = TextFeaturizer(text_columns=[0, 1])
+    tf = TextFeaturizer()
 
     tf.fit(X)
     expected_col_names = set(['DIVERSITY_SCORE(0)',
@@ -159,27 +143,27 @@ def test_index_col_names():
     assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
 
 
-def test_int_col_names():
+def test_float_col_names():
     X = pd.DataFrame(
-        {475: ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
-               'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
-               'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
+        {4.75: ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!'],
          -1: ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
               'I dreamed a dream in days gone by, when hope was high and life worth living',
               'Red, the blood of angry men - black, the dark of ages past']
          })
-    tf = TextFeaturizer(text_columns=[475, -1])
+    tf = TextFeaturizer()
     tf.fit(X)
-    expected_col_names = set(['DIVERSITY_SCORE(475)',
-                              'DIVERSITY_SCORE(-1)',
-                              'LSA(475)[0]',
-                              'LSA(475)[1]',
-                              'LSA(-1)[0]',
-                              'LSA(-1)[1]',
-                              'MEAN_CHARACTERS_PER_WORD(475)',
-                              'MEAN_CHARACTERS_PER_WORD(-1)',
-                              'POLARITY_SCORE(475)',
-                              'POLARITY_SCORE(-1)'])
+    expected_col_names = set(['DIVERSITY_SCORE(4.75)',
+                              'DIVERSITY_SCORE(-1.0)',
+                              'LSA(4.75)[0]',
+                              'LSA(4.75)[1]',
+                              'LSA(-1.0)[0]',
+                              'LSA(-1.0)[1]',
+                              'MEAN_CHARACTERS_PER_WORD(4.75)',
+                              'MEAN_CHARACTERS_PER_WORD(-1.0)',
+                              'POLARITY_SCORE(4.75)',
+                              'POLARITY_SCORE(-1.0)'])
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
@@ -195,7 +179,7 @@ def test_output_null():
                    'I dreamed a dream in days gone by, when hope was high and life worth living Red, the blood of angry men - black, the dark of ages past',
                    ':)']
          })
-    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     assert not X_t.to_dataframe().isnull().any().any()
@@ -206,7 +190,7 @@ def test_diversity_primitive_output():
         {'diverse': ['This is a very diverse string which does not contain any repeated words at all',
                      'Here here each each word word is is repeated repeated exactly exactly twice twice',
                      'A sentence sentence with just a little overlap here and there there there']})
-    tf = TextFeaturizer(text_columns=['diverse'])
+    tf = TextFeaturizer()
     tf.fit(X)
 
     expected_features = pd.Series([1.0, 0.5, 0.75], name='DIVERSITY_SCORE(diverse)')
@@ -220,7 +204,7 @@ def test_lsa_primitive_output():
         {'lsa': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
                  'I dreamed a dream in days gone by, when hope was high and life worth living',
                  'Red, the blood of angry men - black, the dark of ages past']})
-    tf = TextFeaturizer(text_columns=['lsa'])
+    tf = TextFeaturizer()
     tf.fit(X)
 
     expected_features = pd.DataFrame([[0.832, 0.],
@@ -237,7 +221,7 @@ def test_mean_characters_primitive_output():
         {'mean_characters': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
                              'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
                              'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!']})
-    tf = TextFeaturizer(text_columns=['mean_characters'])
+    tf = TextFeaturizer()
     tf.fit(X)
 
     expected_features = pd.Series([4.11764705882352, 3.45, 3.72727272727], name='MEAN_CHARACTERS_PER_WORD(mean_characters)')
@@ -251,7 +235,7 @@ def test_polarity_primitive_output():
         {'polarity': ['This is neutral.',
                       'Everything is bad. Nothing is happy, he hates milk and can\'t stand gross foods, we are being very negative.',
                       'Everything is awesome! Everything is cool when you\'re part of a team! He loves milk and cookies!']})
-    tf = TextFeaturizer(text_columns=['polarity'])
+    tf = TextFeaturizer()
     tf.fit(X)
 
     expected_features = pd.Series([0.0, -0.214, 0.602], name='POLARITY_SCORE(polarity)')
@@ -269,22 +253,17 @@ def test_featurizer_with_custom_indices(text_df):
     assert not X_t.to_dataframe().isnull().any().any()
 
 
-@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
-                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
-                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 10], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 10.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'ab'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
                                   pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
-@pytest.mark.parametrize("with_text_col", [True, False])
-def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, with_text_col):
+def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
     X_df = X_df.copy()
+    X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, Boolean, NaturalLanguage]
-    tf = TextFeaturizer(text_columns=[])
-
-    if with_text_col:
-        X_df['text col'] = pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")
-        tf = TextFeaturizer(text_columns=['text col'])
+    override_types = [Integer, Double, Categorical, Boolean]
+    tf = TextFeaturizer()
 
     for logical_type in override_types:
         try:
@@ -295,8 +274,8 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df, 
         tf.fit(X)
         transformed = tf.transform(X, y)
         assert isinstance(transformed, ww.DataTable)
-        if with_text_col:
-            assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double,
-                                                 'DIVERSITY_SCORE(text col)': Double, 'MEAN_CHARACTERS_PER_WORD(text col)': Double, 'POLARITY_SCORE(text col)': Double}
-        else:
-            assert transformed.logical_types == {0: logical_type}
+        assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double,
+                                             'LSA(text col)[1]': Double,
+                                             'DIVERSITY_SCORE(text col)': Double,
+                                             'MEAN_CHARACTERS_PER_WORD(text col)': Double,
+                                             'POLARITY_SCORE(text col)': Double}
