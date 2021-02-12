@@ -1848,6 +1848,11 @@ def test_automl_error_callback_none(mock_fit, mock_score, X_y_binary, caplog):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=None, train_best_pipeline=False, n_jobs=1)
     automl.search()
     assert msg in caplog.text
+    traceback_string1 = "return self._execute_mock_call(*args, **kwargs)"
+    traceback_string2 = "return self._mock_call(*args, **kwargs)"
+    traceback_string3 = "cv_pipeline.fit(X_train, y_train)"
+    for messages in [traceback_string1, traceback_string2, traceback_string3, msg]:
+        assert messages in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1858,7 +1863,11 @@ def test_automl_error_callback_silent(mock_fit, mock_score, X_y_binary, caplog):
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=silent_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
-    assert msg not in caplog.text
+    traceback_string1 = "return self._execute_mock_call(*args, **kwargs)"
+    traceback_string2 = "return self._mock_call(*args, **kwargs)"
+    traceback_string3 = "cv_pipeline.fit(X_train, y_train)"
+    for messages in [traceback_string1, traceback_string2, traceback_string3, msg]:
+        assert messages not in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1870,7 +1879,11 @@ def test_automl_error_callback_log(mock_fit, mock_score, X_y_binary, caplog):
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
     automl.search()
-    assert msg in caplog.text
+    traceback_string1 = "return self._execute_mock_call(*args, **kwargs)"
+    traceback_string2 = "return self._mock_call(*args, **kwargs)"
+    traceback_string3 = "cv_pipeline.fit(X_train, y_train)"
+    for messages in [traceback_string1, traceback_string2, traceback_string3, msg]:
+        assert messages in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1885,6 +1898,11 @@ def test_automl_error_callback_raise(mock_fit, mock_score, X_y_binary, caplog):
         automl.search()
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
+    traceback_string1 = "return self._execute_mock_call(*args, **kwargs)"
+    traceback_string2 = "return self._mock_call(*args, **kwargs)"
+    traceback_string3 = "cv_pipeline.fit(X_train, y_train)"
+    for messages in [traceback_string1, traceback_string2, traceback_string3]:
+        assert messages in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1902,6 +1920,11 @@ def test_automl_error_callback_log_and_save(mock_fit, mock_score, X_y_binary, ca
     assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
     for e in automl._results['errors']:
         assert str(e) == msg
+    traceback_string1 = "return self._execute_mock_call(*args, **kwargs)"
+    traceback_string2 = "return self._mock_call(*args, **kwargs)"
+    traceback_string3 = "cv_pipeline.fit(X_train, y_train)"
+    for messages in [traceback_string1, traceback_string2, traceback_string3]:
+        assert messages in caplog.text
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1916,6 +1939,11 @@ def test_automl_error_callback(mock_fit, mock_score, X_y_binary, caplog):
         automl.search()
     assert "AutoMLSearch raised a fatal exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
+    traceback_string1 = "return self._execute_mock_call(*args, **kwargs)"
+    traceback_string2 = "return self._mock_call(*args, **kwargs)"
+    traceback_string3 = "cv_pipeline.fit(X_train, y_train)"
+    for messages in [traceback_string1, traceback_string2, traceback_string3]:
+        assert messages in caplog.text
     assert len(automl._results['errors']) == 1  # Raises exception at first error
     for e in automl._results['errors']:
         assert str(e) == msg
