@@ -223,10 +223,10 @@ def test_explain_prediction(mock_normalize_shap_values,
 
 def test_explain_prediction_errors():
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_prediction(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
+        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_prediction(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=-1)
+        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=-1)
 
 
 def test_error_metrics():
@@ -263,28 +263,28 @@ def test_explain_predictions_raises_pipeline_score_error():
 
 def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
-        explain_predictions(None, pd.DataFrame(), y=None, indices_to_explain=[0])
+        explain_predictions(MagicMock(), pd.DataFrame(), y=None, indices_to_explain=[0])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[5])
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[-1])
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[-1])
 
 
 def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
-        explain_predictions(None, input_features, y=None, indices_to_explain=0, output_format="bar")
+        explain_predictions(pipeline=MagicMock(), input_features=input_features, y=None, indices_to_explain=0, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, y=None, index_to_explain=0, output_format="xml")
+        explain_prediction(pipeline=MagicMock(), input_features=input_features, y=None, index_to_explain=0, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
-        explain_predictions_best_worst(None, input_features, y_true=y_true, output_format="foo")
+        explain_predictions_best_worst(pipeline=MagicMock, input_features=input_features, y_true=y_true, output_format="foo")
 
 
 regression_best_worst_answer = """Test Pipeline Name
@@ -598,6 +598,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = ww.DataTable(input_features)
 
     def _add_custom_index(answer, index_best, index_worst, output_format):
 
@@ -720,6 +721,7 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
     input_features = pd.DataFrame({"a": [5, 6]})
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = ww.DataTable(input_features)
 
     pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
