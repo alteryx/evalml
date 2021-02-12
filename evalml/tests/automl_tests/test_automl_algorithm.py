@@ -1,6 +1,7 @@
 import pytest
 
 from evalml.automl.automl_algorithm import AutoMLAlgorithm
+from evalml.exceptions import PipelineNotFoundError
 
 
 class DummyAlgorithm(AutoMLAlgorithm):
@@ -35,3 +36,10 @@ def test_automl_algorithm_dummy():
     assert algo.batch_number == 3
     with pytest.raises(StopIteration, match='No more pipelines!'):
         algo.next_batch()
+
+
+def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline_class):
+    algo = DummyAlgorithm()
+    pipeline = dummy_regression_pipeline_class(parameters={})
+    with pytest.raises(PipelineNotFoundError, match="No such pipeline allowed in this automl search: Mock Regression Pipeline"):
+        algo.add_result(0.1234, pipeline)

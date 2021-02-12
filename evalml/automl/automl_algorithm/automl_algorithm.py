@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from evalml.exceptions import PipelineNotFoundError
 from evalml.tuners import SKOptTuner
 
 
@@ -54,6 +55,8 @@ class AutoMLAlgorithm(ABC):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
         """
+        if pipeline.name not in self._tuners:
+            raise PipelineNotFoundError(f"No such pipeline allowed in this automl search: {pipeline.name}")
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
     @property
