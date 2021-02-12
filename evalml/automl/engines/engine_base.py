@@ -7,6 +7,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
+from evalml.automl import AutoMLSearch
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
@@ -21,27 +22,27 @@ logger = get_logger(__file__)
 
 class EngineBase(ABC):
     """ Base class for engines, which handles the fitting and evaluation of pipelines."""
-    def __init__(self):
+    name = "Base Engine"
+
+    def __init__(self, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
         """This class represents an "engine" for AutoML, which handles the evaluation of a list of pipelines generated from an AutoML search.
 
         To use this interface, you must define an `evaluate_batch` method and an `evaluate_pipeline` method.
         """
-        self.name = "Base Engine"
+        self.automl = automl
+        self._should_continue_callback = should_continue_callback
+        self._pre_evaluation_callback = pre_evaluation_callback
+        self._post_evaluation_callback = post_evaluation_callback
         self.X_train = None
         self.y_train = None
-        self.automl = None
 
-    def load_data(self, X_train, y_train):
-        """Loads the data to fit the pipeline on. Required to run `_compute_cv_scores`."""
+    def set_data(self, X_train, y_train):
+        """Sets the data to fit the pipeline on. Required to run evaluate_batch"""
         self.X_train = X_train
         self.y_train = y_train
 
-    def load_search(self, search_obj):
-        """Loads the current AutoML state. This includes information such as the search parameters and objectives, which is required to run `_compute_cv_scores`."""
-        self.automl = search_obj
-
     @abstractmethod
-    def evaluate_batch(self, pipeline_batch=None):
+    def evaluate_batch(self, pipelines):
         """Evaluate a batch of pipelines using the current dataset and AutoML state.
 
         The abstract method includes checks to make sure that the dataset and an AutoML search object is loaded into the engine object. It is recommended that any implementation calls `super.evaluate_batch()` once before evaluating pipelines.
@@ -49,69 +50,9 @@ class EngineBase(ABC):
         Arguments:
             pipeline_batch (list(PipelineBase)): A batch of pipelines to be fitted and evaluated
         """
-        if self.X_train is None or self.y_train is None:
-            raise ValueError("Dataset has not been loaded into the engine. Call `load_data` with training data.")
-
-        if self.automl is None:
-            raise ValueError("Search info has not been loaded into the engine. Call `load_search` with search context.")
-
-    def log_pipeline(self, pipeline):
-        desc = f"{pipeline.name}"
-        if len(desc) > self.automl._MAX_NAME_LEN:
-            desc = desc[:self.automl._MAX_NAME_LEN - 3] + "..."
-        desc = desc.ljust(self.automl._MAX_NAME_LEN)
-
-        update_pipeline(logger,
-                        desc,
-                        len(self.automl._results['pipeline_results']) + 1,
-                        self.automl.max_iterations,
-                        self.automl._start,
-                        1 if self.automl._automl_algorithm.batch_number == 0 else self.automl._automl_algorithm.batch_number,
-                        self.automl.show_batch_output)
-
-    def _add_result_callback(self, result_callback, pipeline, evaluation_result):
-        """Calls the result callback function with the pipeline evaluation results and updates the search iteration plot.
-
-        Arguments:
-            result_callback (callable): Function called after a pipeline is finished evaluation
-            pipeline (PipelineBase): An untrained pipeline with the parameters used during training
-            evaluation_result (dict): The training results for the pipeline
-        """
-        parameters = pipeline.parameters
-        logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_result))
-        result_callback(trained_pipeline=pipeline,
-                        parameters=parameters,
-                        training_time=evaluation_result['training_time'],
-                        cv_data=evaluation_result['cv_data'],
-                        cv_scores=evaluation_result['cv_scores'])
-        logger.debug('Adding results complete')
-
-        if self.automl.search_iteration_plot:
-            self.automl.search_iteration_plot.update()
-
-    def _handle_keyboard_interrupt(self):
-        """Presents a prompt to the user asking if they want to stop the search.
-
-        Returns:
-            bool: If True, search should terminate early
-        """
-        leading_char = "\n"
-        start_of_loop = time.time()
-        while True:
-            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
-            if choice == "y":
-                logger.info("Exiting AutoMLSearch.")
-                return True
-            elif choice == "n":
-                # So that the time in this loop does not count towards the time budget (if set)
-                time_in_loop = time.time() - start_of_loop
-                self.automl._start += time_in_loop
-                return False
-            else:
-                leading_char = ""
 
     @staticmethod
-    def _compute_cv_scores(pipeline, automl, full_X_train, full_y_train):
+    def _train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
