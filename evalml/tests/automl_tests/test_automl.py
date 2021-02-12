@@ -830,14 +830,20 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     automl.search()
     best_pipeline = automl.best_pipeline
     assert best_pipeline is not None
-    mock_score.return_value = {'Log Loss Binary': 0.1234}
 
+    mock_score.return_value = {'Log Loss Binary': 0.1234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
     automl.add_to_rankings(test_pipeline)
-    assert automl.best_pipeline != best_pipeline
+    assert automl.best_pipeline == best_pipeline
+    assert len(automl.rankings) == 1
+    assert 0.1234 not in automl.rankings['score'].values
 
+    mock_score.return_value = {'Log Loss Binary': 0.001234}
+    test_pipeline = dummy_binary_pipeline_class(parameters={'Mock Classifier': {'a': 1.234}})
+    automl.add_to_rankings(test_pipeline)
+    assert automl.best_pipeline == best_pipeline
     assert len(automl.rankings) == 2
-    assert 0.1234 in automl.rankings['score'].values
+    assert 0.001234 in automl.rankings['score'].values
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
