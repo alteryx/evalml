@@ -3,14 +3,11 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-<<<<<<< HEAD
         * Added multiple sampling methods for data splitters for imbalanced classification :pr:`1775`
-=======
         * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
         * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
->>>>>>> main
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
