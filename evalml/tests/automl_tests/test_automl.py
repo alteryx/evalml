@@ -1637,6 +1637,7 @@ def test_stopping_criterion_bad(X_y_binary):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_data_splitter_binary(mock_fit, mock_score, X_y_binary):
+    mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     y[:] = 0
     y[0] = 1
@@ -1659,6 +1660,7 @@ def test_data_splitter_binary(mock_fit, mock_score, X_y_binary):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_data_splitter_multi(mock_fit, mock_score, X_y_multi):
+    mock_score.return_value = {'Log Loss Multiclass': 1.0}
     X, y = X_y_multi
     y[:] = 1
     y[0] = 0
@@ -1905,7 +1907,8 @@ def test_automl_error_callback_none(mock_fit, mock_score, X_y_binary, caplog):
     msg = 'all your model are belong to us'
     mock_fit.side_effect = Exception(msg)
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=None, train_best_pipeline=False, n_jobs=1)
-    automl.search()
+    with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
+        automl.search()
     assert msg in caplog.text
 
 
@@ -1928,7 +1931,8 @@ def test_automl_error_callback_log(mock_fit, mock_score, X_y_binary, caplog):
     mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_error_callback, train_best_pipeline=False, n_jobs=1)
-    automl.search()
+    with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
+        automl.search()
     assert msg in caplog.text
 
 
@@ -1954,7 +1958,8 @@ def test_automl_error_callback_log_and_save(mock_fit, mock_score, X_y_binary, ca
     mock_fit.side_effect = Exception(msg)
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=log_and_save_error_callback, train_best_pipeline=False, n_jobs=1)
-    automl.search()
+    with pytest.raises(AutoMLSearchException, match="all pipelines in the current automl batch produced a score of np.nan on the primary objective"):
+        automl.search()
     assert "AutoML search encountered an exception: all your model are belong to us" in caplog.text
     assert "fit" in caplog.text  # Check stack trace logged
     # first automl batch, times 3 for 3-fold cross validation
@@ -2074,7 +2079,7 @@ def test_automl_best_pipeline(mock_optimize, X_y_binary):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=True, objective="Log Loss Binary", n_jobs=1)
     automl.search()
     automl.best_pipeline.predict(X)
-    assert automl.best_pipeline.threshold == 0.5
+    assert automl.best_pipeline.threshold is None
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=True, objective="Accuracy Binary", n_jobs=1)
     automl.search()
@@ -2118,6 +2123,7 @@ def test_automl_data_splitter_consistent(mock_binary_score, mock_binary_fit, moc
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_rerun(mock_fit, mock_score, X_y_binary, caplog):
+    mock_score.return_value = {'Log Loss Binary': 1.0}
     msg = "AutoMLSearch.search() has already been run and will not run again on the same instance"
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", train_best_pipeline=False, n_jobs=1)
@@ -2176,6 +2182,7 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
+    mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
               "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
@@ -2196,6 +2203,7 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
 def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
+    mock_score.return_value = {'R2': 1.0}
     X, y = X_y_regression
     params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']},
               'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])},
@@ -2216,6 +2224,7 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
+    mock_score.return_value = {'Log Loss Multiclass': 1.0}
     X, y = X_y_multi
     params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
               'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
@@ -2234,6 +2243,7 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_multi):
+    mock_score.return_value = {'Log Loss Multiclass': 1.0}
     X, y = X_y_multi
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_seed=random_seed, n_jobs=1)
     automl.search()
