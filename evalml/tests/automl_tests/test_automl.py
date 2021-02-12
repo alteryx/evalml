@@ -59,8 +59,10 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
-@pytest.mark.parametrize("automl_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
+@pytest.mark.parametrize("automl_type,objective",
+                         zip([ProblemTypes.REGRESSION, ProblemTypes.MULTICLASS, ProblemTypes.BINARY, ProblemTypes.BINARY],
+                             ['R2', 'log loss multiclass', 'log loss binary', 'F1']))
+def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, objective):
     expected_cv_data_keys = {'all_objective_scores', 'score', 'binary_classification_threshold'}
     if automl_type == ProblemTypes.REGRESSION:
         expected_pipeline_class = RegressionPipeline
@@ -72,7 +74,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         expected_pipeline_class = MulticlassClassificationPipeline
         X, y = X_y_multi
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, max_iterations=2, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, objective=objective, max_iterations=2, n_jobs=1)
     automl.search()
     assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]
@@ -91,8 +93,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type):
         assert isinstance(results['cv_data'], list)
         for cv_result in results['cv_data']:
             assert cv_result.keys() == expected_cv_data_keys
-            if automl_type == ProblemTypes.BINARY:
-                assert isinstance(cv_result['binary_classification_threshold'], float)
+            if objective == 'F1':
+                assert cv_result['binary_classification_threshold'] == 0.5
             else:
                 assert cv_result['binary_classification_threshold'] is None
             all_objective_scores = cv_result["all_objective_scores"]
