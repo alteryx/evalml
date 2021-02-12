@@ -85,8 +85,8 @@ class EngineBase(ABC):
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                cv_pipeline = tune_binary_threshold(cv_pipeline, automl.objective, automl.problem_type,
-                                                    X_threshold_tuning, y_threshold_tuning)
+                tune_binary_threshold(cv_pipeline, automl.objective, automl.problem_type,
+                                      X_threshold_tuning, y_threshold_tuning)
                 if X_threshold_tuning:
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")

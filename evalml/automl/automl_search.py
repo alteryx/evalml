@@ -684,8 +684,8 @@ class AutoMLSearch:
             score_to_minimize = -cv_score if self.objective.greater_is_better else cv_score
             self._automl_algorithm.add_result(score_to_minimize, pipeline)
 
-        if self.automl.search_iteration_plot:
-            self.automl.search_iteration_plot.update()
+        if self.search_iteration_plot:
+            self.search_iteration_plot.update()
 
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
