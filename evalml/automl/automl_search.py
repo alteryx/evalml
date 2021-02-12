@@ -442,7 +442,7 @@ class AutoMLSearch:
         leading_char = "\n"
         start_of_loop = time.time()
         while True:
-            choice = self._read_input()
+            choice = self._read_input(leading_char=leading_char)
             if choice == "y":
                 logger.info("Exiting AutoMLSearch.")
                 return True
@@ -454,7 +454,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def _read_input(self):
+    def _read_input(self, leading_char=''):
         return input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
 
     def search(self, data_checks="auto", show_iteration_plot=True):
@@ -522,11 +522,9 @@ class AutoMLSearch:
         loop_interrupted = False
         while self._should_continue():
             if not loop_interrupted:
-                if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
-                    raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
                 current_batch_pipelines = self._automl_algorithm.next_batch()
             try:
-                self._engine.evaluate_batch(current_batch_pipelines)
+                new_pipeline_ids = self._engine.evaluate_batch(current_batch_pipelines)
                 loop_interrupted = False
             except StopIteration:
                 logger.info('AutoML Algorithm out of recommendations, ending')
@@ -535,6 +533,11 @@ class AutoMLSearch:
                 loop_interrupted = True
                 if self._handle_keyboard_interrupt():
                     break
+            full_rankings = self.full_rankings
+            current_batch_idx = full_rankings['id'].isin(new_pipeline_ids)
+            current_batch_pipeline_scores = full_rankings[current_batch_idx]['score']
+            if len(current_batch_pipeline_scores) and current_batch_pipeline_scores.isna().all():
+                raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
 
         self.search_duration = time.time() - self._start
         elapsed_time = time_elapsed(self._start)
@@ -701,6 +704,7 @@ class AutoMLSearch:
 
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
+        return pipeline_id
 
     def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline

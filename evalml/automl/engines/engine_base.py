@@ -47,6 +47,9 @@ class EngineBase(ABC):
 
         Arguments:
             pipeline_batch (list(PipelineBase)): A batch of pipelines to be fitted and evaluated
+
+        Returns:
+            list (int): a list of the new pipeline IDs which were registered with the automl search
         """
 
     @staticmethod
