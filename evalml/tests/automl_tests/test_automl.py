@@ -826,7 +826,8 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
     automl.search()
     assert len(automl.rankings) == 1
     assert len(automl.full_rankings) == 1
@@ -859,7 +860,8 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
 
     mock_score.return_value = {'Log Loss Binary': 0.5234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
@@ -872,10 +874,6 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     assert 0.5234 in automl.rankings['score'].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
     assert all(np.isnan(res) for res in automl.results['pipeline_results'][0]['percent_better_than_baseline_all_objectives'].values())
-    mock_score.return_value = {'Log Loss Binary': 0.1234}
-    automl.search()
-    assert len(automl.rankings) == 2
-    assert automl.best_pipeline != best_pipeline
 
 
 @patch('evalml.pipelines.RegressionPipeline.score')
