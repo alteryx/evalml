@@ -7,7 +7,6 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from evalml.automl import AutoMLSearch
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
@@ -15,7 +14,7 @@ from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, is_binary
 from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
-from evalml.utils.logger import get_logger, update_pipeline
+from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
 

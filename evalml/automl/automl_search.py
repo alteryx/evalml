@@ -25,6 +25,7 @@ from evalml.data_checks import (
     HighVarianceCVDataCheck
 )
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
+from evalml.model_family import ModelFamily
 from evalml.objectives import (
     get_core_objectives,
     get_non_core_objectives,
@@ -34,7 +35,6 @@ from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
-    PipelineBase,
     TimeSeriesBaselineBinaryPipeline,
     TimeSeriesBaselineMulticlassPipeline,
     TimeSeriesBaselineRegressionPipeline
@@ -54,7 +54,8 @@ from evalml.utils.logger import (
     get_logger,
     log_subtitle,
     log_title,
-    time_elapsed
+    time_elapsed,
+    update_pipeline
 )
 
 logger = get_logger(__file__)
@@ -216,12 +217,6 @@ class AutoMLSearch:
             self.max_batches = 1
             logger.info("Using default limit of max_batches=1.\n")
 
-        if patience and (not isinstance(patience, int) or patience < 0):
-            raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
-
-        if tolerance and (tolerance > 1.0 or tolerance < 0.0):
-            raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(tolerance))
-
         self._results = {
             'pipeline_results': {},
             'search_order': [],
@@ -271,12 +266,10 @@ class AutoMLSearch:
             return method(self, *args, **kwargs)
         return callback
 
-
     def _pre_evaluation_callback(self, pipeline):
         self._log_pipeline(pipeline)
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
-
 
     def _log_pipeline(self, pipeline):
         desc = f"{pipeline.name}"
@@ -325,8 +318,6 @@ class AutoMLSearch:
             f"Max Iterations: {self.max_iterations}\n"
             f"Max Batches: {self.max_batches}\n"
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
-            f"Patience: {self.patience}\n"
-            f"Tolerance: {self.tolerance}\n"
             f"Data Splitting: {self.data_splitter}\n"
             f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
@@ -582,7 +573,6 @@ class AutoMLSearch:
         """
         return len(self._results['pipeline_results'])
 
-
     def should_continue(self):
         """Given the original stopping criterion and current state, should the search continue?
 
@@ -669,6 +659,7 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
+        pipeline_name = pipeline.name
         high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
         high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
         high_variance_cv = False
@@ -676,7 +667,6 @@ class AutoMLSearch:
             logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
             high_variance_cv = True
 
-        pipeline_name = pipeline.name
         pipeline_id = len(self._results['pipeline_results'])
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
