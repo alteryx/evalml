@@ -39,7 +39,7 @@ from evalml.exceptions import (
     PipelineNotYetFittedError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost, ObjectiveBase
+from evalml.objectives import CostBenefitMatrix, FraudCost, BinaryClassificationObjective, RegressionObjective
 from evalml.objectives.utils import (
     get_all_objective_names,
     get_core_objectives,
@@ -1228,7 +1228,7 @@ def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_
 all_objectives = get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
 
 
-class CustomClassificationObjective(ObjectiveBase):
+class CustomClassificationObjective(BinaryClassificationObjective):
     """Accuracy score for binary and multiclass classification."""
     name = "Classification Accuracy"
     greater_is_better = True
@@ -1241,7 +1241,7 @@ class CustomClassificationObjective(ObjectiveBase):
         """Not implementing since mocked in our tests."""
 
 
-class CustomRegressionObjective(ObjectiveBase):
+class CustomRegressionObjective(RegressionObjective):
     """Accuracy score for binary and multiclass classification."""
     name = "Custom Regression Objective"
     greater_is_better = True
