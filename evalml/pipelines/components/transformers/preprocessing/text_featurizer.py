@@ -21,11 +21,10 @@ class TextFeaturizer(TextTransformer):
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
-    def __init__(self, text_columns=None, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, random_state=None, random_seed=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
-            text_columns (list): list of feature names which should be treated as text features.
             random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
@@ -34,10 +33,9 @@ class TextFeaturizer(TextTransformer):
                        nlp_primitives.MeanCharactersPerWord,
                        nlp_primitives.PolarityScore]
         self._features = None
-        self._lsa = LSA(text_columns=text_columns, random_seed=random_seed)
+        self._lsa = LSA(random_seed=random_seed)
         self._primitives_provenance = {}
-        super().__init__(text_columns=text_columns,
-                         random_seed=random_seed,
+        super().__init__(random_seed=random_seed,
                          **kwargs)
 
     def _clean_text(self, X):
@@ -59,7 +57,7 @@ class TextFeaturizer(TextTransformer):
 
         # featuretools expects str-type column names
         X_text.rename(columns=str, inplace=True)
-        all_text_variable_types = {col_name: 'text' for col_name in X_text.columns}
+        all_text_variable_types = {col_name: 'natural_language' for col_name in X_text.columns}
 
         es = ft.EntitySet()
         es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
@@ -70,24 +68,25 @@ class TextFeaturizer(TextTransformer):
         """Fits component to data
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): the target training labels of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
-        if len(self._all_text_columns) == 0:
-            return self
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        self._text_columns = self._get_text_columns(X)
+        if len(self._text_columns) == 0:
+            return self
 
-        text_columns = self._get_text_columns(X)
-        es = self._make_entity_set(X, text_columns)
+        self._lsa.fit(X)
+
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        es = self._make_entity_set(X, self._text_columns)
         self._features = ft.dfs(entityset=es,
                                 target_entity='X',
                                 trans_primitives=self._trans,
                                 features_only=True)
-        self._lsa.fit(X)
         return self
 
     @staticmethod
@@ -107,7 +106,7 @@ class TextFeaturizer(TextTransformer):
         """Transforms data X by creating new features using existing text columns
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
+            X (ww.DataTable, pd.DataFrame): The data to transform.
             y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
@@ -117,18 +116,18 @@ class TextFeaturizer(TextTransformer):
         if self._features is None or len(self._features) == 0:
             return X_ww
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        text_columns = self._get_text_columns(X)
-        es = self._make_entity_set(X, text_columns)
+        es = self._make_entity_set(X, self._text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
-        X_lsa = self._lsa.transform(X[text_columns]).to_dataframe()
+
+        X_lsa = self._lsa.transform(X[self._text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
-        X_t = pd.concat([X.drop(text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
+        X_t = pd.concat([X.drop(self._text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _get_feature_provenance(self):
-        if not self._all_text_columns:
+        if not self._text_columns:
             return {}
         provenance = self._get_primitives_provenance(self._features)
         for col, lsa_features in self._lsa._get_feature_provenance().items():
