@@ -49,8 +49,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
 
-    def next_batch(self):
+    def next_batch(self, max_num_pipelines=None):
         """Get the next batch of pipelines to evaluate
+
+        Arguments:
+            max_num_pipelines: if set below pipelines_per_batch, will cap the size of the next batch
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
@@ -84,7 +87,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
             idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
-            for i in range(self.pipelines_per_batch):
+
+            n_pipelines_to_add = self.pipelines_per_batch
+            if max_num_pipelines is not None:
+                n_pipelines_to_add = min(self.pipelines_per_batch, max_num_pipelines)
+            for i in range(n_pipelines_to_add):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
                 next_batch.append(pipeline_class(parameters=pl_parameters, random_seed=self.random_seed))
