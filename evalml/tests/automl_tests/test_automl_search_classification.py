@@ -277,30 +277,10 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
-    assert automl.best_pipeline.threshold is not None
-    assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.5
-    assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.5
-    assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5
-
-
-@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
-@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_non_optimizable_threshold_multi(mock_fit, mock_score, X_y_multi):
-    mock_score.return_value = {"Log Loss Multiclass": 0.5}
-    X, y = X_y_multi
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Log Loss Multiclass', max_iterations=1)
-    automl.search()
-    mock_fit.assert_called()
-    mock_score.assert_called()
-    with pytest.raises(AttributeError):
-        automl.best_pipeline.threshold
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', objective='Log Loss Multiclass', max_iterations=1, optimize_thresholds=True)
-    automl.search()
-    mock_fit.assert_called()
-    mock_score.assert_called()
-    with pytest.raises(AttributeError):
-        automl.best_pipeline.threshold
+    assert automl.best_pipeline.threshold is None
+    assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') is None
+    assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') is None
+    assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') is None
 
 
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
@@ -466,10 +446,8 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, 
     is_multiclass = automl_type == ProblemTypes.MULTICLASS
     X, y = X_y_multi if is_multiclass else X_y_binary
     problem_type = 'multiclass' if is_multiclass else 'binary'
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_pipelines=None, allowed_model_families=[])
-    assert automl.allowed_pipelines is None
     with pytest.raises(ValueError, match="No allowed pipelines to search"):
-        automl.search()
+        AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_pipelines=None, allowed_model_families=[])
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -480,7 +458,7 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, m
     expected_pipelines = [dummy_binary_pipeline_class]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
-    assert automl.allowed_model_families is None
+    assert automl.allowed_model_families == [ModelFamily.NONE]
 
     automl.search()
     mock_fit.assert_called()
@@ -497,7 +475,7 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines_multi(mock_fit, mo
     expected_pipelines = [dummy_multiclass_pipeline_class]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
-    assert automl.allowed_model_families is None
+    assert automl.allowed_model_families == [ModelFamily.NONE]
 
     automl.search()
     mock_fit.assert_called()
@@ -513,7 +491,7 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_f
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
-    assert automl.allowed_pipelines is None
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -525,7 +503,7 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_f
     mock_score.reset_mock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=['random_forest'])
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
-    assert automl.allowed_pipelines is None
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
@@ -540,7 +518,7 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_multi(mock_fi
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS) for estimator in get_estimators(ProblemTypes.MULTICLASS, model_families=[ModelFamily.RANDOM_FOREST])]
-    assert automl.allowed_pipelines is None
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -552,7 +530,7 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_multi(mock_fi
     mock_score.reset_mock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=None, allowed_model_families=['random_forest'])
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS) for estimator in get_estimators(ProblemTypes.MULTICLASS, model_families=[ModelFamily.RANDOM_FOREST])]
-    assert automl.allowed_pipelines is None
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
@@ -567,7 +545,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_binary(mock_fi
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=None)]
-    assert automl.allowed_pipelines is None
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -583,7 +561,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=None, allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS) for estimator in get_estimators(ProblemTypes.MULTICLASS, model_families=None)]
-    assert automl.allowed_pipelines is None
+    assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -600,7 +578,8 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, m
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_binary_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    # the dummy binary pipeline estimator has model family NONE
+    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -617,7 +596,8 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_multiclass_pipeline_class]
     assert automl.allowed_pipelines == expected_pipelines
-    assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
+    # the dummy multiclass pipeline estimator has model family NONE
+    assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -728,6 +708,8 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 def test_automl_pickle_generated_pipeline(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
                                           problem_type, X_y_binary, X_y_multi):
+    mock_binary_score.return_value = {"Log Loss Binary": 1.0}
+    mock_multi_score.return_value = {"Log Loss Multiclass": 1.0}
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         pipeline = GeneratedPipelineBinary
@@ -749,8 +731,11 @@ def test_automl_pickle_generated_pipeline(mock_binary_score, mock_binary_fit, mo
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
 @patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
-def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary_fit, mock_multi_fit, mock_binary_score, mock_multiclass_score,
+def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary_fit, mock_multi_fit,
+                                                                     mock_binary_score, mock_multiclass_score,
                                                                      problem_type, X_y_binary, X_y_multi):
+    mock_binary_score.return_value = {"Log Loss Binary": 1.0}
+    mock_multiclass_score.return_value = {"Log Loss Multiclass": 1.0}
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
         pipeline = GeneratedPipelineTimeSeriesBinary
@@ -789,12 +774,16 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
                           max_batches=2)
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
-    if optimize and objective == 'F1':
+    if objective == 'Log Loss Binary':
+        mock_optimize_threshold.assert_not_called()
+        assert automl.best_pipeline.threshold is None
+        mock_split_data.assert_not_called()
+    elif optimize and objective == 'F1':
         mock_optimize_threshold.assert_called()
         assert automl.best_pipeline.threshold == 0.62
         mock_split_data.assert_called()
         assert str(mock_split_data.call_args[0][2]) == problem_type
-    else:
+    elif not optimize and objective == 'F1':
         mock_optimize_threshold.assert_not_called()
         assert automl.best_pipeline.threshold == 0.5
         mock_split_data.assert_not_called()
