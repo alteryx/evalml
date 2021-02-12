@@ -258,7 +258,7 @@ class AutoMLSearch:
 
         self._engine = SequentialEngine(self,
                                         should_continue_callback=self._make_callback(self._should_continue),
-                                        pre_evaluation_callback=self._make_callback(self.start_iteration_callback),
+                                        pre_evaluation_callback=self._make_callback(self._pre_evaluation_callback),
                                         post_evaluation_callback=self._make_callback(self._post_evaluation_callback))
 
     def _make_callback(self, method):
