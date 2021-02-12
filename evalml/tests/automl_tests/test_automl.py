@@ -1153,7 +1153,7 @@ dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
                           (5, interrupt_after_bad_message, 4),
                           (5, dont_interrupt, 5),
                           (5, dont_interrupt_after_bad_message, 5)])
-@patch("builtins.input")
+@patch("evalml.automl.AutoMLSearch._read_input")
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,

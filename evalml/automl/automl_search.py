@@ -442,7 +442,7 @@ class AutoMLSearch:
         leading_char = "\n"
         start_of_loop = time.time()
         while True:
-            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
+            choice = self._read_input()
             if choice == "y":
                 logger.info("Exiting AutoMLSearch.")
                 return True
@@ -453,6 +453,9 @@ class AutoMLSearch:
                 return False
             else:
                 leading_char = ""
+
+    def _read_input(self):
+        return input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
 
     def search(self, data_checks="auto", show_iteration_plot=True):
         """Find the best pipeline for the data set.
@@ -516,21 +519,20 @@ class AutoMLSearch:
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
+        loop_interrupted = False
         while self._should_continue():
-            try:
+            if not loop_interrupted:
                 if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
                     raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
-                num_pipelines = self._num_pipelines()
-                num_pipelines_in_next_batch = self._automl_algorithm.pipelines_per_batch
-                if self.max_iterations:
-                    num_pipelines_remaining = max(0, self.max_iterations - num_pipelines)
-                    num_pipelines_in_next_batch = min(num_pipelines_remaining, self._automl_algorithm.pipelines_per_batch)
-                current_batch_pipelines = self._automl_algorithm.next_batch(max_num_pipelines=num_pipelines_in_next_batch)
+                current_batch_pipelines = self._automl_algorithm.next_batch()
+            try:
                 self._engine.evaluate_batch(current_batch_pipelines)
+                loop_interrupted = False
             except StopIteration:
                 logger.info('AutoML Algorithm out of recommendations, ending')
                 break
             except KeyboardInterrupt:
+                loop_interrupted = True
                 if self._handle_keyboard_interrupt():
                     break
 
