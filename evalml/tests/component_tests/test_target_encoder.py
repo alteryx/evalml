@@ -172,10 +172,9 @@ def test_pandas_numpy(mock_fit, X_y_binary):
     X = pd.DataFrame(X).sample(frac=1)
 
     encoder = TargetEncoder()
-    X_t = pd.DataFrame(X).reset_index(drop=True, inplace=False)
 
     encoder.fit(X, y)
-    assert_frame_equal(mock_fit.call_args[0][0], X_t)
+    assert_frame_equal(mock_fit.call_args[0][0], X)
 
     X_numpy = X.to_numpy()
     encoder.fit(X_numpy, y)
