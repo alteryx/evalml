@@ -13,7 +13,7 @@ class SequentialEngine(EngineBase):
             log_pipeline (bool): If True, log the pipeline and relevant information before evaluation.
         """
         if self.X_train is None or self.y_train is None:
-            raise ValueError("Dataset has not been loaded into the engine. Call `load_data` with training data.")
+            raise ValueError("Dataset has not been loaded into the engine.")
         pipeline = None
         while self._should_continue_callback() and len(pipelines) > 0:
             pipeline = pipelines[-1]
