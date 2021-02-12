@@ -12,7 +12,7 @@ from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
-from evalml.utils.gen_utils import _convert_woodwork_types_wrapper
+from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
