@@ -71,6 +71,10 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
     component_graph = ['Imputer', 'Drop Columns Transformer', TextFeaturizer, OneHotEncoder, 'Random Forest Classifier']
 
 
+class LinearPipelineWithTextFeaturizerNoTextFeatures(LinearPipelineWithTextFeatures):
+    """Testing a pipeline with TextFeaturizer but no text features."""
+
+
 class LinearPipelineWithDoubling(BinaryClassificationPipeline):
     component_graph = ['Select Columns Transformer', DoubleColumns, DoubleColumns, DoubleColumns, 'Random Forest Classifier']
 
@@ -115,9 +119,8 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
               (LinearPipelineSameFeatureUsedByTwoComponents, {'DateTime Featurization Component': {'encode_as_categories': True}}),
               (LinearPipelineTwoEncoders, {'One Hot Encoder': {'features_to_encode': ['currency', 'expiration_date', 'provider']},
                                            'One Hot Encoder_2': {'features_to_encode': ['region', 'country']}}),
-              (LinearPipelineWithTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']},
-                                                'Text Featurization Component': {'text_columns': ['provider']}}),
               (LinearPipelineWithTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']}}),
+              (LinearPipelineWithTextFeaturizerNoTextFeatures, {'Drop Columns Transformer': {'columns': ['datetime']}}),
               (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']}}),
               (LinearPipelineWithDoubling, {'Select Columns Transformer': {'columns': ['amount']},
                                             'DoubleColumns': {'drop_old_columns': False}}),
@@ -148,6 +151,9 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
         pytest.skip("Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
                     "dependency not installed.")
     X, y = load_fraud(100)
+
+    if pipeline_class == LinearPipelineWithTextFeatures:
+        X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
 
     # Do this to make sure we use the same int as sklearn under the hood
     random_state = np.random.RandomState(0)

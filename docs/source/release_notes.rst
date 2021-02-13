@@ -18,6 +18,7 @@ Release Notes
         * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
     * Documentation Changes
     * Testing Changes
+        * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
 
 
 **v0.18.2 Feb. 10, 2021**
