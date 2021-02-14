@@ -1,0 +1,77 @@
+name: Windows Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  win_unit_tests:
+    name: ${{ matrix.python_version }} windows unit tests
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: [ "3.7", "3.8" ]
+    env:
+      miniconda_pkg_name: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
+      miniconda_hash: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Download Miniconda
+        run: |
+          $File = ${{ env.miniconda_pkg_name }}
+          $Uri = "https://repo.anaconda.com/miniconda/$File"
+          $ProgressPreference = "silentlyContinue"
+          Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
+          $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
+          $hashFromUrl = "${{ env.miniconda_hash }}"
+          if ($hashFromFile.Hash -ne "$hashFromUrl") {
+            Throw "File hashes did not match!"
+          }
+      - name: Install Miniconda
+        shell: cmd
+        run: start /wait "" %UserProfile%\${{ env.miniconda_pkg_name }} /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+      - name: Set Python ${{ matrix.python_version }} Version
+        shell: pwsh
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda create -n curr_py python=${{ matrix.python_version }}
+      - name: Install make
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda config --add channels conda-forge
+          conda activate curr_py
+          conda install make -q -y
+      - name: Install Graphviz
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda activate curr_py
+          conda install python-graphviz -q -y
+      - name: Install numba (for shap)
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda config --add channels conda-forge
+          conda activate curr_py
+          conda install numba -q -y
+      - name: Install EvalML with test requirements
+        shell: pwsh
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda activate curr_py
+          python -m pip install --upgrade pip
+          python -m pip install .
+          python -m pip install -r test-requirements.txt
+      - name: Run unit tests
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda activate curr_py
+          make win-circleci-test
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: C:/evalml/test-reports
