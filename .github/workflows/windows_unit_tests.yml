@@ -39,14 +39,7 @@ jobs:
         shell: pwsh
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          echo $env:USERPROFILE
           conda create -n curr_py python=${{ matrix.python_version }}
-      - name: Install make
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda config --add channels conda-forge
-          conda activate curr_py
-          conda install make -q -y
       - name: Install Graphviz
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
@@ -70,9 +63,10 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make win-circleci-test
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        if: always()
-        with:
-          files: C:/evalml/test-reports
+          pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
+
+#      - name: Publish Unit Test Results
+#        uses: EnricoMi/publish-unit-test-result-action@v1
+#        if: always()
+#        with:
+#          files: C:/evalml/test-reports
