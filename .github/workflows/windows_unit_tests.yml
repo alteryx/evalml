@@ -23,7 +23,7 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Download Miniconda
         run: |
-          $File = ${{ env.miniconda_pkg_name }}
+          $File = "Miniconda3-4.7.12.1-Windows-x86_64.exe"
           $Uri = "https://repo.anaconda.com/miniconda/$File"
           $ProgressPreference = "silentlyContinue"
           Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
