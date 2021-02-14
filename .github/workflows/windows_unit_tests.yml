@@ -39,6 +39,7 @@ jobs:
         shell: pwsh
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          echo $env:USERPROFILE
           conda create -n curr_py python=${{ matrix.python_version }}
       - name: Install make
         run: |
