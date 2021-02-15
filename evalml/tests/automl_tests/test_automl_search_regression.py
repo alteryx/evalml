@@ -311,10 +311,12 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
         assert result['parameters']['pipeline'] == configuration
 
 
-@patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
-def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression_fit, X_y_regression):
-    class RegressionPipelineCustoms(RegressionPipeline):
+@patch('evalml.pipelines.RegressionPipeline.fit')
+def test_automl_pickle_generated_pipeline(mock_regression_fit, mock_regression_score, X_y_regression):
+    mock_regression_score.return_value = {"R2": 1.0}
+
+    class RegressionPipelineCustom(RegressionPipeline):
         custom_name = "Custom Regression Name"
         component_graph = ["Imputer", "Linear Regressor"]
         custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
@@ -322,24 +324,28 @@ def test_automl_pickle_generated_pipeline(mock_regression_score, mock_regression
     X, y = X_y_regression
     pipeline = GeneratedPipelineRegression
 
-    a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
+    allowed_estimators = get_estimators('regression')
+    allowed_pipelines = [make_pipeline(X, y, estimator, problem_type='regression') for estimator in allowed_estimators]
+    allowed_pipelines.append(RegressionPipelineCustom)
+    a = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=allowed_pipelines)
     a.search()
-    a.add_to_rankings(RegressionPipelineCustoms({}))
+    a.add_to_rankings(RegressionPipelineCustom({}))
     seen_name = False
     for i, row in a.rankings.iterrows():
         automl_pipeline = a.get_pipeline(row['id'])
         assert automl_pipeline.__class__ == pipeline
         assert pickle.loads(pickle.dumps(automl_pipeline))
-        if automl_pipeline.custom_name == RegressionPipelineCustoms.custom_name:
+        if automl_pipeline.custom_name == RegressionPipelineCustom.custom_name:
             seen_name = True
-            assert automl_pipeline.custom_hyperparameters == RegressionPipelineCustoms.custom_hyperparameters
-            assert automl_pipeline.component_graph == RegressionPipelineCustoms.component_graph
+            assert automl_pipeline.custom_hyperparameters == RegressionPipelineCustom.custom_hyperparameters
+            assert automl_pipeline.component_graph == RegressionPipelineCustom.component_graph
     assert seen_name
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
 def test_automl_time_series_regression_pickle_generated_pipeline(mock_fit, mock_score, X_y_regression):
+    mock_score.return_value = {"R2": 1.0}
     X, y = X_y_regression
     configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
     a = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration)
