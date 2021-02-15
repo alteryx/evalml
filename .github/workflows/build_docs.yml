@@ -31,13 +31,13 @@ jobs:
           source test_python/bin/activate
           make installdeps-docs
       - name: Install Pandoc and Graphviz
-          run: |
-            sudo apt update
-            sudo apt install -y pandoc
-            sudo apt install -y graphviz
+        run: |
+          sudo apt update
+          sudo apt install -y pandoc
+          sudo apt install -y graphviz
       - name: Build HTML Docs
-          run: |
-            source test_python/bin/activate
-            make -C docs/ html
+        run: |
+          source test_python/bin/activate
+          make -C docs/ html
       - name: List Docs Built
         run: ls docs/build/html
