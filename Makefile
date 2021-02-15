@@ -22,7 +22,7 @@ test:
 
 .PHONY: circleci-test
 circleci-test:
-	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
+	pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: circleci-test-minimal-deps
 circleci-test-minimal-deps:
