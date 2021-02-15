@@ -53,7 +53,8 @@ class EngineBase(ABC):
         """
 
     @staticmethod
-    def _train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
+    def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
+        """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores"""
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
