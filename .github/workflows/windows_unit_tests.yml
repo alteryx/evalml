@@ -64,9 +64,3 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
           pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure -v
-
-#      - name: Publish Unit Test Results
-#        uses: EnricoMi/publish-unit-test-result-action@v1
-#        if: always()
-#        with:
-#          files: C:/evalml/test-reports
