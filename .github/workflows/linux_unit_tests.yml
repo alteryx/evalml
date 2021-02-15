@@ -11,8 +11,16 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python_version: [ "3.6", "3.7", "3.8" ]
-        optional_libraries: [ "minimal", "optional" ]
+        include:
+          - python_version: "3.7"
+            core_dependencies: false
+            codecov: false
+          - python_version: "3.8"
+            core_dependencies: false
+            codecov: true
+          - python_version: "3.8"
+            core_dependencies: true
+            codecov: true
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -23,39 +31,49 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - name: Build featuretools package
-        run: make package_featuretools
-      - name: Set up pip and graphviz
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - if: ${{ matrix.core_dependencies }}
+        name: Installing Core Dependencies
         run: |
-          pip config --site set global.progress_bar off
-          python -m pip install --upgrade pip
-          sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.optional_libraries != 'optional' }}
-        name: Install featuretools with test requirements (no optional requirements)
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install --upgrade pip -q
+          pip install -e . --no-dependencies
+          pip install -r core-requirements.txt
+          pip install -r test-requirements.txt
+          # "!" negates return code. exit nonzero if any of these deps are found
+          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+          exit $?
+      - if: ${{ !matrix.core_dependencies }}
+        name: Installing Dependencies
         run: |
-          python -m pip install -e unpacked_sdist/
-          python -m pip install -r unpacked_sdist/test-requirements.txt
-      - if: ${{ matrix.optional_libraries == 'optional' }}
-        name: Install featuretools with test requirements and optional requirements
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps
+          make installdeps-test
+      - name: Erase Coverage
         run: |
-          sudo apt install -y openjdk-11-jre-headless
-          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
-          python -m pip install -e unpacked_sdist/[koalas]
-          python -m pip install -r unpacked_sdist/test-requirements.txt
-      - if: ${{ matrix.python_version != 3.6 || matrix.optional_libraries != 'optional' }}
-        name: Run unit tests (no code coverage)
-        run: |
-          cd unpacked_sdist
-          pytest featuretools/ -n 2
-      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
-        name: Run unit tests with code coverage
-        run: |
-          python -m pip install "$(cat dev-requirements.txt | grep codecov)"
+          source test_python/bin/activate
           coverage erase
-          cd unpacked_sdist/
-          coverage erase
-          pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
-      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
+      - if: ${{ matrix.core_dependencies }}
+        name: Run unit tests with minimal dependencies
+        run: |
+          source test_python/bin/activate
+          make circleci-test-minimal-deps
+      - if: ${{ !matrix.core_dependencies }}
+        name: Run unit tests
+        run: |
+          source test_python/bin/activate
+          make circleci-test
+      - if: ${{ matrix.codecov }}
+        name: Run codecov
+        run: |
+          source test_python/bin/activate
+          codecov --required
+      - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
