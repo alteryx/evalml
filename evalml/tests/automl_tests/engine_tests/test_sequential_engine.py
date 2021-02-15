@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from evalml.automl import AutoMLSearch
-from evalml.automl.engines import SequentialEngine
+from evalml.automl.engine import SequentialEngine
 from evalml.tests.automl_tests.test_automl import (
     KeyboardInterruptOnKthPipeline
 )
@@ -24,7 +24,7 @@ def test_load_new_engine(mock_score, X_y_binary, caplog):
     assert "Using Test Sequential Engine to process pipelines." in out
 
 
-@patch('evalml.automl.engines.EngineBase._compute_cv_scores')
+@patch('evalml.automl.engine.EngineBase._compute_cv_scores')
 def test_evaluate_batch(mock_cv, X_y_binary, linear_regression_pipeline_class):
     X, y = X_y_binary
     seq_engine = SequentialEngine()
@@ -57,7 +57,7 @@ def test_evaluate_batch(mock_cv, X_y_binary, linear_regression_pipeline_class):
 
 
 @patch("builtins.input")
-@patch('evalml.automl.engines.EngineBase._compute_cv_scores')
+@patch('evalml.automl.engine.EngineBase._compute_cv_scores')
 def test_evaluate_batch_keyboard_interrupt(mock_cv, mock_input, X_y_binary, linear_regression_pipeline_class):
     X, y = X_y_binary
     seq_engine = SequentialEngine()

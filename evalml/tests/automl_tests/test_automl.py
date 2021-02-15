@@ -1213,7 +1213,7 @@ def test_pipelines_in_batch_return_none(mock_rankings, mock_full_rankings, mock_
         automl.search()
 
 
-@patch('evalml.automl.engines.engine_base.split_data')
+@patch('evalml.automl.engine.engine_base.split_data')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_error_during_train_test_split(mock_fit, mock_score, mock_split_data, X_y_binary):

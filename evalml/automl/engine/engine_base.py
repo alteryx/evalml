@@ -19,7 +19,7 @@ logger = get_logger(__file__)
 
 
 class EngineBase(ABC):
-    """ Base class for engines, which handles the fitting and evaluation of pipelines."""
+    """ Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
     name = "Base Engine"
 
     def __init__(self, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):

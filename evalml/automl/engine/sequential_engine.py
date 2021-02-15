@@ -1,4 +1,4 @@
-from evalml.automl.engines import EngineBase
+from evalml.automl.engine import EngineBase
 
 
 class SequentialEngine(EngineBase):

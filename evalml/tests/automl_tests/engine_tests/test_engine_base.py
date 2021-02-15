@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from evalml.automl.automl_search import AutoMLSearch
-from evalml.automl.engines import EngineBase
+from evalml.automl.engine import EngineBase
 
 
 class DummyEngine(EngineBase):
