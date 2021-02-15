@@ -69,11 +69,6 @@ jobs:
           source test_python/bin/activate
           make circleci-test
       - if: ${{ matrix.codecov }}
-        name: Run codecov
-        run: |
-          source test_python/bin/activate
-          codecov --required
-      - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
