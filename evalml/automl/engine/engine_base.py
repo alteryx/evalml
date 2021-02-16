@@ -19,13 +19,16 @@ logger = get_logger(__file__)
 
 
 class EngineBase(ABC):
-    """ Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
-    name = "Base Engine"
+    """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
 
     def __init__(self, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
-        """This class represents an "engine" for AutoML, which handles the evaluation of a list of pipelines generated from an AutoML search.
+        """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML.
 
-        To use this interface, you must define an `evaluate_batch` method and an `evaluate_pipeline` method.
+        Arguments:
+            automl (AutoMLSearch): a reference to the AutoML search. Used to access configuration and by the error callback.
+            should_continue_callback (function): returns true if another pipeline from the list should be evaluated, false otherwise.
+            pre_evaluation_callback (function): optional callback invoked before pipeline evaluation.
+            post_evaluation_callback (function): optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
         """
         self.automl = automl
         self._should_continue_callback = should_continue_callback
@@ -34,8 +37,13 @@ class EngineBase(ABC):
         self.X_train = None
         self.y_train = None
 
-    def set_data(self, X_train, y_train):
-        """Sets the data to fit the pipeline on. Required to run evaluate_batch"""
+    def set_data(self, X_train, y_train=None):
+        """Sets the data to fit the pipeline on. Required to run evaluate_batch
+
+        Arguments:
+            X_train (ww.DataTable): training features
+            y_train (ww.DataColumn): training target
+        """
         self.X_train = X_train
         self.y_train = y_train
 
@@ -43,18 +51,26 @@ class EngineBase(ABC):
     def evaluate_batch(self, pipelines):
         """Evaluate a batch of pipelines using the current dataset and AutoML state.
 
-        The abstract method includes checks to make sure that the dataset and an AutoML search object is loaded into the engine object. It is recommended that any implementation calls `super.evaluate_batch()` once before evaluating pipelines.
-
         Arguments:
             pipeline_batch (list(PipelineBase)): A batch of pipelines to be fitted and evaluated
 
         Returns:
-            list (int): a list of the new pipeline IDs which were registered with the automl search
+            list (int): a list of the new pipeline IDs which were created by the AutoML search.
         """
 
     @staticmethod
     def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
-        """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores"""
+        """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
+
+        Arguments:
+            pipeline (PipelineBase): the pipeline to score
+            automl (AutoMLSearch): the AutoML search, used to access config and for the error callback
+            full_X_train (ww.DataTable): training features
+            full_y_train (ww.DataColumn): training target
+
+        Returns:
+            dict: a dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
+        """
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")

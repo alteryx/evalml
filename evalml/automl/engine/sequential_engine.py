@@ -4,18 +4,16 @@ from evalml.automl.engine import EngineBase
 
 
 class SequentialEngine(EngineBase):
-    """The default engine for the AutoML search. Evaluates pipelines locally and pipeline batches sequentially."""
-    name = "Sequential Engine"
+    """The default engine for the AutoML search. Trains and scores pipelines locally, one after another."""
 
     def evaluate_batch(self, pipelines):
-        """ Evaluates a batch of pipelines in order.
+        """Evaluate a batch of pipelines using the current dataset and AutoML state.
 
         Arguments:
             pipelines (list(PipelineBase)): A batch of pipelines to be fitted and evaluated.
-            log_pipeline (bool): If True, log the pipeline and relevant information before evaluation.
 
         Returns:
-            list (int): a list of the new pipeline IDs which were registered with the automl search
+            list (int): a list of the new pipeline IDs which were created by the AutoML search.
         """
         if self.X_train is None or self.y_train is None:
             raise ValueError("Dataset has not been loaded into the engine.")
