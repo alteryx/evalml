@@ -4,12 +4,14 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple sampling methods for data splitters for imbalanced classification :pr:`1775`
+        * Added a GitHub Action for Python lint checks :pr:`1837`
         * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
         * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
         * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
         * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
+        * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
@@ -17,6 +19,7 @@ Release Notes
         * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
     * Documentation Changes
     * Testing Changes
+        * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
 
 
 **v0.18.2 Feb. 10, 2021**
