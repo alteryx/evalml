@@ -213,34 +213,6 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov --required
-
-  release_notes_updated:
-    working_directory: ~/evalml
-    docker:
-      - image: busybox:latest
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-    steps:
-      - checkout
-      - run: | # debugging info
-          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
-            echo This is a release PR;
-          elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
-            echo This is a dependency update PR;
-          else
-            echo This is a regular PR;
-          fi
-          echo "${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}"
-      - run: |
-          # for release PRs: if the branch name matches a release regex, skip the check
-          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
-            exit 0;
-          elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
-            exit 0;
-          fi
-          cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}\`"
-
   build_docs:
     working_directory: ~/evalml/
     executor:
@@ -285,13 +257,6 @@ jobs:
 
 workflows:
   version: 2
-  release_notes_updated:
-    jobs:
-      - release_notes_updated:
-          name: "release notes updated"
-          filters:
-            branches:
-              ignore: /^main?/
   build_docs:
     jobs:
       - build_docs:
