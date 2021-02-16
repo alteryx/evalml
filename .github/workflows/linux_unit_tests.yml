@@ -9,7 +9,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
+    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
