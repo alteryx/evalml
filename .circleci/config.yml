@@ -144,7 +144,7 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate curr_py
-              make win-circleci-test
+              make win-git-test
       - store_test_results:
           path: C:/evalml/test-reports
       - store_artifacts:
