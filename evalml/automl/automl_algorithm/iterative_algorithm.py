@@ -84,9 +84,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
             idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
-
-            n_pipelines_to_add = self.pipelines_per_batch
-            for i in range(n_pipelines_to_add):
+            for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
                 next_batch.append(pipeline_class(parameters=pl_parameters, random_seed=self.random_seed))
