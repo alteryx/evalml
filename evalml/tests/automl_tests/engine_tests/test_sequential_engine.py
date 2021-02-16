@@ -12,18 +12,6 @@ class DummyAlgorithm:
         self.batch_number = 0
 
 
-@patch('evalml.pipelines.RegressionPipeline.score')
-def test_load_new_engine(mock_score, X_y_binary, caplog):
-    X, y = X_y_binary
-    seq_engine = SequentialEngine()
-    seq_engine.name = "Test Sequential Engine"
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=1)
-    mock_score.return_value = {automl.objective.name: 1.234}
-    automl.search(engine=seq_engine)
-    out = caplog.text
-    assert "Using Test Sequential Engine to process pipelines." in out
-
-
 def test_evaluate_before_set_data():
     engine = SequentialEngine()
     expected_error = "Dataset has not been loaded into the engine."
