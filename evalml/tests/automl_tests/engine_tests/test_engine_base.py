@@ -1,6 +1,7 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
-from unittest.mock import patch
 
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import EngineBase

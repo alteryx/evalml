@@ -1,15 +1,9 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engine import SequentialEngine
-from evalml.tests.automl_tests.test_automl import (
-    KeyboardInterruptOnKthPipeline
-)
-
-
-class DummyAlgorithm:
-    def __init__(self):
-        self.batch_number = 0
 
 
 def test_evaluate_before_set_data():
@@ -19,68 +13,85 @@ def test_evaluate_before_set_data():
         engine.evaluate_batch([])
 
 
-@patch('evalml.automl.engine.EngineBase._compute_cv_scores')
-def test_evaluate_batch(mock_cv, X_y_binary, linear_regression_pipeline_class):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_evaluate_batch(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    seq_engine = SequentialEngine()
-    seq_engine.load_data(X, y)
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=1)
-    automl._start = 0
-    automl._automl_algorithm = DummyAlgorithm()
-    automl._automl_algorithm.batch_number = 0
-    seq_engine.load_search(automl)
-    mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
-    pipeline_batch = [mock_regression_pipeline, mock_regression_pipeline, mock_regression_pipeline]
-    score_dict = {
-        'cv_data': [
-            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 1},
-            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 0},
-        ],
-        'training_time': 1.0,
-        'cv_scores': [1, 0],
-        'cv_score_mean': 0.5
-    }
-    mock_cv.return_value = (mock_regression_pipeline, score_dict)
-    engine_result = seq_engine.evaluate_batch(pipeline_batch)
-    fitted_pipelines = engine_result.completed_pipelines
-    evaluation_results = engine_result.pipeline_results
-    unprocessed_pipelines = engine_result.unprocessed_pipelines
-    assert engine_result.early_stop is False
-    assert len(evaluation_results) == 3
-    assert len(fitted_pipelines) == 3
-    assert len(unprocessed_pipelines) == 0
+    mock_score.side_effect = [{'Log Loss Binary': 0.42}] * 3 + [{'Log Loss Binary': 0.5}] * 3
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+    pipelines = [dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}}),
+                 dummy_binary_pipeline_class({'Mock Classifier': {'a': 4.2}})]
+
+    mock_should_continue_callback = MagicMock(return_value=True)
+    mock_pre_evaluation_callback = MagicMock()
+    mock_post_evaluation_callback = MagicMock(side_effect=[123, 456])
+
+    engine = SequentialEngine(automl=automl,
+                              should_continue_callback=mock_should_continue_callback,
+                              pre_evaluation_callback=mock_pre_evaluation_callback,
+                              post_evaluation_callback=mock_post_evaluation_callback)
+    engine.set_data(automl.X_train, automl.y_train)
+    new_pipeline_ids = engine.evaluate_batch(pipelines)
+
+    assert len(pipelines) == 2  # input arg should not have been modified
+    assert mock_should_continue_callback.call_count == 3
+    assert mock_pre_evaluation_callback.call_count == 2
+    assert mock_post_evaluation_callback.call_count == 2
+    assert new_pipeline_ids == [123, 456]
+    assert mock_pre_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+    assert mock_pre_evaluation_callback.call_args_list[1].args[0] == pipelines[1]
+    assert mock_post_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+    assert mock_post_evaluation_callback.call_args_list[0].args[1]['cv_score_mean'] == 0.42
+    assert mock_post_evaluation_callback.call_args_list[1].args[0] == pipelines[1]
+    assert mock_post_evaluation_callback.call_args_list[1].args[1]['cv_score_mean'] == 0.5
 
 
-@patch("builtins.input")
-@patch('evalml.automl.engine.EngineBase._compute_cv_scores')
-def test_evaluate_batch_keyboard_interrupt(mock_cv, mock_input, X_y_binary, linear_regression_pipeline_class):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_evaluate_batch_should_continue(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    seq_engine = SequentialEngine()
-    seq_engine.load_data(X, y)
-    callback = KeyboardInterruptOnKthPipeline(k=2)
-    mock_input.side_effect = "y"
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, start_iteration_callback=callback, max_iterations=1)
-    automl._start = 0
-    automl._automl_algorithm = DummyAlgorithm()
-    automl._automl_algorithm.batch_number = 0
-    seq_engine.load_search(automl)
-    mock_regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
-    pipeline_batch = [mock_regression_pipeline, mock_regression_pipeline, mock_regression_pipeline]
-    score_dict = {
-        'cv_data': [
-            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 1},
-            {'all_objective_scores': {}, 'binary_classificatio..._threshold': 0.5, 'score': 0},
-        ],
-        'training_time': 1.0,
-        'cv_scores': [1, 0],
-        'cv_score_mean': 0.5
-    }
-    mock_cv.return_value = (mock_regression_pipeline, score_dict)
-    engine_result = seq_engine.evaluate_batch(pipeline_batch)
-    fitted_pipelines = engine_result.completed_pipelines
-    evaluation_results = engine_result.pipeline_results
-    unprocessed_pipelines = engine_result.unprocessed_pipelines
-    assert engine_result.early_stop is True
-    assert len(evaluation_results) == 1
-    assert len(fitted_pipelines) == 1
-    assert len(unprocessed_pipelines) == 2
+    mock_score.side_effect = [{'Log Loss Binary': 0.42}] * 3 + [{'Log Loss Binary': 0.5}] * 3
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+    pipelines = [dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}}),
+                 dummy_binary_pipeline_class({'Mock Classifier': {'a': 4.2}})]
+
+    # signal stop after 1st pipeline
+    mock_should_continue_callback = MagicMock(side_effect=[True, False])
+    mock_pre_evaluation_callback = MagicMock()
+    mock_post_evaluation_callback = MagicMock(side_effect=[123, 456])
+
+    engine = SequentialEngine(automl=automl,
+                              should_continue_callback=mock_should_continue_callback,
+                              pre_evaluation_callback=mock_pre_evaluation_callback,
+                              post_evaluation_callback=mock_post_evaluation_callback)
+    engine.set_data(automl.X_train, automl.y_train)
+    new_pipeline_ids = engine.evaluate_batch(pipelines)
+
+    assert len(pipelines) == 2  # input arg should not have been modified
+    assert mock_should_continue_callback.call_count == 2
+    assert mock_pre_evaluation_callback.call_count == 1
+    assert mock_post_evaluation_callback.call_count == 1
+    assert new_pipeline_ids == [123]
+    assert mock_pre_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+    assert mock_post_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+    assert mock_post_evaluation_callback.call_args_list[0].args[1]['cv_score_mean'] == 0.42
+
+    # no pipelines
+    mock_should_continue_callback = MagicMock(return_value=False)
+    mock_pre_evaluation_callback = MagicMock()
+    mock_post_evaluation_callback = MagicMock(side_effect=[123, 456])
+
+    engine = SequentialEngine(automl=automl,
+                              should_continue_callback=mock_should_continue_callback,
+                              pre_evaluation_callback=mock_pre_evaluation_callback,
+                              post_evaluation_callback=mock_post_evaluation_callback)
+    engine.set_data(automl.X_train, automl.y_train)
+    new_pipeline_ids = engine.evaluate_batch(pipelines)
+
+    assert len(pipelines) == 2  # input arg should not have been modified
+    assert mock_should_continue_callback.call_count == 1
+    assert mock_pre_evaluation_callback.call_count == 0
+    assert mock_post_evaluation_callback.call_count == 0
+    assert new_pipeline_ids == []
