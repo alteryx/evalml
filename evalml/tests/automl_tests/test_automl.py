@@ -2198,6 +2198,7 @@ def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_mult
                          ["KMeansSMOTETVSplit", "KMeansSMOTECVSplit",
                           "SMOTETomekCVSplit", "SMOTETomekTVSplit",
                           "RandomUnderSamplerCVSplit", "RandomUnderSamplerTVSplit",
+                          "SMOTENCTVSplit", "SMOTENCCVSplit",
                           "None", "Nope"])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -2207,6 +2208,17 @@ def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
     if sampler == "Nope":
         with pytest.raises(ValueError, match="not exist"):
             automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
+    elif "SMOTENC" in sampler:
+        X = ww.DataTable(X)
+        X = X.add_semantic_tags({0: 'category'})
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, categorical_columns=[0], random_seed=0, n_jobs=1, max_iterations=1)
+        automl.search()
+        features = automl.data_splitter.categorical_features
+
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
+        automl.search()
+        features2 = automl.data_splitter.categorical_features
+        assert features == features2
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
         automl.search()

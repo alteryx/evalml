@@ -6,6 +6,8 @@ from evalml.preprocessing.data_splitters import (
     KMeansSMOTETVSplit,
     RandomUnderSamplerCVSplit,
     RandomUnderSamplerTVSplit,
+    SMOTENCCVSplit,
+    SMOTENCTVSplit,
     SMOTETomekCVSplit,
     SMOTETomekTVSplit,
     TimeSeriesSplit,
@@ -43,7 +45,7 @@ def get_default_primary_search_objective(problem_type):
 
 
 def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True,
-                       sampler=None, random_state=None, random_seed=0):
+                       sampler=None, categorical_columns=None, random_state=None, random_seed=0):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
@@ -54,7 +56,8 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             in time series problems, values should be passed in for the gap and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
-        sampler (str, None): String to determine whether or not to use a sampler data splitter. Defaults to None.
+        sampler (str, None): String to determine whether or not to use an imbalanced sampler data splitter. Defaults to None.
+        categorical_columns (list[int], None): The list of categorical indices in the dataframe. Used only for SMOTENC splitters. Defaults to None.
         random_state (None, int): Deprecated - use random_seed instead.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -84,7 +87,9 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
                 "SMOTETomekTVSplit": SMOTETomekTVSplit(),
                 "SMOTETomekCVSplit": SMOTETomekCVSplit(),
                 "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit(),
-                "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit()
+                "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit(),
+                "SMOTENCCVSplit": SMOTENCCVSplit(categorical_features=categorical_columns),
+                "SMOTENCTVSplit": SMOTENCTVSplit(categorical_features=categorical_columns)
             }[sampler]
         except KeyError:
             raise ValueError("Provided key {} does not exist for samplers".format(sampler))
