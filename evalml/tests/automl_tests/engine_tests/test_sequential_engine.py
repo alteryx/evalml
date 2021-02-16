@@ -24,6 +24,13 @@ def test_load_new_engine(mock_score, X_y_binary, caplog):
     assert "Using Test Sequential Engine to process pipelines." in out
 
 
+def test_evaluate_before_set_data():
+    engine = SequentialEngine()
+    expected_error = "Dataset has not been loaded into the engine."
+    with pytest.raises(ValueError, match=expected_error):
+        engine.evaluate_batch([])
+
+
 @patch('evalml.automl.engine.EngineBase._compute_cv_scores')
 def test_evaluate_batch(mock_cv, X_y_binary, linear_regression_pipeline_class):
     X, y = X_y_binary

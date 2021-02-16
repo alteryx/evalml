@@ -22,19 +22,3 @@ def test_set_data(X_y_binary):
     engine.set_data(X, y)
     pd.testing.assert_frame_equal(X, engine.X_train)
     pd.testing.assert_frame_equal(y, engine.y_train)
-
-
-def test_load_data_before_evaluate():
-    engine = DummyEngine()
-    expected_error = "Dataset has not been loaded into the engine. Call `load_data` with training data."
-    with pytest.raises(ValueError, match=expected_error):
-        engine.evaluate_batch([])
-
-
-def test_load_search_before_evaluate(X_y_binary):
-    engine = DummyEngine()
-    X, y = X_y_binary
-    engine.load_data(X, y)
-    expected_error = "Search info has not been loaded into the engine. Call `load_search` with search context."
-    with pytest.raises(ValueError, match=expected_error):
-        engine.evaluate_batch([])
