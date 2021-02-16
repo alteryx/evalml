@@ -29,10 +29,12 @@ jobs:
             echo This is a regular PR;
           fi
           echo "${{ github.event.number }}"
+          echo "${{ github.event.issue.number }}"
+          echo "${{ github.event.issue.pull_request }}"
       - run: |
           if [[ $(expr match "${{ env.BRANCH_REF }}" "release_v[0-9.]\+") -gt 0 ]]; then
             exit 0;
           elif [[ $(expr match "${{ env.BRANCH_REF }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             exit 0;
           fi
-          cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
+          cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.issue.number }}\`"
