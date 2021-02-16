@@ -1,3 +1,6 @@
+[run]
+source = evalml
+
 [report]
 exclude_lines =
     # Have to re-enable the standard pragma
