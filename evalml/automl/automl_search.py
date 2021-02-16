@@ -92,8 +92,7 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
-                 _pipelines_per_batch=5,
-                 _engine=None):
+                 _pipelines_per_batch=5):
         """Automated pipeline search
 
         Arguments:
