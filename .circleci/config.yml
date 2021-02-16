@@ -121,13 +121,13 @@ jobs:
           steps:
             - run: |
                 source test_python/bin/activate
-                make circleci-test-minimal-deps
+                make git-test-minimal-deps
       - unless:
           condition: << parameters.core_dependencies >>
           steps:
             - run: |
                 source test_python/bin/activate
-                make circleci-test
+                make git-test
       - store_test_results:
           path: test-reports
       - store_artifacts:
