@@ -32,12 +32,6 @@ commands:
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps-test
-  install_dependencies_dev:
-    steps:
-      - run: |
-            virtualenv test_python -q
-            source test_python/bin/activate
-            make installdeps-dev
   install_dependencies_docs:
     steps:
       - run: |
@@ -92,20 +86,6 @@ jobs:
       - setup_remote_docker:
           version: 19.03.12
       - build_pkg
-  lint_test:
-      parameters:
-        python_version:
-          type: string
-          default: "3.8"
-      executor:
-        name: python
-        python_version: << parameters.python_version >>
-      steps:
-        - checkout
-        - install_dependencies_dev
-        - run: |
-            source test_python/bin/activate
-            make lint
   win_unit_tests:
     working_directory: C:/evalml
     parameters:
@@ -333,11 +313,6 @@ workflows:
                 ignore: /^main?/
   test_all_python_versions:
     jobs:
-        - lint_test:
-            matrix:
-              parameters:
-                python_version: ["3.7", "3.8"]
-            name: "python << matrix.python_version >> lint test"
         - unit_tests:
             matrix:
               parameters:
