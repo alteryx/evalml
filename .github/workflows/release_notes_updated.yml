@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize]
     branches:
       - !main
+      - *
 
 jobs:
   release_notes_updated:
