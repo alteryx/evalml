@@ -21,10 +21,12 @@ jobs:
             echo This is a release PR;
           elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             echo This is a dependency update PR;
+          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "[0-9.]{4}.*") -gt 0 ]]; then
+            echo This is an even more regular file
           else
             echo This is a regular PR;
           fi
-            echo "${{ github.event.pull_request.head.ref }}"
+            echo ${{ github.event.pull_request.head.ref }}
       - run: |
           echo "${{ github.base_ref }}"
           echo "${{ github.event_name }}"
