@@ -17,10 +17,8 @@ jobs:
         with:
           ref: ${{ env.BRANCH_REF }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
-        name: Check if release notes were updated
-        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
-      - run: | # debugging info
+      - name: Debug PR type
+        run: |
           if [[ $(expr match "${{ env.BRANCH_REF }}" "release_v[0-9.]\+") -gt 0 ]]; then
             echo This is a release PR;
           elif [[ $(expr match "${{ env.BRANCH_REF }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
@@ -28,10 +26,11 @@ jobs:
           else
             echo This is a regular PR;
           fi
-          echo "${{ github.event.number }}"
-          echo "${{ github.event.issue.number }}"
+          echo ${{ github.event.number }}
+          echo ${{ github.event.issue.number }}
           echo "${{ github.event.issue.pull_request }}"
-      - run: |
+      - name: Release notes added
+        run: |
           if [[ $(expr match "${{ env.BRANCH_REF }}" "release_v[0-9.]\+") -gt 0 ]]; then
             exit 0;
           elif [[ $(expr match "${{ env.BRANCH_REF }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
