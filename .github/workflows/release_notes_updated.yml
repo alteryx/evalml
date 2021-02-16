@@ -3,9 +3,6 @@ name: Release Notes Updated
 on:
   pull_request:
     types: [opened, synchronize]
-    branches:
-      - '**'
-      - '!main'
 
 jobs:
   release_notes_updated:
