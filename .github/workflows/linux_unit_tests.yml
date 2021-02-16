@@ -3,6 +3,9 @@ name: Linux Unit Tests
 on:
   pull_request:
     types: [opened, synchronize]
+  push:
+    branches:
+      - main
 
 jobs:
   unit_tests:
