@@ -1,3 +1,4 @@
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -39,12 +40,20 @@ def test_evaluate_batch(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_b
     assert mock_pre_evaluation_callback.call_count == 2
     assert mock_post_evaluation_callback.call_count == 2
     assert new_pipeline_ids == [123, 456]
-    assert mock_pre_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
-    assert mock_pre_evaluation_callback.call_args_list[1].args[0] == pipelines[1]
-    assert mock_post_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
-    assert mock_post_evaluation_callback.call_args_list[0].args[1]['cv_score_mean'] == 0.42
-    assert mock_post_evaluation_callback.call_args_list[1].args[0] == pipelines[1]
-    assert mock_post_evaluation_callback.call_args_list[1].args[1]['cv_score_mean'] == 0.5
+    if sys.version_info[1] >= 8:
+        assert mock_pre_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+        assert mock_pre_evaluation_callback.call_args_list[1].args[0] == pipelines[1]
+        assert mock_post_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+        assert mock_post_evaluation_callback.call_args_list[0].args[1]['cv_score_mean'] == 0.42
+        assert mock_post_evaluation_callback.call_args_list[1].args[0] == pipelines[1]
+        assert mock_post_evaluation_callback.call_args_list[1].args[1]['cv_score_mean'] == 0.5
+    else:
+        assert mock_pre_evaluation_callback.call_args_list[0][0][0] == pipelines[0]
+        assert mock_pre_evaluation_callback.call_args_list[1][0][0] == pipelines[1]
+        assert mock_post_evaluation_callback.call_args_list[0][0][0] == pipelines[0]
+        assert mock_post_evaluation_callback.call_args_list[0][0][1]['cv_score_mean'] == 0.42
+        assert mock_post_evaluation_callback.call_args_list[1][0][0] == pipelines[1]
+        assert mock_post_evaluation_callback.call_args_list[1][0][1]['cv_score_mean'] == 0.5
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -74,9 +83,14 @@ def test_evaluate_batch_should_continue(mock_fit, mock_score, dummy_binary_pipel
     assert mock_pre_evaluation_callback.call_count == 1
     assert mock_post_evaluation_callback.call_count == 1
     assert new_pipeline_ids == [123]
-    assert mock_pre_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
-    assert mock_post_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
-    assert mock_post_evaluation_callback.call_args_list[0].args[1]['cv_score_mean'] == 0.42
+    if sys.version_info[1] >= 8:
+        assert mock_pre_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+        assert mock_post_evaluation_callback.call_args_list[0].args[0] == pipelines[0]
+        assert mock_post_evaluation_callback.call_args_list[0].args[1]['cv_score_mean'] == 0.42
+    else:
+        assert mock_pre_evaluation_callback.call_args_list[0][0][0] == pipelines[0]
+        assert mock_post_evaluation_callback.call_args_list[0][0][0] == pipelines[0]
+        assert mock_post_evaluation_callback.call_args_list[0][0][1]['cv_score_mean'] == 0.42
 
     # no pipelines
     mock_should_continue_callback = MagicMock(return_value=False)
