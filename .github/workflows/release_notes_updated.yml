@@ -24,13 +24,14 @@ jobs:
           else
             echo This is a regular PR;
           fi
-            echo ""
+            echo "${{ github.event.pull_request.head.ref }}"
       - run: |
-          echo ${{ github.event.pull_request.head.ref }}
-          echo "${{ env.BRANCH_REF }}"
+          echo "${{ github.base_ref }}"
+          echo "${{ github.event_name }}"
           echo "${{ github.event.number }}"
           echo "${{ github.event.issue.number }}"
           echo "${{ github.event.issue.pull_request }}"
+          echo "${{ github.event.pull_request.head.ref }}"
       - name: Release notes added
         run: |
           if [[ $(expr match "${{ env.BRANCH_REF }}" "release_v[0-9.]\+") -gt 0 ]]; then
