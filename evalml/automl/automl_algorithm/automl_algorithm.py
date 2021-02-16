@@ -38,11 +38,8 @@ class AutoMLAlgorithm(ABC):
         self._batch_number = 0
 
     @abstractmethod
-    def next_batch(self, max_num_pipelines=None):
+    def next_batch(self):
         """Get the next batch of pipelines to evaluate
-
-        Arguments:
-            max_num_pipelines: if set below pipelines_per_batch, will cap the size of the next batch
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
