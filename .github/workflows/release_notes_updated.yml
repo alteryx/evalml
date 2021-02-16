@@ -30,7 +30,6 @@ jobs:
           fi
           echo "${{ github.event.number }}"
       - run: |
-#         for release PRs: if the branch name matches a release regex, skip the check
           if [[ $(expr match "${{ env.BRANCH_REF }}" "release_v[0-9.]\+") -gt 0 ]]; then
             exit 0;
           elif [[ $(expr match "${{ env.BRANCH_REF }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
