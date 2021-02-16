@@ -81,15 +81,18 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
                                    max_delay=problem_configuration.get('max_delay'))
     else:
         try:
-            return {
-                "KMeansSMOTETVSplit": KMeansSMOTETVSplit(),
-                "KMeansSMOTECVSplit": KMeansSMOTECVSplit(),
-                "SMOTETomekTVSplit": SMOTETomekTVSplit(),
-                "SMOTETomekCVSplit": SMOTETomekCVSplit(),
-                "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit(),
-                "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit(),
-                "SMOTENCCVSplit": SMOTENCCVSplit(categorical_features=categorical_columns),
-                "SMOTENCTVSplit": SMOTENCTVSplit(categorical_features=categorical_columns)
+            data_splitter_class = {
+                "KMeansSMOTETVSplit": KMeansSMOTETVSplit,
+                "KMeansSMOTECVSplit": KMeansSMOTECVSplit,
+                "SMOTETomekTVSplit": SMOTETomekTVSplit,
+                "SMOTETomekCVSplit": SMOTETomekCVSplit,
+                "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit,
+                "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit,
+                "SMOTENCCVSplit": SMOTENCCVSplit,
+                "SMOTENCTVSplit": SMOTENCTVSplit
             }[sampler]
+            if 'SMOTENC' in sampler:
+                return data_splitter_class(categorical_features=categorical_columns)
+            return data_splitter_class()
         except KeyError:
             raise ValueError("Provided key {} does not exist for samplers".format(sampler))

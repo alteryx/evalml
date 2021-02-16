@@ -25,7 +25,7 @@ class SMOTENCTVSplit(BaseTVSplit):
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         if not _allowed_categorical(categorical_features):
-            raise ValueError(f"Categorical feature array must be a list with values and must not all be True, recieved {categorical_features}")
+            raise ValueError(f"Categorical feature array must be a list with values and must not all be True, received {categorical_features}")
         self.categorical_features = categorical_features
         self.snc = im.SMOTENC(categorical_features=self.categorical_features,
                               sampling_strategy=sampling_strategy,
@@ -41,7 +41,7 @@ class SMOTENCCVSplit(BaseCVSplit):
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         if not _allowed_categorical(categorical_features):
-            raise ValueError(f"Categorical feature array must be a list with values and must not all be True, recieved {categorical_features}")
+            raise ValueError(f"Categorical feature array must be a list with values and must not all be True, received {categorical_features}")
         self.categorical_features = categorical_features
         self.snc = im.SMOTENC(categorical_features=self.categorical_features,
                               sampling_strategy=sampling_strategy,
