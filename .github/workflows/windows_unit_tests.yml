@@ -29,20 +29,26 @@ jobs:
           $File = "Miniconda3-4.7.12.1-Windows-x86_64.exe"
           $Uri = "https://repo.anaconda.com/miniconda/$File"
           $ProgressPreference = "silentlyContinue"
-          Invoke-WebRequest -Uri $Uri -Outfile "$env:USERPROFILE/$File"
-          $hashFromFile = Get-FileHash "$env:USERPROFILE/$File" -Algorithm SHA256
+          Invoke-WebRequest -Uri $Uri -Outfile "$File"
+          $hashFromFile = Get-FileHash "$File" -Algorithm SHA256
           $hashFromUrl = "${{ env.miniconda_hash }}"
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
             Throw "File hashes did not match!"
           }
       - name: Install Miniconda
         shell: cmd
-        run: start /wait "" %UserProfile%\${{ env.miniconda_pkg_name }} /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+        run: start /wait C:\evalml\\${{ env.miniconda_pkg_name }} /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
       - name: Set Python ${{ matrix.python_version }} Version
         shell: pwsh
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda create -n curr_py python=${{ matrix.python_version }}
+      - name: Install make
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda config --add channels conda-forge
+          conda activate curr_py
+          conda install make -q -y
       - name: Install Graphviz
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
