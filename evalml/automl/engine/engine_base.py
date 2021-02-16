@@ -11,7 +11,7 @@ from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
+from evalml.problem_types import is_binary, is_multiclass
 from evalml.utils.logger import get_logger
 from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 
@@ -21,31 +21,23 @@ logger = get_logger(__file__)
 class EngineBase(ABC):
     """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
 
-    def __init__(self, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
+    def __init__(self, X_train=None, y_train=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
         """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML.
 
         Arguments:
+            X_train (ww.DataTable): training features
+            y_train (ww.DataColumn): training target
             automl (AutoMLSearch): a reference to the AutoML search. Used to access configuration and by the error callback.
             should_continue_callback (function): returns true if another pipeline from the list should be evaluated, false otherwise.
             pre_evaluation_callback (function): optional callback invoked before pipeline evaluation.
             post_evaluation_callback (function): optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
         """
+        self.X_train = X_train
+        self.y_train = y_train
         self.automl = automl
         self._should_continue_callback = should_continue_callback
         self._pre_evaluation_callback = pre_evaluation_callback
         self._post_evaluation_callback = post_evaluation_callback
-        self.X_train = None
-        self.y_train = None
-
-    def set_data(self, X_train, y_train=None):
-        """Sets the data to fit the pipeline on. Required to run evaluate_batch
-
-        Arguments:
-            X_train (ww.DataTable): training features
-            y_train (ww.DataColumn): training target
-        """
-        self.X_train = X_train
-        self.y_train = y_train
 
     @abstractmethod
     def evaluate_batch(self, pipelines):

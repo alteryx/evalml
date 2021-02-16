@@ -6,7 +6,7 @@ from evalml.automl import AutoMLSearch
 from evalml.automl.engine import SequentialEngine
 
 
-def test_evaluate_before_set_data():
+def test_evaluate_no_data():
     engine = SequentialEngine()
     expected_error = "Dataset has not been loaded into the engine."
     with pytest.raises(ValueError, match=expected_error):
@@ -27,11 +27,12 @@ def test_evaluate_batch(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_b
     mock_pre_evaluation_callback = MagicMock()
     mock_post_evaluation_callback = MagicMock(side_effect=[123, 456])
 
-    engine = SequentialEngine(automl=automl,
+    engine = SequentialEngine(X_train=automl.X_train,
+                              y_train=automl.y_train,
+                              automl=automl,
                               should_continue_callback=mock_should_continue_callback,
                               pre_evaluation_callback=mock_pre_evaluation_callback,
                               post_evaluation_callback=mock_post_evaluation_callback)
-    engine.set_data(automl.X_train, automl.y_train)
     new_pipeline_ids = engine.evaluate_batch(pipelines)
 
     assert len(pipelines) == 2  # input arg should not have been modified
@@ -62,11 +63,12 @@ def test_evaluate_batch_should_continue(mock_fit, mock_score, dummy_binary_pipel
     mock_pre_evaluation_callback = MagicMock()
     mock_post_evaluation_callback = MagicMock(side_effect=[123, 456])
 
-    engine = SequentialEngine(automl=automl,
+    engine = SequentialEngine(X_train=automl.X_train,
+                              y_train=automl.y_train,
+                              automl=automl,
                               should_continue_callback=mock_should_continue_callback,
                               pre_evaluation_callback=mock_pre_evaluation_callback,
                               post_evaluation_callback=mock_post_evaluation_callback)
-    engine.set_data(automl.X_train, automl.y_train)
     new_pipeline_ids = engine.evaluate_batch(pipelines)
 
     assert len(pipelines) == 2  # input arg should not have been modified
@@ -83,11 +85,12 @@ def test_evaluate_batch_should_continue(mock_fit, mock_score, dummy_binary_pipel
     mock_pre_evaluation_callback = MagicMock()
     mock_post_evaluation_callback = MagicMock(side_effect=[123, 456])
 
-    engine = SequentialEngine(automl=automl,
+    engine = SequentialEngine(X_train=automl.X_train,
+                              y_train=automl.y_train,
+                              automl=automl,
                               should_continue_callback=mock_should_continue_callback,
                               pre_evaluation_callback=mock_pre_evaluation_callback,
                               post_evaluation_callback=mock_post_evaluation_callback)
-    engine.set_data(automl.X_train, automl.y_train)
     new_pipeline_ids = engine.evaluate_batch(pipelines)
 
     assert len(pipelines) == 2  # input arg should not have been modified

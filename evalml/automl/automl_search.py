@@ -273,11 +273,12 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
-        self._engine = SequentialEngine(self,
+        self._engine = SequentialEngine(self.X_train,
+                                        self.y_train,
+                                        self,
                                         should_continue_callback=self._should_continue,
                                         pre_evaluation_callback=self._pre_evaluation_callback,
                                         post_evaluation_callback=self._post_evaluation_callback)
-        self._engine.set_data(self.X_train, self.y_train)
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
