@@ -28,7 +28,7 @@ class EngineBase(ABC):
             X_train (ww.DataTable): training features
             y_train (ww.DataColumn): training target
             automl (AutoMLSearch): a reference to the AutoML search. Used to access configuration and by the error callback.
-            should_continue_callback (function): returns true if another pipeline from the list should be evaluated, false otherwise.
+            should_continue_callback (function): returns True if another pipeline from the list should be evaluated, False otherwise.
             pre_evaluation_callback (function): optional callback invoked before pipeline evaluation.
             post_evaluation_callback (function): optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
         """
