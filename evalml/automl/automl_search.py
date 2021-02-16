@@ -508,7 +508,7 @@ class AutoMLSearch:
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
         logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
-        logger.info(f"Using {self._engine.name} to train and score pipelines.")
+        logger.info(f"Using {self._engine.__name__} to train and score pipelines.")
 
         if self.max_batches is not None:
             logger.info(f"Searching up to {self.max_batches} batches for a total of {self.max_iterations} pipelines. ")
