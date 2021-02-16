@@ -453,7 +453,7 @@ class AutoMLSearch:
         leading_char = "\n"
         start_of_loop = time.time()
         while True:
-            choice = self._read_input(leading_char=leading_char)
+            choice = AutoMLSearch._read_input(leading_char=leading_char)
             if choice == "y":
                 logger.info("Exiting AutoMLSearch.")
                 return True
@@ -465,6 +465,7 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
+    @staticmethod
     def _read_input(self, leading_char=''):
         return input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
 
