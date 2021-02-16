@@ -172,9 +172,6 @@ class AutoMLSearch:
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
-
-            _engine (EngineBase): The pipeline processing engine to use during AutoML search.
-                If not specified, uses `SequentialEngine` by default.
         """
         if X_train is None:
             raise ValueError('Must specify training data as a 2d array using the X_train argument')
