@@ -1518,6 +1518,33 @@ def test_max_batches_works(mock_pipeline_fit, mock_score, mock_regression_fit, m
     assert automl.full_rankings.shape[0] == n_results
 
 
+def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+    with pytest.raises(ValueError, match='patience value must be a positive integer.'):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_seed=0)
+    with pytest.raises(ValueError, match='tolerance value must be'):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_seed=0)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5,
+                          allowed_model_families=['linear_model'], patience=2, tolerance=0.05,
+                          random_seed=0, n_jobs=1)
+    mock_results = {
+        'search_order': [0, 1, 2],
+        'pipeline_results': {}
+    }
+
+    scores = [0.95, 0.84, 0.96]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
+    for id in mock_results['search_order']:
+        mock_results['pipeline_results'][id] = {}
+        mock_results['pipeline_results'][id]['score'] = scores[id]
+        mock_results['pipeline_results'][id]['pipeline_class'] = logistic_regression_binary_pipeline_class
+    automl._results = mock_results
+
+    automl._should_continue()
+    out = caplog.text
+    assert "2 iterations without improvement. Stopping search early." in out
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock_score, X_y_binary, logistic_regression_binary_pipeline_class, caplog):

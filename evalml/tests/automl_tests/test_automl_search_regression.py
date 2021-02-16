@@ -1,5 +1,4 @@
 import pickle
-import time
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -89,31 +88,6 @@ def test_callback(X_y_regression):
 
     assert counts["start_iteration_callback"] == max_iterations
     assert counts["add_result_callback"] == max_iterations
-
-
-def test_early_stopping(caplog, linear_regression_pipeline_class, X_y_regression):
-    X, y = X_y_regression
-    tolerance = 0.005
-    patience = 2
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective='mse', max_time='60 seconds',
-                          patience=patience, tolerance=tolerance,
-                          allowed_model_families=['linear_model'], random_seed=0, n_jobs=1)
-
-    mock_results = {
-        'search_order': [0, 1, 2],
-        'pipeline_results': {}
-    }
-
-    scores = [150, 200, 195]
-    for id in mock_results['search_order']:
-        mock_results['pipeline_results'][id] = {}
-        mock_results['pipeline_results'][id]['score'] = scores[id]
-        mock_results['pipeline_results'][id]['pipeline_class'] = linear_regression_pipeline_class
-
-    automl._results = mock_results
-    automl._check_stopping_condition(time.time())
-    out = caplog.text
-    assert "2 iterations without improvement. Stopping search early." in out
 
 
 def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependencies):

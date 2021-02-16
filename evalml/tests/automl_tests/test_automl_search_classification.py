@@ -1,5 +1,4 @@
 import pickle
-import time
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -318,34 +317,6 @@ def test_max_time_units(X_y_binary):
 
     with pytest.raises(TypeError, match="Parameter max_time must be a float, int, string or None. Received <class 'tuple'> with value \\(30, 'minutes'\\)."):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='F1', max_time=(30, 'minutes'))
-
-
-def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-    with pytest.raises(ValueError, match='patience value must be a positive integer.'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=-1, random_seed=0)
-
-    with pytest.raises(ValueError, match='tolerance value must be'):
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5, allowed_model_families=['linear_model'], patience=1, tolerance=1.5, random_seed=0)
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=5,
-                          allowed_model_families=['linear_model'], patience=2, tolerance=0.05,
-                          random_seed=0, n_jobs=1)
-    mock_results = {
-        'search_order': [0, 1, 2],
-        'pipeline_results': {}
-    }
-
-    scores = [0.95, 0.84, 0.96]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
-    for id in mock_results['search_order']:
-        mock_results['pipeline_results'][id] = {}
-        mock_results['pipeline_results'][id]['score'] = scores[id]
-        mock_results['pipeline_results'][id]['pipeline_class'] = logistic_regression_binary_pipeline_class
-
-    automl._results = mock_results
-    automl._check_stopping_condition(time.time())
-    out = caplog.text
-    assert "2 iterations without improvement. Stopping search early." in out
 
 
 def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):

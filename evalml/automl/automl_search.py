@@ -75,6 +75,8 @@ class AutoMLSearch:
                  objective='auto',
                  max_iterations=None,
                  max_time=None,
+                 patience=None,
+                 tolerance=None,
                  data_splitter=None,
                  allowed_pipelines=None,
                  allowed_model_families=None,
@@ -116,6 +118,12 @@ class AutoMLSearch:
                 This will not start a new pipeline search after the duration
                 has elapsed. If it is an integer, then the time will be in seconds.
                 For strings, time can be specified as seconds, minutes, or hours.
+
+            patience (int): Number of iterations without improvement to stop search early. Must be positive.
+                If None, early stopping is disabled. Defaults to None.
+
+            tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+                Only applicable if patience is not None. Defaults to None.
 
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
                 The default of None indicates all pipelines for this problem type are allowed. Setting this field will cause
@@ -219,6 +227,15 @@ class AutoMLSearch:
         if not self.max_iterations and not self.max_time and not self.max_batches:
             self.max_batches = 1
             logger.info("Using default limit of max_batches=1.\n")
+
+        if patience and (not isinstance(patience, int) or patience < 0):
+            raise ValueError("patience value must be a positive integer. Received {} instead".format(patience))
+
+        if tolerance and (tolerance > 1.0 or tolerance < 0.0):
+            raise ValueError("tolerance value must be a float between 0.0 and 1.0 inclusive. Received {} instead".format(tolerance))
+
+        self.patience = patience
+        self.tolerance = tolerance or 0.0
 
         self._results = {
             'pipeline_results': {},
@@ -380,6 +397,8 @@ class AutoMLSearch:
             f"Max Iterations: {self.max_iterations}\n"
             f"Max Batches: {self.max_batches}\n"
             f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
+            f"Patience: {self.patience}\n"
+            f"Tolerance: {self.tolerance}\n"
             f"Data Splitting: {self.data_splitter}\n"
             f"Tuner: {self.tuner_class.__name__}\n"
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
@@ -606,6 +625,26 @@ class AutoMLSearch:
             return False
         elif self.max_iterations and num_pipelines >= self.max_iterations:
             return False
+
+        # check for early stopping
+        if self.patience is None or self.tolerance is None:
+            return True
+
+        first_id = self._results['search_order'][0]
+        best_score = self._results['pipeline_results'][first_id]['score']
+        num_without_improvement = 0
+        for id in self._results['search_order'][1:]:
+            curr_score = self._results['pipeline_results'][id]['score']
+            significant_change = abs((curr_score - best_score) / best_score) > self.tolerance
+            score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
+            if score_improved and significant_change:
+                best_score = curr_score
+                num_without_improvement = 0
+            else:
+                num_without_improvement += 1
+            if num_without_improvement >= self.patience:
+                logger.info("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
+                return False
         return True
 
     def _validate_problem_type(self):
