@@ -3,6 +3,9 @@ name: Windows Unit Tests
 on:
   pull_request:
     types: [opened, synchronize]
+  push:
+    branches:
+      - main
 
 jobs:
   win_unit_tests:
