@@ -4,8 +4,8 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches:
-      - !main
-      - *
+      - '*'
+      - '!main'
 
 jobs:
   release_notes_updated:
