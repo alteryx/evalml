@@ -9,25 +9,24 @@ jobs:
   release_notes_updated:
     name: Release Notes Updated
     runs-on: ubuntu-latest
-    env:
-      BRANCH_REF: ${{ github.event.pull_request.head.ref }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: ${{ env.BRANCH_REF }}
+          ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Debug PR type
         run: |
-          if [[ $(expr match "${{ env.BRANCH_REF }}" "release_v[0-9.]\+") -gt 0 ]]; then
+          if [[ $(expr match "${{ github.event.pull_request.head.ref }}" "release_v[0-9.]\+") -gt 0 ]]; then
             echo This is a release PR;
-          elif [[ $(expr match "${{ env.BRANCH_REF }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
             echo This is a dependency update PR;
           else
             echo This is a regular PR;
           fi
             echo ""
       - run: |
+          echo ${{ github.event.pull_request.head.ref }}
           echo "${{ env.BRANCH_REF }}"
           echo "${{ github.event.number }}"
           echo "${{ github.event.issue.number }}"
