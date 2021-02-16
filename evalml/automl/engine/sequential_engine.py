@@ -21,7 +21,7 @@ class SequentialEngine(EngineBase):
         while self._should_continue_callback() and len(pipelines) > 0:
             pipeline = pipelines[-1]
             self._pre_evaluation_callback(pipeline)
-            pipeline, evaluation_result = EngineBase.train_and_score_pipeline(pipeline, self.automl, self.X_train, self.y_train)
+            evaluation_result = EngineBase.train_and_score_pipeline(pipeline, self.automl, self.X_train, self.y_train)
             new_pipeline_ids.append(self._post_evaluation_callback(pipeline, evaluation_result))
             pipelines.pop()
         return new_pipeline_ids

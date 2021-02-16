@@ -123,4 +123,4 @@ class EngineBase(ABC):
         cv_scores = pd.Series([fold['score'] for fold in cv_data])
         cv_score_mean = cv_scores.mean()
         logger.info(f"\tFinished cross validation - mean {automl.objective.name}: {cv_score_mean:.3f}")
-        return pipeline, {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
+        return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
