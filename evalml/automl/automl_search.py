@@ -339,12 +339,8 @@ class AutoMLSearch:
         )
 
     def _pre_evaluation_callback(self, pipeline):
-        if self._start is not None:
-            self._log_pipeline(pipeline)
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
-
-    def _log_pipeline(self, pipeline):
         desc = f"{pipeline.name}"
         if len(desc) > AutoMLSearch._MAX_NAME_LEN:
             desc = desc[:AutoMLSearch._MAX_NAME_LEN - 3] + "..."
