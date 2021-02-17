@@ -16,6 +16,11 @@ jobs:
       matrix:
         python_version: [ "3.7", "3.8" ]
     steps:
+      - name: Configure Pagefile
+        uses: al-cheb/configure-pagefile-action@v1.2
+        with:
+          minimum-size: 8
+          maximum-size: 16
       - name: Download Miniconda
         shell: pwsh
         run: |
