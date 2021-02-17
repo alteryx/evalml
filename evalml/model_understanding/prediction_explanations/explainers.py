@@ -17,7 +17,7 @@ from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 from evalml.utils.gen_utils import drop_rows_with_nans
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
-_ReportData = namedtuple("ReportData", ["pipeline", "input_features",
+_ReportData = namedtuple("ReportData", ["pipeline", "pipeline_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
 
 
@@ -44,13 +44,13 @@ def explain_prediction(pipeline, input_features, y, index_to_explain, top_k_feat
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     input_features = infer_feature_types(input_features)
-    input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    pipeline_features = pipeline.compute_estimator_features(input_features, y).to_dataframe()
 
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     if any([x < 0 or x >= len(input_features) for x in [index_to_explain]]):
         raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
-    return _make_single_prediction_shap_table(pipeline, input_features, y, index_to_explain, top_k_features, include_shap_values,
+    return _make_single_prediction_shap_table(pipeline, pipeline_features, index_to_explain, top_k_features, include_shap_values,
                                               output_format=output_format)
 
 
@@ -88,7 +88,10 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
     if any([x < 0 or x >= len(input_features) for x in indices_to_explain]):
         raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
-    data = _ReportData(pipeline, input_features, y_true=y, y_pred=None,
+
+    pipeline_features = pipeline.compute_estimator_features(input_features, y).to_dataframe()
+
+    data = _ReportData(pipeline, pipeline_features, y_true=y, y_pred=None,
                        y_pred_values=None, errors=None, index_list=indices_to_explain, metric=None)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions",
@@ -172,7 +175,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     worst_indices = sorted_scores.index[-num_to_explain:]
     index_list = best_indices.tolist() + worst_indices.tolist()
 
-    data = _ReportData(pipeline, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
+    pipeline_features = pipeline.compute_estimator_features(input_features, y_true).to_dataframe()
+
+    data = _ReportData(pipeline, pipeline_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,
