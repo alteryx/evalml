@@ -3,8 +3,9 @@ name: Release Notes Updated
 on:
   pull_request:
     types: [opened, synchronize]
+  push:
     branches-ignore:
-      - 'main'
+      - *
 
 jobs:
   release_notes_updated:
