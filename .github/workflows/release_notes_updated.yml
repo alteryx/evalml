@@ -25,7 +25,7 @@ jobs:
           else
             echo This is a regular PR;
           fi
-            echo "PR#: ${{ github.event.number }}"
+            echo "PR #: ${{ github.event.number }}"
       - name: Release notes added
         run: |
           if [[ $(expr match "${{ github.event.pull_request.head.ref }}" "release_v[0-9.]\+") -gt 0 ]]; then
