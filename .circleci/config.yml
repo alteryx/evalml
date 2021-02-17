@@ -105,64 +105,64 @@ jobs:
       - run: Get-Process | Sort-Object -Descending WS
       - run: systeminfo | find "Available Physical Memory"
       - run:
-        name: Download Miniconda
-        command: |
-          $File = "./<< parameters.miniconda_pkg_name >>"
-          $Uri = "https://repo.anaconda.com/miniconda/<< parameters.miniconda_pkg_name >>"
-          $ProgressPreference = "silentlyContinue"
-          Invoke-WebRequest -Uri $Uri -Outfile $File
-          $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
-          $hashFromUrl = "<< parameters.miniconda_hash >>"
-          if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "File hashes did not match!"
-          }
+          name: Download Miniconda
+          command: |
+            $File = "./<< parameters.miniconda_pkg_name >>"
+            $Uri = "https://repo.anaconda.com/miniconda/<< parameters.miniconda_pkg_name >>"
+            $ProgressPreference = "silentlyContinue"
+            Invoke-WebRequest -Uri $Uri -Outfile $File
+            $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
+            $hashFromUrl = "<< parameters.miniconda_hash >>"
+            if ($hashFromFile.Hash -ne "$hashFromUrl") {
+              Throw "File hashes did not match!"
+            }
       - run:
-        name: Install Miniconda
-        command: start /wait C:\evalml\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
-        shell: cmd.exe
+          name: Install Miniconda
+          command: start /wait C:\evalml\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
+          shell: cmd.exe
       - run:
-        name: Set Python Version
-        command: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda create -n curr_py python=<< parameters.python_version >>
+          name: Set Python Version
+          command: |
+            C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+            conda create -n curr_py python=<< parameters.python_version >>
       - run:
-        name: Install make
-        command: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda config --add channels conda-forge
-          conda activate curr_py
-          conda install make -q -y
+          name: Install make
+          command: |
+            C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+            conda config --add channels conda-forge
+            conda activate curr_py
+            conda install make -q -y
       - run:
-        name: Install Graphviz
-        command: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate curr_py
-          conda install python-graphviz graphviz<=2.42.3 -q -y
+          name: Install Graphviz
+          command: |
+            C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+            conda activate curr_py
+            conda install python-graphviz graphviz<=2.42.3 -q -y
       - run:
-        name: Install numba (for shap)
-        command: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda config --add channels conda-forge
-          conda activate curr_py
-          conda install numba -q -y
+          name: Install numba (for shap)
+          command: |
+            C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+            conda config --add channels conda-forge
+            conda activate curr_py
+            conda install numba -q -y
       - run:
-        name: Install EvalML
-        command: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate curr_py
-          python -m pip install --upgrade pip
-          python -m pip install .
-          python -m pip install -r test-requirements.txt
+          name: Install EvalML
+          command: |
+            C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+            conda activate curr_py
+            python -m pip install --upgrade pip
+            python -m pip install .
+            python -m pip install -r test-requirements.txt
       - run:
-        name: Run Unit Tests
-        command: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate curr_py
-          make win-git-test
+          name: Run Unit Tests
+          command: |
+            C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+            conda activate curr_py
+            make win-git-test
       - store_test_results:
-        path: C:/evalml/test-reports
+          path: C:/evalml/test-reports
       - store_artifacts:
-        path: C:/evalml/test-reports
+          path: C:/evalml/test-reports
   unit_tests:
     resource_class: xlarge
     parameters:
