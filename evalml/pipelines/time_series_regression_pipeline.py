@@ -78,7 +78,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = infer_feature_types(y)
         features, y_t = self.compute_estimator_features(X, y)
         y_t = _convert_woodwork_types_wrapper(y_t.to_series())
-        y_t_index = y_t.index
         features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y_t = drop_rows_with_nans(features, y_t)
         y_arg = None

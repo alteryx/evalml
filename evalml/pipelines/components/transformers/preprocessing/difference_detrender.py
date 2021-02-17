@@ -14,7 +14,7 @@ class DifferenceDetrender(Transformer):
     """Removes trends from time series by taking successive differences of the target variable."""
     name = "Difference Detrender"
 
-    hyperparameter_ranges = {"degree": Integer(1, 3)}
+    hyperparameter_ranges = {}
 
     def __init__(self, degree=1, random_state=None, random_seed=0, **kwargs):
         """Initialzie the DifferenceDetrender.
@@ -24,7 +24,8 @@ class DifferenceDetrender(Transformer):
             random_state (None): Deprecated. Use random seed.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-
+        if degree != 1:
+            raise ValueError("Degree must be equal to 1!")
         params = {"degree": degree}
         params.update(kwargs)
         self.degree = degree
@@ -64,9 +65,9 @@ class DifferenceDetrender(Transformer):
            return X, y
         y_dt = infer_feature_types(y)
         y_t = _convert_woodwork_types_wrapper(y_dt.to_series())
-        self._first_elements = []
+        self._first_elements = y_t.copy(deep=True)
         for degree in range(self.degree):
-            self._first_elements.append(y_t.iloc[degree])
+            # self._first_elements.append(y_t.iloc[degree])
             y_t = y_t - y_t.shift(1)
         y_t = ww.DataColumn(y_t)
         return X, y_t
@@ -99,10 +100,14 @@ class DifferenceDetrender(Transformer):
             raise ValueError("y cannot be None for DifferenceDetrender!")
         y_dt = infer_feature_types(y)
         y_array = _convert_woodwork_types_wrapper(y_dt.to_series())
-        y_index = y_array.index
-        y_array = y_array.values[self.degree:]
-        for degree in range(self.degree, 0, -1):
-            y_array = np.r_[self._first_elements[degree - 1], y_array].cumsum()
-        y_t = ww.DataColumn(pd.Series(y_array, index=y_index))
+        previous_index = max(self._first_elements.index.get_loc(y_array.index[0]) - 1, 0)
+        # y_no_nan = y_array.dropna()
+        #y_array = y_array.values[self.degree:]
+        #for degree in range(self.degree, 0, -1):
+        original = np.r_[self._first_elements.iloc[previous_index], y_array.loc[self._first_elements.index[previous_index + 1]:]].cumsum()
+        original = pd.Series(original, index=self._first_elements.index[previous_index:])
+        original = original.loc[y_array.index[0]:]
+        #y_t = ww.DataColumn(pd.Series(y_array, index=y_index))
+        y_t = ww.DataColumn(original)
         return X, y_t
 

@@ -30,7 +30,7 @@ def test_difference_detrender_fit_transform(degree, use_int_index, ts_data):
 
 
 @pytest.mark.parametrize("use_int_index", [True, False])
-@pytest.mark.parametrize("degree", [1, 2, 3])
+@pytest.mark.parametrize("degree", [1])
 def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
     X, y = ts_data
     X = X.iloc[:5]
@@ -44,3 +44,6 @@ def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
     output_inverse_X, output_inverse_y = detrender.inverse_transform(output_X, output_y)
     pd.testing.assert_series_equal(y, output_inverse_y.to_series(), check_dtype=False)
     pd.testing.assert_frame_equal(X, output_inverse_X)
+
+    output_inverse_X, output_inverse_y = detrender.inverse_transform(output_X.iloc[2:], output_y.iloc[2:])
+    pd.testing.assert_series_equal(y.iloc[2:], output_inverse_y.to_series(), check_dtype=False)
