@@ -23,6 +23,7 @@ jobs:
         with:
           minimum-size: 8
           maximum-size: 16
+          disk-root: "C:"
       - run: |
           (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize
       - name: Download Miniconda
