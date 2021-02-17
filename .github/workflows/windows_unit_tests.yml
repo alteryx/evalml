@@ -16,6 +16,8 @@ jobs:
       matrix:
         python_version: [ "3.7", "3.8" ]
     steps:
+      - run: Get-Process | Sort-Object -Descending WS
+      - run: systeminfo | find "Available Physical Memory"
       - run: |
           (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize
       - name: Configure Pagefile
