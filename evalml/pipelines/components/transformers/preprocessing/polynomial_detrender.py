@@ -101,7 +101,6 @@ class PolynomialDetrender(Transformer):
             raise ValueError("y cannot be None for PolynomialDetrender!")
         y_dt = infer_feature_types(y)
         y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
-        breakpoint()
         y_t = self._component_obj.inverse_transform(y_series)
         y_t = ww.DataColumn(pd.Series(y_t, index=y_series.index))
         return X, y_t

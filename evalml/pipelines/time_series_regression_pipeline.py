@@ -78,15 +78,17 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y = infer_feature_types(y)
         features, y_t = self.compute_estimator_features(X, y)
         y_t = _convert_woodwork_types_wrapper(y_t.to_series())
+        y_t_index = y_t.index
         features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y_t = drop_rows_with_nans(features, y_t)
         y_arg = None
         if self.estimator.predict_uses_y:
             y_arg = y_t
         predictions = self.estimator.predict(features_no_nan, y_arg).to_series()
+        predictions.index = y_t.index
         if self._component_graph._component_with_inverse_transformer:
             predictions = self._component_graph.get_component(self._component_graph._component_with_inverse_transformer).inverse_transform(features_no_nan, predictions)[1]
-        predictions = predictions.to_series()
+            predictions = predictions.to_series()
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return infer_feature_types(padded)
@@ -112,7 +114,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
 
         y_predicted = self.predict(X, y)
         y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
-
         y_shifted = y.shift(-self.gap)
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         y_shifted, y_predicted = drop_rows_with_nans(y_shifted, y_predicted)
