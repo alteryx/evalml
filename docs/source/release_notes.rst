@@ -22,6 +22,7 @@ Release Notes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
         * Pin graphviz version for windows builds :pr:`1847`
+        * Unpin graphviz version for windows builds :pr:`1851`
 
 
 **v0.18.2 Feb. 10, 2021**
