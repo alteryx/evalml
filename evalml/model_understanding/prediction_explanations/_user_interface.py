@@ -208,7 +208,7 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, index_to_exp
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        pipeline_features (pd.DataFrame): Dataframe of features computed the pipeline.
+        pipeline_features (pd.DataFrame): Dataframe of features computed by the pipeline.
         top_k (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
@@ -278,19 +278,30 @@ class _Heading(_SectionMaker):
 
         Differences between best/worst reports and reports where user manually specifies the input features subset
         are handled by formatting the value of the prefix parameter in the initialization.
+
+        Arguments:
+            rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
         """
         prefix = self.prefixes[(rank // self.n_indices)]
         rank = rank % self.n_indices
         return [f"\t{prefix}{rank + 1} of {self.n_indices}\n\n"]
 
     def make_dict(self, rank):
-        """Makes the heading section for reports formatted as dictionaries."""
+        """Makes the heading section for reports formatted as dictionaries.
+
+        Arguments:
+            rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
+        """
         prefix = self.prefixes[(rank // self.n_indices)]
         rank = rank % self.n_indices
         return {"prefix": prefix, "index": rank + 1}
 
     def make_dataframe(self, rank):
-        """Makes the heading section for reports formatted as a dataframe."""
+        """Makes the heading section for reports formatted as a dataframe.
+
+        Arguments:
+            rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
+        """
         return self.make_dict(rank)
 
 
@@ -305,7 +316,16 @@ class _ClassificationPredictedValues(_SectionMaker):
         self.predicted_values = y_pred_values
 
     def make_text(self, index, y_pred, y_true, scores, dataframe_index):
-        """Makes the predicted values section for classification problem best/worst reports formatted as text."""
+        """Makes the predicted values section for classification problem best/worst reports formatted as text.
+
+        Arguments:
+            index (int): The index of the prediction in the dataset.
+            y_pred (pd.Series): Pipeline predictions on the entire dataset.
+            y_true (pd.Series): Targets for the entire dataset.
+            scores (np.ndarray): Scores on the entire dataset.
+            dataframe_index (pd.Series): pandas index for the entire dataset. Used to display the index in the data
+                each explanation belongs to.
+        """
         pred_value = [f"{col_name}: {pred}" for col_name, pred in
                       zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist())]
         pred_value = "[" + ", ".join(pred_value) + "]"
@@ -314,7 +334,7 @@ class _ClassificationPredictedValues(_SectionMaker):
         return [f"\t\tPredicted Probabilities: {pred_value}\n",
                 f"\t\tPredicted Value: {self.predicted_values[index]}\n",
                 f"\t\tTarget Value: {true_value}\n",
-                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n",
+                f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
                 f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n"]
 
     def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
@@ -341,10 +361,19 @@ class _RegressionPredictedValues(_SectionMaker):
         self.error_name = error_name
 
     def make_text(self, index, y_pred, y_true, scores, dataframe_index):
-        """Makes the predicted values section for regression problem best/worst reports formatted as text."""
+        """Makes the predicted values section for regression problem best/worst reports formatted as text.
+
+        Arguments:
+            index (int): The index of the prediction in the dataset.
+            y_pred (pd.Series): Pipeline predictions on the entire dataset.
+            y_true (pd.Series): Targets for the entire dataset.
+            scores (pd.Series): Scores on the entire dataset.
+            dataframe_index (pd.Series): pandas index for the entire dataset. Used to display the index in the data
+                each explanation belongs to.
+        """
         return [f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
                 f"\t\tTarget Value: {round(y_true.iloc[index], 3)}\n",
-                f"\t\t{self.error_name}: {round(scores.iloc[index], 3)}\n",
+                f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
                 f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n"]
 
     def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
@@ -366,7 +395,7 @@ class _SHAPTable(_SectionMaker):
         self.top_k_features = top_k_features
         self.include_shap_values = include_shap_values
 
-    def make_text(self, index, pipeline, pipeline_features, y):
+    def make_text(self, index, pipeline, pipeline_features):
         """Makes the SHAP table section for reports formatted as text.
 
         The table is the same whether the user requests a best/worst report or they manually specified the
@@ -374,6 +403,12 @@ class _SHAPTable(_SectionMaker):
 
         Handling the differences in how the table is formatted between regression and classification problems
         is delegated to the _make_single_prediction_shap_table
+
+        Arguments:
+            index (int): The index of the prediction in the dataset.
+            pipeline (PipelineBase): The pipeline to explain.
+            pipeline_features (pd.DataFrame): The dataframe of features created by the pipeline.
+            y (pd.Series):
         """
         table = _make_single_prediction_shap_table(pipeline, pipeline_features,
                                                    index_to_explain=index,
@@ -383,7 +418,7 @@ class _SHAPTable(_SectionMaker):
         # Indent the rows of the table to match the indentation of the entire report.
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
 
-    def make_dict(self, index, pipeline, pipeline_features, y):
+    def make_dict(self, index, pipeline, pipeline_features):
         """Makes the SHAP table section formatted as a dictionary."""
         json_output = _make_single_prediction_shap_table(pipeline, pipeline_features,
                                                          index_to_explain=index,
@@ -392,7 +427,7 @@ class _SHAPTable(_SectionMaker):
                                                          output_format="dict")
         return json_output
 
-    def make_dataframe(self, index, pipeline, pipeline_features, y):
+    def make_dataframe(self, index, pipeline, pipeline_features):
         """Makes the SHAP table section formatted as a dataframe."""
         return _make_single_prediction_shap_table(pipeline, pipeline_features,
                                                   index_to_explain=index,
@@ -440,7 +475,7 @@ class _ReportMaker:
                                                                          pd.Series(data.pipeline_features.index)))
             else:
                 report.extend([""])
-            report.extend(self.table_maker.make_text(index, data.pipeline, data.pipeline_features, data.y_true))
+            report.extend(self.table_maker.make_text(index, data.pipeline, data.pipeline_features))
         return "".join(report)
 
     def make_dict(self, data):
@@ -463,15 +498,14 @@ class _ReportMaker:
                                                                                          data.y_true, data.errors,
                                                                                          pd.Series(data.pipeline_features.index))
             section["explanations"] = self.table_maker.make_dict(index, data.pipeline,
-                                                                 data.pipeline_features,
-                                                                 data.y_true)["explanations"]
+                                                                 data.pipeline_features)["explanations"]
             report.append(section)
         return {"explanations": report}
 
     def make_dataframe(self, data):
         report = []
         for rank, index in enumerate(data.index_list):
-            shap_table = self.table_maker.make_dataframe(index, data.pipeline, data.pipeline_features, data.y_true)
+            shap_table = self.table_maker.make_dataframe(index, data.pipeline, data.pipeline_features)
             if self.make_predicted_values_maker:
                 heading = self.make_predicted_values_maker.make_dataframe(index, data.y_pred, data.y_true, data.errors,
                                                                           pd.Series(data.pipeline_features.index))

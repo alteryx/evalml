@@ -284,7 +284,7 @@ def test_output_format_checked():
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
-        explain_predictions_best_worst(pipeline=MagicMock, input_features=input_features, y_true=y_true, output_format="foo")
+        explain_predictions_best_worst(pipeline=MagicMock(), input_features=input_features, y_true=y_true, output_format="foo")
 
 
 regression_best_worst_answer = """Test Pipeline Name
@@ -762,8 +762,10 @@ def test_explain_predictions_time_series(ts_data):
                             indices_to_explain=[1, 11], output_format="text")
 
 
-@pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"), (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
-def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, ts_data):
+@pytest.mark.parametrize("output_format", ["text", "dict", "dataframe"])
+@pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                                                       (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
+def test_explain_predictions_best_worst_time_series(output_format, pipeline_class, estimator, ts_data):
     X, y = ts_data
 
     if is_binary(pipeline_class.problem_type):
@@ -778,11 +780,12 @@ def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, t
     tspipeline.fit(X, y)
 
     exp = explain_predictions_best_worst(pipeline=tspipeline, input_features=X, y_true=y,
-                                         output_format="dict")
+                                         output_format=output_format)
 
-    # Check that the computed features to be explained aren't NaN.
-    for exp_idx in range(len(exp["explanations"])):
-        assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
+    if output_format == "dict":
+        # Check that the computed features to be explained aren't NaN.
+        for exp_idx in range(len(exp["explanations"])):
+            assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
