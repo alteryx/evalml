@@ -32,6 +32,7 @@ Release Notes
         * Added custom random undersampling sampler for classification :pr:`1857`
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
+        * Integrated ``KNN Classifier`` into AutoML :pr:`1850`
     * Fixes
         * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
     * Changes
