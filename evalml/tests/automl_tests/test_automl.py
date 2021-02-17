@@ -1529,11 +1529,11 @@ def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_b
                           allowed_model_families=['linear_model'], patience=2, tolerance=0.05,
                           random_seed=0, n_jobs=1)
     mock_results = {
-        'search_order': [0, 1, 2],
+        'search_order': [0, 1, 2, 3],
         'pipeline_results': {}
     }
 
-    scores = [0.95, 0.84, 0.96]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
+    scores = [0.84, 0.95, 0.84, 0.96]  # 0.96 is only 1% greater so it doesn't trigger patience due to tolerance
     for id in mock_results['search_order']:
         mock_results['pipeline_results'][id] = {}
         mock_results['pipeline_results'][id]['score'] = scores[id]
