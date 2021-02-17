@@ -16,11 +16,15 @@ jobs:
       matrix:
         python_version: [ "3.7", "3.8" ]
     steps:
+      - run: |
+          (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize
       - name: Configure Pagefile
         uses: al-cheb/configure-pagefile-action@v1.2
         with:
           minimum-size: 8
           maximum-size: 16
+      - run: |
+          (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize
       - name: Download Miniconda
         shell: pwsh
         run: |
