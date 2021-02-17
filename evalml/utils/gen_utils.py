@@ -64,6 +64,7 @@ def convert_to_seconds(input_str):
         raise AssertionError(msg)
 
 
+
 # specifies the min and max values a seed to np.random.RandomState is allowed to take.
 # these limits were chosen to fit in the numpy.int32 datatype to avoid issues with 32-bit systems
 # see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
@@ -158,8 +159,7 @@ _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBas
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
                        'TimeSeriesBaselineRegressionPipeline', 'TimeSeriesBaselineBinaryPipeline',
-                       'TimeSeriesBaselineMulticlassPipeline', 'KNeighborsClassifier',
-                       'SVMClassifier', 'SVMRegressor'}
+                       'TimeSeriesBaselineMulticlassPipeline', 'SVMClassifier', 'SVMRegressor'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
