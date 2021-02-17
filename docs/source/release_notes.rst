@@ -11,6 +11,7 @@ Release Notes
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
         * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
+        * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
@@ -20,6 +21,7 @@ Release Notes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
         * Pin graphviz version for windows builds :pr:`1847`
+        * Unpin graphviz version for windows builds :pr:`1851`
 
 
 **v0.18.2 Feb. 10, 2021**
