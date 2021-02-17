@@ -454,7 +454,7 @@ class AutoMLSearch:
         leading_char = "\n"
         start_of_loop = time.time()
         while True:
-            choice = AutoMLSearch._read_input(leading_char=leading_char)
+            choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
             if choice == "y":
                 logger.info("Exiting AutoMLSearch.")
                 return True
@@ -465,10 +465,6 @@ class AutoMLSearch:
                 return False
             else:
                 leading_char = ""
-
-    @staticmethod
-    def _read_input(self, leading_char=''):
-        return input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
 
     def search(self, data_checks="auto", show_iteration_plot=True):
         """Find the best pipeline for the data set.
