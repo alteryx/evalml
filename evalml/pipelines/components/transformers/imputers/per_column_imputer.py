@@ -89,4 +89,4 @@ class PerColumnImputer(Transformer):
             else:
                 X_t[column] = transformed[column]
         X_t = X_t.drop(cols_to_drop, axis=1)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t), y

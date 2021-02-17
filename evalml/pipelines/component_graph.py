@@ -4,7 +4,7 @@ import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
-from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components import ComponentBase, Estimator, Transformer, DifferenceDetrender, PolynomialDetrender
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -34,6 +34,7 @@ class ComponentGraph:
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
+        self._component_with_inverse_transformer = None
 
     @classmethod
     def from_list(cls, component_list, random_seed=0):
@@ -55,6 +56,7 @@ class ComponentGraph:
             component_dict[component_name] = [component_class]
             if previous_component is not None:
                 component_dict[component_name].append(f"{previous_component}.x")
+                component_dict[component_name].append(f"{previous_component}.y")
             previous_component = component_name
         return cls(component_dict, random_seed=random_seed)
 
@@ -73,7 +75,8 @@ class ComponentGraph:
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-
+            if component_class in [PolynomialDetrender, DifferenceDetrender]:
+                self._component_with_inverse_transformer = component_name
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
             except (ValueError, TypeError) as e:
@@ -135,18 +138,18 @@ class ComponentGraph:
             ww.DataTable: Transformed values.
         """
         if len(self.compute_order) <= 1:
-            return infer_feature_types(X)
+            return infer_feature_types(X), infer_feature_types(y)
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs = []
+        target = y
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
             if isinstance(parent_output, ww.DataColumn):
-                parent_output = parent_output.to_series()
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = infer_feature_types(parent_output)
-            final_component_inputs.append(parent_output)
+                target = parent_output
+            else:
+                final_component_inputs.append(parent_output)
         concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
-        return infer_feature_types(concatted)
+        return infer_feature_types(concatted), target
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -218,6 +221,8 @@ class ComponentGraph:
                     component_instance.fit(input_x, input_y)
                 if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
                     output = component_instance.predict(input_x)
+                    if self._component_with_inverse_transformer:
+                        output = self.get_component(self._component_with_inverse_transformer).inverse_transform(input_x, output)[1]
                 else:
                     output = None
                 output_cache[component_name] = output

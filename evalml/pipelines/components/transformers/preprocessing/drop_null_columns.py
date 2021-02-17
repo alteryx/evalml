@@ -51,4 +51,4 @@ class DropNullColumns(Transformer):
         X_t = infer_feature_types(X)
         if len(self._cols_to_drop) == 0:
             return X_t
-        return X_t.drop(self._cols_to_drop)
+        return X_t.drop(self._cols_to_drop), y

@@ -124,7 +124,7 @@ class TextFeaturizer(TextTransformer):
         X_lsa = self._lsa.transform(X[self._text_columns]).to_dataframe()
         X_nlp_primitives.set_index(X.index, inplace=True)
         X_t = pd.concat([X.drop(self._text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t), y
 
     def _get_feature_provenance(self):
         if not self._text_columns:

@@ -53,12 +53,10 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
-        X_t = self._compute_features_during_fit(X, y)
-        X_t = X_t.to_dataframe()
-
-        y_shifted = y.shift(-self.gap)
+        X_t, y_t = self._compute_features_during_fit(X, y)
+        y_t = _convert_woodwork_types_wrapper(y_t.to_series())
+        X_t = _convert_woodwork_types_wrapper(X_t.to_dataframe())
+        y_shifted = y_t.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
         return self
@@ -78,15 +76,17 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
             X = pd.DataFrame()
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
-        features = self.compute_estimator_features(X, y)
+        features, y_t = self.compute_estimator_features(X, y)
+        y_t = _convert_woodwork_types_wrapper(y_t.to_series())
         features = _convert_woodwork_types_wrapper(features.to_dataframe())
-        features_no_nan, y = drop_rows_with_nans(features, y)
+        features_no_nan, y_t = drop_rows_with_nans(features, y_t)
         y_arg = None
         if self.estimator.predict_uses_y:
-            y_arg = y
+            y_arg = y_t
         predictions = self.estimator.predict(features_no_nan, y_arg).to_series()
+        if self._component_graph._component_with_inverse_transformer:
+            predictions = self._component_graph.get_component(self._component_graph._component_with_inverse_transformer).inverse_transform(features_no_nan, predictions)[1]
+        predictions = predictions.to_series()
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return infer_feature_types(padded)

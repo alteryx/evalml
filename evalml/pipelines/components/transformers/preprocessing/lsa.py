@@ -70,7 +70,7 @@ class LSA(TextTransformer):
         self._provenance = provenance
 
         X_t = X_t.drop(columns=self._text_columns)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t), y
 
     def _get_feature_provenance(self):
         return self._provenance

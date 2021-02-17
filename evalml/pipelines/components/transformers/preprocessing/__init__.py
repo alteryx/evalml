@@ -5,3 +5,5 @@ from .lsa import LSA
 from .text_featurizer import TextFeaturizer
 from .delayed_feature_transformer import DelayedFeatureTransformer
 from .featuretools import DFSTransformer
+from .polynomial_detrender import PolynomialDetrender
+from .difference_detrender import DifferenceDetrender

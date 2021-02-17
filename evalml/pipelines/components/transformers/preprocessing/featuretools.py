@@ -76,4 +76,4 @@ class DFSTransformer(Transformer):
         X_t.columns = X_t.columns.astype(str)
         es = self._make_entity_set(X_t)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, feature_matrix)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, feature_matrix), y

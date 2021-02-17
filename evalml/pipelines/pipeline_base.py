@@ -186,10 +186,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             ww.DataTable: New transformed features.
         """
-        X_t = self._component_graph.compute_final_component_features(X, y=y)
-        return X_t
+        return self._component_graph.compute_final_component_features(X, y=y)
 
     def _compute_features_during_fit(self, X, y):
+        breakpoint()
         self.input_target_name = y.name
         X_t = self._component_graph.fit_features(X, y)
         self.input_feature_names = self._component_graph.input_feature_names

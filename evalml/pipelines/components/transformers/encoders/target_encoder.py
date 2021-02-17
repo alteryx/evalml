@@ -70,7 +70,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             y = _convert_woodwork_types_wrapper(y.to_series())
         X_t = self._component_obj.transform(X, y)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Categorical])
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Categorical]), y
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)

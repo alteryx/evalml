@@ -24,6 +24,7 @@ from evalml.pipelines.components import (
     Transformer
 )
 from evalml.utils import infer_feature_types
+from evalml.pipelines.components import DifferenceDetrender, PolynomialDetrender
 
 
 class DummyTransformer(Transformer):
@@ -736,3 +737,29 @@ def test_component_graph_dataset_with_different_types():
     assert input_feature_names['Elastic Net'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
                                                   'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
+
+
+@pytest.mark.parametrize("detrender", [DifferenceDetrender, PolynomialDetrender])
+@patch('evalml.pipelines.components.Estimator.fit')
+@patch('evalml.pipelines.components.Estimator.predict')
+@patch('evalml.pipelines.components.PolynomialDetrender.inverse_transform')
+@patch('evalml.pipelines.components.DifferenceDetrender.inverse_transform')
+def test_predict_calls_inverse_transform(mock_difference_detrender, mock_polynomial_detrender,
+                                         mock_predict, mock_fit, detrender, X_y_binary):
+    X, y = X_y_binary
+    mock_predict.return_value = ww.DataColumn(pd.Series(y))
+    mock_inverse_transform = {DifferenceDetrender: mock_difference_detrender,
+                              PolynomialDetrender: mock_polynomial_detrender}[detrender]
+    mock_inverse_transform.return_value = None, ww.DataColumn(pd.Series(y))
+
+    graph = {'Detrender': [detrender],
+             'Imputer': [Imputer, "Detrender.x", "Detrender.y"],
+             'OneHotEncoder': [OneHotEncoder, "Imputer.x", "Imputer.y"],
+             'Random Forest': [RandomForestClassifier, 'OneHotEncoder.x', "OneHotEncoder.y"]
+             }
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    assert mock_inverse_transform.call_count == 0
+    component_graph.predict(X)
+    assert mock_inverse_transform.call_count == 1

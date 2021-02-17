@@ -106,12 +106,12 @@ class Imputer(Transformer):
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X_null_dropped[self._numeric_cols]
-            imputed = self._numeric_imputer.transform(X_numeric).to_dataframe()
+            imputed = self._numeric_imputer.transform(X_numeric)[0].to_dataframe()
             X_null_dropped[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
             X_categorical = X_null_dropped[self._categorical_cols]
-            imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
+            imputed = self._categorical_imputer.transform(X_categorical)[0].to_dataframe()
             X_null_dropped[X_categorical.columns] = imputed
         X_null_dropped = _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
-        return X_null_dropped
+        return X_null_dropped, y

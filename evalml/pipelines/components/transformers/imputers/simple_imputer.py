@@ -83,7 +83,7 @@ class SimpleImputer(Transformer):
 
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
         X_t.index = X_null_dropped.index
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t), y
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

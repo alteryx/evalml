@@ -105,15 +105,15 @@ class DelayedFeatureTransformer(Transformer):
 
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
-            y = infer_feature_types(y)
-            if y.logical_type == logical_types.Categorical:
-                y = self._encode_y_while_preserving_index(y)
+            y_t = infer_feature_types(y)
+            if y_t.logical_type == logical_types.Categorical:
+                y_t = self._encode_y_while_preserving_index(y)
             else:
-                y = _convert_woodwork_types_wrapper(y.to_series())
-            X = X.assign(**{f"target_delay_{t}": y.shift(t)
+                y_t = _convert_woodwork_types_wrapper(y.to_series())
+            X = X.assign(**{f"target_delay_{t}": y_t.shift(t)
                             for t in range(self.start_delay_for_target, self.max_delay + 1)})
 
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X), y
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)
