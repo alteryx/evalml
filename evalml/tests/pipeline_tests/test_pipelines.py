@@ -56,7 +56,7 @@ from evalml.problem_types import ProblemTypes, is_time_series
 
 
 def test_allowed_model_families(has_minimal_dependencies):
-    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.EXTRA_TREES, ModelFamily.DECISION_TREE]
+    families = [ModelFamily.RANDOM_FOREST, ModelFamily.LINEAR_MODEL, ModelFamily.EXTRA_TREES, ModelFamily.DECISION_TREE, ModelFamily.K_NEIGHBORS]
     expected_model_families_binary = set(families)
     expected_model_families_regression = set(families)
     if not has_minimal_dependencies:
