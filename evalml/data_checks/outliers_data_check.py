@@ -55,7 +55,7 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         for col in X.columns:
             results = OutliersDataCheck._outlier_score(X[col], False)
-            if results["score"] <= 0.9:
+            if results is not None and results["score"] <= 0.9:
                 has_outliers.append(col)
         warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in has_outliers]))
         messages["warnings"].append(DataCheckWarning(message=warning_msg,

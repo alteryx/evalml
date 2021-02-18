@@ -117,3 +117,8 @@ def test_outlier_score_convert_column_to_int():
     results = OutliersDataCheck._outlier_score(no_outlier, convert_column=True)
     assert results['score'] == 1.0
     len(results['values']['high_values']) == 0 and len(results['values']['low_values']) == 0
+
+
+def test_outlier_score_all_nan():
+    all_nan = pd.Series([np.nan, np.nan, np.nan])
+    assert OutliersDataCheck._outlier_score(all_nan) is None
