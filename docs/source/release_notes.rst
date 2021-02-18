@@ -27,6 +27,11 @@ Release Notes
         * Pin graphviz version for windows builds :pr:`1847`
         * Unpin graphviz version for windows builds :pr:`1851`
 
+.. warning::
+
+    **Breaking Changes**
+        * Added a deprecation warning to ``explain_prediction``. It will be deleted in the next release. :pr:`1860`
+
 
 **v0.18.2 Feb. 10, 2021**
     * Enhancements
