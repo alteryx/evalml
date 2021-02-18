@@ -16,18 +16,7 @@ jobs:
       matrix:
         python_version: [ "3.7", "3.8" ]
     steps:
-      - run: Get-Process | Sort-Object -Descending WS
       - run: systeminfo | find "Available Physical Memory"
-      - run: |
-          (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize
-      - name: Configure Pagefile
-        uses: al-cheb/configure-pagefile-action@v1.2
-        with:
-          minimum-size: 8
-          maximum-size: 16
-          disk-root: "C:"
-      - run: |
-          (Get-CimInstance Win32_PageFileUsage).AllocatedBaseSize
       - name: Download Miniconda
         shell: pwsh
         run: |
@@ -82,4 +71,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+          pytest evalml/ --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
