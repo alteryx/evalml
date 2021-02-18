@@ -71,4 +71,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          pytest evalml/ --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+          pytest evalml/ -n 3 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
