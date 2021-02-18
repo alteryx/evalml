@@ -16,7 +16,6 @@ jobs:
       matrix:
         python_version: [ "3.7", "3.8" ]
     steps:
-      - run: systeminfo | find "Available Physical Memory"
       - name: Download Miniconda
         shell: pwsh
         run: |
