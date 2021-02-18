@@ -1,13 +1,13 @@
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
-from evalml.utils import _convert_numeric_dataset, infer_feature_types
+from evalml.utils import _convert_sampler_dataset, infer_feature_types
 
 
 class BaseTVSplit(BaseCrossValidator):
     """Base class for training validation data splitter."""
 
-    def __init__(self, sampler=None, test_size=None, random_seed=0):
+    def __init__(self, sampler=None, test_size=None, numeric_only=True, random_seed=0):
         """Create a training-validation data splitter instance
 
         Arguments:
@@ -16,11 +16,14 @@ class BaseTVSplit(BaseCrossValidator):
             test_size (float): What percentage of data points should be included in the validation
                 set. Defalts to the complement of `train_size` if `train_size` is set, and 0.25 otherwise.
 
+            numeric_only (bool): Whether the dataset should include numeric, non-null values only, or if it can include other dtypes as well. Defaults to True.
+
             random_seed (int): Random seed for the splitter. Defaults to 0
         """
         self.sampler = sampler
         self.test_size = test_size
         self.random_seed = random_seed
+        self.numeric = numeric_only
 
     @staticmethod
     def get_n_splits():
@@ -37,11 +40,11 @@ class BaseTVSplit(BaseCrossValidator):
         Returns:
             tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
         """
-        X, y = _convert_numeric_dataset(X, y)
+        X, y = _convert_sampler_dataset(X, y, numeric=self.numeric)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_seed)
         X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
-        X_train_resample, y_train_resample = _convert_numeric_dataset(X_train_resample, y_train_resample, to_pandas=False)
-        X_test, y_test = _convert_numeric_dataset(X_test, y_test, to_pandas=False)
+        X_train_resample, y_train_resample = _convert_sampler_dataset(X_train_resample, y_train_resample, to_pandas=False, numeric=self.numeric)
+        X_test, y_test = _convert_sampler_dataset(X_test, y_test, to_pandas=False, numeric=self.numeric)
         return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
 
     def transform(self, X, y):
@@ -54,7 +57,7 @@ class BaseTVSplit(BaseCrossValidator):
             Returns:
                 tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
         """
-        X_pd, y_pd = _convert_numeric_dataset(X, y)
+        X_pd, y_pd = _convert_sampler_dataset(X, y, numeric=self.numeric)
         X_transformed, y_transformed = self.sampler.fit_resample(X_pd, y_pd)
         return (infer_feature_types(X_transformed), infer_feature_types(y_transformed))
 
@@ -62,7 +65,7 @@ class BaseTVSplit(BaseCrossValidator):
 class BaseCVSplit(StratifiedKFold):
     """Base class for K-fold cross-validation data splitter."""
 
-    def __init__(self, sampler=None, n_splits=3, shuffle=True, random_seed=0):
+    def __init__(self, sampler=None, n_splits=3, shuffle=True, numeric_only=True, random_seed=0):
         """Create a cross-validation data splitter instance
 
         Arguments:
@@ -72,9 +75,12 @@ class BaseCVSplit(StratifiedKFold):
 
             shuffle (bool): Whether or not to shuffle the data. Defaults to True.
 
+            numeric_only (bool): Whether the dataset should include numeric, non-null values only, or if it can include other dtypes as well. Defaults to True.
+
             random_seed (int): Random seed for the splitter. Defaults to 0
         """
         self.sampler = sampler
+        self.numeric = numeric_only
         super().__init__(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)
 
     def split(self, X, y):
@@ -87,12 +93,12 @@ class BaseCVSplit(StratifiedKFold):
         Returns:
             tuple((ww.DataTable, ww.DataColumn), (ww.DataTable, ww.DataColumn)): An iterator containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
         """
-        X, y = _convert_numeric_dataset(X, y)
+        X, y = _convert_sampler_dataset(X, y, numeric=self.numeric)
         for i, (train_indices, test_indices) in enumerate(super().split(X, y)):
             X_train, X_test, y_train, y_test = X.iloc[train_indices], X.iloc[test_indices], y.iloc[train_indices], y.iloc[test_indices]
             X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
-            X_train_resample, y_train_resample = _convert_numeric_dataset(X_train_resample, y_train_resample, to_pandas=False)
-            X_test, y_test = _convert_numeric_dataset(X_test, y_test, to_pandas=False)
+            X_train_resample, y_train_resample = _convert_sampler_dataset(X_train_resample, y_train_resample, to_pandas=False, numeric=self.numeric)
+            X_test, y_test = _convert_sampler_dataset(X_test, y_test, to_pandas=False, numeric=self.numeric)
             yield iter(((X_train_resample, y_train_resample), (X_test, y_test)))
 
     def transform(self, X, y):
@@ -105,6 +111,6 @@ class BaseCVSplit(StratifiedKFold):
             Returns:
                 tuple(ww.DataTable, ww.DataColumn): A tuple containing the resulting X and y post-transformation.
         """
-        X_pd, y_pd = _convert_numeric_dataset(X, y)
+        X_pd, y_pd = _convert_sampler_dataset(X, y, numeric=self.numeric)
         X_transformed, y_transformed = self.sampler.fit_resample(X_pd, y_pd)
         return (infer_feature_types(X_transformed), infer_feature_types(y_transformed))

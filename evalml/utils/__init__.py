@@ -28,5 +28,6 @@ from .cli_utils import (
 from .woodwork_utils import (
     _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
+    infer_feature_types,
+    _convert_sampler_dataset
 )
