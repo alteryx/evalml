@@ -312,7 +312,7 @@ def test_classification_data_frame_dtypes():
     X = pd.DataFrame({
         "integers": [i for i in range(1000)],
         "strings": [f"string_{i % 3}" for i in range(1000)],
-        "text": [f"this should be text data because {i} said so. Let's hope it behaves in that way" for i in range(1000)],
+        "text": [f"this should be text data because {i} think it's a long string. Let's hope it behaves in that way" for i in range(1000)],
         "float": [i / 10000 for i in range(1000)],
         "bool": [bool(i % 2) for i in range(1000)],
         "datetime": [random.choice([2012 / 1 / 2, 2012 / 2 / 1, 2012 / 4 / 2]) for i in range(1000)]
@@ -329,3 +329,14 @@ def test_classification_data_frame_dtypes():
     assert len(X2) == 500
     assert all(y2.value_counts().values == [400, 100])
     assert y2.value_counts()[1] == 100
+
+
+def test_classification_data_drop():
+    # tests for whether or not the `max(0, counts[k] - goal_value)` code works as expected
+    X = pd.DataFrame({"a": [i for i in range(420)]})
+    y = pd.Series([0] * 90 + [1] * 100 + [2] * 120 + [3] * 40 + [4] * 70)
+    # will downsample he [2] target
+    bcs = BalancedClassificationSampler(balanced_ratio=1, min_percentage=0.01)
+    X2, y2 = bcs.fit_resample(X, y)
+    assert len(X2) == 400
+    assert y2.value_counts().values[0] == 100
