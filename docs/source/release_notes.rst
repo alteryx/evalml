@@ -11,6 +11,7 @@ Release Notes
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
         * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
+        * Added full error traceback to AutoMLSearch logger file :pr:`1840`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
         * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
     * Fixes
