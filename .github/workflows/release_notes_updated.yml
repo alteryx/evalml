@@ -1,0 +1,34 @@
+name: Release Notes Updated
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  release_notes_updated:
+    name: Release Notes Updated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Debug PR type
+        run: |
+          if [[ $(expr match "${{ github.event.pull_request.head.ref }}" "release_v[0-9.]\+") -gt 0 ]]; then
+            echo This is a release PR;
+          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+            echo This is a dependency update PR;
+          else
+            echo This is a regular PR;
+          fi
+            echo "PR #: ${{ github.event.number }}"
+      - name: Release notes added
+        run: |
+          if [[ $(expr match "${{ github.event.pull_request.head.ref }}" "release_v[0-9.]\+") -gt 0 ]]; then
+            exit 0;
+          elif [[ $(expr match "${{ github.event.pull_request.head.ref }}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
+            exit 0;
+          fi
+          cat docs/source/release_notes.rst | grep ":pr:\`${{ github.event.number }}\`"
