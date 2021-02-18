@@ -37,10 +37,10 @@ def test_data_splitter_smote_nsplits(splitter):
 
 def test_kmeans_kwargs():
     km = KMeansSMOTECVSplit(cluster_balance_threshold=0.01)
-    assert km.kmsmote.cluster_balance_threshold == 0.01
+    assert km.sampler.cluster_balance_threshold == 0.01
 
     km = KMeansSMOTETVSplit(cluster_balance_threshold=0.01)
-    assert km.kmsmote.cluster_balance_threshold == 0.01
+    assert km.sampler.cluster_balance_threshold == 0.01
 
 
 @pytest.mark.parametrize("categorical_features,error", [(None, True),

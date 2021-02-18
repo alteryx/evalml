@@ -12,8 +12,8 @@ class SMOTETomekTVSplit(BaseTVSplit):
     def __init__(self, sampling_strategy='auto', test_size=None, n_jobs=-1, random_seed=0):
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.combine", error_msg=error_msg)
-        self.stl = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_seed)
-        super().__init__(sampler=self.stl, test_size=test_size, random_seed=random_seed)
+        self.sampler = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_seed)
+        super().__init__(sampler=self.sampler, test_size=test_size, random_seed=random_seed)
 
 
 class SMOTETomekCVSplit(BaseCVSplit):
@@ -23,5 +23,5 @@ class SMOTETomekCVSplit(BaseCVSplit):
     def __init__(self, sampling_strategy='auto', n_splits=3, shuffle=True, n_jobs=-1, random_seed=0):
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.combine", error_msg=error_msg)
-        self.stl = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_seed)
-        super().__init__(sampler=self.stl, n_splits=n_splits, shuffle=shuffle, random_seed=random_seed)
+        self.sampler = im.SMOTETomek(sampling_strategy=sampling_strategy, n_jobs=n_jobs, random_state=random_seed)
+        super().__init__(sampler=self.sampler, n_splits=n_splits, shuffle=shuffle, random_seed=random_seed)

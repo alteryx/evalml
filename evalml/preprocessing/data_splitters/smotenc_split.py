@@ -27,10 +27,10 @@ class SMOTENCTVSplit(BaseTVSplit):
         if not _allowed_categorical(categorical_features):
             raise ValueError(f"Categorical feature array must be a list with values and must not all be True, received {categorical_features}")
         self.categorical_features = categorical_features
-        self.snc = im.SMOTENC(categorical_features=self.categorical_features,
+        self.sampler = im.SMOTENC(categorical_features=self.categorical_features,
                               sampling_strategy=sampling_strategy,
                               n_jobs=n_jobs, random_state=random_seed)
-        super().__init__(sampler=self.snc, test_size=test_size, random_seed=random_seed)
+        super().__init__(sampler=self.sampler, test_size=test_size, random_seed=random_seed)
 
 
 class SMOTENCCVSplit(BaseCVSplit):
@@ -43,7 +43,7 @@ class SMOTENCCVSplit(BaseCVSplit):
         if not _allowed_categorical(categorical_features):
             raise ValueError(f"Categorical feature array must be a list with values and must not all be True, received {categorical_features}")
         self.categorical_features = categorical_features
-        self.snc = im.SMOTENC(categorical_features=self.categorical_features,
+        self.sampler = im.SMOTENC(categorical_features=self.categorical_features,
                               sampling_strategy=sampling_strategy,
                               n_jobs=n_jobs, random_state=random_seed)
-        super().__init__(sampler=self.snc, n_splits=n_splits, shuffle=shuffle, random_seed=random_seed)
+        super().__init__(sampler=self.sampler, n_splits=n_splits, shuffle=shuffle, random_seed=random_seed)
