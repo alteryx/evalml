@@ -155,25 +155,20 @@ class OutliersDataCheck(DataCheck):
             low_bound = q1 - (column_iqr * 1.5)
             high_bound = q3 + (column_iqr * 1.5)
 
-            # Filters
             low_filter = column_nonan < low_bound
             high_filter = column_nonan > high_bound
 
-            # Indices
             low_indices = column_nonan[low_filter].index.tolist()
             high_indices = column_nonan[high_filter].index.tolist()
 
-            # Values
             low_values = column.filter(low_indices).tolist()
             high_values = column.filter(high_indices).tolist()
 
             # calculate outlier probability
             pct_outliers = (len(low_values) + len(high_values)) / len(column_nonan)
 
-            # read in model and retrieve results
             num_records = len(column_nonan)
             score = OutliersDataCheck._no_outlier_prob(num_records, pct_outliers)
-
             result = {
                 "score": score,
                 "values": {
