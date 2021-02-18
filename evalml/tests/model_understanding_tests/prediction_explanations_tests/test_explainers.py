@@ -1,11 +1,11 @@
 import json
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-import warnings
 
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
