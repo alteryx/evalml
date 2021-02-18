@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`
         * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
