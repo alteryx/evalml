@@ -120,6 +120,7 @@ Release Notes
     * Documentation Changes
         * Update Model Understanding in the user guide to include ``visualize_decision_tree`` :pr:`1678`
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
+        * Fixed docs to show plots for ``AutoMLSearch`` :pr:`1697`
         * Updated docs to prompt users to install graphiz on Mac :pr:`1656`
         * Added ``infer_feature_types`` to the ``start.ipynb`` guide :pr:`1700`
         * Added multicollinearity data check to API reference and docs :pr:`1707`
