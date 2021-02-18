@@ -19,7 +19,7 @@ class OutliersDataCheck(DataCheck):
     def __init__(self):
         """Checks if there are any outliers in the input data."""
 
-    def no_outlier_prob(num_records: int, pct_outliers: float) -> float:
+    def no_outlier_prob(self, num_records: int, pct_outliers: float) -> float:
         """
         This functions calculates the probability that there are no true
         outliers in a numeric (integer or float) field. It is based on creating
@@ -79,7 +79,7 @@ class OutliersDataCheck(DataCheck):
         return prob_val
 
 
-    def outlier_score(field: pd.Series, convert_field=False) -> dict:
+    def outlier_score(self, field: pd.Series, convert_field=False) -> dict:
         """
         This function returns a dictionary of high and low values of potential
         numeric outliers using the IQR method.
@@ -119,7 +119,7 @@ class OutliersDataCheck(DataCheck):
 
             # read in model and retrieve results
             num_records = len(field_nonan)
-            score = no_outlier_prob(num_records, pct_outliers)
+            score = self.no_outlier_prob(num_records, pct_outliers)
 
             payload = {
                 "score": score,
@@ -137,9 +137,6 @@ class OutliersDataCheck(DataCheck):
             }
 
             return payload
-
-
-
 
 
 
@@ -179,20 +176,69 @@ class OutliersDataCheck(DataCheck):
         if len(X.columns) == 0:
             return messages
 
-        def get_IQR(df, k=2.0):
-            q1 = df.quantile(0.25)
-            q3 = df.quantile(0.75)
-            iqr = q3 - q1
-            lower_bound = pd.Series(q1 - (k * iqr), name='lower_bound')
-            upper_bound = pd.Series(q3 + (k * iqr), name='upper_bound')
-            return pd.concat([lower_bound, upper_bound], axis=1)
-
-        iqr = get_IQR(X, k=2.0)
-        has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
-        cols = list(has_outliers.index[has_outliers])
-        warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in cols]))
-        messages["warnings"].append(DataCheckWarning(message=warning_msg,
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                                     details={"columns": cols}).to_dict())
+        for col in X.columns:
+            self.outlier_score(X[col], False)
+        # cols = list(has_outliers.index[has_outliers])
+        # warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in cols]))
+        # messages["warnings"].append(DataCheckWarning(message=warning_msg,
+                                                    #  data_check_name=self.name,
+                                                    #  message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                                    #  details={"columns": cols}).to_dict())
         return messages
+
+
+
+
+    # def validate(self, X, y=None):
+    #     """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
+
+    #     Arguments:
+    #         X (ww.DataTable, pd.DataFrame, np.ndarray): Features
+    #         y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
+
+    #     Returns:
+    #         dict: A dictionary with warnings if any columns have outliers.
+
+    #     Example:
+    #         >>> df = pd.DataFrame({
+    #         ...     'x': [1, 2, 3, 4, 5],
+    #         ...     'y': [6, 7, 8, 9, 10],
+    #         ...     'z': [-1, -2, -3, -1201, -4]
+    #         ... })
+    #         >>> outliers_check = OutliersDataCheck()
+    #         >>> assert outliers_check.validate(df) == {"warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",\
+    #                                                                  "data_check_name": "OutliersDataCheck",\
+    #                                                                  "level": "warning",\
+    #                                                                  "code": "HAS_OUTLIERS",\
+    #                                                                  "details": {"columns": ["z"]}}],\
+    #                                                    "errors": []}
+    #     """
+    #     messages = {
+    #         "warnings": [],
+    #         "errors": []
+    #     }
+
+    #     X = infer_feature_types(X)
+    #     X = X.select('numeric')
+    #     X = _convert_woodwork_types_wrapper(X.to_dataframe())
+
+    #     if len(X.columns) == 0:
+    #         return messages
+
+    #     def get_IQR(df, k=2.0):
+    #         q1 = df.quantile(0.25)
+    #         q3 = df.quantile(0.75)
+    #         iqr = q3 - q1
+    #         lower_bound = pd.Series(q1 - (k * iqr), name='lower_bound')
+    #         upper_bound = pd.Series(q3 + (k * iqr), name='upper_bound')
+    #         return pd.concat([lower_bound, upper_bound], axis=1)
+
+    #     iqr = get_IQR(X, k=2.0)
+    #     has_outliers = ((X < iqr['lower_bound']) | (X > iqr['upper_bound'])).any()
+    #     cols = list(has_outliers.index[has_outliers])
+    #     warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in cols]))
+    #     messages["warnings"].append(DataCheckWarning(message=warning_msg,
+    #                                                  data_check_name=self.name,
+    #                                                  message_code=DataCheckMessageCode.HAS_OUTLIERS,
+    #                                                  details={"columns": cols}).to_dict())
+    #     return messages
