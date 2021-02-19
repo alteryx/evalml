@@ -335,7 +335,8 @@ def test_classification_data_drop():
     # tests for whether or not the `max(0, counts[k] - goal_value)` code works as expected
     X = pd.DataFrame({"a": [i for i in range(420)]})
     y = pd.Series([0] * 90 + [1] * 100 + [2] * 120 + [3] * 40 + [4] * 70)
-    # will downsample he [2] target
+    # will downsample the [2] target
+    # will try to downsample [0] and [4], but max(0, x) will prevent that
     bcs = BalancedClassificationSampler(balanced_ratio=1, min_percentage=0.01)
     X2, y2 = bcs.fit_resample(X, y)
     assert len(X2) == 400
