@@ -1,12 +1,13 @@
 import numpy as np
 
+from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
 from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
     infer_feature_types
 )
 
 
-class BalancedClassificationSampler():
+class BalancedClassificationSampler(SamplerBase):
     """Class for balanced classification downsampler"""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0):
@@ -25,6 +26,7 @@ class BalancedClassificationSampler():
 
             random_seed (int): The seed to use for random sampling. Defaults to 0.
         """
+        super().__init__(random_seed=random_seed)
         if balanced_ratio < 1:
             raise ValueError(f"balanced_ratio must be at least 1, but received {balanced_ratio}")
         if min_samples <= 0:
@@ -34,7 +36,6 @@ class BalancedClassificationSampler():
         self.balanced_ratio = balanced_ratio
         self.min_samples = min_samples
         self.min_percentage = min_percentage
-        self.random_seed = random_seed
         self.random_state = np.random.RandomState(self.random_seed)
 
     def _find_ideal_samples(self, y):
