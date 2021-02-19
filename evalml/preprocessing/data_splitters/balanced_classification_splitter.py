@@ -1,9 +1,5 @@
 import numpy as np
 
-from evalml.preprocessing.data_splitters.base_splitters import (
-    BaseCVSplit,
-    BaseTVSplit
-)
 from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
     infer_feature_types
@@ -93,21 +89,3 @@ class BalancedClassificationSampler():
                 X = X.drop(indices_to_remove)
                 y = y.drop(indices_to_remove)
         return X, y
-
-
-class BalancedClassificationTVSplit(BaseTVSplit):
-    """Simple downsampler for training-validation split"""
-
-    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=0.25, numeric_only=False, random_seed=0):
-        self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples,
-                                                     min_percentage=min_percentage, random_seed=random_seed)
-        super.__init__(sampler=self.sampler, test_size=test_size, numeric_only=False, random_seed=random_seed)
-
-
-class BalancedClassificationCVSplit(BaseCVSplit):
-    """Simple downsampler for cross-validation split"""
-
-    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, n_splits=3, shuffle=True, numeric_only=False, random_seed=0):
-        self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples,
-                                                     min_percentage=min_percentage, random_seed=random_seed)
-        super.__init__(sampler=self.sampler, n_splits=n_splits, shuffle=shuffle, numeric_only=numeric_only, random_seed=random_seed)
