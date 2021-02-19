@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
+from evalml.problem_types import handle_problem_types
 from evalml.utils import _convert_woodwork_types_wrapper, classproperty
 
 
@@ -162,4 +163,4 @@ class ObjectiveBase(ABC):
 
     @classmethod
     def is_defined_for_problem_type(cls, problem_type):
-        return problem_type in cls.problem_types
+        return handle_problem_types(problem_type) in cls.problem_types

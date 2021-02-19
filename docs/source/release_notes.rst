@@ -3,6 +3,8 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for Python windows unit tests :pr:`1844`
+        * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`
         * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
         * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
@@ -14,6 +16,7 @@ Release Notes
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
         * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
+        * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`

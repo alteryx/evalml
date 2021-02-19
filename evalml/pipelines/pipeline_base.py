@@ -280,7 +280,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def model_family(cls):
-        "Returns model family of this pipeline template"""
+        """Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
@@ -291,7 +291,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def hyperparameters(cls):
-        "Returns hyperparameter ranges from all components as a dictionary"
+        """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
         if isinstance(component_graph, list):
