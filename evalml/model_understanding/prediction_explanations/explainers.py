@@ -1,5 +1,6 @@
 import sys
 import traceback
+import warnings
 from collections import namedtuple
 
 import numpy as np
@@ -43,6 +44,8 @@ def explain_prediction(pipeline, input_features, y, index_to_explain, top_k_feat
     Raises:
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
+    warnings.warn("The explain_prediction function will be deleted in the next release. "
+                  "Please use the explain_predictions function instead.")
     input_features = infer_feature_types(input_features)
     pipeline_features = pipeline.compute_estimator_features(input_features, y).to_dataframe()
 
