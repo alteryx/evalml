@@ -10,7 +10,7 @@ def silent_error_callback(exception, traceback, automl, **kwargs):
 
 def raise_error_callback(exception, traceback, automl, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object. Also logs the exception as an error."""
-    logger.error(f'AutoMLSearch raised a fatal exception: {str(exception)}')
+    logger.error(f'AutoML search raised a fatal exception: {str(exception)}')
     logger.error("\n".join(traceback))
     raise exception
 
@@ -26,7 +26,7 @@ def log_and_save_error_callback(exception, traceback, automl, **kwargs):
 def raise_and_save_error_callback(exception, traceback, automl, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object, logs it as an error,
         and adds the exception to the 'errors' list in AutoMLSearch object results."""
-    logger.error(f'AutoMLSearch raised a fatal exception: {str(exception)}')
+    logger.error(f'AutoML search raised a fatal exception: {str(exception)}')
     logger.error("\n".join(traceback))
     automl._results['errors'].append(exception)
     raise exception
