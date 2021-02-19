@@ -59,17 +59,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import (
-    KMeansSMOTECVSplit,
-    KMeansSMOTETVSplit,
-    RandomUnderSamplerCVSplit,
-    RandomUnderSamplerTVSplit,
-    SMOTENCCVSplit,
-    SMOTENCTVSplit,
-    SMOTETomekCVSplit,
-    SMOTETomekTVSplit,
-    TrainingValidationSplit
-)
+from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -2259,70 +2249,6 @@ def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_mult
     for i, row in automl.rankings.iterrows():
         if 'Base' not in list(row['parameters'].keys())[0]:
             assert automl.get_pipeline(row['id']).random_seed == random_seed
-
-
-@pytest.mark.parametrize("sampler",
-                         ["KMeansSMOTETVSplit", "KMeansSMOTECVSplit",
-                          "SMOTETomekCVSplit", "SMOTETomekTVSplit",
-                          "RandomUnderSamplerCVSplit", "RandomUnderSamplerTVSplit",
-                          "SMOTENCTVSplit", "SMOTENCCVSplit",
-                          "None", "Nope"])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_sampler(mock_fit, mock_score, sampler, X_y_binary):
-    pytest.importorskip('imblearn', reason='Skipping data splitter test because imblearn not installed')
-    X, y = X_y_binary
-    if sampler == "Nope":
-        with pytest.raises(ValueError, match="not exist"):
-            automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
-    elif "SMOTENC" in sampler:
-        X = ww.DataTable(X)
-        X = X.add_semantic_tags({0: 'category'})
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, categorical_columns=[0], random_seed=0, n_jobs=1, max_iterations=1)
-        automl.search()
-        features = automl.data_splitter.categorical_features
-
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
-        automl.search()
-        features2 = automl.data_splitter.categorical_features
-        assert features == features2
-    else:
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
-        automl.search()
-        if sampler != "None":
-            assert automl.data_splitter.__class__.__name__ == sampler
-        else:
-            assert automl.data_splitter.__class__.__name__ == "StratifiedKFold"
-
-
-@pytest.mark.parametrize("sampler",
-                         [KMeansSMOTETVSplit, KMeansSMOTECVSplit,
-                          SMOTETomekCVSplit, SMOTETomekTVSplit,
-                          RandomUnderSamplerCVSplit, RandomUnderSamplerTVSplit,
-                          SMOTENCCVSplit, SMOTENCTVSplit])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_sampler_instance(mock_fit, mock_score, sampler, X_y_binary):
-    pytest.importorskip('imblearn', reason='Skipping data splitter test because imblearn not installed')
-    X, y = X_y_binary
-    if 'SMOTENC' in sampler.__name__:
-        sampler = sampler(categorical_features=[0])
-    else:
-        sampler = sampler()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=sampler, random_seed=0, n_jobs=1, max_iterations=1)
-    automl.search()
-    assert automl.data_splitter.__class__.__name__ == sampler.__class__.__name__
-
-
-@pytest.mark.parametrize("sampler", ["KMeansSMOTETVSplit", "SMOTETomekTVSplit"])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_data_splitter_overrides_sampler(mock_fit, mock_score, sampler, X_y_binary):
-    pytest.importorskip('imblearn', reason='Skipping data splitter test because imblearn not installed')
-    X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=TrainingValidationSplit(), sampler=sampler, random_seed=0, n_jobs=1, max_iterations=1)
-    automl.search()
-    assert automl.data_splitter.__class__.__name__ == "TrainingValidationSplit"
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):

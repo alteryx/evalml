@@ -94,8 +94,6 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
-                 sampler=None,
-                 categorical_columns=None,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -171,12 +169,6 @@ class AutoMLSearch:
                 in time series problems, values should be passed in for the gap and max_delay variables.
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
-
-            sampler (str or None): The sampler to use for the data splitting strategy. Ignored if `data_splitter` provided. Defaults to None.
-
-            categorical_columns (list(int) or None): The list of categorical indices in the X_train datatable. Used only for SMOTENC data splitting methods.
-                If no columns are specified and SMOTENC is chosen as the sampler, defaults to using any columns labeled as 'categorical' in the Woodwork datatable.
-                Defaults to None.
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -274,10 +266,8 @@ class AutoMLSearch:
         # make everything ww objects
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
-        self.sampler = sampler if (sampler is not None and sampler != 'None') else None
-        self.categorical_columns = categorical_columns or [i for i, col in enumerate(self.X_train.columns) if 'category' in self.X_train[col].semantic_tags]
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration, n_splits=3, shuffle=True,
-                                                   sampler=self.sampler, categorical_columns=self.categorical_columns, random_seed=self.random_seed)
+                                                   random_seed=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
@@ -591,8 +581,6 @@ class AutoMLSearch:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_seed=self.random_seed)
-                if getattr(self.data_splitter, "transform", None):
-                    X_train, y_train = self.data_splitter.transform(X_train, y_train)
                 self._best_pipeline.fit(X_train, y_train)
                 tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
 

@@ -2,14 +2,6 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
-    KMeansSMOTECVSplit,
-    KMeansSMOTETVSplit,
-    RandomUnderSamplerCVSplit,
-    RandomUnderSamplerTVSplit,
-    SMOTENCCVSplit,
-    SMOTENCTVSplit,
-    SMOTETomekCVSplit,
-    SMOTETomekTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -46,7 +38,7 @@ def get_default_primary_search_objective(problem_type):
 
 
 def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True,
-                       sampler=None, categorical_columns=None, random_state=None, random_seed=0):
+                       random_state=None, random_seed=0):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
@@ -57,8 +49,6 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             in time series problems, values should be passed in for the gap and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
-        sampler (str, None): String to determine whether or not to use an imbalanced sampler data splitter. Defaults to None.
-        categorical_columns (list[int], None): The list of categorical indices in the dataframe. Used only for SMOTENC splitters. Defaults to None.
         random_state (None, int): Deprecated - use random_seed instead.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -66,36 +56,18 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         sklearn.model_selection.BaseCrossValidator: Data splitting method.
     """
     random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
-    if sampler is None:
-        problem_type = handle_problem_types(problem_type)
-        if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-            return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
-        if problem_type == ProblemTypes.REGRESSION:
-            return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
-        elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            return StratifiedKFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
-        elif is_time_series(problem_type):
-            if not problem_configuration:
-                raise ValueError("problem_configuration is required for time series problem types")
-            return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                                   max_delay=problem_configuration.get('max_delay'))
-    else:
-        try:
-            data_splitter_class = {
-                "KMeansSMOTETVSplit": KMeansSMOTETVSplit,
-                "KMeansSMOTECVSplit": KMeansSMOTECVSplit,
-                "SMOTETomekTVSplit": SMOTETomekTVSplit,
-                "SMOTETomekCVSplit": SMOTETomekCVSplit,
-                "RandomUnderSamplerTVSplit": RandomUnderSamplerTVSplit,
-                "RandomUnderSamplerCVSplit": RandomUnderSamplerCVSplit,
-                "SMOTENCCVSplit": SMOTENCCVSplit,
-                "SMOTENCTVSplit": SMOTENCTVSplit
-            }[sampler]
-            if 'SMOTENC' in sampler:
-                return data_splitter_class(categorical_features=categorical_columns)
-            return data_splitter_class()
-        except KeyError:
-            raise ValueError("Provided key {} does not exist for samplers".format(sampler))
+    problem_type = handle_problem_types(problem_type)
+    if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
+        return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
+    if problem_type == ProblemTypes.REGRESSION:
+        return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
+    elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        return StratifiedKFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
+    elif is_time_series(problem_type):
+        if not problem_configuration:
+            raise ValueError("problem_configuration is required for time series problem types")
+        return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
+                               max_delay=problem_configuration.get('max_delay'))
 
 
 def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):

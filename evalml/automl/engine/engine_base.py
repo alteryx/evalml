@@ -74,12 +74,8 @@ class EngineBase(ABC):
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            if getattr(automl.data_splitter, "transform", None):
-                X_train, y_train = train[0], train[1]
-                X_valid, y_valid = valid[0], valid[1]
-            else:
-                X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
-                y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
+            X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
+            y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
             if is_binary(automl.problem_type) or is_multiclass(automl.problem_type):
                 diff_train = set(np.setdiff1d(full_y_train.to_series(), y_train.to_series()))
                 diff_valid = set(np.setdiff1d(full_y_train.to_series(), y_valid.to_series()))
