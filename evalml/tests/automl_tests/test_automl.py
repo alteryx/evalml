@@ -14,6 +14,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
+from evalml.automl import ParallelEngine, SequentialEngine
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
     log_error_callback,
@@ -796,6 +797,20 @@ def test_init_objective(X_y_binary):
     for problem_type in defaults:
         error_automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type)
         assert error_automl.objective.name == defaults[problem_type]
+
+
+def test_init_engine(X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine="sequential")
+    assert isinstance(automl._engine, SequentialEngine)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine="parallel")
+    assert isinstance(automl._engine, ParallelEngine)
+    assert len(automl._engine.client.ncores()) == 4
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine="parallel", engine_workers=6)
+    assert isinstance(automl._engine, ParallelEngine)
+    assert len(automl._engine.client.ncores()) == 6
 
 
 @patch('evalml.automl.automl_search.AutoMLSearch.search')
