@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from scipy.stats import gamma
 
 from evalml.data_checks import (
@@ -55,7 +54,7 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         for col in X.columns:
             results = OutliersDataCheck._outlier_score(X[col], False)
-            if results is not None and results["score"] <= 0.9:
+            if results is not None and results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
                 has_outliers.append(col)
         warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in has_outliers]))
         messages["warnings"].append(DataCheckWarning(message=warning_msg,
@@ -141,8 +140,7 @@ class OutliersDataCheck(DataCheck):
         Returns:
             dict: Dictionary containing outlier information
         """
-        column_nonan = column[~pd.isna(column)]
-
+        column_nonan = column.dropna()
         if column_nonan.shape[0] == 0:
             return None
         else:
