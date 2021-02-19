@@ -63,7 +63,7 @@ class InvalidTargetDataCheck(DataCheck):
             "errors": []
         }
         if y is None:
-            raise ValueError("y cannot be None")
+            messages["errors"].append(DataCheckError())
 
         y = infer_feature_types(y)
         is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
