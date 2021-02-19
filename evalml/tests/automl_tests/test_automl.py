@@ -1929,39 +1929,56 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
 
 @pytest.mark.parametrize("callback", [log_error_callback, silent_error_callback, raise_error_callback,
                                       raise_and_save_error_callback, log_and_save_error_callback])
-@pytest.mark.parametrize("score_error", [True, False])
+@pytest.mark.parametrize("error_type", ['fit', 'score', 'fit-single'])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_error_callback(mock_fit, mock_score, score_error, callback, X_y_binary, caplog):
+def test_automl_error_callback(mock_fit, mock_score, error_type, callback, X_y_binary, caplog):
     X, y = X_y_binary
-    if score_error:
+    if error_type == 'score':
         msg = "Score Error!"
         mock_score.side_effect = Exception(msg)
-        message_list = [msg]
-    else:
+    elif error_type == 'fit':
         mock_score.return_value = {"Log Loss Binary": 0.8}
         msg = 'all your model are belong to us'
         mock_fit.side_effect = Exception(msg)
-        message_list = [msg, "cv_pipeline.fit(X_train, y_train)"]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=callback, train_best_pipeline=False, n_jobs=1)
-    automl.search()
-
-    if callbacks == log_and_save_error_callback:
-        automl.search()
-        assert f"AutoML search encountered an exception: {msg}" in caplog.text
-        # first automl batch, times 3 for 3-fold cross validation
-        assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
     else:
-        with pytest.raises(Exception, match=msg):
-            automl.search()
-        assert f"AutoMLSearch raised a fatal exception: {msg}" in caplog.text
+        # throw exceptions for only one pipeline
+        mock_score.return_value = {"Log Loss Binary": 0.8}
+        msg = 'all your model are belong to us'
+        mock_fit.side_effect = [Exception(msg)] * 3 + [None] * 100
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=callback, train_best_pipeline=False, n_jobs=1)
+    if callback in [log_error_callback, silent_error_callback, log_and_save_error_callback]:
+        exception = AutoMLSearchException
+        match = "All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"
+    else:
+        exception = Exception
+        match = msg
 
-    for messages in message_list:
-        if callback == silent_error_callback:
-            assert messages not in caplog.text
+    if error_type == 'fit-single' and callback in [silent_error_callback, log_error_callback, log_and_save_error_callback]:
+        automl.search()
+    else:
+        with pytest.raises(exception, match=match):
+            automl.search()
+
+    if callback == silent_error_callback:
+        assert msg not in caplog.text
+    if callback == log_and_save_error_callback:
+        assert f"AutoML search encountered an exception: {msg}" in caplog.text
+        assert msg in caplog.text
+    if callback == log_error_callback:
+        assert f"Exception during automl search: {msg}" in caplog.text
+        assert msg in caplog.text
+    if callback in [raise_error_callback, raise_and_save_error_callback]:
+        assert f"AutoML search raised a fatal exception: {msg}" in caplog.text
+        assert msg in caplog.text
+
+    if callback == log_and_save_error_callback:
+        if error_type == 'fit-single':
+            assert len(automl._results['errors']) == 3
         else:
-            assert messages in caplog.text
-    if callback != raise_error_callback:
+            # first automl batch, times 3 for 3-fold cross validation
+            assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
+    elif callback in [log_error_callback, silent_error_callback, raise_and_save_error_callback, log_and_save_error_callback]:
         for e in automl._results['errors']:
             assert str(e) == msg
 
