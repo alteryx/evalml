@@ -12,7 +12,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.engine import SequentialEngine
+from evalml.automl.engine import ParallelEngine, SequentialEngine
 from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
@@ -84,7 +84,9 @@ class AutoMLSearch:
                  train_best_pipeline=True,
                  pipeline_parameters=None,
                  _ensembling_split_size=0.2,
-                 _pipelines_per_batch=5):
+                 _pipelines_per_batch=5,
+                 engine="sequential",
+                 engine_workers=4):
         """Automated pipeline search
 
         Arguments:
@@ -167,6 +169,12 @@ class AutoMLSearch:
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
+
+            engine (str): Which engine to use for pipeline evaluation - "sequential", the default serial engine, or "parallel",
+                the parallel Dask engine.  The Dask engine will use the 'engine_workers' parameter to determine how many
+                workers to distribute pipeline batch evaluatiation over.  Defaults to "sequential".
+
+            engine_workers (int): How many workers for the parallel Dask engine to use for pipeline batch.  Defaults to 4.
         """
         if X_train is None:
             raise ValueError('Must specify training data as a 2d array using the X_train argument')
@@ -267,6 +275,23 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
+        if engine == "sequential":
+            self._engine = SequentialEngine(self.X_train,
+                                            self.y_train,
+                                            self,
+                                            should_continue_callback=self._should_continue,
+                                            pre_evaluation_callback=self._pre_evaluation_callback,
+                                            post_evaluation_callback=self._post_evaluation_callback)
+        elif engine == "parallel":
+            self._engine = ParallelEngine(self.X_train,
+                                          self.y_train,
+                                          self,
+                                          should_continue_callback=self._should_continue,
+                                          pre_evaluation_callback=self._pre_evaluation_callback,
+                                          post_evaluation_callback=self._post_evaluation_callback,
+                                          n_workers=engine_workers)
+        else:
+            raise ValueError(f"Provided engine should be 'sequential' or 'dask', received {engine}.")
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
@@ -313,14 +338,6 @@ class AutoMLSearch:
             X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
             _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
             self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
-
-        self._engine = SequentialEngine(self.X_train,
-                                        self.y_train,
-                                        self.ensembling_indices,
-                                        self,
-                                        should_continue_callback=self._should_continue,
-                                        pre_evaluation_callback=self._pre_evaluation_callback,
-                                        post_evaluation_callback=self._post_evaluation_callback)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
