@@ -59,6 +59,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     problem_type = handle_problem_types(problem_type)
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
+
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:

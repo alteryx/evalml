@@ -266,8 +266,8 @@ class AutoMLSearch:
         # make everything ww objects
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
-        default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration, n_splits=3, shuffle=True,
-                                                   random_seed=self.random_seed)
+        default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration, 
+                                                   n_splits=3, shuffle=True, random_seed=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
