@@ -26,6 +26,7 @@ class OutliersDataCheck(DataCheck):
             dict: A dictionary with warnings if any columns have outliers.
 
         Example:
+            >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...     'x': [1, 2, 3, 4, 5],
             ...     'y': [6, 7, 8, 9, 10],
