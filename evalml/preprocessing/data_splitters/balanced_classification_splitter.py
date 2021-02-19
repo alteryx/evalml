@@ -55,7 +55,7 @@ class BalancedClassificationSampler(SamplerBase):
         # if no class ratios are greater than what we consider balanced, then the target is balanced
         if all(class_ratios <= self.balanced_ratio):
             return {}
-        # if any classes have than min_samples counts and are less than min_percentage of the total data,
+        # if any classes have less than min_samples counts and are less than min_percentage of the total data,
         # then it's severely imbalanced
         if any(counts < self.min_samples) and any(normalized_counts < self.min_percentage):
             return {}
