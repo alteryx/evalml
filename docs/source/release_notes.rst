@@ -21,6 +21,7 @@ Release Notes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
         * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
+        * Added ``DataCheckError`` message in ``InvalidTargetDataCheck`` if input target is None and removed exception raised :pr:`1820`
     * Documentation Changes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
