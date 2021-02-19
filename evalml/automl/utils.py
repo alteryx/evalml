@@ -16,6 +16,7 @@ from evalml.preprocessing.data_splitters import (
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_binary,
     is_time_series
 )
 from evalml.utils import deprecate_arg
@@ -69,7 +70,6 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         problem_type = handle_problem_types(problem_type)
         if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
             return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=True)
-
         if problem_type == ProblemTypes.REGRESSION:
             return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
         elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
@@ -96,3 +96,19 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
             return data_splitter_class()
         except KeyError:
             raise ValueError("Provided key {} does not exist for samplers".format(sampler))
+
+
+def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):
+    """Tunes the threshold of a binary pipeline to the X and y thresholding data
+
+    Arguments:
+        pipeline (Pipeline): Pipeline instance to threshold
+        X_threshold_tuning (ww.DataTable): Features to tune pipeline to
+        y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to
+    """
+    if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and objective.can_optimize_threshold:
+        pipeline.threshold = 0.5
+        if X_threshold_tuning:
+            y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+            y_predict_proba = y_predict_proba.iloc[:, 1]
+            pipeline.threshold = objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
