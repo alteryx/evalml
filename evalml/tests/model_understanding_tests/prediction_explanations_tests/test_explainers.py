@@ -1,4 +1,5 @@
 import json
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -212,7 +213,12 @@ def test_explain_prediction(mock_normalize_shap_values,
     features = pd.DataFrame({"a": [1], "b": [2]})
     if input_type == "ww":
         features = ww.DataTable(features)
-    table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0, top_k_features=2)
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0,
+                                   top_k_features=2)
+        assert str(warn[0].message).startswith("The explain_prediction function will be deleted in the next release")
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
