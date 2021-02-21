@@ -1,4 +1,5 @@
 import warnings
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -8,14 +9,16 @@ from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
     get_default_primary_search_objective,
-    make_data_splitter
+    make_data_splitter,
+    tune_binary_threshold
 )
-from evalml.objectives import R2, LogLossBinary, LogLossMulticlass
+from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 def test_get_default_primary_search_objective():
@@ -145,3 +148,28 @@ def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
         assert splitter.random_state == 15
         assert str(warn[0].message).startswith(
             "Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold,
+                               dummy_binary_pipeline_class, X_y_binary):
+    mock_optimize_threshold.return_value = 0.42
+    mock_score.return_value = {'F1': 1.0}
+    X, y = X_y_binary
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
+
+    pipeline = dummy_binary_pipeline_class({})
+    tune_binary_threshold(pipeline, F1(), 'binary', X, y)
+    assert pipeline.threshold == 0.42
+
+    pipeline = dummy_binary_pipeline_class({})
+    tune_binary_threshold(pipeline, F1(), 'binary', None, None)
+    assert pipeline.threshold == 0.5
+
+    pipeline = dummy_binary_pipeline_class({})
+    tune_binary_threshold(pipeline, F1(), 'multiclass', X, y)
+    assert pipeline.threshold is None
