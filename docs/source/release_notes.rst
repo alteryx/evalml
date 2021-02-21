@@ -7,7 +7,7 @@ Release Notes
         * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`
         * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
-        * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
+        * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1866`
         * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
