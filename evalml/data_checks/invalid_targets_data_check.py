@@ -63,7 +63,11 @@ class InvalidTargetDataCheck(DataCheck):
             "errors": []
         }
         if y is None:
-            raise ValueError("y cannot be None")
+            messages["errors"].append(DataCheckError(message="Target is None",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_IS_NONE,
+                                                     details={}).to_dict())
+            return messages
 
         y = infer_feature_types(y)
         is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]

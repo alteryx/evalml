@@ -143,8 +143,13 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
 
 def test_invalid_target_y_none():
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    with pytest.raises(ValueError, match="y cannot be None"):
-        invalid_targets_check.validate(pd.DataFrame(), y=None)
+    assert invalid_targets_check.validate(pd.DataFrame(), y=None) == {
+        "warnings": [],
+        "errors": [DataCheckError(message="Target is None",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_IS_NONE,
+                                  details={}).to_dict()]
+    }
 
 
 def test_invalid_target_data_input_formats():
