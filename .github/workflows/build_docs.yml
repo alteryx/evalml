@@ -29,8 +29,6 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          echo ${{ github.repository }}
-          echo ${{ github.event.pull_request.head.repo.full_name }}
           make installdeps-docs
       - name: Install Pandoc and Graphviz
         run: |

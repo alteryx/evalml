@@ -196,13 +196,6 @@ workflows:
           filters:
             branches:
               ignore: /^main?/
-  windows_test_all_python_versions:
-    jobs:
-        - win_unit_tests:
-            matrix:
-              parameters:
-                python_version: ["3.7", "3.8"]
-            name: "windows python << matrix.python_version >> unit tests"
   check_dependencies_updated_linux:
     jobs:
         - check_dependencies_updated_linux:
