@@ -9,6 +9,7 @@ from evalml.utils import (
     infer_feature_types,
     pad_with_nans
 )
+from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
 
 
 class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta):
