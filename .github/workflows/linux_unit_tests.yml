@@ -61,23 +61,18 @@ jobs:
         run: |
           source test_python/bin/activate
           coverage erase
-      - if: ${{ matrix.core_dependencies && matrix.codecov }}
-        name: Run unit tests with minimal dependencies and code coverage
+      - if: ${{ matrix.core_dependencies }}
+        name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          pytest evalml/ -n 8 --doctest-modules --cov=evalml --cov-config=../.coveragerc --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
-      - if: ${{ !matrix.core_dependencies && matrix.codecov }}
-        name: Run unit tests with code coverage
-        run: |
-          source test_python/bin/activate
-          pytest evalml/ -n 8 --doctest-modules --cov=evalml --cov-config=../.coveragerc --junitxml=test-reports/junit.xml --doctest-continue-on-failure
-      - if: ${{ !matrix.core_dependencies && !matrix.codecov }}
+          make git-test-minimal-deps
+      - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
-          pytest evalml/ -n 8 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+          make git-test
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          fail_ci_if_error: true
+        run: |
+          source test_python/bin/activate
+          codecov --required
