@@ -9,10 +9,9 @@ from evalml.utils import (
     infer_feature_types,
     pad_with_nans
 )
-from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
 
 
-class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesClassificationPipeline(ClassificationPipeline):
     """Pipeline base class for time series classifcation problems."""
 
     def __init__(self, parameters, random_state=None, random_seed=0):

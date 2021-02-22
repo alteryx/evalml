@@ -11,7 +11,7 @@ from evalml.utils import (
 )
 
 
-class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesRegressionPipeline(RegressionPipeline):
     """Pipeline base class for time series regression problems."""
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
