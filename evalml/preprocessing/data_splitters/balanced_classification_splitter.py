@@ -8,7 +8,7 @@ from evalml.utils.woodwork_utils import (
 
 
 class BalancedClassificationSampler(SamplerBase):
-    """Class for balanced classification downsampler"""
+    """Class for balanced classification downsampler."""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0):
         """
@@ -39,7 +39,7 @@ class BalancedClassificationSampler(SamplerBase):
         self.random_state = np.random.RandomState(self.random_seed)
 
     def _find_ideal_samples(self, y):
-        """Returns dictionary of examples to drop for each class if we need to resample
+        """Returns dictionary of examples to drop for each class if we need to resample.
 
         Arguments:
             y (pd.Series): Target data passed in
@@ -68,7 +68,7 @@ class BalancedClassificationSampler(SamplerBase):
         return {k: v for k, v in drop_values.items() if v != 0}
 
     def fit_resample(self, X, y):
-        """Resampling technique for this sampler
+        """Resampling technique for this sampler.
 
         Arguments:
             X (pd.DataFrame): Training data to fit and resample
