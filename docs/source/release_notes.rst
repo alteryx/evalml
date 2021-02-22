@@ -3,6 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for building a conda package :pr:`1870`
         * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`
