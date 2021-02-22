@@ -1,4 +1,5 @@
 import json
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -212,7 +213,12 @@ def test_explain_prediction(mock_normalize_shap_values,
     features = pd.DataFrame({"a": [1], "b": [2]})
     if input_type == "ww":
         features = ww.DataTable(features)
-    table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0, top_k_features=2)
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0,
+                                   top_k_features=2)
+        assert str(warn[0].message).startswith("The explain_prediction function will be deleted in the next release")
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
@@ -223,10 +229,10 @@ def test_explain_prediction(mock_normalize_shap_values,
 
 def test_explain_prediction_errors():
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_prediction(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
+        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_prediction(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=-1)
+        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=-1)
 
 
 def test_error_metrics():
@@ -263,28 +269,28 @@ def test_explain_predictions_raises_pipeline_score_error():
 
 def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
-        explain_predictions(None, pd.DataFrame(), y=None, indices_to_explain=[0])
+        explain_predictions(MagicMock(), pd.DataFrame(), y=None, indices_to_explain=[0])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[5])
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
 
     with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_predictions(None, pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[-1])
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[-1])
 
 
 def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
-        explain_predictions(None, input_features, y=None, indices_to_explain=0, output_format="bar")
+        explain_predictions(pipeline=MagicMock(), input_features=input_features, y=None, indices_to_explain=0, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, y=None, index_to_explain=0, output_format="xml")
+        explain_prediction(pipeline=MagicMock(), input_features=input_features, y=None, index_to_explain=0, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
-        explain_predictions_best_worst(None, input_features, y_true=y_true, output_format="foo")
+        explain_predictions_best_worst(pipeline=MagicMock(), input_features=input_features, y_true=y_true, output_format="foo")
 
 
 regression_best_worst_answer = """Test Pipeline Name
@@ -598,6 +604,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = ww.DataTable(input_features)
 
     def _add_custom_index(answer, index_best, index_worst, output_format):
 
@@ -720,6 +727,7 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
     input_features = pd.DataFrame({"a": [5, 6]})
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = ww.DataTable(input_features)
 
     pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
@@ -760,8 +768,10 @@ def test_explain_predictions_time_series(ts_data):
                             indices_to_explain=[1, 11], output_format="text")
 
 
-@pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"), (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
-def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, ts_data):
+@pytest.mark.parametrize("output_format", ["text", "dict", "dataframe"])
+@pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                                                       (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
+def test_explain_predictions_best_worst_time_series(output_format, pipeline_class, estimator, ts_data):
     X, y = ts_data
 
     if is_binary(pipeline_class.problem_type):
@@ -776,11 +786,12 @@ def test_explain_predictions_best_worst_time_series(pipeline_class, estimator, t
     tspipeline.fit(X, y)
 
     exp = explain_predictions_best_worst(pipeline=tspipeline, input_features=X, y_true=y,
-                                         output_format="dict")
+                                         output_format=output_format)
 
-    # Check that the computed features to be explained aren't NaN.
-    for exp_idx in range(len(exp["explanations"])):
-        assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
+    if output_format == "dict":
+        # Check that the computed features to be explained aren't NaN.
+        for exp_idx in range(len(exp["explanations"])):
+            assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

@@ -4,6 +4,8 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added a GitHub Action for Linux unit tests :pr:`1846`
+        * Added a GitHub Action for Python windows unit tests :pr:`1844`
+        * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`
         * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
         * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
@@ -11,7 +13,10 @@ Release Notes
         * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
         * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
         * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
+        * Added full error traceback to AutoMLSearch logger file :pr:`1840`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
+        * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
+        * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
@@ -21,6 +26,12 @@ Release Notes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
         * Pin graphviz version for windows builds :pr:`1847`
+        * Unpin graphviz version for windows builds :pr:`1851`
+
+.. warning::
+
+    **Breaking Changes**
+        * Added a deprecation warning to ``explain_prediction``. It will be deleted in the next release. :pr:`1860`
 
 
 **v0.18.2 Feb. 10, 2021**
