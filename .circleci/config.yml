@@ -186,6 +186,19 @@ jobs:
           when: on_fail
       - store_artifacts:
           path: /tmp/dependencies_updated_artifacts
+  build_docs:
+    working_directory: ~/evalml/
+    executor:
+      name: python
+      python_version: "3.8"
+    steps:
+      - checkout
+      - install_dependencies_docs
+      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
+      - run: |
+          source test_python/bin/activate
+          make -C docs/ html
+      - run: ls docs/build/html
 
 workflows:
   version: 2
@@ -229,3 +242,7 @@ workflows:
           filters:
             branches:
               only: main
+  build_docs:
+    jobs:
+      - build_docs:
+          name: "build docs"
