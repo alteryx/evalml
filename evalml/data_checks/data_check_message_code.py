@@ -13,6 +13,9 @@ class DataCheckMessageCode(Enum):
     TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
     """Message code for target data that has incompatible values for the specified objective"""
 
+    TARGET_IS_NONE = "target_is_none"
+    """Message code for when target is None."""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
