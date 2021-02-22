@@ -126,15 +126,15 @@ def _normalize_values_dict(values):
     """
 
     # Store in matrix of shape (len(values), n_features)
-    sorted_feature_names = list(values.keys())
-    all_values = np.stack([values[feature_name] for feature_name in sorted_feature_names]).T
+    feature_names = list(values.keys())
+    all_values = np.stack([values[feature_name] for feature_name in feature_names]).T
 
     if not all_values.any():
         return values
 
     scaled_values = all_values / np.abs(all_values).sum(axis=1)[:, np.newaxis]
 
-    return {feature_name: scaled_values[:, i].tolist() for i, feature_name in enumerate(sorted_feature_names)}
+    return {feature_name: scaled_values[:, i].tolist() for i, feature_name in enumerate(feature_names)}
 
 
 def _normalize_shap_values(values):
