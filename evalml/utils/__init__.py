@@ -29,5 +29,5 @@ from .woodwork_utils import (
     _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types,
-    _convert_data_sampler_for_numeric_dataset
+    _convert_numeric_dataset_for_data_sampler
 )

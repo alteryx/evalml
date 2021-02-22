@@ -1,7 +1,7 @@
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
-from evalml.utils import _convert_data_sampler_for_numeric_dataset
+from evalml.utils import _convert_numeric_dataset_for_data_sampler
 
 
 class BaseTVSplit(BaseCrossValidator):
@@ -37,7 +37,7 @@ class BaseTVSplit(BaseCrossValidator):
         Returns:
             tuple((pd.DataFrame, pd.Series), (pd.DataFrame, pd.Series)): A tuple containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
         """
-        X, y = _convert_data_sampler_for_numeric_dataset(X, y)
+        X, y = _convert_numeric_dataset_for_data_sampler(X, y)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_seed)
         X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
         return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
@@ -52,7 +52,7 @@ class BaseTVSplit(BaseCrossValidator):
             Returns:
                 tuple(pd.DataFrame, pd.Series): A tuple containing the resulting X and y post-transformation.
         """
-        X_pd, y_pd = _convert_data_sampler_for_numeric_dataset(X, y)
+        X_pd, y_pd = _convert_numeric_dataset_for_data_sampler(X, y)
         X_transformed, y_transformed = self.sampler.fit_resample(X_pd, y_pd)
         return (X_transformed, y_transformed)
 
@@ -85,7 +85,7 @@ class BaseCVSplit(StratifiedKFold):
         Returns:
             tuple((pd.DataFrame, pd.Series), (pd.DataFrame, pd.Series)): An iterator containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
         """
-        X, y = _convert_data_sampler_for_numeric_dataset(X, y)
+        X, y = _convert_numeric_dataset_for_data_sampler(X, y)
         for i, (train_indices, test_indices) in enumerate(super().split(X, y)):
             X_train, X_test, y_train, y_test = X.iloc[train_indices], X.iloc[test_indices], y.iloc[train_indices], y.iloc[test_indices]
             X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
@@ -101,6 +101,6 @@ class BaseCVSplit(StratifiedKFold):
             Returns:
                 tuple(pd.DataFrame, pd.Series): A tuple containing the resulting X and y post-transformation.
         """
-        X_pd, y_pd = _convert_data_sampler_for_numeric_dataset(X, y)
+        X_pd, y_pd = _convert_numeric_dataset_for_data_sampler(X, y)
         X_transformed, y_transformed = self.sampler.fit_resample(X_pd, y_pd)
         return (X_transformed, y_transformed)

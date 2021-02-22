@@ -11,7 +11,7 @@ import woodwork as ww
 from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
 from evalml.utils import (
-    _convert_data_sampler_for_numeric_dataset,
+    _convert_numeric_dataset_for_data_sampler,
     _convert_woodwork_types_wrapper,
     infer_feature_types
 )
@@ -493,7 +493,7 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
                          ])
 @pytest.mark.parametrize("to_pandas", [True, False])
 @pytest.mark.parametrize("datatype", ["np", "pd", "ww"])
-def test_convert_data_sampler_for_numeric_dataset(datatype, to_pandas, value, error, make_data_type):
+def test_convert_numeric_dataset_for_data_sampler(datatype, to_pandas, value, error, make_data_type):
     if datatype == "np" and value == "hello":
         pytest.skip("Unsupported configuration")
 
@@ -504,9 +504,9 @@ def test_convert_data_sampler_for_numeric_dataset(datatype, to_pandas, value, er
 
     if error:
         with pytest.raises(ValueError, match="Values not all numeric or there are null"):
-            _convert_data_sampler_for_numeric_dataset(X, y, to_pandas=to_pandas)
+            _convert_numeric_dataset_for_data_sampler(X, y, to_pandas=to_pandas)
     else:
-        X_transformed, y_transformed = _convert_data_sampler_for_numeric_dataset(X, y, to_pandas=to_pandas)
+        X_transformed, y_transformed = _convert_numeric_dataset_for_data_sampler(X, y, to_pandas=to_pandas)
         X_ww = infer_feature_types(X)
         y_ww = infer_feature_types(y)
 

@@ -102,7 +102,7 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
     return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
 
 
-def _convert_data_sampler_for_numeric_dataset(X, y, to_pandas=True):
+def _convert_numeric_dataset_for_data_sampler(X, y, to_pandas=True):
     """Convert numeric and non-null data to woodwork or pandas datatype. Raises ValueError if there is null or non-numeric data.
     Used with data sampler strategies.
 
