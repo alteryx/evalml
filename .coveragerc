@@ -1,9 +1,7 @@
 [run]
 source = evalml
-data_file = /tmp/.coverage
 
 [report]
 exclude_lines =
     # Have to re-enable the standard pragma
     pragma: no cover
-
