@@ -102,8 +102,8 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
     return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
 
 
-def _convert_numeric_dataset_for_data_sampler(X, y, to_pandas=True):
-    """Convert numeric and non-null data to woodwork or pandas datatype. Raises ValueError if there is null or non-numeric data.
+def _convert_numeric_dataset_pandas(X, y):
+    """Convert numeric and non-null data to pandas datatype. Raises ValueError if there is null or non-numeric data.
     Used with data sampler strategies.
 
     Arguments:
@@ -111,12 +111,11 @@ def _convert_numeric_dataset_for_data_sampler(X, y, to_pandas=True):
         y (pd.Series, np.ndarray, ww.DataColumn): Target data
 
     Returns:
-        Tuple(ww.DataTable, ww.DataColumn) or Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
+        Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
     X_ww = infer_feature_types(X)
     if not is_all_numeric(X_ww):
         raise ValueError('Values not all numeric or there are null values provided in the dataset')
     y_ww = infer_feature_types(y)
-    if to_pandas:
-        X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
+    X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+    y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
     return X_ww, y_ww

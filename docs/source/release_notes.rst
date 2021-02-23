@@ -3,7 +3,7 @@ Release Notes
 
 **Future Releases**
     * Enhancements
-        * Added multiple sampling methods as data splitters for imbalanced classification :pr:`1775`
+        * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
         * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`

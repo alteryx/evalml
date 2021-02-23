@@ -4,14 +4,14 @@ from sklearn.model_selection._split import BaseCrossValidator
 from evalml.utils import _convert_numeric_dataset_for_data_sampler
 
 
-class BaseTVSplit(BaseCrossValidator):
+class BaseSamplingSplitter(BaseCrossValidator):
     """Base class for training validation data splitter."""
 
     def __init__(self, sampler=None, test_size=None, random_seed=0):
         """Create a training-validation data splitter instance
 
         Arguments:
-            sampler (sampler instance): The sampler instance to use for resampling the training data. Must have a `fit_resample` method. Defaults to None.
+            sampler (sampler instance): The sampler instance to use for resampling the training data. Must have a `fit_resample` method. Defaults to None, which is equivalent to regular TV split.
 
             test_size (float): What percentage of data points should be included in the validation
                 set. Defalts to the complement of `train_size` if `train_size` is set, and 0.25 otherwise.
@@ -39,8 +39,9 @@ class BaseTVSplit(BaseCrossValidator):
         """
         X, y = _convert_numeric_dataset_for_data_sampler(X, y)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_seed)
-        X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
-        return iter([((X_train_resample, y_train_resample), (X_test, y_test))])
+        if self.sampler is not None:
+            X_train, y_train = self.sampler.fit_resample(X_train, y_train)
+        return iter([((X_train, y_train), (X_test, y_test))])
 
     def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
@@ -64,7 +65,7 @@ class BaseCVSplit(StratifiedKFold):
         """Create a cross-validation data splitter instance
 
         Arguments:
-            sampler (sampler instance): The sampler instance to use for resampling the training data. Must have a `fit_resample` method. Defaults to None.
+            sampler (sampler instance): The sampler instance to use for resampling the training data. Must have a `fit_resample` method. Defaults to None, which is equal to regular K-fold CV.
 
             n_splits (int): How many CV folds to use. Defaults to 3.
 
@@ -88,8 +89,9 @@ class BaseCVSplit(StratifiedKFold):
         X, y = _convert_numeric_dataset_for_data_sampler(X, y)
         for i, (train_indices, test_indices) in enumerate(super().split(X, y)):
             X_train, X_test, y_train, y_test = X.iloc[train_indices], X.iloc[test_indices], y.iloc[train_indices], y.iloc[test_indices]
-            X_train_resample, y_train_resample = self.sampler.fit_resample(X_train, y_train)
-            yield iter(((X_train_resample, y_train_resample), (X_test, y_test)))
+            if self.sampler is not None:
+                X_train, y_train = self.sampler.fit_resample(X_train, y_train)
+            yield iter(((X_train, y_train), (X_test, y_test)))
 
     def transform(self, X, y):
         """Transforms the input data with the balancing strategy.
