@@ -4,7 +4,7 @@ from sklearn.model_selection._split import BaseCrossValidator
 from evalml.utils import _convert_numeric_dataset_pandas
 
 
-class BaseSamplingSplitter(BaseCrossValidator):
+class BaseTVSplit(BaseCrossValidator):
     """Base class for training validation data splitter."""
 
     def __init__(self, sampler=None, test_size=None, random_seed=0):
