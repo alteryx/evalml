@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
 from evalml.utils.woodwork_utils import (
@@ -90,3 +92,6 @@ class BalancedClassificationSampler(SamplerBase):
                 indices_to_remove = self.random_state.choice(indices, value, replace=False)
                 indices_to_drop.extend(indices_to_remove)
         return list(set(list(y.index.values)).difference(set(indices_to_drop)))
+
+
+class BalancedClassificationDataSplitter(BaseCrossValidator)
