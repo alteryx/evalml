@@ -22,7 +22,6 @@ jobs:
     needs: shellcheck
     if: github.ref == 'refs/head/main'
     steps:
-      working-directory: ~/evalml/
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
