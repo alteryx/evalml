@@ -262,7 +262,7 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
-    return table_maker(shap_values, normalized_shap_values, pipeline_features_row, input_features_row, top_k, include_shap_values)
+    return table_maker(aggregated_shap_values, normalized_shap_values, pipeline_features_row, input_features_row, top_k, include_shap_values)
 
 
 class _SectionMaker(abc.ABC):
