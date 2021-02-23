@@ -2,6 +2,7 @@ from itertools import product
 
 import pandas as pd
 import pytest
+from pandas.testing import assert_series_equal
 
 from evalml.demos import load_breast_cancer, load_wine
 
@@ -46,12 +47,12 @@ def test_pipeline_has_classes_property(logistic_regression_binary_pipeline_class
         pipeline.classes_
 
     pipeline.fit(X, y)
-    pd.testing.assert_series_equal(pd.Series(pipeline.classes_), pd.Series(answer))
+    assert_series_equal(pd.Series(pipeline.classes_), pd.Series(answer))
 
 
 def test_woodwork_classification_pipeline(logistic_regression_binary_pipeline_class):
     X, y = load_breast_cancer()
     mock_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     mock_pipeline.fit(X, y)
-    assert not pd.isnull(mock_pipeline.predict(X)).any()
-    assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()
+    assert not pd.isnull(mock_pipeline.predict(X).to_series()).any()
+    assert not pd.isnull(mock_pipeline.predict_proba(X).to_dataframe()).any().any()

@@ -4,11 +4,14 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
+from evalml.problem_types import handle_problem_types
 from evalml.utils import _convert_woodwork_types_wrapper, classproperty
 
 
 class ObjectiveBase(ABC):
     """Base class for all objectives."""
+
+    problem_types = None
 
     @property
     @classmethod
@@ -34,6 +37,12 @@ class ObjectiveBase(ABC):
     @abstractmethod
     def perfect_score(cls):
         """Returns the score obtained by evaluating this objective on a perfect model."""
+
+    @property
+    @classmethod
+    @abstractmethod
+    def is_bounded_like_percentage(cls):
+        """Returns whether this objective is bounded between 0 and 1, inclusive."""
 
     @classmethod
     @abstractmethod
@@ -76,7 +85,7 @@ class ObjectiveBase(ABC):
         """Standardize input to pandas for scoring.
 
         Arguments:
-            input_data (ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
+            input_data (list, ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
             pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
@@ -87,9 +96,14 @@ class ObjectiveBase(ABC):
             return _convert_woodwork_types_wrapper(input_data.to_dataframe())
         if isinstance(input_data, ww.DataColumn):
             return _convert_woodwork_types_wrapper(input_data.to_series())
-        if len(input_data.shape) == 1:
+        if isinstance(input_data, list):
+            if isinstance(input_data[0], list):
+                return pd.DataFrame(input_data)
             return pd.Series(input_data)
-        return pd.DataFrame(input_data)
+        if isinstance(input_data, np.ndarray):
+            if len(input_data.shape) == 1:
+                return pd.Series(input_data)
+            return pd.DataFrame(input_data)
 
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.
@@ -124,27 +138,29 @@ class ObjectiveBase(ABC):
                 this is the score achieved on this objective with a baseline estimator.
 
         Returns:
-            float: The percent difference between the scores. This will be the difference normalized by the
-                baseline score.
+            float: The percent difference between the scores. Note that for objectives that can be interpreted
+                as percentages, this will be the difference between the reference score and score. For all other
+                objectives, the difference will be normalized by the reference score.
         """
 
         if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 
-        if np.isclose(baseline_score, 0, atol=1e-10):
-            return np.nan
-
-        if baseline_score == score:
+        if np.isclose(baseline_score - score, 0, atol=1e-10):
             return 0
+
+        # Return inf when dividing by 0
+        if np.isclose(baseline_score, 0, atol=1e-10) and not cls.is_bounded_like_percentage:
+            return np.inf
 
         decrease = False
         if (baseline_score > score and cls.greater_is_better) or (baseline_score < score and not cls.greater_is_better):
             decrease = True
 
         difference = (baseline_score - score)
-        change = difference / baseline_score
+        change = difference if cls.is_bounded_like_percentage else difference / baseline_score
         return 100 * (-1) ** (decrease) * np.abs(change)
 
     @classmethod
     def is_defined_for_problem_type(cls, problem_type):
-        return problem_type in cls.problem_types
+        return handle_problem_types(problem_type) in cls.problem_types

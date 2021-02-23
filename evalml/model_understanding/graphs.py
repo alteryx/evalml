@@ -6,10 +6,12 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from joblib import Parallel, delayed
 from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.inspection import \
     permutation_importance as sk_permutation_importance
+from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
 from sklearn.metrics import \
@@ -23,11 +25,12 @@ import evalml
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
+    deprecate_arg,
     import_or_raise,
+    infer_feature_types,
     jupyter_check
 )
 
@@ -43,8 +46,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     Returns:
         pd.DataFrame: Confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
-    y_true = _convert_to_woodwork_structure(y_true)
-    y_predicted = _convert_to_woodwork_structure(y_predicted)
+    y_true = infer_feature_types(y_true)
+    y_predicted = infer_feature_types(y_predicted)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
     y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series()).to_numpy()
     labels = unique_labels(y_true, y_predicted)
@@ -65,7 +68,7 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
-    conf_mat = _convert_to_woodwork_structure(conf_mat)
+    conf_mat = infer_feature_types(conf_mat)
     conf_mat = _convert_woodwork_types_wrapper(conf_mat.to_dataframe())
     col_names = conf_mat.columns
 
@@ -151,8 +154,8 @@ def precision_recall_curve(y_true, y_pred_proba):
                   * `thresholds`: Threshold values used to produce the precision and recall.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = _convert_to_woodwork_structure(y_true)
-    y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    y_true = infer_feature_types(y_true)
+    y_pred_proba = infer_feature_types(y_pred_proba)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
 
@@ -206,8 +209,8 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = _convert_to_woodwork_structure(y_true)
-    y_pred_proba = _convert_to_woodwork_structure(y_pred_proba)
+    y_true = infer_feature_types(y_true)
+    y_pred_proba = infer_feature_types(y_pred_proba)
     if isinstance(y_pred_proba, ww.DataTable):
         y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
     else:
@@ -282,7 +285,72 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     return _go.Figure(layout=layout, data=graph_data)
 
 
-def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_state=0):
+def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, objective, col_name,
+                                       random_seed, n_repeats, scorer, baseline_score):
+    """Calculate the permutation score when `col_name` is permuted."""
+
+    random_state = np.random.RandomState(random_seed)
+
+    scores = np.zeros(n_repeats)
+
+    # If column is not in the features or provenance, assume the column was dropped
+    if col_name not in precomputed_features.columns and col_name not in pipeline._get_feature_provenance():
+        return scores + baseline_score
+
+    if col_name in precomputed_features.columns:
+        col_idx = precomputed_features.columns.get_loc(col_name)
+    else:
+        col_idx = [precomputed_features.columns.get_loc(col) for col in pipeline._get_feature_provenance()[col_name]]
+
+    # This is what sk_permutation_importance does. Useful for thread safety
+    X_permuted = precomputed_features.copy()
+
+    shuffling_idx = np.arange(precomputed_features.shape[0])
+    for n_round in range(n_repeats):
+        random_state.shuffle(shuffling_idx)
+        col = X_permuted.iloc[shuffling_idx, col_idx]
+        col.index = X_permuted.index
+        X_permuted.iloc[:, col_idx] = col
+
+        feature_score = scorer(pipeline, X_permuted, y, objective)
+        scores[n_round] = feature_score
+
+    return scores
+
+
+def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
+    """Calculate permutation importance faster by only computing the estimator features once.
+
+    Only used for pipelines that support this optimization.
+    """
+
+    precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
+
+    if is_classification(pipeline.problem_type):
+        y = pipeline._encode_targets(y)
+
+    def scorer(pipeline, features, y, objective):
+        if objective.score_needs_proba:
+            preds = pipeline.estimator.predict_proba(features)
+            preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
+        else:
+            preds = pipeline.estimator.predict(features)
+            preds = _convert_woodwork_types_wrapper(preds.to_series())
+        score = pipeline._score(X, y, preds, objective)
+        return score if objective.greater_is_better else -score
+
+    baseline_score = scorer(pipeline, precomputed_features, y, objective)
+
+    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
+        pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
+    ) for col_name in X.columns)
+
+    importances = baseline_score - np.array(scores)
+    return {'importances_mean': np.mean(importances, axis=1)}
+
+
+def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None,
+                                     random_state=None, random_seed=0):
     """Calculates permutation importance for features.
 
     Arguments:
@@ -293,27 +361,32 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
-
+        random_state (None, int): Deprecated - use random_seed instead.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
-        Mean feature importance scores over 5 shuffles.
+        pd.DataFrame, Mean feature importance scores over 5 shuffles.
     """
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     y = _convert_woodwork_types_wrapper(y.to_series())
+
+    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
 
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
-    def scorer(pipeline, X, y):
-        scores = pipeline.score(X, y, objectives=[objective])
-        return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-    perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs, random_state=random_state)
+    if pipeline._supports_fast_permutation_importance:
+        perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs,
+                                                       random_seed=random_seed)
+    else:
+        def scorer(pipeline, X, y):
+            scores = pipeline.score(X, y, objectives=[objective])
+            return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
+        perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs,
+                                                    random_state=random_seed)
     mean_perm_importance = perm_importance["importances_mean"]
-    if not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
     feature_names = list(X.columns)
     mean_perm_importance = list(zip(feature_names, mean_perm_importance))
     mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
@@ -433,81 +506,122 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def partial_dependence(pipeline, X, feature, grid_resolution=100):
-    """Calculates partial dependence.
+def partial_dependence(pipeline, X, features, grid_resolution=100):
+    """Calculates one or two-way partial dependence.  If a single integer or
+    string is given for features, one-way partial dependence is calculated. If
+    a tuple of two integers or strings is given, two-way partial dependence
+    is calculated with the first feature in the y-axis and second feature in the
+    x-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target features for which to create the partial dependence plot for.
-            If feature is an int, it must be the index of the feature to use.
-            If feature is a string, it must be a valid column name in X.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
+            If features is an int, it must be the index of the feature to use.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
+            is less than the maximum number of categories present in categorical data within X, it will be
+            set to the max number of categories + 1.
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions. The dataframe will
-            contain two columns: "feature_values" (grid points at which the partial dependence was calculated) and
-            "partial_dependence" (the partial dependence at that feature value). For classification problems, there
-            will be a third column called "class_label" (the class label for which the partial
-            dependence was calculated). For binary classification, the partial dependence is only calculated for the
-            "positive" class.
+            over all samples of X and the values used to calculate those predictions.
 
+            In the one-way case: The dataframe will contain two columns, "feature_values" (grid points at which the
+            partial dependence was calculated) and "partial_dependence" (the partial dependence at that feature value).
+            For classification problems, there will be a third column called "class_label" (the class label for which
+            the partial dependence was calculated). For binary classification, the partial dependence is only calculated
+            for the "positive" class.
+
+            In the two-way case: The data frame will contain grid_resolution number of columns and rows where the
+            index and column headers are the sampled values of the first and second features, respectively, used to make
+            the partial dependence contour. The values of the data frame contain the partial dependence data for each
+            feature value pair.
+
+    Raises:
+        ValueError: if the user provides a tuple of not exactly two features.
+        ValueError: if the provided pipeline isn't fitted.
+        ValueError: if the provided pipeline is a Baseline pipeline.
     """
-    X = _convert_to_woodwork_structure(X)
+
+    X = infer_feature_types(X)
+    # Dynamically set the grid resolution to the maximum number of categories
+    # in the categorical variables if there are more categories than resolution cells
+    X_cats = X.select("categorical")
+    if X_cats.shape[1] != 0:
+        max_num_cats = max(X_cats.describe().loc["nunique"])
+        grid_resolution = max([max_num_cats + 1, grid_resolution])
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
+    if isinstance(features, (list, tuple)):
+        if len(features) != 2:
+            raise ValueError("Too many features given to graph_partial_dependence.  Only one or two-way partial "
+                             "dependence is supported.")
+        if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
+            raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-    if isinstance(pipeline, evalml.pipelines.ClassificationPipeline):
-        pipeline._estimator_type = "classifier"
-    elif isinstance(pipeline, evalml.pipelines.RegressionPipeline):
-        pipeline._estimator_type = "regressor"
-    pipeline.feature_importances_ = pipeline.feature_importance
-    if ((isinstance(feature, int) and X.iloc[:, feature].isnull().sum()) or (isinstance(feature, str) and X[feature].isnull().sum())):
+
+    if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
-    try:
-        avg_pred, values = sk_partial_dependence(pipeline, X=X, features=[feature], grid_resolution=grid_resolution)
-    finally:
-        # Delete scikit-learn attributes that were temporarily set
-        del pipeline._estimator_type
-        del pipeline.feature_importances_
+
+    wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
         classes = [pipeline.classes_[1]]
     elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         classes = pipeline.classes_
 
-    data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
-                         "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    if isinstance(features, (int, str)):
+        data = pd.DataFrame({"feature_values": np.tile(values[0], avg_pred.shape[0]),
+                             "partial_dependence": np.concatenate([pred for pred in avg_pred])})
+    elif isinstance(features, (list, tuple)):
+        data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
+        data.columns = values[1]
+        data.index = np.tile(values[0], avg_pred.shape[0])
+
     if classes is not None:
         data['class_label'] = np.repeat(classes, len(values[0]))
-
     return data
 
 
-def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolution=100):
-    """Create an one-way partial dependence plot.
+def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resolution=100):
+    """Create an one-way or two-way partial dependence plot.  Passing a single integer or
+    string as features will create a one-way partial dependence plot with the feature values
+    plotted against the partial dependence.  Passing features a tuple of int/strings will create
+    a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
+    in the x-axis and the partial dependence in the z-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        feature (int, string): The target feature for which to create the partial dependence plot for.
-            If feature is an int, it must be the index of the feature to use.
-            If feature is a string, it must be a valid column name in X.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
+            If features is an int, it must be the index of the feature to use.
+            If features is a string, it must be a valid column name in X.
+            If features is a tuple of strings, it must contain valid column int/names in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
 
     Returns:
-        pd.DataFrame: pd.DataFrame with averaged predictions for all points in the grid averaged
-            over all samples of X and the values used to calculate those predictions.
+        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
 
+    Raises:
+        ValueError: if a graph is requested for a class name that isn't present in the pipeline
     """
+    if isinstance(features, (list, tuple)):
+        mode = "two-way"
+    elif isinstance(features, (int, str)):
+        mode = "one-way"
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -516,13 +630,21 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
             msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
             raise ValueError(msg)
 
-    part_dep = partial_dependence(pipeline, X, feature=feature, grid_resolution=grid_resolution)
-    feature_name = str(feature)
-    title = f"Partial Dependence of '{feature_name}'"
-    layout = _go.Layout(title={'text': title},
-                        xaxis={'title': f'{feature_name}'},
-                        yaxis={'title': 'Partial Dependence'},
-                        showlegend=False)
+    part_dep = partial_dependence(pipeline, X, features=features, grid_resolution=grid_resolution)
+
+    if mode == "two-way":
+        title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
+        layout = _go.Layout(title={'text': title},
+                            xaxis={'title': f'{features[0]}'},
+                            yaxis={'title': f'{features[1]}'},
+                            showlegend=False)
+    elif mode == "one-way":
+        feature_name = str(features)
+        title = f"Partial Dependence of '{feature_name}'"
+        layout = _go.Layout(title={'text': title},
+                            xaxis={'title': f'{feature_name}'},
+                            yaxis={'title': 'Partial Dependence'},
+                            showlegend=False)
     if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise("plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects")
@@ -534,21 +656,42 @@ def graph_partial_dependence(pipeline, X, feature, class_label=None, grid_resolu
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
-
-            # Plotly trace indexing begins at 1 so we add 1 to i
-            fig.add_trace(_go.Scatter(x=part_dep.loc[part_dep.class_label == label, 'feature_values'],
-                                      y=part_dep.loc[part_dep.class_label == label, 'partial_dependence'],
-                                      line=dict(width=3),
-                                      name=label),
-                          row=(i + 2) // 2, col=(i % 2) + 1)
+            label_df = part_dep.loc[part_dep.class_label == label]
+            if mode == "two-way":
+                x = label_df.index
+                y = np.array([col for col in label_df.columns if isinstance(col, (int, float))])
+                z = label_df.values
+                fig.add_trace(_go.Contour(x=x, y=y, z=z, name=label, coloraxis="coloraxis"),
+                              row=(i + 2) // 2, col=(i % 2) + 1)
+            elif mode == "one-way":
+                x = label_df['feature_values']
+                y = label_df['partial_dependence']
+                fig.add_trace(_go.Scatter(x=x, y=y, line=dict(width=3), name=label),
+                              row=(i + 2) // 2, col=(i % 2) + 1)
         fig.update_layout(layout)
-        fig.update_xaxes(title=f'{feature_name}', range=_calculate_axis_range(part_dep['feature_values']))
-        fig.update_yaxes(range=_calculate_axis_range(part_dep['partial_dependence']))
+
+        if mode == "two-way":
+            title = f'{features[0]}'
+            xrange = _calculate_axis_range(part_dep.index)
+            yrange = _calculate_axis_range(np.array([x for x in part_dep.columns if isinstance(x, (int, float))]))
+            fig.update_layout(coloraxis=dict(colorscale='Bluered_r'), showlegend=False)
+        elif mode == "one-way":
+            title = f'{feature_name}'
+            xrange = _calculate_axis_range(part_dep['feature_values'])
+            yrange = _calculate_axis_range(part_dep['partial_dependence'])
+        fig.update_xaxes(title=title, range=xrange)
+        fig.update_yaxes(range=yrange)
     else:
-        trace = _go.Scatter(x=part_dep['feature_values'],
-                            y=part_dep['partial_dependence'],
-                            name='Partial Dependence',
-                            line=dict(width=3))
+        if mode == "two-way":
+            trace = _go.Contour(x=part_dep.index,
+                                y=part_dep.columns,
+                                z=part_dep.values,
+                                name="Partial Dependence")
+        elif mode == "one-way":
+            trace = _go.Scatter(x=part_dep['feature_values'],
+                                y=part_dep['partial_dependence'],
+                                name='Partial Dependence',
+                                line=dict(width=3))
         fig = _go.Figure(layout=layout, data=[trace])
 
     return fig
@@ -582,9 +725,9 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
-    y_true = _convert_to_woodwork_structure(y_true)
+    y_true = infer_feature_types(y_true)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_pred = _convert_to_woodwork_structure(y_pred)
+    y_pred = infer_feature_types(y_pred)
     y_pred = _convert_woodwork_types_wrapper(y_pred.to_series())
 
     predictions = y_pred.reset_index(drop=True)
@@ -667,12 +810,11 @@ def _tree_parse(est, feature_names):
     return recurse(0)
 
 
-def decision_tree_data_from_estimator(estimator, feature_names=None):
+def decision_tree_data_from_estimator(estimator):
     """Return data for a fitted tree in a restructured format
 
     Arguments:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
-        feature_names (List): A list of feature names to replace column index values.
 
     Returns:
         OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
@@ -683,14 +825,7 @@ def decision_tree_data_from_estimator(estimator, feature_names=None):
         raise NotFittedError("This DecisionTree estimator is not fitted yet. Call 'fit' with appropriate arguments "
                              "before using this estimator.")
     est = estimator._component_obj
-
-    if feature_names:
-        if not isinstance(feature_names, list):
-            feature_names = list(feature_names)
-        if len(feature_names) != est.n_features_:
-            raise ValueError("Length mismatch: Expected features has length {} but got list with length {}"
-                             .format(est.n_features_, len(feature_names)))
-
+    feature_names = estimator.input_feature_names
     return _tree_parse(est, feature_names)
 
 
@@ -761,7 +896,7 @@ def visualize_decision_tree(estimator, max_depth=None, rotate=False, filled=Fals
         else:
             graph_format = 'pdf'  # If the filepath has no extension default to pdf
 
-    dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled)
+    dot_data = export_graphviz(decision_tree=est, max_depth=max_depth, rotate=rotate, filled=filled, feature_names=estimator.input_feature_names)
     source_obj = graphviz.Source(source=dot_data, format=graph_format)
     if filepath:
         source_obj.render(filename=path_and_name, cleanup=True)
@@ -782,8 +917,8 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
        pd.DataFrame
     """
 
-    dates = _convert_to_woodwork_structure(dates)
-    y = _convert_to_woodwork_structure(y)
+    dates = infer_feature_types(dates)
+    y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
 
     dates = _convert_woodwork_types_wrapper(dates.to_series())
@@ -803,7 +938,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
         dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-        plotly.Figure showing the prediction vs actual over time.
+        plotly.Figure: Showing the prediction vs actual over time.
     """
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
 
@@ -823,3 +958,91 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
                         yaxis={'title': 'Target Values and Predictions'})
 
     return _go.Figure(data=data, layout=layout)
+
+
+def get_linear_coefficients(estimator, features=None):
+    """Returns a dataframe showing the features with the greatest predictive power for a linear model.
+
+    Arguments:
+        estimator (Estimator): Fitted linear model family estimator.
+        features (list[str]): List of feature names associated with the underlying data.
+
+    Returns:
+        pd.DataFrame: Displaying the features by importance.
+    """
+    if not estimator.model_family == ModelFamily.LINEAR_MODEL:
+        raise ValueError("Linear coefficients are only available for linear family models")
+    if not estimator._is_fitted:
+        raise NotFittedError("This linear estimator is not fitted yet. Call 'fit' with appropriate arguments "
+                             "before using this estimator.")
+    coef_ = estimator.feature_importance
+    coef_ = pd.Series(coef_, name='Coefficients', index=features)
+    coef_ = coef_.sort_values()
+    coef_ = pd.Series(estimator._component_obj.intercept_, index=['Intercept']).append(coef_)
+
+    return coef_
+
+
+def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', **kwargs):
+    """Get the transformed output after fitting X to the embedded space using t-SNE.
+
+     Arguments:
+        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed. Must be numeric.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+
+    Returns:
+        np.ndarray (n_samples, n_components)
+    """
+    if not isinstance(n_components, int) or not n_components > 0:
+        raise ValueError("The parameter n_components must be of type integer and greater than 0")
+    if not perplexity >= 0:
+        raise ValueError("The parameter perplexity must be non-negative")
+
+    X = infer_feature_types(X)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
+    X_new = t_sne_.fit_transform(X)
+    return X_new
+
+
+def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='euclidean', marker_line_width=2, marker_size=7, **kwargs):
+    """Plot high dimensional data into lower dimensional space using t-SNE .
+
+    Arguments:
+        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed. Must be numeric.
+        n_components (int, optional): Dimension of the embedded space.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
+        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
+        local minimum, increasing the learning rate may help.
+        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        marker_line_width (int, optional): Determines the line width of the marker boundary.
+        marker_size (int, optional): Determines the size of the marker.
+
+    Returns:
+        plotly.Figure representing the transformed data
+
+    """
+    _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
+
+    if not marker_line_width >= 0:
+        raise ValueError("The parameter marker_line_width must be non-negative")
+    if not marker_size >= 0:
+        raise ValueError("The parameter marker_size must be non-negative")
+
+    X_embedded = t_sne(X, n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
+
+    fig = _go.Figure()
+    fig.add_trace(_go.Scatter(
+        x=X_embedded[:, 0], y=X_embedded[:, 1],
+        mode='markers'
+    ))
+    fig.update_traces(mode='markers', marker_line_width=marker_line_width, marker_size=marker_size)
+    fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)
+
+    return fig

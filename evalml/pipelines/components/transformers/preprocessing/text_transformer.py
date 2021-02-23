@@ -7,32 +7,23 @@ logger = get_logger(__file__)
 class TextTransformer(Transformer):
     """Base class for all transformers working with text features"""
 
-    def __init__(self, text_columns=None, component_obj=None, random_state=0, **kwargs):
+    def __init__(self, component_obj=None, random_state=None, random_seed=0, **kwargs):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            text_columns (list): list of feature names which should be treated as text features.
-            random_state (int, np.random.RandomState): Seed for the random number generator.
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        parameters = {'text_columns': text_columns}
+        parameters = {}
         parameters.update(kwargs)
 
-        self._all_text_columns = text_columns or []
         super().__init__(parameters=parameters,
                          component_obj=component_obj,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def _get_text_columns(self, X):
         """Returns the ordered list of columns names in the input which have been designated as text columns."""
-        columns = []
-        missing_columns = []
-        for col_name in self._all_text_columns:
-            if col_name in X.columns:
-                columns.append(col_name)
-            else:
-                missing_columns.append(col_name)
-        if len(columns) == 0:
-            raise AttributeError("None of the provided text column names match the columns in the given DataFrame")
-        if len(columns) < len(self._all_text_columns):
-            logger.warn("Columns {} were not found in the given DataFrame, ignoring".format(missing_columns))
-        return columns
+        text_column_vals = X.select('natural_language')
+        text_columns = list(text_column_vals.to_dataframe().columns)
+        return text_columns

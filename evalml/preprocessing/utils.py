@@ -7,7 +7,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series
 )
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import deprecate_arg, infer_feature_types
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
@@ -42,36 +42,39 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
     return X, y
 
 
-def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_state=0):
-    """splits data into train and test sets.
+def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_state=None, random_seed=0):
+    """Splits data into train and test sets.
 
     Arguments:
-        X (ww.datatable, pd.dataframe or np.ndarray): data of shape [n_samples, n_features]
-        y (ww.datacolumn, pd.series, or np.ndarray): target data of length [n_samples]
-        problem_type (str or problemtypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
-        problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
+        X (ww.DataTable, pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
+        y (ww.DataColumn, pd.Series, or np.ndarray): target data of length [n_samples]
+        problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
+        problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the gap and max_delay variables.
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
-        random_state (int, np.random.RandomState): Seed for the random number generator
+        random_state (None, int): Deprecated - use random_seed instead.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+
+    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
 
     data_splitter = None
     if is_time_series(problem_type):
-        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_state)
+        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_seed)
     elif is_regression(problem_type):
-        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
     elif is_classification(problem_type):
-        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
 
     train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
 
@@ -122,11 +125,11 @@ def drop_nan_target_rows(X, y):
     """Drops rows in X and y when row in the target y has a value of NaN.
 
     Arguments:
-        X (pd.DataFrame): Data to transform
-        y (pd.Series): Target data
+        X (pd.DataFrame, np.ndarray): Data to transform
+        y (pd.Series, np.ndarray): Target data
 
     Returns:
-        pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
+        pd.DataFrame, pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
     """
     X_t = X
     y_t = y

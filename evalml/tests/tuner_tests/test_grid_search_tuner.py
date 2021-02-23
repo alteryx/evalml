@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from evalml.tuners import GridSearchTuner, NoParamsException
@@ -66,11 +68,22 @@ def test_grid_search_tuner_space_types():
 
 
 def test_grid_search_tuner_invalid_space():
-    type_error_text = 'Invalid dimension type in tuner'
     bound_error_text = "Upper bound must be greater than lower bound. Parameter lower bound is 1 and upper bound is 0"
-    with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner({'Mock Classifier': {'param a': False}})
-    with pytest.raises(TypeError, match=type_error_text):
-        GridSearchTuner({'Mock Classifier': {'param a': (0)}})
     with pytest.raises(ValueError, match=bound_error_text):
         GridSearchTuner({'Mock Classifier': {'param a': (1, 0)}})
+
+
+def test_grid_search_tuner_valid_space():
+    GridSearchTuner({'Mock Classifier': {'param a': 1}})
+    GridSearchTuner({'Mock Classifier': {'param a': "param_value"}})
+    tuner = GridSearchTuner({'Mock Classifier': {'param a': 3.200}})
+    proposed_params = tuner.propose()
+    assert proposed_params == {'Mock Classifier': {}}
+
+
+def test_grid_search_tuner_raises_deprecated_random_state_warning():
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        GridSearchTuner({'Mock Classifier': {'param a': (0, 2)}}, random_state=13)
+        assert str(warn[0].message).startswith(
+            "Argument 'random_state' has been deprecated in favor of 'random_seed'")

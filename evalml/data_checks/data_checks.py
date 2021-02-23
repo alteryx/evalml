@@ -2,7 +2,7 @@ import inspect
 
 from evalml.data_checks import DataCheck
 from evalml.exceptions import DataCheckInitError
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import infer_feature_types
 
 
 def _has_defaults_for_all_args(init):
@@ -87,9 +87,9 @@ class DataChecks:
             "warnings": [],
             "errors": []
         }
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if y is not None:
-            y = _convert_to_woodwork_structure(y)
+            y = infer_feature_types(y)
 
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)

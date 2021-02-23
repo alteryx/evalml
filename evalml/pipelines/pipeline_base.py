@@ -10,19 +10,25 @@ from collections import OrderedDict
 import cloudpickle
 import pandas as pd
 
-from .components import Estimator
-from .components.utils import handle_component_class
+from .components import (
+    PCA,
+    DFSTransformer,
+    Estimator,
+    LinearDiscriminantAnalysis,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor
+)
+from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
 from evalml.utils import (
-    _convert_to_woodwork_structure,
-    check_random_state_equality,
     classproperty,
+    deprecate_arg,
     get_logger,
-    get_random_state,
     import_or_raise,
+    infer_feature_types,
     jupyter_check,
     log_subtitle,
     log_title,
@@ -49,7 +55,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_state=0):
+    def __init__(self, parameters, random_state=None, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -58,13 +64,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_state = get_random_state(random_state)
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         if isinstance(self.component_graph, list):  # Backwards compatibility
-            self._component_graph = ComponentGraph().from_list(self.component_graph, random_state=self.random_state)
+            self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:
-            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_state=self.random_state)
+            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
@@ -113,8 +119,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def linearized_component_graph(cls):
-        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order
-        """
+        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
         if isinstance(cls.component_graph, list):
             return cls.component_graph
         else:
@@ -132,13 +137,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def __getitem__(self, index):
         if isinstance(index, slice):
             raise NotImplementedError('Slicing pipelines is currently not supported.')
-        elif isinstance(index, int):
-            component_name = self.component_graph[index]
-            if not isinstance(component_name, str):
-                component_name = component_name.name
-            return self.get_component(component_name)
-        else:
-            return self.get_component(index)
+        return self._component_graph[index]
 
     def __setitem__(self, index, value):
         raise NotImplementedError('Setting pipeline components is not supported.')
@@ -182,10 +181,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
-            X (pd.DataFrame): Input data to the pipeline to transform.
+            X (ww.DataTable, pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            pd.DataFrame - New transformed features.
+            ww.DataTable: New transformed features.
         """
         X_t = self._component_graph.compute_final_component_features(X, y=y)
         return X_t
@@ -222,11 +221,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            pd.Series: Predicted values.
+            ww.DataColumn: Predicted values.
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         predictions = self._component_graph.predict(X)
-        return predictions.rename(self.input_target_name)
+        predictions_series = predictions.to_series()
+        predictions_series.name = self.input_target_name
+        return infer_feature_types(predictions_series)
 
     @abstractmethod
     def score(self, X, y, objectives):
@@ -256,6 +257,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y_pred_proba (pd.Dataframe, pd.Series, None): The predicted probabilities for classification problems.
                 Will be a DataFrame for multiclass problems and Series otherwise. Will be None for regression problems.
             objectives (list): List of objectives to score.
+
+        Returns:
+            dict: Ordered dictionary with objectives and their scores.
         """
         scored_successfully = OrderedDict()
         exceptions = OrderedDict()
@@ -276,7 +280,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def model_family(cls):
-        "Returns model family of this pipeline template"""
+        """Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
@@ -287,7 +291,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def hyperparameters(cls):
-        "Returns hyperparameter ranges from all components as a dictionary"
+        """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
         if isinstance(component_graph, list):
@@ -465,22 +469,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
 
-    def clone(self, random_state=0):
-        """Constructs a new pipeline with the same parameters and components.
-
-        Arguments:
-            random_state (int): the value to seed the random state with. Can also be a RandomState instance. Defaults to 0.
+    def clone(self):
+        """Constructs a new pipeline with the same components, parameters, and random state.
 
         Returns:
-            A new instance of this pipeline with identical parameters and components
+            A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(self.parameters, random_state=random_state)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = check_random_state_equality(self.random_state, other.random_state)
-        if not random_state_eq:
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
             return False
         attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
         for attribute in attributes_to_check:
@@ -498,3 +499,22 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
         return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return next(self._component_graph)
+
+    def _get_feature_provenance(self):
+        return self._component_graph._feature_provenance
+
+    @property
+    def _supports_fast_permutation_importance(self):
+        has_more_than_one_estimator = sum(isinstance(c, Estimator) for c in self._component_graph) > 1
+        _all_components = set(all_components())
+        has_custom_components = any(c.__class__ not in _all_components for c in self._component_graph)
+        has_dim_reduction = any(isinstance(c, (PCA, LinearDiscriminantAnalysis)) for c in self._component_graph)
+        has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
+        has_stacked_ensembler = any(isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor)) for c in self._component_graph)
+        return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs, has_stacked_ensembler])

@@ -9,11 +9,13 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, get_random_seed, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
+    SEED_BOUNDS,
     _convert_woodwork_types_wrapper,
-    _rename_column_names_to_numeric
+    _rename_column_names_to_numeric,
+    deprecate_arg,
+    import_or_raise,
+    infer_feature_types
 )
 
 
@@ -37,10 +39,10 @@ class LightGBMClassifier(Estimator):
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
 
-    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31, min_child_samples=20, n_jobs=-1, random_state=0, bagging_fraction=0.9, bagging_freq=0, **kwargs):
-        # lightGBM's current release doesn't currently support numpy.random.RandomState as the random_state value so we convert to int instead
-        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
-
+    def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=100, max_depth=0, num_leaves=31,
+                 min_child_samples=20, n_jobs=-1, random_state=None, random_seed=0,
+                 bagging_fraction=0.9, bagging_freq=0, **kwargs):
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         parameters = {"boosting_type": boosting_type,
                       "learning_rate": learning_rate,
                       "n_estimators": n_estimators,
@@ -71,14 +73,19 @@ class LightGBMClassifier(Estimator):
 
         super().__init__(parameters=parameters,
                          component_obj=lgbm_classifier,
-                         random_state=random_seed)
+                         random_seed=random_seed)
 
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
-        X_encoded = _convert_to_woodwork_structure(X)
-        X_encoded = _rename_column_names_to_numeric(X_encoded)
-        cat_cols = list(X_encoded.select('category').columns)
-        X_encoded = _convert_woodwork_types_wrapper(X_encoded.to_dataframe())
+        X = infer_feature_types(X)
+        cat_cols = list(X.select('category').columns)
+        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        if fit:
+            self.input_feature_names = list(X.columns)
+        X_encoded = _rename_column_names_to_numeric(X)
+        rename_cols_dict = dict(zip(X.columns, X_encoded.columns))
+        cat_cols = [rename_cols_dict[col] for col in cat_cols]
+
         if len(cat_cols) == 0:
             return X_encoded
         if fit:
@@ -91,7 +98,8 @@ class LightGBMClassifier(Estimator):
         return X_encoded
 
     def _encode_labels(self, y):
-        y_encoded = pd.Series(y)
+        y_encoded = infer_feature_types(y)
+        y_encoded = _convert_woodwork_types_wrapper(y_encoded.to_series())
         # change only if dtype isn't int
         if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()
@@ -99,16 +107,19 @@ class LightGBMClassifier(Estimator):
         return y_encoded
 
     def fit(self, X, y=None):
+        X_encoded = infer_feature_types(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
-        return super().fit(X_encoded, y_encoded)
+        self._component_obj.fit(X_encoded, y_encoded)
+        return self
 
     def predict(self, X):
         X_encoded = self._encode_categories(X)
         predictions = super().predict(X_encoded)
-        if self._label_encoder:
-            predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
-        return predictions
+        if not self._label_encoder:
+            return predictions
+        predictions = pd.Series(self._label_encoder.inverse_transform(predictions.to_series().astype(np.int64)))
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         X_encoded = self._encode_categories(X)

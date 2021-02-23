@@ -7,5 +7,6 @@ from .xgboost_regressor import XGBoostRegressor
 from .et_regressor import ExtraTreesRegressor
 from .baseline_regressor import BaselineRegressor
 from .decision_tree_regressor import DecisionTreeRegressor
+from .time_series_baseline_estimator import TimeSeriesBaselineEstimator
+from .svm_regressor import SVMRegressor
 from .gam_regressor import GAMRegressor
-from .time_series_baseline_regressor import TimeSeriesBaselineRegressor

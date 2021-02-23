@@ -19,9 +19,12 @@ from .estimators import (
     BaselineRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
+    TimeSeriesBaselineEstimator,
+    KNeighborsClassifier,
+    SVMClassifier,
+    SVMRegressor,
     GAMClassifier,
-    GAMRegressor,
-    TimeSeriesBaselineRegressor
+    GAMRegressor
 )
 from .transformers import (
     Transformer,

@@ -29,8 +29,8 @@ def test_fit_predict_binary(X_y_binary):
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
 
 
 def test_fit_predict_multi(X_y_multi):
@@ -42,12 +42,14 @@ def test_fit_predict_multi(X_y_multi):
     y_pred_proba_sk = sk_clf.predict_proba(X)
 
     clf = DecisionTreeClassifier()
-    clf.fit(X, y)
+    fitted = clf.fit(X, y)
+    assert isinstance(fitted, DecisionTreeClassifier)
+
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred, y_pred_sk, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba, y_pred_proba_sk, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
 
 
 def test_feature_importance(X_y_binary):

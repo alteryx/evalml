@@ -4,6 +4,14 @@ import featuretools as ft
 import pandas as pd
 import pytest
 import woodwork as ww
+from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer
+)
 
 from evalml.pipelines.components import DFSTransformer
 
@@ -27,13 +35,14 @@ def test_numeric_columns(X_y_multi):
 
 @patch('evalml.pipelines.components.transformers.preprocessing.featuretools.dfs')
 @patch('evalml.pipelines.components.transformers.preprocessing.featuretools.calculate_feature_matrix')
-def test_index(mock_dfs, mock_calculate_feature_matrix, X_y_multi):
+def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     X, y = X_y_multi
     X_pd = pd.DataFrame(X)
     X_new_index = X_pd.copy()
     index = [i for i in range(len(X))]
     new_index = [i * 2 for i in index]
     X_new_index['index'] = new_index
+    mock_calculate_feature_matrix.return_value = pd.DataFrame({})
 
     # check if _make_entity_set keeps the intended index
     feature = DFSTransformer()
@@ -61,13 +70,13 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         X_pd.columns = X_pd.columns.astype(str)
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id="X", dataframe=X_pd, index='index', make_index=True)
-        matrix, features = ft.dfs(entityset=es, target_entity="X")
+        feature_matrix, features = ft.dfs(entityset=es, target_entity="X")
 
         feature = DFSTransformer()
         feature.fit(X)
-        X_feature_matrix = feature.transform(X)
+        X_t = feature.transform(X)
 
-        pd.testing.assert_frame_equal(matrix, X_feature_matrix)
+        assert_frame_equal(feature_matrix, X_t.to_dataframe())
         assert features == feature.features
 
         feature.fit(X, y)
@@ -89,10 +98,33 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
 
         es = ft.EntitySet()
         es = es.entity_from_dataframe(entity_id="X", dataframe=X_transform, index='index', make_index=True)
-        matrix, features = ft.dfs(entityset=es, target_entity="X")
+        feature_matrix, features = ft.dfs(entityset=es, target_entity="X")
 
         feature = DFSTransformer()
         feature.fit(X_fit)
-        X_feature_matrix = feature.transform(X_transform)
+        X_t = feature.transform(X_transform)
 
-        pd.testing.assert_frame_equal(matrix, X_feature_matrix)
+        assert_frame_equal(feature_matrix, X_t.to_dataframe())
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category"))])
+def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, Datetime, Boolean]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df.copy(), logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        dft = DFSTransformer()
+        dft.fit(X, y)
+        transformed = dft.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        if logical_type == Datetime:
+            assert transformed.logical_types == {'DAY(0)': Integer, 'MONTH(0)': Integer, 'WEEKDAY(0)': Integer, 'YEAR(0)': Integer}
+        else:
+            assert transformed.logical_types == {'0': logical_type}

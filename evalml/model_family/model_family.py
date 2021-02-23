@@ -4,8 +4,14 @@ from enum import Enum
 class ModelFamily(Enum):
     """Enum for family of machine learning models."""
 
+    K_NEIGHBORS = 'k_neighbors'
+    """K Nearest Neighbors model family."""
+
     RANDOM_FOREST = 'random_forest'
     """Random Forest model family."""
+
+    SVM = 'svm'
+    """SVM model family."""
 
     XGBOOST = 'xgboost'
     """XGBoost model family."""
@@ -35,7 +41,9 @@ class ModelFamily(Enum):
     """None"""
 
     def __str__(self):
-        model_family_dict = {ModelFamily.RANDOM_FOREST.name: "Random Forest",
+        model_family_dict = {ModelFamily.K_NEIGHBORS.name: "K Nearest Neighbors",
+                             ModelFamily.RANDOM_FOREST.name: "Random Forest",
+                             ModelFamily.SVM.name: "SVM",
                              ModelFamily.XGBOOST.name: "XGBoost",
                              ModelFamily.LIGHTGBM.name: "LightGBM",
                              ModelFamily.LINEAR_MODEL.name: "Linear",

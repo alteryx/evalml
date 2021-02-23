@@ -9,17 +9,8 @@ from evalml.data_checks import (
     DataCheckWarning,
     OutliersDataCheck
 )
-from evalml.utils import get_random_state
 
 outliers_data_check_name = OutliersDataCheck.name
-
-
-def test_outliers_data_check_init():
-    outliers_check = OutliersDataCheck()
-    assert outliers_check.random_state.get_state()[0] == get_random_state(0).get_state()[0]
-
-    outliers_check = OutliersDataCheck(random_state=2)
-    assert outliers_check.random_state.get_state()[0] == get_random_state(2).get_state()[0]
 
 
 def test_outliers_data_check_warnings():
@@ -95,3 +86,39 @@ def test_outliers_data_check_string_cols():
                                       details={"columns": ["d"]}).to_dict()],
         "errors": []
     }
+
+
+def test_outlier_score():
+    a = np.arange(10) * 0.01
+    data = np.tile(a, (100, 10))
+
+    X = pd.DataFrame(data=data)
+    X.iloc[0, 3] = 1000
+    X.iloc[3, 25] = 1000
+    X.iloc[5, 55] = 10000
+    X.iloc[10, 72] = -1000
+
+    for col in X.columns:
+        results = OutliersDataCheck._outlier_score(X[col], convert_column=False)
+        if col in [3, 25, 55, 72]:
+            assert results['score'] != 1.0
+            assert len(results['values']['high_values']) != 0 or len(results['values']['low_values']) != 0
+        else:
+            assert results['score'] == 1.0
+            assert len(results['values']['high_values']) == 0 and len(results['values']['low_values']) == 0
+
+
+def test_outlier_score_convert_column_to_int():
+    has_outlier = pd.Series(np.append(np.arange(10), 1000)).astype(object)
+    results = OutliersDataCheck._outlier_score(has_outlier, convert_column=True)
+    assert results['score'] != 1.0
+    len(results['values']['high_values']) != 0 or len(results['values']['low_values']) != 0
+    no_outlier = pd.Series(np.arange(10)).astype(object)
+    results = OutliersDataCheck._outlier_score(no_outlier, convert_column=True)
+    assert results['score'] == 1.0
+    len(results['values']['high_values']) == 0 and len(results['values']['low_values']) == 0
+
+
+def test_outlier_score_all_nan():
+    all_nan = pd.Series([np.nan, np.nan, np.nan])
+    assert OutliersDataCheck._outlier_score(all_nan) is None

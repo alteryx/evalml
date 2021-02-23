@@ -2,6 +2,7 @@ import inspect
 from operator import itemgetter
 
 import numpy as np
+from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
@@ -17,8 +18,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  allowed_pipelines=None,
                  max_iterations=None,
                  tuner_class=None,
-                 text_columns=None,
-                 random_state=0,
+                 random_seed=0,
                  pipelines_per_batch=5,
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
@@ -30,8 +30,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
-            pipelines_per_batch (int): the number of pipelines to be evaluated in each batch, after the first batch.
+            random_state (int): Seed for the random number generator. Defaults to 0.
+            pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
@@ -40,11 +40,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
                          tuner_class=tuner_class,
-                         random_state=random_state)
+                         random_seed=random_seed)
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
-        self._text_columns = text_columns
         self._first_batch_results = []
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
@@ -63,7 +62,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_state=self.random_state)
+            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_seed=self.random_seed)
                           for pipeline_class in self.allowed_pipelines]
 
         # One after training all pipelines one round
@@ -75,9 +74,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params),
-                                                      random_state=self.random_state))
+                                                      random_seed=self.random_seed))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
-                                                       random_state=self.random_state)
+                                                       random_seed=self.random_seed,
+                                                       n_jobs=self.n_jobs)
+
             next_batch.append(ensemble)
         else:
             num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
@@ -86,7 +87,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
-                next_batch.append(pipeline_class(parameters=pl_parameters, random_state=self.random_state))
+                next_batch.append(pipeline_class(parameters=pl_parameters, random_seed=self.random_seed))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -122,25 +123,33 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline_class, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
-        if self._pipeline_params:
-            parameters['pipeline'] = self._pipeline_params
+        if 'pipeline' in self._pipeline_params:
+            parameters['pipeline'] = self._pipeline_params['pipeline']
         component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph]
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-
-            # Add the text columns parameter if the component is a TextFeaturizer
-            if component_class.name == "Text Featurization Component":
-                component_parameters['text_columns'] = self._text_columns
 
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in init_params:
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
-            # Pass the pipeline params to the components that need them
-            for param_name, value in self._pipeline_params.items():
-                if param_name in init_params:
-                    component_parameters[param_name] = value
+            # For first batch, pass the pipeline params to the components that need them
+            if component_class.name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[component_class.name].items():
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
+                    elif isinstance(value, Categorical):
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)
+                    elif isinstance(value, (list, tuple)):
+                        component_parameters[param_name] = value[0]
+                    else:
+                        component_parameters[param_name] = value
+            if 'pipeline' in self._pipeline_params:
+                for param_name, value in self._pipeline_params['pipeline'].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
         return parameters

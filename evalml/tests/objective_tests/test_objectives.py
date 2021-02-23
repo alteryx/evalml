@@ -6,6 +6,7 @@ from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
     CostBenefitMatrix,
+    LogLossBinary,
     MulticlassClassificationObjective,
     RegressionObjective,
     get_all_objective_names,
@@ -126,3 +127,9 @@ def test_objective_outputs(X_y_binary, X_y_multi, binary_core_objectives,
                 y_predicted_pd = pd.DataFrame(y_predicted)
             np.testing.assert_almost_equal(objective.score(y_true_multi_np, y_predicted), expected_value)
             np.testing.assert_almost_equal(objective.score(pd.Series(y_true_multi_np), y_predicted_pd), expected_value)
+
+
+def test_is_defined_for_problem_type():
+    assert LogLossBinary.is_defined_for_problem_type(ProblemTypes.BINARY)
+    assert LogLossBinary.is_defined_for_problem_type('binary')
+    assert not LogLossBinary.is_defined_for_problem_type(ProblemTypes.MULTICLASS)
