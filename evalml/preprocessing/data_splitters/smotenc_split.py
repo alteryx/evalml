@@ -1,5 +1,4 @@
 from evalml.preprocessing.data_splitters.base_splitters import (
-    BaseSamplingSplitter,
     BaseSamplingSplitter
 )
 from evalml.utils import import_or_raise

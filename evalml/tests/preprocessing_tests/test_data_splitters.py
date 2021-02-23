@@ -11,9 +11,11 @@ from evalml.preprocessing.data_splitters import (
     SMOTENCCVSplit,
     SMOTENCTVSplit,
     SMOTETomekCVSplit,
-    SMOTETomekTVSplit,
+    SMOTETomekTVSplit
 )
-from evalml.preprocessing.data_splitters.base_splitters import BaseSamplingSplitter
+from evalml.preprocessing.data_splitters.base_splitters import (
+    BaseSamplingSplitter
+)
 
 im_os = pytest.importorskip('imblearn.over_sampling', reason='Skipping data splitter test because imblearn not installed')
 im_com = pytest.importorskip('imblearn.combine', reason='Skipping data splitter test because imblearn not installed')
