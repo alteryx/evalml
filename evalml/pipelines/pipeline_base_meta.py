@@ -32,6 +32,7 @@ class PipelineBaseMeta(BaseMeta):
                 return method(self, X, y)
         return _check_for_fit
 
+
 class TimeSeriesPipelineBaseMeta(PipelineBaseMeta):
     """Metaclass that overrides creating a new pipeline by wrapping methods with validators and setters"""
 

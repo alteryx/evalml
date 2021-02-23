@@ -2,6 +2,7 @@ import pandas as pd
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
+from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -9,7 +10,6 @@ from evalml.utils import (
     infer_feature_types,
     pad_with_nans
 )
-from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
 
 
 class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
@@ -168,7 +168,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                                           objectives=objectives)
 
 
-class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
+class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     problem_type = ProblemTypes.TIME_SERIES_BINARY
     _threshold = None
 

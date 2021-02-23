@@ -123,7 +123,7 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -157,7 +157,7 @@ def test_make_pipeline(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -191,7 +191,7 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -225,7 +225,7 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -256,7 +256,7 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -290,7 +290,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -318,7 +318,7 @@ def test_make_pipeline_numpy_input(problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             if is_time_series(problem_type):
@@ -348,7 +348,7 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None

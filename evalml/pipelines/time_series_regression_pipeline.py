@@ -1,6 +1,7 @@
 import pandas as pd
 
 from evalml.objectives import get_objective
+from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -9,7 +10,6 @@ from evalml.utils import (
     infer_feature_types,
     pad_with_nans
 )
-from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
 
 
 class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta):
