@@ -2,7 +2,7 @@ import pandas as pd
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
-from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
+from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -64,6 +64,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
+        self.input_feature_names = self._component_graph.input_feature_names
         return self
 
     def _estimator_predict(self, features, y):

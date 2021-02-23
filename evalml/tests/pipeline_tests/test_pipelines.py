@@ -61,6 +61,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
     make_pipeline_from_components
 )
+from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes, is_time_series
 
 
@@ -1613,9 +1614,8 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         assert set(predict_proba.columns) == set(unique_vals)
 
 
-@patch('evalml.pipelines.PipelineBase.fit')
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi, X_y_regression,
+def test_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_multi, X_y_regression,
                                    logistic_regression_binary_pipeline_class,
                                    logistic_regression_multiclass_pipeline_class,
                                    linear_regression_pipeline_class):
@@ -1634,20 +1634,87 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
     with pytest.raises(PipelineNotYetFittedError):
         clf.feature_importance
 
-    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+    if is_classification(problem_type):
         with pytest.raises(PipelineNotYetFittedError):
             clf.predict_proba(X)
 
     clf.fit(X, y)
-    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        with patch('evalml.pipelines.ClassificationPipeline.predict') as mock_predict:
+
+    if is_classification(problem_type):
+        to_patch = 'evalml.pipelines.ClassificationPipeline._predict'
+        if problem_type == ProblemTypes.BINARY:
+            to_patch = 'evalml.pipelines.BinaryClassificationPipeline._predict'
+        with patch(to_patch) as mock_predict:
             clf.predict(X)
             mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is None
+
+            clf.predict(X, 'Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
         with patch('evalml.pipelines.ClassificationPipeline.predict_proba') as mock_predict_proba:
             clf.predict_proba(X)
             mock_predict_proba.assert_called()
     else:
         with patch('evalml.pipelines.RegressionPipeline.predict') as mock_predict:
+            clf.predict(X)
+            mock_predict.assert_called()
+    clf.feature_importance
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_REGRESSION])
+def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                               time_series_binary_classification_pipeline_class,
+                                               time_series_multiclass_classification_pipeline_class,
+                                               time_series_regression_pipeline_class):
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = X_y_regression
+        clf = time_series_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1},
+                                                                "pipeline": {"gap": 0, "max_delay": 0}})
+
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.predict(X)
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.feature_importance
+
+    if is_classification(problem_type):
+        with pytest.raises(PipelineNotYetFittedError):
+            clf.predict_proba(X)
+
+    clf.fit(X, y)
+
+    if is_classification(problem_type):
+        to_patch = 'evalml.pipelines.TimeSeriesClassificationPipeline._predict'
+        if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+            to_patch = 'evalml.pipelines.TimeSeriesBinaryClassificationPipeline._predict'
+        with patch(to_patch) as mock_predict:
+            clf.predict(X, y)
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is None
+
+            clf.predict(X, y, 'Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+        with patch('evalml.pipelines.TimeSeriesClassificationPipeline.predict_proba') as mock_predict_proba:
+            clf.predict_proba(X)
+            mock_predict_proba.assert_called()
+    else:
+        with patch('evalml.pipelines.TimeSeriesRegressionPipeline.predict') as mock_predict:
             clf.predict(X)
             mock_predict.assert_called()
     clf.feature_importance

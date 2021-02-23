@@ -1,7 +1,7 @@
 import pandas as pd
 
 from evalml.objectives import get_objective
-from evalml.pipelines.pipeline_base_meta import TimeSeriesPipelineBaseMeta
+from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -62,6 +62,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
+        self.input_feature_names = self._component_graph.input_feature_names
+
         return self
 
     def predict(self, X, y=None, objective=None):

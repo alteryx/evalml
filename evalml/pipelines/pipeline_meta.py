@@ -1,6 +1,5 @@
 
 
-import inspect
 from functools import wraps
 
 from evalml.exceptions import PipelineNotYetFittedError
@@ -24,17 +23,13 @@ class PipelineBaseMeta(BaseMeta):
                 return method(self)
             elif y is None:
                 return method(self, X)
-            # For time series classification pipelines, predict will take X, y, objective
-            elif len(inspect.getfullargspec(method).args) == 4:
-                return method(self, X, y, objective)
-            # For other pipelines, predict will take X, y or X, objective
             else:
                 return method(self, X, y)
         return _check_for_fit
 
 
 class TimeSeriesPipelineBaseMeta(PipelineBaseMeta):
-    """Metaclass that overrides creating a new pipeline by wrapping methods with validators and setters"""
+    """Metaclass that overrides creating a new time series pipeline by wrapping methods with validators and setters"""
 
     @classmethod
     def check_for_fit(cls, method):
@@ -51,9 +46,8 @@ class TimeSeriesPipelineBaseMeta(PipelineBaseMeta):
             elif y is None:
                 return method(self, X)
             # For time series classification pipelines, predict will take X, y, objective
-            elif len(inspect.getfullargspec(method).args) == 4:
+            elif method.__name__ == 'predict':
                 return method(self, X, y, objective)
-            # For other pipelines, predict will take X, y or X, objective
             else:
                 return method(self, X, y)
         return _check_for_fit
