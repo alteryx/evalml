@@ -11,7 +11,7 @@ from evalml.model_understanding.prediction_explanations._algorithms import (
 from evalml.problem_types import ProblemTypes
 
 
-def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False,
+def _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values=False,
                convert_numeric_to_string=True):
     """Makes the rows (one row for each feature) for the SHAP table.
 
@@ -19,6 +19,9 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
         shap_values (dict): Dictionary mapping the feature names to their SHAP values. In a multiclass setting,
             this dictionary for correspond to the SHAP values for a single class.
         normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
+        pipeline_features (pd.Series): The features created by the pipeline.
+        original_features (pd.Series): The features passed to the pipeline by the user. If possible,
+            will display the original feature value.
         top_k (int): How many of the highest/lowest features to include in the table.
         include_shap_values (bool): Whether to include the SHAP values in their own column.
         convert_numeric_to_string (bool): Whether numeric values should be converted to strings from numeric
@@ -39,7 +42,10 @@ def _make_rows(shap_values, normalized_values, pipeline_features, top_k, include
     for value, feature_name in features_to_display:
         symbol = "+" if value >= 0 else "-"
         display_text = symbol * min(int(abs(value) // 0.2) + 1, 5)
-        feature_value = pipeline_features[feature_name].iloc[0]
+        if feature_name in original_features.columns:
+            feature_value = original_features[feature_name].iloc[0]
+        else:
+            feature_value = pipeline_features[feature_name].iloc[0]
         if convert_numeric_to_string:
             if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(feature_value):
                 feature_value = "{:.2f}".format(feature_value)
@@ -93,7 +99,8 @@ def _make_json_serializable(value):
     return value
 
 
-def _make_text_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+def _make_text_table(shap_values, normalized_values, pipeline_features, original_features,
+                     top_k, include_shap_values=False):
     """Make a table displaying the SHAP values for a prediction.
 
     Arguments:
@@ -120,7 +127,7 @@ def _make_text_table(shap_values, normalized_values, pipeline_features, top_k, i
         header.append("SHAP Value")
 
     rows = [header]
-    rows += _make_rows(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)
+    rows += _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values)
     table.add_rows(rows)
     return table.draw()
 
@@ -129,15 +136,19 @@ class _TableMaker(abc.ABC):
     """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
 
     @abc.abstractmethod
-    def make_text(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+    def make_text(self, shap_values, normalized_values, pipeline_features, orignal_features,
+                  top_k, include_shap_values=False):
         """Creates a table given shap values and formats it as text."""
 
     @abc.abstractmethod
-    def make_dict(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+    def make_dict(self, shap_values, normalized_values, pipeline_features, original_features,
+                  top_k, include_shap_values=False):
         """Creates a table given shap values and formats it as dictionary."""
 
-    def make_dataframe(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
-        data = self.make_dict(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)['explanations']
+    def make_dataframe(self, shap_values, normalized_values, pipeline_features, original_features,
+                       top_k, include_shap_values=False):
+        data = self.make_dict(shap_values, normalized_values, pipeline_features, original_features,
+                              top_k, include_shap_values)['explanations']
         df = pd.concat(map(pd.DataFrame, data)).reset_index(drop=True)
         if "class_name" in df.columns and df['class_name'].isna().all():
             df = df.drop(columns=['class_name'])
@@ -147,11 +158,13 @@ class _TableMaker(abc.ABC):
 class _RegressionSHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a regression problems."""
 
-    def make_text(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
-        return _make_text_table(shap_values, normalized_values, pipeline_features, top_k, include_shap_values)
+    def make_text(self, shap_values, normalized_values, pipeline_features, original_features,
+                  top_k, include_shap_values=False):
+        return _make_text_table(shap_values, normalized_values, pipeline_features, original_features,
+                                top_k, include_shap_values)
 
-    def make_dict(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
-        rows = _make_rows(shap_values, normalized_values, pipeline_features, top_k, include_shap_values,
+    def make_dict(self, shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values=False):
+        rows = _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values,
                           convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
         json_rows["class_name"] = None
@@ -164,14 +177,14 @@ class _BinarySHAPTable(_TableMaker):
     def __init__(self, class_names):
         self.class_names = class_names
 
-    def make_text(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+    def make_text(self, shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values=False):
         # The SHAP algorithm will return a two-element list for binary problems.
         # By convention, we display the explanation for the dominant class.
-        return _make_text_table(shap_values[1], normalized_values[1], pipeline_features, top_k, include_shap_values)
+        return _make_text_table(shap_values[1], normalized_values[1], pipeline_features, original_features, top_k, include_shap_values)
 
-    def make_dict(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
-        rows = _make_rows(shap_values[1], normalized_values[1], pipeline_features, top_k, include_shap_values,
-                          convert_numeric_to_string=False)
+    def make_dict(self, shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values=False):
+        rows = _make_rows(shap_values[1], normalized_values[1], pipeline_features, original_features,
+                          top_k, include_shap_values, convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
         json_rows["class_name"] = _make_json_serializable(self.class_names[1])
         return {"explanations": [json_rows]}
@@ -183,20 +196,23 @@ class _MultiClassSHAPTable(_TableMaker):
     def __init__(self, class_names):
         self.class_names = class_names
 
-    def make_text(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+    def make_text(self, shap_values, normalized_values, pipeline_features, original_features,
+                  top_k, include_shap_values=False):
         strings = []
         for class_name, class_values, normalized_class_values in zip(self.class_names, shap_values, normalized_values):
             strings.append(f"Class: {class_name}\n")
-            table = _make_text_table(class_values, normalized_class_values, pipeline_features, top_k, include_shap_values)
+            table = _make_text_table(class_values, normalized_class_values, pipeline_features, original_features,
+                                     top_k, include_shap_values)
             strings += table.splitlines()
             strings.append("\n")
         return "\n".join(strings)
 
-    def make_dict(self, shap_values, normalized_values, pipeline_features, top_k, include_shap_values=False):
+    def make_dict(self, shap_values, normalized_values, pipeline_features, original_features,
+                  top_k, include_shap_values=False):
         json_output = []
         for class_name, class_values, normalized_class_values in zip(self.class_names, shap_values, normalized_values):
-            rows = _make_rows(class_values, normalized_class_values, pipeline_features, top_k, include_shap_values,
-                              convert_numeric_to_string=False)
+            rows = _make_rows(class_values, normalized_class_values, pipeline_features, original_features, top_k,
+                              include_shap_values, convert_numeric_to_string=False)
             json_output_for_class = _rows_to_dict(rows)
             json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
@@ -246,7 +262,7 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
-    return table_maker(shap_values, normalized_shap_values, input_features_row, top_k, include_shap_values)
+    return table_maker(shap_values, normalized_shap_values, pipeline_features_row, input_features_row, top_k, include_shap_values)
 
 
 class _SectionMaker(abc.ABC):
