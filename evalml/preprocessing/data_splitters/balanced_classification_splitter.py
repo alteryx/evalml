@@ -1,8 +1,10 @@
 import numpy as np
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
+from evalml.preprocessing.data_splitters.base_splitters import BaseSamplingSplitter
+from evalml.preprocessing.data_splitters.training_validation_split import TrainingValidationSplit
 from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
     infer_feature_types
@@ -94,4 +96,39 @@ class BalancedClassificationSampler(SamplerBase):
         return list(set(list(y.index.values)).difference(set(indices_to_drop)))
 
 
-class BalancedClassificationDataSplitter(BaseCrossValidator)
+class BalancedClassificationDataSplitter(BaseCrossValidator):
+    """Base class for TV and CV split for Balanced Classification Data Sampler"""
+
+    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=None, n_splits=3, shuffle=True, split_type="CV", random_seed=0):
+        self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
+        self.n_splits = 1 if split_type == "TV" else n_splits
+        self.random_seed = random_seed
+        self.split_type = split_type
+        if self.split_type == "TV":
+            self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_state=random_seed)
+        else:
+            self.splitter = StratifiedKFold(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)
+
+    def get_n_splits(self):
+        """Returns the number of splits of this object."""
+        return self.n_splits
+
+    def split(self, X, y):
+        """Splits and returns the sampled training data using the data sampler provided.
+        Arguments:
+                X (ww.DataTable): DataTable of points to split
+                y (ww.DataTable): DataColumn of points to split
+        Returns:
+            tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
+        """
+        X_ww = infer_feature_types(X)
+        y_ww = infer_feature_types(y)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        for train, test in self.splitter.split(X, y):
+            X_train, y_train = X.iloc[train], y.iloc[train]
+            train_indices = self.sampler.fit_resample(X_train, y_train)
+        if self.split_type == "TV":
+            return iter([(train_indices, test)])
+        else:
+            yield iter([(train_indices, test)])
