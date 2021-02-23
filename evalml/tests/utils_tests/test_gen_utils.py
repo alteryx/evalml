@@ -516,7 +516,6 @@ def test_convert_numeric_dataset_pandas(datatype, to_pandas, value, error, make_
         pd.testing.assert_series_equal(y_ww, y_transformed)
 
 
-
 def test_deprecate_arg():
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
