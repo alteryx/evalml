@@ -1,6 +1,6 @@
 from evalml.preprocessing.data_splitters.base_splitters import (
-    BaseCVSplit,
-    BaseTVSplit
+    BaseSamplingSplitter,
+    BaseSamplingSplitter
 )
 from evalml.utils import import_or_raise
 
@@ -17,7 +17,7 @@ def _allowed_categorical(categorical_features):
     return True
 
 
-class SMOTENCTVSplit(BaseTVSplit):
+class SMOTENCTVSplit(BaseSamplingSplitter):
     """Splits the data into training and validation sets and uses SMOTENC to balance the training data.
        Keeps the validation data the same. Works on numeric and categorical data, but categorical data must be numerical"""
 
@@ -30,10 +30,10 @@ class SMOTENCTVSplit(BaseTVSplit):
         self.sampler = im.SMOTENC(categorical_features=self.categorical_features,
                                   sampling_strategy=sampling_strategy,
                                   n_jobs=n_jobs, random_state=random_seed)
-        super().__init__(sampler=self.sampler, test_size=test_size, random_seed=random_seed)
+        super().__init__(sampler=self.sampler, test_size=test_size, split_type="TV", random_seed=random_seed)
 
 
-class SMOTENCCVSplit(BaseCVSplit):
+class SMOTENCCVSplit(BaseSamplingSplitter):
     """Splits the data into KFold cross validation sets and uses SMOTENC to balance the training data.
        Keeps the validation data the same. Works on numeric and categorical data, but categorical data must be numerical"""
 
@@ -46,4 +46,4 @@ class SMOTENCCVSplit(BaseCVSplit):
         self.sampler = im.SMOTENC(categorical_features=self.categorical_features,
                                   sampling_strategy=sampling_strategy,
                                   n_jobs=n_jobs, random_state=random_seed)
-        super().__init__(sampler=self.sampler, n_splits=n_splits, shuffle=shuffle, random_seed=random_seed)
+        super().__init__(sampler=self.sampler, n_splits=n_splits, shuffle=shuffle, split_type="CV", random_seed=random_seed)

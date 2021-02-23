@@ -11,12 +11,45 @@ from evalml.preprocessing.data_splitters import (
     SMOTENCCVSplit,
     SMOTENCTVSplit,
     SMOTETomekCVSplit,
-    SMOTETomekTVSplit
+    SMOTETomekTVSplit,
 )
+from evalml.preprocessing.data_splitters.base_splitters import BaseSamplingSplitter
 
 im_os = pytest.importorskip('imblearn.over_sampling', reason='Skipping data splitter test because imblearn not installed')
 im_com = pytest.importorskip('imblearn.combine', reason='Skipping data splitter test because imblearn not installed')
 im_us = pytest.importorskip('imblearn.under_sampling', reason='Skipping data splitter test because imblearn not installed')
+
+
+def test_empty_sampler_tv(X_y_binary):
+    # ensure base splitters work with no sampler
+    X, y = X_y_binary
+    r = BaseSamplingSplitter(split_type="TV", random_seed=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
+
+    for train, test in r.split(X, y):
+        np.testing.assert_equal(X_train, train[0])
+        np.testing.assert_equal(y_train, train[1])
+        np.testing.assert_equal(X_test, test[0])
+        np.testing.assert_equal(y_test, test[1])
+
+
+def test_empty_sampler_cv(X_y_binary):
+    # ensure base splitters work with no sampler
+    X, y = X_y_binary
+    r = BaseSamplingSplitter(n_splits=3, shuffle=True, split_type="CV", random_seed=0)
+    skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=0)
+
+    for i in range(3):
+        train, test = next(r.split(X, y))
+        skf_train, skf_test = next(skf.split(X, y))
+        X_train = X[skf_train]
+        X_test = X[skf_test]
+        y_train = y[skf_train]
+        y_test = y[skf_test]
+        np.testing.assert_equal(X_train, train[0])
+        np.testing.assert_equal(y_train, train[1])
+        np.testing.assert_equal(X_test, test[0])
+        np.testing.assert_equal(y_test, test[1])
 
 
 @pytest.mark.parametrize("splitter",
