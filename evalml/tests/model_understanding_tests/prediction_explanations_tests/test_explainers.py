@@ -43,6 +43,7 @@ explain_prediction_regression_dict_answer = {
         "feature_values": [40, 20],
         "qualitative_explanation": ["+++++", "-----"],
         "quantitative_explanation": [None, None],
+        "drill_down": {},
         "class_name": None
     }]
 }
@@ -58,6 +59,7 @@ explain_prediction_binary_dict_answer = {
         "feature_values": [40, 20],
         "qualitative_explanation": ["+++++", "-----"],
         "quantitative_explanation": [None, None],
+        "drill_down": {},
         "class_name": "class_1"
     }]
 }
@@ -100,16 +102,19 @@ explain_prediction_multiclass_dict_answer = {
          "feature_values": [10, 30],
          "qualitative_explanation": ["+++++", "---"],
          "quantitative_explanation": [None, None],
+         "drill_down": {},
          "class_name": "class_0"},
         {"feature_names": ["a", "b"],
          "feature_values": [10, 20],
          "qualitative_explanation": ["+++", "++"],
          "quantitative_explanation": [None, None],
+         "drill_down": {},
          "class_name": "class_1"},
         {"feature_names": ["c", "d"],
          "feature_values": [30, 40],
          "qualitative_explanation": ["---", "---"],
          "quantitative_explanation": [None, None],
+         "drill_down": {},
          "class_name": "class_2"},
     ]
 }

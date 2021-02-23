@@ -55,9 +55,9 @@ def test_make_rows_and_make_table(test_case, include_shap_values, include_string
             filtered_answer[-1][1] = val
         new_answer = filtered_answer
 
-    assert _make_rows(values, values, pipeline_features, top_k, include_shap_values) == new_answer
+    assert _make_rows(values, values, pipeline_features, pipeline_features, top_k, include_shap_values) == new_answer
 
-    table = _make_text_table(values, values, pipeline_features, top_k, include_shap_values).splitlines()
+    table = _make_text_table(values, values, pipeline_features, pipeline_features, top_k, include_shap_values).splitlines()
     if include_shap_values:
         assert "SHAP Value" in table[0]
     # Subtracting two because a header and a line under the header are included in the table.
@@ -289,7 +289,8 @@ def test_make_single_prediction_table(values, normalized_values, pipeline_featur
 
     if isinstance(values, list):
         if len(values) > 2:
-            table_maker = _MultiClassSHAPTable(class_names)
+            table_maker = _MultiClassSHAPTable(top_k=3, include_shap_values=include_shap,
+                                               class_names=class_names, pipeline=)
         else:
             table_maker = _BinarySHAPTable(class_names)
     else:
