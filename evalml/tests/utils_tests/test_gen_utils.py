@@ -10,11 +10,6 @@ import woodwork as ww
 
 from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
-from evalml.utils import (
-    _convert_numeric_dataset_pandas,
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     _rename_column_names_to_numeric,
@@ -483,37 +478,6 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
     assert os.path.exists(output_)
     assert isinstance(output_, str)
     assert os.path.basename(output_) == 'test_plot.png'
-
-
-@pytest.mark.parametrize("value,error",
-                         [
-                             (1, False), (-1, False),
-                             (2.3, False), (None, True),
-                             (np.nan, True), ("hello", True)
-                         ])
-@pytest.mark.parametrize("to_pandas", [True, False])
-@pytest.mark.parametrize("datatype", ["np", "pd", "ww"])
-def test_convert_numeric_dataset_pandas(datatype, to_pandas, value, error, make_data_type):
-    if datatype == "np" and value == "hello":
-        pytest.skip("Unsupported configuration")
-
-    X = pd.DataFrame([[1, 2, 3, 4], [2, value, 4, value]])
-    y = pd.Series([0, 1])
-    X = make_data_type(datatype, X)
-    y = make_data_type(datatype, y)
-
-    if error:
-        with pytest.raises(ValueError, match="Values not all numeric or there are null"):
-            _convert_numeric_dataset_pandas(X, y, to_pandas=to_pandas)
-    else:
-        X_transformed, y_transformed = _convert_numeric_dataset_pandas(X, y, to_pandas=to_pandas)
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-
-        X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
-        pd.testing.assert_frame_equal(X_ww, X_transformed)
-        pd.testing.assert_series_equal(y_ww, y_transformed)
 
 
 def test_deprecate_arg():
