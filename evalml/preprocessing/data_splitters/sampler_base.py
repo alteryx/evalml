@@ -16,5 +16,5 @@ class SamplerBase(ABC):
             y (pd.Series): Training data targets to fit and resample
 
         Returns:
-            pd.DataFrame, pd.Series: resampled X and y data
+            Tuple(pd.DataFrame, pd.Series) or list: resampled X and y data for oversampling or indices to keep for undersampling
         """

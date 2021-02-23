@@ -39,8 +39,9 @@ def test_classification_balanced_simple(num_classes):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([i % num_classes for i in range(1000)])
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     pd.testing.assert_frame_equal(X, X2)
     pd.testing.assert_series_equal(y, y2)
 
@@ -50,8 +51,9 @@ def test_classification_severely_imbalanced_binary_simple():
     # 5 instances of positive 1
     y = pd.Series([1 if i % 200 != 0 else 0 for i in range(1000)])
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     pd.testing.assert_frame_equal(X, X2)
     pd.testing.assert_series_equal(y, y2)
 
@@ -61,8 +63,9 @@ def test_classification_severely_imbalanced_multiclass_simple():
     # 9 instances of 1, 9 instances of 2
     y = pd.Series([0 if i % 55 != 0 else (1 + i % 2) for i in range(1000)])
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     pd.testing.assert_frame_equal(X, X2)
     pd.testing.assert_series_equal(y, y2)
 
@@ -76,8 +79,9 @@ def test_classification_imbalanced_balanced_ratio(num_classes, balanced_ratio):
     else:
         y = pd.Series([0] * 600 + [1] * 200 + [2] * 200)
     bcs = BalancedClassificationSampler(balanced_ratio=balanced_ratio)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if balanced_ratio >= 3:
         # the classes are considered balanced, do nothing
         pd.testing.assert_frame_equal(X, X2)
@@ -98,8 +102,9 @@ def test_classification_imbalanced_min_samples(num_classes, min_samples):
     else:
         y = pd.Series([0] * 799 + [1] * 101 + [2] * 100)
     bcs = BalancedClassificationSampler(balanced_ratio=1, min_samples=min_samples)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if min_samples <= 100:
         # balance 1:1 without conflicting with min_samples
         assert len(X2) == {2: 200, 3: 300}[num_classes]
@@ -123,8 +128,9 @@ def test_classification_imbalanced_min_percentage(num_classes, min_percentage):
     else:
         y = pd.Series([0] * 820 + [1] * 90 + [2] * 90)
     bcs = BalancedClassificationSampler(balanced_ratio=1, min_percentage=min_percentage)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if min_percentage <= 0.05:
         # does not classify as severe imbalance, so balance 1:1 with min_samples==100
         assert len(X2) == {2: 150, 3: 280}[num_classes]
@@ -140,8 +146,9 @@ def test_classification_imbalanced_severe_imbalance_binary(min_samples, min_perc
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 850 + [1] * 150)  # minority class is 15% of total distribution
     bcs = BalancedClassificationSampler(balanced_ratio=2, min_samples=min_samples, min_percentage=min_percentage)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if min_samples >= 200 and min_percentage >= 0.2:
         # severe imbalance, do nothing
         pd.testing.assert_frame_equal(X2, X)
@@ -157,8 +164,9 @@ def test_classification_imbalanced_normal_imbalance_binary(min_samples, balanced
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 850 + [1] * 150)  # minority class is 15% of total distribution, never counts as severe imbalance
     bcs = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if balanced_ratio >= 6:
         # data is balanced, do nothing
         pd.testing.assert_frame_equal(X2, X)
@@ -178,8 +186,9 @@ def test_classification_imbalanced_severe_imbalance_multiclass(data_type, min_sa
     else:
         y = pd.Series(["class_1"] * 800 + ["class_2"] * 100 + ["class_3"] * 100)
     bcs = BalancedClassificationSampler(balanced_ratio=2, min_samples=min_samples, min_percentage=min_percentage)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if min_samples >= 200 and min_percentage >= 0.2:
         # severe imbalance, do nothing
         pd.testing.assert_frame_equal(X2, X)
@@ -199,8 +208,9 @@ def test_classification_imbalanced_normal_imbalance_multiclass(data_type, min_sa
     else:
         y = pd.Series(["class_1"] * 800 + ["class_2"] * 100 + ["class_3"] * 100)
     bcs = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples)
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if balanced_ratio > 6:
         # data is balanced, do nothing
         pd.testing.assert_frame_equal(X2, X)
@@ -217,9 +227,12 @@ def test_classification_imbalanced_random_seed(random_seed, balanced_ratio):
     y = pd.Series([0] * 800 + [1] * 200)
     bcs1 = BalancedClassificationSampler(balanced_ratio=balanced_ratio, random_seed=random_seed)
     bcs2 = BalancedClassificationSampler(balanced_ratio=balanced_ratio, random_seed=random_seed)
-
-    X1, y1 = bcs1.fit_resample(X, y)
-    X2, y2 = bcs2.fit_resample(X, y)
+    indices1 = bcs1.fit_resample(X, y)
+    X1 = X.loc[indices1]
+    y1 = y.loc[indices1]
+    indices2 = bcs2.fit_resample(X, y)
+    X2 = X.loc[indices2]
+    y2 = y.loc[indices2]
 
     if balanced_ratio >= 4.5:
         # data is balanced
@@ -241,8 +254,9 @@ def test_classification_imbalanced_custom_indices(index):
     X = pd.DataFrame({"a": [i for i in range(1000)]}, index=index)
     y = pd.Series([0] * 900 + [1] * 100, index=index)
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
-
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     assert len(X2) == 500
     assert all(y2.value_counts(0).values == [400, 100])
     assert all(y2.index.values == X2.index.values)
@@ -254,14 +268,18 @@ def test_classification_imbalanced_small_dataset(size):
     X = pd.DataFrame({"a": [i for i in range(size)]})
     y = pd.Series([0] * int(0.8 * size) + [1] * int(0.2 * size))
     bcs = BalancedClassificationSampler(balanced_ratio=1)
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if size == 100:
         pd.testing.assert_frame_equal(X2, X)
     else:
         assert len(X2) == 0.2 * size + 100
 
     bcs2 = BalancedClassificationSampler(balanced_ratio=1, min_samples=40)
-    X2, y2 = bcs2.fit_resample(X, y)
+    indices = bcs2.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     if size == 500:
         # resulting majority size is 100
         assert len(X2) == 200
@@ -275,19 +293,25 @@ def test_classification_imbalanced_multiple_multiclass():
     X = pd.DataFrame({"a": [i for i in range(10000)]})
     y = pd.Series([0] * 4900 + [1] * 4900 + [2] * 200)  # minority class is 2% of data
     bcs = BalancedClassificationSampler(min_samples=201)
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     # severe imbalanace case, don't resample
     pd.testing.assert_frame_equal(X, X2)
     pd.testing.assert_series_equal(y, y2)
 
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     assert len(X2) == 1800
     assert all(y2.value_counts().values == [800, 800, 200])
     assert y2.value_counts()[2] == 200
 
     bcs = BalancedClassificationSampler(balanced_ratio=3)
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     # resample to 4:1 ratios on both 0 and 1 classes
     assert len(X2) == 1400
     assert all(y2.value_counts().values == [600, 600, 200])
@@ -302,10 +326,12 @@ def test_classification_imbalanced_data_type(data_type, make_data_type):
     y = make_data_type(data_type, y)
 
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
-    assert len(X2) == 500
-    assert all(y2.value_counts().values == [400, 100])
-    assert y2.value_counts()[1] == 100
+    indices = bcs.fit_resample(X, y)
+    assert len(indices) == 500
+    if data_type in ['pd', 'np']:
+        y2 = y.loc[indices]
+        assert all(y2.value_counts().values == [400, 100])
+        assert y2.value_counts()[1] == 100
 
 
 def test_classification_data_frame_dtypes():
@@ -319,13 +345,17 @@ def test_classification_data_frame_dtypes():
     })
     y = pd.Series([0] * 900 + [1] * 100)
     bcs = BalancedClassificationSampler()
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     assert len(X2) == 500
     assert all(y2.value_counts().values == [400, 100])
     assert y2.value_counts()[1] == 100
 
     X['integers'][0] = None
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     assert len(X2) == 500
     assert all(y2.value_counts().values == [400, 100])
     assert y2.value_counts()[1] == 100
@@ -338,6 +368,8 @@ def test_classification_data_drop():
     # will downsample the [2] target
     # will try to downsample [0] and [4], but max(0, x) will prevent that
     bcs = BalancedClassificationSampler(balanced_ratio=1, min_percentage=0.01)
-    X2, y2 = bcs.fit_resample(X, y)
+    indices = bcs.fit_resample(X, y)
+    X2 = X.loc[indices]
+    y2 = y.loc[indices]
     assert len(X2) == 400
     assert y2.value_counts().values[0] == 100

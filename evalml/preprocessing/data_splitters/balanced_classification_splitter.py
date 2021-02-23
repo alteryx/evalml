@@ -75,18 +75,18 @@ class BalancedClassificationSampler(SamplerBase):
             y (pd.Series): Training data targets to fit and resample
 
         Returns:
-            pd.DataFrame, pd.Series: resampled X and y data
+            list: Indices to keep for training data
         """
         X_ww = infer_feature_types(X)
         y_ww = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         result = self._find_ideal_samples(y)
+        indices_to_drop = []
         if len(result):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
             for key, value in result.items():
                 indices = y.index[y == key].values
                 indices_to_remove = self.random_state.choice(indices, value, replace=False)
-                X = X.drop(indices_to_remove)
-                y = y.drop(indices_to_remove)
-        return X, y
+                indices_to_drop.extend(indices_to_remove)
+        return list(set(list(y.index.values)).difference(set(indices_to_drop)))
