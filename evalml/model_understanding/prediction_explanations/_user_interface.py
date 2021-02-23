@@ -5,7 +5,8 @@ from texttable import Texttable
 
 from evalml.model_understanding.prediction_explanations._algorithms import (
     _compute_shap_values,
-    _normalize_shap_values
+    _normalize_shap_values,
+    _aggregate_shap_values
 )
 from evalml.problem_types import ProblemTypes
 
@@ -202,7 +203,7 @@ class _MultiClassSHAPTable(_TableMaker):
         return {"explanations": json_output}
 
 
-def _make_single_prediction_shap_table(pipeline, pipeline_features, index_to_explain, top_k=3,
+def _make_single_prediction_shap_table(pipeline, pipeline_features, input_features, index_to_explain, top_k=3,
                                        include_shap_values=False, output_format="text"):
     """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
@@ -223,10 +224,12 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, index_to_exp
         ValueError: if requested index results in a NaN in the computed features.
     """
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
+    input_features_row = input_features.iloc[[index_to_explain]]
     if pipeline_features_row.isna().any(axis=None):
         raise ValueError(f"Requested index ({index_to_explain}) produces NaN in features.")
     shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0))
-    normalized_shap_values = _normalize_shap_values(shap_values)
+    aggregated_shap_values = _aggregate_shap_values(pipeline, shap_values)
+    normalized_shap_values = _normalize_shap_values(aggregated_shap_values)
 
     class_names = None
     if hasattr(pipeline, "classes_"):
@@ -243,7 +246,7 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, index_to_exp
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
-    return table_maker(shap_values, normalized_shap_values, pipeline_features_row, top_k, include_shap_values)
+    return table_maker(shap_values, normalized_shap_values, input_features_row, top_k, include_shap_values)
 
 
 class _SectionMaker(abc.ABC):
@@ -395,7 +398,7 @@ class _SHAPTable(_SectionMaker):
         self.top_k_features = top_k_features
         self.include_shap_values = include_shap_values
 
-    def make_text(self, index, pipeline, pipeline_features):
+    def make_text(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section for reports formatted as text.
 
         The table is the same whether the user requests a best/worst report or they manually specified the
@@ -411,6 +414,7 @@ class _SHAPTable(_SectionMaker):
             y (pd.Series):
         """
         table = _make_single_prediction_shap_table(pipeline, pipeline_features,
+                                                   input_features,
                                                    index_to_explain=index,
                                                    top_k=self.top_k_features,
                                                    include_shap_values=self.include_shap_values, output_format="text")
@@ -418,18 +422,19 @@ class _SHAPTable(_SectionMaker):
         # Indent the rows of the table to match the indentation of the entire report.
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
 
-    def make_dict(self, index, pipeline, pipeline_features):
+    def make_dict(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section formatted as a dictionary."""
-        json_output = _make_single_prediction_shap_table(pipeline, pipeline_features,
+        json_output = _make_single_prediction_shap_table(pipeline, pipeline_features, input_features,
                                                          index_to_explain=index,
                                                          top_k=self.top_k_features,
                                                          include_shap_values=self.include_shap_values,
                                                          output_format="dict")
         return json_output
 
-    def make_dataframe(self, index, pipeline, pipeline_features):
+    def make_dataframe(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section formatted as a dataframe."""
         return _make_single_prediction_shap_table(pipeline, pipeline_features,
+                                                  input_features,
                                                   index_to_explain=index,
                                                   top_k=self.top_k_features,
                                                   include_shap_values=self.include_shap_values,
@@ -475,7 +480,8 @@ class _ReportMaker:
                                                                          pd.Series(data.pipeline_features.index)))
             else:
                 report.extend([""])
-            report.extend(self.table_maker.make_text(index, data.pipeline, data.pipeline_features))
+            report.extend(self.table_maker.make_text(index, data.pipeline, data.pipeline_features,
+                                                     data.input_features))
         return "".join(report)
 
     def make_dict(self, data):
@@ -498,14 +504,16 @@ class _ReportMaker:
                                                                                          data.y_true, data.errors,
                                                                                          pd.Series(data.pipeline_features.index))
             section["explanations"] = self.table_maker.make_dict(index, data.pipeline,
-                                                                 data.pipeline_features)["explanations"]
+                                                                 data.pipeline_features,
+                                                                 data.input_features)["explanations"]
             report.append(section)
         return {"explanations": report}
 
     def make_dataframe(self, data):
         report = []
         for rank, index in enumerate(data.index_list):
-            shap_table = self.table_maker.make_dataframe(index, data.pipeline, data.pipeline_features)
+            shap_table = self.table_maker.make_dataframe(index, data.pipeline, data.pipeline_features,
+                                                         data.input_features)
             if self.make_predicted_values_maker:
                 heading = self.make_predicted_values_maker.make_dataframe(index, data.y_pred, data.y_true, data.errors,
                                                                           pd.Series(data.pipeline_features.index))

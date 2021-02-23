@@ -110,6 +110,64 @@ def _compute_shap_values(pipeline, features, training_data=None):
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 
 
+def _aggreggate_shap_values_dict(pipeline, values):
+    """Aggregates shap values across features created from a common feature.
+
+    For example, let's say the pipeline has a text featurizer that creates the columns: LSA_1, LSA_2, PolarityScore,
+    MeanCharacter, and DiversityScore from a column called "text_feature".
+
+    The values dictionary input to this function will have a key for each of the features created by the text featurizer,
+    but it will not have a key for the original "text_feature" column. It will look like this:
+
+    {"LSA_1": [0.2], "LSA_0": [0.3], "PolarityScore": [0.1], "MeanCharacters": [0.05], "DiversityScore": [-0.1], ...}
+
+    After this function, the values dictionary will look like: {"text_feature": [0.55]}
+
+    This aggregation will happen for all features created by the TextFeaturizer, LSA, and OHE, and NOT the DateTimeFeaturizer.
+
+    Arguments:
+        pipeline (PipelineBase): Pipeline used to create the shap values
+        values (dict):  A mapping of feature names to a list of SHAP values for each data point.
+
+    Returns:
+        dict
+    """
+    provenance = pipeline._get_feature_provenance()
+    child_to_parent = {}
+    for parent_feature, children in provenance.items():
+        for child in children:
+            child_to_parent[child] = parent_feature
+    agg_values = {}
+    for feature_name, shap_list in values.items():
+        if feature_name in child_to_parent:
+            parent = child_to_parent[feature_name]
+            if parent not in agg_values:
+                agg_values[parent] = [0]
+            agg_values[parent][0] += shap_list[0]
+        else:
+            agg_values[feature_name] = shap_list
+
+    return agg_values
+
+
+def _aggregate_shap_values(pipeline, values):
+    """Normalizes the SHAP values by the absolute value of their sum for each data point.
+
+    Arguments:
+        values (dict or list(dict)): Dictionary mapping feature name to list of values,
+            or a list of dictionaries (each mapping a feature name to a list of values).
+
+    Returns:
+        dict or list(dict)
+    """
+    if isinstance(values, dict):
+        return _aggreggate_shap_values_dict(pipeline, values)
+    elif isinstance(values, list):
+        return [_aggreggate_shap_values_dict(pipeline, class_values) for class_values in values]
+    else:
+        raise ValueError(f"Unsupported data type for _normalize_shap_values: {str(type(values))}.")
+
+
 def _normalize_values_dict(values):
     """Normalizes SHAP values by dividing by the sum of absolute values for each feature.
 
