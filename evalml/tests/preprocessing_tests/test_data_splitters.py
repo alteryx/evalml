@@ -25,14 +25,17 @@ im_us = pytest.importorskip('imblearn.under_sampling', reason='Skipping data spl
 def test_empty_sampler_tv(X_y_binary):
     # ensure base splitters work with no sampler
     X, y = X_y_binary
-    r = BaseSamplingSplitter(split_type="TV", random_seed=0)
+    r = BaseSamplingSplitter(sampler=None, split_type="TV", random_seed=0)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
-
     for train, test in r.split(X, y):
         np.testing.assert_equal(X_train, train[0])
         np.testing.assert_equal(y_train, train[1])
         np.testing.assert_equal(X_test, test[0])
         np.testing.assert_equal(y_test, test[1])
+
+    X2, y2 = r.transform(X, y)
+    np.testing.assert_equal(X2, X)
+    np.testing.assert_equal(y2, y)
 
 
 def test_empty_sampler_cv(X_y_binary):
@@ -52,6 +55,10 @@ def test_empty_sampler_cv(X_y_binary):
         np.testing.assert_equal(y_train, train[1])
         np.testing.assert_equal(X_test, test[0])
         np.testing.assert_equal(y_test, test[1])
+
+    X2, y2 = r.transform(X, y)
+    np.testing.assert_equal(X2, X)
+    np.testing.assert_equal(y2, y)
 
 
 @pytest.mark.parametrize("splitter",
@@ -152,10 +159,7 @@ def test_data_splitter_tv_default(splitter, sampler, data_type, make_data_type, 
     for i, j in enumerate(data_splitter.split(X, y)):
         for idx, tup in enumerate(j):  # for each (X, y) in split
             for jdx, val in enumerate(tup):  # for each array in (X, y) pair
-                if jdx == 1:
-                    np.testing.assert_equal(val.values, initial_results[idx][jdx])
-                else:
-                    np.testing.assert_equal(val.values, initial_results[idx][jdx])
+                np.testing.assert_equal(val.values, initial_results[idx][jdx])
 
     X_data_split, y_data_split = data_splitter.transform(X, y)
     np.testing.assert_equal(X_transform, X_data_split.values)
@@ -193,10 +197,7 @@ def test_data_splitter_cv_default(splitter, sampler, data_type, make_data_type, 
     for i, j in enumerate(data_splitter.split(X, y)):  # for each split
         for idx, tup in enumerate(j):  # for each (X, y) pair
             for jdx, val in enumerate(tup):  # for each array in (X, y)
-                if jdx == 1:
-                    np.testing.assert_equal(val.values, initial_results[i][idx][jdx])
-                else:
-                    np.testing.assert_equal(val.values, initial_results[i][idx][jdx])
+                np.testing.assert_equal(val.values, initial_results[i][idx][jdx])
 
     X_data_split, y_data_split = data_splitter.transform(X, y)
     np.testing.assert_equal(X_transform, X_data_split.values)
