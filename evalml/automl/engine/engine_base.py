@@ -92,7 +92,7 @@ class EngineBase(ABC):
                    automl.objective.can_optimize_threshold and is_binary(automl.problem_type):
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, automl.problem_type,
                                                                                           test_size=0.2,
-                                                                                          random_state=automl.random_seed)
+                                                                                          random_seed=automl.random_seed)
                 cv_pipeline = pipeline.clone()
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline.fit(X_train, y_train)
