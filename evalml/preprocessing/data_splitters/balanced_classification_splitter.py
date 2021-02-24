@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
+from evalml.preprocessing.data_splitters.base_splitters import BaseUnderSamplingSplitter
 from evalml.preprocessing.data_splitters.training_validation_split import (
     TrainingValidationSplit
 )
@@ -97,21 +97,16 @@ class BalancedClassificationSampler(SamplerBase):
         return list(set(list(y.index.values)).difference(set(indices_to_drop)))
 
 
-class BalancedClassificationDataTVSplit(BaseCrossValidator):
+class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
     """Base class for TV and CV split for Balanced Classification Data Sampler"""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=None, shuffle=True, random_seed=0):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
-        self.n_splits = 1
-        self.random_seed = random_seed
+        super().__init__(sampler=self.sampler, n_splits=1, random_seed=random_seed)
         self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_state=random_seed)
 
-    def get_n_splits(self):
-        """Returns the number of splits of this object."""
-        return self.n_splits
-
     def split(self, X, y):
-        """Splits and returns the sampled training data using the data sampler provided.
+        """Splits and returns the labels of the training and testing data using the data sampler provided.
         Arguments:
                 X (ww.DataTable): DataTable of points to split
                 y (ww.DataTable): DataColumn of points to split
@@ -127,34 +122,14 @@ class BalancedClassificationDataTVSplit(BaseCrossValidator):
             train_indices = self.sampler.fit_resample(X_train, y_train)
             return iter([(train_indices, test)])
 
-    def transform(self, X, y):
-        """Transforms the input data using the sampler.
 
-        Arguments:
-            X (ww.DataTable): DataTable of points to split
-            y (ww.DataTable): DataColumn of points to split
-        Returns:
-            list: List of indices to keep
-        """
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        return self.sampler.fit_resample(X, y)
-
-
-class BalancedClassificationDataCVSplit(BaseCrossValidator):
+class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
     """Base class for TV and CV split for Balanced Classification Data Sampler"""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, n_splits=3, shuffle=True, random_seed=0):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
-        self.n_splits = n_splits
-        self.random_seed = random_seed
+        super().__init__(sampler=self.sampler, n_splits=n_splits, random_seed=random_seed)
         self.splitter = StratifiedKFold(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)
-
-    def get_n_splits(self):
-        """Returns the number of splits of this object."""
-        return self.n_splits
 
     def split(self, X, y):
         """Splits and returns the sampled training data using the data sampler provided.
@@ -172,18 +147,3 @@ class BalancedClassificationDataCVSplit(BaseCrossValidator):
             X_train, y_train = X.iloc[train], y.iloc[train]
             train_indices = self.sampler.fit_resample(X_train, y_train)
             yield iter([train_indices, test])
-
-    def transform(self, X, y):
-        """Transforms the input data using the sampler.
-
-        Arguments:
-            X (ww.DataTable): DataTable of points to split
-            y (ww.DataTable): DataColumn of points to split
-        Returns:
-            list: List of indices to keep
-        """
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        return self.sampler.fit_resample(X, y)
