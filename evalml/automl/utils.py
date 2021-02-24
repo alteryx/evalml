@@ -1,7 +1,8 @@
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold
 
 from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
+    BalancedClassificationDataCVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -63,7 +64,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return StratifiedKFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
+        return BalancedClassificationDataCVSplit(n_splits=n_splits, random_seed=random_seed, shuffle=shuffle)
     elif is_time_series(problem_type):
         if not problem_configuration:
             raise ValueError("problem_configuration is required for time series problem types")

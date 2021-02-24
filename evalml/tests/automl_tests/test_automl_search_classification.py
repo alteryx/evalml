@@ -32,7 +32,11 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import TimeSeriesSplit, split_data
+from evalml.preprocessing import (
+    BalancedClassificationDataCVSplit,
+    TimeSeriesSplit,
+    split_data
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -78,6 +82,13 @@ def test_data_splitter(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=StratifiedKFold(cv_folds), max_iterations=1,
+                          n_jobs=1)
+    automl.search()
+
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=BalancedClassificationDataCVSplit(n_splits=cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 

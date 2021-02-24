@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from sklearn import datasets
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
@@ -59,7 +59,10 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import TrainingValidationSplit
+from evalml.preprocessing.data_splitters import (
+    BalancedClassificationDataCVSplit,
+    TrainingValidationSplit
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -272,7 +275,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'data_splitter': StratifiedKFold(5),
+        'data_splitter': BalancedClassificationDataCVSplit(n_splits=5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
@@ -288,7 +291,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
+        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=None,', 'n_splits=5, random_seed=0'),
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -303,10 +306,11 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     mock_optimize_threshold.return_value = 0.62
     str_rep = str(automl)
     for param, value in param_str_reps.items():
-        if isinstance(value, list):
+        if isinstance(value, (tuple, list)):
             assert f"{param}" in str_rep
             for item in value:
-                assert f"\t{str(item)}" in str_rep
+                s = f"\t{str(item)}" if isinstance(value, list) else f"{item}"
+                assert s in str_rep
         else:
             assert f"{param}: {str(value)}" in str_rep
     assert "Search Results" not in str_rep
@@ -459,7 +463,7 @@ def test_automl_str_no_param_search(X_y_binary):
         'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
-        'Data Splitting': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
+        'Data Splitting': 'BalancedClassificationDataCVSplit(n_splits=3, random_state=0, shuffle=True)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
             'AUC',
@@ -689,7 +693,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, StratifiedKFold)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
@@ -700,7 +704,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, StratifiedKFold)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
 
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
@@ -872,7 +876,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     automl.add_to_rankings(test_pipeline)
     best_pipeline = automl.best_pipeline
     assert best_pipeline is not None
-    assert isinstance(automl.data_splitter, StratifiedKFold)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
     assert len(automl.rankings) == 1
     assert 0.5234 in automl.rankings['score'].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
