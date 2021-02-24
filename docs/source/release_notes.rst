@@ -16,6 +16,7 @@ Release Notes
         * Added full error traceback to AutoMLSearch logger file :pr:`1840`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
         * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
+        * Added custom random undersampling sampler for classification :pr:`1857`
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
@@ -23,6 +24,7 @@ Release Notes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
         * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
+        * Added ``DataCheckError`` message in ``InvalidTargetDataCheck`` if input target is None and removed exception raised :pr:`1866`
     * Documentation Changes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
