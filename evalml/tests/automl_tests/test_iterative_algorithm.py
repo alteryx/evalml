@@ -108,7 +108,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     last_batch_number = algo.batch_number
@@ -131,7 +131,8 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             all_parameters.extend([p.parameters for p in next_batch])
             scores = -np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
-                algo.add_result(score, pipeline)
+                algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
         assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
 
         if ensembling_value:
@@ -145,7 +146,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             last_pipeline_number = algo.pipeline_number
             scores = np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
-                algo.add_result(score, pipeline)
+                algo.add_result(score, pipeline, {"id": algo.pipeline_number})
             assert pipeline.model_family == ModelFamily.ENSEMBLE
             assert pipeline.random_seed == algo.random_seed
             stack_args = mock_stack.call_args[1]['estimators']
@@ -168,7 +169,7 @@ def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     for i in range(1, 5):
         for _ in range(len(dummy_binary_pipeline_classes)):
@@ -176,7 +177,7 @@ def test_iterative_algorithm_passes_pipeline_params(mock_stack, ensembling_value
             assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
             scores = -np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
-                algo.add_result(score, pipeline)
+                algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
         if ensembling_value:
             next_batch = algo.next_batch()
@@ -192,7 +193,7 @@ def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     for i in range(1, 3):
         for _ in range(len(dummy_binary_pipeline_classes)):
@@ -200,7 +201,7 @@ def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
             assert all([p.parameters['Mock Classifier']['n_jobs'] == 2 for p in next_batch])
             scores = -np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
-                algo.add_result(score, pipeline)
+                algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
@@ -221,7 +222,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     # subsequent batches contain pipelines_per_batch copies of one pipeline, moving from best to worst from the first batch
     last_batch_number = algo.batch_number
@@ -239,7 +240,8 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         all_parameters.extend([p.parameters for p in next_batch])
         scores = -np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
-            algo.add_result(score, pipeline)
+            algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
         assert any([p != logistic_regression_binary_pipeline_class.default_parameters for p in all_parameters])
 
 
@@ -251,7 +253,8 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
     seen_ensemble = False
     scores = range(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
     for i in range(5):
         next_batch = algo.next_batch()
         for pipeline in next_batch:
@@ -268,7 +271,8 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_r
     seen_ensemble = False
     scores = range(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
     for i in range(5):
         next_batch = algo.next_batch()
         for pipeline in next_batch:
@@ -294,7 +298,7 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
 
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     # make sure that future batches remain in the hyperparam range
     for i in range(1, 5):
@@ -324,7 +328,7 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
 
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline)
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     # make sure that future batches remain in the hyperparam range
     for i in range(1, 5):
