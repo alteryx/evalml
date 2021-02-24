@@ -4,9 +4,10 @@ import pandas as pd
 from texttable import Texttable
 
 from evalml.model_understanding.prediction_explanations._algorithms import (
+    _aggregate_shap_values,
     _compute_shap_values,
-    _normalize_shap_values,
-    _aggregate_shap_values
+    _keep_only_children_features,
+    _normalize_shap_values
 )
 from evalml.problem_types import ProblemTypes
 
@@ -147,10 +148,11 @@ class _TableMaker(abc.ABC):
         for parent_feature, children_features in pipeline._get_feature_provenance().items():
             shap_for_children = {k: v for k, v in shap_values.items() if k in children_features}
             agg_for_children = {k: v for k, v in normalized_values.items() if k in children_features}
-            top_k = len(agg_for_children)
-            rows = _make_rows(shap_for_children, agg_for_children, pipeline_features, original_features,
-                              top_k=top_k, include_shap_values=include_shap_values, convert_numeric_to_string=False)
-            drill_down[parent_feature] = _rows_to_dict(rows)
+            if shap_for_children:
+                top_k = len(agg_for_children)
+                rows = _make_rows(shap_for_children, agg_for_children, pipeline_features, original_features,
+                                  top_k=top_k, include_shap_values=include_shap_values, convert_numeric_to_string=False)
+                drill_down[parent_feature] = _rows_to_dict(rows)
         return drill_down
 
     @abc.abstractmethod
@@ -165,10 +167,11 @@ class _TableMaker(abc.ABC):
 
     def make_dataframe(self, aggregated_shap_values, aggregated_normalized_values,
                        shap_values, normalized_values, pipeline_features, original_features):
-        breakpoint()
         data = self.make_dict(aggregated_shap_values, aggregated_normalized_values,
-                              shap_values=None, normalized_values=None,
+                              shap_values=shap_values, normalized_values=normalized_values,
                               pipeline_features=pipeline_features, original_features=original_features)['explanations']
+        for d in data:
+            del d['drill_down']
         df = pd.concat(map(pd.DataFrame, data)).reset_index(drop=True)
         if "class_name" in df.columns and df['class_name'].isna().all():
             df = df.drop(columns=['class_name'])
@@ -289,6 +292,9 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     aggregated_shap_values = _aggregate_shap_values(pipeline, shap_values)
     aggregated_normalized_shap_values = _normalize_shap_values(aggregated_shap_values)
 
+    children_shap_values = _keep_only_children_features(shap_values, aggregated_shap_values)
+    normalized_children_shap_values = _keep_only_children_features(normalized_values, aggregated_normalized_shap_values)
+
     class_names = None
     if hasattr(pipeline, "classes_"):
         class_names = pipeline.classes_
@@ -305,7 +311,7 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
     return table_maker(aggregated_shap_values, aggregated_normalized_shap_values,
-                       shap_values, normalized_values, pipeline_features_row, input_features_row)
+                       children_shap_values, normalized_children_shap_values, pipeline_features_row, input_features_row)
 
 
 class _SectionMaker(abc.ABC):

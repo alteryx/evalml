@@ -133,10 +133,13 @@ def _aggreggate_shap_values_dict(pipeline, values):
         dict
     """
     provenance = pipeline._get_feature_provenance()
+    features_created_by_ohe = pipeline._get_features_created_by_ohe()
+
     child_to_parent = {}
     for parent_feature, children in provenance.items():
         for child in children:
-            child_to_parent[child] = parent_feature
+            if child in features_created_by_ohe:
+                child_to_parent[child] = parent_feature
     agg_values = {}
     for feature_name, shap_list in values.items():
         if feature_name in child_to_parent:
@@ -146,7 +149,6 @@ def _aggreggate_shap_values_dict(pipeline, values):
             agg_values[parent][0] += shap_list[0]
         else:
             agg_values[feature_name] = shap_list
-
     return agg_values
 
 
@@ -162,10 +164,28 @@ def _aggregate_shap_values(pipeline, values):
     """
     if isinstance(values, dict):
         return _aggreggate_shap_values_dict(pipeline, values)
-    elif isinstance(values, list):
-        return [_aggreggate_shap_values_dict(pipeline, class_values) for class_values in values]
     else:
-        raise ValueError(f"Unsupported data type for _normalize_shap_values: {str(type(values))}.")
+        return [_aggreggate_shap_values_dict(pipeline, class_values) for class_values in values]
+
+
+def _keep_only_children_features_dict(values, aggregated_values):
+    return {k: v for k, v in values.items() if k not in aggregated_values}
+
+
+def _keep_only_children_features(values, aggregated_values):
+    """Keep only the shap values for features that were created from other features.
+
+    Arguments:
+        values (dict or list(dict)): Dictionary mapping feature name to list of values,
+            or a list of dictionaries (each mapping a feature name to a list of values).
+
+    Returns:
+        dict or list(dict)
+    """
+    if isinstance(values, dict):
+        return _keep_only_children_features_dict(values, aggregated_values)
+    else:
+        return [_keep_only_children_features_dict(class_values, agg_values) for class_values, agg_values in zip(values, aggregated_values)]
 
 
 def _normalize_values_dict(values):

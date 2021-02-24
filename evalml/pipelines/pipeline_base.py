@@ -15,6 +15,7 @@ from .components import (
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
+    OneHotEncoder,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor
 )
@@ -518,3 +519,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
         has_stacked_ensembler = any(isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor)) for c in self._component_graph)
         return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs, has_stacked_ensembler])
+
+    def _get_features_created_by_ohe(self):
+        features_created_by_ohe = set([])
+        for component in self._component_graph:
+            if isinstance(component, OneHotEncoder):
+                for children_features in component._get_feature_provenance().values():
+                    features_created_by_ohe = features_created_by_ohe.union(children_features)
+        return features_created_by_ohe
