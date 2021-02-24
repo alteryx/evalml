@@ -45,6 +45,4 @@ class TimeSeriesPipelineBaseMeta(PipelineBaseMeta):
                 return method(self, X, y)
             elif method.__name__ == 'predict':
                 return method(self, X, y, objective)
-            else:
-                return method(self)
         return _check_for_fit
