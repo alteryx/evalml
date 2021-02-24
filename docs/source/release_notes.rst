@@ -1,7 +1,13 @@
 Release Notes
 -------------
-
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.19.0 Feb. 23, 2021**
     * Enhancements
         * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
