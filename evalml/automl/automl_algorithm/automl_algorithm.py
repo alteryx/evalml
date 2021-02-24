@@ -45,12 +45,13 @@ class AutoMLAlgorithm(ABC):
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
-    def add_result(self, score_to_minimize, pipeline):
+    def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline
 
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
+            trained_pipeline_results (dict): Results from training the pipeline
         """
         if pipeline.name not in self._tuners:
             raise PipelineNotFoundError(f"No such pipeline allowed in this AutoML search: {pipeline.name}")

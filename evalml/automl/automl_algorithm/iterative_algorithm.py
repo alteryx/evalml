@@ -92,24 +92,25 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
-    def add_result(self, score_to_minimize, pipeline):
+    def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline
 
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
+            trained_pipeline_results (dict): Results from training the pipeline
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number == 1:
                 try:
-                    super().add_result(score_to_minimize, pipeline)
+                    super().add_result(score_to_minimize, pipeline, trained_pipeline_results)
                 except ValueError as e:
                     if 'is not within the bounds of the space' in str(e):
                         raise ValueError("Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(pipeline.name, e))
                     else:
                         raise(e)
             else:
-                super().add_result(score_to_minimize, pipeline)
+                super().add_result(score_to_minimize, pipeline, trained_pipeline_results)
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
@@ -117,7 +118,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if score_to_minimize is not None and score_to_minimize < current_best_score:
             self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
                                                                      'pipeline_class': pipeline.__class__,
-                                                                     'parameters': pipeline.parameters}
+                                                                     'parameters': pipeline.parameters,
+                                                                     'id': trained_pipeline_results['id']}
                                              })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
