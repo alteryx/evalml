@@ -1,4 +1,5 @@
 from abc import abstractmethod
+
 from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.utils.woodwork_utils import (
@@ -24,7 +25,7 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
     def get_n_splits(self):
         """Returns the number of splits of this object."""
         return self.n_splits
-    
+
     @abstractmethod
     def split(self, X, y):
         """Splits and returns the indices of the training and testing using the data sampler provided.

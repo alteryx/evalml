@@ -1,8 +1,10 @@
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 
+from evalml.preprocessing.data_splitters.base_splitters import (
+    BaseUnderSamplingSplitter
+)
 from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
-from evalml.preprocessing.data_splitters.base_splitters import BaseUnderSamplingSplitter
 from evalml.preprocessing.data_splitters.training_validation_split import (
     TrainingValidationSplit
 )
