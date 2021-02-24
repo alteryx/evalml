@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold
 
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
@@ -14,6 +14,7 @@ from evalml.automl.utils import (
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
+    BalancedClassificationDataCVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -66,10 +67,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        assert isinstance(data_splitter, StratifiedKFold)
+        assert isinstance(data_splitter, BalancedClassificationDataCVSplit)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
-        assert data_splitter.random_state == 0
+        assert data_splitter.random_seed == 0
 
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                         ProblemTypes.TIME_SERIES_BINARY,
@@ -81,8 +82,8 @@ def test_make_data_splitter_default(problem_type, large_data):
 
 
 @pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
-                                                                  (ProblemTypes.BINARY, StratifiedKFold),
-                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
+                                                                  (ProblemTypes.BINARY, BalancedClassificationDataCVSplit),
+                                                                  (ProblemTypes.MULTICLASS, BalancedClassificationDataCVSplit)])
 def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
@@ -94,7 +95,10 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
-    assert data_splitter.random_state == random_seed
+    if str(problem_type) == 'regression':
+        assert data_splitter.random_state == random_seed
+    else:
+        assert data_splitter.random_seed == random_seed
 
 
 def test_make_data_splitter_parameters_time_series():
@@ -125,7 +129,7 @@ def test_make_data_splitter_error():
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("large_data", [True, False])
-def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data):
+def test_make_data_splitter_no_error_shuffle_random_state(problem_type, large_data):
     n = 10
     if large_data:
         n = _LARGE_DATA_ROW_THRESHOLD + 1
@@ -133,11 +137,7 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
                       'target': list(range(n))})
     y = X.pop('target')
 
-    if large_data:
-        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
-    else:
-        with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
-            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
+    make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
 
 
 def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
@@ -145,7 +145,7 @@ def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
         splitter = make_data_splitter(X, y, "binary", n_splits=5, shuffle=True, random_state=15)
-        assert splitter.random_state == 15
+        assert splitter.random_seed == 15
         assert str(warn[0].message).startswith(
             "Argument 'random_state' has been deprecated in favor of 'random_seed'")
 

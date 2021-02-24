@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 
 from evalml.preprocessing.data_splitters.base_splitters import (
@@ -89,6 +90,7 @@ class BalancedClassificationSampler(SamplerBase):
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         result = self._find_ideal_samples(y)
+        index_df = pd.DataFrame(y.index)
         indices_to_drop = []
         if len(result):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
@@ -96,7 +98,9 @@ class BalancedClassificationSampler(SamplerBase):
                 indices = y.index[y == key].values
                 indices_to_remove = self.random_state.choice(indices, value, replace=False)
                 indices_to_drop.extend(indices_to_remove)
-        return list(set(list(y.index.values)).difference(set(indices_to_drop)))
+        original_indices = list(set(list(y.index.values)).difference(set(indices_to_drop)))
+        # convert to integer indices rather than the original indices of y (to use iloc rather than loc)
+        return index_df[index_df.isin(original_indices)].dropna().index.values.tolist()
 
 
 class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
@@ -105,6 +109,7 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=None, shuffle=True, random_seed=0):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
         super().__init__(sampler=self.sampler, n_splits=1, random_seed=random_seed)
+        self.shuffle = shuffle
         self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_state=random_seed)
 
     def split(self, X, y):
@@ -131,6 +136,7 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, n_splits=3, shuffle=True, random_seed=0):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
         super().__init__(sampler=self.sampler, n_splits=n_splits, random_seed=random_seed)
+        self.shuffle = shuffle
         self.splitter = StratifiedKFold(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)
 
     def split(self, X, y):
