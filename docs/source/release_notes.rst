@@ -1,7 +1,13 @@
 Release Notes
 -------------
-
 **Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.19.0 Feb. 23, 2021**
     * Enhancements
         * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
@@ -20,6 +26,7 @@ Release Notes
         * Added ``Engines`` pipeline processing API :pr:`1838`
         * Added ``BalancedClassificationDataCVSplit`` to AutoMLSearch :pr:`1875`
     * Fixes
+        * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
         * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
