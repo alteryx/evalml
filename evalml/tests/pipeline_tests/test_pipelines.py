@@ -1655,13 +1655,9 @@ def test_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_multi, X_y_regr
             _, kwargs = mock_predict.call_args
             assert kwargs['objective'] is not None
 
-        with patch('evalml.pipelines.ClassificationPipeline.predict_proba') as mock_predict_proba:
-            clf.predict_proba(X)
-            mock_predict_proba.assert_called()
+        clf.predict_proba(X)
     else:
-        with patch('evalml.pipelines.RegressionPipeline.predict') as mock_predict:
-            clf.predict(X)
-            mock_predict.assert_called()
+        clf.predict(X)
     clf.feature_importance
 
 
@@ -1710,13 +1706,9 @@ def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_mul
             _, kwargs = mock_predict.call_args
             assert kwargs['objective'] is not None
 
-        with patch('evalml.pipelines.TimeSeriesClassificationPipeline.predict_proba') as mock_predict_proba:
-            clf.predict_proba(X)
-            mock_predict_proba.assert_called()
+            clf.predict_proba(X, y)
     else:
-        with patch('evalml.pipelines.TimeSeriesRegressionPipeline.predict') as mock_predict:
-            clf.predict(X)
-            mock_predict.assert_called()
+        clf.predict(X, y)
     clf.feature_importance
 
 
