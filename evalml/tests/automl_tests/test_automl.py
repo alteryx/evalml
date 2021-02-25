@@ -2274,3 +2274,4 @@ def test_best_pipeline_data_splitter_transform(mock_fit, mock_score, mock_transf
     assert mock_transform.is_called()
     # since we have the transformer return 3 indices only, we want to make sure the last training sample, after transform, has 3 values only
     assert len(mock_fit.call_args_list[-1][0][0]) == 3
+    assert len(mock_fit.call_args_list[-1][0][1]) == 3
