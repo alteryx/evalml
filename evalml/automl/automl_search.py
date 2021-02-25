@@ -733,7 +733,7 @@ class AutoMLSearch:
         if not is_baseline:
             score_to_minimize = -cv_score if self.objective.greater_is_better else cv_score
             try:
-                self._automl_algorithm.add_result(score_to_minimize, pipeline)
+                self._automl_algorithm.add_result(score_to_minimize, pipeline, self._results['pipeline_results'][pipeline_id])
             except PipelineNotFoundError:
                 pass
 
