@@ -155,11 +155,14 @@ def _aggreggate_shap_values_dict(values, provenance):
 
 
 def _aggregate_shap_values(values, provenance):
-    """Normalizes the SHAP values by the absolute value of their sum for each data point.
+    """Aggregates shap values across features created from a common feature.
 
     Arguments:
-        values (dict or list(dict)): Dictionary mapping feature name to list of values,
-            or a list of dictionaries (each mapping a feature name to a list of values).
+        values (dict):  A mapping of feature names to a list of SHAP values for each data point.
+        provenance (dict): A mapping from a feature in the original data to the names of the features that were created
+            from that feature
+    Returns:
+        dict
 
     Returns:
         dict or list(dict)
