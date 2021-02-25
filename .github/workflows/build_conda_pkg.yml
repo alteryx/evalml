@@ -30,6 +30,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Install Dependencies
         run: |
+          pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps-test
