@@ -24,7 +24,7 @@ def test_data_check_action_equality():
     assert data_check_action_eq == data_check_action
 
     data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL, details={'same detail': 'same same same'})
-    data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL, details={'same detail': 'same same same'})
+    data_check_action_eq = DataCheckAction(DataCheckActionCode.DROP_COL, details={'same detail': 'same same same'})
 
     assert data_check_action == data_check_action
     assert data_check_action == data_check_action_eq
