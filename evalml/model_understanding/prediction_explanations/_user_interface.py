@@ -42,10 +42,15 @@ def _make_rows(shap_values, normalized_values, pipeline_features, original_featu
     for value, feature_name in features_to_display:
         symbol = "+" if value >= 0 else "-"
         display_text = symbol * min(int(abs(value) // 0.2) + 1, 5)
+
+        # At this point, the feature is either in the original data or the data
+        # the final estimator sees. So if it is not a pipeline feature, it is
+        # an original feature
         if feature_name in pipeline_features.columns:
             feature_value = pipeline_features[feature_name].iloc[0]
         else:
             feature_value = original_features[feature_name].iloc[0]
+
         if convert_numeric_to_string:
             if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(feature_value):
                 feature_value = "{:.2f}".format(feature_value)
