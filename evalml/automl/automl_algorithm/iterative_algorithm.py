@@ -98,7 +98,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
-            trained_pipeline_results (dict): Results from training the pipeline
+            trained_pipeline_results (dict): Results from training a pipeline.
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number == 1:
