@@ -88,7 +88,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             ww.DataColumn: Estimated labels
         """
-        predictions = self._predict(X, objective).to_series()
+        predictions = self._predict(X, objective=objective).to_series()
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
         return infer_feature_types(predictions)
 
