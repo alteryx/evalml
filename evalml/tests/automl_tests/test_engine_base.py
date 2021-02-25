@@ -15,7 +15,7 @@ def test_train_and_score_pipelines(mock_fit, mock_score, dummy_binary_pipeline_c
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
                           allowed_pipelines=[dummy_binary_pipeline_class])
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train)
+    evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train, automl.X_ensemble, automl.y_ensemble)
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()
     assert mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get('training_time') is not None
@@ -33,7 +33,7 @@ def test_train_and_score_pipelines_error(mock_fit, mock_score, dummy_binary_pipe
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
                           allowed_pipelines=[dummy_binary_pipeline_class])
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train)
+    evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train, automl.X_ensemble, automl.y_ensemble)
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()
     assert mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get('training_time') is not None
