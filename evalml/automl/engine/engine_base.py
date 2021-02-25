@@ -76,6 +76,9 @@ class EngineBase(ABC):
             logger.debug(f"\t\tTraining and scoring on fold {i}")
             X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
             y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
+            print(full_y_train.to_series().value_counts())
+            print(y_train.to_series().value_counts())
+            print(y_valid.to_series().value_counts())
             if is_binary(automl.problem_type) or is_multiclass(automl.problem_type):
                 diff_train = set(np.setdiff1d(full_y_train.to_series(), y_train.to_series()))
                 diff_valid = set(np.setdiff1d(full_y_train.to_series(), y_valid.to_series()))

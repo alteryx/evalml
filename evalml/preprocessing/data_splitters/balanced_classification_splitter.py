@@ -88,7 +88,6 @@ class BalancedClassificationSampler(SamplerBase):
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         result = self._find_ideal_samples(y)
-        index_df = pd.DataFrame(y.index)
         indices_to_drop = []
         if len(result):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
@@ -96,9 +95,9 @@ class BalancedClassificationSampler(SamplerBase):
                 indices = y.index[y == key].values
                 indices_to_remove = self.random_state.choice(indices, value, replace=False)
                 indices_to_drop.extend(indices_to_remove)
-        original_indices = list(set(list(y.index.values)).difference(set(indices_to_drop)))
-        # convert to integer indices rather than the original indices of y (to use iloc rather than loc)
-        return index_df[index_df.isin(original_indices)].dropna().index.values.tolist()
+        # indices of the y datacolumn
+        original_indices = list(set(y.index.values).difference(set(indices_to_drop)))
+        return original_indices
 
 
 class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
@@ -122,9 +121,12 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
         y_ww = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
-            train_indices = self.sampler.fit_resample(X_train, y_train)
+            train_index_drop = self.sampler.fit_resample(X_train, y_train)
+            # convert the indices of the y column into index indices of the original pre-split y
+            train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
             return iter([(train_indices, test)])
 
 
@@ -149,7 +151,10 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
         y_ww = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
-            train_indices = self.sampler.fit_resample(X_train, y_train)
+            train_index_drop = self.sampler.fit_resample(X_train, y_train)
+            # convert the indices of the y column into index indices of the original pre-split y
+            train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
             yield iter([train_indices, test])
