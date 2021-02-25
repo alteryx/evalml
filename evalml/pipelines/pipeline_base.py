@@ -22,7 +22,7 @@ from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
-from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
+from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.utils import (
     classproperty,
     deprecate_arg,
