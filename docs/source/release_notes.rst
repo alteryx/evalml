@@ -25,6 +25,7 @@ Release Notes
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
+        * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
