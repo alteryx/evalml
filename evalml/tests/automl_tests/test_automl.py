@@ -2263,12 +2263,11 @@ def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_mult
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensembling, X_y_binary):
     X, y = X_y_binary
-    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=0.25)
+    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=0.2)
     mock_split_data.return_value = (X_train, X_ensemble, y_train, y_ensemble)
     # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=ensembling, train_best_pipeline=False, optimize_thresholds=False)
     automl.search()
-    print(automl.full_rankings)
     if ensembling:
         assert automl.ensembling
         # check that the X_train data is all used for the length
@@ -2282,18 +2281,19 @@ def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensem
             assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
 
 
-@patch('evalml.automl.automl_search.AutoMLSearch.rankings')
+@patch('evalml.automl.automl_search.AutoMLSearch.rankings', new_callable=PropertyMock)
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, X_y_binary):
     X, y = X_y_binary
-    def get_ranking(val):
-        return pd.DataFrame({"id": val}, index=[0])
-    mock_rankings.return_value = [get_ranking(i) for i in range(100)]
-    # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
+    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='multiclass', test_size=0.2)
+    # we want to make sure the best pipeline chosen was the stacked ensembler, which is the 90th pipeline
+    mock_rankings.return_value = pd.DataFrame({"id": 90, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=True)
     automl.search()
-    print(automl.best_pipeline)
+    assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
+    assert len(mock_fit.call_args_list[-1][0][0]) == len(X_ensemble)
+    assert len(mock_fit.call_args_list[-1][0][1]) == len(y_ensemble)
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):

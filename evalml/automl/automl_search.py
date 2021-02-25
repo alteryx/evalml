@@ -322,7 +322,7 @@ class AutoMLSearch:
             else:
                 self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
         if run_ensembling:
-            self.X_train, self.X_ensemble, self.y_train, self.y_ensemble = split_data(self.X_train, self.y_train, problem_type=self.problem_type, test_size=0.25)
+            self.X_train, self.X_ensemble, self.y_train, self.y_ensemble = split_data(self.X_train, self.y_train, problem_type=self.problem_type, test_size=0.20)
             self._engine.add_ensemble(self.X_train, self.y_train, self.X_ensemble, self.y_ensemble)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
@@ -562,7 +562,7 @@ class AutoMLSearch:
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         logger.info(desc)
-        breakpoint()
+
         self._find_best_pipeline()
         if self._best_pipeline is not None:
             best_pipeline = self.rankings.iloc[0]
