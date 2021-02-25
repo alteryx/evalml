@@ -14,9 +14,9 @@ from evalml.automl.utils import (
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
+    BalancedClassificationDataCVSplit,
     TimeSeriesSplit,
-    TrainingValidationSplit,
-    BalancedClassificationDataCVSplit
+    TrainingValidationSplit
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
