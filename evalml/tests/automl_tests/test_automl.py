@@ -2290,7 +2290,7 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, X_
     # we want to make sure the best pipeline chosen was the stacked ensembler, which is the 90th or 58th pipeline, depending on dependencies
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=True)
     if has_minimal_dependencies:
-        mock_rankings.return_value = pd.DataFrame({"id": 58, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
+        mock_rankings.return_value = pd.DataFrame({"id": 57, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
     else:
         mock_rankings.return_value = pd.DataFrame({"id": 90, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
     automl.search()
