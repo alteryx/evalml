@@ -5,10 +5,10 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils import (
     _convert_woodwork_types_wrapper,
-    get_random_state
+    get_random_state,
+    infer_feature_types
 )
 
 
@@ -22,12 +22,13 @@ class BaselineClassifier(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, strategy="mode", random_state=0, **kwargs):
+    def __init__(self, strategy="mode", random_state=None, random_seed=0, **kwargs):
         """Baseline classifier that uses a simple strategy to make predictions.
 
         Arguments:
             strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
@@ -40,13 +41,14 @@ class BaselineClassifier(Estimator):
         self._mode = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         vals, counts = np.unique(y, return_counts=True)
@@ -60,18 +62,18 @@ class BaselineClassifier(Estimator):
         return self
 
     def predict(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            predictions = get_random_state(self.random_state).choice(self._classes, len(X))
+            predictions = get_random_state(self.random_seed).choice(self._classes, len(X))
         else:
-            predictions = get_random_state(self.random_state).choice(self._classes, len(X), p=self._percentage_freq)
-        return _convert_to_woodwork_structure(predictions)
+            predictions = get_random_state(self.random_seed).choice(self._classes, len(X), p=self._percentage_freq)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
@@ -81,7 +83,7 @@ class BaselineClassifier(Estimator):
         else:
             proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
         predictions = pd.DataFrame(proba_arr, columns=self._classes)
-        return _convert_to_woodwork_structure(predictions)
+        return infer_feature_types(predictions)
 
     @property
     def feature_importance(self):

@@ -13,6 +13,9 @@ class DataCheckMessageCode(Enum):
     TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
     """Message code for target data that has incompatible values for the specified objective"""
 
+    TARGET_IS_NONE = "target_is_none"
+    """Message code for when target is None."""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
@@ -66,3 +69,12 @@ class DataCheckMessageCode(Enum):
 
     TOO_SPARSE = "too sparse"
     """Message code for when multiclass data has values that are too sparsely populated."""
+
+    MISMATCHED_INDICES = "mismatched_indices"
+    """Message code for when input target and features have mismatched indices."""
+
+    MISMATCHED_INDICES_ORDER = "mismatched_indices_order"
+    """Message code for when input target and features have mismatched indices order. The two inputs have the same index values, but shuffled."""
+
+    MISMATCHED_LENGTHS = "mismatched_lengths"
+    """Message code for when input target and features have different lengths."""

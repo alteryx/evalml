@@ -4,9 +4,9 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.problem_types import handle_problem_types, is_multiclass
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils.woodwork_utils import (
+    _convert_woodwork_types_wrapper,
+    infer_feature_types
 )
 
 warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
@@ -63,7 +63,7 @@ class SparsityDataCheck(DataCheck):
             "errors": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)

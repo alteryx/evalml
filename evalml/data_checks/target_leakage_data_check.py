@@ -5,9 +5,9 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
+    infer_feature_types,
     numeric_and_boolean_ww
 )
 
@@ -47,7 +47,7 @@ class TargetLeakageDataCheck(DataCheck):
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
         for col in X.columns:
-            cols_to_compare = _convert_to_woodwork_structure(pd.DataFrame({col: X[col], str(col) + "y": y}))
+            cols_to_compare = infer_feature_types(pd.DataFrame({col: X[col], str(col) + "y": y}))
             mutual_info = cols_to_compare.mutual_information()
             if len(mutual_info) > 0 and mutual_info['mutual_info'].iloc[0] > self.pct_corr_threshold:
                 highly_corr_cols.append(col)
@@ -86,8 +86,8 @@ class TargetLeakageDataCheck(DataCheck):
             "warnings": [],
             "errors": []
         }
-        X = _convert_to_woodwork_structure(X)
-        y = _convert_to_woodwork_structure(y)
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
 
         if self.method == 'pearson':
             highly_corr_cols = self._calculate_pearson(X, y)

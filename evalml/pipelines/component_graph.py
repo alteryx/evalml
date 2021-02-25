@@ -7,22 +7,21 @@ from networkx.exception import NetworkXUnfeasible
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     _convert_woodwork_types_wrapper,
-    get_random_seed,
-    import_or_raise
+    import_or_raise,
+    infer_feature_types
 )
 
 
 class ComponentGraph:
-    def __init__(self, component_dict=None, random_state=0):
+    def __init__(self, component_dict=None, random_seed=0):
         """ Initializes a component graph for a pipeline as a directed acyclic graph (DAG).
 
         Example:
             >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
            """
-        self.random_state = get_random_seed(random_state)
+        self.random_seed = random_seed
         self.component_dict = component_dict or {}
         self.component_instances = {}
         self._is_instantiated = False
@@ -37,7 +36,7 @@ class ComponentGraph:
         self._i = 0
 
     @classmethod
-    def from_list(cls, component_list, random_state=0):
+    def from_list(cls, component_list, random_seed=0):
         """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
         Arguments:
@@ -57,7 +56,7 @@ class ComponentGraph:
             if previous_component is not None:
                 component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
-        return cls(component_dict, random_state=random_state)
+        return cls(component_dict, random_seed=random_seed)
 
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
@@ -76,7 +75,7 @@ class ComponentGraph:
             component_parameters = parameters.get(component_name, {})
 
             try:
-                new_component = component_class(**component_parameters, random_state=self.random_state)
+                new_component = component_class(**component_parameters, random_seed=self.random_seed)
             except (ValueError, TypeError) as e:
                 self._is_instantiated = False
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
@@ -93,7 +92,7 @@ class ComponentGraph:
             X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
@@ -136,7 +135,7 @@ class ComponentGraph:
             ww.DataTable: Transformed values.
         """
         if len(self.compute_order) <= 1:
-            return _convert_to_woodwork_structure(X)
+            return infer_feature_types(X)
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
@@ -144,10 +143,12 @@ class ComponentGraph:
             if isinstance(parent_output, ww.DataColumn):
                 parent_output = parent_output.to_series()
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = _convert_to_woodwork_structure(parent_output)
+                parent_output = infer_feature_types(parent_output)
             final_component_inputs.append(parent_output)
         concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
-        return _convert_to_woodwork_structure(concatted)
+        if needs_fitting:
+            self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
+        return infer_feature_types(concatted)
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -159,10 +160,10 @@ class ComponentGraph:
             ww.DataColumn: Predicted values.
         """
         if len(self.compute_order) == 0:
-            return _convert_to_woodwork_structure(X)
+            return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return _convert_to_woodwork_structure(outputs.get(final_component, outputs.get(f'{final_component}.x')))
+        return infer_feature_types(outputs.get(final_component, outputs.get(f'{final_component}.x')))
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -177,7 +178,7 @@ class ComponentGraph:
         Returns:
             dict: Outputs from each component
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if len(component_list) == 0:
             return X
         output_cache = {}
@@ -200,17 +201,6 @@ class ComponentGraph:
                         parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
-            col_intersection = set(X.columns.keys()).intersection(set(input_x.columns.keys()))
-            for col in col_intersection:
-                if (X[col].logical_type != input_x[col].logical_type and
-                        "numeric" not in X[col].semantic_tags):  # numeric is special because we may not be able to safely convert (ex: input is int, output is float)
-                    try:
-                        input_x = input_x.set_types({col: X[col].logical_type})
-                    except TypeError:
-                        # if there is a column whose type has been converted s.t. it cannot be converted back, keep as is.
-                        # example: StandardScaler could convert a boolean column to a float column. This is expected, and we should not
-                        # try to convert back to boolean.
-                        continue
             self.input_feature_names.update({component_name: list(input_x.columns)})
 
             if isinstance(component_instance, Transformer):
@@ -304,9 +294,9 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = _convert_to_woodwork_structure(return_x)
+        return_x = infer_feature_types(return_x)
         if return_y is not None:
-            return_y = _convert_to_woodwork_structure(return_y)
+            return_y = infer_feature_types(return_y)
         return return_x, return_y
 
     def get_component(self, component_name):

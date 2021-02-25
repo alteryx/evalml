@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import PerColumnImputer
 
@@ -175,3 +183,27 @@ def test_transform_drop_all_nan_columns_empty():
     transformer.fit(X)
     assert transformer.transform(X).to_dataframe().empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+@pytest.mark.parametrize("has_nan", [True, False])
+def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
+    y = pd.Series([1, 2, 1])
+    if has_nan:
+        X_df.iloc[len(X_df) - 1, 0] = np.nan
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        imputer = PerColumnImputer()
+        imputer.fit(X, y)
+        transformed = imputer.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+        assert transformed.logical_types == {0: logical_type}

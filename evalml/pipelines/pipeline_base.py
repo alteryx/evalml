@@ -22,13 +22,13 @@ from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
 from evalml.pipelines import ComponentGraph
-from evalml.pipelines.pipeline_base_meta import PipelineBaseMeta
+from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.utils import (
-    _convert_to_woodwork_structure,
     classproperty,
+    deprecate_arg,
     get_logger,
-    get_random_seed,
     import_or_raise,
+    infer_feature_types,
     jupyter_check,
     log_subtitle,
     log_title,
@@ -55,7 +55,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_state=0):
+    def __init__(self, parameters, random_state=None, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -66,11 +66,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                  An empty dictionary {} implies using all default values for component parameters.
             random_state (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_state = get_random_seed(random_state)
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         if isinstance(self.component_graph, list):  # Backwards compatibility
-            self._component_graph = ComponentGraph().from_list(self.component_graph, random_state=self.random_state)
+            self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:
-            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_state=self.random_state)
+            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
@@ -223,11 +223,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             ww.DataColumn: Predicted values.
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         predictions = self._component_graph.predict(X)
         predictions_series = predictions.to_series()
         predictions_series.name = self.input_target_name
-        return _convert_to_woodwork_structure(predictions_series)
+        return infer_feature_types(predictions_series)
 
     @abstractmethod
     def score(self, X, y, objectives):
@@ -280,7 +280,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def model_family(cls):
-        "Returns model family of this pipeline template"""
+        """Returns model family of this pipeline template"""
         component_graph = copy.copy(cls.component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
@@ -291,7 +291,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @classproperty
     def hyperparameters(cls):
-        "Returns hyperparameter ranges from all components as a dictionary"
+        """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
         if isinstance(component_graph, list):
@@ -475,13 +475,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(self.parameters, random_state=self.random_state)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        random_state_eq = self.random_state == other.random_state
-        if not random_state_eq:
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
             return False
         attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
         for attribute in attributes_to_check:

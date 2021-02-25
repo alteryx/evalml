@@ -34,7 +34,7 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             elif is_regression(problem_type):
                 X, y = X_y_regression
 
-            X = get_random_state(clf.random_state).random((X.shape[0], len(string.printable)))
+            X = get_random_state(clf.random_seed).random((X.shape[0], len(string.printable)))
             col_names = ['column_{}'.format(ascii_char) for ascii_char in string.printable]
             X = pd.DataFrame(X, columns=col_names)
             assert clf.input_feature_names is None

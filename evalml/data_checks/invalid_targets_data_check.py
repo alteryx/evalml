@@ -8,9 +8,9 @@ from evalml.data_checks import (
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
+from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
+    infer_feature_types,
     numeric_and_boolean_ww
 )
 
@@ -48,7 +48,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         Example:
             >>> import pandas as pd
-            >>> X = pd.DataFrame({})
+            >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series([0, 1, None, None])
             >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
             >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
@@ -63,9 +63,13 @@ class InvalidTargetDataCheck(DataCheck):
             "errors": []
         }
         if y is None:
-            raise ValueError("y cannot be None")
+            messages["errors"].append(DataCheckError(message="Target is None",
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_IS_NONE,
+                                                     details={}).to_dict())
+            return messages
 
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
         if not is_supported_type:
             messages["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
@@ -141,5 +145,32 @@ class InvalidTargetDataCheck(DataCheck):
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
                                                      details=details).to_dict())
+
+        if X is not None:
+            X = infer_feature_types(X)
+            X_index = list(X.to_dataframe().index)
+            y_index = list(y_df.index)
+            X_length = len(X_index)
+            y_length = len(y_index)
+            if X_length != y_length:
+                messages["warnings"].append(DataCheckWarning(message="Input target and features have different lengths",
+                                                             data_check_name=self.name,
+                                                             message_code=DataCheckMessageCode.MISMATCHED_LENGTHS,
+                                                             details={"features_length": X_length, "target_length": y_length}).to_dict())
+
+            if X_index != y_index:
+                if set(X_index) == set(y_index):
+                    messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices order",
+                                                                 data_check_name=self.name,
+                                                                 message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
+                                                                 details={}).to_dict())
+                else:
+                    index_diff_not_in_X = list(set(y_index) - set(X_index))[:10]
+                    index_diff_not_in_y = list(set(X_index) - set(y_index))[:10]
+                    messages["warnings"].append(DataCheckWarning(message="Input target and features have mismatched indices",
+                                                                 data_check_name=self.name,
+                                                                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
+                                                                 details={"indices_not_in_features": index_diff_not_in_X,
+                                                                          "indices_not_in_target": index_diff_not_in_y}).to_dict())
 
         return messages

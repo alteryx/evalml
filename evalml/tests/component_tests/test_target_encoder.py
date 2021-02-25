@@ -3,8 +3,17 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
 from pytest import importorskip
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import TargetEncoder
@@ -163,10 +172,35 @@ def test_pandas_numpy(mock_fit, X_y_binary):
     X = pd.DataFrame(X).sample(frac=1)
 
     encoder = TargetEncoder()
-    X_t = pd.DataFrame(X).reset_index(drop=True, inplace=False)
 
     encoder.fit(X, y)
-    assert_frame_equal(mock_fit.call_args[0][0], X_t)
+    assert_frame_equal(mock_fit.call_args[0][0], X)
 
     X_numpy = X.to_numpy()
     encoder.fit(X_numpy, y)
+
+
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
+                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
+                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
+                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean, Datetime]
+    for logical_type in override_types:
+        try:
+            X = ww.DataTable(X_df, logical_types={0: logical_type})
+        except TypeError:
+            continue
+
+        encoder = TargetEncoder()
+        encoder.fit(X, y)
+        transformed = encoder.transform(X, y)
+        assert isinstance(transformed, ww.DataTable)
+
+        if logical_type == Categorical:
+            assert transformed.logical_types == {0: Double}
+        else:
+            assert transformed.logical_types == {0: logical_type}

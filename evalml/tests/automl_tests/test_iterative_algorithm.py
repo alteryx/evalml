@@ -15,7 +15,6 @@ from evalml.pipelines import (
     StackedEnsembleRegressor
 )
 from evalml.pipelines.components import Estimator
-from evalml.pipelines.components.transformers import TextFeaturizer
 from evalml.problem_types import ProblemTypes
 
 
@@ -50,10 +49,10 @@ def dummy_binary_pipeline_classes():
             else:
                 hyperparameter_ranges = {'dummy_parameter': [hyperparameters]}
 
-            def __init__(self, dummy_parameter='default', n_jobs=-1, random_state=0, **kwargs):
+            def __init__(self, dummy_parameter='default', n_jobs=-1, random_seed=0, **kwargs):
                 super().__init__(parameters={'dummy_parameter': dummy_parameter, **kwargs,
                                              'n_jobs': n_jobs},
-                                 component_obj=None, random_state=random_state)
+                                 component_obj=None, random_seed=random_seed)
 
         class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
             estimator = MockEstimator
@@ -124,7 +123,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
             assert all([p.parameters['Mock Classifier']['n_jobs'] == -1 for p in next_batch])
-            assert all((p.random_state == algo.random_state) for p in next_batch)
+            assert all((p.random_seed == algo.random_seed) for p in next_batch)
             assert algo.pipeline_number == last_pipeline_number + len(next_batch)
             last_pipeline_number = algo.pipeline_number
             assert algo.batch_number == last_batch_number + 1
@@ -148,12 +147,12 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline)
             assert pipeline.model_family == ModelFamily.ENSEMBLE
-            assert pipeline.random_state == algo.random_state
+            assert pipeline.random_seed == algo.random_seed
             stack_args = mock_stack.call_args[1]['estimators']
             estimators_used_in_ensemble = [args[1] for args in stack_args]
-            random_states_the_same = [(estimator.pipeline.random_state == algo.random_state)
-                                      for estimator in estimators_used_in_ensemble]
-            assert all(random_states_the_same)
+            random_seeds_the_same = [(estimator.pipeline.random_seed == algo.random_seed)
+                                     for estimator in estimators_used_in_ensemble]
+            assert all(random_seeds_the_same)
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
@@ -231,7 +230,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     for i in range(1, 5):
         next_batch = algo.next_batch()
         assert len(next_batch) == algo.pipelines_per_batch
-        assert all((p.random_state == algo.random_state) for p in next_batch)
+        assert all((p.random_seed == algo.random_seed) for p in next_batch)
         assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
         assert algo.pipeline_number == last_pipeline_number + len(next_batch)
         last_pipeline_number = algo.pipeline_number
@@ -242,18 +241,6 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline)
         assert any([p != logistic_regression_binary_pipeline_class.default_parameters for p in all_parameters])
-
-
-def test_iterative_algorithm_instantiates_text(dummy_classifier_estimator_class):
-    class MockTextClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = [TextFeaturizer, dummy_classifier_estimator_class]
-
-    algo = IterativeAlgorithm(allowed_pipelines=[MockTextClassificationPipeline], text_columns=['text_col_1', 'text_col_2'])
-    pipeline = algo.next_batch()[0]
-    expected_params = {'text_columns': ['text_col_1', 'text_col_2']}
-    assert pipeline.parameters['Text Featurization Component'] == expected_params
-    assert isinstance(pipeline[0], TextFeaturizer)
-    assert pipeline[0]._all_text_columns == ['text_col_1', 'text_col_2']
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
@@ -325,7 +312,7 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
                               pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
                                                'Mock Classifier': {'dummy_parameter': parameters}},
-                              random_state=0)
+                              random_seed=0)
 
     next_batch = algo.next_batch()
     if isinstance(parameters, (Real, Integer)):
@@ -355,7 +342,7 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
                               pipeline_params={'Mock Classifier': {'dummy_parameter': "dummy", 'fake_param': 'fake'}},
-                              random_state=0)
+                              random_seed=0)
 
     next_batch = algo.next_batch()
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": "dummy", "n_jobs": -1, "fake_param": "fake"} for p in next_batch])

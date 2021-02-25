@@ -1,4 +1,5 @@
 import json
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -14,7 +15,11 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions,
     explain_predictions_best_worst
 )
-from evalml.problem_types import ProblemTypes
+from evalml.pipelines import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesRegressionPipeline
+)
+from evalml.problem_types import ProblemTypes, is_binary, is_regression
 
 
 def compare_two_tables(table_1, table_2):
@@ -25,12 +30,6 @@ def compare_two_tables(table_1, table_2):
 
 test_features = [[1], np.ones((15, 1)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
                  pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}), pd.DataFrame()]
-
-
-@pytest.mark.parametrize("test_features", test_features)
-def test_explain_prediction_value_error(test_features):
-    with pytest.raises(ValueError, match="features must be stored in a dataframe or datatable with exactly one row."):
-        explain_prediction(None, input_features=test_features, training_data=None)
 
 
 explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
@@ -142,6 +141,23 @@ explain_prediction_multiclass_df_answer = pd.DataFrame({
                            {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
                            explain_predictions_regression_df_answer
                            ),
+                          (ProblemTypes.TIME_SERIES_REGRESSION,
+                           "text",
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           explain_prediction_answer),
+                          (ProblemTypes.TIME_SERIES_REGRESSION,
+                           "dict",
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           explain_prediction_regression_dict_answer
+                           ),
+                          (ProblemTypes.TIME_SERIES_REGRESSION,
+                           "dataframe",
+                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
+                           explain_predictions_regression_df_answer
+                           ),
                           (ProblemTypes.BINARY,
                            "text",
                            [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
@@ -195,11 +211,14 @@ def test_explain_prediction(mock_normalize_shap_values,
     # By the time we call transform, we are looking at only one row of the input data.
     pipeline.compute_estimator_features.return_value = ww.DataTable(pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]}))
     features = pd.DataFrame({"a": [1], "b": [2]})
-    training_data = pd.DataFrame()
     if input_type == "ww":
         features = ww.DataTable(features)
-        training_data = ww.DataTable(training_data)
-    table = explain_prediction(pipeline, features, output_format=output_format, top_k=2, training_data=training_data)
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0,
+                                   top_k_features=2)
+        assert str(warn[0].message).startswith("The explain_prediction function will be deleted in the next release")
     if isinstance(table, str):
         compare_two_tables(table.splitlines(), answer)
     elif isinstance(table, pd.DataFrame):
@@ -208,12 +227,20 @@ def test_explain_prediction(mock_normalize_shap_values,
         assert table == answer
 
 
+def test_explain_prediction_errors():
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=-1)
+
+
 def test_error_metrics():
 
-    pd.testing.assert_series_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), pd.Series([3, 1, 3]))
-    pd.testing.assert_series_equal(cross_entropy(pd.Series([1, 0]),
-                                                 pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
-                                   pd.Series([-np.log(0.9), -np.log(0.2)]))
+    np.testing.assert_array_equal(abs_error(pd.Series([1, 2, 3]), pd.Series([4, 1, 0])), np.array([3, 1, 3]))
+    np.testing.assert_allclose(cross_entropy(pd.Series([1, 0]),
+                                             pd.DataFrame({"a": [0.1, 0.2], "b": [0.9, 0.8]})),
+                               np.array([-np.log(0.9), -np.log(0.2)]))
 
 
 input_features_and_y_true = [([[1]], pd.Series([1]), "^Input features must be a dataframe with more than 10 rows!"),
@@ -242,19 +269,28 @@ def test_explain_predictions_raises_pipeline_score_error():
 
 def test_explain_predictions_value_errors():
     with pytest.raises(ValueError, match="Parameter input_features must be a non-empty dataframe."):
-        explain_predictions(None, pd.DataFrame())
+        explain_predictions(MagicMock(), pd.DataFrame(), y=None, indices_to_explain=[0])
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[5])
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[1, 5])
+
+    with pytest.raises(ValueError, match="Explained indices should be between"):
+        explain_predictions(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, indices_to_explain=[-1])
 
 
 def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
-        explain_predictions(None, input_features, output_format="bar")
+        explain_predictions(pipeline=MagicMock(), input_features=input_features, y=None, indices_to_explain=0, output_format="bar")
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(None, input_features=input_features, training_data=None, output_format="xml")
+        explain_prediction(pipeline=MagicMock(), input_features=input_features, y=None, index_to_explain=0, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
-        explain_predictions_best_worst(None, input_features, y_true=y_true, output_format="foo")
+        explain_predictions_best_worst(pipeline=MagicMock(), input_features=input_features, y_true=y_true, output_format="foo")
 
 
 regression_best_worst_answer = """Test Pipeline Name
@@ -516,6 +552,33 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
                           (ProblemTypes.MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, ["2020-10", "2020-11"]),
                           (ProblemTypes.MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, ["2020-15", "2020-15"]),
                           (ProblemTypes.MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, ["2020-15", "2020-15"]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dataframe", regression_best_worst_answer_df, no_best_worst_answer_df, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, [4, 23]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, [4, 10]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dataframe", regression_best_worst_answer_df, no_best_worst_answer_df, [4, 10]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "text", regression_best_worst_answer, no_best_worst_answer, ["foo", "bar"]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dict", regression_best_worst_answer_dict, no_best_worst_answer_dict, ["foo", "bar"]),
+                          (ProblemTypes.TIME_SERIES_REGRESSION, "dataframe", regression_best_worst_answer_df, no_best_worst_answer_df, ["foo", "bar"]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "text", binary_best_worst_answer, no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dataframe", binary_best_worst_answer_df, no_best_worst_answer_df, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "text", binary_best_worst_answer, no_best_worst_answer, [7, 11]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, [7, 11]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dataframe", binary_best_worst_answer_df, no_best_worst_answer_df, [7, 11]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "text", binary_best_worst_answer, no_best_worst_answer, ["first", "second"]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dict", binary_best_worst_answer_dict, no_best_worst_answer_dict, ["first", "second"]),
+                          (ProblemTypes.TIME_SERIES_BINARY, "dataframe", binary_best_worst_answer_df, no_best_worst_answer_df, ["first", "second"]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, [0, 1]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, [19, 103]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, [17, 235]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, [17, 235]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "text", multiclass_best_worst_answer, multiclass_no_best_worst_answer, ["2020-10", "2020-11"]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dict", multiclass_best_worst_answer_dict, no_best_worst_answer_dict, ["2020-15", "2020-15"]),
+                          (ProblemTypes.TIME_SERIES_MULTICLASS, "dataframe", multiclass_best_worst_answer_df, no_best_worst_answer_df, ["2020-15", "2020-15"]),
                           ])
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
@@ -541,6 +604,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
     input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = ww.DataTable(input_features)
 
     def _add_custom_index(answer, index_best, index_worst, output_format):
 
@@ -555,7 +619,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
             answer["explanations"][1]["predicted_values"]["index_id"] = index_worst
         return answer
 
-    if problem_type == ProblemTypes.REGRESSION:
+    if is_regression(problem_type):
         abs_error_mock = MagicMock(__name__="abs_error")
         abs_error_mock.return_value = pd.Series([4., 1.], dtype="float64")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
@@ -563,7 +627,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         y_true = pd.Series([3, 2], index=custom_index)
         answer = _add_custom_index(answer, index_best=custom_index[1],
                                    index_worst=custom_index[0], output_format=output_format)
-    elif problem_type == ProblemTypes.BINARY:
+    elif is_binary(problem_type):
         pipeline.classes_.return_value = ["benign", "malignant"]
         cross_entropy_mock = MagicMock(__name__="cross_entropy")
         mock_default_metrics.__getitem__.return_value = cross_entropy_mock
@@ -588,6 +652,15 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         answer = _add_custom_index(answer, index_best=custom_index[0],
                                    index_worst=custom_index[1], output_format=output_format)
 
+    report = explain_predictions(pipeline, input_features, y=y_true, indices_to_explain=[0, 1], output_format=output_format)
+    if output_format == "text":
+        compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
+    elif output_format == "dataframe":
+        assert report.columns.tolist() == explain_predictions_answer.columns.tolist()
+        pd.testing.assert_frame_equal(report, explain_predictions_answer[report.columns])
+    else:
+        assert report == explain_predictions_answer
+
     best_worst_report = explain_predictions_best_worst(pipeline, input_features, y_true=y_true,
                                                        num_to_explain=1, output_format=output_format)
     if output_format == "text":
@@ -598,16 +671,6 @@ def test_explain_predictions_best_worst_and_explain_predictions(mock_make_table,
         pd.testing.assert_frame_equal(best_worst_report, answer[best_worst_report.columns])
     else:
         assert best_worst_report == answer
-
-    report = explain_predictions(pipeline, input_features, output_format=output_format,
-                                 training_data=input_features)
-    if output_format == "text":
-        compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
-    elif output_format == "dataframe":
-        assert report.columns.tolist() == explain_predictions_answer.columns.tolist()
-        pd.testing.assert_frame_equal(report, explain_predictions_answer[report.columns])
-    else:
-        assert report == explain_predictions_answer
 
 
 regression_custom_metric_answer = """Test Pipeline Name
@@ -664,6 +727,7 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
     input_features = pd.DataFrame({"a": [5, 6]})
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = ww.DataTable(input_features)
 
     pipeline.predict.return_value = ww.DataColumn(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
@@ -678,6 +742,56 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
         compare_two_tables(best_worst_report.splitlines(), regression_custom_metric_answer.splitlines())
     else:
         assert best_worst_report == answer
+
+
+def test_explain_predictions_time_series(ts_data):
+    X, y = ts_data
+
+    class TSPipeline(TimeSeriesRegressionPipeline):
+        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+        name = "time series pipeline"
+
+    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2},
+                             "Random Forest Regressor": {"n_jobs": 1}})
+
+    tspipeline.fit(X, y)
+
+    exp = explain_predictions(pipeline=tspipeline, input_features=X, y=y,
+                              indices_to_explain=[5, 11], output_format="dict")
+
+    # Check that the computed features to be explained aren't NaN.
+    for exp_idx in range(len(exp["explanations"])):
+        assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
+
+    with pytest.raises(ValueError, match="Requested index"):
+        explain_predictions(pipeline=tspipeline, input_features=X, y=y,
+                            indices_to_explain=[1, 11], output_format="text")
+
+
+@pytest.mark.parametrize("output_format", ["text", "dict", "dataframe"])
+@pytest.mark.parametrize("pipeline_class, estimator", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+                                                       (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier")])
+def test_explain_predictions_best_worst_time_series(output_format, pipeline_class, estimator, ts_data):
+    X, y = ts_data
+
+    if is_binary(pipeline_class.problem_type):
+        y = y % 2
+
+    class TSPipeline(pipeline_class):
+        component_graph = ["Delayed Feature Transformer", estimator]
+        name = "time series pipeline"
+
+    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
+
+    tspipeline.fit(X, y)
+
+    exp = explain_predictions_best_worst(pipeline=tspipeline, input_features=X, y_true=y,
+                                         output_format=output_format)
+
+    if output_format == "dict":
+        # Check that the computed features to be explained aren't NaN.
+        for exp_idx in range(len(exp["explanations"])):
+            assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -704,5 +818,5 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
                                                 num_to_explain=1, output_format="dict")
     assert json.loads(json.dumps(best_worst)) == best_worst
 
-    report = explain_predictions(pipeline, pd.DataFrame(X[:1]), output_format="dict")
+    report = explain_predictions(pipeline, pd.DataFrame(X), y=y, output_format="dict", indices_to_explain=[0])
     assert json.loads(json.dumps(report)) == report

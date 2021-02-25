@@ -6,11 +6,13 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+from evalml.exceptions import PipelineNotYetFittedError
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
+from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
 
 
@@ -363,3 +365,61 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     with pytest.raises(ValueError, match="Objective Precision Micro is not defined for time series binary classification."):
         binary_pipeline.predict(X, y, "precision micro")
     mock_transform.assert_called()
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_REGRESSION])
+def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                               time_series_binary_classification_pipeline_class,
+                                               time_series_multiclass_classification_pipeline_class,
+                                               time_series_regression_pipeline_class):
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = X_y_regression
+        clf = time_series_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1},
+                                                                "pipeline": {"gap": 0, "max_delay": 0}})
+
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.predict(X)
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.feature_importance
+
+    if is_classification(problem_type):
+        with pytest.raises(PipelineNotYetFittedError):
+            clf.predict_proba(X)
+
+    clf.fit(X, y)
+
+    if is_classification(problem_type):
+        to_patch = 'evalml.pipelines.TimeSeriesClassificationPipeline._predict'
+        if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+            to_patch = 'evalml.pipelines.TimeSeriesBinaryClassificationPipeline._predict'
+        with patch(to_patch) as mock_predict:
+            clf.predict(X, y)
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is None
+
+            mock_predict.reset_mock()
+            clf.predict(X, y, 'Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+            mock_predict.reset_mock()
+            clf.predict(X, y, objective='Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+            clf.predict_proba(X, y)
+    else:
+        clf.predict(X, y)
+    clf.feature_importance

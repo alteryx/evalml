@@ -2,9 +2,10 @@ import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -13,7 +14,7 @@ class SimpleImputer(Transformer):
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=0, **kwargs):
+    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -31,7 +32,8 @@ class SimpleImputer(Transformer):
         self._all_null_cols = None
         super().__init__(parameters=parameters,
                          component_obj=imputer,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
@@ -44,7 +46,7 @@ class SimpleImputer(Transformer):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         # Convert all bool dtypes to category for fitting
@@ -65,24 +67,23 @@ class SimpleImputer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = infer_feature_types(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
-            return _convert_to_woodwork_structure(X)
+            return infer_feature_types(X)
 
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
         X_t = self._component_obj.transform(X)
         if X_null_dropped.empty:
             X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-            return _convert_to_woodwork_structure(X_t)
+            return infer_feature_types(X_t)
 
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        X_t = X_t.infer_objects()
         X_t.index = X_null_dropped.index
-        return _convert_to_woodwork_structure(X_t)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

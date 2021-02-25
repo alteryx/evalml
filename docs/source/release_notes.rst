@@ -1,6 +1,5 @@
 Release Notes
 -------------
-
 **Future Releases**
     * Enhancements
         * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
@@ -8,6 +7,42 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+
+**v0.19.0 Feb. 23, 2021**
+    * Enhancements
+        * Added a GitHub Action for Python windows unit tests :pr:`1844`
+        * Added a GitHub Action for checking updated release notes :pr:`1849`
+        * Added a GitHub Action for Python lint checks :pr:`1837`
+        * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
+        * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
+        * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
+        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
+        * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
+        * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
+        * Added full error traceback to AutoMLSearch logger file :pr:`1840`
+        * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
+        * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
+        * Added custom random undersampling sampler for classification :pr:`1857`
+        * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
+        * Added ``Engines`` pipeline processing API :pr:`1838`
+    * Fixes
+        * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
+        * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
+    * Changes
+        * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
+        * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
+        * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
+        * Added ``DataCheckError`` message in ``InvalidTargetDataCheck`` if input target is None and removed exception raised :pr:`1866`
+    * Documentation Changes
+    * Testing Changes
+        * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
+        * Pin graphviz version for windows builds :pr:`1847`
+        * Unpin graphviz version for windows builds :pr:`1851`
+
+.. warning::
+
+    **Breaking Changes**
+        * Added a deprecation warning to ``explain_prediction``. It will be deleted in the next release. :pr:`1860`
 
 
 **v0.18.2 Feb. 10, 2021**
@@ -26,6 +61,7 @@ Release Notes
         * Moving some prs to the right section of the release notes :pr:`1789`
         * Tweak README.md. :pr:`1800`
         * Fixed back arrow on install page docs :pr:`1795`
+        * Fixed docstring for `ClassImbalanceDataCheck.validate()` :pr:`1817`
     * Testing Changes
 
 **v0.18.1 Feb. 1, 2021**
@@ -35,7 +71,6 @@ Release Notes
         * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
         * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
         * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
-        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
     * Fixes
         * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
@@ -43,7 +78,7 @@ Release Notes
         * Remove ``ProphetRegressor`` from main as windows tests were flaky :pr:`1764`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
-        * Updated `clone()` for pipelines and components to copy over random state automatically :pr:`1753`
+        * Updated ``clone()`` for pipelines and components to copy over random state automatically :pr:`1753`
         * Dropped support for Python version 3.6 :pr:`1751`
         * Removed deprecated ``verbose`` flag from ``AutoMLSearch`` parameters :pr:`1772`
     * Documentation Changes
