@@ -352,7 +352,6 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": "dummy", "n_jobs": -1, "fake_param": "fake"} for p in next_batch])
 
 
-
 def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline_classes, logistic_regression_binary_pipeline_class):
     allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
