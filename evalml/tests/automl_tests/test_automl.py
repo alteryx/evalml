@@ -2268,6 +2268,7 @@ def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensem
     # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=ensembling, train_best_pipeline=False, optimize_thresholds=False)
     automl.search()
+    print(automl.full_rankings)
     if ensembling:
         assert automl.ensembling
         # check that the X_train data is all used for the length
@@ -2279,6 +2280,20 @@ def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensem
         assert not automl.X_ensemble
         for i in [-1, -2]:
             assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
+
+
+@patch('evalml.automl.automl_search.AutoMLSearch.rankings')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, X_y_binary):
+    X, y = X_y_binary
+    def get_ranking(val):
+        return pd.DataFrame({"id": val}, index=[0])
+    mock_rankings.return_value = [get_ranking(i) for i in range(100)]
+    # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=True)
+    automl.search()
+    print(automl.best_pipeline)
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):

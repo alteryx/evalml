@@ -562,7 +562,7 @@ class AutoMLSearch:
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         logger.info(desc)
-
+        breakpoint()
         self._find_best_pipeline()
         if self._best_pipeline is not None:
             best_pipeline = self.rankings.iloc[0]
@@ -582,7 +582,10 @@ class AutoMLSearch:
             if self._train_best_pipeline:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
-                X_train, y_train = self.X_train, self.y_train
+                if self._best_pipeline.model_family == ModelFamily.ENSEMBLE:
+                    X_train, y_train = self.X_ensemble, self.y_ensemble
+                else:
+                    X_train, y_train = self.X_train, self.y_train
                 if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
                    and self.optimize_thresholds and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
