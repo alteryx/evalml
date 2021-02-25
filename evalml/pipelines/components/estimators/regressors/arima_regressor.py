@@ -5,7 +5,7 @@ from skopt.space import Integer
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise
+from evalml.utils import deprecate_arg, import_or_raise
 
 
 class ARIMARegressor(Estimator):
@@ -24,16 +24,17 @@ class ARIMARegressor(Estimator):
     model_family = ModelFamily.ARIMA
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, date_column='date', p=0, d=0, q=0,
-                 random_seed=0, **kwargs):
-        self.date_column = date_column
-
+    def __init__(self, date_column=None, p=1, d=0, q=0,
+                 random_seed=0, random_state=None, **kwargs):
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         order = (p, d, q)
         parameters = {'order': order}
         parameters.update(kwargs)
+        self.date_column = date_column
 
         p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
-        import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
+        arima = import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
+        arima.ARIMA(endog=np.zeros(p + d + q + 1), **parameters)  # to validate parameters
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_seed=random_seed)
@@ -44,6 +45,8 @@ class ARIMARegressor(Estimator):
         if X is not None:
             if self.date_column in X.columns:
                 date_col = X[self.date_column]
+                X.drop([self.date_column], axis=1, inplace=True)
+                X.index = y.index
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
         elif isinstance(y.index, pd.DatetimeIndex):
@@ -63,8 +66,6 @@ class ARIMARegressor(Estimator):
         if y is None:
             raise ValueError('ARIMA Regressor requires y as input.')
         elif X is not None:
-            X = X.select_dtypes(include=['number'])
-            X.index = y.index
             arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **self.parameters)
         else:
             arima_with_data = arima.ARIMA(endog=y, dates=dates, **self.parameters)
@@ -80,8 +81,6 @@ class ARIMARegressor(Estimator):
         end = dates.max()
         params = self.parameters['order']
         if X is not None:
-            X = X.select_dtypes(include=['number'])
-            X.index = y.index
             y_pred = self._component_obj.predict(params=params, start=start, end=end, exog=X)
         else:
             y_pred = self._component_obj.predict(params=params, start=start, end=end)

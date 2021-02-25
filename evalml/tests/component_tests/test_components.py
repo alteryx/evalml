@@ -767,7 +767,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)], n_jobs=1)
             elif (component_class == StackedEnsembleRegressor):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)], n_jobs=1)
-        if ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types:
+        if isinstance(component, Estimator) and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types:
             X, y = ts_data
         else:
             X, y = X_y_binary
@@ -1088,17 +1088,22 @@ def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class
 
     supported_problem_types = estimator_class.supported_problem_types
 
-    if supported_problem_types == [ProblemTypes.TIME_SERIES_REGRESSION]:
-        X, y = ts_data
-    elif ProblemTypes.REGRESSION in supported_problem_types or ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+    ts_problem = False
+    if ProblemTypes.REGRESSION in supported_problem_types:
         X, y = X_y_regression
+    elif ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+        X, y = ts_data
+        ts_problem = True
     else:
         X, y = X_y_binary
 
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
-    if use_custom_index:
+    if use_custom_index and ts_problem:
+        X.index = pd.date_range("2020-10-01", "2020-10-31")
+        y.index = pd.date_range("2020-10-01", "2020-10-31")
+    elif use_custom_index and not ts_problem:
         gen = np.random.default_rng(seed=0)
         custom_index = gen.permutation(range(200, 200 + X.shape[0]))
         X.index = custom_index
