@@ -61,6 +61,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
     make_pipeline_from_components
 )
+from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes, is_time_series
 
 
@@ -123,7 +124,7 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -157,7 +158,7 @@ def test_make_pipeline(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -191,7 +192,7 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -225,7 +226,7 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -256,7 +257,7 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -290,7 +291,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -318,7 +319,7 @@ def test_make_pipeline_numpy_input(problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             if is_time_series(problem_type):
@@ -348,7 +349,7 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
         y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
+        if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
@@ -1613,9 +1614,8 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         assert set(predict_proba.columns) == set(unique_vals)
 
 
-@patch('evalml.pipelines.PipelineBase.fit')
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi, X_y_regression,
+def test_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_multi, X_y_regression,
                                    logistic_regression_binary_pipeline_class,
                                    logistic_regression_multiclass_pipeline_class,
                                    linear_regression_pipeline_class):
@@ -1634,22 +1634,37 @@ def test_pipeline_not_fitted_error(mock_fit, problem_type, X_y_binary, X_y_multi
     with pytest.raises(PipelineNotYetFittedError):
         clf.feature_importance
 
-    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+    if is_classification(problem_type):
         with pytest.raises(PipelineNotYetFittedError):
             clf.predict_proba(X)
 
     clf.fit(X, y)
-    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        with patch('evalml.pipelines.ClassificationPipeline.predict') as mock_predict:
+
+    if is_classification(problem_type):
+        to_patch = 'evalml.pipelines.ClassificationPipeline._predict'
+        if problem_type == ProblemTypes.BINARY:
+            to_patch = 'evalml.pipelines.BinaryClassificationPipeline._predict'
+        with patch(to_patch) as mock_predict:
             clf.predict(X)
             mock_predict.assert_called()
-        with patch('evalml.pipelines.ClassificationPipeline.predict_proba') as mock_predict_proba:
-            clf.predict_proba(X)
-            mock_predict_proba.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is None
+
+            mock_predict.reset_mock()
+            clf.predict(X, 'Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+            mock_predict.reset_mock()
+            clf.predict(X, objective='Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+        clf.predict_proba(X)
     else:
-        with patch('evalml.pipelines.RegressionPipeline.predict') as mock_predict:
-            clf.predict(X)
-            mock_predict.assert_called()
+        clf.predict(X)
     clf.feature_importance
 
 
