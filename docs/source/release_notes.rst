@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
     * Fixes
     * Changes
     * Documentation Changes
