@@ -1,9 +1,17 @@
 Release Notes
 -------------
-
 **Future Releases**
     * Enhancements
         * Added a GitHub Action for Linux unit tests :pr:`1846`
+    * Fixes
+        * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
+    * Changes
+        * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
+    * Documentation Changes
+    * Testing Changes
+
+**v0.19.0 Feb. 23, 2021**
+    * Enhancements
         * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
         * Added a GitHub Action for Python lint checks :pr:`1837`
@@ -16,13 +24,16 @@ Release Notes
         * Added full error traceback to AutoMLSearch logger file :pr:`1840`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
         * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
+        * Added custom random undersampling sampler for classification :pr:`1857`
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
+        * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
         * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
+        * Added ``DataCheckError`` message in ``InvalidTargetDataCheck`` if input target is None and removed exception raised :pr:`1866`
     * Documentation Changes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
