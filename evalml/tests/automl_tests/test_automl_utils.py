@@ -14,9 +14,9 @@ from evalml.automl.utils import (
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
-    BalancedClassificationDataCVSplit,
     TimeSeriesSplit,
-    TrainingValidationSplit
+    TrainingValidationSplit,
+    BalancedClassificationDataCVSplit
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
@@ -129,7 +129,7 @@ def test_make_data_splitter_error():
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @pytest.mark.parametrize("large_data", [True, False])
-def test_make_data_splitter_no_error_shuffle_random_state(problem_type, large_data):
+def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data):
     n = 10
     if large_data:
         n = _LARGE_DATA_ROW_THRESHOLD + 1
@@ -137,7 +137,11 @@ def test_make_data_splitter_no_error_shuffle_random_state(problem_type, large_da
                       'target': list(range(n))})
     y = X.pop('target')
 
-    make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
+    if large_data:
+        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
+    else:
+        with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
+            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
 
 
 def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
