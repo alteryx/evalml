@@ -2289,12 +2289,14 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, X_
     X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='multiclass', test_size=0.2)
     # we want to make sure the best pipeline chosen was the stacked ensembler, which is the 90th pipeline
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=True)
-    mock_rankings.return_value = pd.DataFrame({"id": 90, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
-    automl.search()
     if has_minimal_dependencies:
-        assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
-        assert len(mock_fit.call_args_list[-1][0][0]) == len(X_ensemble)
-        assert len(mock_fit.call_args_list[-1][0][1]) == len(y_ensemble)
+        mock_rankings.return_value = pd.DataFrame({"id": 58, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
+    else:
+        mock_rankings.return_value = pd.DataFrame({"id": 90, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
+    automl.search()
+    assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
+    assert len(mock_fit.call_args_list[-1][0][0]) == len(X_ensemble)
+    assert len(mock_fit.call_args_list[-1][0][1]) == len(y_ensemble)
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):
