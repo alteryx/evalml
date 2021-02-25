@@ -142,10 +142,12 @@ def _aggreggate_shap_values_dict(values, provenance):
 
     agg_values = {}
     for feature_name, shap_list in values.items():
+        # Only aggregate features for which we know the parent-feature
         if feature_name in child_to_parent:
             parent = child_to_parent[feature_name]
             if parent not in agg_values:
                 agg_values[parent] = [0] * len(shap_list)
+            # Elementwise-sum without numpy
             agg_values[parent] = list(map(add, agg_values[parent], shap_list))
         else:
             agg_values[feature_name] = shap_list
