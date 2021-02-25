@@ -355,20 +355,18 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
 def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline_classes, logistic_regression_binary_pipeline_class):
     allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
-    assert algo.pipeline_number == 0
-    assert algo.batch_number == 0
-    assert algo.allowed_pipelines == allowed_pipelines
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
-    assert len(next_batch) == len(allowed_pipelines)
-    assert [p.__class__ for p in next_batch] == allowed_pipelines
-    assert algo.pipeline_number == len(allowed_pipelines)
-    assert algo.batch_number == 1
-    assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
-
     scores = np.arange(0, len(next_batch))
-    for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline, {"id": score})
-    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 0
-    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 1
+    for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number + pipeline_num})
+    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 2
+    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 3
+
+    for i in range(1, 3):
+        next_batch = algo.next_batch()
+        scores = -np.arange(1, len(next_batch))  # Score always gets better with each pipeline
+        for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
+            algo.add_result(score, pipeline, {"id": algo.pipeline_number + pipeline_num})
+            assert algo._best_pipeline_info[pipeline.model_family]['id'] == algo.pipeline_number + pipeline_num
