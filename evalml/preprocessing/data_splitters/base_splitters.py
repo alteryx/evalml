@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+import pandas as pd
 from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.utils.woodwork_utils import (
@@ -44,8 +45,9 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
             Returns:
                 list: List of indices to keep
         """
-        X_ww = infer_feature_types(X)
         y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        return self.sampler.fit_resample(X, y)
+        index_df = pd.Series(y.index)
+        train_index_drop = self.sampler.fit_resample(X, y)
+        train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
+        return train_indices

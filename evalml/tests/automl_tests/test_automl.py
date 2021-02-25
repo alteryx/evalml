@@ -2262,3 +2262,15 @@ def test_automl_raises_deprecated_random_state_warning(X_y_multi):
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
         assert automl.random_seed == 10
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+@patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform', return_value=[0, 1, 2])
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={'Log Loss Multiclass': 0.2})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_best_pipeline_data_splitter_transform(mock_fit, mock_score, mock_transform, X_y_multi):
+    X, y = X_y_multi
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass')
+    automl.search()
+    assert mock_transform.is_called()
+    # since we have the transformer return 3 indices only, we want to make sure the last training sample, after transform, has 3 values only
+    assert len(mock_fit.call_args_list[-1][0][0]) == 3

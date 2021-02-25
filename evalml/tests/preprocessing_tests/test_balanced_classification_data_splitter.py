@@ -70,6 +70,7 @@ def test_data_splitter_tv_default(data_type, make_data_type, dataset, X_y_binary
     assert len(final_indices) == len(indices)
     # make sure we have no more than 50 samples per class (since min class has at most 50 samples)
     assert len(final_indices) <= 50 * (dataset + 2)
+    assert isinstance(final_indices, list)
 
 
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
@@ -102,3 +103,4 @@ def test_data_splitter_cv_default(data_type, make_data_type, dataset, X_y_binary
     final_indices = data_splitter.transform(X_extended, y_extended)
     assert len(final_indices) == len(indices)
     assert len(final_indices) <= 50 * (dataset + 2)
+    assert isinstance(final_indices, list)
