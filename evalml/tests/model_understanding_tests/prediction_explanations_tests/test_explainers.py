@@ -1009,3 +1009,32 @@ def test_categories_aggregated_but_not_those_that_are_dropped(pipeline_class, es
         assert explanation['drill_down'].keys() == {"currency", "provider"}
         assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
         assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, fraud_100):
+
+    X, y = fraud_100
+    y = y.to_series()
+
+    class LinearPipelineDropDates(pipeline_class):
+        component_graph = ["Select Columns Transformer", "One Hot Encoder",
+                           "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
+
+    pipeline = LinearPipelineDropDates({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
+                                                                                   "datetime"]},
+                                        "Drop Columns Transformer": {"columns": ["datetime_month", "datetime_hour"]},
+                                        estimator: {"n_jobs": 1}})
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=4)
+    for explanation in report["explanations"][0]['explanations']:
+        assert set(explanation['feature_names']) == {"amount", "provider", "currency", "datetime"}
+        assert set(explanation['feature_values']) == {"CUC", "Mastercard", 24900, pd.Timestamp('2019-01-01 00:12:26')}
+        assert explanation['drill_down'].keys() == {"currency", "provider", "datetime"}
+        assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
+        assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
+        assert set(explanation['drill_down']['datetime']['feature_names']) == {"datetime_year", "datetime_day_of_week"}
