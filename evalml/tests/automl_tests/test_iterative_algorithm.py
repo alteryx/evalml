@@ -350,3 +350,26 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
 
     next_batch = algo.next_batch()
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": "dummy", "n_jobs": -1, "fake_param": "fake"} for p in next_batch])
+
+
+
+def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline_classes, logistic_regression_binary_pipeline_class):
+    allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class]
+    algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
+    assert algo.pipeline_number == 0
+    assert algo.batch_number == 0
+    assert algo.allowed_pipelines == allowed_pipelines
+
+    # initial batch contains one of each pipeline, with default parameters
+    next_batch = algo.next_batch()
+    assert len(next_batch) == len(allowed_pipelines)
+    assert [p.__class__ for p in next_batch] == allowed_pipelines
+    assert algo.pipeline_number == len(allowed_pipelines)
+    assert algo.batch_number == 1
+    assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
+
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": score})
+    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 0
+    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 1
