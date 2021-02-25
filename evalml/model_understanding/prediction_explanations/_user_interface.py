@@ -6,7 +6,6 @@ from texttable import Texttable
 from evalml.model_understanding.prediction_explanations._algorithms import (
     _aggregate_shap_values,
     _compute_shap_values,
-    _keep_only_children_features,
     _normalize_shap_values
 )
 from evalml.problem_types import ProblemTypes
@@ -136,23 +135,22 @@ def _make_text_table(shap_values, normalized_values, pipeline_features, original
 class _TableMaker(abc.ABC):
     """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
 
-    def __init__(self, top_k, include_shap_values, pipeline):
+    def __init__(self, top_k, include_shap_values, provenance):
         self.top_k = top_k
         self.include_shap_values = include_shap_values
-        self.pipeline = pipeline
+        self.provenance = provenance
 
     @staticmethod
-    def make_drill_down_dict(pipeline, shap_values, normalized_values, pipeline_features,
+    def make_drill_down_dict(provenance, shap_values, normalized_values, pipeline_features,
                              original_features, include_shap_values):
         drill_down = {}
-        for parent_feature, children_features in pipeline._get_feature_provenance().items():
+        for parent_feature, children_features in provenance.items():
             shap_for_children = {k: v for k, v in shap_values.items() if k in children_features}
             agg_for_children = {k: v for k, v in normalized_values.items() if k in children_features}
-            if shap_for_children:
-                top_k = len(agg_for_children)
-                rows = _make_rows(shap_for_children, agg_for_children, pipeline_features, original_features,
-                                  top_k=top_k, include_shap_values=include_shap_values, convert_numeric_to_string=False)
-                drill_down[parent_feature] = _rows_to_dict(rows)
+            top_k = len(agg_for_children)
+            rows = _make_rows(shap_for_children, agg_for_children, pipeline_features, original_features,
+                              top_k=top_k, include_shap_values=include_shap_values, convert_numeric_to_string=False)
+            drill_down[parent_feature] = _rows_to_dict(rows)
         return drill_down
 
     @abc.abstractmethod
@@ -191,7 +189,7 @@ class _RegressionSHAPTable(_TableMaker):
         rows = _make_rows(aggregated_shap_values, aggregated_normalized_values, pipeline_features, original_features,
                           self.top_k, self.include_shap_values, convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
-        drill_down = self.make_drill_down_dict(self.pipeline, shap_values, normalized_values,
+        drill_down = self.make_drill_down_dict(self.provenance, shap_values, normalized_values,
                                                pipeline_features, original_features, self.include_shap_values)
         json_rows["class_name"] = None
         json_rows["drill_down"] = drill_down
@@ -201,10 +199,9 @@ class _RegressionSHAPTable(_TableMaker):
 class _BinarySHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a binary classification problem."""
 
-    def __init__(self, top_k, include_shap_values, class_names, pipeline):
-        super().__init__(top_k, include_shap_values, pipeline)
+    def __init__(self, top_k, include_shap_values, class_names, provenance):
+        super().__init__(top_k, include_shap_values, provenance)
         self.class_names = class_names
-        self.pipeline = pipeline
 
     def make_text(self, aggregated_shap_values, aggregated_normalized_values,
                   shap_values, normalized_values, pipeline_features, original_features):
@@ -218,7 +215,7 @@ class _BinarySHAPTable(_TableMaker):
         rows = _make_rows(aggregated_shap_values[1], aggregated_normalized_values[1], pipeline_features, original_features,
                           self.top_k, self.include_shap_values, convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
-        drill_down = self.make_drill_down_dict(self.pipeline, shap_values[1], normalized_values[1],
+        drill_down = self.make_drill_down_dict(self.provenance, shap_values[1], normalized_values[1],
                                                pipeline_features, original_features, self.include_shap_values)
         json_rows["drill_down"] = drill_down
         json_rows["class_name"] = _make_json_serializable(self.class_names[1])
@@ -228,8 +225,8 @@ class _BinarySHAPTable(_TableMaker):
 class _MultiClassSHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a multiclass classification problem."""
 
-    def __init__(self, top_k, include_shap_values, class_names, pipeline):
-        super().__init__(top_k, include_shap_values, pipeline)
+    def __init__(self, top_k, include_shap_values, class_names, provenance):
+        super().__init__(top_k, include_shap_values, provenance)
         self.class_names = class_names
 
     def make_text(self, aggregated_shap_values, aggregated_normalized_values,
@@ -252,7 +249,7 @@ class _MultiClassSHAPTable(_TableMaker):
                               pipeline_features, original_features, self.top_k,
                               self.include_shap_values, convert_numeric_to_string=False)
             json_output_for_class = _rows_to_dict(rows)
-            drill_down = self.make_drill_down_dict(self.pipeline, shap_values[class_index],
+            drill_down = self.make_drill_down_dict(self.provenance, shap_values[class_index],
                                                    normalized_values[class_index], pipeline_features, original_features,
                                                    self.include_shap_values)
             json_output_for_class["drill_down"] = drill_down
@@ -289,29 +286,27 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0))
     normalized_values = _normalize_shap_values(shap_values)
 
-    aggregated_shap_values = _aggregate_shap_values(pipeline, shap_values)
+    provenance = pipeline._get_feature_provenance()
+    aggregated_shap_values = _aggregate_shap_values(shap_values, provenance)
     aggregated_normalized_shap_values = _normalize_shap_values(aggregated_shap_values)
-
-    children_shap_values = _keep_only_children_features(shap_values, aggregated_shap_values)
-    normalized_children_shap_values = _keep_only_children_features(normalized_values, aggregated_normalized_shap_values)
 
     class_names = None
     if hasattr(pipeline, "classes_"):
         class_names = pipeline.classes_
 
-    table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, pipeline),
-                    ProblemTypes.BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, pipeline),
-                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, pipeline),
-                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, pipeline),
-                    ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, pipeline),
-                    ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, pipeline)}
+    table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, provenance),
+                    ProblemTypes.BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, provenance),
+                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, provenance),
+                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, provenance),
+                    ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, provenance),
+                    ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, provenance)}
 
     table_maker_class = table_makers[pipeline.problem_type]
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
     return table_maker(aggregated_shap_values, aggregated_normalized_shap_values,
-                       children_shap_values, normalized_children_shap_values, pipeline_features_row, input_features_row)
+                       shap_values, normalized_values, pipeline_features_row, input_features_row)
 
 
 class _SectionMaker(abc.ABC):

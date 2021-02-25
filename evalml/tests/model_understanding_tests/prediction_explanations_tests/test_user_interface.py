@@ -1,7 +1,6 @@
 import copy
 import json
 from itertools import product
-from unittest.mock import MagicMock
 
 import numpy as np
 import pandas as pd
@@ -89,7 +88,6 @@ regression_pipeline_features = pd.DataFrame({"a": 7.5, "b": 2.77, "c": 1.57, "d"
                                              "foo": -20, "bar": -30}, index=[31])
 regression_original_features = pd.DataFrame({"a": 0.75, "b": 0.277, "c": 0.57, "d": 1.91, "e": 1.71, "f": -1.21,
                                              "foo": -20, "bar": -40}, index=[31])
-
 
 regression_table = """Feature Name  Feature Value Contribution to Prediction
                       =========================================================
@@ -306,17 +304,15 @@ def test_make_single_prediction_table(values, normalized_values, pipeline_featur
 
     class_names = ["0", "1", "2"]
 
-    pipeline_mock = MagicMock()
-
     if isinstance(values, list):
         if len(values) > 2:
             table_maker = _MultiClassSHAPTable(top_k=3, include_shap_values=include_shap,
-                                               class_names=class_names, pipeline=pipeline_mock)
+                                               class_names=class_names, provenance={})
         else:
             table_maker = _BinarySHAPTable(class_names=class_names, top_k=3, include_shap_values=include_shap,
-                                           pipeline=pipeline_mock)
+                                           provenance={})
     else:
-        table_maker = _RegressionSHAPTable(top_k=3, include_shap_values=include_shap, pipeline=pipeline_mock)
+        table_maker = _RegressionSHAPTable(top_k=3, include_shap_values=include_shap, provenance={})
 
     table_maker = table_maker.make_text if output_format == "text" else table_maker.make_dict
 

@@ -16,6 +16,9 @@ from evalml.model_understanding.prediction_explanations.explainers import (
     explain_predictions_best_worst
 )
 from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
@@ -825,3 +828,184 @@ def test_json_serialization(problem_type, X_y_regression, linear_regression_pipe
 
     report = explain_predictions(pipeline, pd.DataFrame(X), y=y, output_format="dict", indices_to_explain=[0])
     assert json.loads(json.dumps(report)) == report
+
+
+def transform_y_for_problem_type(problem_type, y):
+
+    if problem_type == ProblemTypes.REGRESSION:
+        y = y.astype("int")
+    elif problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series(y).astype("str")
+        y[:20] = "2"
+    return y
+
+
+EXPECTED_DATETIME_FEATURES = {'datetime_hour', 'datetime_year', 'datetime_month', 'datetime_day_of_week'}
+
+EXPECTED_DATETIME_FEATURES_OHE = {'datetime_hour', 'datetime_year', 'datetime_month_3',
+                                  'datetime_day_of_week_0', 'datetime_day_of_week_1', 'datetime_day_of_week_2', 'datetime_day_of_week_3',
+                                  'datetime_day_of_week_4', 'datetime_day_of_week_5', 'datetime_day_of_week_6',
+                                  'datetime_month_0', 'datetime_month_1', 'datetime_month_2', 'datetime_month_4',
+                                  'datetime_month_5', 'datetime_month_6', 'datetime_month_7'}
+
+EXPECTED_CURRENCY_FEATURES = {'currency_XDR', 'currency_MUR', 'currency_NIS', 'currency_CNY', 'currency_TZS',
+                              'currency_LAK', 'currency_MOP', 'currency_IMP', 'currency_QAR', 'currency_EGP'}
+
+EXPECTED_PROVIDER_FEATURES_OHE = {'provider_JCB 16 digit', 'provider_Discover', 'provider_American Express',
+                                  'provider_JCB 15 digit', 'provider_Maestro', 'provider_VISA 19 digit',
+                                  'provider_VISA 13 digit', 'provider_Mastercard', 'provider_VISA 16 digit',
+                                  'provider_Diners Club / Carte Blanche'}
+
+EXPECTED_PROVIDER_FEATURES_TEXT = {'DIVERSITY_SCORE(provider)', 'LSA(provider)[0]', 'LSA(provider)[1]',
+                                   'MEAN_CHARACTERS_PER_WORD(provider)', 'POLARITY_SCORE(provider)'}
+
+pipeline_test_cases = [(BinaryClassificationPipeline, "Random Forest Classifier"),
+                       (RegressionPipeline, "Random Forest Regressor"),
+                       (MulticlassClassificationPipeline, "Random Forest Classifier")]
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_100):
+
+    X, y = fraud_100
+    y = y.to_series()
+
+    class LinearPipelineBinary(pipeline_class):
+        component_graph = ["Select Columns Transformer", "One Hot Encoder",
+                           "DateTime Featurization Component", estimator]
+
+    pipeline = LinearPipelineBinary({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency"]},
+                                     estimator: {"n_jobs": 1}})
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dict")
+    for explanation in report["explanations"][0]['explanations']:
+        assert set(explanation['feature_names']) == {"amount", "provider", "currency"}
+        assert set(explanation['feature_values']) == {"CUC", "Mastercard", 24900}
+        assert explanation['drill_down'].keys() == {"currency", "provider"}
+        assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
+        assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
+
+    X, y = fraud_100
+    y = y.to_series()
+    X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
+
+    class LinearPipelineText(pipeline_class):
+        component_graph = ["Select Columns Transformer", "One Hot Encoder",
+                           "Text Featurization Component", "DateTime Featurization Component",
+                           estimator]
+
+    pipeline = LinearPipelineText({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency", 'datetime']},
+                                   estimator: {"n_jobs": 1}})
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], top_k_features=4, output_format="dict")
+    for explanation in report["explanations"][0]['explanations']:
+        assert set(explanation['feature_names']) == {"amount", "provider", "currency", "datetime"}
+        assert set(explanation['feature_values']) == {"CUC", "Mastercard", 24900, pd.Timestamp('2019-01-01 00:12:26')}
+        assert explanation['drill_down'].keys() == {"currency", "provider", "datetime"}
+        assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
+        assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_TEXT
+        assert set(explanation['drill_down']['datetime']['feature_names']) == EXPECTED_DATETIME_FEATURES
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
+
+    X, y = fraud_100
+    y = y.to_series()
+
+    class LinearPipelineEncodeDatesAsCategory(pipeline_class):
+        component_graph = ["Select Columns Transformer", "DateTime Featurization Component",
+                           "One Hot Encoder", estimator]
+
+    pipeline = LinearPipelineEncodeDatesAsCategory({"Select Columns Transformer": {'columns': ['datetime', 'amount', 'provider', "currency"]},
+                                                    'DateTime Featurization Component': {"encode_as_categories": True},
+                                                    estimator: {"n_jobs": 1}})
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=7)
+
+    for explanation in report["explanations"][0]['explanations']:
+        assert set(explanation['feature_names']) == {"amount", "provider", "currency", "datetime"}
+        assert set(explanation['feature_values']) == {pd.Timestamp('2019-01-01 00:12:26'), 'Mastercard', 'CUC', 24900}
+        assert explanation['drill_down'].keys() == {"currency", "provider", "datetime"}
+        assert set(explanation['drill_down']['datetime']['feature_names']) == EXPECTED_DATETIME_FEATURES_OHE
+        assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
+        assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
+
+    X, y = fraud_100
+    y = y.to_series()
+
+    class PcaDagPipeline(pipeline_class):
+        component_graph = {
+            'SelectNumeric': ["Select Columns Transformer"],
+            'SelectCategorical': ["Select Columns Transformer"],
+            'SelectDate': ["Select Columns Transformer"],
+            'OHE': ['One Hot Encoder', 'SelectCategorical'],
+            'DT': ['DateTime Featurization Component', "SelectDate"],
+            'PCA': ['PCA Transformer', 'SelectNumeric'],
+            'Estimator': [estimator, 'PCA', 'DT', 'OHE'],
+        }
+
+    pipeline = PcaDagPipeline({'SelectNumeric': {'columns': ['card_id', 'store_id', 'amount', 'lat', 'lng']},
+                               'SelectCategorical': {'columns': ['currency', 'provider']},
+                               'SelectDate': {'columns': ['datetime']},
+                               'PCA': {"n_components": 2},
+                               'Estimator': {"n_jobs": 1}})
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=7)
+
+    for explanation in report["explanations"][0]["explanations"]:
+        assert set(explanation['feature_names']) == {"component_0", "component_1", "provider", "currency", "datetime"}
+        assert all([f in explanation['feature_values'] for f in [pd.Timestamp('2019-01-01 00:12:26'), 'Mastercard', 'CUC']])
+        assert explanation['drill_down'].keys() == {"currency", "provider", "datetime"}
+        assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
+        assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
+        assert set(explanation['drill_down']['datetime']['feature_names']) == EXPECTED_DATETIME_FEATURES
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_but_not_those_that_are_dropped(pipeline_class, estimator, fraud_100):
+
+    X, y = fraud_100
+    y = y.to_series()
+
+    class LinearPipelineDropDates(pipeline_class):
+        component_graph = ["Select Columns Transformer", "One Hot Encoder",
+                           "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
+
+    pipeline = LinearPipelineDropDates({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
+                                                                                   "datetime"]},
+                                        "Drop Columns Transformer": {"columns": list(EXPECTED_DATETIME_FEATURES)},
+                                        estimator: {"n_jobs": 1}})
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dict")
+    for explanation in report["explanations"][0]['explanations']:
+        assert set(explanation['feature_names']) == {"amount", "provider", "currency"}
+        assert set(explanation['feature_values']) == {"CUC", "Mastercard", 24900}
+        assert explanation['drill_down'].keys() == {"currency", "provider"}
+        assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
+        assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
