@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ARIMARegressor :pr:`1894`
     * Fixes
     * Changes
     * Documentation Changes
