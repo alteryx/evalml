@@ -39,14 +39,17 @@ class ARIMARegressor(Estimator):
                          random_seed=random_seed)
 
     def get_dates(self, X, y):
-        if isinstance(y.index, pd.DatetimeIndex):
-            date_col = y.index
-        elif X is not None:
+        date_col = None
+
+        if X is not None:
             if self.date_column in X.columns:
                 date_col = X[self.date_column]
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-        else:
+        elif isinstance(y.index, pd.DatetimeIndex):
+            date_col = y.index
+
+        if date_col is None:
             msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. If not it will look for the datetime column in the index of X or y."
             raise ValueError(msg)
         return date_col
@@ -60,12 +63,14 @@ class ARIMARegressor(Estimator):
         if y is None:
             raise ValueError('ARIMA Regressor requires y as input.')
         elif X is not None:
+            X = X.select_dtypes(include=['number'])
+            X.index = y.index
             arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **self.parameters)
         else:
             arima_with_data = arima.ARIMA(endog=y, dates=dates, **self.parameters)
 
         self._component_obj = arima_with_data
-        self._component_obj.fit(solver='nm')
+        self._component_obj.fit(solver='nm', disp=0)
         return self
 
     def predict(self, X, y=None):
@@ -74,7 +79,9 @@ class ARIMARegressor(Estimator):
         start = dates.min()
         end = dates.max()
         params = self.parameters['order']
-        if X:
+        if X is not None:
+            X = X.select_dtypes(include=['number'])
+            X.index = y.index
             y_pred = self._component_obj.predict(params=params, start=start, end=end, exog=X)
         else:
             y_pred = self._component_obj.predict(params=params, start=start, end=end)
