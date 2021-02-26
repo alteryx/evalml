@@ -101,7 +101,7 @@ class BalancedClassificationSampler(SamplerBase):
 
 
 class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
-    """Base class for TV and CV split for Balanced Classification Data Sampler"""
+    """Data splitter for generating training and validation split using Balanced Classification Data Sampler."""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=None, shuffle=True, random_seed=0):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
@@ -131,7 +131,7 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
 
 
 class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
-    """Base class for TV and CV split for Balanced Classification Data Sampler"""
+    """Data splitter for generating k-fold cross-validation split using Balanced Classification Data Sampler."""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, n_splits=3, shuffle=True, random_seed=0):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
