@@ -28,14 +28,22 @@ jobs:
           python-version: 3.8
       - name: Checkout repository
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: https://github.com/conda-forge/evalml-core-feedstock
       - name: Install Dependencies
         run: |
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps-test
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: 'main'
+          repository: 'conda-forge/evalml-core-feedstock'
       - run: |
-          git clone https://github.com/conda-forge/evalml-core-feedstock
+#          git clone https://github.com/conda-forge/evalml-core-feedstock
           source test_python/bin/activate
           mkdir evalml-core-feedstock/evalml
           cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
