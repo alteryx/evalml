@@ -585,7 +585,12 @@ class AutoMLSearch:
                 if self._best_pipeline.model_family == ModelFamily.ENSEMBLE:
                     X_train, y_train = self.X_ensemble, self.y_ensemble
                 else:
-                    X_train, y_train = self.X_train, self.y_train
+                    if self.X_ensemble:
+                        X_train = self.X_train.to_dataframe().append(self.X_ensemble.to_dataframe(), ignore_index=True)
+                        y_train = self.y_train.to_series().append(self.y_ensemble.to_series(), ignore_index=True)
+                    else:
+                        X_train = self.X_train
+                        y_train = self.y_train
                 if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
                    and self.optimize_thresholds and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,

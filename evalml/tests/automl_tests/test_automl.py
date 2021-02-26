@@ -2281,22 +2281,39 @@ def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensem
             assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
 
 
+@pytest.mark.parametrize("best_pipeline", [-1, -2])
 @patch('evalml.automl.automl_search.AutoMLSearch.rankings', new_callable=PropertyMock)
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, X_y_binary, has_minimal_dependencies):
+def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, best_pipeline, X_y_binary, has_minimal_dependencies):
     X, y = X_y_binary
     X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='multiclass', test_size=0.2)
-    # we want to make sure the best pipeline chosen was the stacked ensembler, which is the 90th or 58th pipeline, depending on dependencies
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=True)
-    if has_minimal_dependencies:
-        mock_rankings.return_value = pd.DataFrame({"id": 57, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
-    else:
-        mock_rankings.return_value = pd.DataFrame({"id": 90, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=10, ensembling=True)
+    # when best_pipeline == -1, model is ensembling,
+    # otherwise, the model is a different model
+    # the ensembling_num formula is taken from AutoMLSearch
+    ensembling_num = (1 + len(automl.allowed_pipelines) + len(automl.allowed_pipelines) * automl._pipelines_per_batch + 1) + best_pipeline
+    mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
     automl.search()
-    assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
-    assert len(mock_fit.call_args_list[-1][0][0]) == len(X_ensemble)
-    assert len(mock_fit.call_args_list[-1][0][1]) == len(y_ensemble)
+    if best_pipeline == -1:
+        assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
+        assert len(mock_fit.call_args_list[-1][0][0]) == len(X_ensemble)
+        assert len(mock_fit.call_args_list[-1][0][1]) == len(y_ensemble)
+    else:
+        assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
+        assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+        assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_no_ensembling_best_pipeline(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    # does not ensemble
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_iterations=2)
+    automl.search()
+    assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+    assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):
