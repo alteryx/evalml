@@ -124,7 +124,8 @@ def _aggreggate_shap_values_dict(values, provenance):
 
     After this function, the values dictionary will look like: {"text_feature": [0.55]}
 
-    This aggregation will happen for all features created by the TextFeaturizer, LSA, and OHE, and NOT the DateTimeFeaturizer.
+    This aggregation will happen for all features for which we know the provenance/lineage. Other features will
+    be left as they are.
 
     Arguments:
         values (dict):  A mapping of feature names to a list of SHAP values for each data point.
