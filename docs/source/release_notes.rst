@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added a GitHub Action for Linux unit tests :pr:`1846`
+        * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
     * Changes
