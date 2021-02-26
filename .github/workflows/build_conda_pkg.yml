@@ -40,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: 'main'
+          ref: 'master'
           repository: 'conda-forge/evalml-core-feedstock'
       - run: |
           source test_python/bin/activate
