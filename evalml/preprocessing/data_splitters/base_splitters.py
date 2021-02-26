@@ -5,7 +5,7 @@ from evalml.utils import _convert_numeric_dataset_pandas
 
 
 class BaseSamplingSplitter(BaseCrossValidator):
-    """Base class for training validation data splitter."""
+    """Base class for training validation and cv data splitter."""
 
     def __init__(self, sampler=None, test_size=None, n_splits=3, shuffle=True, split_type="TV", random_seed=0):
         """Create a TV or CV data splitter instance
@@ -51,7 +51,7 @@ class BaseSamplingSplitter(BaseCrossValidator):
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, random_state=self.random_seed)
             if self.sampler is not None:
                 X_train, y_train = self.sampler.fit_resample(X_train, y_train)
-            return iter([(X_train, y_train), (X_test, y_test)])
+            yield iter([(X_train, y_train), (X_test, y_test)])
         else:
             for i, (train_indices, test_indices) in enumerate(self.splitter.split(X, y)):
                 X_train, X_test, y_train, y_test = X.iloc[train_indices], X.iloc[test_indices], y.iloc[train_indices], y.iloc[test_indices]

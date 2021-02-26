@@ -25,15 +25,15 @@ im_us = pytest.importorskip('imblearn.under_sampling', reason='Skipping data spl
 def test_empty_sampler_tv(X_y_binary):
     # ensure base splitters work with no sampler
     X, y = X_y_binary
-    r = BaseSamplingSplitter(sampler=None, split_type="TV", random_seed=0)
+    bss = BaseSamplingSplitter(sampler=None, split_type="TV", random_seed=0)
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
-    for train, test in r.split(X, y):
+    for i, (train, test) in enumerate(bss.split(X, y)):
         np.testing.assert_equal(X_train, train[0])
         np.testing.assert_equal(y_train, train[1])
         np.testing.assert_equal(X_test, test[0])
         np.testing.assert_equal(y_test, test[1])
 
-    X2, y2 = r.transform(X, y)
+    X2, y2 = bss.transform(X, y)
     np.testing.assert_equal(X2, X)
     np.testing.assert_equal(y2, y)
 
