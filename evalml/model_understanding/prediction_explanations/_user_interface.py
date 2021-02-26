@@ -148,6 +148,12 @@ class _TableMaker(abc.ABC):
     @staticmethod
     def make_drill_down_dict(provenance, shap_values, normalized_values, pipeline_features,
                              original_features, include_shap_values):
+        """Format the 'drill_down' section of the explanation report when output_format="dict"
+
+        This section will include the feature values, feature names, qualitative explanation
+        and shap values (if include_shap_values=True) for the features created from one of the
+        original features in the data.
+        """
         drill_down = {}
         for parent_feature, children_features in provenance.items():
             shap_for_children = {k: v for k, v in shap_values.items() if k in children_features}
@@ -173,8 +179,12 @@ class _TableMaker(abc.ABC):
         data = self.make_dict(aggregated_shap_values, aggregated_normalized_values,
                               shap_values=shap_values, normalized_values=normalized_values,
                               pipeline_features=pipeline_features, original_features=original_features)['explanations']
+
+        # Not including the drill down dict for dataframes
+        # 'drill_down' is always included in the dict output so we can delete it
         for d in data:
             del d['drill_down']
+
         df = pd.concat(map(pd.DataFrame, data)).reset_index(drop=True)
         if "class_name" in df.columns and df['class_name'].isna().all():
             df = df.drop(columns=['class_name'])
