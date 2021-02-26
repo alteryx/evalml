@@ -158,16 +158,12 @@ def test_default_data_checks_regression(input_type):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
         y_no_variance = ww.DataColumn(y_no_variance)
-    id_leakage = [DataCheckWarning(message="Column 'id' is 95.0% or more correlated with the target",
-                                   data_check_name="TargetLeakageDataCheck",
-                                   message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                   details={"column": "id"}).to_dict()]
     null_leakage = [DataCheckWarning(message="Column 'lots_of_null' is 95.0% or more correlated with the target",
                                      data_check_name="TargetLeakageDataCheck",
                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                      details={"column": "lots_of_null"}).to_dict()]
     data_checks = DefaultDataChecks("regression", get_default_primary_search_objective("regression"))
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {"warnings": messages[:3] + null_leakage, "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
@@ -178,7 +174,7 @@ def test_default_data_checks_regression(input_type):
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
 
 
 def test_default_data_checks_time_series_regression():
