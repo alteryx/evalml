@@ -73,6 +73,6 @@ jobs:
           make git-test
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
-        run: |
-          source test_python/bin/activate
-          codecov --required
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
