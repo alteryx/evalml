@@ -4,7 +4,7 @@ from evalml.data_checks import DataCheckAction, DataCheckActionCode
 def test_data_check_action_attributes():
     data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL)
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
-    assert data_check_action.details is None
+    assert data_check_action.details == {}
 
     data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL, {})
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
@@ -44,6 +44,6 @@ def test_data_check_action_to_dict():
     data_check_action_empty_details = DataCheckAction(DataCheckActionCode.DROP_COL, details={})
     data_check_action_with_details = DataCheckAction(DataCheckActionCode.DROP_COL, details={"some detail": ["this is different"]})
 
-    assert data_check_action.to_dict() == {"code": DataCheckActionCode.DROP_COL.name}
+    assert data_check_action.to_dict() == {"code": DataCheckActionCode.DROP_COL.name, "details": {}}
     assert data_check_action_empty_details.to_dict() == {"code": DataCheckActionCode.DROP_COL.name, "details": {}}
     assert data_check_action_with_details.to_dict() == {"code": DataCheckActionCode.DROP_COL.name, "details": {"some detail": ["this is different"]}}

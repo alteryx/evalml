@@ -10,7 +10,7 @@ class DataCheckAction:
             details (dict, optional): Additional useful information associated with the action
         """
         self.action_code = action_code
-        self.details = details
+        self.details = details or {}
 
     def __eq__(self, other):
         """Checks for equality. Two DataCheckAction objs are considered equivalent if all of their attributes are equivalent."""
@@ -18,7 +18,8 @@ class DataCheckAction:
                 self.details == other.details)
 
     def to_dict(self):
-        action_dict = {"code": self.action_code.name}
-        if self.details is not None:
-            action_dict.update({"details": self.details})
+        action_dict = {
+            "code": self.action_code.name,
+            "details": self.details
+        }
         return action_dict
