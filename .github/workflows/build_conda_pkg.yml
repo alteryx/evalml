@@ -43,6 +43,8 @@ jobs:
           ref: 'master'
           repository: 'conda-forge/evalml-core-feedstock'
       - run: |
+          pip install virtualenv
+          virtualenv test_python -q
           source test_python/bin/activate
           mkdir evalml-core-feedstock/evalml
           cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
