@@ -37,12 +37,8 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps-test
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          ref: 'master'
-          repository: 'conda-forge/evalml-core-feedstock'
       - run: |
+          git clone https://github.com/conda-forge/evalml-core-feedstock
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
