@@ -255,7 +255,7 @@ def test_class_imbalance_nonnumeric(input_type):
                                       data_check_name=class_imbalance_data_check_name,
                                       message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
                                       details={"target_values": ["green", "blue"]}).to_dict(),
-                     DataCheckWarning(message="The following labels have severe class imbalance because they fall under 35% of the target and have less than 50 samples: ['green', 'blue']",
+                     DataCheckWarning(message="The following labels have severe class imbalance because they fall under 35% of the target and have less than 100 samples: ['green', 'blue']",
                                       data_check_name=class_imbalance_data_check_name,
                                       message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
                                       details={"target_values": ["green", "blue"]}).to_dict()],
