@@ -2275,7 +2275,7 @@ def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensem
         # last call will be the stacking ensembler
         assert len(X_ensemble) == (len(mock_fit.call_args_list[-1][0][0]) + len(mock_score.call_args_list[-1][0][0]))
     else:
-        # verify that there is use nor creation of ensembling CV data
+        # verify that there is no creation of ensembling CV data
         assert not automl.X_ensemble
         for i in [-1, -2]:
             assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))

@@ -1,4 +1,5 @@
 from evalml.automl.engine import EngineBase
+from evalml.model_family import ModelFamily
 
 
 class SequentialEngine(EngineBase):
@@ -20,8 +21,10 @@ class SequentialEngine(EngineBase):
         while self._should_continue_callback() and index < len(pipelines):
             pipeline = pipelines[index]
             self._pre_evaluation_callback(pipeline)
-            evaluation_result = EngineBase.train_and_score_pipeline(pipeline, self.automl, self.X_train, self.y_train,
-                                                                    self.X_ensemble, self.y_ensemble)
+            if pipeline.model_family == ModelFamily.ENSEMBLE:
+                evaluation_result = EngineBase.train_and_score_pipeline(pipeline, self.automl, self.X_ensemble, self.y_ensemble)
+            else:
+                evaluation_result = EngineBase.train_and_score_pipeline(pipeline, self.automl, self.X_train, self.y_train)
             new_pipeline_ids.append(self._post_evaluation_callback(pipeline, evaluation_result))
             index += 1
         return new_pipeline_ids

@@ -67,7 +67,7 @@ class EngineBase(ABC):
         """
 
     @staticmethod
-    def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train, X_ensemble, y_ensemble):
+    def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
         """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
 
         Arguments:
@@ -75,8 +75,6 @@ class EngineBase(ABC):
             automl (AutoMLSearch): The AutoML search, used to access config and for the error callback
             full_X_train (ww.DataTable): Training features
             full_y_train (ww.DataColumn): Training target
-            X_ensemble (ww.DataTable): Ensembling training features
-            y_ensemble (ww.DataColumn): Ensembling training target
 
         Returns:
             dict: A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -84,25 +82,19 @@ class EngineBase(ABC):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
-        if pipeline.model_family == ModelFamily.ENSEMBLE and automl._automl_algorithm.ensembling:
-            X_input = X_ensemble
-            y_input = y_ensemble
-        else:
-            X_input = full_X_train
-            y_input = full_y_train
-        X_pd = _convert_woodwork_types_wrapper(X_input.to_dataframe())
-        y_pd = _convert_woodwork_types_wrapper(y_input.to_series())
+        X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
+        y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
         for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd)):
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break
             logger.debug(f"\t\tTraining and scoring on fold {i}")
-            X_train, X_valid = X_input.iloc[train], X_input.iloc[valid]
-            y_train, y_valid = y_input.iloc[train], y_input.iloc[valid]
+            X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
+            y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
             if is_binary(automl.problem_type) or is_multiclass(automl.problem_type):
-                diff_train = set(np.setdiff1d(y_input.to_series(), y_train.to_series()))
-                diff_valid = set(np.setdiff1d(y_input.to_series(), y_valid.to_series()))
+                diff_train = set(np.setdiff1d(full_y_train.to_series(), y_train.to_series()))
+                diff_valid = set(np.setdiff1d(full_y_train.to_series(), y_valid.to_series()))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
                 if diff_string:

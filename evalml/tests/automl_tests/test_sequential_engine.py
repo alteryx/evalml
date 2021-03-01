@@ -5,6 +5,8 @@ import pytest
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engine import SequentialEngine
+from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
+from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.preprocessing import split_data
 
 
@@ -22,13 +24,43 @@ def test_add_ensemble_data():
                               y_train=y,
                               automl=None)
     pd.testing.assert_frame_equal(engine.X_train, X)
-    assert engine.X_ensemble is None
+    assert not engine.X_ensemble
 
     X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=0.25)
     engine.add_ensemble(X_train, y_train, X_ensemble, y_ensemble)
     pd.testing.assert_frame_equal(engine.X_train.to_dataframe(), X_train.to_dataframe())
     pd.testing.assert_frame_equal(engine.X_ensemble.to_dataframe(), X_ensemble.to_dataframe())
     pd.testing.assert_series_equal(engine.y_ensemble.to_series(), y_ensemble.to_series())
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_ensemble_data(mock_fit, mock_score, dummy_binary_pipeline_class, stackable_classifiers):
+    X = pd.DataFrame({"a": [i for i in range(100)]})
+    y = pd.Series([i % 2 for i in range(100)])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=19, ensembling=True)
+    mock_should_continue_callback = MagicMock(return_value=True)
+    mock_pre_evaluation_callback = MagicMock()
+    mock_post_evaluation_callback = MagicMock()
+
+    engine = SequentialEngine(X_train=automl.X_train,
+                              y_train=automl.y_train,
+                              automl=automl,
+                              should_continue_callback=mock_should_continue_callback,
+                              pre_evaluation_callback=mock_pre_evaluation_callback,
+                              post_evaluation_callback=mock_post_evaluation_callback)
+    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=0.25)
+    engine.add_ensemble(X_train, y_train, X_ensemble, y_ensemble)
+    pipeline1 = [dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}})]
+    engine.evaluate_batch(pipeline1)
+    # check the fit length is correct, taking into account the data splits
+    assert len(mock_fit.call_args[0][0]) == int(2 / 3 * 0.75 * len(X))
+
+    input_pipelines = [make_pipeline_from_components([classifier], problem_type='binary')
+                       for classifier in stackable_classifiers]
+    pipeline2 = [make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=1)], problem_type='binary', custom_name="Stacked Ensemble Classification Pipeline")]
+    engine.evaluate_batch(pipeline2)
+    assert len(mock_fit.call_args[0][0]) == int(2 / 3 * 0.25 * len(X))
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
