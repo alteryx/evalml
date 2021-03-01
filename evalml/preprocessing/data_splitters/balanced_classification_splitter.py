@@ -108,22 +108,6 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
         self.shuffle = shuffle
         self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_state=random_seed)
 
-    def split(self, X, y):
-        """Splits and returns the labels of the training and testing data using the data sampler provided.
-        Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
-        Returns:
-            tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
-        """
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        for train, test in self.splitter.split(X, y):
-            X_train, y_train = X.iloc[train], y.iloc[train]
-            yield iter([super().transform_sample(X_train, y_train), test])
-
 
 class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
     """Data splitter for generating k-fold cross-validation split using Balanced Classification Data Sampler."""
@@ -133,19 +117,3 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
         super().__init__(sampler=self.sampler, n_splits=n_splits, random_seed=random_seed)
         self.shuffle = shuffle
         self.splitter = StratifiedKFold(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)
-
-    def split(self, X, y):
-        """Splits and returns the sampled training data using the data sampler provided.
-        Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
-        Returns:
-            tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
-        """
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        for train, test in self.splitter.split(X, y):
-            X_train, y_train = X.iloc[train], y.iloc[train]
-            yield iter([super().transform_sample(X_train, y_train), test])

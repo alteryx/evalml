@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import pandas as pd
 from sklearn.model_selection._split import BaseCrossValidator
 
@@ -27,7 +25,6 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
         """Returns the number of splits of this object."""
         return self.n_splits
 
-    @abstractmethod
     def split(self, X, y):
         """Splits and returns the indices of the training and testing using the data sampler provided.
         Arguments:
@@ -36,6 +33,17 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
         Returns:
             tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
         """
+        X_ww = infer_feature_types(X)
+        y_ww = infer_feature_types(y)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        index_df = pd.Series(y.index)
+        for train, test in self.splitter.split(X, y):
+            X_train, y_train = X.iloc[train], y.iloc[train]
+            train_index_drop = self.sampler.fit_resample(X_train, y_train)
+            # convert the indices of the y column into index indices of the original pre-split y
+            train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
+            yield iter([train_indices, test])
 
     def transform_sample(self, X, y):
         """Transforms the input data with the balancing strategy.
