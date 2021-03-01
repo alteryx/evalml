@@ -1017,12 +1017,10 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
         automl.get_pipeline(0)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
-
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
     automl.search()
     out = caplog.text
@@ -1045,6 +1043,32 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, X_y_binary, caplog):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=_get_first_stacked_classifier_no(),
+                          objective="Log Loss Binary", ensembling=True)
+    automl.search(data_checks=None)
+
+    pipeline_names = automl.rankings['pipeline_name']
+    assert pipeline_names.str.contains('Ensemble').any()
+    assert f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration" in caplog.text
+    assert len(automl.results['pipeline_results']) == 50
+
+    caplog.clear()
+    automl.describe_pipeline(len(automl.results['pipeline_results']) - 1)
+    out = caplog.text
+    assert "Stacked Ensemble Classification Pipeline" in out
+    assert "Problem Type: binary" in out
+    assert "Model Family: Ensemble" in out
+    assert "* final_estimator : None" in out
+    assert "Total training time (including CV): " in out
+    assert "Log Loss Binary # Training # Validation" in out
+    assert "This is an ensemble. Print info about ID here. Add info about ID here." in out
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
