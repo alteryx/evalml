@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
+        * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
