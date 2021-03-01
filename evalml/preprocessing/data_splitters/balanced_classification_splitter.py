@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 
 from evalml.preprocessing.data_splitters.base_splitters import (
