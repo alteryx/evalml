@@ -810,6 +810,9 @@ class AutoMLSearch:
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             logger.info(all_objective_scores)
 
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            logger.info("This is an ensemble. Print info about ID here. Add info about ID here.")
+
         if return_dict:
             return pipeline_results
 
