@@ -45,12 +45,19 @@ jobs:
           mkdir evalml-core-feedstock/evalml
           echo $PWD
           cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
+          echo $PWD
           python .github/conda_config.py "$(python setup.py --version)"
+          echo $PWD
           cd evalml-core-feedstock
+          echo $PWD
           echo "$DOCKERHUB_PASSWORD" | docker login -u $DOCKERHUB_USERNAME --password-stdin
+          echo $PWD
           export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-cos7-x86_64)"
+          echo $PWD
           echo "Created container ${DOCKER_CONTAINERID}"
+          echo $PWD
           chmod -R 777 ./
+          echo $PWD
           docker cp . ${DOCKER_CONTAINERID}:/home/conda/feedstock_root/
           docker cp ./recipe/. ${DOCKER_CONTAINERID}:/home/conda/recipe_root/
           echo "COMMITING UPDATED IMAGE"
