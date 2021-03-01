@@ -250,7 +250,7 @@ def test_class_imbalance_nonnumeric(input_type):
         "errors": []
     }
 
-    assert ClassImbalanceDataCheck(threshold=0.35, min_samples=50, num_cv_folds=0).validate(X, y_multiclass) == {
+    assert ClassImbalanceDataCheck(threshold=0.35, num_cv_folds=0).validate(X, y_multiclass) == {
         "warnings": [DataCheckWarning(message="The following labels fall below 35% of the target: ['green', 'blue']",
                                       data_check_name=class_imbalance_data_check_name,
                                       message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
