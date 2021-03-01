@@ -2264,7 +2264,7 @@ def test_automl_raises_deprecated_random_state_warning(X_y_multi):
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
 
 
-@patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform', return_value=[0, 1, 2])
+@patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform_sample', return_value=[0, 1, 2])
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={'Log Loss Multiclass': 0.2})
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_best_pipeline_data_splitter_transform(mock_fit, mock_score, mock_transform, X_y_multi):

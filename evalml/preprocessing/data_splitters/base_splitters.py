@@ -37,7 +37,7 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
             tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
         """
 
-    def transform(self, X, y):
+    def transform_sample(self, X, y):
         """Transforms the input data with the balancing strategy.
             Arguments:
                 X (ww.DataTable): DataTable of points to split
@@ -49,5 +49,6 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         index_df = pd.Series(y.index)
         train_index_drop = self.sampler.fit_resample(X, y)
+        # convert the indices of the y column into index indices of the original pre-split y
         train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
         return train_indices

@@ -581,8 +581,8 @@ class AutoMLSearch:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_seed=self.random_seed)
-                if hasattr(self.data_splitter, "transform"):
-                    train_indices = self.data_splitter.transform(X_train, y_train)
+                if hasattr(self.data_splitter, "transform_sample"):
+                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
                 self._best_pipeline.fit(X_train, y_train)

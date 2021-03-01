@@ -121,13 +121,9 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
         y_ww = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
-            train_index_drop = self.sampler.fit_resample(X_train, y_train)
-            # convert the indices of the y column into index indices of the original pre-split y
-            train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
-            return iter([(train_indices, test)])
+            yield iter([super().transform_sample(X_train, y_train), test])
 
 
 class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
@@ -151,10 +147,6 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
         y_ww = infer_feature_types(y)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
-            train_index_drop = self.sampler.fit_resample(X_train, y_train)
-            # convert the indices of the y column into index indices of the original pre-split y
-            train_indices = index_df[index_df.isin(train_index_drop)].dropna().index.values.tolist()
-            yield iter([train_indices, test])
+            yield iter([super().transform_sample(X_train, y_train), test])
