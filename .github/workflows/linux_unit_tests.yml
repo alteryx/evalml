@@ -20,7 +20,7 @@ jobs:
             codecov: false
           - python_version: "3.8"
             core_dependencies: false
-            codecov: true
+            codecov: false
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
