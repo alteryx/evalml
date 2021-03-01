@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import EngineBase
@@ -63,3 +64,33 @@ def test_train_pipeline_trains_and_tunes_threshold(mock_pipeline_fit, mock_predi
                                   optimize_thresholds=True, objective=F1())
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_called_once()
+
+
+def test_engines_check_pipeline_names_unique(dummy_binary_pipeline_class):
+
+    class MinimalEngine(EngineBase):
+
+        def evaluate_batch(self, pipelines):
+            return []
+
+        def train_batch(self, pipelines):
+            super().train_batch(pipelines)
+            return {}
+
+        def score_batch(self, pipelines, X, y, objectives):
+            super().score_batch(pipelines, X, y, objectives)
+            return {}
+
+    engine = MinimalEngine(X_train=pd.DataFrame(), y_train=pd.Series())
+
+    class Pipeline1(dummy_binary_pipeline_class):
+        custom_name = "My Pipeline"
+
+    class Pipeline2(dummy_binary_pipeline_class):
+        custom_name = "My Pipeline"
+
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The names My Pipeline were repeated."):
+        engine.train_batch([Pipeline2({}), Pipeline1({})])
+
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The names My Pipeline were repeated."):
+        engine.train_batch([Pipeline2({}), Pipeline1({})])
