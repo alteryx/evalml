@@ -2,7 +2,7 @@ catboost==0.24.4
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
-featuretools==0.23.1
+featuretools==0.23.2
 graphviz==0.16
 ipywidgets==7.6.3
 kaleido==0.1.0
@@ -23,5 +23,5 @@ seaborn==0.11.1
 shap==0.38.1
 statsmodels==0.12.2
 texttable==1.6.3
-woodwork==0.0.7
+woodwork==0.0.10
 xgboost==1.2.1
