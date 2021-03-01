@@ -16,8 +16,7 @@ from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
-    make_data_splitter,
-    tune_binary_threshold
+    make_data_splitter
 )
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -42,8 +41,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
-from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -587,22 +585,16 @@ class AutoMLSearch:
             return
         best_pipeline = self.rankings.iloc[0]
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
-            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
                 if self._best_pipeline.model_family == ModelFamily.ENSEMBLE:
                     X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
                 else:
                     X_train = self.X_train
                     y_train = self.y_train
-                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
-                   and self.optimize_thresholds and self.objective.can_optimize_threshold:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_seed=self.random_seed)
-                self._best_pipeline.fit(X_train, y_train)
-                tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
+                best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
+                                                            self.optimize_thresholds, self.objective)
+            self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
         """Return the number of pipeline evaluations which have been made

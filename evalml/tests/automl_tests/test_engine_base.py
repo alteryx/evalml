@@ -7,6 +7,7 @@ import pytest
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import EngineBase
 from evalml.objectives import F1, LogLossBinary
+from evalml.preprocessing import split_data
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -49,21 +50,29 @@ def test_train_and_score_pipelines_error(mock_fit, mock_score, dummy_binary_pipe
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_train_pipeline_trains_and_tunes_threshold(mock_pipeline_fit, mock_predict_proba, mock_optimize, X_y_binary,
+@patch('evalml.automl.engine.engine_base.split_data')
+def test_train_pipeline_trains_and_tunes_threshold(mock_split_data, mock_pipeline_fit,
+                                                   mock_predict_proba, mock_optimize, X_y_binary,
                                                    dummy_binary_pipeline_class):
     X, y = X_y_binary
+    mock_split_data.return_value = split_data(X, y, "binary", test_size=0.2, random_state=0)
+
     _ = EngineBase.train_pipeline(dummy_binary_pipeline_class({}), X, y,
                                   optimize_thresholds=True, objective=LogLossBinary())
+
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_not_called()
+    mock_split_data.assert_not_called()
 
     mock_pipeline_fit.reset_mock()
     mock_optimize.reset_mock()
+    mock_split_data.reset_mock()
 
     _ = EngineBase.train_pipeline(dummy_binary_pipeline_class({}), X, y,
                                   optimize_thresholds=True, objective=F1())
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_called_once()
+    mock_split_data.assert_called_once()
 
 
 def test_engines_check_pipeline_names_unique(dummy_binary_pipeline_class):

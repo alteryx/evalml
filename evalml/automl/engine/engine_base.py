@@ -85,11 +85,24 @@ class EngineBase(ABC):
 
     @staticmethod
     def tune_threshold(pipeline, optimize_thresholds, objective):
+        """Check whether the threshold of a binary classification pipeline can be tuned."""
         return optimize_thresholds and objective.is_defined_for_problem_type(pipeline.problem_type) and \
             objective.can_optimize_threshold and is_binary(pipeline.problem_type)
 
     @staticmethod
     def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
+        """Train a pipeline and tune the threshold if necessary.
+
+        Arguments:
+            pipeline (PipelineBase): Pipeline to train.
+            X (ww.DataTable, pd.DataFrame): Features to train on.
+            y (ww.DataColumn, pd.Series): Target to train on.
+            optimize_thresholds (bool): Whether to tune the threshold (if pipeline supports it).
+            objective (ObjectiveBase): Objective used in threshold tuning.
+
+        Returns:
+            PipelineBase - trained pipeline.
+        """
         X_threshold_tuning = None
         y_threshold_tuning = None
         if EngineBase.tune_threshold(pipeline, optimize_thresholds, objective):
