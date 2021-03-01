@@ -98,7 +98,7 @@ class ClassImbalanceDataCheck(DataCheck):
         sample_counts = fold_counts.where(fold_counts < self.min_samples).dropna()
         if len(below_threshold) and len(sample_counts):
             sample_count_values = sample_counts.index.tolist()
-            severe_imbalance = list(set(sample_count_values).intersection(set(below_threshold_values)))
+            severe_imbalance = [v for v in sample_count_values if v in below_threshold]
             warning_msg = "The following labels have severe class imbalance because they fall under {:.0f}% of the target and have less than {} samples: {}"
             DataCheck._add_message(DataCheckWarning(message=warning_msg.format(self.threshold * 100, self.min_samples, severe_imbalance),
                                                     data_check_name=self.name,
