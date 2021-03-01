@@ -34,6 +34,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
       - if: ${{ matrix.core_dependencies }}
