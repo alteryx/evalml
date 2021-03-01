@@ -1,5 +1,14 @@
+import sys
+import traceback
+
+import numpy as np
+
 from evalml.automl.engine import EngineBase
 from evalml.model_family import ModelFamily
+from evalml.exceptions import PipelineScoreError
+from evalml.utils import get_logger
+
+logger = get_logger(__file__)
 
 
 class SequentialEngine(EngineBase):
@@ -32,3 +41,55 @@ class SequentialEngine(EngineBase):
             new_pipeline_ids.append(self._post_evaluation_callback(pipeline, evaluation_result))
             index += 1
         return new_pipeline_ids
+
+    def train_batch(self, pipelines):
+        """Train a batch of pipelines using the current dataset.
+
+        Arguments:
+            pipelines (list(PipelineBase)): A batch of pipelines to fit.
+        Returns:
+            Dict[str, PipelineBase]: Dict of fitted pipelines keyed by pipeline name.
+        """
+        super().train_batch(pipelines)
+
+        fitted_pipelines = {}
+        for pipeline in pipelines:
+            fitted_pipeline = pipeline.clone()
+            try:
+                fitted_pipeline = EngineBase.train_pipeline(
+                    fitted_pipeline, self.X_train, self.y_train,
+                    self.automl.optimize_thresholds,
+                    self.automl.objective
+                )
+
+                fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
+            except Exception as e:
+                logger.error(f'AutoML search raised a fatal exception: {str(e)}')
+                tb = traceback.format_tb(sys.exc_info()[2])
+                logger.error("Traceback:")
+                logger.error("\n".join(tb))
+
+        return fitted_pipelines
+
+    def score_batch(self, pipelines, X, y, objectives):
+        """Score a batch of pipelines.
+
+        Arguments:
+            pipelines (list(PipelineBase)): A batch of fitted pipelines to score.
+            X (ww.DataTable, pd.DataFrame): Features to score on.
+            y (ww.DataTable, pd.DataFrame): Data to score on.
+            objectives (list(ObjectiveBase), list(str)): Objectives to score on.
+        Returns:
+            Dict: Dict containining scores for all objectives for all pipelines. Keyed by pipeline name.
+        """
+        super().score_batch(pipelines, X, y, objectives)
+
+        scores = {}
+        for pipeline in pipelines:
+            try:
+                scores[pipeline.name] = pipeline.score(X, y, objectives)
+            except PipelineScoreError as e:
+                nan_scores = {objective: np.nan for objective in e.exceptions}
+                logger.debug(f"Score error for {pipeline.name}: {str(e)}")
+                scores[pipeline.name] = {**nan_scores, **e.scored_successfully}
+        return scores

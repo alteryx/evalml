@@ -7,7 +7,10 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from evalml.automl.utils import tune_binary_threshold
+from evalml.automl.utils import (
+    check_all_pipeline_names_unique,
+    tune_binary_threshold
+)
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
@@ -52,6 +55,52 @@ class EngineBase(ABC):
             list (int): A list of the new pipeline IDs which were created by the AutoML search.
         """
 
+    @abstractmethod
+    def train_batch(self, pipelines):
+        """Train a batch of pipelines using the current dataset.
+
+        Arguments:
+            pipelines (list(PipelineBase)): A batch of pipelines to fit.
+        Returns:
+            list(PipelineBase): List of fitted pipelines
+        """
+        if self.X_train is None or self.y_train is None:
+            raise ValueError("Dataset has not been loaded into the engine.")
+
+        check_all_pipeline_names_unique(pipelines)
+
+    @abstractmethod
+    def score_batch(self, pipelines, X, y, objectives):
+        """Score a batch of pipelines.
+
+        Arguments:
+            pipelines (list(PipelineBase)): A batch of fitted pipelines to score.
+            X (ww.DataTable, pd.DataFrame): Features to score on.
+            y (ww.DataTable, pd.DataFrame): Data to score on.
+            objectives (list(ObjectiveBase), list(str)): Objectives to score on.
+        Returns:
+            Dict[pipeline name, score]: Scores for all objectives for all pipelines.
+        """
+        check_all_pipeline_names_unique(pipelines)
+
+    @staticmethod
+    def tune_threshold(pipeline, optimize_thresholds, objective):
+        return optimize_thresholds and objective.is_defined_for_problem_type(pipeline.problem_type) and \
+            objective.can_optimize_threshold and is_binary(pipeline.problem_type)
+
+    @staticmethod
+    def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
+        X_threshold_tuning = None
+        y_threshold_tuning = None
+        if EngineBase.tune_threshold(pipeline, optimize_thresholds, objective):
+            X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
+                                                                      test_size=0.2, random_seed=pipeline.random_seed)
+        cv_pipeline = pipeline.clone()
+        cv_pipeline.fit(X, y)
+        tune_binary_threshold(cv_pipeline, objective, cv_pipeline.problem_type,
+                              X_threshold_tuning, y_threshold_tuning)
+        return cv_pipeline
+
     @staticmethod
     def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
         """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
@@ -88,20 +137,10 @@ class EngineBase(ABC):
             objectives_to_score = [automl.objective] + automl.additional_objectives
             cv_pipeline = None
             try:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-                if automl.optimize_thresholds and automl.objective.is_defined_for_problem_type(automl.problem_type) and \
-                   automl.objective.can_optimize_threshold and is_binary(automl.problem_type):
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, automl.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_seed=automl.random_seed)
-                cv_pipeline = pipeline.clone()
                 logger.debug(f"\t\t\tFold {i}: starting training")
-                cv_pipeline.fit(X_train, y_train)
+                cv_pipeline = EngineBase.train_pipeline(pipeline, X_train, y_train, automl.optimize_thresholds, automl.objective)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                tune_binary_threshold(cv_pipeline, automl.objective, automl.problem_type,
-                                      X_threshold_tuning, y_threshold_tuning)
-                if X_threshold_tuning:
+                if EngineBase.tune_threshold(pipeline, automl.optimize_thresholds, automl.objective):
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
