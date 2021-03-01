@@ -19,6 +19,7 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
+from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
@@ -27,6 +28,7 @@ from evalml.pipelines.components import (  # noqa: F401
     ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
+    DropColumns,
     DropNullColumns,
     Estimator,
     Imputer,
@@ -276,3 +278,20 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
         return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
                                              random_seed=random_seed)
+
+
+def _make_component_list_from_actions(actions):
+    """
+    Creates a list of components from the input DataCheckAction list
+
+    Arguments:
+        actions (list(DataCheckAction)): List of DataCheckAction objects used to create list of components
+
+    Returns:
+        List of components used to address the input actions
+    """
+    components = []
+    for action in actions:
+        if action.code == DataCheckActionCode.DROP_COL:
+            components.append(DropColumns(columns=action.details["cols"]))
+    return components
