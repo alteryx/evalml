@@ -49,6 +49,9 @@ class DataCheckMessageCode(Enum):
     CLASS_IMBALANCE_BELOW_THRESHOLD = "class_imbalance_below_threshold"
     """Message code for when balance in classes is less than the threshold."""
 
+    CLASS_IMBALANCE_SEVERE = "class_imbalance_severe"
+    """Message code for when balance in classes is less than the threshold and minimum class is less than minimum number of accepted samples."""
+
     CLASS_IMBALANCE_BELOW_FOLDS = "class_imbalance_below_folds"
     """Message code for when the number of values for each target is below 2 * number of CV folds."""
 

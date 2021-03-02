@@ -10,6 +10,7 @@ Release Notes
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
     * Changes
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
+        * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
     * Documentation Changes
     * Testing Changes
 
