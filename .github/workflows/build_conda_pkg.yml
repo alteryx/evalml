@@ -50,7 +50,7 @@ jobs:
           cd evalml-core-feedstock
           echo $PWD
           ls
-          echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+          echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USER --password-stdin
           echo "Post docker login"
           export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-cos7-x86_64)"
           echo "Created container ${DOCKER_CONTAINERID}"
