@@ -154,11 +154,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return self._component_graph.get_component(name)
 
-    def describe(self):
+    def describe(self, return_dict=False):
         """Outputs pipeline details including component parameters
 
         Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
+            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to False.
 
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
@@ -172,10 +172,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         # Summary of steps
         log_subtitle(logger, "Pipeline Steps")
+
+        pipeline_dict = {
+            "name": self.name,
+            "problem_type": self.problem_type,
+            "model_family": self.model_family,
+            "components": dict()
+        }
         for number, component in enumerate(self._component_graph, 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
-            component.describe(print_name=False)
+            pipeline_dict["components"].update({component.name: component.describe(print_name=False, return_dict=return_dict)})
+        if return_dict:
+            return pipeline_dict
 
     def compute_estimator_features(self, X, y=None):
         """Transforms the data by applying all pre-processing components.

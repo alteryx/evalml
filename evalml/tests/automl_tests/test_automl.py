@@ -1,5 +1,6 @@
 import os
 import warnings
+from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -1019,7 +1020,8 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
     automl.search()
@@ -1029,7 +1031,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
 
     assert len(automl.results['pipeline_results']) == 1
     caplog.clear()
-    automl.describe_pipeline(0)
+    automl_dict = automl.describe_pipeline(0, return_dict=return_dict)
     out = caplog.text
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: binary" in out
@@ -1044,10 +1046,28 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
 
+    if return_dict:
+        assert automl_dict['id'] == 0
+        assert automl_dict['pipeline_name'] == 'Mode Baseline Binary Classification Pipeline'
+        assert automl_dict['pipeline_summary'] == 'Baseline Classifier'
+        assert automl_dict['parameters'] == {'Baseline Classifier': {'strategy': 'mode'}}
+        assert automl_dict['score'] == 1.0
+        assert not automl_dict['high_variance_cv']
+        assert isinstance(automl_dict['training_time'], float)
+        assert automl_dict['cv_data'] == [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)]), 'score': 1.0, 'binary_classification_threshold': None},
+                                          {'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 67), ('# Validation', 33)]), 'score': 1.0, 'binary_classification_threshold': None},
+                                          {'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 67), ('# Validation', 33)]), 'score': 1.0, 'binary_classification_threshold': None}]
+        assert automl_dict['percent_better_than_baseline_all_objectives'] == {'Log Loss Binary': 0}
+        assert automl_dict['percent_better_than_baseline'] == 0
+        assert automl_dict['validation_score'] == 1.0
+    else:
+        assert automl_dict is None
+
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, X_y_binary, caplog):
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return_dict, X_y_binary, caplog):
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=_get_first_stacked_classifier_no(),
@@ -1058,9 +1078,10 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, X_y_bi
     assert pipeline_names.str.contains('Ensemble').any()
     assert f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration" in caplog.text
     assert len(automl.results['pipeline_results']) == 50
-
+    stacked_ensemble_id = len(automl.results['pipeline_results']) - 1
     caplog.clear()
-    automl.describe_pipeline(len(automl.results['pipeline_results']) - 1)
+
+    automl_dict = automl.describe_pipeline(stacked_ensemble_id, return_dict=return_dict)
     out = caplog.text
     assert "Stacked Ensemble Classification Pipeline" in out
     assert "Problem Type: binary" in out
@@ -1069,6 +1090,20 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, X_y_bi
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
     assert "This is an ensemble. Print info about ID here. Add info about ID here." in out
+
+    if return_dict:
+        assert automl_dict['id'] == stacked_ensemble_id
+        assert automl_dict['pipeline_name'] == "Stacked Ensemble Classification Pipeline"
+        assert automl_dict['pipeline_summary'] == 'Stacked Ensemble Classifier'
+        assert automl_dict['score'] == 0.8
+        assert not automl_dict['high_variance_cv']
+        assert isinstance(automl_dict['training_time'], float)
+        assert automl_dict['cv_data'] == [{'all_objective_scores': OrderedDict([('Log Loss Binary', 0.8), ('# Training', 66), ('# Validation', 34)]), 'score': 0.8, 'binary_classification_threshold': None}]
+        assert automl_dict['percent_better_than_baseline_all_objectives'] == {'Log Loss Binary': 0}
+        assert automl_dict['percent_better_than_baseline'] == 0
+        assert automl_dict['validation_score'] == 0.8
+    else:
+        assert automl_dict is None
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')

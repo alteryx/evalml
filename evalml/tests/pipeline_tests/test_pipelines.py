@@ -548,36 +548,41 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
         clf[:1]
 
 
-def test_describe(caplog, logistic_regression_binary_pipeline_class):
-    lrp = logistic_regression_binary_pipeline_class(parameters={})
-    lrp.describe()
+@pytest.mark.parametrize("is_linear", [True, False])
+def test_describe(is_linear, caplog, logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
+    if is_linear:
+        pipeline = logistic_regression_binary_pipeline_class(parameters={})
+        name = "Logistic Regression Binary Pipeline"
+    else:
+        pipeline = nonlinear_binary_pipeline_class(parameters={})
+        name = "Non Linear Binary Pipeline"
+
+    pipeline.describe()
     out = caplog.text
-    assert "Logistic Regression Binary Pipeline" in out
+    assert name in out
     assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
     assert "Number of features: " not in out
 
-    for component in lrp:
+    for component in pipeline:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
         assert component.name in out
 
 
-def test_describe_nonlinear(caplog, nonlinear_binary_pipeline_class):
-    nbpl = nonlinear_binary_pipeline_class(parameters={})
-    nbpl.describe()
-    out = caplog.text
-    assert "Non Linear Binary Pipeline" in out
-    assert "Problem Type: binary" in out
-    assert "Model Family: Linear" in out
-    assert "Number of features: " not in out
+# def test_describe_nonlinear(caplog, ):
+#     nbpl.describe()
+#     out = caplog.text
+#     assert "Problem Type: binary" in out
+#     assert "Model Family: Linear" in out
+#     assert "Number of features: " not in out
 
-    for component in nbpl:
-        if component.hyperparameter_ranges:
-            for parameter in component.hyperparameter_ranges:
-                assert parameter in out
-        assert component.name in out
+#     for component in nbpl:
+#         if component.hyperparameter_ranges:
+#             for parameter in component.hyperparameter_ranges:
+#                 assert parameter in out
+#         assert component.name in out
 
 
 def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline_class):
