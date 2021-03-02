@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
+        * Added a GitHub Action for Linux unit tests :pr:`1846`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
     * Fixes
