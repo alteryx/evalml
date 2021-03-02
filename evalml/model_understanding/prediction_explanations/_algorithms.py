@@ -130,7 +130,7 @@ def _aggreggate_shap_values_dict(values, provenance):
     Arguments:
         values (dict):  A mapping of feature names to a list of SHAP values for each data point.
         provenance (dict): A mapping from a feature in the original data to the names of the features that were created
-            from that feature
+            from that feature.
     Returns:
         dict
     """

@@ -166,7 +166,7 @@ class _TableMaker(abc.ABC):
 
     @abc.abstractmethod
     def make_text(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, orignal_features):
+                  shap_values, normalized_values, pipeline_features, original_features):
         """Creates a table given shap values and formats it as text."""
 
     @abc.abstractmethod
@@ -229,12 +229,12 @@ class _BinarySHAPTable(_TableMaker):
                   shap_values, normalized_values, pipeline_features, original_features):
         rows = _make_rows(aggregated_shap_values[1], aggregated_normalized_values[1], pipeline_features, original_features,
                           self.top_k, self.include_shap_values, convert_numeric_to_string=False)
-        json_rows = _rows_to_dict(rows)
+        dict_rows = _rows_to_dict(rows)
         drill_down = self.make_drill_down_dict(self.provenance, shap_values[1], normalized_values[1],
                                                pipeline_features, original_features, self.include_shap_values)
-        json_rows["drill_down"] = drill_down
-        json_rows["class_name"] = _make_json_serializable(self.class_names[1])
-        return {"explanations": [json_rows]}
+        dict_rows["drill_down"] = drill_down
+        dict_rows["class_name"] = _make_json_serializable(self.class_names[1])
+        return {"explanations": [dict_rows]}
 
 
 class _MultiClassSHAPTable(_TableMaker):
@@ -280,6 +280,9 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         pipeline_features (pd.DataFrame): Dataframe of features computed by the pipeline.
+        input_features (pd.DataFrame): Dataframe of features passed to the pipeline. This is where the pipeline_features
+            come from.
+        index_to_explain (int): Index in the pipeline_features/input_features to explain.
         top_k (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
@@ -486,7 +489,7 @@ class _SHAPTable(_SectionMaker):
             index (int): The index of the prediction in the dataset.
             pipeline (PipelineBase): The pipeline to explain.
             pipeline_features (pd.DataFrame): The dataframe of features created by the pipeline.
-            y (pd.Series):
+            input_features (pd.Dataframe): The dataframe of features passed to the pipeline.
         """
         table = _make_single_prediction_shap_table(pipeline, pipeline_features,
                                                    input_features,

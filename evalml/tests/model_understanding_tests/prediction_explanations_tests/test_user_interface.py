@@ -316,7 +316,12 @@ def test_make_single_prediction_table(values, normalized_values, pipeline_featur
 
     table_maker = table_maker.make_text if output_format == "text" else table_maker.make_dict
 
-    table = table_maker(values, normalized_values, values, normalized_values, pipeline_features, pipeline_features)
+    table = table_maker(aggregated_shap_values=values,
+                        aggregated_normalized_values=normalized_values,
+                        shap_values=values,
+                        normalized_values=normalized_values,
+                        pipeline_features=pipeline_features,
+                        original_features=pipeline_features)
 
     # Making sure the content is the same, regardless of formatting.
     if output_format == "text":
