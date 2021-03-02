@@ -919,3 +919,34 @@ class AutoMLSearch:
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def train_pipelines(self, pipelines):
+        """Train a list of pipelines on the training data.
+
+        This can be helpful for training pipelines once the search is complete.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+
+        Returns:
+            Dict[str, PipelineBase]: Dictionary keyed by pipeline name that maps to the fitted pipeline.
+            Note that the any pipelines that error out during training will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.train_batch(pipelines)
+
+    def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
+        """Score a list of pipelines on the given holdout data.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+            X_holdout (ww.DataTable, pd.DataFrame): Holdout features.
+            y_holdout (ww.DataTable, pd.DataFrame): Holdout targets for scoring.
+            objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
+
+        Returns:
+            Dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
+            Note that the any pipelines that error out during scoring will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.score_batch(pipelines, X_holdout, y_holdout, objectives)
