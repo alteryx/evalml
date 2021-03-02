@@ -778,10 +778,19 @@ class AutoMLSearch:
         if pipeline_id not in self._results['pipeline_results']:
             raise PipelineNotFoundError("Pipeline not found")
 
+        automl_dict = dict()
+
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self._results['pipeline_results'][pipeline_id]
+        automl_dict.update(pipeline_results)
 
         pipeline.describe()
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
+            automl_dict["input_pipeline_ids"] = input_pipeline_ids
+            logger.info("Input for ensembler are pipelines with IDs: " + str(input_pipeline_ids))
+
         log_subtitle(logger, "Training")
         logger.info("Training for {} problems.".format(pipeline.problem_type))
 
@@ -810,11 +819,8 @@ class AutoMLSearch:
         with pd.option_context('display.float_format', '{:.3f}'.format, 'expand_frame_repr', False):
             logger.info(all_objective_scores)
 
-        if pipeline.model_family == ModelFamily.ENSEMBLE:
-            logger.info("This is an ensemble. Print info about ID here. Add info about ID here.")
-
         if return_dict:
-            return pipeline_results
+            return automl_dict
 
     def add_to_rankings(self, pipeline):
         """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.

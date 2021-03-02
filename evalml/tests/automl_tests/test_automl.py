@@ -58,7 +58,10 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    allowed_model_families,
+    get_estimators
+)
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -1089,7 +1092,7 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return
     assert "* final_estimator : None" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
-    assert "This is an ensemble. Print info about ID here. Add info about ID here." in out
+    assert "Input for ensembler are pipelines with IDs:" in out
 
     if return_dict:
         assert automl_dict['id'] == stacked_ensemble_id
@@ -1102,6 +1105,7 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return
         assert automl_dict['percent_better_than_baseline_all_objectives'] == {'Log Loss Binary': 0}
         assert automl_dict['percent_better_than_baseline'] == 0
         assert automl_dict['validation_score'] == 0.8
+        assert len(automl_dict['input_pipeline_ids']) == len(allowed_model_families("binary"))
     else:
         assert automl_dict is None
 
