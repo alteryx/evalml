@@ -269,6 +269,7 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
+        self.X_feature_types = self.X_train.logical_types
         self.X_ensemble = None
         self.y_ensemble = None
 
@@ -592,8 +593,8 @@ class AutoMLSearch:
                     X_train, y_train = self.X_ensemble, self.y_ensemble
                 else:
                     if self.X_ensemble:
-                        X_train = _convert_woodwork_types_wrapper(self.X_train.to_dataframe()).append(_convert_woodwork_types_wrapper(self.X_ensemble.to_dataframe()), ignore_index=True)
-                        y_train = _convert_woodwork_types_wrapper(self.y_train.to_series()).append(_convert_woodwork_types_wrapper(self.y_ensemble.to_series()), ignore_index=True)
+                        X_train = infer_feature_types(self.X_train.to_dataframe().append(self.X_ensemble.to_dataframe(), ignore_index=True), self.X_feature_types)
+                        y_train = infer_feature_types(self.y_train.to_series().append(self.y_ensemble.to_series(), ignore_index=True))
                     else:
                         X_train = self.X_train
                         y_train = self.y_train

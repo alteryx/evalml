@@ -2330,6 +2330,23 @@ def test_automl_ensemble_split_size(ensemble_split_size, X_y_binary):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, ensembling=True, max_batches=ensemble_pipelines, _ensembling_split_size=ensemble_split_size)
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    X = ww.DataTable(pd.DataFrame(X), logical_types={1: "categorical"})
+    y = ww.DataColumn(pd.Series(y))
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=True,
+                          train_best_pipeline=True, optimize_thresholds=False)
+    assert automl.ensembling
+    automl.search()
+    # ensure we use the full X data for training the best pipeline, which isn't ensembling pipeline
+    assert len(X) == len(mock_fit.call_args_list[-1][0][0])
+    # check that the logical types were preserved
+    assert str(mock_fit.call_args_list[-1][0][0].logical_types[1]) == 'Categorical'
+
+
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):
     X, y = X_y_multi
     with warnings.catch_warnings(record=True) as warn:
