@@ -6,11 +6,13 @@ Release Notes
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
         * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
+        * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
     * Changes
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
+        * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
     * Documentation Changes
     * Testing Changes
 
