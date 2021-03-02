@@ -100,8 +100,8 @@ class TargetLeakageDataCheck(DataCheck):
 
         warning_msg = "Column '{}' is {}% or more correlated with the target"
         results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
-                                                      data_check_name=self.name,
-                                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                                      details={"column": col_name}).to_dict()
-                                     for col_name in highly_corr_cols])
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                                     details={"column": col_name}).to_dict()
+                                    for col_name in highly_corr_cols])
         return results

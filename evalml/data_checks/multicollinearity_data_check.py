@@ -45,7 +45,7 @@ class MulticollinearityDataCheck(DataCheck):
         if correlated_cols:
             warning_msg = "Columns are likely to be correlated: {}"
             results["warnings"].append(DataCheckWarning(message=warning_msg.format(correlated_cols),
-                                                         data_check_name=self.name,
-                                                         message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
-                                                         details={"columns": correlated_cols}).to_dict())
+                                                        data_check_name=self.name,
+                                                        message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
+                                                        details={"columns": correlated_cols}).to_dict())
         return results

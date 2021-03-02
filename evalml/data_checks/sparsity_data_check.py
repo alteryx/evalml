@@ -70,11 +70,11 @@ class SparsityDataCheck(DataCheck):
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
         results["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
-                                                                                        self.problem_type),
-                                                      data_check_name=self.name,
-                                                      message_code=DataCheckMessageCode.TOO_SPARSE,
-                                                      details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
-                                     for col_name in too_sparse_cols])
+                                                                                       self.problem_type),
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TOO_SPARSE,
+                                                     details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
+                                    for col_name in too_sparse_cols])
         return results
 
     @staticmethod

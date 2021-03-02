@@ -55,14 +55,14 @@ class OutliersDataCheck(DataCheck):
 
         has_outliers = []
         for col in X.columns:
-            results = OutliersDataCheck._outlier_score(X[col], False)
-            if results is not None and results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
+            outlier_results = OutliersDataCheck._outlier_score(X[col], False)
+            if outlier_results is not None and outlier_results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
                 has_outliers.append(col)
         warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in has_outliers]))
         results["warnings"].append(DataCheckWarning(message=warning_msg,
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                                     details={"columns": has_outliers}).to_dict())
+                                                    data_check_name=self.name,
+                                                    message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                                    details={"columns": has_outliers}).to_dict())
         return results
 
     @staticmethod

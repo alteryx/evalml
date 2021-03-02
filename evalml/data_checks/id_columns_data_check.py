@@ -73,8 +73,8 @@ class IDColumnsDataCheck(DataCheck):
         id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= self.id_threshold}
         warning_msg = "Column '{}' is {}% or more likely to be an ID column"
         results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.id_threshold * 100),
-                                                      data_check_name=self.name,
-                                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                                      details={"column": col_name}).to_dict()
-                                     for col_name in id_cols_above_threshold])
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                                     details={"column": col_name}).to_dict()
+                                    for col_name in id_cols_above_threshold])
         return results
