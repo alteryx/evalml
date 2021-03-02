@@ -21,12 +21,13 @@ logger = get_logger(__file__)
 class EngineBase(ABC):
     """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
 
-    def __init__(self, X_train=None, y_train=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
+    def __init__(self, X_train=None, y_train=None, ensembling_indices=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
         """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML.
 
         Arguments:
             X_train (ww.DataTable): Training features
             y_train (ww.DataColumn): Training target
+            ensembling_indices (list): Ensembling indices for ensembling data
             automl (AutoMLSearch): A reference to the AutoML search. Used to access configuration and by the error callback.
             should_continue_callback (function): Returns True if another pipeline from the list should be evaluated, False otherwise.
             pre_evaluation_callback (function): Optional callback invoked before pipeline evaluation.
@@ -38,22 +39,7 @@ class EngineBase(ABC):
         self._should_continue_callback = should_continue_callback
         self._pre_evaluation_callback = pre_evaluation_callback
         self._post_evaluation_callback = post_evaluation_callback
-        self.X_ensemble = None
-        self.y_ensemble = None
-
-    def add_ensemble(self, X_train, y_train, X_ensemble, y_ensemble):
-        """Adds the ensembling batches to the Engine
-
-        Arguments:
-            X_train (ww.DataTable): New training features
-            y_train (ww.DataColumn): New training target
-            X_ensemble (ww.DataTable): Ensembling training features
-            y_ensemble (ww.DataColumn): Ensembling training target
-        """
-        self.X_train = X_train
-        self.y_train = y_train
-        self.X_ensemble = X_ensemble
-        self.y_ensemble = y_ensemble
+        self.ensembling_indices = ensembling_indices
 
     @abstractmethod
     def evaluate_batch(self, pipelines):

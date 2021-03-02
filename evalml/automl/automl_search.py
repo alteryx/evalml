@@ -41,7 +41,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
-from evalml.preprocessing import split_data
+from evalml.preprocessing import TrainingValidationSplit, split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
@@ -171,8 +171,8 @@ class AutoMLSearch:
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
 
-            _ensembling_split_size (float): The data split size that we will use to separate the ensembling data from the full training dataset. Only used when ensembling is True.
-                Must be between 0 and 1, exclusive. Defaults to 0.2.
+            _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
+                Must be between 0 and 1, exclusive. Defaults to 0.2
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -269,9 +269,7 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
-        self.X_feature_types = self.X_train.logical_types
-        self.X_ensemble = None
-        self.y_ensemble = None
+        self.ensembling_indices = None
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_seed=self.random_seed)
@@ -279,13 +277,6 @@ class AutoMLSearch:
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
         self._interrupted = False
-
-        self._engine = SequentialEngine(self.X_train,
-                                        self.y_train,
-                                        self,
-                                        should_continue_callback=self._should_continue,
-                                        pre_evaluation_callback=self._pre_evaluation_callback,
-                                        post_evaluation_callback=self._post_evaluation_callback)
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -329,8 +320,16 @@ class AutoMLSearch:
         if run_ensembling:
             if not (0 < _ensembling_split_size < 1):
                 raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
-            self.X_train, self.X_ensemble, self.y_train, self.y_ensemble = split_data(self.X_train, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size)
-            self._engine.add_ensemble(self.X_train, self.y_train, self.X_ensemble, self.y_ensemble)
+            for _, ensembling_indices in TrainingValidationSplit(test_size=_ensembling_split_size, shuffle=True, stratify=self.y_train.to_series(), random_state=self.random_seed).split(self.X_train.to_dataframe(), self.y_train.to_series()):
+                self.ensembling_indices = ensembling_indices
+
+        self._engine = SequentialEngine(self.X_train,
+                                        self.y_train,
+                                        self.ensembling_indices,
+                                        self,
+                                        should_continue_callback=self._should_continue,
+                                        pre_evaluation_callback=self._pre_evaluation_callback,
+                                        post_evaluation_callback=self._post_evaluation_callback)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -590,14 +589,10 @@ class AutoMLSearch:
                 X_threshold_tuning = None
                 y_threshold_tuning = None
                 if self._best_pipeline.model_family == ModelFamily.ENSEMBLE:
-                    X_train, y_train = self.X_ensemble, self.y_ensemble
+                    X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
                 else:
-                    if self.X_ensemble:
-                        X_train = infer_feature_types(self.X_train.to_dataframe().append(self.X_ensemble.to_dataframe(), ignore_index=True), self.X_feature_types)
-                        y_train = infer_feature_types(self.y_train.to_series().append(self.y_ensemble.to_series(), ignore_index=True))
-                    else:
-                        X_train = self.X_train
-                        y_train = self.y_train
+                    X_train = self.X_train
+                    y_train = self.y_train
                 if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
                    and self.optimize_thresholds and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
