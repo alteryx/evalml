@@ -179,6 +179,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             "model_family": self.model_family,
             "components": dict()
         }
+
         for number, component in enumerate(self._component_graph, 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)

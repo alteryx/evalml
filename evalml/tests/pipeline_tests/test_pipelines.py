@@ -549,58 +549,49 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
 
 
 @pytest.mark.parametrize("is_linear", [True, False])
-def test_describe(is_linear, caplog, logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
+@pytest.mark.parametrize("is_fitted", [True, False])
+def test_describe_pipeline(is_linear, is_fitted, X_y_binary, caplog, logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
+    X, y = X_y_binary
+
     if is_linear:
         pipeline = logistic_regression_binary_pipeline_class(parameters={})
         name = "Logistic Regression Binary Pipeline"
+        expected_pipeline_dict = {'name': 'Logistic Regression Binary Pipeline',
+                                  'problem_type': ProblemTypes.BINARY,
+                                  'model_family': ModelFamily.LINEAR_MODEL,
+                                  'components': {'Imputer': {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}},
+                                                 'One Hot Encoder': {'name': 'One Hot Encoder', 'parameters': {'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}},
+                                                 'Standard Scaler': {'name': 'Standard Scaler', 'parameters': {}},
+                                                 'Logistic Regression Classifier': {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}}}
     else:
         pipeline = nonlinear_binary_pipeline_class(parameters={})
         name = "Non Linear Binary Pipeline"
+        expected_pipeline_dict = {'name': 'Non Linear Binary Pipeline',
+                                  'problem_type': ProblemTypes.BINARY,
+                                  'model_family': ModelFamily.LINEAR_MODEL,
+                                  'components': {'Imputer': {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}},
+                                                 'One Hot Encoder': {'name': 'One Hot Encoder', 'parameters': {'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}},
+                                                 'Elastic Net Classifier': {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}},
+                                                 'Random Forest Classifier': {'name': 'Random Forest Classifier', 'parameters': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},
+                                                 'Logistic Regression Classifier': {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}}
+    }
 
-    pipeline.describe()
+    if is_fitted:
+        pipeline.fit(X, y)
+
+    pipeline_dict = pipeline.describe(return_dict=True)
+    assert pipeline_dict == expected_pipeline_dict
     out = caplog.text
     assert name in out
     assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
-    assert "Number of features: " not in out
+
+    if is_fitted:
+        assert "Number of features: " in out
+    else:
+        assert "Number of features: " not in out
 
     for component in pipeline:
-        if component.hyperparameter_ranges:
-            for parameter in component.hyperparameter_ranges:
-                assert parameter in out
-        assert component.name in out
-
-
-def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline_class):
-    X, y = X_y_binary
-    lrp = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    lrp.fit(X, y)
-    lrp.describe()
-    out = caplog.text
-    assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: binary" in out
-    assert "Model Family: Linear" in out
-    assert "Number of features: {}".format(X.shape[1]) in out
-
-    for component in lrp:
-        if component.hyperparameter_ranges:
-            for parameter in component.hyperparameter_ranges:
-                assert parameter in out
-        assert component.name in out
-
-
-def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline_class):
-    X, y = X_y_binary
-    nbpl = nonlinear_binary_pipeline_class(parameters={})
-    nbpl.fit(X, y)
-    nbpl.describe()
-    out = caplog.text
-    assert "Non Linear Binary Pipeline" in out
-    assert "Problem Type: binary" in out
-    assert "Model Family: Linear" in out
-    assert "Number of features: 2" in out
-
-    for component in nbpl:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
