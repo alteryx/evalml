@@ -58,7 +58,7 @@ jobs:
           source test_python/bin/activate
           make installdeps
           make installdeps-test
-          echo $GITHUB_SHA
+          echo ${GITHUB_SHA}
       - name: Erase Coverage
         run: |
           source test_python/bin/activate
@@ -79,4 +79,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-          commit_parent: $GITHUB_SHA
+          commit_parent: ${GITHUB_SHA}
