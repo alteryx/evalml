@@ -2258,15 +2258,18 @@ def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_mult
 
 
 @pytest.mark.parametrize("ensembling", [True, False])
+@pytest.mark.parametrize("ensemble_split_size", [0.1, 0.2])
 @patch('evalml.automl.automl_search.split_data')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensembling, X_y_binary):
+def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensemble_split_size, ensembling, X_y_binary):
     X, y = X_y_binary
-    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=0.2)
+    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='binary', test_size=ensemble_split_size)
     mock_split_data.return_value = (X_train, X_ensemble, y_train, y_ensemble)
     # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=19, ensembling=ensembling, train_best_pipeline=False, optimize_thresholds=False)
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
+                          train_best_pipeline=False, optimize_thresholds=False, _ensembling_split_size=ensemble_split_size)
     automl.search()
     if ensembling:
         assert automl.ensembling
@@ -2282,13 +2285,16 @@ def test_automl_ensembling_training(mock_fit, mock_score, mock_split_data, ensem
 
 
 @pytest.mark.parametrize("best_pipeline", [-1, -2])
+@pytest.mark.parametrize("ensemble_split_size", [0.1, 0.2, 0.5])
 @patch('evalml.automl.automl_search.AutoMLSearch.rankings', new_callable=PropertyMock)
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, best_pipeline, X_y_binary, has_minimal_dependencies):
+def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, ensemble_split_size, best_pipeline, X_y_binary, has_minimal_dependencies):
     X, y = X_y_binary
-    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='multiclass', test_size=0.2)
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=10, ensembling=True)
+    X_train, X_ensemble, y_train, y_ensemble = split_data(X, y, problem_type='multiclass', test_size=ensemble_split_size)
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines,
+                          ensembling=True, _ensembling_split_size=ensemble_split_size)
     # when best_pipeline == -1, model is ensembling,
     # otherwise, the model is a different model
     # the ensembling_num formula is taken from AutoMLSearch
@@ -2314,6 +2320,14 @@ def test_automl_no_ensembling_best_pipeline(mock_fit, mock_score, X_y_binary):
     automl.search()
     assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
     assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+
+
+@pytest.mark.parametrize("ensemble_split_size", [-1, 0, 1.0, 1.1])
+def test_automl_ensemble_split_size(ensemble_split_size, X_y_binary):
+    X, y = X_y_binary
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    with pytest.raises(ValueError, match="Ensembling split size must be between"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, ensembling=True, max_batches=ensemble_pipelines, _ensembling_split_size=ensemble_split_size)
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):

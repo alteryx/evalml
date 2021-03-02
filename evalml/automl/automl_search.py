@@ -94,6 +94,7 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 _ensembling_split_size=0.2,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -169,6 +170,9 @@ class AutoMLSearch:
                 in time series problems, values should be passed in for the gap and max_delay variables.
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
+
+            _ensembling_split_size (float): The data split size that we will use to separate the ensembling data from the full training dataset. Only used when ensembling is True.
+                Must be between 0 and 1, exclusive. Defaults to 0.2.
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -322,7 +326,9 @@ class AutoMLSearch:
             else:
                 self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
         if run_ensembling:
-            self.X_train, self.X_ensemble, self.y_train, self.y_ensemble = split_data(self.X_train, self.y_train, problem_type=self.problem_type, test_size=0.20)
+            if not (0 < _ensembling_split_size < 1):
+                raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
+            self.X_train, self.X_ensemble, self.y_train, self.y_ensemble = split_data(self.X_train, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size)
             self._engine.add_ensemble(self.X_train, self.y_train, self.X_ensemble, self.y_ensemble)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
@@ -586,8 +592,8 @@ class AutoMLSearch:
                     X_train, y_train = self.X_ensemble, self.y_ensemble
                 else:
                     if self.X_ensemble:
-                        X_train = self.X_train.to_dataframe().append(self.X_ensemble.to_dataframe(), ignore_index=True)
-                        y_train = self.y_train.to_series().append(self.y_ensemble.to_series(), ignore_index=True)
+                        X_train = _convert_woodwork_types_wrapper(self.X_train.to_dataframe()).append(_convert_woodwork_types_wrapper(self.X_ensemble.to_dataframe()), ignore_index=True)
+                        y_train = _convert_woodwork_types_wrapper(self.y_train.to_series()).append(_convert_woodwork_types_wrapper(self.y_ensemble.to_series()), ignore_index=True)
                     else:
                         X_train = self.X_train
                         y_train = self.y_train
