@@ -571,20 +571,6 @@ def test_describe(is_linear, caplog, logistic_regression_binary_pipeline_class, 
         assert component.name in out
 
 
-# def test_describe_nonlinear(caplog, ):
-#     nbpl.describe()
-#     out = caplog.text
-#     assert "Problem Type: binary" in out
-#     assert "Model Family: Linear" in out
-#     assert "Number of features: " not in out
-
-#     for component in nbpl:
-#         if component.hyperparameter_ranges:
-#             for parameter in component.hyperparameter_ranges:
-#                 assert parameter in out
-#         assert component.name in out
-
-
 def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
     lrp = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})

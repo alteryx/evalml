@@ -1077,7 +1077,7 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return
     pipeline_names = automl.rankings['pipeline_name']
     assert pipeline_names.str.contains('Ensemble').any()
     assert f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration" in caplog.text
-    assert len(automl.results['pipeline_results']) == 50
+    assert len(automl.results['pipeline_results']) == _get_first_stacked_classifier_no()
     stacked_ensemble_id = len(automl.results['pipeline_results']) - 1
     caplog.clear()
 
