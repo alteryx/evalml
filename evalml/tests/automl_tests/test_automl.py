@@ -2268,18 +2268,18 @@ def test_automl_ensembling_training(mock_fit, mock_score, ensemble_split_size, e
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
                           train_best_pipeline=False, optimize_thresholds=False, _ensembling_split_size=ensemble_split_size)
     automl.search()
-    for training_indices, ensembling_indices in TrainingValidationSplit(test_size=ensemble_split_size, shuffle=True, stratify=y, random_state=0).split(X, y):
-        if ensembling:
-            assert automl.ensembling
-            # check that the X_train data is all used for the length
-            assert len(training_indices) == (len(mock_fit.call_args_list[-2][0][0]) + len(mock_score.call_args_list[-2][0][0]))
-            # last call will be the stacking ensembler
-            assert len(ensembling_indices) == (len(mock_fit.call_args_list[-1][0][0]) + len(mock_score.call_args_list[-1][0][0]))
-        else:
-            # verify that there is no creation of ensembling CV data
-            assert not automl.ensembling_indices
-            for i in [-1, -2]:
-                assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
+    training_indices, ensembling_indices = next(TrainingValidationSplit(test_size=ensemble_split_size, shuffle=True, stratify=y, random_state=0).split(X, y))
+    if ensembling:
+        assert automl.ensembling
+        # check that the X_train data is all used for the length
+        assert len(training_indices) == (len(mock_fit.call_args_list[-2][0][0]) + len(mock_score.call_args_list[-2][0][0]))
+        # last call will be the stacking ensembler
+        assert len(ensembling_indices) == (len(mock_fit.call_args_list[-1][0][0]) + len(mock_score.call_args_list[-1][0][0]))
+    else:
+        # verify that there is no creation of ensembling CV data
+        assert not automl.ensembling_indices
+        for i in [-1, -2]:
+            assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
 
 
 @pytest.mark.parametrize("best_pipeline", [-1, -2])
@@ -2298,18 +2298,18 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     ensembling_num = (1 + len(automl.allowed_pipelines) + len(automl.allowed_pipelines) * automl._pipelines_per_batch + 1) + best_pipeline
     mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
     automl.search()
-    for training_indices, ensembling_indices in TrainingValidationSplit(test_size=ensemble_split_size, shuffle=True, stratify=y, random_state=0).split(X, y):
-        # when best_pipeline == -1, model is ensembling,
-        # otherwise, the model is a different model
-        # the ensembling_num formula is taken from AutoMLSearch
-        if best_pipeline == -1:
-            assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
-            assert len(mock_fit.call_args_list[-1][0][0]) == len(ensembling_indices)
-            assert len(mock_fit.call_args_list[-1][0][1]) == len(ensembling_indices)
-        else:
-            assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
-            assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
-            assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+    training_indices, ensembling_indices = next(TrainingValidationSplit(test_size=ensemble_split_size, shuffle=True, stratify=y, random_state=0).split(X, y))
+    # when best_pipeline == -1, model is ensembling,
+    # otherwise, the model is a different model
+    # the ensembling_num formula is taken from AutoMLSearch
+    if best_pipeline == -1:
+        assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
+        assert len(mock_fit.call_args_list[-1][0][0]) == len(ensembling_indices)
+        assert len(mock_fit.call_args_list[-1][0][1]) == len(ensembling_indices)
+    else:
+        assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
+        assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+        assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
