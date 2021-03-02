@@ -40,9 +40,10 @@ class OutliersDataCheck(DataCheck):
                                                                      "details": {"columns": ["z"]}}],\
                                                        "errors": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -50,7 +51,7 @@ class OutliersDataCheck(DataCheck):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         if len(X.columns) == 0:
-            return messages
+            return results
 
         has_outliers = []
         for col in X.columns:
@@ -58,11 +59,11 @@ class OutliersDataCheck(DataCheck):
             if results is not None and results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
                 has_outliers.append(col)
         warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in has_outliers]))
-        messages["warnings"].append(DataCheckWarning(message=warning_msg,
+        results["warnings"].append(DataCheckWarning(message=warning_msg,
                                                      data_check_name=self.name,
                                                      message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                                      details={"columns": has_outliers}).to_dict())
-        return messages
+        return results
 
     @staticmethod
     def _no_outlier_prob(num_records: int, pct_outliers: float) -> float:

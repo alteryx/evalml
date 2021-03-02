@@ -62,10 +62,12 @@ class UniquenessDataCheck(DataCheck):
                                                                  "code": "NOT_UNIQUE_ENOUGH",\
                                                                  "details": {"column": "regression_not_unique_enough", 'uniqueness_score': 0.0}}]}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
+
 
         X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
@@ -74,7 +76,7 @@ class UniquenessDataCheck(DataCheck):
 
         if is_regression(self.problem_type):
             not_unique_enough_cols = list(res.index[res < self.threshold])
-            messages["warnings"].extend([DataCheckWarning(message=warning_not_unique_enough.format(col_name,
+            results["warnings"].extend([DataCheckWarning(message=warning_not_unique_enough.format(col_name,
                                                                                                    self.problem_type),
                                                           data_check_name=self.name,
                                                           message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
@@ -82,13 +84,13 @@ class UniquenessDataCheck(DataCheck):
                                          for col_name in not_unique_enough_cols])
         elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
-            messages["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
+            results["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
                                                                                             self.problem_type),
                                                           data_check_name=self.name,
                                                           message_code=DataCheckMessageCode.TOO_UNIQUE,
                                                           details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                          for col_name in too_unique_cols])
-        return messages
+        return results
 
     @staticmethod
     def uniqueness_score(col):

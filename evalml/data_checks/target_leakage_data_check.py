@@ -82,10 +82,12 @@ class TargetLeakageDataCheck(DataCheck):
                                                                              "details": {"column": "leak"}}],\
                                                                "errors": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
+
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
@@ -97,9 +99,9 @@ class TargetLeakageDataCheck(DataCheck):
             highly_corr_cols = self._calculate_mutual_information(X, y)
 
         warning_msg = "Column '{}' is {}% or more correlated with the target"
-        messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
+        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
                                                       data_check_name=self.name,
                                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                                       details={"column": col_name}).to_dict()
                                      for col_name in highly_corr_cols])
-        return messages
+        return results

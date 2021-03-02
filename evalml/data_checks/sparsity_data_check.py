@@ -58,9 +58,10 @@ class SparsityDataCheck(DataCheck):
                                                             "code": "TOO_SPARSE",\
                                                             "details": {"column": "sparse", 'sparsity_score': 0.0}}]}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -68,13 +69,13 @@ class SparsityDataCheck(DataCheck):
 
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
-        messages["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
+        results["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
                                                                                         self.problem_type),
                                                       data_check_name=self.name,
                                                       message_code=DataCheckMessageCode.TOO_SPARSE,
                                                       details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
                                      for col_name in too_sparse_cols])
-        return messages
+        return results
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):

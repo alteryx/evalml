@@ -41,10 +41,12 @@ class HighVarianceCVDataCheck(DataCheck):
                                                                                                  "details": {"variance": 2.0/3.0, "pipeline_name": "LogisticRegressionPipeline"}}],\
                                                                                    "errors": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
+
         if not isinstance(cv_scores, pd.Series):
             cv_scores = pd.Series(cv_scores)
 
@@ -60,5 +62,5 @@ class HighVarianceCVDataCheck(DataCheck):
             DataCheck._add_message(DataCheckWarning(message=warning_msg,
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.HIGH_VARIANCE,
-                                                    details={"variance": variance, "pipeline_name": pipeline_name}), messages)
-        return messages
+                                                    details={"variance": variance, "pipeline_name": pipeline_name}), results)
+        return results
