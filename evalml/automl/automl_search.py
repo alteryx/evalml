@@ -322,7 +322,6 @@ class AutoMLSearch:
                 raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
             _, self.ensembling_indices = next(TrainingValidationSplit(test_size=_ensembling_split_size, shuffle=True, stratify=self.y_train.to_series(), random_state=self.random_seed).split(self.X_train.to_dataframe(), self.y_train.to_series()))
 
-
         self._engine = SequentialEngine(self.X_train,
                                         self.y_train,
                                         self.ensembling_indices,
