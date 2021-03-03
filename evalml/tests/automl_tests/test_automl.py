@@ -1077,7 +1077,7 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=two_stacking_batches,
                           objective="Log Loss Binary", ensembling=True, error_callback=raise_error_callback)
 
-    mock_score.side_effect = [{'Log Loss Binary': score} for score in np.arange(0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1)]
+    mock_score.side_effect = [{'Log Loss Binary': score} for score in np.arange(0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1)]  # Dcreases with each call
     automl.search(data_checks=None)
     pipeline_names = automl.rankings['pipeline_name']
     assert pipeline_names.str.contains('Ensemble').any()
