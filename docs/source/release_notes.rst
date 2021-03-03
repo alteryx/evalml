@@ -15,8 +15,14 @@ Release Notes
         * Reversed GitHub Action for Linux unit tests until a fix for report generation is found :pr:`1920`
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
+        * Deleted the ``explain_prediction`` function :pr:`1915`
     * Documentation Changes
     * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``explain_prediction`` function :pr:`1915`
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements
