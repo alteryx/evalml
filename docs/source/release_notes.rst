@@ -19,6 +19,7 @@ Release Notes
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
         * Deleted the ``explain_prediction`` function :pr:`1915`
     * Documentation Changes
+        * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
     * Testing Changes
 
 .. warning::
