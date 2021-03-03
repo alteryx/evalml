@@ -4,8 +4,8 @@ import traceback
 import numpy as np
 
 from evalml.automl.engine import EngineBase
-from evalml.model_family import ModelFamily
 from evalml.exceptions import PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)

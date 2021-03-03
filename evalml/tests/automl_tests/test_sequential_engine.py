@@ -7,11 +7,11 @@ import woodwork as ww
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engine import SequentialEngine
+from evalml.exceptions import PipelineScoreError
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.preprocessing import split_data
 from evalml.utils.woodwork_utils import infer_feature_types
-from evalml.exceptions import PipelineScoreError
 
 
 def test_evaluate_no_data():

@@ -41,6 +41,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
+from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
@@ -587,7 +588,7 @@ class AutoMLSearch:
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
             best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                if self._best_pipeline.model_family == ModelFamily.ENSEMBLE:
+                if best_pipeline.model_family == ModelFamily.ENSEMBLE:
                     X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
                 else:
                     X_train = self.X_train
