@@ -78,10 +78,11 @@ jobs:
           make git-test
       - run: |
           echo "actual_sha=$(echo git log -1 --format='%H')" >> $GITHUB_ENV
+          echo ${{ env.actual_sha }}
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-          commit_parent: $ {{ env.actual_sha }}
+          override_commit: $ {{ env.actual_sha }}
