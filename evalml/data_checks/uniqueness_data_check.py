@@ -60,7 +60,8 @@ class UniquenessDataCheck(DataCheck):
                                                                  "data_check_name": "UniquenessDataCheck",\
                                                                  "level": "warning",\
                                                                  "code": "NOT_UNIQUE_ENOUGH",\
-                                                                 "details": {"column": "regression_not_unique_enough", 'uniqueness_score': 0.0}}]}
+                                                                 "details": {"column": "regression_not_unique_enough", 'uniqueness_score': 0.0}}],\
+                                                         "actions": []}
         """
         results = {
             "warnings": [],
