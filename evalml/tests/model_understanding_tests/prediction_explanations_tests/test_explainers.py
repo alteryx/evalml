@@ -1,5 +1,4 @@
 import json
-import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -11,7 +10,6 @@ from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
     abs_error,
     cross_entropy,
-    explain_prediction,
     explain_predictions,
     explain_predictions_best_worst
 )
@@ -29,218 +27,6 @@ def compare_two_tables(table_1, table_2):
     assert len(table_1) == len(table_2)
     for row, row_answer in zip(table_1, table_2):
         assert row.strip().split() == row_answer.strip().split()
-
-
-test_features = [[1], np.ones((15, 1)), pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}).iloc[0],
-                 pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]}), pd.DataFrame()]
-
-
-explain_prediction_answer = """Feature Name Feature Value Contribution to Prediction
-                               =========================================================
-                                 d           40.00          +++++
-                                 b           20.00          -----""".splitlines()
-
-explain_prediction_regression_dict_answer = {
-    "explanations": [{
-        "feature_names": ["d", "b"],
-        "feature_values": [40, 20],
-        "qualitative_explanation": ["+++++", "-----"],
-        "quantitative_explanation": [None, None],
-        "drill_down": {},
-        "class_name": None
-    }]
-}
-
-explain_predictions_regression_df_answer = pd.DataFrame({'feature_names': ['d', 'b'],
-                                                         'feature_values': [40, 20],
-                                                         'qualitative_explanation': ['+++++', '-----'],
-                                                         "quantitative_explanation": [None, None]})
-
-explain_prediction_binary_dict_answer = {
-    "explanations": [{
-        "feature_names": ["d", "b"],
-        "feature_values": [40, 20],
-        "qualitative_explanation": ["+++++", "-----"],
-        "quantitative_explanation": [None, None],
-        "drill_down": {},
-        "class_name": "class_1"
-    }]
-}
-
-explain_prediction_binary_df_answer = pd.DataFrame({
-    "feature_names": ["d", "b"],
-    "feature_values": [40, 20],
-    "qualitative_explanation": ["+++++", "-----"],
-    "quantitative_explanation": [None, None],
-    "class_name": ["class_1", "class_1"]
-})
-
-explain_prediction_multiclass_answer = """Class: class_0
-
-        Feature Name Feature Value Contribution to Prediction
-       =========================================================
-            a           10.00               +++++
-            c           30.00                ---
-
-
-        Class: class_1
-
-        Feature Name Feature Value Contribution to Prediction
-       =========================================================
-            a           10.00               +++
-            b           20.00               ++
-
-
-        Class: class_2
-
-        Feature Name Feature Value Contribution to Prediction
-        =========================================================
-            c          30.00           ---
-            d          40.00           ---
-            """.splitlines()
-
-explain_prediction_multiclass_dict_answer = {
-    "explanations": [
-        {"feature_names": ["a", "c"],
-         "feature_values": [10, 30],
-         "qualitative_explanation": ["+++++", "---"],
-         "quantitative_explanation": [None, None],
-         "drill_down": {},
-         "class_name": "class_0"},
-        {"feature_names": ["a", "b"],
-         "feature_values": [10, 20],
-         "qualitative_explanation": ["+++", "++"],
-         "quantitative_explanation": [None, None],
-         "drill_down": {},
-         "class_name": "class_1"},
-        {"feature_names": ["c", "d"],
-         "feature_values": [30, 40],
-         "qualitative_explanation": ["---", "---"],
-         "quantitative_explanation": [None, None],
-         "drill_down": {},
-         "class_name": "class_2"},
-    ]
-}
-
-explain_prediction_multiclass_df_answer = pd.DataFrame({
-    "feature_names": ["a", "c", "a", "b", "c", "d"],
-    "feature_values": [10, 30, 10, 20, 30, 40],
-    "qualitative_explanation": ["+++++", "---", "+++", "++", "---", "---"],
-    "quantitative_explanation": [None, None, None, None, None, None],
-    "class_name": ['class_0', 'class_0', 'class_1', 'class_1', 'class_2', 'class_2']
-})
-
-
-@pytest.mark.parametrize("problem_type, output_format, shap_values, normalized_shap_values, answer",
-                         [(ProblemTypes.REGRESSION,
-                           "text",
-                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           explain_prediction_answer),
-                          (ProblemTypes.REGRESSION,
-                           "dict",
-                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           explain_prediction_regression_dict_answer
-                           ),
-                          (ProblemTypes.REGRESSION,
-                           "dataframe",
-                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           explain_predictions_regression_df_answer
-                           ),
-                          (ProblemTypes.TIME_SERIES_REGRESSION,
-                           "text",
-                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           explain_prediction_answer),
-                          (ProblemTypes.TIME_SERIES_REGRESSION,
-                           "dict",
-                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           explain_prediction_regression_dict_answer
-                           ),
-                          (ProblemTypes.TIME_SERIES_REGRESSION,
-                           "dataframe",
-                           {"a": [1], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           {"a": [0.5], "b": [-2.1], "c": [-0.25], "d": [2.3]},
-                           explain_predictions_regression_df_answer
-                           ),
-                          (ProblemTypes.BINARY,
-                           "text",
-                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
-                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
-                           explain_prediction_answer),
-                          (ProblemTypes.BINARY,
-                           "dict",
-                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
-                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
-                           explain_prediction_binary_dict_answer),
-                          (ProblemTypes.BINARY,
-                           "dataframe",
-                           [{}, {"a": [0.5], "b": [-0.89], "c": [0.33], "d": [0.89]}],
-                           [{}, {"a": [0.5], "b": [-0.89], "c": [-0.25], "d": [0.89]}],
-                           explain_prediction_binary_df_answer),
-                          (ProblemTypes.MULTICLASS,
-                           "text",
-                           [{}, {}, {}],
-                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
-                            {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
-                            {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
-                           explain_prediction_multiclass_answer),
-                          (ProblemTypes.MULTICLASS,
-                           "dict",
-                           [{}, {}, {}],
-                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
-                            {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
-                            {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
-                           explain_prediction_multiclass_dict_answer),
-                          (ProblemTypes.MULTICLASS,
-                           "dataframe",
-                           [{}, {}, {}],
-                           [{"a": [1.1], "b": [0.09], "c": [-0.53], "d": [-0.06]},
-                            {"a": [0.53], "b": [0.24], "c": [-0.15], "d": [-0.22]},
-                            {"a": [0.03], "b": [0.02], "c": [-0.42], "d": [-0.47]}],
-                           explain_prediction_multiclass_df_answer)
-                          ])
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@patch("evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values")
-@patch("evalml.model_understanding.prediction_explanations._user_interface._normalize_shap_values")
-def test_explain_prediction(mock_normalize_shap_values,
-                            mock_compute_shap_values,
-                            problem_type, output_format, shap_values, normalized_shap_values, answer,
-                            input_type):
-    mock_compute_shap_values.return_value = shap_values
-    mock_normalize_shap_values.return_value = normalized_shap_values
-    pipeline = MagicMock()
-    pipeline.problem_type = problem_type
-    pipeline.classes_ = ["class_0", "class_1", "class_2"]
-
-    # By the time we call transform, we are looking at only one row of the input data.
-    pipeline.compute_estimator_features.return_value = ww.DataTable(pd.DataFrame({"a": [10], "b": [20], "c": [30], "d": [40]}))
-    features = pd.DataFrame({"a": [1], "b": [2]})
-    if input_type == "ww":
-        features = ww.DataTable(features)
-
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        table = explain_prediction(pipeline, features, y=None, output_format=output_format, index_to_explain=0,
-                                   top_k_features=2)
-        assert str(warn[0].message).startswith("The explain_prediction function will be deleted in the next release")
-    if isinstance(table, str):
-        compare_two_tables(table.splitlines(), answer)
-    elif isinstance(table, pd.DataFrame):
-        pd.testing.assert_frame_equal(table, answer)
-    else:
-        assert table == answer
-
-
-def test_explain_prediction_errors():
-    with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=5)
-
-    with pytest.raises(ValueError, match="Explained indices should be between"):
-        explain_prediction(MagicMock(), pd.DataFrame({"a": [0, 1, 2, 3, 4]}), y=None, index_to_explain=-1)
 
 
 def test_error_metrics():
@@ -293,8 +79,6 @@ def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received bar"):
         explain_predictions(pipeline=MagicMock(), input_features=input_features, y=None, indices_to_explain=0, output_format="bar")
-    with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received xml"):
-        explain_prediction(pipeline=MagicMock(), input_features=input_features, y=None, index_to_explain=0, output_format="xml")
 
     input_features, y_true = pd.DataFrame(data=range(15)), pd.Series(range(15))
     with pytest.raises(ValueError, match="Parameter output_format must be either text, dict, or dataframe. Received foo"):
