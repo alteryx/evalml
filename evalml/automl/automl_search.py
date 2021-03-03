@@ -302,7 +302,7 @@ class AutoMLSearch:
                                           post_evaluation_callback=self._post_evaluation_callback,
                                           n_workers=engine_workers)
         else:
-            raise ValueError(f"Provided engine should be 'sequential' or 'dask', received {engine}.")
+            raise ValueError(f"Provided engine should be 'sequential' or 'parallel', received {engine}.")
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
