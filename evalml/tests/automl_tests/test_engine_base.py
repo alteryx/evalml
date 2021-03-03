@@ -55,7 +55,7 @@ def test_train_pipeline_trains_and_tunes_threshold(mock_split_data, mock_pipelin
                                                    mock_predict_proba, mock_optimize, X_y_binary,
                                                    dummy_binary_pipeline_class):
     X, y = X_y_binary
-    mock_split_data.return_value = split_data(X, y, "binary", test_size=0.2, random_state=0)
+    mock_split_data.return_value = split_data(X, y, "binary", test_size=0.2, random_seed=0)
 
     _ = EngineBase.train_pipeline(dummy_binary_pipeline_class({}), X, y,
                                   optimize_thresholds=True, objective=LogLossBinary())
@@ -80,15 +80,13 @@ def test_engines_check_pipeline_names_unique(dummy_binary_pipeline_class):
     class MinimalEngine(EngineBase):
 
         def evaluate_batch(self, pipelines):
-            return []
+            """Docstring so codecov doesn't complain."""
 
         def train_batch(self, pipelines):
             super().train_batch(pipelines)
-            return {}
 
         def score_batch(self, pipelines, X, y, objectives):
             super().score_batch(pipelines, X, y, objectives)
-            return {}
 
     engine = MinimalEngine(X_train=pd.DataFrame(), y_train=pd.Series())
 
@@ -102,4 +100,4 @@ def test_engines_check_pipeline_names_unique(dummy_binary_pipeline_class):
         engine.train_batch([Pipeline2({}), Pipeline1({})])
 
     with pytest.raises(ValueError, match="All pipeline names must be unique. The names My Pipeline were repeated."):
-        engine.train_batch([Pipeline2({}), Pipeline1({})])
+        engine.score_batch([Pipeline2({}), Pipeline1({})], None, None, None)
