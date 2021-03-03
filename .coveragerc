@@ -1,6 +1,3 @@
-[run]
-source=evalml
-
 [report]
 exclude_lines =
     pragma: no cover
