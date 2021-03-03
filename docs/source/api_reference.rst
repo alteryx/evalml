@@ -349,7 +349,6 @@ Prediction Explanations
     :toctree: generated
     :nosignatures:
 
-    explain_prediction
     explain_predictions
     explain_predictions_best_worst
 
