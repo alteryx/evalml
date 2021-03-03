@@ -21,16 +21,17 @@ logger = get_logger(__file__)
 class EngineBase(ABC):
     """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
 
-    def __init__(self, X_train=None, y_train=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
+    def __init__(self, X_train=None, y_train=None, ensembling_indices=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
         """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML.
 
         Arguments:
-            X_train (ww.DataTable): training features
-            y_train (ww.DataColumn): training target
-            automl (AutoMLSearch): a reference to the AutoML search. Used to access configuration and by the error callback.
-            should_continue_callback (function): returns True if another pipeline from the list should be evaluated, False otherwise.
-            pre_evaluation_callback (function): optional callback invoked before pipeline evaluation.
-            post_evaluation_callback (function): optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
+            X_train (ww.DataTable): Training features
+            y_train (ww.DataColumn): Training target
+            ensembling_indices (list): Ensembling indices for ensembling data
+            automl (AutoMLSearch): A reference to the AutoML search. Used to access configuration and by the error callback.
+            should_continue_callback (function): Returns True if another pipeline from the list should be evaluated, False otherwise.
+            pre_evaluation_callback (function): Optional callback invoked before pipeline evaluation.
+            post_evaluation_callback (function): Optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
         """
         self.X_train = X_train
         self.y_train = y_train
@@ -38,6 +39,7 @@ class EngineBase(ABC):
         self._should_continue_callback = should_continue_callback
         self._pre_evaluation_callback = pre_evaluation_callback
         self._post_evaluation_callback = post_evaluation_callback
+        self.ensembling_indices = ensembling_indices
 
     @abstractmethod
     def evaluate_batch(self, pipelines):
@@ -47,7 +49,7 @@ class EngineBase(ABC):
             pipeline_batch (list(PipelineBase)): A batch of pipelines to be fitted and evaluated
 
         Returns:
-            list (int): a list of the new pipeline IDs which were created by the AutoML search.
+            list (int): A list of the new pipeline IDs which were created by the AutoML search.
         """
 
     @staticmethod
@@ -55,13 +57,13 @@ class EngineBase(ABC):
         """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
 
         Arguments:
-            pipeline (PipelineBase): the pipeline to score
-            automl (AutoMLSearch): the AutoML search, used to access config and for the error callback
-            full_X_train (ww.DataTable): training features
-            full_y_train (ww.DataColumn): training target
+            pipeline (PipelineBase): The pipeline to score
+            automl (AutoMLSearch): The AutoML search, used to access config and for the error callback
+            full_X_train (ww.DataTable): Training features
+            full_y_train (ww.DataColumn): Training target
 
         Returns:
-            dict: a dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
+            dict: A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
         """
         start = time.time()
         cv_data = []
