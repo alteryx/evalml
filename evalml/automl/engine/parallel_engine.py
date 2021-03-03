@@ -50,10 +50,6 @@ class ParallelEngine(EngineBase):
         if self.X_train is None or self.y_train is None:
             raise ValueError("Dataset has not been loaded into the engine.")
 
-        # Ensures for the parallel case that only max_iterations pipelines are
-        if self.automl.max_iterations:
-            pipelines = pipelines[0:self.automl.max_iterations]  # Covers when max_iterations == 1
-
         if self._pre_evaluation_callback:
             for pipeline in pipelines:
                 self._pre_evaluation_callback(pipeline)
@@ -65,9 +61,7 @@ class ParallelEngine(EngineBase):
                                            full_X_train=deepcopy(self.X_train), full_y_train=deepcopy(self.y_train), return_pipeline=True)
 
         new_pipeline_ids = []
-        eval_results = []
         for future in as_completed(pipeline_futures):
             evaluation_result, pipeline = future.result()
             new_pipeline_ids.append(self._post_evaluation_callback(pipeline, evaluation_result))
-            eval_results.append(evaluation_result)
         return new_pipeline_ids
