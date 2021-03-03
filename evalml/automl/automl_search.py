@@ -5,6 +5,7 @@ from collections import defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -41,7 +42,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
-from evalml.preprocessing import TrainingValidationSplit, split_data
+from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
@@ -320,7 +321,9 @@ class AutoMLSearch:
         if run_ensembling:
             if not (0 < _ensembling_split_size < 1):
                 raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
-            _, self.ensembling_indices = next(TrainingValidationSplit(test_size=_ensembling_split_size, shuffle=True, stratify=self.y_train.to_series(), random_state=self.random_seed).split(self.X_train.to_dataframe(), self.y_train.to_series()))
+            X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
+            _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
+            self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
 
         self._engine = SequentialEngine(self.X_train,
                                         self.y_train,

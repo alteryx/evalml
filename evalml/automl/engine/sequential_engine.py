@@ -24,11 +24,10 @@ class SequentialEngine(EngineBase):
             X, y = self.X_train, self.y_train
             if pipeline.model_family == ModelFamily.ENSEMBLE:
                 X, y = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
-            else:
-                if self.ensembling_indices is not None:
-                    training_indices = [i for i in range(len(self.X_train)) if i not in self.ensembling_indices]
-                    X = self.X_train.iloc[training_indices]
-                    y = self.y_train.iloc[training_indices]
+            elif self.ensembling_indices is not None:
+                training_indices = [i for i in range(len(self.X_train)) if i not in self.ensembling_indices]
+                X = self.X_train.iloc[training_indices]
+                y = self.y_train.iloc[training_indices]
             evaluation_result = EngineBase.train_and_score_pipeline(pipeline, self.automl, X, y)
             new_pipeline_ids.append(self._post_evaluation_callback(pipeline, evaluation_result))
             index += 1
