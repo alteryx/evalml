@@ -75,7 +75,7 @@ def test_highly_null_data_check_input_formats():
     highly_null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
 
     # test empty pd.DataFrame
-    assert highly_null_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
+    assert highly_null_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}
 
     #  test Woodwork
     ww_input = ww.DataTable(pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]]))

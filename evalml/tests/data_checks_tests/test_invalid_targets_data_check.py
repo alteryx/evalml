@@ -30,7 +30,7 @@ def test_invalid_target_data_check_nan_error():
     X = pd.DataFrame({"col": [1, 2, 3]})
     invalid_targets_check = InvalidTargetDataCheck("regression", get_default_primary_search_objective("regression"))
 
-    assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": [], "actions": []}
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == {
         "warnings": [],
         "errors": [DataCheckError(message="3 row(s) (100.0%) of target values are null",
@@ -44,7 +44,7 @@ def test_invalid_target_data_check_numeric_binary_classification_valid_float():
     y = pd.Series([0.0, 1.0, 0.0, 1.0])
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
 
 def test_invalid_target_data_check_numeric_binary_classification_error():
@@ -120,7 +120,7 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
 
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
 
-    assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
     y = pd.Series(pd.date_range('2000-02-03', periods=5, freq='W'))
     X = pd.DataFrame({"col": range(len(y))})
@@ -373,9 +373,9 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
     invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical) == {"warnings": [], "errors": [data_check_error]}
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}), y=y_mixed_cat_numeric) == {"warnings": [], "errors": [data_check_error]}
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_float))}), y=y_float) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_numeric))}), y=y_numeric) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer) == {"warnings": [], "errors": [], "actions": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_float))}), y=y_float) == {"warnings": [], "errors": [], "actions": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_numeric))}), y=y_numeric) == {"warnings": [], "errors": [], "actions": []}
 
 
 def test_invalid_target_data_check_multiclass_problem_binary_data():
@@ -389,7 +389,7 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
         details={"num_classes": len(set(y_binary))}).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_multiclass))}), y=y_multiclass) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_multiclass))}), y=y_multiclass) == {"warnings": [], "errors": [], "actions": []}
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary) == {"warnings": [], "errors": [data_check_error]}
 
 
@@ -417,7 +417,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
 
     y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_low_classes))})
-    assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {"warnings": [], "errors": [], "actions": []}
 
 
 def test_invalid_target_data_check_mismatched_indices():
@@ -427,8 +427,8 @@ def test_invalid_target_data_check_mismatched_indices():
     y_diff_index_order = pd.Series([0, 1, 0], index=[0, 2, 1])
 
     invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
-    assert invalid_targets_check.validate(X=None, y=y_same_index) == {"warnings": [], "errors": []}
-    assert invalid_targets_check.validate(X, y_same_index) == {"warnings": [], "errors": []}
+    assert invalid_targets_check.validate(X=None, y=y_same_index) == {"warnings": [], "errors": [], "actions": []}
+    assert invalid_targets_check.validate(X, y_same_index) == {"warnings": [], "errors": [], "actions": []}
 
     X_index_missing = list(set(y_diff_index.index) - set(X.index))
     y_index_missing = list(set(X.index) - set(y_diff_index.index))

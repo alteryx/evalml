@@ -56,7 +56,8 @@ class InvalidTargetDataCheck(DataCheck):
                                                                    "level": "error",\
                                                                    "code": "TARGET_HAS_NULL",\
                                                                    "details": {"num_null_rows": 2, "pct_null_rows": 50}}],\
-                                                       "warnings": []}
+                                                       "warnings": [],\
+                                                       "actions": []}
         """
         results = {
             "warnings": [],

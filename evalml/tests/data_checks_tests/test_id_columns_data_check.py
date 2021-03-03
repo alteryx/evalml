@@ -58,7 +58,8 @@ def test_id_columns_warning():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_3_id"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     X = pd.DataFrame.from_dict(X_dict)
@@ -72,7 +73,8 @@ def test_id_columns_warning():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_1_id"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -103,7 +105,8 @@ def test_id_columns_strings():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_3_id"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
@@ -116,7 +119,8 @@ def test_id_columns_strings():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_1_id"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -124,7 +128,7 @@ def test_id_cols_data_check_input_formats():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.8)
 
     # test empty pd.DataFrame
-    assert id_cols_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
+    assert id_cols_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}
 
     #  test Woodwork
     ww_input = ww.DataTable(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]))
@@ -137,7 +141,8 @@ def test_id_cols_data_check_input_formats():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": 1}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     #  test 2D list
@@ -150,7 +155,8 @@ def test_id_cols_data_check_input_formats():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": 1}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     # test np.array
@@ -163,5 +169,6 @@ def test_id_cols_data_check_input_formats():
                                       data_check_name=id_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": 1}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }

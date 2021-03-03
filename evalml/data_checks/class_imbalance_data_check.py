@@ -64,7 +64,8 @@ class ClassImbalanceDataCheck(DataCheck):
                                                                    "data_check_name": "ClassImbalanceDataCheck",\
                                                                    "level": "warning",\
                                                                    "code": "CLASS_IMBALANCE_SEVERE",\
-                                                                   "details": {"target_values": [0]}}]}
+                                                                   "details": {"target_values": [0]}}],\
+                                                     "actions": []}
         """
         results = {
             "warnings": [],

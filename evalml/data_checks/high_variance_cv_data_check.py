@@ -39,7 +39,8 @@ class HighVarianceCVDataCheck(DataCheck):
                                                                                                  "level": "warning",\
                                                                                                  "code": "HIGH_VARIANCE",\
                                                                                                  "details": {"variance": 2.0/3.0, "pipeline_name": "LogisticRegressionPipeline"}}],\
-                                                                                   "errors": []}
+                                                                                   "errors": [],\
+                                                                                   "actions": []}
         """
         results = {
             "warnings": [],

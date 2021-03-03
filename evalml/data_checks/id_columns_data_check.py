@@ -46,7 +46,8 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "data_check_name": "IDColumnsDataCheck",\
                                                                    "level": "warning",\
                                                                    "code": "HAS_ID_COLUMN",\
-                                                                   "details": {"column": "df_id"}}]}
+                                                                   "details": {"column": "df_id"}}],\
+                                                     "actions": []}
         """
         results = {
             "warnings": [],
