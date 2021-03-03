@@ -1084,7 +1084,7 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return
 
     ensemble_ids = [_get_first_stacked_classifier_no() - 1, len(automl.results['pipeline_results']) - 1]
 
-    for ensemble_id in ensemble_ids:
+    for i, ensemble_id in enumerate(ensemble_ids):
         caplog.clear()
         automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
         out = caplog.text
@@ -1107,7 +1107,11 @@ def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return
             assert isinstance(automl_dict['percent_better_than_baseline'], float)
             assert isinstance(automl_dict['validation_score'], float)
             assert len(automl_dict['input_pipeline_ids']) == len(allowed_model_families("binary"))
-            assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+            if i == 0:
+                assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+            else:
+                assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+                assert all(input_id > ensemble_ids[0] for input_id in automl_dict['input_pipeline_ids'])
         else:
             assert automl_dict is None
 
