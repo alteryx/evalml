@@ -76,12 +76,12 @@ jobs:
         run: |
           source test_python/bin/activate
           make git-test
+      - run: |
+          echo ::set-env name=$ACTUAL_COMMIT::$(git log -1 --format='%H')
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-          commit_parent: $ACTUAL_COMMIT
-        env:
-          ACTUAL_COMMIT: git log -1 --format='%H'
+          commit_parent: $ {{ env.ACTUAL_COMMIT }}
