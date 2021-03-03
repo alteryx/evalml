@@ -63,7 +63,7 @@ from evalml.pipelines.components.utils import (
     get_estimators
 )
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing.data_splitters import TrainingValidationSplit
+from evalml.preprocessing import TrainingValidationSplit, split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -1532,12 +1532,15 @@ def test_max_iteration_works_with_stacked_ensemble(mock_pipeline_fit, mock_score
     pipeline_names = automl.rankings['pipeline_name']
     if max_iterations < _get_first_stacked_classifier_no():
         assert not pipeline_names.str.contains('Ensemble').any()
+        assert not automl.ensembling_indices
     elif use_ensembling:
         assert pipeline_names.str.contains('Ensemble').any()
         assert f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration" in caplog.text
+        assert automl.ensembling_indices
 
     else:
         assert not pipeline_names.str.contains('Ensemble').any()
+        assert not automl.ensembling_indices
 
 
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
@@ -1636,7 +1639,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
-
+    assert not automl.ensembling_indices
     # Check that ensembling runs when len(allowed_model_families) == 1 but len(allowed_pipelines) > 1
     caplog.clear()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
@@ -1644,6 +1647,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     pipeline_names = automl.rankings['pipeline_name']
     assert pipeline_names.str.contains('Ensemble').any()
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." not in caplog.text
+    assert automl.ensembling_indices
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1657,6 +1661,7 @@ def test_automl_max_iterations_less_than_ensembling_disabled(mock_pipeline_fit, 
 
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
+    assert not automl.ensembling_indices
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1670,6 +1675,7 @@ def test_automl_max_batches_less_than_ensembling_disabled(mock_pipeline_fit, moc
 
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
+    assert not automl.ensembling_indices
 
 
 @pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
@@ -2318,6 +2324,102 @@ def test_automl_pipeline_random_seed(mock_fit, mock_score, random_seed, X_y_mult
     for i, row in automl.rankings.iterrows():
         if 'Base' not in list(row['parameters'].keys())[0]:
             assert automl.get_pipeline(row['id']).random_seed == random_seed
+
+
+@pytest.mark.parametrize("ensembling", [True, False])
+@pytest.mark.parametrize("ensemble_split_size", [0.1, 0.2])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_training(mock_fit, mock_score, ensemble_split_size, ensembling, X_y_binary):
+    X, y = X_y_binary
+    # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
+                          train_best_pipeline=False, optimize_thresholds=False, _ensembling_split_size=ensemble_split_size)
+    automl.search()
+    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=ensemble_split_size, random_seed=0)
+    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
+    if ensembling:
+        assert automl.ensembling
+        # check that the X_train data is all used for the length
+        assert len(training_indices) == (len(mock_fit.call_args_list[-2][0][0]) + len(mock_score.call_args_list[-2][0][0]))
+        # last call will be the stacking ensembler
+        assert len(ensembling_indices) == (len(mock_fit.call_args_list[-1][0][0]) + len(mock_score.call_args_list[-1][0][0]))
+    else:
+        # verify that there is no creation of ensembling CV data
+        assert not automl.ensembling_indices
+        for i in [-1, -2]:
+            assert len(X) == (len(mock_fit.call_args_list[i][0][0]) + len(mock_score.call_args_list[i][0][0]))
+
+
+@pytest.mark.parametrize("best_pipeline", [-1, -2])
+@pytest.mark.parametrize("ensemble_split_size", [0.1, 0.2, 0.5])
+@pytest.mark.parametrize("indices", [[i for i in range(100)], [f"index_{i}" for i in range(100)]])
+@patch('evalml.automl.automl_search.AutoMLSearch.rankings', new_callable=PropertyMock)
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, indices, ensemble_split_size, best_pipeline, X_y_binary, has_minimal_dependencies):
+    X, y = X_y_binary
+    X = pd.DataFrame(X, index=indices)
+    y = pd.Series(y, index=indices)
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines,
+                          ensembling=True, _ensembling_split_size=ensemble_split_size)
+    ensembling_num = (1 + len(automl.allowed_pipelines) + len(automl.allowed_pipelines) * automl._pipelines_per_batch + 1) + best_pipeline
+    mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
+    automl.search()
+    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=ensemble_split_size, random_seed=0)
+    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
+    # when best_pipeline == -1, model is ensembling,
+    # otherwise, the model is a different model
+    # the ensembling_num formula is taken from AutoMLSearch
+    if best_pipeline == -1:
+        assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
+        assert len(mock_fit.call_args_list[-1][0][0]) == len(ensembling_indices)
+        assert len(mock_fit.call_args_list[-1][0][1]) == len(ensembling_indices)
+    else:
+        assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
+        assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+        assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_no_ensembling_best_pipeline(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    # does not ensemble
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_iterations=2)
+    automl.search()
+    assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+    assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+
+
+@pytest.mark.parametrize("ensemble_split_size", [-1, 0, 1.0, 1.1])
+def test_automl_ensemble_split_size(ensemble_split_size, X_y_binary):
+    X, y = X_y_binary
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    with pytest.raises(ValueError, match="Ensembling split size must be between"):
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, ensembling=True, max_batches=ensemble_pipelines, _ensembling_split_size=ensemble_split_size)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X['text column'] = ["Here is a text column that we want to treat as categorical if possible, but we want it to have some unique {} value".format(i % 10) for i in range(len(X))]
+    X = ww.DataTable(X, logical_types={1: "categorical", "text column": "categorical"})
+    y = ww.DataColumn(pd.Series(y))
+    ensemble_pipelines = len(get_estimators("binary")) + 2
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=True,
+                          train_best_pipeline=True, optimize_thresholds=False)
+    assert automl.ensembling
+    automl.search()
+    # ensure we use the full X data for training the best pipeline, which isn't ensembling pipeline
+    assert len(X) == len(mock_fit.call_args_list[-1][0][0])
+    # check that the logical types were preserved
+    assert str(mock_fit.call_args_list[-1][0][0].logical_types[1]) == 'Categorical'
+    assert str(mock_fit.call_args_list[-1][0][0].logical_types['text column']) == 'Categorical'
 
 
 def test_automl_raises_deprecated_random_state_warning(X_y_multi):
