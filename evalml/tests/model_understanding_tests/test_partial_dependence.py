@@ -3,12 +3,19 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.demos import load_breast_cancer, load_wine, load_fraud
+from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
-from evalml.model_understanding import partial_dependence, graph_partial_dependence
-from evalml.pipelines import ClassificationPipeline, MulticlassClassificationPipeline, BinaryClassificationPipeline, \
+from evalml.model_understanding import (
+    graph_partial_dependence,
+    partial_dependence
+)
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    ClassificationPipeline,
+    MulticlassClassificationPipeline,
     RegressionPipeline
+)
 from evalml.problem_types import ProblemTypes
 
 
