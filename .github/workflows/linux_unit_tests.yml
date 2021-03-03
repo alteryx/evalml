@@ -62,10 +62,6 @@ jobs:
           echo ${GITHUB_REF}
           git log -1 --format='%H'
           echo ${{ github.sha }}
-          echo ${{ github.sha.event.pull_request.head.ref }}
-          echo ${{ github.sha.event.pull_request.head.sha }}
-          echo ${{ github.sha.event.pull_request.base.ref }}
-          echo ${{ github.sha.event.pull_request.base.sha }}
       - name: Erase Coverage
         run: |
           source test_python/bin/activate
@@ -86,3 +82,6 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          commit_parent: $ACTUAL_COMMIT
+        env:
+          ACTUAL_COMMIT: git log -1 --format='%H'
