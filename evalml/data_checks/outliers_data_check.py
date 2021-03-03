@@ -38,7 +38,8 @@ class OutliersDataCheck(DataCheck):
                                                                      "level": "warning",\
                                                                      "code": "HAS_OUTLIERS",\
                                                                      "details": {"columns": ["z"]}}],\
-                                                       "errors": []}
+                                                       "errors": [],\
+                                                       "actions": []}
         """
         results = {
             "warnings": [],

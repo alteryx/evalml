@@ -56,7 +56,8 @@ class SparsityDataCheck(DataCheck):
                                                             "data_check_name": "SparsityDataCheck",\
                                                             "level": "warning",\
                                                             "code": "TOO_SPARSE",\
-                                                            "details": {"column": "sparse", 'sparsity_score': 0.0}}]}
+                                                            "details": {"column": "sparse", 'sparsity_score': 0.0}}]\
+                                                      "actions": []}
         """
         results = {
             "warnings": [],

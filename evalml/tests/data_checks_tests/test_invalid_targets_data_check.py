@@ -36,7 +36,8 @@ def test_invalid_target_data_check_nan_error():
         "errors": [DataCheckError(message="3 row(s) (100.0%) of target values are null",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-                                  details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()]
+                                  details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()],
+        "actions": []
     }
 
 
@@ -57,7 +58,8 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
             details={"target_values": [1, 5]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     y = pd.Series([0, 5, np.nan, np.nan])
@@ -71,7 +73,8 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
         "errors": [DataCheckError(message="2 row(s) (50.0%) of target values are null",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-                                  details={"num_null_rows": 2, "pct_null_rows": 50}).to_dict()]
+                                  details={"num_null_rows": 2, "pct_null_rows": 50}).to_dict()],
+        "actions": []
     }
 
     y = pd.Series([0, 1, 1, 0, 1, 2])
@@ -81,7 +84,8 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": [1, 0, 2]}).to_dict()]
+                                  details={"target_values": [1, 0, 2]}).to_dict()],
+        "actions": []
     }
 
 
@@ -97,7 +101,8 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                  details={"least_populated_class_labels": [0]}).to_dict()]
+                                  details={"least_populated_class_labels": [0]}).to_dict()],
+        "actions": []
     }
 
     y = pd.Series([0] + [1] + [2] * 98)
@@ -108,7 +113,8 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                  details={"least_populated_class_labels": [1, 0]}).to_dict()]
+                                  details={"least_populated_class_labels": [1, 0]}).to_dict()],
+        "actions": []
     }
 
 
@@ -137,7 +143,8 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
                    DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": unique_values}).to_dict()]
+                                  details={"target_values": unique_values}).to_dict()],
+        "actions": []
     }
 
 
@@ -148,7 +155,8 @@ def test_invalid_target_y_none():
         "errors": [DataCheckError(message="Target is None",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_IS_NONE,
-                                  details={}).to_dict()]
+                                  details={}).to_dict()],
+        "actions": []
     }
 
 
@@ -163,7 +171,8 @@ def test_invalid_target_data_input_formats():
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": []}).to_dict()]
+                                  details={"target_values": []}).to_dict()],
+        "actions": []
     }
     #  test Woodwork
     y = pd.Series([None, None, None, 0])
@@ -178,7 +187,8 @@ def test_invalid_target_data_input_formats():
                    DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": [0]}).to_dict()]
+                                  details={"target_values": [0]}).to_dict()],
+        "actions": []
     }
 
     #  test list
@@ -195,7 +205,8 @@ def test_invalid_target_data_input_formats():
                    DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": [0]}).to_dict()]
+                                  details={"target_values": [0]}).to_dict()],
+        "actions": []
     }
 
     # test np.array
@@ -212,7 +223,8 @@ def test_invalid_target_data_input_formats():
                    DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": [0]}).to_dict()]
+                                  details={"target_values": [0]}).to_dict()],
+        "actions": []
     }
 
 
@@ -228,7 +240,8 @@ def test_invalid_target_data_check_n_unique():
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": unique_values}).to_dict()]
+                                  details={"target_values": unique_values}).to_dict()],
+        "actions": []
     }
 
     # Test number of unique values < n_unique
@@ -241,7 +254,8 @@ def test_invalid_target_data_check_n_unique():
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": unique_values}).to_dict()]
+                                  details={"target_values": unique_values}).to_dict()],
+        "actions": []
     }
 
     # Test n_unique is None
@@ -256,7 +270,8 @@ def test_invalid_target_data_check_n_unique():
         "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": unique_values}).to_dict()]
+                                  details={"target_values": unique_values}).to_dict()],
+        "actions": []
     }
 
 
@@ -274,7 +289,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
             message=f"Target has non-positive values which is not supported for {objective}",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
-            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
+            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()],
+        "actions": []
     }
 
     X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
@@ -288,7 +304,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
             message=f"Target has non-positive values which is not supported for {objective}",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
-            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
+            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()],
+        "actions": []
     }
 
 
@@ -306,7 +323,8 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_inst
             message=f"Target has non-positive values which is not supported for {objective.name}",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
-            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()]
+            details={"Count of offending values": sum(val <= 0 for val in y.values.flatten())}).to_dict()],
+        "actions": []
     }
 
 
@@ -320,7 +338,8 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_cor
                                                                                            "objective": objective}})
             assert data_checks.validate(X, y) == {
                 "warnings": [],
-                "errors": []
+                "errors": [],
+                "actions": []
             }
 
     X = pd.DataFrame({'column_one': [100, 200, 100, 200, 100]})
@@ -329,10 +348,7 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(time_series_cor
     for objective in time_series_core_objectives:
         if not objective.positive_only:
             invalid_targets_check = InvalidTargetDataCheck(problem_type="regression", objective=objective)
-            assert invalid_targets_check.validate(X, y) == {
-                "warnings": [],
-                "errors": []
-            }
+            assert invalid_targets_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
 
 @pytest.mark.parametrize("objective",
@@ -343,10 +359,7 @@ def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objec
 
     data_checks = DataChecks([InvalidTargetDataCheck], {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                                                    "objective": objective}})
-    assert data_checks.validate(X, y) == {
-        "warnings": [],
-        "errors": []
-    }
+    assert data_checks.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
 
 def test_invalid_target_data_check_initialize_with_none_objective():
@@ -371,8 +384,8 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
         details={}).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical) == {"warnings": [], "errors": [data_check_error]}
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}), y=y_mixed_cat_numeric) == {"warnings": [], "errors": [data_check_error]}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical) == {"warnings": [], "errors": [data_check_error], "actions": []}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}), y=y_mixed_cat_numeric) == {"warnings": [], "errors": [data_check_error], "actions": []}
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer) == {"warnings": [], "errors": [], "actions": []}
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_float))}), y=y_float) == {"warnings": [], "errors": [], "actions": []}
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_numeric))}), y=y_numeric) == {"warnings": [], "errors": [], "actions": []}
@@ -390,7 +403,7 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
 
     invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_multiclass))}), y=y_multiclass) == {"warnings": [], "errors": [], "actions": []}
-    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary) == {"warnings": [], "errors": [data_check_error]}
+    assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary) == {"warnings": [], "errors": [data_check_error], "actions": []}
 
 
 def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
@@ -402,8 +415,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": 1 / 3}).to_dict()
-    assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {"warnings": [data_check_error],
-                                                                              "errors": []}
+    assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {"warnings": [data_check_error], "errors": [], "actions": []}
 
     y_multiclass_med_classes = pd.Series(list(range(0, 5)) * 20)  # 5 classes, 100 samples, .05 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_med_classes))})
@@ -412,8 +424,7 @@ def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": .05}).to_dict()
-    assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {"warnings": [data_check_error],
-                                                                             "errors": []}
+    assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {"warnings": [data_check_error], "errors": [], "actions": []}
 
     y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_low_classes))})
@@ -438,14 +449,16 @@ def test_invalid_target_data_check_mismatched_indices():
                                       message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                                       details={"indices_not_in_features": X_index_missing,
                                                "indices_not_in_target": y_index_missing}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
     assert invalid_targets_check.validate(X, y_diff_index_order) == {
         "warnings": [DataCheckWarning(message="Input target and features have mismatched indices order",
                                       data_check_name=invalid_targets_data_check_name,
                                       message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                                       details={}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     # Test that we only store ten mismatches when there are more than 10 differences in indices found
@@ -459,7 +472,8 @@ def test_invalid_target_data_check_mismatched_indices():
                                       message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                                       details={"indices_not_in_features": X_index_missing[:10],
                                                "indices_not_in_target": y_index_missing[:10]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -476,4 +490,5 @@ def test_invalid_target_data_check_different_lengths():
                                                                                            message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                                                                                            details={"indices_not_in_features": [],
                                                                                                     "indices_not_in_target": [2]}).to_dict()],
-                                                             "errors": []}
+                                                             "errors": [],
+                                                             "actions": []}

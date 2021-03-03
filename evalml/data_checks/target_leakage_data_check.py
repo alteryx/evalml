@@ -80,7 +80,8 @@ class TargetLeakageDataCheck(DataCheck):
                                                                              "level": "warning",\
                                                                              "code": "TARGET_LEAKAGE",\
                                                                              "details": {"column": "leak"}}],\
-                                                               "errors": []}
+                                                               "errors": [],\
+                                                               "actions": []}
         """
         results = {
             "warnings": [],
