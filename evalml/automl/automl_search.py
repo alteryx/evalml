@@ -595,15 +595,15 @@ class AutoMLSearch:
                 else:
                     X_train = self.X_train
                     y_train = self.y_train
+                if hasattr(self.data_splitter, "transform_sample"):
+                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
+                    X_train = X_train.iloc[train_indices]
+                    y_train = y_train.iloc[train_indices]
                 if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
                    and self.optimize_thresholds and self.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_seed=self.random_seed)
-                if hasattr(self.data_splitter, "transform_sample"):
-                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
-                    X_train = X_train.iloc[train_indices]
-                    y_train = y_train.iloc[train_indices]
                 self._best_pipeline.fit(X_train, y_train)
                 tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
 

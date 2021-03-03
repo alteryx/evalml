@@ -1,4 +1,5 @@
 from .training_validation_split import TrainingValidationSplit
 from .time_series_split import TimeSeriesSplit
-from .balanced_classification_splitter import BalancedClassificationSampler, BalancedClassificationDataCVSplit, BalancedClassificationDataTVSplit
+from .balanced_classification_sampler import BalancedClassificationSampler
+from .balanced_classification_splitter import BalancedClassificationDataCVSplit, BalancedClassificationDataTVSplit
 from .sampler_base import SamplerBase
