@@ -29,6 +29,7 @@ Release Notes
         * Update default classification data splitter to use downsampling for highly imbalanced data :pr:`1875`
         * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
+        * Added ``ParallelEngine`` pipeline processing API :pr:`1869`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
         * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
@@ -76,7 +77,6 @@ Release Notes
         * Added custom random undersampler data splitter for classification :pr:`1857`
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
-        * Added ``ParallelEngine`` pipeline processing API :pr:`1869`
     * Fixes
         * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
     * Changes
