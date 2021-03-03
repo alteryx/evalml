@@ -802,11 +802,8 @@ class AutoMLSearch:
         if pipeline_id not in self._results['pipeline_results']:
             raise PipelineNotFoundError("Pipeline not found")
 
-        automl_dict = dict()
-
         pipeline = self.get_pipeline(pipeline_id)
         pipeline_results = self._results['pipeline_results'][pipeline_id]
-        automl_dict.update(pipeline_results)
 
         pipeline.describe()
 
@@ -842,7 +839,7 @@ class AutoMLSearch:
             logger.info(all_objective_scores)
 
         if return_dict:
-            return automl_dict
+            return pipeline_results
 
     def add_to_rankings(self, pipeline):
         """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
