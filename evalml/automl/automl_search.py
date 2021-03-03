@@ -724,6 +724,11 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
+            self._results['pipeline_results'][pipeline_id]["input_pipeline_ids"] = input_pipeline_ids
+
         self._results['search_order'].append(pipeline_id)
 
         if not is_baseline:
@@ -787,9 +792,7 @@ class AutoMLSearch:
         pipeline.describe()
 
         if pipeline.model_family == ModelFamily.ENSEMBLE:
-            input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
-            automl_dict["input_pipeline_ids"] = input_pipeline_ids
-            logger.info("Input for ensembler are pipelines with IDs: " + str(input_pipeline_ids))
+            logger.info("Input for ensembler are pipelines with IDs: " + str(pipeline_results['input_pipeline_ids']))
 
         log_subtitle(logger, "Training")
         logger.info("Training for {} problems.".format(pipeline.problem_type))
