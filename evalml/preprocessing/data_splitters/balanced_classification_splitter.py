@@ -9,10 +9,6 @@ from evalml.preprocessing.data_splitters.base_splitters import (
 from evalml.preprocessing.data_splitters.training_validation_split import (
     TrainingValidationSplit
 )
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
 
 
 class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
