@@ -22,8 +22,7 @@ from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
     DefaultDataChecks,
-    EmptyDataChecks,
-    HighVarianceCVDataCheck
+    EmptyDataChecks
 )
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
@@ -720,18 +719,12 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        pipeline_name = pipeline.name
-        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
-        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
-        high_variance_cv = False
-        if high_variance_cv_check_results["warnings"]:
-            logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
-            high_variance_cv = True
+        high_variance_cv = self._check_for_high_variance(pipeline, cv_scores)
 
         pipeline_id = len(self._results['pipeline_results'])
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
-            "pipeline_name": pipeline_name,
+            "pipeline_name": pipeline.name,
             "pipeline_class": type(pipeline),
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
@@ -758,6 +751,21 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
         return pipeline_id
+
+    def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
+        """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
+        # if not isinstance(cv_scores, pd.Series):
+        #     cv_scores = pd.Series(cv_scores)
+
+        pipeline_name = pipeline.name
+        high_variance_cv = False
+
+        if cv_scores.mean() != 0:
+            high_variance_cv = abs(cv_scores.std() / cv_scores.mean()) > threshold
+
+        if high_variance_cv:
+            logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
+        return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline

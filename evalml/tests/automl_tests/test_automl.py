@@ -2360,3 +2360,20 @@ def test_automl_raises_deprecated_random_state_warning(X_y_multi):
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
         assert automl.random_seed == 10
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class, caplog):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    cv_scores = pd.Series([1, 1, 1])
+    pipeline = dummy_binary_pipeline_class(parameters={})
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 1, np.nan, np.nan])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 1, 2, 3])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, -1, -1, -1])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
