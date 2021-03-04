@@ -15,6 +15,7 @@ from evalml.automl.utils import (
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
     BalancedClassificationDataCVSplit,
+    BalancedClassificationDataTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -52,12 +53,16 @@ def test_make_data_splitter_default(problem_type, large_data):
         problem_configuration = {'gap': 1, 'max_delay': 7}
 
     data_splitter = make_data_splitter(X, y, problem_type, problem_configuration=problem_configuration)
-    if large_data:
-        assert isinstance(data_splitter, TrainingValidationSplit)
+    if large_data and problem_type in [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        if problem_type == ProblemTypes.REGRESSION:
+            assert isinstance(data_splitter, TrainingValidationSplit)
+            assert data_splitter.stratify is None
+            assert data_splitter.random_state == 0
+        else:
+            assert isinstance(data_splitter, BalancedClassificationDataTVSplit)
+            assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
-        assert data_splitter.stratify is None
-        assert data_splitter.random_state == 0
         return
 
     if problem_type == ProblemTypes.REGRESSION:
