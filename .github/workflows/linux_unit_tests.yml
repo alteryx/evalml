@@ -58,10 +58,6 @@ jobs:
           source test_python/bin/activate
           make installdeps
           make installdeps-test
-          echo ${GITHUB_SHA}
-          echo ${GITHUB_REF}
-          git log -1 --format='%H'
-          echo ${{ github.sha }}
       - name: Erase Coverage
         run: |
           source test_python/bin/activate
