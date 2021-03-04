@@ -64,11 +64,13 @@ class ClassImbalanceDataCheck(DataCheck):
                                                                    "data_check_name": "ClassImbalanceDataCheck",\
                                                                    "level": "warning",\
                                                                    "code": "CLASS_IMBALANCE_SEVERE",\
-                                                                   "details": {"target_values": [0]}}]}
+                                                                   "details": {"target_values": [0]}}],\
+                                                     "actions": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         y = infer_feature_types(y)
@@ -83,18 +85,18 @@ class ClassImbalanceDataCheck(DataCheck):
             DataCheck._add_message(DataCheckError(message=error_msg.format(self.cv_folds, below_threshold_values),
                                                   data_check_name=self.name,
                                                   message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                                                  details={"target_values": below_threshold_values}), messages)
+                                                  details={"target_values": below_threshold_values}), results)
 
         counts = fold_counts / fold_counts.sum()
         below_threshold = counts.where(counts < self.threshold).dropna()
-        # if there are items that occur less than the threshold, add them to the list of messages
+        # if there are items that occur less than the threshold, add them to the list of results
         if len(below_threshold):
             below_threshold_values = below_threshold.index.tolist()
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
             DataCheck._add_message(DataCheckWarning(message=warning_msg.format(self.threshold * 100, below_threshold_values),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
-                                                    details={"target_values": below_threshold_values}), messages)
+                                                    details={"target_values": below_threshold_values}), results)
         sample_counts = fold_counts.where(fold_counts < self.min_samples).dropna()
         if len(below_threshold) and len(sample_counts):
             sample_count_values = sample_counts.index.tolist()
@@ -103,5 +105,5 @@ class ClassImbalanceDataCheck(DataCheck):
             DataCheck._add_message(DataCheckWarning(message=warning_msg.format(self.threshold * 100, self.min_samples, severe_imbalance),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
-                                                    details={"target_values": severe_imbalance}), messages)
-        return messages
+                                                    details={"target_values": severe_imbalance}), results)
+        return results

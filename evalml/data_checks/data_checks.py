@@ -85,7 +85,8 @@ class DataChecks:
         """
         messages = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
         X = infer_feature_types(X)
         if y is not None:
@@ -95,6 +96,7 @@ class DataChecks:
             messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
+            messages["actions"].extend(messages_new["actions"])
 
         return messages
 
