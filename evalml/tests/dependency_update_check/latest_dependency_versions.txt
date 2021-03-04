@@ -5,7 +5,7 @@ colorama==0.4.4
 featuretools==0.23.2
 graphviz==0.16
 ipywidgets==7.6.3
-kaleido==0.1.0
+kaleido==0.2.0
 lightgbm==3.0.0
 matplotlib==3.3.4
 networkx==2.5
