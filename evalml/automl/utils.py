@@ -68,7 +68,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         if problem_type == ProblemTypes.REGRESSION:
             return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle)
         elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                return BalancedClassificationDataTVSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle, random_seed=random_seed)
+            return BalancedClassificationDataTVSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle, random_seed=random_seed)
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
