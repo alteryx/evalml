@@ -38,11 +38,13 @@ class OutliersDataCheck(DataCheck):
                                                                      "level": "warning",\
                                                                      "code": "HAS_OUTLIERS",\
                                                                      "details": {"columns": ["z"]}}],\
-                                                       "errors": []}
+                                                       "errors": [],\
+                                                       "actions": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -50,19 +52,19 @@ class OutliersDataCheck(DataCheck):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         if len(X.columns) == 0:
-            return messages
+            return results
 
         has_outliers = []
         for col in X.columns:
-            results = OutliersDataCheck._outlier_score(X[col], False)
-            if results is not None and results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
+            outlier_results = OutliersDataCheck._outlier_score(X[col], False)
+            if outlier_results is not None and outlier_results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
                 has_outliers.append(col)
         warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in has_outliers]))
-        messages["warnings"].append(DataCheckWarning(message=warning_msg,
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                                     details={"columns": has_outliers}).to_dict())
-        return messages
+        results["warnings"].append(DataCheckWarning(message=warning_msg,
+                                                    data_check_name=self.name,
+                                                    message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                                                    details={"columns": has_outliers}).to_dict())
+        return results
 
     @staticmethod
     def _no_outlier_prob(num_records: int, pct_outliers: float) -> float:

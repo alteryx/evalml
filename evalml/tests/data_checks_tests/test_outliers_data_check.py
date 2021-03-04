@@ -30,7 +30,8 @@ def test_outliers_data_check_warnings():
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                       details={"columns": [3, 25, 55, 72]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -38,7 +39,7 @@ def test_outliers_data_check_input_formats():
     outliers_check = OutliersDataCheck()
 
     # test empty pd.DataFrame
-    assert outliers_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
+    assert outliers_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}
 
     # test np.array
     a = np.arange(10) * 0.01
@@ -56,7 +57,8 @@ def test_outliers_data_check_input_formats():
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                       details={"columns": [3, 25, 55, 72]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     # test Woodwork
@@ -66,7 +68,8 @@ def test_outliers_data_check_input_formats():
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                       details={"columns": [3, 25, 55, 72]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -84,7 +87,8 @@ def test_outliers_data_check_string_cols():
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,
                                       details={"columns": ["d"]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
