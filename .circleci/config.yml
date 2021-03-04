@@ -38,6 +38,18 @@ commands:
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps-docs
+  install_dependencies_core:
+    steps:
+      - run: |
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install --upgrade pip -q
+          pip install -e . --no-dependencies
+          pip install -r core-requirements.txt
+          pip install -r test-requirements.txt
+          # "!" negates return code. exit nonzero if any of these deps are found
+          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+          exit $?
   build_pkg:
     steps:
       - run: |
@@ -74,6 +86,58 @@ jobs:
       - setup_remote_docker:
           version: 19.03.12
       - build_pkg
+  unit_tests:
+    resource_class: xlarge
+    parameters:
+      python_version:
+        type: string
+        default: "3.8"
+      codecov:
+        type: boolean
+        default: false
+      core_dependencies:
+        type: boolean
+        default: false
+    executor:
+      name: python
+      python_version: << parameters.python_version >>
+    steps:
+      - run: sudo apt update && sudo apt install -y graphviz
+      - checkout
+      - when:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - install_dependencies_core
+      - unless:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - install_dependencies
+            - install_dependencies_test
+      - run: |
+          source test_python/bin/activate
+          coverage erase
+      - when:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                make git-test-minimal-deps
+      - unless:
+          condition: << parameters.core_dependencies >>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                make git-test
+      - store_test_results:
+          path: test-reports
+      - store_artifacts:
+          path: test-reports
+      - when:
+          condition: << parameters.codecov >>
+          steps:
+            - run: |
+                source test_python/bin/activate
+                codecov --require
   build_docs:
     working_directory: ~/evalml/
     executor:
@@ -130,6 +194,22 @@ workflows:
             filters:
               branches:
                 ignore: /^main?/
+  test_all_python_versions:
+    jobs:
+      - unit_tests:
+          matrix:
+            parameters:
+              python_version: [ "3.7" ]
+              core_dependencies: [ false ]
+              codecov: [ false ]
+          name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
+      - unit_tests:
+          matrix:
+            parameters:
+              python_version: [ "3.8" ]
+              core_dependencies: [ false, true ]
+              codecov: [ true ]
+          name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
   build_conda_pkg:
     jobs:
       - shellcheck/check

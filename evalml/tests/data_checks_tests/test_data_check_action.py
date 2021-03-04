@@ -10,9 +10,9 @@ def test_data_check_action_attributes():
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action.details == {}
 
-    data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL, details={"cols": [1, 2]})
+    data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL, details={"columns": [1, 2]})
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
-    assert data_check_action.details == {"cols": [1, 2]}
+    assert data_check_action.details == {"columns": [1, 2]}
 
 
 def test_data_check_action_equality():
