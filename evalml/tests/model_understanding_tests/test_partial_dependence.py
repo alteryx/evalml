@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from skopt.space import Real
 
 from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
@@ -17,6 +18,31 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
+
+
+@pytest.fixture
+def test_pipeline():
+    class TestPipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+
+        hyperparameters = {
+            "penalty": ["l2"],
+            "C": Real(.01, 10),
+            "impute_strategy": ["mean", "median", "most_frequent"],
+        }
+
+        def __init__(self, parameters):
+            super().__init__(parameters=parameters)
+
+        @property
+        def feature_importance(self):
+            importance = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
+            feature_names = range(len(importance))
+            f_i = list(zip(feature_names, importance))
+            df = pd.DataFrame(f_i, columns=["feature", "importance"])
+            return df
+
+    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
 def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=20):
