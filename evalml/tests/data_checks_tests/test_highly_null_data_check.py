@@ -45,7 +45,8 @@ def test_highly_null_data_check_warnings():
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     some_null_check = HighlyNullDataCheck(pct_null_threshold=0.5)
@@ -58,7 +59,8 @@ def test_highly_null_data_check_warnings():
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     all_null_check = HighlyNullDataCheck(pct_null_threshold=1.0)
@@ -67,7 +69,8 @@ def test_highly_null_data_check_warnings():
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -75,7 +78,7 @@ def test_highly_null_data_check_input_formats():
     highly_null_check = HighlyNullDataCheck(pct_null_threshold=0.8)
 
     # test empty pd.DataFrame
-    assert highly_null_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
+    assert highly_null_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}
 
     #  test Woodwork
     ww_input = ww.DataTable(pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]]))
@@ -92,7 +95,8 @@ def test_highly_null_data_check_input_formats():
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": 2}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     #  test 2D list
@@ -109,7 +113,8 @@ def test_highly_null_data_check_input_formats():
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": 2}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     # test np.array
@@ -126,5 +131,6 @@ def test_highly_null_data_check_input_formats():
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": 2}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
