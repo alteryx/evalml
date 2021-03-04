@@ -766,7 +766,7 @@ class AutoMLSearch:
         high_variance_cv = False
 
         if cv_scores.mean() != 0:
-            high_variance_cv = abs(cv_scores.std() / cv_scores.mean()) > threshold
+            high_variance_cv = bool(abs(cv_scores.std() / cv_scores.mean()) > threshold)
 
         if high_variance_cv:
             logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
