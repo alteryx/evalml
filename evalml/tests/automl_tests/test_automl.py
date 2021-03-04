@@ -1,5 +1,6 @@
 import os
 import warnings
+from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -57,7 +58,10 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    allowed_model_families,
+    get_estimators
+)
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TrainingValidationSplit, split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -1017,12 +1021,11 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
         automl.get_pipeline(0)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary):
     X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
-
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
     automl.search()
     out = caplog.text
@@ -1031,7 +1034,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
 
     assert len(automl.results['pipeline_results']) == 1
     caplog.clear()
-    automl.describe_pipeline(0)
+    automl_dict = automl.describe_pipeline(0, return_dict=return_dict)
     out = caplog.text
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: binary" in out
@@ -1045,6 +1048,72 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
+
+    if return_dict:
+        assert automl_dict['id'] == 0
+        assert automl_dict['pipeline_name'] == 'Mode Baseline Binary Classification Pipeline'
+        assert automl_dict['pipeline_summary'] == 'Baseline Classifier'
+        assert automl_dict['parameters'] == {'Baseline Classifier': {'strategy': 'mode'}}
+        assert automl_dict['score'] == 1.0
+        assert not automl_dict['high_variance_cv']
+        assert isinstance(automl_dict['training_time'], float)
+        assert automl_dict['cv_data'] == [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)]), 'score': 1.0, 'binary_classification_threshold': None},
+                                          {'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 67), ('# Validation', 33)]), 'score': 1.0, 'binary_classification_threshold': None},
+                                          {'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 67), ('# Validation', 33)]), 'score': 1.0, 'binary_classification_threshold': None}]
+        assert automl_dict['percent_better_than_baseline_all_objectives'] == {'Log Loss Binary': 0}
+        assert automl_dict['percent_better_than_baseline'] == 0
+        assert automl_dict['validation_score'] == 1.0
+    else:
+        assert automl_dict is None
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return_dict, X_y_binary, caplog):
+    X, y = X_y_binary
+
+    two_stacking_batches = 1 + 2 * (len(get_estimators(ProblemTypes.BINARY)) + 1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=two_stacking_batches,
+                          objective="Log Loss Binary", ensembling=True, error_callback=raise_error_callback)
+
+    mock_score.side_effect = [{'Log Loss Binary': score} for score in np.arange(0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1)]  # Dcreases with each call
+    automl.search(data_checks=None)
+    pipeline_names = automl.rankings['pipeline_name']
+    assert pipeline_names.str.contains('Ensemble').any()
+
+    ensemble_ids = [_get_first_stacked_classifier_no() - 1, len(automl.results['pipeline_results']) - 1]
+
+    for i, ensemble_id in enumerate(ensemble_ids):
+        caplog.clear()
+        automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
+        out = caplog.text
+        assert "Stacked Ensemble Classification Pipeline" in out
+        assert "Problem Type: binary" in out
+        assert "Model Family: Ensemble" in out
+        assert "* final_estimator : None" in out
+        assert "Total training time (including CV): " in out
+        assert "Log Loss Binary # Training # Validation" in out
+        assert "Input for ensembler are pipelines with IDs:" in out
+
+        if return_dict:
+            assert automl_dict['id'] == ensemble_id
+            assert automl_dict['pipeline_name'] == "Stacked Ensemble Classification Pipeline"
+            assert automl_dict['pipeline_summary'] == 'Stacked Ensemble Classifier'
+            assert isinstance(automl_dict['score'], float)
+            assert not automl_dict['high_variance_cv']
+            assert isinstance(automl_dict['training_time'], float)
+            assert isinstance(automl_dict['percent_better_than_baseline_all_objectives'], dict)
+            assert isinstance(automl_dict['percent_better_than_baseline'], float)
+            assert isinstance(automl_dict['validation_score'], float)
+            assert len(automl_dict['input_pipeline_ids']) == len(allowed_model_families("binary"))
+            if i == 0:
+                assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+            else:
+                assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+                assert all(input_id > ensemble_ids[0] for input_id in automl_dict['input_pipeline_ids'])
+        else:
+            assert automl_dict is None
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
