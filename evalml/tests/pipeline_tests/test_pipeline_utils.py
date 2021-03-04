@@ -408,7 +408,6 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     assert pipeline.parameters == new_pipeline.parameters
     for component, new_component in zip(pipeline._component_graph, new_pipeline._component_graph):
         assert isinstance(new_component, type(component))
-    assert pipeline.describe() == new_pipeline.describe()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
