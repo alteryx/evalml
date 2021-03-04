@@ -50,8 +50,7 @@ class BalancedClassificationSampler(SamplerBase):
         """
         counts = y.value_counts()
         normalized_counts = y.value_counts(normalize=True)
-        class_ratios = normalized_counts.copy().values
-        class_ratios /= class_ratios[-1]
+        class_ratios = normalized_counts / min(normalized_counts)
         # if no class ratios are greater than what we consider balanced, then the target is balanced
         if all(class_ratios <= self.balanced_ratio):
             return {}
@@ -62,10 +61,11 @@ class BalancedClassificationSampler(SamplerBase):
         # otherwise, we are imbalanced enough to perform on this
         undersample_classes = counts[class_ratios > self.balanced_ratio].index.values
         # find goal size, round it down if it's a float
-        goal_value = max(int((self.balanced_ratio * counts.values[-1]) // 1), self.min_samples)
+        minority_class = min(counts.values)
+        goal_value = max(int((self.balanced_ratio * minority_class) // 1), self.min_samples)
         # we don't want to drop less than 0 rows
         drop_values = {k: max(0, counts[k] - goal_value) for k in undersample_classes}
-        return {k: v for k, v in drop_values.items() if v != 0}
+        return {k: v for k, v in drop_values.items() if v > 0}
 
     def fit_resample(self, X, y):
         """Resampling technique for this sampler.

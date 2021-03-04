@@ -61,6 +61,7 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import (
     BalancedClassificationDataCVSplit,
+    BalancedClassificationDataTVSplit,
     TrainingValidationSplit,
     split_data
 )
@@ -634,7 +635,7 @@ def test_large_dataset_binary(mock_score):
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -651,7 +652,7 @@ def test_large_dataset_multiclass(mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -718,7 +719,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
     assert automl.data_splitter.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
