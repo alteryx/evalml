@@ -345,15 +345,15 @@ def test_automl_empty_data_checks(mock_fit, mock_score):
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=1)
     automl.search(data_checks=[])
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
     mock_fit.assert_called()
     mock_score.assert_called()
 
     automl.search(data_checks="disabled")
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
 
     automl.search(data_checks=None)
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
 
 
 @patch('evalml.data_checks.DefaultDataChecks.validate')
@@ -382,6 +382,7 @@ class MockDataCheckErrorAndWarning(DataCheck):
         return {
             "warnings": [DataCheckWarning("warning one", self.name).to_dict()],
             "errors": [DataCheckError("error one", self.name).to_dict()],
+            "actions": []
         }
 
 
@@ -429,7 +430,7 @@ class MockDataCheckObjective(DataCheck):
         self.objective_name = get_objective(objective).name
 
     def validate(self, X, y):
-        return {"warnings": [], "errors": []}
+        return {"warnings": [], "errors": [], "actions": []}
 
 
 @pytest.mark.parametrize("data_checks", [DataChecks([MockDataCheckObjective],
@@ -533,7 +534,7 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y_binary
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=5)
     automl.search()
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
     mock_fit.assert_called()
     mock_score.assert_called()
     assert mock_algo_next_batch.call_count == 1
