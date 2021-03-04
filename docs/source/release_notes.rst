@@ -6,6 +6,7 @@ Release Notes
         * Added a GitHub Action for Linux unit tests :pr:`1846`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
+        * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
@@ -16,8 +17,14 @@ Release Notes
         * Reversed GitHub Action for Linux unit tests until a fix for report generation is found :pr:`1920`
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
+        * Deleted the ``explain_prediction`` function :pr:`1915`
     * Documentation Changes
     * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``explain_prediction`` function :pr:`1915`
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements
