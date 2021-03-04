@@ -101,7 +101,7 @@ class EngineBase(ABC):
             objective (ObjectiveBase): Objective used in threshold tuning.
 
         Returns:
-            PipelineBase - trained pipeline.
+            pipeline (PipelineBase) - trained pipeline.
         """
         X_threshold_tuning = None
         y_threshold_tuning = None

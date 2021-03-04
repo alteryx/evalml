@@ -6,6 +6,7 @@ import numpy as np
 from evalml.automl.engine import EngineBase
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
+from evalml.objectives.utils import get_objective
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -64,7 +65,7 @@ class SequentialEngine(EngineBase):
 
                 fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
             except Exception as e:
-                logger.error(f'AutoML search raised a fatal exception: {str(e)}')
+                logger.error(f'Train error for {fitted_pipeline.name}: {str(e)}')
                 tb = traceback.format_tb(sys.exc_info()[2])
                 logger.error("Traceback:")
                 logger.error("\n".join(tb))
@@ -80,16 +81,26 @@ class SequentialEngine(EngineBase):
             y (ww.DataTable, pd.DataFrame): Data to score on.
             objectives (list(ObjectiveBase), list(str)): Objectives to score on.
         Returns:
-            Dict: Dict containining scores for all objectives for all pipelines. Keyed by pipeline name.
+            Dict: Dict containing scores for all objectives for all pipelines. Keyed by pipeline name.
         """
         super().score_batch(pipelines, X, y, objectives)
 
         scores = {}
+        objectives = [get_objective(o, return_instance=True) for o in objectives]
         for pipeline in pipelines:
             try:
                 scores[pipeline.name] = pipeline.score(X, y, objectives)
-            except PipelineScoreError as e:
-                nan_scores = {objective: np.nan for objective in e.exceptions}
-                logger.debug(f"Score error for {pipeline.name}: {str(e)}")
-                scores[pipeline.name] = {**nan_scores, **e.scored_successfully}
+            except Exception as e:
+                logger.error(f"Score error for {pipeline.name}: {str(e)}")
+                if isinstance(e, PipelineScoreError):
+                    nan_scores = {objective: np.nan for objective in e.exceptions}
+                    scores[pipeline.name] = {**nan_scores, **e.scored_successfully}
+                else:
+                    # Traceback already included in the PipelineScoreError so we only
+                    # need to include it for all other errors
+                    tb = traceback.format_tb(sys.exc_info()[2])
+                    logger.error("Traceback:")
+                    logger.error("\n".join(tb))
+                    scores[pipeline.name] = {objective.name: np.nan for objective in objectives}
+
         return scores
