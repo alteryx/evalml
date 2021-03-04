@@ -80,7 +80,6 @@ jobs:
           echo "actual_sha=$(echo git log -1 --format='%H')" >> $GITHUB_ENV
           echo ${{ github.event.number }}
           echo  ${{ github.event.pull_request.head.sha }}
-          echo  ${{ github.event.push.head.sha }}
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1.2.1
@@ -88,4 +87,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           override_pr: ${{ github.event.number }}
-          override_commit: ${{ github.event.push.head.sha }}
+          override_commit: ${{ github.event.pull_request.head.sha }}
