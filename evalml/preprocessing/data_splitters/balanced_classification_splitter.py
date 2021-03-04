@@ -15,7 +15,8 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
     """Data splitter for generating training and validation split using Balanced Classification Data Sampler."""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=None, shuffle=True, random_seed=0):
-        """
+        """Create Balanced Classification Data TV splitter
+
         Arguments:
             balanced_ratio (float): The largest majority:minority ratio that is accepted as 'balanced'. For instance, a 4:1 ratio would be
                 represented as 4, while a 6:5 ratio is 1.2. Must be greater than or equal to 1 (or 1:1). Defaults to 4.
@@ -45,7 +46,8 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
     """Data splitter for generating k-fold cross-validation split using Balanced Classification Data Sampler."""
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, n_splits=3, shuffle=True, random_seed=0):
-        """
+        """Create Balanced Classification Data CV splitter
+
         Arguments:
             balanced_ratio (float): The largest majority:minority ratio that is accepted as 'balanced'. For instance, a 4:1 ratio would be
                 represented as 4, while a 6:5 ratio is 1.2. Must be greater than or equal to 1 (or 1:1). Defaults to 4.
