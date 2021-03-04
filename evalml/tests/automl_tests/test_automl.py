@@ -2430,3 +2430,23 @@ def test_automl_raises_deprecated_random_state_warning(X_y_multi):
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
         assert automl.random_seed == 10
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+
+    class MyPipeline1(BinaryClassificationPipeline):
+        custom_name = "Custom Pipeline"
+        component_graph = ["Imputer", "Random Forest Classifier"]
+
+    class MyPipeline2(BinaryClassificationPipeline):
+        custom_name = "Custom Pipeline"
+        component_graph = ["Imputer", "Logistic Regression Classifier"]
+
+    class MyPipeline3(BinaryClassificationPipeline):
+        custom_name = "My Pipeline 3"
+        component_graph = ["Logistic Regression Classifier"]
+
+    with pytest.raises(ValueError,
+                       match="All pipeline names must be unique. The names 'Custom Pipeline' were repeated."):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2, MyPipeline3])
