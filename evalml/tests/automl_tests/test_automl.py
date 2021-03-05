@@ -56,6 +56,7 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
+    PipelineBase,
     RegressionPipeline
 )
 from evalml.pipelines.components.utils import (
@@ -2534,3 +2535,29 @@ def test_train_batch_score_batch(mock_fit, mock_score, dummy_binary_pipeline_cla
     expected_scores = {f"Pipeline {i}": effect for i, effect in zip(range(3), score_effects)}
     scores = automl.score_pipelines(pipelines, X, y, ["Log Loss Binary"])
     assert scores == expected_scores
+
+
+def test_train_batch_returns_trained_pipelines(X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+
+    class RfPipeline(BinaryClassificationPipeline):
+        component_graph = ["Random Forest Classifier"]
+
+    class LogisticPipeline(BinaryClassificationPipeline):
+        component_graph = ["Logistic Regression Classifier"]
+
+    pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
+                 LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
+
+    fitted_pipelines = automl.train_pipelines(pipelines)
+
+    assert all([isinstance(pl, PipelineBase) for pl in fitted_pipelines.values()])
+
+    # Check that the output pipelines are fitted but the input pipelines are not
+    for original_pipeline in pipelines:
+        fitted_pipeline = fitted_pipelines[original_pipeline.name]
+        assert fitted_pipeline.name == original_pipeline.name
+        assert fitted_pipeline._is_fitted
+        assert fitted_pipeline != original_pipeline

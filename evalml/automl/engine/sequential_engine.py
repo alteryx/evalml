@@ -49,23 +49,22 @@ class SequentialEngine(EngineBase):
         Arguments:
             pipelines (list(PipelineBase)): A batch of pipelines to fit.
         Returns:
-            Dict[str, PipelineBase]: Dict of fitted pipelines keyed by pipeline name.
+            dict[str, PipelineBase]: Dict of fitted pipelines keyed by pipeline name.
         """
         super().train_batch(pipelines)
 
         fitted_pipelines = {}
         for pipeline in pipelines:
-            fitted_pipeline = pipeline.clone()
             try:
                 fitted_pipeline = EngineBase.train_pipeline(
-                    fitted_pipeline, self.X_train, self.y_train,
+                    pipeline, self.X_train, self.y_train,
                     self.automl.optimize_thresholds,
                     self.automl.objective
                 )
 
                 fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
             except Exception as e:
-                logger.error(f'Train error for {fitted_pipeline.name}: {str(e)}')
+                logger.error(f'Train error for {pipeline.name}: {str(e)}')
                 tb = traceback.format_tb(sys.exc_info()[2])
                 logger.error("Traceback:")
                 logger.error("\n".join(tb))
@@ -81,7 +80,7 @@ class SequentialEngine(EngineBase):
             y (ww.DataTable, pd.DataFrame): Data to score on.
             objectives (list(ObjectiveBase), list(str)): Objectives to score on.
         Returns:
-            Dict: Dict containing scores for all objectives for all pipelines. Keyed by pipeline name.
+            dict: Dict containing scores for all objectives for all pipelines. Keyed by pipeline name.
         """
         super().score_batch(pipelines, X, y, objectives)
 
