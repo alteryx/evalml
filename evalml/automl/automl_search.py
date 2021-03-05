@@ -14,6 +14,7 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
+    check_all_pipeline_names_unique,
     get_default_primary_search_objective,
     make_data_splitter,
     tune_binary_threshold
@@ -287,6 +288,7 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+        check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
         if run_ensembling and len(self.allowed_pipelines) == 1:

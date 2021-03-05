@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.model_selection import KFold
 
 from evalml.objectives import get_objective
@@ -89,3 +90,24 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
             y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
             y_predict_proba = y_predict_proba.iloc[:, 1]
             pipeline.threshold = objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+
+
+def check_all_pipeline_names_unique(pipelines):
+    """Checks whether all the pipeline names are unique.
+
+    Arguments:
+        pipelines (list(PipelineBase)): List of pipelines to check if all names are unique.
+
+    Returns:
+          None
+
+    Raises:
+        ValueError: if any pipeline names are duplicated.
+    """
+    name_count = pd.Series([p.name for p in pipelines]).value_counts()
+    duplicate_names = name_count[name_count > 1].index.tolist()
+
+    if duplicate_names:
+        plural, tense = ("s", "were") if len(duplicate_names) > 1 else ("", "was")
+        duplicates = ", ".join([f"'{name}'" for name in sorted(duplicate_names)])
+        raise ValueError(f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.")
