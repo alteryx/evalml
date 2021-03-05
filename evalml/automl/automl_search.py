@@ -759,9 +759,6 @@ class AutoMLSearch:
 
     def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
         """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
-        # if not isinstance(cv_scores, pd.Series):
-        #     cv_scores = pd.Series(cv_scores)
-
         pipeline_name = pipeline.name
         high_variance_cv = False
 
