@@ -1,4 +1,4 @@
-name: Update Dependencies
+name: Detect Dependencies Changes
 
 on:
   pull_request:
@@ -14,6 +14,7 @@ jobs:
           python-version: '3.8.x'
       - name: Install Dependencies
         run: |
+          pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps
