@@ -95,6 +95,7 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 data_checks="auto",
                  _ensembling_split_size=0.2,
                  _pipelines_per_batch=5):
         """Automated pipeline search
@@ -171,6 +172,13 @@ class AutoMLSearch:
                 in time series problems, values should be passed in for the gap and max_delay variables.
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
+
+            pipeline_parameters
+
+            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
+                automl search. If data checks produce any errors, an exception will be thrown before the
+                search begins. If "disabled" or None, `no` data checks will be done.
+                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -354,6 +362,16 @@ class AutoMLSearch:
             pipeline_params=pipeline_params
         )
 
+        data_checks = self._validate_data_checks(data_checks)
+        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
+                                                        _convert_woodwork_types_wrapper(self.y_train.to_series()))
+        for result in self._data_check_results["warnings"]:
+            logger.warning(result["message"])
+        for result in self._data_check_results["errors"]:
+            logger.error(result["message"])
+        if self._data_check_results["errors"]:
+            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
+
     def _pre_evaluation_callback(self, pipeline):
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
@@ -481,15 +499,10 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, data_checks="auto", show_iteration_plot=True):
+    def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Arguments:
-            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
-                automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, `no` data checks will be done.
-                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
-
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
 
@@ -506,16 +519,6 @@ class AutoMLSearch:
                 get_ipython
             except NameError:
                 show_iteration_plot = False
-
-        data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
-                                                        _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for result in self._data_check_results["warnings"]:
-            logger.warning(result["message"])
-        for result in self._data_check_results["errors"]:
-            logger.error(result["message"])
-        if self._data_check_results["errors"]:
-            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
 
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
