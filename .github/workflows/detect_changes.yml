@@ -26,7 +26,9 @@ jobs:
           export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
           evalml/tests/dependency_update_check/make_deps_diff.sh
           diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
-          exit $?
+          echo ${{ steps.check.outcome }}
+          echo ${{ steps.check.conclusion }}
+          echo ${{ steps.check.outputs }}
       - name: Display Dependency Changes
         if: steps.check.outcome != 'success'
         run: |
