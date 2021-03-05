@@ -29,6 +29,6 @@ jobs:
           exit $?
       - name: Display Dependency Changes
         if: steps.check.outcome != 'success'
-          run: |
-            echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
-            cat /tmp/dependencies_updated_artifacts/diff.txt
+        run: |
+          echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
+          cat /tmp/dependencies_updated_artifacts/diff.txt
