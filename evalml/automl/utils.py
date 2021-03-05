@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
@@ -97,16 +98,10 @@ def check_all_pipeline_names_unique(pipelines):
           None
 
     Raises:
-        ValueError if any pipeline names are duplicated.
+        ValueError: if any pipeline names are duplicated.
     """
-    seen_names = set()
-    duplicate_names = set()
-
-    for pipeline in pipelines:
-        if pipeline.name in seen_names:
-            duplicate_names.add(pipeline.name)
-        else:
-            seen_names.add(pipeline.name)
+    name_count = pd.Series([p.name for p in pipelines]).value_counts()
+    duplicate_names = name_count[name_count > 1].index.tolist()
 
     if duplicate_names:
         plural, tense = ("s", "were") if len(duplicate_names) > 1 else ("", "was")
