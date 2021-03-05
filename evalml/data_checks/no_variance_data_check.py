@@ -60,9 +60,10 @@ class NoVarianceDataCheck(DataCheck):
         Returns:
             dict: dict of warnings/errors corresponding to features or target with no variance.
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -76,11 +77,11 @@ class NoVarianceDataCheck(DataCheck):
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
             if not message:
                 continue
-            DataCheck._add_message(message, messages)
+            DataCheck._add_message(message, results)
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
-            DataCheck._add_message(target_message, messages)
-        return messages
+            DataCheck._add_message(target_message, results)
+        return results

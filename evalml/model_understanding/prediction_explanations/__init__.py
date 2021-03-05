@@ -1,1 +1,1 @@
-from .explainers import explain_prediction, explain_predictions_best_worst, explain_predictions
+from .explainers import explain_predictions_best_worst, explain_predictions

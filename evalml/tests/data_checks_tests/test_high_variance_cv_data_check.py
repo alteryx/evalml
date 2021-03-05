@@ -19,9 +19,9 @@ def test_high_variance_cv_data_check_invalid_threshold():
 
 def test_high_variance_cv_data_check():
     high_variance_cv = HighVarianceCVDataCheck()
-    assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=[0, 0, 0]) == {"warnings": [], "errors": []}
-    assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=[1, 1, 1]) == {"warnings": [], "errors": []}
-    assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=pd.Series([1, 1, 1])) == {"warnings": [], "errors": []}
+    assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=[0, 0, 0]) == {"warnings": [], "errors": [], "actions": []}
+    assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=[1, 1, 1]) == {"warnings": [], "errors": [], "actions": []}
+    assert high_variance_cv.validate(pipeline_name=hv_pipeline_name, cv_scores=pd.Series([1, 1, 1])) == {"warnings": [], "errors": [], "actions": []}
 
     cv_scores = pd.Series([0, 1, 2, 3])
     variance = abs(cv_scores.std() / cv_scores.mean())
@@ -30,7 +30,8 @@ def test_high_variance_cv_data_check():
                                       data_check_name=high_variance_data_check_name,
                                       message_code=DataCheckMessageCode.HIGH_VARIANCE,
                                       details={"variance": variance, "pipeline_name": hv_pipeline_name}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -43,7 +44,8 @@ def test_high_variance_cv_data_check_empty_nan():
                                       data_check_name=high_variance_data_check_name,
                                       message_code=DataCheckMessageCode.HIGH_VARIANCE,
                                       details={"variance": variance, "pipeline_name": hv_pipeline_name}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -56,5 +58,6 @@ def test_high_variance_cv_data_check_negative():
                                       data_check_name=high_variance_data_check_name,
                                       message_code=DataCheckMessageCode.HIGH_VARIANCE,
                                       details={"variance": variance, "pipeline_name": hv_pipeline_name}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
