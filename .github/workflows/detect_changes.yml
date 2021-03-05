@@ -1,0 +1,30 @@
+name: Update Dependencies
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8.x'
+      - name: Install Dependencies
+        run: |
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps
+      - name: Detect Dependency Changes
+        run: |
+          source test_python/bin/activate
+          mkdir /tmp/dependencies_updated_artifacts
+          export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
+          evalml/tests/dependency_update_check/make_deps_diff.sh
+          diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+      - name: Display Dependency Changes
+        run: |
+          echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
+          cat /tmp/dependencies_updated_artifacts/diff.txt
