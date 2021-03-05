@@ -109,5 +109,6 @@ def check_all_pipeline_names_unique(pipelines):
             seen_names.add(pipeline.name)
 
     if duplicate_names:
+        plural, tense = ("s", "were") if len(duplicate_names) > 1 else ("", "was")
         duplicates = ", ".join([f"'{name}'" for name in duplicate_names])
-        raise ValueError(f"All pipeline names must be unique. The names {duplicates} were repeated.")
+        raise ValueError(f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.")
