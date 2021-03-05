@@ -2473,3 +2473,36 @@ def test_automl_check_high_variance_logs_warning(mock_train, mock_fit_binary, mo
     automl.search()
     out = caplog.text
     assert "High coefficient of variation" in out
+
+
+def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+
+    class MyPipeline1(BinaryClassificationPipeline):
+        custom_name = "Custom Pipeline"
+        component_graph = ["Imputer", "Random Forest Classifier"]
+
+    class MyPipeline2(BinaryClassificationPipeline):
+        custom_name = "Custom Pipeline"
+        component_graph = ["Imputer", "Logistic Regression Classifier"]
+
+    class MyPipeline3(BinaryClassificationPipeline):
+        custom_name = "My Pipeline 3"
+        component_graph = ["Logistic Regression Classifier"]
+
+    class MyPipeline4(BinaryClassificationPipeline):
+        custom_name = "My Pipeline 3"
+        component_graph = ["Random Forest Classifier"]
+
+    class OtherPipeline(BinaryClassificationPipeline):
+        custom_name = "Other Pipeline"
+        component_graph = ["Extra Trees Classifier"]
+
+    with pytest.raises(ValueError,
+                       match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated."):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2, MyPipeline3])
+
+    with pytest.raises(ValueError,
+                       match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated."):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2,
+                                                                     MyPipeline3, MyPipeline4, OtherPipeline])
