@@ -18,6 +18,7 @@ Release Notes
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
         * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Moved data check logic done in ``AutoMLSearch`` from ``search()`` to constructor :pr:`1935`
     * Documentation Changes
     * Testing Changes
 

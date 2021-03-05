@@ -447,9 +447,8 @@ def test_validate_data_check_n_splits():
                                         n_informative=3, n_redundant=2, random_state=0)
 
     data_split = make_data_splitter(X, y, problem_type='multiclass', n_splits=4, random_seed=42)
-    automl = AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
     with pytest.raises(ValueError, match="Data checks raised some warnings and/or errors."):
-        automl.search()
+        AutoMLSearch(X, y, problem_type="multiclass", max_iterations=1, n_jobs=1, data_splitter=data_split)
     assert automl.data_check_results["errors"][0]["message"] == "The number of instances of these targets is less than 2 * the number of cross folds = 8 instances: [2, 1, 0]"
 
 
