@@ -2439,6 +2439,9 @@ def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class)
     pipeline = dummy_binary_pipeline_class(parameters={})
     assert not automl._check_for_high_variance(pipeline, cv_scores)
 
+    cv_scores = pd.Series([0, 0, 0])
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
+
     cv_scores = pd.Series([0, 1, np.nan, np.nan])
     assert automl._check_for_high_variance(pipeline, cv_scores)
 
