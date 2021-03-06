@@ -2432,6 +2432,49 @@ def test_automl_raises_deprecated_random_state_warning(X_y_multi):
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
 
 
+def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    cv_scores = pd.Series([1, 1, 1])
+    pipeline = dummy_binary_pipeline_class(parameters={})
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 0, 0])
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 1, np.nan, np.nan])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 1, 2, 3])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, -1, -1, -1])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.automl.engine.EngineBase.train_and_score_pipeline')
+def test_automl_check_high_variance_logs_warning(mock_train, mock_fit_binary, mock_score_binary, X_y_binary, caplog):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    mock_train.return_value = {'cv_scores': pd.Series([1, 1, 1]),
+                               'training_time': 0,
+                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
+    automl.search()
+    out = caplog.text
+    assert "High coefficient of variation" not in out
+
+    caplog.clear()
+    mock_train.return_value = {'cv_scores': pd.Series([0, 1, 2, 3]),
+                               'training_time': 0,
+                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    automl.search()
+    out = caplog.text
+    assert "High coefficient of variation" in out
+
+
 def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
 
