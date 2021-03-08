@@ -10,6 +10,7 @@ Release Notes
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:``
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
@@ -28,6 +29,7 @@ Release Notes
     **Breaking Changes**
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:``
 
 
 **v0.19.0 Feb. 23, 2021**

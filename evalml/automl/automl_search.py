@@ -89,7 +89,7 @@ class AutoMLSearch:
                  random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
-                 optimize_thresholds=False,
+                 optimize_thresholds=True,
                  ensembling=False,
                  max_batches=None,
                  problem_configuration=None,
@@ -139,6 +139,8 @@ class AutoMLSearch:
             data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
+
+            optimize_thresholds (bool): Whether or not to optimize the binary pipeline threshold. Defaults to True.
 
             start_iteration_callback (callable): Function called before each pipeline training iteration.
                 Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
@@ -596,13 +598,12 @@ class AutoMLSearch:
                 else:
                     X_train = self.X_train
                     y_train = self.y_train
-                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
-                   and self.optimize_thresholds and self.objective.can_optimize_threshold:
+                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) and self.optimize_thresholds:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_seed=self.random_seed)
                 self._best_pipeline.fit(X_train, y_train)
-                tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
+                tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning, best_pipeline=True)
 
     def _num_pipelines(self):
         """Return the number of pipeline evaluations which have been made

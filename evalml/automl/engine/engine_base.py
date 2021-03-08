@@ -91,7 +91,7 @@ class EngineBase(ABC):
                 X_threshold_tuning = None
                 y_threshold_tuning = None
                 if automl.optimize_thresholds and automl.objective.is_defined_for_problem_type(automl.problem_type) and \
-                   automl.objective.can_optimize_threshold and is_binary(automl.problem_type):
+                   is_binary(automl.problem_type) and automl.objective.can_optimize_threshold:
                     X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, automl.problem_type,
                                                                                           test_size=0.2,
                                                                                           random_seed=automl.random_seed)
