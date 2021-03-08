@@ -14,11 +14,13 @@ from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     IllFormattedClassNameError,
     MissingComponentError,
+    ObjectiveCreationError,
+    ObjectiveNotFoundError,
     PipelineNotYetFittedError,
     PipelineScoreError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import CostBenefitMatrix, FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     GeneratedPipelineBinary,
@@ -52,7 +54,12 @@ from evalml.pipelines.utils import (
     get_generated_pipeline_class
 )
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_time_series
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -1985,3 +1992,28 @@ def test_pipelines_raise_deprecated_random_state_warning(dummy_binary_pipeline_c
     test_pipeline_class(dummy_time_series_regression_pipeline_class)
     test_pipeline_class(dummy_ts_binary_pipeline_class)
     test_pipeline_class(time_series_multiclass_classification_pipeline_class)
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_score_error_when_custom_objective_not_instantiated(problem_type, logistic_regression_binary_pipeline_class,
+                                                            dummy_multiclass_pipeline_class,
+                                                            dummy_regression_pipeline_class, X_y_binary):
+    pipeline = dummy_regression_pipeline_class({})
+    if is_binary(problem_type):
+        pipeline = logistic_regression_binary_pipeline_class({})
+    elif is_multiclass(problem_type):
+        pipeline = dummy_multiclass_pipeline_class({})
+
+    X, y = X_y_binary
+    pipeline.fit(X, y)
+    msg = "Cannot pass cost benefit matrix as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
+    with pytest.raises(ObjectiveCreationError, match=msg):
+        pipeline.score(X, y, objectives=["cost benefit matrix", "F1"])
+
+    # Verify ObjectiveCreationError only raised when string matches an existing objective
+    with pytest.raises(ObjectiveNotFoundError, match="cost benefit is not a valid Objective!"):
+        pipeline.score(X, y, objectives=["cost benefit", "F1"])
+
+    # Verify no exception when objective properly specified
+    if is_binary(problem_type):
+        pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])
