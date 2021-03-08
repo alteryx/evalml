@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 
 from evalml.automl.utils import (
-    check_all_pipeline_names_unique,
     can_tune_pipeline_threshold,
+    check_all_pipeline_names_unique,
     tune_binary_threshold
 )
 from evalml.exceptions import PipelineScoreError
