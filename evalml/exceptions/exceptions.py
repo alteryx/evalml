@@ -74,3 +74,7 @@ class DataCheckInitError(Exception):
 
 class NullsInColumnWarning(UserWarning):
     """Warning thrown when there are null values in the column of interest"""
+
+
+class ObjectiveCreationError(Exception):
+    """Exception when get_objective tries to instantiate an objective and required args are not provided."""
