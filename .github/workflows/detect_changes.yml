@@ -32,6 +32,4 @@ jobs:
         run: |
           echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
           cat /tmp/dependencies_updated_artifacts/diff.txt
-          echo ${{ steps.check.outcome }}
-          echo ${{ steps.check.conclusion }}
-          echo ${{ steps.check.outputs }}
+          exit 1
