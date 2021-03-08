@@ -21,7 +21,7 @@ class BalancedClassificationSampler(SamplerBase):
                 Must be greater than 0. Defaults to 100.
 
             min_percentage (float): The minimum percentage of the minimum class to total dataset that we tolerate, as long as it is above min_samples.
-                If class percentage and min_samples are not met, treat this as severely imbalanced, and we will not resample the data.
+                To determine severe imbalance, the minority class must have a class ratio below this and must occur less often than min_samples.
                 Must be between 0 and 0.5, inclusive. Defaults to 0.1.
 
             random_seed (int): The seed to use for random sampling. Defaults to 0.

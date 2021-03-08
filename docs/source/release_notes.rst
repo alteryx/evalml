@@ -6,7 +6,7 @@ Release Notes
         * Added a GitHub Action for Linux unit tests :pr:`1846`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
-        * Added ``BalancedClassificationDataCVSplit`` andn ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
+        * Added ``BalancedClassificationDataCVSplit`` and ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
         * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`

@@ -14,7 +14,7 @@ from evalml.preprocessing.data_splitters.training_validation_split import (
 class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
     """Data splitter for generating training and validation split using Balanced Classification Data Sampler."""
 
-    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=None, shuffle=True, random_seed=0):
+    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, test_size=0.25, shuffle=True, random_seed=0):
         """Create Balanced Classification Data TV splitter
 
         Arguments:
@@ -26,10 +26,10 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
                 Must be greater than 0. Defaults to 100.
 
             min_percentage (float): The minimum percentage of the minimum class to total dataset that we tolerate, as long as it is above min_samples.
-                If class percentage and min_samples are not met, treat this as severely imbalanced, and we will not resample the data.
+                If min_percentage and min_samples are not met, treat this as severely imbalanced, and we will not resample the data.
                 Must be between 0 and 0.5, inclusive. Defaults to 0.1.
 
-            test_size (float): The size of the test split. If none provided, this is set to 0.25. Defaults to None.
+            test_size (float): The size of the test split. Defaults to 0.25.
 
             shuffle (bool): Whether or not to shuffle the data before splitting. Defaults to True.
 
@@ -57,7 +57,7 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
                 Must be greater than 0. Defaults to 100.
 
             min_percentage (float): The minimum percentage of the minimum class to total dataset that we tolerate, as long as it is above min_samples.
-                If class percentage and min_samples are not met, treat this as severely imbalanced, and we will not resample the data.
+                If min_percentage and min_samples are not met, treat this as severely imbalanced, and we will not resample the data.
                 Must be between 0 and 0.5, inclusive. Defaults to 0.1.
 
             n_splits (int): The number of splits to use for cross validation. Defaults to 3.
