@@ -84,7 +84,7 @@ def can_tune_pipeline_threshold(pipeline, objective):
 
     """
     return objective.is_defined_for_problem_type(pipeline.problem_type) and \
-               objective.can_optimize_threshold and is_binary(pipeline.problem_type)
+        objective.can_optimize_threshold and is_binary(pipeline.problem_type)
 
 
 def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):
