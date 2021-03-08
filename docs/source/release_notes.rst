@@ -14,11 +14,13 @@ Release Notes
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
+        * Fixed stack trace caused by passing pipelines with duplicate names to ``AutoMLSearch`` :pr:`1932`
     * Changes
         * Reversed GitHub Action for Linux unit tests until a fix for report generation is found :pr:`1920`
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
         * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
     * Documentation Changes
     * Testing Changes
 
@@ -26,6 +28,8 @@ Release Notes
 
     **Breaking Changes**
         * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements
