@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for Detecting dependency changes :pr:`1933`
         * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
         * Added a GitHub Action for Linux unit tests :pr:`1846`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
