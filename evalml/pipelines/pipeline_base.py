@@ -541,6 +541,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             try:
                 objective_instances.append(get_objective(objective, return_instance=True))
             except ObjectiveCreationError as e:
-                msg = f"Cannot pass {objective} as a string. Instantiate first and then add it to the list of objectives."
+                msg = f"Cannot pass {objective} as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
                 raise ObjectiveCreationError(msg) from e
         return objective_instances

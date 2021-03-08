@@ -2006,7 +2006,7 @@ def test_score_error_when_custom_objective_not_instantiated(problem_type, logist
 
     X, y = X_y_binary
     pipeline.fit(X, y)
-    msg = "Cannot pass cost benefit matrix as a string. Instantiate first and then add it to the list of objectives."
+    msg = "Cannot pass cost benefit matrix as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
     with pytest.raises(ObjectiveCreationError, match=msg):
         pipeline.score(X, y, objectives=["cost benefit matrix", "F1"])
 
