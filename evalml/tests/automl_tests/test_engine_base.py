@@ -96,8 +96,8 @@ def test_engines_check_pipeline_names_unique(dummy_binary_pipeline_class):
     class Pipeline2(dummy_binary_pipeline_class):
         custom_name = "My Pipeline"
 
-    with pytest.raises(ValueError, match="All pipeline names must be unique. The names 'My Pipeline' were repeated."):
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
         engine.train_batch([Pipeline2({}), Pipeline1({})])
 
-    with pytest.raises(ValueError, match="All pipeline names must be unique. The names 'My Pipeline' were repeated."):
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
         engine.score_batch([Pipeline2({}), Pipeline1({})], None, None, None)
