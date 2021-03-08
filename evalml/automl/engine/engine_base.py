@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from evalml.automl.utils import (
-    can_tune_pipeline_threshold,
     check_all_pipeline_names_unique,
     tune_binary_threshold
 )
@@ -100,7 +99,7 @@ class EngineBase(ABC):
         """
         X_threshold_tuning = None
         y_threshold_tuning = None
-        if optimize_thresholds and can_tune_pipeline_threshold(pipeline, objective):
+        if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
             X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
                                                                       test_size=0.2, random_seed=pipeline.random_seed)
         cv_pipeline = pipeline.clone()
@@ -148,7 +147,7 @@ class EngineBase(ABC):
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline = EngineBase.train_pipeline(pipeline, X_train, y_train, automl.optimize_thresholds, automl.objective)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                if automl.optimize_thresholds and can_tune_pipeline_threshold(pipeline, automl.objective):
+                if automl.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl.objective):
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
