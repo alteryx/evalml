@@ -13,6 +13,8 @@ Release Notes
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
         * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
+        * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
@@ -32,7 +34,7 @@ Release Notes
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
         * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
-
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements

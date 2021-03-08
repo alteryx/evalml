@@ -725,7 +725,7 @@ def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary
 
 @pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary'])
 @pytest.mark.parametrize("optimize", [True, False])
-@patch('evalml.automl.automl_search.split_data')
+@patch('evalml.automl.engine.engine_base.split_data')
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
