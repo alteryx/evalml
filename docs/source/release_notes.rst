@@ -11,6 +11,7 @@ Release Notes
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
+        * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
     * Fixes
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
