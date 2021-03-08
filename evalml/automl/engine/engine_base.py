@@ -96,7 +96,7 @@ class EngineBase(ABC):
 
         Returns:
             pipeline (PipelineBase) - trained pipeline.
-        """        
+        """
         X_threshold_tuning = None
         y_threshold_tuning = None
         if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):

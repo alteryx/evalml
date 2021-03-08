@@ -43,6 +43,7 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types.utils import is_binary
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -595,13 +596,8 @@ class AutoMLSearch:
                 else:
                     X_train = self.X_train
                     y_train = self.y_train
-                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) and self.optimize_thresholds:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_seed=self.random_seed)
-                    if not self.objective.can_optimize_threshold:
-                        objective = get_objective("F1", return_instance=True)
-                if objective:
+                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) and self.optimize_thresholds and not self.objective.can_optimize_threshold:
+                    objective = get_objective("F1", return_instance=True)
                     best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
                                                                 self.optimize_thresholds, objective)
                 else:
