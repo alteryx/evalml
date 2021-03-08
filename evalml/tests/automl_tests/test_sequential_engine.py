@@ -7,6 +7,8 @@ import woodwork as ww
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engine import SequentialEngine
+from evalml.exceptions import PipelineScoreError
+from evalml.objectives import F1
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.preprocessing import split_data
@@ -18,6 +20,9 @@ def test_evaluate_no_data():
     expected_error = "Dataset has not been loaded into the engine."
     with pytest.raises(ValueError, match=expected_error):
         engine.evaluate_batch([])
+
+    with pytest.raises(ValueError, match=expected_error):
+        engine.train_batch([])
 
 
 def test_add_ensemble_data():
@@ -156,3 +161,144 @@ def test_evaluate_batch_should_continue(mock_fit, mock_score, dummy_binary_pipel
     assert mock_pre_evaluation_callback.call_count == 0
     assert mock_post_evaluation_callback.call_count == 0
     assert new_pipeline_ids == []
+
+
+@pytest.mark.parametrize("pipeline_fit_side_effect",
+                         [[None] * 6, [None, Exception("foo"), None],
+                          [None, Exception("bar"), Exception("baz")],
+                          [Exception("Everything"), Exception("is"), Exception("broken")]])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
+                           dummy_binary_pipeline_class, stackable_classifiers, caplog):
+
+    exceptions_to_check = [str(e) for e in pipeline_fit_side_effect if isinstance(e, Exception)]
+
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
+                          train_best_pipeline=False, n_jobs=1)
+
+    engine = SequentialEngine(X_train=automl.X_train,
+                              y_train=automl.y_train,
+                              automl=automl)
+
+    def make_pipeline_name(index):
+        class DummyPipeline(dummy_binary_pipeline_class):
+            custom_name = f"Pipeline {index}"
+        return DummyPipeline({'Mock Classifier': {'a': index}})
+
+    pipelines = [make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)]
+    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
+    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)], problem_type="binary")
+    pipelines.append(ensemble)
+
+    def train_batch_and_check():
+        caplog.clear()
+        with patch('evalml.pipelines.BinaryClassificationPipeline.fit') as mock_fit:
+            mock_fit.side_effect = pipeline_fit_side_effect
+
+            trained_pipelines = engine.train_batch(pipelines)
+
+            assert len(trained_pipelines) == len(pipeline_fit_side_effect) - len(exceptions_to_check)
+            assert mock_fit.call_count == len(pipeline_fit_side_effect)
+            for exception in exceptions_to_check:
+                assert exception in caplog.text
+
+    # Test training before search is run
+    train_batch_and_check()
+
+    # Test training after search.
+    automl.search()
+
+    train_batch_and_check()
+
+
+no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
+
+
+@pytest.mark.parametrize("pipeline_score_side_effect",
+                         [[no_exception_scores] * 6,
+                          [no_exception_scores,
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"F1": 0.2}),
+                           no_exception_scores],
+                          [no_exception_scores,
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"F1": 0.3}),
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "F1": (Exception(), [])},
+                                              scored_successfully={"Log Loss Binary": 0.2})],
+                          [PipelineScoreError(exceptions={"Log Loss Binary": (Exception(), []), "F1": (Exception(), [])},
+                                              scored_successfully={"AUC": 0.6}),
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"F1": 0.2}),
+                           PipelineScoreError(exceptions={"Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"AUC": 0.2, "F1": 0.1})]])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
+                           dummy_binary_pipeline_class, stackable_classifiers, caplog):
+
+    exceptions_to_check = []
+    expected_scores = {}
+    for i, e in enumerate(pipeline_score_side_effect):
+        # Ensemble pipeline has different name
+        pipeline_name = f"Pipeline {i}" if i < len(pipeline_score_side_effect) - 1 else "Templated Pipeline"
+        scores = no_exception_scores
+        if isinstance(e, PipelineScoreError):
+            scores = {"F1": np.nan, "AUC": np.nan, "Log Loss Binary": np.nan}
+            scores.update(e.scored_successfully)
+            exceptions_to_check.append(f"Score error for {pipeline_name}")
+
+        expected_scores[pipeline_name] = scores
+
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+
+    engine = SequentialEngine(X_train=automl.X_train, y_train=automl.y_train, automl=automl)
+
+    def make_pipeline_name(index):
+        class DummyPipeline(dummy_binary_pipeline_class):
+            custom_name = f"Pipeline {index}"
+        return DummyPipeline({'Mock Classifier': {'a': index}})
+
+    pipelines = [make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)]
+    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
+    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)],
+                                             problem_type="binary")
+    pipelines.append(ensemble)
+
+    def score_batch_and_check():
+        caplog.clear()
+        with patch('evalml.pipelines.BinaryClassificationPipeline.score') as mock_score:
+            mock_score.side_effect = pipeline_score_side_effect
+
+            scores = engine.score_batch(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
+            assert scores == expected_scores
+            for exception in exceptions_to_check:
+                assert exception in caplog.text
+
+    # Test scoring before search
+    score_batch_and_check()
+
+    automl.search()
+
+    # Test scoring after search
+    score_batch_and_check()
+
+
+def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_binary_pipeline_class, caplog):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+
+    engine = SequentialEngine(X_train=automl.X_train, y_train=automl.y_train, automl=automl)
+
+    scored_pipelines = engine.score_batch([dummy_binary_pipeline_class({})], X, y, objectives=["Log Loss Binary",
+                                                                                               F1()])
+    scored_pipelines["Mock Binary Classification Pipeline"] = {"Log Loss Binary": np.nan,
+                                                               "F1": np.nan}
+
+    assert "Score error for Mock Binary Classification Pipeline" in caplog.text
+    assert "This LabelEncoder instance is not fitted yet." in caplog.text
