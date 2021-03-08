@@ -9,6 +9,7 @@ import pandas as pd
 
 from evalml.automl.utils import (
     check_all_pipeline_names_unique,
+    can_tune_pipeline_threshold,
     tune_binary_threshold
 )
 from evalml.exceptions import PipelineScoreError
@@ -84,12 +85,6 @@ class EngineBase(ABC):
         check_all_pipeline_names_unique(pipelines)
 
     @staticmethod
-    def tune_threshold(pipeline, optimize_thresholds, objective):
-        """Check whether the threshold of a binary classification pipeline can be tuned."""
-        return optimize_thresholds and objective.is_defined_for_problem_type(pipeline.problem_type) and \
-            objective.can_optimize_threshold and is_binary(pipeline.problem_type)
-
-    @staticmethod
     def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
         """Train a pipeline and tune the threshold if necessary.
 
@@ -105,7 +100,7 @@ class EngineBase(ABC):
         """
         X_threshold_tuning = None
         y_threshold_tuning = None
-        if EngineBase.tune_threshold(pipeline, optimize_thresholds, objective):
+        if optimize_thresholds and can_tune_pipeline_threshold(pipeline, objective):
             X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
                                                                       test_size=0.2, random_seed=pipeline.random_seed)
         cv_pipeline = pipeline.clone()
@@ -153,7 +148,7 @@ class EngineBase(ABC):
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline = EngineBase.train_pipeline(pipeline, X_train, y_train, automl.optimize_thresholds, automl.objective)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                if EngineBase.tune_threshold(pipeline, automl.optimize_thresholds, automl.objective):
+                if automl.optimize_thresholds and can_tune_pipeline_threshold(pipeline, automl.objective):
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
