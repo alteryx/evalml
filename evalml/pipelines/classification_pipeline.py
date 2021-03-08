@@ -2,7 +2,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
@@ -119,7 +118,7 @@ class ClassificationPipeline(PipelineBase):
         """
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         if y_predicted is not None:
