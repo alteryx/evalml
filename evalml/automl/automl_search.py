@@ -14,16 +14,10 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
+    check_all_pipeline_names_unique,
     get_default_primary_search_objective,
     make_data_splitter,
     tune_binary_threshold
-)
-from evalml.data_checks import (
-    AutoMLDataChecks,
-    DataChecks,
-    DefaultDataChecks,
-    EmptyDataChecks,
-    HighVarianceCVDataCheck
 )
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
@@ -95,7 +89,6 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
-                 data_checks="auto",
                  _ensembling_split_size=0.2,
                  _pipelines_per_batch=5):
         """Automated pipeline search
@@ -174,11 +167,6 @@ class AutoMLSearch:
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
 
             pipeline_parameters
-
-            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
-                automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, `no` data checks will be done.
-                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -261,8 +249,6 @@ class AutoMLSearch:
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
 
-        self._data_check_results = None
-
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -295,6 +281,7 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+        check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
         if run_ensembling and len(self.allowed_pipelines) == 1:
@@ -362,16 +349,6 @@ class AutoMLSearch:
             pipeline_params=pipeline_params
         )
 
-        data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
-                                                        _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for result in self._data_check_results["warnings"]:
-            logger.warning(result["message"])
-        for result in self._data_check_results["errors"]:
-            logger.error(result["message"])
-        if self._data_check_results["errors"]:
-            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
-
     def _pre_evaluation_callback(self, pipeline):
         if self.start_iteration_callback:
             self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
@@ -400,10 +377,6 @@ class AutoMLSearch:
             return objective()
         return objective
 
-    @property
-    def data_check_results(self):
-        """If there are data checks, return any error messages that are found"""
-        return self._data_check_results
 
     def __str__(self):
         def _print_list(obj_list):
@@ -451,32 +424,6 @@ class AutoMLSearch:
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
 
-    def _validate_data_checks(self, data_checks):
-        """Validate data_checks parameter.
-
-        Arguments:
-            data_checks (DataChecks, list(Datacheck), str, None): Input to validate. If not of the right type,
-                raise an exception.
-
-        Returns:
-            An instance of DataChecks used to perform checks before search.
-        """
-        if isinstance(data_checks, DataChecks):
-            return data_checks
-        elif isinstance(data_checks, list):
-            return AutoMLDataChecks(data_checks)
-        elif isinstance(data_checks, str):
-            if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective, n_splits=self.data_splitter.get_n_splits())
-            elif data_checks == "disabled":
-                return EmptyDataChecks()
-            else:
-                raise ValueError("If data_checks is a string, it must be either 'auto' or 'disabled'. "
-                                 f"Received '{data_checks}'.")
-        elif data_checks is None:
-            return EmptyDataChecks()
-        else:
-            return DataChecks(data_checks)
 
     def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
@@ -723,18 +670,12 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        pipeline_name = pipeline.name
-        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
-        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
-        high_variance_cv = False
-        if high_variance_cv_check_results["warnings"]:
-            logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
-            high_variance_cv = True
+        high_variance_cv = self._check_for_high_variance(pipeline, cv_scores)
 
         pipeline_id = len(self._results['pipeline_results'])
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
-            "pipeline_name": pipeline_name,
+            "pipeline_name": pipeline.name,
             "pipeline_class": type(pipeline),
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
@@ -766,6 +707,14 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
         return pipeline_id
+
+    def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
+        """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
+        pipeline_name = pipeline.name
+        high_variance_cv = bool(abs(cv_scores.std() / cv_scores.mean()) > threshold)
+        if high_variance_cv:
+            logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
+        return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline

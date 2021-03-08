@@ -154,7 +154,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
 
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
