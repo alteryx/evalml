@@ -91,13 +91,36 @@ def test_data_splitter(X_y_binary):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
 
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=TimeSeriesSplit(n_splits=cv_folds),
+                          max_iterations=1, n_jobs=1, engine="parallel")
+    automl.search()
+
+    assert isinstance(automl.rankings, pd.DataFrame)
+    assert len(automl.results['pipeline_results'][0]["cv_data"]) == cv_folds
+
 
 def test_max_iterations(X_y_binary):
     X, y = X_y_binary
     max_iterations = 5
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=max_iterations, n_jobs=1)
-    automl.search()
-    assert len(automl.full_rankings) == max_iterations
+
+    # Sequential
+    sequential_automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
+                                     max_iterations=max_iterations, n_jobs=1, engine="sequential")
+    sequential_automl.search()
+    assert len(sequential_automl.full_rankings) == max_iterations
+
+    # # Parallel
+    # parallel_automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
+    #                                max_iterations=max_iterations, n_jobs=1, engine="parallel")
+    # parallel_automl.search()
+    # assert len(parallel_automl.full_rankings) == max_iterations
+    #
+    # # Compare Sequential and Parallel Ranking Values
+    # sequential_rankings = sequential_automl.full_rankings
+    # sequential_rankings.set_index("id")
+    # parallel_rankings = parallel_automl.full_rankings
+    # parallel_rankings.set_index("id")
+    # assert all(parallel_rankings == sequential_rankings)
 
 
 def test_recall_error(X_y_binary):
@@ -228,6 +251,7 @@ def test_additional_objectives(X_y_binary):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary, caplog):
+    # TODO: This doesn't work with parallel engine because of the mock incompatibility with Dask
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='precision', max_iterations=1, optimize_thresholds=True)
@@ -252,6 +276,7 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
+    # TODO: This doesn't work with parallel engine because of the mock incompatibility with Dask
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='precision', max_iterations=1, optimize_thresholds=False)
@@ -270,6 +295,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
+    # TODO: This doesn't work with parallel engine because of the mock incompatibility with Dask
     mock_score.return_value = {"AUC": 1.0}
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=1)

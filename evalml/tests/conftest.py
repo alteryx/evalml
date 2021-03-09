@@ -239,6 +239,20 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
+def dummy_parallel_binary_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+        def score(self, *args, **kwargs):
+            return {'Log Loss Binary': 0.42}
+
+    return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
 def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
