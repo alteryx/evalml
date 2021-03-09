@@ -597,7 +597,6 @@ class AutoMLSearch:
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
-                self._best_pipeline.fit(X_train, y_train)
                 best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
                                                             self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
