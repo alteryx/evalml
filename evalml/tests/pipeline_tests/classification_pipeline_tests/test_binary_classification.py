@@ -66,3 +66,11 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     with pytest.raises(ValueError, match="You can only use a binary classification objective to make predictions for a binary classification pipeline."):
         binary_pipeline.predict(X, "precision micro")
     mock_transform.assert_called()
+
+
+def test_binary_predict_pipeline_use_objective(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    binary_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    binary_pipeline.threshold = 0.7
+    binary_pipeline.fit(X, y)
+    binary_pipeline.score(X, y, ['precision'])
