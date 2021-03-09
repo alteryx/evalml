@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 import woodwork as ww
+from evalml.objectives import FraudCost
 
 
 @patch('evalml.pipelines.ClassificationPipeline._decode_targets', return_value=[0, 1])
@@ -73,4 +74,5 @@ def test_binary_predict_pipeline_use_objective(X_y_binary, logistic_regression_b
     binary_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     binary_pipeline.threshold = 0.7
     binary_pipeline.fit(X, y)
-    binary_pipeline.score(X, y, ['precision'])
+    fraud_cost = FraudCost(amount_col=0)
+    binary_pipeline.score(X, y, ['precision', fraud_cost])
