@@ -16,8 +16,7 @@ from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
-    make_data_splitter,
-    tune_binary_threshold
+    make_data_splitter
 )
 from evalml.data_checks import (
     AutoMLDataChecks,
@@ -43,7 +42,7 @@ from evalml.pipelines import (
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -587,11 +586,9 @@ class AutoMLSearch:
             return
         best_pipeline = self.rankings.iloc[0]
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
-            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-                if self._best_pipeline.model_family == ModelFamily.ENSEMBLE:
+                if best_pipeline.model_family == ModelFamily.ENSEMBLE:
                     X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
                 else:
                     X_train = self.X_train
@@ -600,13 +597,11 @@ class AutoMLSearch:
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
-                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
-                   and self.optimize_thresholds and self.objective.can_optimize_threshold:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_seed=self.random_seed)
                 self._best_pipeline.fit(X_train, y_train)
                 tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
+                best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
+                                                            self.optimize_thresholds, self.objective)
+            self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
         """Return the number of pipeline evaluations which have been made
@@ -931,3 +926,34 @@ class AutoMLSearch:
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def train_pipelines(self, pipelines):
+        """Train a list of pipelines on the training data.
+
+        This can be helpful for training pipelines once the search is complete.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+
+        Returns:
+            Dict[str, PipelineBase]: Dictionary keyed by pipeline name that maps to the fitted pipeline.
+            Note that the any pipelines that error out during training will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.train_batch(pipelines)
+
+    def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
+        """Score a list of pipelines on the given holdout data.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+            X_holdout (ww.DataTable, pd.DataFrame): Holdout features.
+            y_holdout (ww.DataTable, pd.DataFrame): Holdout targets for scoring.
+            objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
+
+        Returns:
+            Dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
+            Note that the any pipelines that error out during scoring will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.score_batch(pipelines, X_holdout, y_holdout, objectives)

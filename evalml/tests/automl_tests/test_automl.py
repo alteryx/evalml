@@ -56,6 +56,7 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
+    PipelineBase,
     RegressionPipeline
 )
 from evalml.pipelines.components.utils import (
@@ -2525,3 +2526,57 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
                        match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated."):
         AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2,
                                                                      MyPipeline3, MyPipeline4, OtherPipeline])
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_train_batch_score_batch(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+
+    def make_dummy_pipeline(index):
+        class Pipeline(dummy_binary_pipeline_class):
+            custom_name = f"Pipeline {index}"
+        return Pipeline({})
+
+    pipelines = [make_dummy_pipeline(i) for i in range(3)]
+
+    X, y = X_y_binary
+
+    mock_score.return_value = {"Log Loss Binary": 0.1}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=3)
+    automl.search()
+
+    mock_fit.side_effect = [None, Exception("foo"), None]
+    fitted_pipelines = automl.train_pipelines(pipelines)
+    assert fitted_pipelines.keys() == {"Pipeline 0", "Pipeline 2"}
+
+    score_effects = [{"Log Loss Binary": 0.1}, {"Log Loss Binary": 0.2}, {"Log Loss Binary": 0.3}]
+    mock_score.side_effect = score_effects
+    expected_scores = {f"Pipeline {i}": effect for i, effect in zip(range(3), score_effects)}
+    scores = automl.score_pipelines(pipelines, X, y, ["Log Loss Binary"])
+    assert scores == expected_scores
+
+
+def test_train_batch_returns_trained_pipelines(X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+
+    class RfPipeline(BinaryClassificationPipeline):
+        component_graph = ["Random Forest Classifier"]
+
+    class LogisticPipeline(BinaryClassificationPipeline):
+        component_graph = ["Logistic Regression Classifier"]
+
+    pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
+                 LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
+
+    fitted_pipelines = automl.train_pipelines(pipelines)
+
+    assert all([isinstance(pl, PipelineBase) for pl in fitted_pipelines.values()])
+
+    # Check that the output pipelines are fitted but the input pipelines are not
+    for original_pipeline in pipelines:
+        fitted_pipeline = fitted_pipelines[original_pipeline.name]
+        assert fitted_pipeline.name == original_pipeline.name
+        assert fitted_pipeline._is_fitted
+        assert fitted_pipeline != original_pipeline
