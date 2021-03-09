@@ -151,34 +151,6 @@ jobs:
           source test_python/bin/activate
           make -C docs/ html
       - run: ls docs/build/html
-  check_dependencies_updated_linux:
-    parameters:
-      python_version:
-        type: string
-        default: "3.8"
-    executor:
-      name: python
-      python_version: << parameters.python_version >>
-    steps:
-      - checkout
-      - install_dependencies
-      - run:
-          name: "Detect Dependency Changes"
-          command: |
-            source test_python/bin/activate
-            mkdir /tmp/dependencies_updated_artifacts
-            export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
-            evalml/tests/dependency_update_check/make_deps_diff.sh
-            diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
-            exit $?
-      - run:
-          name: "Display Dependency Diff"
-          command: |
-            echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
-            cat /tmp/dependencies_updated_artifacts/diff.txt
-          when: on_fail
-      - store_artifacts:
-          path: /tmp/dependencies_updated_artifacts
 
 
 workflows:
