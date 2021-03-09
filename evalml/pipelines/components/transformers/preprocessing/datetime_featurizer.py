@@ -94,7 +94,7 @@ class DateTimeFeaturizer(Transformer):
         """
         X_ww = infer_feature_types(X)
         X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_t = X.rename(columns=str)
+        # X_t = X.rename(columns=str)
 
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
