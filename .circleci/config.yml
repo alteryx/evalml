@@ -159,15 +159,6 @@ workflows:
     jobs:
       - build_docs:
           name: "build docs"
-  check_dependencies_updated_linux:
-    jobs:
-      - check_dependencies_updated_linux:
-          name: "linux python 3.8 check dependencies for updates"
-          python_version: "3.8"
-          filters:
-            branches:
-              ignore: /^main?/
-
   test_all_python_versions:
     jobs:
       - unit_tests:

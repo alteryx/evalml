@@ -15,6 +15,7 @@ Release Notes
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
     * Fixes
+        * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
         * Fixed stack trace caused by passing pipelines with duplicate names to ``AutoMLSearch`` :pr:`1932`
