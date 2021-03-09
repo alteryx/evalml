@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn import datasets
 from sklearn.model_selection import KFold
 from skopt.space import Categorical, Integer, Real
 

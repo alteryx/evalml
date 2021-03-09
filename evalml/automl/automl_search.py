@@ -160,7 +160,7 @@ class AutoMLSearch:
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
 
-            pipeline_parameters
+            pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
