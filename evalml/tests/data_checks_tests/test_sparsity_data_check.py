@@ -106,5 +106,6 @@ def test_sparsity_data_check_warnings():
             message_code=DataCheckMessageCode.TOO_SPARSE,
             details={"column": "sparse",
                      'sparsity_score': 0.3333333333333333}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }

@@ -8,6 +8,8 @@ from .utils import (
 from .data_splitters import (
     TrainingValidationSplit,
     TimeSeriesSplit,
+    BalancedClassificationDataCVSplit,
+    BalancedClassificationDataTVSplit,
     KMeansSMOTETVSplit,
     KMeansSMOTECVSplit,
     SMOTETomekTVSplit,

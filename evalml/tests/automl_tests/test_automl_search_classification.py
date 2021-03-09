@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.model_selection import StratifiedKFold
 from skopt.space import Categorical
 
 from evalml import AutoMLSearch
@@ -32,7 +31,11 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import TimeSeriesSplit, split_data
+from evalml.preprocessing import (
+    BalancedClassificationDataCVSplit,
+    TimeSeriesSplit,
+    split_data
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -77,7 +80,7 @@ def test_get_pipeline_none(X_y_binary):
 def test_data_splitter(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=StratifiedKFold(cv_folds), max_iterations=1,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=BalancedClassificationDataCVSplit(n_splits=cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 
@@ -725,7 +728,7 @@ def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary
 
 @pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary'])
 @pytest.mark.parametrize("optimize", [True, False])
-@patch('evalml.automl.automl_search.split_data')
+@patch('evalml.automl.engine.engine_base.split_data')
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')

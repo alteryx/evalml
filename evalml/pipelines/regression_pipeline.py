@@ -1,5 +1,4 @@
 
-from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
@@ -39,6 +38,6 @@ class RegressionPipeline(PipelineBase):
         Returns:
             dict: Ordered dictionary of objective scores
         """
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
         y_predicted = _convert_woodwork_types_wrapper(self.predict(X).to_series())
         return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)

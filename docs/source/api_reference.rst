@@ -44,6 +44,8 @@ Data splitter classes for imbalanced classification datasets.
     :template: class.rst
     :nosignatures:
 
+    BalancedClassificationDataTVSplit
+    BalancedClassificationDataCVSplit
     KMeansSMOTECVSplit
     KMeansSMOTETVSplit
     SMOTETomekCVSplit
@@ -52,7 +54,7 @@ Data splitter classes for imbalanced classification datasets.
     RandomUnderSamplerTVSplit
     SMOTENCCVSplit
     SMOTENCTVSplit
-    
+
 
 .. currentmodule:: evalml.exceptions
 

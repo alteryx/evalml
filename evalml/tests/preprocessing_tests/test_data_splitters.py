@@ -33,7 +33,7 @@ def test_empty_sampler_tv(X_y_binary):
         np.testing.assert_equal(X_test, test[0])
         np.testing.assert_equal(y_test, test[1])
 
-    X2, y2 = bss.transform(X, y)
+    X2, y2 = bss.transform_sample(X, y)
     np.testing.assert_equal(X2, X)
     np.testing.assert_equal(y2, y)
 
@@ -56,7 +56,7 @@ def test_empty_sampler_cv(X_y_binary):
         np.testing.assert_equal(X_test, test[0])
         np.testing.assert_equal(y_test, test[1])
 
-    X2, y2 = r.transform(X, y)
+    X2, y2 = r.transform_sample(X, y)
     np.testing.assert_equal(X2, X)
     np.testing.assert_equal(y2, y)
 
@@ -124,7 +124,7 @@ def test_data_splitter_error(splitter, value, X_y_binary):
         # handles both TV and CV iterations
         next(data_split.split(X, y))
     with pytest.raises(ValueError, match="Values not all numeric or there are null values"):
-        data_split.transform(X, y)
+        data_split.transform_sample(X, y)
 
 
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
@@ -161,7 +161,7 @@ def test_data_splitter_tv_default(splitter, sampler, data_type, make_data_type, 
             for jdx, val in enumerate(tup):  # for each array in (X, y) pair
                 np.testing.assert_equal(val.values, initial_results[idx][jdx])
 
-    X_data_split, y_data_split = data_splitter.transform(X, y)
+    X_data_split, y_data_split = data_splitter.transform_sample(X, y)
     np.testing.assert_equal(X_transform, X_data_split.values)
     np.testing.assert_equal(y_transform, y_data_split.values)
 
@@ -199,6 +199,6 @@ def test_data_splitter_cv_default(splitter, sampler, data_type, make_data_type, 
             for jdx, val in enumerate(tup):  # for each array in (X, y)
                 np.testing.assert_equal(val.values, initial_results[i][idx][jdx])
 
-    X_data_split, y_data_split = data_splitter.transform(X, y)
+    X_data_split, y_data_split = data_splitter.transform_sample(X, y)
     np.testing.assert_equal(X_transform, X_data_split.values)
     np.testing.assert_equal(y_transform, y_data_split.values)

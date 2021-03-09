@@ -154,6 +154,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             random_seeds_the_same = [(estimator.pipeline.random_seed == algo.random_seed)
                                      for estimator in estimators_used_in_ensemble]
             assert all(random_seeds_the_same)
+            assert ModelFamily.ENSEMBLE not in algo._best_pipeline_info
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
