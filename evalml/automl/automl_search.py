@@ -286,23 +286,6 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
-        if engine == "sequential":
-            self._engine = SequentialEngine(self.X_train,
-                                            self.y_train,
-                                            self,
-                                            should_continue_callback=self._should_continue,
-                                            pre_evaluation_callback=self._pre_evaluation_callback,
-                                            post_evaluation_callback=self._post_evaluation_callback)
-        elif engine == "parallel":
-            self._engine = ParallelEngine(self.X_train,
-                                          self.y_train,
-                                          self,
-                                          should_continue_callback=self._should_continue,
-                                          pre_evaluation_callback=self._pre_evaluation_callback,
-                                          post_evaluation_callback=self._post_evaluation_callback,
-                                          n_workers=engine_workers)
-        else:
-            raise ValueError(f"Provided engine should be 'sequential' or 'parallel', received {engine}.")
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
@@ -349,6 +332,27 @@ class AutoMLSearch:
             X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
             _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
             self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
+
+
+        if engine == "sequential":
+            self._engine = SequentialEngine(self.X_train,
+                                            self.y_train,
+                                            self.ensembling_indices,
+                                            self,
+                                            should_continue_callback=self._should_continue,
+                                            pre_evaluation_callback=self._pre_evaluation_callback,
+                                            post_evaluation_callback=self._post_evaluation_callback)
+        elif engine == "parallel":
+            self._engine = ParallelEngine(self.X_train,
+                                          self.y_train,
+                                          self.ensembling_indices,
+                                          self,
+                                          should_continue_callback=self._should_continue,
+                                          pre_evaluation_callback=self._pre_evaluation_callback,
+                                          post_evaluation_callback=self._post_evaluation_callback,
+                                          n_workers=engine_workers)
+        else:
+            raise ValueError(f"Provided engine should be 'sequential' or 'parallel', received {engine}.")
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 

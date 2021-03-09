@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock
 
+import numpy as np
 import pytest
 
 from evalml.automl import AutoMLSearch
@@ -48,3 +49,19 @@ def test_evaluate_batch_parallel(dummy_parallel_binary_pipeline_class, X_y_binar
     assert mock_post_evaluation_callback.call_args_list[0][0][1]['cv_score_mean'] == 0.42
     assert mock_post_evaluation_callback.call_args_list[1][0][0] in pipelines
     assert mock_post_evaluation_callback.call_args_list[1][0][1]['cv_score_mean'] == 0.42
+
+def test_train_batch():
+    with pytest.raises(NotImplementedError):
+        engine = ParallelEngine(X_train=np.array([]),
+                                y_train=np.array([]),
+                                automl=None)
+        engine.train_batch()
+
+
+def test_score_batch():
+    with pytest.raises(NotImplementedError):
+        engine = ParallelEngine(X_train=np.array([]),
+                                y_train=np.array([]),
+                                automl=None)
+        engine.score_batch(pipelines=[], X=None, y=None, objectives=[None])
+
