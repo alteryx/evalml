@@ -2523,7 +2523,7 @@ def test_train_batch_score_batch(mock_fit, mock_score, dummy_binary_pipeline_cla
     X, y = X_y_binary
 
     mock_score.return_value = {"Log Loss Binary": 0.1}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=3)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False, max_iterations=3)
     automl.search()
 
     mock_fit.side_effect = [None, Exception("foo"), None]
