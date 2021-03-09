@@ -13,13 +13,14 @@ AutoMLSearchStruct = namedtuple("AutoML",
 class ParallelEngine(EngineBase):
     """A parallel engine for the AutoML search. Trains and scores pipelines locally, in parallel."""
 
-    def __init__(self, X_train=None, y_train=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None,
+    def __init__(self, X_train=None, y_train=None, ensembling_indices=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None,
                  post_evaluation_callback=None, n_workers=4):
         """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML.
 
         Arguments:
             X_train (ww.DataTable): training features
             y_train (ww.DataColumn): training target
+            ensembling_indices (list): Ensembling indices for ensembling data
             automl (AutoMLSearch): a reference to the AutoML search. Used to access configuration and by the error callback.
             should_continue_callback (function): returns True if another pipeline from the list should be evaluated, False otherwise.
             pre_evaluation_callback (function): optional callback invoked before pipeline evaluation.
@@ -29,7 +30,8 @@ class ParallelEngine(EngineBase):
         Raises:
             ValueError: if n_workers is not a positive integer greater than or equal to 1.
         """
-        super().__init__(X_train=X_train, y_train=y_train, automl=automl,
+        super().__init__(X_train=X_train, y_train=y_train,
+                         ensembling_indices=ensembling_indices, automl=automl,
                          should_continue_callback=should_continue_callback,
                          pre_evaluation_callback=pre_evaluation_callback,
                          post_evaluation_callback=post_evaluation_callback)
@@ -65,3 +67,9 @@ class ParallelEngine(EngineBase):
             evaluation_result, pipeline = future.result()
             new_pipeline_ids.append(self._post_evaluation_callback(pipeline, evaluation_result))
         return new_pipeline_ids
+
+    def train_batch(self):
+        raise NotImplementedError
+
+    def score_batch(self, pipelines, X, y, objectives):
+        raise NotImplementedError
