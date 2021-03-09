@@ -84,7 +84,7 @@ class EngineBase(ABC):
         check_all_pipeline_names_unique(pipelines)
 
     @staticmethod
-    def train_pipeline(pipeline, X, y, optimize_thresholds, objective, best_pipeline=False):
+    def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
         """Train a pipeline and tune the threshold if necessary.
 
         Arguments:
@@ -93,21 +93,19 @@ class EngineBase(ABC):
             y (ww.DataColumn, pd.Series): Target to train on.
             optimize_thresholds (bool): Whether to tune the threshold (if pipeline supports it).
             objective (ObjectiveBase): Objective used in threshold tuning.
-            best_pipeline (bool): Whether or not this training is for the best pipeline
 
         Returns:
             pipeline (PipelineBase) - trained pipeline.
         """
         X_threshold_tuning = None
         y_threshold_tuning = None
-        if (optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective) and
-                (best_pipeline or (not best_pipeline and objective.can_optimize_threshold))):
+        if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
             X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
                                                                       test_size=0.2, random_seed=pipeline.random_seed)
         cv_pipeline = pipeline.clone()
         cv_pipeline.fit(X, y)
         tune_binary_threshold(cv_pipeline, objective, cv_pipeline.problem_type,
-                              X_threshold_tuning, y_threshold_tuning, best_pipeline)
+                              X_threshold_tuning, y_threshold_tuning)
         return cv_pipeline
 
     @staticmethod

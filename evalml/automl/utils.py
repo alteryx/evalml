@@ -72,7 +72,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
                                max_delay=problem_configuration.get('max_delay'))
 
 
-def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning, best_pipeline=False):
+def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):
     """Tunes the threshold of a binary pipeline to the X and y thresholding data
 
     Arguments:
@@ -81,10 +81,7 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
         problem_type (ProblemType): The problem type of the pipeline.
         X_threshold_tuning (ww.DataTable): Features to tune pipeline to.
         y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to.
-        best_pipeline (bool): Whether this pipeline is the best pipeline in AutoMLSearch.
     """
-    if best_pipeline and is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and not objective.can_optimize_threshold:
-        objective = get_objective("F1", return_instance=True)
     if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and objective.can_optimize_threshold:
         pipeline.threshold = 0.5
         if X_threshold_tuning:

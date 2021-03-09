@@ -596,7 +596,7 @@ class AutoMLSearch:
                     X_train = self.X_train
                     y_train = self.y_train
                 best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
-                                                            self.optimize_thresholds, self.objective, best_pipeline=True)
+                                                            self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
