@@ -25,6 +25,7 @@ Release Notes
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
     * Documentation Changes
+        * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
     * Testing Changes
 
 .. warning::
