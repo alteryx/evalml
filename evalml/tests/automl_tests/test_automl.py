@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn import datasets
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
@@ -24,8 +23,7 @@ from evalml.automl.callbacks import (
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective,
-    make_data_splitter
+    get_default_primary_search_objective
 )
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (

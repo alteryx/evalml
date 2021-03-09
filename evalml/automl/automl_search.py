@@ -39,12 +39,7 @@ from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    convert_to_seconds,
-    deprecate_arg,
-    infer_feature_types
-)
+from evalml.utils import convert_to_seconds, deprecate_arg, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -377,7 +372,6 @@ class AutoMLSearch:
             return objective()
         return objective
 
-
     def __str__(self):
         def _print_list(obj_list):
             lines = sorted(['\t{}'.format(o.name) for o in obj_list])
@@ -423,7 +417,6 @@ class AutoMLSearch:
                 raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
-
 
     def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
