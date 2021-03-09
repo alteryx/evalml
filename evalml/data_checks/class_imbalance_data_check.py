@@ -60,7 +60,7 @@ class ClassImbalanceDataCheck(DataCheck):
                                                                    "level": "warning",\
                                                                    "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",\
                                                                    "details": {"target_values": [0]}},\
-                                                                   {"message": "The following labels have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",\
+                                                                   {"message": "The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",\
                                                                    "data_check_name": "ClassImbalanceDataCheck",\
                                                                    "level": "warning",\
                                                                    "code": "CLASS_IMBALANCE_SEVERE",\
@@ -101,7 +101,7 @@ class ClassImbalanceDataCheck(DataCheck):
         if len(below_threshold) and len(sample_counts):
             sample_count_values = sample_counts.index.tolist()
             severe_imbalance = [v for v in sample_count_values if v in below_threshold]
-            warning_msg = "The following labels have severe class imbalance because they fall under {:.0f}% of the target and have less than {} samples: {}"
+            warning_msg = "The following labels in the target have severe class imbalance because they fall under {:.0f}% of the target and have less than {} samples: {}"
             DataCheck._add_message(DataCheckWarning(message=warning_msg.format(self.threshold * 100, self.min_samples, severe_imbalance),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
