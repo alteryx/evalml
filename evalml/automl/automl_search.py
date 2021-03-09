@@ -333,7 +333,6 @@ class AutoMLSearch:
             _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
             self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
 
-
         if engine == "sequential":
             self._engine = SequentialEngine(self.X_train,
                                             self.y_train,

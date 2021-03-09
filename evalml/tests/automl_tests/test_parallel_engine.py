@@ -50,6 +50,7 @@ def test_evaluate_batch_parallel(dummy_parallel_binary_pipeline_class, X_y_binar
     assert mock_post_evaluation_callback.call_args_list[1][0][0] in pipelines
     assert mock_post_evaluation_callback.call_args_list[1][0][1]['cv_score_mean'] == 0.42
 
+
 def test_train_batch():
     with pytest.raises(NotImplementedError):
         engine = ParallelEngine(X_train=np.array([]),
@@ -64,4 +65,3 @@ def test_score_batch():
                                 y_train=np.array([]),
                                 automl=None)
         engine.score_batch(pipelines=[], X=None, y=None, objectives=[None])
-

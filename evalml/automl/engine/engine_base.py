@@ -20,6 +20,7 @@ from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 
 logger = get_logger(__file__)
 
+
 def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train, return_pipeline=False):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
 
@@ -103,6 +104,7 @@ def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train, retur
         return result, pipeline
     else:
         return result
+
 
 class EngineBase(ABC):
     """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
