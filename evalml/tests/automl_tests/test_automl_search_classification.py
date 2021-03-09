@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.model_selection import StratifiedKFold
 from skopt.space import Categorical
 
 from evalml import AutoMLSearch
@@ -32,7 +31,11 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import TimeSeriesSplit, split_data
+from evalml.preprocessing import (
+    BalancedClassificationDataCVSplit,
+    TimeSeriesSplit,
+    split_data
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -77,7 +80,7 @@ def test_get_pipeline_none(X_y_binary):
 def test_data_splitter(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=StratifiedKFold(cv_folds), max_iterations=1,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=BalancedClassificationDataCVSplit(n_splits=cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 
