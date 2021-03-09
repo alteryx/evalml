@@ -598,7 +598,6 @@ class AutoMLSearch:
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
                 self._best_pipeline.fit(X_train, y_train)
-                tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
                 best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
                                                             self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
