@@ -595,6 +595,10 @@ class AutoMLSearch:
                 else:
                     X_train = self.X_train
                     y_train = self.y_train
+                if hasattr(self.data_splitter, "transform_sample"):
+                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
+                    X_train = X_train.iloc[train_indices]
+                    y_train = y_train.iloc[train_indices]
                 best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
                                                             self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
