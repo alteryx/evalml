@@ -7,7 +7,7 @@
 [![PyPI version](https://badge.fury.io/py/evalml.svg?maxAge=2592000)](https://badge.fury.io/py/evalml)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/evalml.svg)](https://pypistats.org/packages/evalml)
 
-EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.
+EvalML is an AutoML library which builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.
 
 **Key Functionality**
 

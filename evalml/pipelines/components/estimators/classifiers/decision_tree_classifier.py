@@ -4,6 +4,7 @@ from skopt.space import Integer
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils import deprecate_arg
 
 
 class DecisionTreeClassifier(Estimator):
@@ -24,7 +25,8 @@ class DecisionTreeClassifier(Estimator):
                  max_depth=6,
                  min_samples_split=2,
                  min_weight_fraction_leaf=0.0,
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  **kwargs):
         parameters = {"criterion": criterion,
                       "max_features": max_features,
@@ -32,9 +34,9 @@ class DecisionTreeClassifier(Estimator):
                       "min_samples_split": min_samples_split,
                       "min_weight_fraction_leaf": min_weight_fraction_leaf}
         parameters.update(kwargs)
-
-        dt_classifier = SKDecisionTreeClassifier(random_state=random_state,
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        dt_classifier = SKDecisionTreeClassifier(random_state=random_seed,
                                                  **parameters)
         super().__init__(parameters=parameters,
                          component_obj=dt_classifier,
-                         random_state=random_state)
+                         random_seed=random_seed)

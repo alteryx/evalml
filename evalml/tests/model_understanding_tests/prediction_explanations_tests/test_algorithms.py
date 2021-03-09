@@ -7,6 +7,7 @@ import pytest
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._algorithms import (
+    _aggregate_shap_values,
     _compute_shap_values,
     _create_dictionary,
     _normalize_shap_values
@@ -149,6 +150,12 @@ def test_normalize_values_exceptions():
         _normalize_shap_values(1)
 
 
+def check_equal_dicts(normalized, answer):
+    assert set(normalized.keys()) == set(answer)
+    for key in normalized:
+        np.testing.assert_almost_equal(normalized[key], answer[key], decimal=4)
+
+
 @pytest.mark.parametrize("values,answer", [({"a": [-0.5, 0, 0.5], "b": [0.1, -0.6, 0.2]},
                                             {"a": [-0.5 / 0.6, 0, 0.5 / 0.7], "b": [0.1 / 0.6, -1.0, 0.2 / 0.7]}),
                                            ([{"a": [-0.5, 0, 0.5], "b": [0.1, -0.6, 0.2]}] * 2,
@@ -157,13 +164,12 @@ def test_normalize_values_exceptions():
                                            ([{"a": [0]}] * 10, [{"a": [0]}] * 10),
                                            ({"a": [5], "b": [20], "c": [-22]},
                                             {"a": [5 / 47], "b": [20 / 47], "c": [-22 / 47]}),
-                                           ({"a": [5], "b": [-5]}, {"a": [0.5], "b": [-0.5]})])
+                                           ({"a": [5], "b": [-5]}, {"a": [0.5], "b": [-0.5]}),
+                                           ({0: [5], "b": [-5]}, {0: [0.5], "b": [-0.5]}),
+                                           ({"a": [-0.5, 0, 0.5], 1: [0.1, -0.6, 0.2]},
+                                            {"a": [-0.5 / 0.6, 0, 0.5 / 0.7], 1: [0.1 / 0.6, -1.0, 0.2 / 0.7]})
+                                           ])
 def test_normalize_values(values, answer):
-
-    def check_equal_dicts(normalized, answer):
-        assert set(normalized.keys()) == set(answer)
-        for key in normalized:
-            np.testing.assert_almost_equal(normalized[key], answer[key], decimal=4)
 
     normalized = _normalize_shap_values(values)
     if isinstance(normalized, dict):
@@ -172,4 +178,23 @@ def test_normalize_values(values, answer):
     else:
         assert len(normalized) == len(answer)
         for values, correct in zip(normalized, answer):
+            check_equal_dicts(values, correct)
+
+
+@pytest.mark.parametrize("values,provenance,answer", [({"a_0": [-0.5, 0, 0.5], "a_1": [1, 1, 2], "b": [0.1, -0.6, 0.2]},
+                                                       {"a": ["a_0", "a_1"]},
+                                                       {"a": [0.5, 1, 2.5], "b": [0.1, -0.6, 0.2]}),
+                                                      ([{"a_0": [0.5, 1.0, 2.0], "a_1": [1.2, 1.5, 0.6], "b": [0.5, 0.2, 0.5]},
+                                                        {"a_0": [-0.5, 0, 0.5], "a_1": [1, 1, 2], "b": [0.1, -0.6, 0.2]}],
+                                                       {"a": ["a_0", "a_1"], "c": ["c_1", "c_2"]},
+                                                       [{"a": [1.7, 2.5, 2.6], "b": [0.5, 0.2, 0.5]},
+                                                        {"a": [0.5, 1, 2.5], "b": [0.1, -0.6, 0.2]}])])
+def test_aggregate_values(values, provenance, answer):
+    aggregated = _aggregate_shap_values(values, provenance)
+
+    if isinstance(aggregated, dict):
+        check_equal_dicts(aggregated, answer)
+    else:
+        assert len(aggregated) == len(answer)
+        for values, correct in zip(aggregated, answer):
             check_equal_dicts(values, correct)

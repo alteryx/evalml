@@ -4,10 +4,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -49,14 +46,16 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "data_check_name": "IDColumnsDataCheck",\
                                                                    "level": "warning",\
                                                                    "code": "HAS_ID_COLUMN",\
-                                                                   "details": {"column": "df_id"}}]}
+                                                                   "details": {"column": "df_id"}}],\
+                                                     "actions": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
 
         col_names = [col for col in X.columns]
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
@@ -74,9 +73,9 @@ class IDColumnsDataCheck(DataCheck):
 
         id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= self.id_threshold}
         warning_msg = "Column '{}' is {}% or more likely to be an ID column"
-        messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.id_threshold * 100),
-                                                      data_check_name=self.name,
-                                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                                      details={"column": col_name}).to_dict()
-                                     for col_name in id_cols_above_threshold])
-        return messages
+        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.id_threshold * 100),
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                                     details={"column": col_name}).to_dict()
+                                    for col_name in id_cols_above_threshold])
+        return results

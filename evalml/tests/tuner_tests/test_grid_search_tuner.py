@@ -1,3 +1,5 @@
+import warnings
+
 import pytest
 
 from evalml.tuners import GridSearchTuner, NoParamsException
@@ -77,3 +79,11 @@ def test_grid_search_tuner_valid_space():
     tuner = GridSearchTuner({'Mock Classifier': {'param a': 3.200}})
     proposed_params = tuner.propose()
     assert proposed_params == {'Mock Classifier': {}}
+
+
+def test_grid_search_tuner_raises_deprecated_random_state_warning():
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        GridSearchTuner({'Mock Classifier': {'param a': (0, 2)}}, random_state=13)
+        assert str(warn[0].message).startswith(
+            "Argument 'random_state' has been deprecated in favor of 'random_seed'")

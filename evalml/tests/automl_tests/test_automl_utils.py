@@ -1,3 +1,6 @@
+import warnings
+from unittest.mock import patch
+
 import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
@@ -6,14 +9,16 @@ from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
     get_default_primary_search_objective,
-    make_data_splitter
+    make_data_splitter,
+    tune_binary_threshold
 )
-from evalml.objectives import R2, LogLossBinary, LogLossMulticlass
+from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 def test_get_default_primary_search_objective():
@@ -75,30 +80,28 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.max_delay == 7
 
 
-def test_make_data_splitter_parameters():
+@pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
+                                                                  (ProblemTypes.BINARY, StratifiedKFold),
+                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
+def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
                       'target': list(range(n))})
     y = X.pop('target')
-    random_state = 42
+    random_seed = 42
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.REGRESSION, n_splits=5, shuffle=False, random_state=random_state)
-    assert isinstance(data_splitter, KFold)
+    data_splitter = make_data_splitter(X, y, problem_type, n_splits=5, random_seed=random_seed)
+    assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
-    assert not data_splitter.shuffle
-    assert data_splitter.random_state == random_state
+    assert data_splitter.shuffle
+    assert data_splitter.random_state == random_seed
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.BINARY, n_splits=5, shuffle=False, random_state=random_state)
-    assert isinstance(data_splitter, StratifiedKFold)
-    assert data_splitter.n_splits == 5
-    assert not data_splitter.shuffle
-    assert data_splitter.random_state == random_state
 
-    data_splitter = make_data_splitter(X, y, ProblemTypes.MULTICLASS, n_splits=5, shuffle=False, random_state=random_state)
-    assert isinstance(data_splitter, StratifiedKFold)
-    assert data_splitter.n_splits == 5
-    assert not data_splitter.shuffle
-    assert data_splitter.random_state == random_state
+def test_make_data_splitter_parameters_time_series():
+    n = 10
+    X = pd.DataFrame({'col_0': list(range(n)),
+                      'target': list(range(n))})
+    y = X.pop('target')
 
     for problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
         data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
@@ -115,6 +118,58 @@ def test_make_data_splitter_error():
     y = X.pop('target')
 
     with pytest.raises(ValueError, match="problem_configuration is required for time series problem types"):
-        make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION, n_splits=5, shuffle=False)
+        make_data_splitter(X, y, ProblemTypes.TIME_SERIES_REGRESSION)
     with pytest.raises(KeyError, match="Problem type 'XYZ' does not exist"):
-        make_data_splitter(X, y, 'XYZ', n_splits=5, shuffle=False)
+        make_data_splitter(X, y, 'XYZ')
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@pytest.mark.parametrize("large_data", [True, False])
+def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data):
+    n = 10
+    if large_data:
+        n = _LARGE_DATA_ROW_THRESHOLD + 1
+    X = pd.DataFrame({'col_0': list(range(n)),
+                      'target': list(range(n))})
+    y = X.pop('target')
+
+    if large_data:
+        make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
+    else:
+        with pytest.raises(ValueError, match="Setting a random_state has no effect since shuffle is False."):
+            make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
+
+
+def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
+    X, y = X_y_binary
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        splitter = make_data_splitter(X, y, "binary", n_splits=5, shuffle=True, random_state=15)
+        assert splitter.random_state == 15
+        assert str(warn[0].message).startswith(
+            "Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold,
+                               dummy_binary_pipeline_class, X_y_binary):
+    mock_optimize_threshold.return_value = 0.42
+    mock_score.return_value = {'F1': 1.0}
+    X, y = X_y_binary
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
+
+    pipeline = dummy_binary_pipeline_class({})
+    tune_binary_threshold(pipeline, F1(), 'binary', X, y)
+    assert pipeline.threshold == 0.42
+
+    pipeline = dummy_binary_pipeline_class({})
+    tune_binary_threshold(pipeline, F1(), 'binary', None, None)
+    assert pipeline.threshold == 0.5
+
+    pipeline = dummy_binary_pipeline_class({})
+    tune_binary_threshold(pipeline, F1(), 'multiclass', X, y)
+    assert pipeline.threshold is None

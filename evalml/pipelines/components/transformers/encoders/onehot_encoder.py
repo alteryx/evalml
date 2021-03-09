@@ -4,9 +4,10 @@ from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -27,14 +28,15 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  drop=None,
                  handle_unknown="ignore",
                  handle_missing="error",
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  **kwargs):
         """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
 
         Arguments:
             top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
                 Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
-            features_to_encode (list(str)): List of columns to encode. All other columns will remain untouched.
+            features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
                 If None, all appropriate columns will be encoded. Defaults to None.
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
@@ -70,8 +72,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
-        self._initial_state = self.random_state.get_state()
+                         random_state=random_state,
+                         random_seed=random_seed)
+        self._initial_state = self.random_seed
+        self._provenance = {}
 
     @staticmethod
     def _get_cat_cols(X):
@@ -80,7 +84,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X)
 
@@ -107,9 +111,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
-                    new_random_state = np.random.RandomState()
-                    new_random_state.set_state(self._initial_state)
-                    value_counts = value_counts.sample(frac=1, random_state=new_random_state)
+                    value_counts = value_counts.sample(frac=1, random_state=self._initial_state)
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
@@ -123,17 +125,17 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         return self
 
     def transform(self, X, y=None):
-        """One-hot encode the input DataFrame.
+        """One-hot encode the input data.
 
         Arguments:
-            X (pd.DataFrame): Dataframe of features.
-            y (pd.Series): Ignored.
+            X (ww.DataTable, pd.DataFrame): Features to one-hot encode.
+            y (ww.DataColumn, pd.Series): Ignored.
 
         Returns:
-            Transformed dataframe, where each categorical feature has been encoded into numerical columns using one-hot encoding.
+            ww.DataTable: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        X_copy = _convert_to_woodwork_structure(X)
-        X_copy = _convert_woodwork_types_wrapper(X_copy.to_dataframe())
+        X_ww = infer_feature_types(X)
+        X_copy = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_copy = self._handle_parameter_handle_missing(X_copy)
 
         X_t = pd.DataFrame()
@@ -151,7 +153,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
-        return X_t
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _handle_parameter_handle_missing(self, X):
         """Helper method to handle the `handle_missing` parameter."""
@@ -209,8 +211,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         """
         unique_names = []
         seen_before = set([])
+        provenance = {}
         for col_index, col in enumerate(self.features_to_encode):
             column_categories = self.categories(col)
+            unique_encoded_columns = []
             for cat_index, category in enumerate(column_categories):
 
                 # Drop categories specified by the user
@@ -223,5 +227,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
 
                 unique_names.append(proposed_name)
+                unique_encoded_columns.append(proposed_name)
                 seen_before.add(proposed_name)
+            provenance[col] = unique_encoded_columns
+        self._provenance = provenance
         return unique_names
+
+    def _get_feature_provenance(self):
+        return self._provenance

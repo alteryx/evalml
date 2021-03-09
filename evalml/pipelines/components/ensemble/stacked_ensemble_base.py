@@ -2,7 +2,7 @@ from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import scikit_learn_wrapped_estimator
-from evalml.utils import classproperty
+from evalml.utils import classproperty, deprecate_arg
 
 _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
@@ -14,7 +14,8 @@ class StackedEnsembleBase(Estimator):
     _default_final_estimator = None
     _default_cv = None
 
-    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=None, random_state=0, **kwargs):
+    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=None,
+                 random_state=None, random_seed=0, **kwargs):
         """Stacked ensemble base class.
 
         Arguments:
@@ -24,6 +25,7 @@ class StackedEnsembleBase(Estimator):
             cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
                 For int/None inputs, if the estimator is a classifier and y is either binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
                 Possible inputs for cv are:
+
                 - None: 5-fold cross validation
                 - int: the number of folds in a (Stratified) KFold
                 - An scikit-learn cross-validation generator object
@@ -32,7 +34,8 @@ class StackedEnsembleBase(Estimator):
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
                 Defaults to None.
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
-            random_state (int, np.random.RandomState): seed for the random number generator
+            random_state (None, int): Deprecated - use random_seed instead.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if not input_pipelines:
             raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
@@ -50,7 +53,8 @@ class StackedEnsembleBase(Estimator):
         if len(set([pipeline.problem_type for pipeline in input_pipelines])) > 1:
             raise ValueError("All pipelines must have the same problem type.")
 
-        cv = cv or self._default_cv(n_splits=3, random_state=random_state, shuffle=True)
+        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        cv = cv or self._default_cv(n_splits=3, random_state=random_seed, shuffle=True)
         estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
         final_estimator = scikit_learn_wrapped_estimator(final_estimator or self._default_final_estimator())
         sklearn_parameters = {
@@ -62,7 +66,7 @@ class StackedEnsembleBase(Estimator):
         sklearn_parameters.update(kwargs)
         super().__init__(parameters=parameters,
                          component_obj=self._stacking_estimator_class(**sklearn_parameters),
-                         random_state=random_state)
+                         random_seed=random_seed)
 
     @property
     def feature_importance(self):

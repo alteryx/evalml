@@ -1,6 +1,14 @@
 import json
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .generated_pipelines import (
+    GeneratedPipelineBinary,
+    GeneratedPipelineMulticlass,
+    GeneratedPipelineRegression,
+    GeneratedPipelineTimeSeriesBinary,
+    GeneratedPipelineTimeSeriesMulticlass,
+    GeneratedPipelineTimeSeriesRegression
+)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -11,6 +19,7 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
+from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
@@ -19,6 +28,7 @@ from evalml.pipelines.components import (  # noqa: F401
     ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
+    DropColumns,
     DropNullColumns,
     Estimator,
     Imputer,
@@ -35,20 +45,18 @@ from evalml.problem_types import (
     handle_problem_types,
     is_time_series
 )
-from evalml.utils import get_logger
-from evalml.utils.gen_utils import _convert_to_woodwork_structure
+from evalml.utils import deprecate_arg, get_logger, infer_feature_types
 
 logger = get_logger(__file__)
 
 
-def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_class):
+def _get_preprocessing_components(X, y, problem_type, estimator_class):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Arguments:
         X (ww.DataTable): The input data of shape [n_samples, n_features]
         y (ww.DataColumn): The target data of length [n_samples]
         problem_type (ProblemTypes or str): Problem type
-        text_columns (list): feature names which should be treated as text features
         estimator_class (class): A class which subclasses Estimator estimator for pipeline
 
     Returns:
@@ -63,7 +71,8 @@ def _get_preprocessing_components(X, y, problem_type, text_columns, estimator_cl
 
     pp_components.append(Imputer)
 
-    if text_columns:
+    text_columns = list(X.select('natural_language').columns)
+    if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
     datetime_cols = X.select(["Datetime"])
@@ -99,7 +108,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, text_columns=None):
+def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -111,19 +120,18 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
             with component name as key and dictionary of parameters as the value
-        text_columns (list): feature names which should be treated as text features. Defaults to None.
 
     Returns:
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
 
     """
-    X = _convert_to_woodwork_structure(X)
-    y = _convert_to_woodwork_structure(y)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
 
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    preprocessing_components = _get_preprocessing_components(X, y, problem_type, text_columns, estimator)
+    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
@@ -140,7 +148,27 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, te
     return GeneratedPipeline
 
 
-def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=0):
+def get_generated_pipeline_class(problem_type):
+    """Returns the class for the generated pipeline based on the problem type
+
+    Arguments:
+        problem_type (ProblemTypes): The problem_type that the pipeline is for
+
+    Returns:
+        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
+    """
+    try:
+        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
+                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
+                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
+                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
+                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
+                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
+    except KeyError:
+        raise ValueError("ProblemType {} not recognized".format(problem_type))
+
+
+def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=None, random_seed=0):
     """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
     untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
@@ -150,7 +178,8 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
-        random_state (int or np.random.RandomState): Random state used to intialize the pipeline.
+        random_state(int): Deprecated. Use random_seed instead.
+        random_seed (int): Random seed used to intialize the pipeline.
 
     Returns:
         Pipeline instance with component instances and specified estimator created from given random state.
@@ -161,6 +190,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         >>> pipeline.describe()
 
     """
+    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
     for i, component in enumerate(component_instances):
         if not isinstance(component, ComponentBase):
             raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
@@ -175,7 +205,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_state=random_state)
+    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_seed=random_seed)
 
 
 def generate_pipeline_code(element):
@@ -195,7 +225,7 @@ def generate_pipeline_code(element):
     if isinstance(element.component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
 
-    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element._component_graph])
+    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element])
     code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
     # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
     pipeline_list = []
@@ -225,7 +255,7 @@ def generate_pipeline_code(element):
     return "\n".join(code_strings)
 
 
-def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=0):
+def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, random_seed=0):
     """
     Creates a pipeline with a stacked ensemble estimator.
 
@@ -233,15 +263,35 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, random_state=
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
+        n_jobs (int or None): Integer describing level of parallelism used for pipelines.
+            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+            Defaults to -1.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Classification Pipeline",
-                                             random_state=random_state)
+                                             random_seed=random_seed)
     else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines)], problem_type,
+        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
-                                             random_state=random_state)
+                                             random_seed=random_seed)
+
+
+def _make_component_list_from_actions(actions):
+    """
+    Creates a list of components from the input DataCheckAction list
+
+    Arguments:
+        actions (list(DataCheckAction)): List of DataCheckAction objects used to create list of components
+
+    Returns:
+        List of components used to address the input actions
+    """
+    components = []
+    for action in actions:
+        if action.action_code == DataCheckActionCode.DROP_COL:
+            components.append(DropColumns(columns=action.details["columns"]))
+    return components

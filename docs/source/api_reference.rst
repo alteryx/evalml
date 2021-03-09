@@ -254,6 +254,7 @@ Classifiers are components that output a predicted class label.
     StackedEnsembleClassifier
     DecisionTreeClassifier
     KNeighborsClassifier
+    SVMClassifier
 
 Regressors
 -----------
@@ -276,6 +277,7 @@ Regressors are components that output a predicted target value.
     StackedEnsembleRegressor
     DecisionTreeRegressor
     LightGBMRegressor
+    SVMRegressor
 
 .. currentmodule:: evalml.model_understanding
 
@@ -297,6 +299,8 @@ Utility Methods
     get_prediction_vs_actual_over_time_data
     partial_dependence
     get_prediction_vs_actual_data
+    get_linear_coefficients
+    t_sne
 
 
 Graph Utility Methods
@@ -314,6 +318,7 @@ Graph Utility Methods
     graph_prediction_vs_actual
     graph_prediction_vs_actual_over_time
     graph_partial_dependence
+    graph_t_sne
 
 
 .. currentmodule:: evalml.model_understanding.prediction_explanations
@@ -326,7 +331,6 @@ Prediction Explanations
     :toctree: generated
     :nosignatures:
 
-    explain_prediction
     explain_predictions
     explain_predictions_best_worst
 
@@ -502,6 +506,7 @@ Data Check Classes
     OutliersDataCheck
     NoVarianceDataCheck
     ClassImbalanceDataCheck
+    MulticollinearityDataCheck
 
 
 .. autosummary::
@@ -565,3 +570,6 @@ General Utils
     pad_with_nans
     drop_rows_with_nans
     infer_feature_types
+    save_plot
+    is_all_numeric
+    get_importable_subclasses

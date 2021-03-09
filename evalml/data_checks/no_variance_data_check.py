@@ -4,10 +4,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -63,14 +60,15 @@ class NoVarianceDataCheck(DataCheck):
         Returns:
             dict: dict of warnings/errors corresponding to features or target with no variance.
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_to_woodwork_structure(y)
+        y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
@@ -79,11 +77,11 @@ class NoVarianceDataCheck(DataCheck):
             message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
             if not message:
                 continue
-            DataCheck._add_message(message, messages)
+            DataCheck._add_message(message, results)
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
-            DataCheck._add_message(target_message, messages)
-        return messages
+            DataCheck._add_message(target_message, results)
+        return results
