@@ -266,10 +266,11 @@ def test_rankings(X_y_binary, X_y_regression):
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
+def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, X_y_binary):
     def _dummy_callback(param1, param2, param3):
         return None
 

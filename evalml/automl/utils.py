@@ -91,7 +91,7 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
         if X_threshold_tuning:
             y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
             y_predict_proba = y_predict_proba.iloc[:, 1]
-            pipeline.threshold = objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
+            pipeline.optimize_threshold(X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective)
 
 
 def check_all_pipeline_names_unique(pipelines):

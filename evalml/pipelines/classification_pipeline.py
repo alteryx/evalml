@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import is_binary
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
@@ -136,3 +137,16 @@ class ClassificationPipeline(PipelineBase):
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)
         return y_predicted, y_predicted_proba
+
+    def optimize_threshold(self, X, y, y_pred_proba, objective):
+        """Optimize the pipeline threshold given the objective to use. Only used for binary problems with objectives that can be thresholded.
+
+        Arguments:
+            X (ww.DataTable): Input features
+            y (ww.DataColumn): Input target values
+            y_pred_proba (ww.DataColumn, np.nparray): The predicted probabilities of the target outputted by the pipeline
+            objective (ObjectiveBase): The objective to threshold with. Must be thresholdable.
+        """
+        if is_binary(self.problem_type) and objective.can_optimize_threshold:
+            targets = self._encode_targets(y.to_series())
+            self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
