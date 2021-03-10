@@ -20,7 +20,12 @@ from evalml.exceptions import (
     PipelineScoreError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost, Precision
+from evalml.objectives import (
+    CostBenefitMatrix,
+    FraudCost,
+    Precision,
+    get_objective
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     GeneratedPipelineBinary,
@@ -2017,3 +2022,19 @@ def test_score_error_when_custom_objective_not_instantiated(problem_type, logist
     # Verify no exception when objective properly specified
     if is_binary(problem_type):
         pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])
+
+
+def test_binary_pipeline_string_target_thresholding(make_data_type, X_y_binary):
+    class BinaryClass(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
+
+    X, y = X_y_binary
+    X = make_data_type('ww', (X))
+    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    objective = get_objective("F1", return_instance=True)
+    pipeline = BinaryClass({})
+    pipeline.fit(X, y)
+    assert pipeline.threshold is None
+    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    pipeline.optimize_threshold(X, y, pred_proba, objective)
+    assert pipeline.threshold is not None
