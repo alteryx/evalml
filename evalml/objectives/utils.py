@@ -2,7 +2,7 @@
 from .objective_base import ObjectiveBase
 
 from evalml import objectives
-from evalml.exceptions import ObjectiveNotFoundError
+from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.problem_types import handle_problem_types
 from evalml.utils.gen_utils import _get_subclasses
 
@@ -85,7 +85,7 @@ def get_objective(objective, return_instance=False, **kwargs):
         try:
             return objective_class(**kwargs)
         except TypeError as e:
-            raise TypeError(f"In get_objective, cannot pass in return_instance=True for {objective} because {str(e)}")
+            raise ObjectiveCreationError(f"In get_objective, cannot pass in return_instance=True for {objective} because {str(e)}")
 
     return objective_class
 

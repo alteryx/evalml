@@ -74,6 +74,7 @@ commands:
             export FEEDSTOCK_NAME=evalml-core-feedstock
             docker run -t -e CONFIG -e HOST_USER_ID -e UPLOAD_PACKAGES -e GIT_BRANCH -e UPLOAD_ON_BRANCH -e CI -e FEEDSTOCK_NAME -e CPU_COUNT -e BINSTAR_TOKEN -e FEEDSTOCK_TOKEN -e STAGING_BINSTAR_TOKEN psalter/build:latest bash /home/conda/feedstock_root/.scripts/build_steps.sh
 
+
 jobs:
   build_conda_pkg:
     working_directory: ~/evalml/
@@ -151,34 +152,6 @@ jobs:
           source test_python/bin/activate
           make -C docs/ html
       - run: ls docs/build/html
-  check_dependencies_updated_linux:
-    parameters:
-      python_version:
-        type: string
-        default: "3.8"
-    executor:
-      name: python
-      python_version: << parameters.python_version >>
-    steps:
-      - checkout
-      - install_dependencies
-      - run:
-          name: "Detect Dependency Changes"
-          command: |
-            source test_python/bin/activate
-            mkdir /tmp/dependencies_updated_artifacts
-            export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
-            evalml/tests/dependency_update_check/make_deps_diff.sh
-            diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
-            exit $?
-      - run:
-          name: "Display Dependency Diff"
-          command: |
-            echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
-            cat /tmp/dependencies_updated_artifacts/diff.txt
-          when: on_fail
-      - store_artifacts:
-          path: /tmp/dependencies_updated_artifacts
 
 workflows:
   version: 2
@@ -186,14 +159,6 @@ workflows:
     jobs:
       - build_docs:
           name: "build docs"
-  check_dependencies_updated_linux:
-    jobs:
-        - check_dependencies_updated_linux:
-            name: "linux python 3.8 check dependencies for updates "
-            python_version: "3.8"
-            filters:
-              branches:
-                ignore: /^main?/
   test_all_python_versions:
     jobs:
       - unit_tests:

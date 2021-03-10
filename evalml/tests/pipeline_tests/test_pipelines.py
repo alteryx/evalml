@@ -14,11 +14,13 @@ from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     IllFormattedClassNameError,
     MissingComponentError,
+    ObjectiveCreationError,
+    ObjectiveNotFoundError,
     PipelineNotYetFittedError,
     PipelineScoreError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import CostBenefitMatrix, FraudCost, Precision
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     GeneratedPipelineBinary,
@@ -52,7 +54,12 @@ from evalml.pipelines.utils import (
     get_generated_pipeline_class
 )
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_time_series
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -198,68 +205,57 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
         clf[:1]
 
 
-def test_describe(caplog, logistic_regression_binary_pipeline_class):
-    lrp = logistic_regression_binary_pipeline_class(parameters={})
-    lrp.describe()
-    out = caplog.text
-    assert "Logistic Regression Binary Pipeline" in out
-    assert "Problem Type: binary" in out
-    assert "Model Family: Linear" in out
-    assert "Number of features: " not in out
-
-    for component in lrp:
-        if component.hyperparameter_ranges:
-            for parameter in component.hyperparameter_ranges:
-                assert parameter in out
-        assert component.name in out
-
-
-def test_describe_nonlinear(caplog, nonlinear_binary_pipeline_class):
-    nbpl = nonlinear_binary_pipeline_class(parameters={})
-    nbpl.describe()
-    out = caplog.text
-    assert "Non Linear Binary Pipeline" in out
-    assert "Problem Type: binary" in out
-    assert "Model Family: Linear" in out
-    assert "Number of features: " not in out
-
-    for component in nbpl:
-        if component.hyperparameter_ranges:
-            for parameter in component.hyperparameter_ranges:
-                assert parameter in out
-        assert component.name in out
-
-
-def test_describe_fitted(X_y_binary, caplog, logistic_regression_binary_pipeline_class):
+@pytest.mark.parametrize("is_linear", [True, False])
+@pytest.mark.parametrize("is_fitted", [True, False])
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline(is_linear, is_fitted, return_dict,
+                           X_y_binary, caplog, logistic_regression_binary_pipeline_class, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
-    lrp = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    lrp.fit(X, y)
-    lrp.describe()
+
+    if is_linear:
+        pipeline = logistic_regression_binary_pipeline_class(parameters={})
+        name = "Logistic Regression Binary Pipeline"
+        expected_pipeline_dict = {'name': 'Logistic Regression Binary Pipeline',
+                                  'problem_type': ProblemTypes.BINARY,
+                                  'model_family': ModelFamily.LINEAR_MODEL,
+                                  'components': {'Imputer': {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}},
+                                                 'One Hot Encoder': {'name': 'One Hot Encoder', 'parameters': {'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}},
+                                                 'Standard Scaler': {'name': 'Standard Scaler', 'parameters': {}},
+                                                 'Logistic Regression Classifier': {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}}}
+    else:
+        pipeline = nonlinear_binary_pipeline_class(parameters={})
+        name = "Non Linear Binary Pipeline"
+        expected_pipeline_dict = {
+            'name': 'Non Linear Binary Pipeline',
+            'problem_type': ProblemTypes.BINARY,
+            'model_family': ModelFamily.LINEAR_MODEL,
+            'components': {'Imputer': {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}},
+                           'One Hot Encoder': {'name': 'One Hot Encoder', 'parameters': {'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': None, 'handle_unknown': 'ignore', 'handle_missing': 'error'}},
+                           'Elastic Net Classifier': {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}},
+                           'Random Forest Classifier': {'name': 'Random Forest Classifier', 'parameters': {'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},
+                           'Logistic Regression Classifier': {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}}
+        }
+
+    if is_fitted:
+        pipeline.fit(X, y)
+
+    pipeline_dict = pipeline.describe(return_dict=return_dict)
+    if return_dict:
+        assert pipeline_dict == expected_pipeline_dict
+    else:
+        assert pipeline_dict is None
+
     out = caplog.text
-    assert "Logistic Regression Binary Pipeline" in out
+    assert name in out
     assert "Problem Type: binary" in out
     assert "Model Family: Linear" in out
-    assert "Number of features: {}".format(X.shape[1]) in out
 
-    for component in lrp:
-        if component.hyperparameter_ranges:
-            for parameter in component.hyperparameter_ranges:
-                assert parameter in out
-        assert component.name in out
+    if is_fitted:
+        assert "Number of features: " in out
+    else:
+        assert "Number of features: " not in out
 
-
-def test_describe_nonlinear_fitted(X_y_binary, caplog, nonlinear_binary_pipeline_class):
-    X, y = X_y_binary
-    nbpl = nonlinear_binary_pipeline_class(parameters={})
-    nbpl.fit(X, y)
-    nbpl.describe()
-    out = caplog.text
-    assert "Non Linear Binary Pipeline" in out
-    assert "Problem Type: binary" in out
-    assert "Model Family: Linear" in out
-    assert "Number of features: 2" in out
-
-    for component in nbpl:
+    for component in pipeline:
         if component.hyperparameter_ranges:
             for parameter in component.hyperparameter_ranges:
                 assert parameter in out
@@ -1996,3 +1992,28 @@ def test_pipelines_raise_deprecated_random_state_warning(dummy_binary_pipeline_c
     test_pipeline_class(dummy_time_series_regression_pipeline_class)
     test_pipeline_class(dummy_ts_binary_pipeline_class)
     test_pipeline_class(time_series_multiclass_classification_pipeline_class)
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_score_error_when_custom_objective_not_instantiated(problem_type, logistic_regression_binary_pipeline_class,
+                                                            dummy_multiclass_pipeline_class,
+                                                            dummy_regression_pipeline_class, X_y_binary):
+    pipeline = dummy_regression_pipeline_class({})
+    if is_binary(problem_type):
+        pipeline = logistic_regression_binary_pipeline_class({})
+    elif is_multiclass(problem_type):
+        pipeline = dummy_multiclass_pipeline_class({})
+
+    X, y = X_y_binary
+    pipeline.fit(X, y)
+    msg = "Cannot pass cost benefit matrix as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
+    with pytest.raises(ObjectiveCreationError, match=msg):
+        pipeline.score(X, y, objectives=["cost benefit matrix", "F1"])
+
+    # Verify ObjectiveCreationError only raised when string matches an existing objective
+    with pytest.raises(ObjectiveNotFoundError, match="cost benefit is not a valid Objective!"):
+        pipeline.score(X, y, objectives=["cost benefit", "F1"])
+
+    # Verify no exception when objective properly specified
+    if is_binary(problem_type):
+        pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])

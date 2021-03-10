@@ -81,7 +81,8 @@ def test_uniqueness_data_check_warnings():
             message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
             details={"column": "regression_not_unique_enough",
                      'uniqueness_score': 0.0}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
     data = pd.DataFrame({'multiclass_too_unique': ["Cats", "Are", "Absolutely", "The", "Best"] * 20,
@@ -94,5 +95,6 @@ def test_uniqueness_data_check_warnings():
             message_code=DataCheckMessageCode.TOO_UNIQUE,
             details={"column": "multiclass_too_unique",
                      'uniqueness_score': 0.7999999999999999}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }

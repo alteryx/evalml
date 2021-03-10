@@ -1,5 +1,6 @@
 import os
 import warnings
+from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
 
@@ -9,7 +10,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from sklearn import datasets
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
@@ -55,11 +56,20 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
+    PipelineBase,
     RegressionPipeline
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    allowed_model_families,
+    get_estimators
+)
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import TrainingValidationSplit, split_data
+from evalml.preprocessing import (
+    BalancedClassificationDataCVSplit,
+    BalancedClassificationDataTVSplit,
+    TrainingValidationSplit,
+    split_data
+)
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
@@ -272,7 +282,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'data_splitter': StratifiedKFold(5),
+        'data_splitter': BalancedClassificationDataCVSplit(n_splits=5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
@@ -288,7 +298,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
+        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=None,', 'n_splits=5, random_seed=0'),
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -303,10 +313,11 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
     mock_optimize_threshold.return_value = 0.62
     str_rep = str(automl)
     for param, value in param_str_reps.items():
-        if isinstance(value, list):
+        if isinstance(value, (tuple, list)):
             assert f"{param}" in str_rep
             for item in value:
-                assert f"\t{str(item)}" in str_rep
+                s = f"\t{str(item)}" if isinstance(value, list) else f"{item}"
+                assert s in str_rep
         else:
             assert f"{param}: {str(value)}" in str_rep
     assert "Search Results" not in str_rep
@@ -341,15 +352,15 @@ def test_automl_empty_data_checks(mock_fit, mock_score):
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=1)
     automl.search(data_checks=[])
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
     mock_fit.assert_called()
     mock_score.assert_called()
 
     automl.search(data_checks="disabled")
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
 
     automl.search(data_checks=None)
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
 
 
 @patch('evalml.data_checks.DefaultDataChecks.validate')
@@ -378,6 +389,7 @@ class MockDataCheckErrorAndWarning(DataCheck):
         return {
             "warnings": [DataCheckWarning("warning one", self.name).to_dict()],
             "errors": [DataCheckError("error one", self.name).to_dict()],
+            "actions": []
         }
 
 
@@ -425,7 +437,7 @@ class MockDataCheckObjective(DataCheck):
         self.objective_name = get_objective(objective).name
 
     def validate(self, X, y):
-        return {"warnings": [], "errors": []}
+        return {"warnings": [], "errors": [], "actions": []}
 
 
 @pytest.mark.parametrize("data_checks", [DataChecks([MockDataCheckObjective],
@@ -459,7 +471,7 @@ def test_automl_str_no_param_search(X_y_binary):
         'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
-        'Data Splitting': 'StratifiedKFold(n_splits=3, random_state=0, shuffle=True)',
+        'Data Splitting': 'BalancedClassificationDataCVSplit(n_splits=3, random_state=0, shuffle=True)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
             'AUC',
@@ -529,7 +541,7 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y_binary
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=5)
     automl.search()
-    assert automl.data_check_results == {"warnings": [], "errors": []}
+    assert automl.data_check_results == {"warnings": [], "errors": [], "actions": []}
     mock_fit.assert_called()
     mock_score.assert_called()
     assert mock_algo_next_batch.call_count == 1
@@ -629,7 +641,7 @@ def test_large_dataset_binary(mock_score):
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -646,7 +658,7 @@ def test_large_dataset_multiclass(mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -689,7 +701,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, StratifiedKFold)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
@@ -700,7 +712,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, StratifiedKFold)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
 
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
@@ -713,7 +725,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, TrainingValidationSplit)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
     assert automl.data_splitter.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
@@ -872,7 +884,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     automl.add_to_rankings(test_pipeline)
     best_pipeline = automl.best_pipeline
     assert best_pipeline is not None
-    assert isinstance(automl.data_splitter, StratifiedKFold)
+    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
     assert len(automl.rankings) == 1
     assert 0.5234 in automl.rankings['score'].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
@@ -1017,12 +1029,11 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
         automl.get_pipeline(0)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary):
     X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
-
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
     automl.search()
     out = caplog.text
@@ -1031,7 +1042,7 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
 
     assert len(automl.results['pipeline_results']) == 1
     caplog.clear()
-    automl.describe_pipeline(0)
+    automl_dict = automl.describe_pipeline(0, return_dict=return_dict)
     out = caplog.text
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: binary" in out
@@ -1045,6 +1056,72 @@ def test_describe_pipeline(mock_fit, mock_score, caplog, X_y_binary):
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
+
+    if return_dict:
+        assert automl_dict['id'] == 0
+        assert automl_dict['pipeline_name'] == 'Mode Baseline Binary Classification Pipeline'
+        assert automl_dict['pipeline_summary'] == 'Baseline Classifier'
+        assert automl_dict['parameters'] == {'Baseline Classifier': {'strategy': 'mode'}}
+        assert automl_dict['score'] == 1.0
+        assert not automl_dict['high_variance_cv']
+        assert isinstance(automl_dict['training_time'], float)
+        assert automl_dict['cv_data'] == [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)]), 'score': 1.0, 'binary_classification_threshold': None},
+                                          {'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 67), ('# Validation', 33)]), 'score': 1.0, 'binary_classification_threshold': None},
+                                          {'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 67), ('# Validation', 33)]), 'score': 1.0, 'binary_classification_threshold': None}]
+        assert automl_dict['percent_better_than_baseline_all_objectives'] == {'Log Loss Binary': 0}
+        assert automl_dict['percent_better_than_baseline'] == 0
+        assert automl_dict['validation_score'] == 1.0
+    else:
+        assert automl_dict is None
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_pipeline_with_ensembling(mock_pipeline_fit, mock_score, return_dict, X_y_binary, caplog):
+    X, y = X_y_binary
+
+    two_stacking_batches = 1 + 2 * (len(get_estimators(ProblemTypes.BINARY)) + 1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=two_stacking_batches,
+                          objective="Log Loss Binary", ensembling=True, error_callback=raise_error_callback)
+
+    mock_score.side_effect = [{'Log Loss Binary': score} for score in np.arange(0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1)]  # Dcreases with each call
+    automl.search(data_checks=None)
+    pipeline_names = automl.rankings['pipeline_name']
+    assert pipeline_names.str.contains('Ensemble').any()
+
+    ensemble_ids = [_get_first_stacked_classifier_no() - 1, len(automl.results['pipeline_results']) - 1]
+
+    for i, ensemble_id in enumerate(ensemble_ids):
+        caplog.clear()
+        automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
+        out = caplog.text
+        assert "Stacked Ensemble Classification Pipeline" in out
+        assert "Problem Type: binary" in out
+        assert "Model Family: Ensemble" in out
+        assert "* final_estimator : None" in out
+        assert "Total training time (including CV): " in out
+        assert "Log Loss Binary # Training # Validation" in out
+        assert "Input for ensembler are pipelines with IDs:" in out
+
+        if return_dict:
+            assert automl_dict['id'] == ensemble_id
+            assert automl_dict['pipeline_name'] == "Stacked Ensemble Classification Pipeline"
+            assert automl_dict['pipeline_summary'] == 'Stacked Ensemble Classifier'
+            assert isinstance(automl_dict['score'], float)
+            assert not automl_dict['high_variance_cv']
+            assert isinstance(automl_dict['training_time'], float)
+            assert isinstance(automl_dict['percent_better_than_baseline_all_objectives'], dict)
+            assert isinstance(automl_dict['percent_better_than_baseline'], float)
+            assert isinstance(automl_dict['validation_score'], float)
+            assert len(automl_dict['input_pipeline_ids']) == len(allowed_model_families("binary"))
+            if i == 0:
+                assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+            else:
+                assert all(input_id < ensemble_id for input_id in automl_dict['input_pipeline_ids'])
+                assert all(input_id > ensemble_ids[0] for input_id in automl_dict['input_pipeline_ids'])
+        else:
+            assert automl_dict is None
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -2360,3 +2437,146 @@ def test_automl_raises_deprecated_random_state_warning(X_y_multi):
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
         assert automl.random_seed == 10
         assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
+
+
+@patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform_sample', return_value=[0, 1, 2])
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={'Log Loss Multiclass': 0.2})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+def test_best_pipeline_data_splitter_transform(mock_fit, mock_score, mock_transform, X_y_multi):
+    X, y = X_y_multi
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass')
+    automl.search()
+    assert mock_transform.is_called()
+    # since we have the transformer return 3 indices only, we want to make sure the last training sample, after transform, has 3 values only
+    assert len(mock_fit.call_args_list[-1][0][0]) == 3
+    assert len(mock_fit.call_args_list[-1][0][1]) == 3
+
+
+def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    cv_scores = pd.Series([1, 1, 1])
+    pipeline = dummy_binary_pipeline_class(parameters={})
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 0, 0])
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 1, np.nan, np.nan])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, 1, 2, 3])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+    cv_scores = pd.Series([0, -1, -1, -1])
+    assert automl._check_for_high_variance(pipeline, cv_scores)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.automl.engine.EngineBase.train_and_score_pipeline')
+def test_automl_check_high_variance_logs_warning(mock_train, mock_fit_binary, mock_score_binary, X_y_binary, caplog):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    mock_train.return_value = {'cv_scores': pd.Series([1, 1, 1]),
+                               'training_time': 0,
+                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
+    automl.search()
+    out = caplog.text
+    assert "High coefficient of variation" not in out
+
+    caplog.clear()
+    mock_train.return_value = {'cv_scores': pd.Series([0, 1, 2, 3]),
+                               'training_time': 0,
+                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    automl.search()
+    out = caplog.text
+    assert "High coefficient of variation" in out
+
+
+def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+
+    class MyPipeline1(BinaryClassificationPipeline):
+        custom_name = "Custom Pipeline"
+        component_graph = ["Imputer", "Random Forest Classifier"]
+
+    class MyPipeline2(BinaryClassificationPipeline):
+        custom_name = "Custom Pipeline"
+        component_graph = ["Imputer", "Logistic Regression Classifier"]
+
+    class MyPipeline3(BinaryClassificationPipeline):
+        custom_name = "My Pipeline 3"
+        component_graph = ["Logistic Regression Classifier"]
+
+    class MyPipeline4(BinaryClassificationPipeline):
+        custom_name = "My Pipeline 3"
+        component_graph = ["Random Forest Classifier"]
+
+    class OtherPipeline(BinaryClassificationPipeline):
+        custom_name = "Other Pipeline"
+        component_graph = ["Extra Trees Classifier"]
+
+    with pytest.raises(ValueError,
+                       match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated."):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2, MyPipeline3])
+
+    with pytest.raises(ValueError,
+                       match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated."):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2,
+                                                                     MyPipeline3, MyPipeline4, OtherPipeline])
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_train_batch_score_batch(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+
+    def make_dummy_pipeline(index):
+        class Pipeline(dummy_binary_pipeline_class):
+            custom_name = f"Pipeline {index}"
+        return Pipeline({})
+
+    pipelines = [make_dummy_pipeline(i) for i in range(3)]
+
+    X, y = X_y_binary
+
+    mock_score.return_value = {"Log Loss Binary": 0.1}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=3)
+    automl.search()
+
+    mock_fit.side_effect = [None, Exception("foo"), None]
+    fitted_pipelines = automl.train_pipelines(pipelines)
+    assert fitted_pipelines.keys() == {"Pipeline 0", "Pipeline 2"}
+
+    score_effects = [{"Log Loss Binary": 0.1}, {"Log Loss Binary": 0.2}, {"Log Loss Binary": 0.3}]
+    mock_score.side_effect = score_effects
+    expected_scores = {f"Pipeline {i}": effect for i, effect in zip(range(3), score_effects)}
+    scores = automl.score_pipelines(pipelines, X, y, ["Log Loss Binary"])
+    assert scores == expected_scores
+
+
+def test_train_batch_returns_trained_pipelines(X_y_binary):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+
+    class RfPipeline(BinaryClassificationPipeline):
+        component_graph = ["Random Forest Classifier"]
+
+    class LogisticPipeline(BinaryClassificationPipeline):
+        component_graph = ["Logistic Regression Classifier"]
+
+    pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
+                 LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
+
+    fitted_pipelines = automl.train_pipelines(pipelines)
+
+    assert all([isinstance(pl, PipelineBase) for pl in fitted_pipelines.values()])
+
+    # Check that the output pipelines are fitted but the input pipelines are not
+    for original_pipeline in pipelines:
+        fitted_pipeline = fitted_pipelines[original_pipeline.name]
+        assert fitted_pipeline.name == original_pipeline.name
+        assert fitted_pipeline._is_fitted
+        assert fitted_pipeline != original_pipeline
