@@ -21,7 +21,6 @@ from .graphs import (
     t_sne
 )
 from .prediction_explanations import (
-    explain_prediction,
     explain_predictions,
     explain_predictions_best_worst
 )

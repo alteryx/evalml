@@ -1,7 +1,43 @@
 Release Notes
 -------------
-
 **Future Releases**
+    * Enhancements
+        * Added a GitHub Action for Detecting dependency changes :pr:`1933`
+        * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
+        * Added a GitHub Action for Linux unit tests :pr:`1846`
+        * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
+        * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
+        * Added ``BalancedClassificationDataCVSplit`` and ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
+        * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
+        * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
+        * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
+        * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
+        * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
+        * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
+    * Fixes
+        * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
+        * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
+        * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
+        * Fixed stack trace caused by passing pipelines with duplicate names to ``AutoMLSearch`` :pr:`1932`
+    * Changes
+        * Reversed GitHub Action for Linux unit tests until a fix for report generation is found :pr:`1920`
+        * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
+        * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
+        * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+    * Documentation Changes
+        * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
+
+**v0.19.0 Feb. 23, 2021**
     * Enhancements
         * Added a GitHub Action for Python windows unit tests :pr:`1844`
         * Added a GitHub Action for checking updated release notes :pr:`1849`
@@ -15,12 +51,16 @@ Release Notes
         * Added full error traceback to AutoMLSearch logger file :pr:`1840`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
         * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
+        * Added custom random undersampler data splitter for classification :pr:`1857`
+        * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
+        * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
     * Changes
         * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
         * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
         * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
+        * Added ``DataCheckError`` message in ``InvalidTargetDataCheck`` if input target is None and removed exception raised :pr:`1866`
     * Documentation Changes
     * Testing Changes
         * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`

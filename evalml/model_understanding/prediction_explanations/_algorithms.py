@@ -1,4 +1,5 @@
 import warnings
+from operator import add
 
 import numpy as np
 import shap
@@ -110,6 +111,70 @@ def _compute_shap_values(pipeline, features, training_data=None):
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 
 
+def _aggreggate_shap_values_dict(values, provenance):
+    """Aggregates shap values across features created from a common feature.
+
+    For example, let's say the pipeline has a text featurizer that creates the columns: LSA_1, LSA_2, PolarityScore,
+    MeanCharacter, and DiversityScore from a column called "text_feature".
+
+    The values dictionary input to this function will have a key for each of the features created by the text featurizer,
+    but it will not have a key for the original "text_feature" column. It will look like this:
+
+    {"LSA_1": [0.2], "LSA_0": [0.3], "PolarityScore": [0.1], "MeanCharacters": [0.05], "DiversityScore": [-0.1], ...}
+
+    After this function, the values dictionary will look like: {"text_feature": [0.55]}
+
+    This aggregation will happen for all features for which we know the provenance/lineage. Other features will
+    be left as they are.
+
+    Arguments:
+        values (dict):  A mapping of feature names to a list of SHAP values for each data point.
+        provenance (dict): A mapping from a feature in the original data to the names of the features that were created
+            from that feature.
+
+    Returns:
+        dict - mapping from feature name to shap values.
+    """
+
+    child_to_parent = {}
+    for parent_feature, children in provenance.items():
+        for child in children:
+            if child in values:
+                child_to_parent[child] = parent_feature
+
+    agg_values = {}
+    for feature_name, shap_list in values.items():
+        # Only aggregate features for which we know the parent-feature
+        if feature_name in child_to_parent:
+            parent = child_to_parent[feature_name]
+            if parent not in agg_values:
+                agg_values[parent] = [0] * len(shap_list)
+            # Elementwise-sum without numpy
+            agg_values[parent] = list(map(add, agg_values[parent], shap_list))
+        else:
+            agg_values[feature_name] = shap_list
+    return agg_values
+
+
+def _aggregate_shap_values(values, provenance):
+    """Aggregates shap values across features created from a common feature.
+
+    Arguments:
+        values (dict):  A mapping of feature names to a list of SHAP values for each data point.
+        provenance (dict): A mapping from a feature in the original data to the names of the features that were created
+            from that feature
+    Returns:
+        dict
+
+    Returns:
+        dict or list(dict)
+    """
+    if isinstance(values, dict):
+        return _aggreggate_shap_values_dict(values, provenance)
+    else:
+        return [_aggreggate_shap_values_dict(class_values, provenance) for class_values in values]
+
+
 def _normalize_values_dict(values):
     """Normalizes SHAP values by dividing by the sum of absolute values for each feature.
 
@@ -125,16 +190,16 @@ def _normalize_values_dict(values):
         >>> assert normalized_values == {"a": [1/5, -1/6, 3/7], "b": [3/5, -2/6, 0/7], "c": [-1/5, 3/6, 4/7]}
     """
 
-    sorted_feature_names = sorted(values)
     # Store in matrix of shape (len(values), n_features)
-    all_values = np.stack([values[feature_name] for feature_name in sorted_feature_names]).T
+    feature_names = list(values.keys())
+    all_values = np.stack([values[feature_name] for feature_name in feature_names]).T
 
     if not all_values.any():
         return values
 
     scaled_values = all_values / np.abs(all_values).sum(axis=1)[:, np.newaxis]
 
-    return {feature_name: scaled_values[:, i].tolist() for i, feature_name in enumerate(sorted_feature_names)}
+    return {feature_name: scaled_values[:, i].tolist() for i, feature_name in enumerate(feature_names)}
 
 
 def _normalize_shap_values(values):

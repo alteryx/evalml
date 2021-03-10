@@ -1,6 +1,6 @@
 import pandas as pd
 
-from evalml.objectives import get_objective
+from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -11,7 +11,7 @@ from evalml.utils import (
 )
 
 
-class TimeSeriesRegressionPipeline(RegressionPipeline):
+class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     """Pipeline base class for time series regression problems."""
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
@@ -61,6 +61,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
+        self.input_feature_names = self._component_graph.input_feature_names
+
         return self
 
     def predict(self, X, y=None, objective=None):
@@ -114,7 +116,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
 
         y_shifted = y.shift(-self.gap)
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
         y_shifted, y_predicted = drop_rows_with_nans(y_shifted, y_predicted)
         return self._score_all_objectives(X, y_shifted,
                                           y_predicted,

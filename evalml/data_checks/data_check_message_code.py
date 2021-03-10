@@ -13,6 +13,9 @@ class DataCheckMessageCode(Enum):
     TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
     """Message code for target data that has incompatible values for the specified objective"""
 
+    TARGET_IS_NONE = "target_is_none"
+    """Message code for when target is None."""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
@@ -45,6 +48,9 @@ class DataCheckMessageCode(Enum):
 
     CLASS_IMBALANCE_BELOW_THRESHOLD = "class_imbalance_below_threshold"
     """Message code for when balance in classes is less than the threshold."""
+
+    CLASS_IMBALANCE_SEVERE = "class_imbalance_severe"
+    """Message code for when balance in classes is less than the threshold and minimum class is less than minimum number of accepted samples."""
 
     CLASS_IMBALANCE_BELOW_FOLDS = "class_imbalance_below_folds"
     """Message code for when the number of values for each target is below 2 * number of CV folds."""
