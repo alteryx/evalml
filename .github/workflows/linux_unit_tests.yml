@@ -67,7 +67,7 @@ jobs:
           source test_python/bin/activate
           make git-test-minimal-deps
       - if: ${{ !matrix.core_dependencies }}
-        name: Run unit tests
+        name: Run Unit Tests
         run: |
           source test_python/bin/activate
           make git-test
