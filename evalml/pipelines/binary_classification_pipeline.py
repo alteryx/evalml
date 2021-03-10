@@ -1,16 +1,14 @@
+import sys
+import traceback
+from collections import OrderedDict
+
+from evalml.exceptions import PipelineScoreError
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
-from collections import OrderedDict
-import os
-import sys
-import traceback
-from collections import OrderedDict 
 
-from evalml.exceptions import (
-    PipelineScoreError
-)
+
 class BinaryClassificationPipeline(ClassificationPipeline):
     """Pipeline subclass for all binary classification pipelines."""
     _threshold = None
@@ -44,9 +42,10 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.threshold is None:
             return self._component_graph.predict(X)
         ypred_proba = self.predict_proba(X).to_dataframe()
-        o = self.objective_helper(X, ypred_proba, objective)
-        return infer_feature_types(o)
-    def objective_helper(self, X, ypred_proba, objective):
+        predictions = self._predict_with_objective(X, ypred_proba, objective)
+        return infer_feature_types(predictions)
+
+    def _predict_with_objective(self, X, ypred_proba, objective):
         ypred_proba = ypred_proba.iloc[:, 1]
         if objective is None:
             return ypred_proba > self.threshold
@@ -71,7 +70,6 @@ class BinaryClassificationPipeline(ClassificationPipeline):
             predictions = predictions.iloc[:, 1]
         return ClassificationPipeline._score(X, y, predictions, objective)
 
-
     def _compute_predictions(self, X, y, objectives, time_series=False):
         """Compute predictions/probabilities based on objectives."""
         y_predicted = None
@@ -91,7 +89,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
                 y_pred_to_use = y_pred
                 if self.threshold is not None and not objective.score_needs_proba:
-                    y_pred_to_use = self.objective_helper(X, y_pred_proba, objective)
+                    y_pred_to_use = self._predict_with_objective(X, y_pred_proba, objective)
                 score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred_to_use, objective)
                 scored_successfully.update({objective.name: score})
             except Exception as e:

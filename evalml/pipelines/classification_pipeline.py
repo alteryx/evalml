@@ -131,7 +131,6 @@ class ClassificationPipeline(PipelineBase):
         """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
-        # TODO
         if any(o.score_needs_proba for o in objectives):
             y_predicted_proba = self.predict_proba(X, y) if time_series else self.predict_proba(X)
         if any(not o.score_needs_proba for o in objectives):

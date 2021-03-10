@@ -3,6 +3,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 import woodwork as ww
+
 from evalml.objectives import FraudCost
 
 
@@ -69,10 +70,13 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     mock_transform.assert_called()
 
 
-def test_binary_predict_pipeline_use_objective(X_y_binary, logistic_regression_binary_pipeline_class):
+@patch('evalml.objectives.FraudCost.decision_function')
+def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
+    mock_decision_function.return_value = pd.Series([0] * 100)
     binary_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     binary_pipeline.threshold = 0.7
     binary_pipeline.fit(X, y)
     fraud_cost = FraudCost(amount_col=0)
-    binary_pipeline.score(X, y, ['precision', fraud_cost])
+    binary_pipeline.score(X, y, ['precision', 'auc', fraud_cost])
+    mock_decision_function.assert_called()
