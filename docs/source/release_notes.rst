@@ -2,12 +2,20 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.20.0 Mar. 10, 2021**
+    * Enhancements
         * Added a GitHub Action for Detecting dependency changes :pr:`1933`
         * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
         * Added a GitHub Action for Linux unit tests :pr:`1846`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
         * Added ``BalancedClassificationDataCVSplit`` and ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
+        * Update default classification data splitter to use downsampling for highly imbalanced data :pr:`1875`
         * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
