@@ -4,7 +4,7 @@ from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
-import pandas as pd
+
 
 def _extract_year(col, encode_as_categories=False):
     return col.dt.year, None
@@ -79,7 +79,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = [str(name) for name in X.select(include=["datetime"]).columns]
+        self._date_time_col_names = X.select("datetime").columns
         return self
 
     def transform(self, X, y=None):
@@ -94,15 +94,13 @@ class DateTimeFeaturizer(Transformer):
         """
         X_ww = infer_feature_types(X)
         X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        # X_t = X.rename(columns=str)
-
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return infer_feature_types(X_t)
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
-                features, categories = self._function_mappings[feature](X_t[str(col_name)], self.encode_as_categories)
+                features, categories = self._function_mappings[feature](X_t[col_name], self.encode_as_categories)
                 X_t[name] = features
                 if categories:
                     self._categories[name] = categories
