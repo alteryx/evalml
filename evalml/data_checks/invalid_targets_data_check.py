@@ -134,13 +134,6 @@ class InvalidTargetDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                     details=details).to_dict())
 
-        if len(value_counts) == 2 and is_supported_type:
-            if set(unique_values) != set([0, 1]):
-                results["warnings"].append(DataCheckWarning(message="Numerical binary classification target classes must be [0, 1], got [{}] instead".format(", ".join([str(val) for val in unique_values])),
-                                                            data_check_name=self.name,
-                                                            message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
-                                                            details={"target_values": unique_values}).to_dict())
-
         any_neg = not (y_df > 0).all() if y.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
         if any_neg and self.objective.positive_only:
             details = {"Count of offending values": sum(val <= 0 for val in y_df.values.flatten())}
