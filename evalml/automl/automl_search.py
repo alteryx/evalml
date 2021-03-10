@@ -40,7 +40,7 @@ from evalml.pipelines import (
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
+from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
@@ -781,11 +781,7 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        pipeline = get_generated_pipeline_class(self.problem_type)
-        pipeline.custom_hyperparameters = pipeline_class.custom_hyperparameters
-        pipeline.custom_name = pipeline_class.name
-        pipeline.component_graph = pipeline_class.component_graph
-        return pipeline(parameters, random_seed=self.random_seed)
+        return pipeline_class(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
