@@ -150,3 +150,5 @@ class ClassificationPipeline(PipelineBase):
         if is_binary(self.problem_type) and objective.can_optimize_threshold:
             targets = self._encode_targets(y.to_series())
             self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
+        else:
+            raise ValueError("Problem type must be binary and objective must be optimizable")

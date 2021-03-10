@@ -2038,3 +2038,34 @@ def test_binary_pipeline_string_target_thresholding(make_data_type, X_y_binary):
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
     pipeline.optimize_threshold(X, y, pred_proba, objective)
     assert pipeline.threshold is not None
+
+
+def test_pipeline_thresholding_errors(make_data_type, X_y_multi, X_y_binary):
+    class BinaryClass(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
+    
+    class MulticlassClass(MulticlassClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
+
+    X, y = X_y_multi
+    X = make_data_type('ww', (X))
+    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    objective = get_objective("F1 Macro", return_instance=True)
+    pipeline = MulticlassClass({})
+    pipeline.fit(X, y)
+    pred_proba = pipeline.predict(X, y)
+    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
+        pipeline.optimize_threshold(X, y, pred_proba, objective)
+
+    objective = get_objective("Log Loss Multiclass")
+    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
+        pipeline.optimize_threshold(X, y, pred_proba, objective)
+    X, y = X_y_binary
+    X = make_data_type('ww', (X))
+    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    objective = get_objective("Log Loss Binary", return_instance=True)
+    pipeline = BinaryClass({})
+    pipeline.fit(X, y)
+    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
+        pipeline.optimize_threshold(X, y, pred_proba, objective)
