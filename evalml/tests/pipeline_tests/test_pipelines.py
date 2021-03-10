@@ -2043,7 +2043,7 @@ def test_binary_pipeline_string_target_thresholding(make_data_type, X_y_binary):
 def test_pipeline_thresholding_errors(make_data_type, X_y_multi, X_y_binary):
     class BinaryClass(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
-    
+
     class MulticlassClass(MulticlassClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
 
