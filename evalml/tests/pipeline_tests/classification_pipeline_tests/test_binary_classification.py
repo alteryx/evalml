@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
+from evalml.exceptions import PipelineScoreError
 from evalml.objectives import FraudCost
 
 
@@ -80,3 +81,11 @@ def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binar
     fraud_cost = FraudCost(amount_col=0)
     binary_pipeline.score(X, y, ['precision', 'auc', fraud_cost])
     mock_decision_function.assert_called()
+
+
+def test_binary_predict_pipeline_score_error(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    binary_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    binary_pipeline.fit(X, y)
+    with pytest.raises(PipelineScoreError, match='Invalid objective MCC Multiclass specified for problem type binary'):
+        binary_pipeline.score(X, y, ['MCC Multiclass'])
