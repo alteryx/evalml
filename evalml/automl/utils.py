@@ -81,7 +81,7 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
 
     Arguments:
         pipeline (Pipeline): Pipeline instance to threshold.
-        objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use to F1.
+        objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
         X_threshold_tuning (ww.DataTable): Features to tune pipeline to.
         y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to.
