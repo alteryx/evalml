@@ -145,10 +145,10 @@ def test_class_imbalance_data_check_multiclass(input_type):
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=2)
     assert class_imbalance_check.validate(X, y_imbalanced_cv) == {
         "warnings": [],
-        "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [2, 0]",
+        "errors": [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [0, 2]",
                                   data_check_name=class_imbalance_data_check_name,
                                   message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                                  details={"target_values": [2, 0]}).to_dict()],
+                                  details={"target_values": [0, 2]}).to_dict()],
         "actions": []
     }
 

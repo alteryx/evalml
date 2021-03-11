@@ -111,10 +111,10 @@ def test_default_data_checks_classification(input_type):
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
 
-    imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]",
+    imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                                details={"target_values": [1.0, 0.0]}).to_dict()]
+                                details={"target_values": [0.0, 1.0]}).to_dict()]
 
     assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance, "actions": []}
 

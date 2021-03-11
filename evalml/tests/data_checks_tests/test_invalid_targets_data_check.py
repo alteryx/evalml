@@ -66,10 +66,10 @@ def test_invalid_target_data_check_numeric_binary_classification_error():
     X = pd.DataFrame({"col": range(len(y))})
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [DataCheckWarning(
-            message="Numerical binary classification target classes must be [0, 1], got [5.0, 0.0] instead",
+            message="Numerical binary classification target classes must be [0, 1], got [0.0, 5.0] instead",
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_BINARY_INVALID_VALUES,
-            details={"target_values": [5.0, 0.0]}).to_dict()],
+            details={"target_values": [0.0, 5.0]}).to_dict()],
         "errors": [DataCheckError(message="2 row(s) (50.0%) of target values are null",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
@@ -113,7 +113,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                  details={"least_populated_class_labels": [1, 0]}).to_dict()],
+                                  details={"least_populated_class_labels": [0, 1]}).to_dict()],
         "actions": []
     }
 
