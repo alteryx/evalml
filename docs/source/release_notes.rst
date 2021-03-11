@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
+        * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
     * Fixes
     * Changes
     * Documentation Changes

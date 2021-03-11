@@ -171,7 +171,7 @@ class AutoMLSearch:
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
                 in time series problems, values should be passed in for the gap and max_delay variables.
 
-            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
+            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
