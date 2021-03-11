@@ -9,7 +9,7 @@ def test_has_minimal_deps(has_minimal_dependencies):
     lines = open(reqs_path, 'r').readlines()
     lines = [line for line in lines if '-r ' not in line]
     reqs = requirements.parse(''.join(lines))
-    extra_deps = [req.name for req in reqs]
+    extra_deps = [req.name if req.name != 'imbalanced-learn' else 'imblearn' for req in reqs]
     extra_deps += ['plotly.graph_objects']
     for module in extra_deps:
         try:
