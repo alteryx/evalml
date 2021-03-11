@@ -67,11 +67,15 @@ jobs:
           source test_python/bin/activate
           make git-test-minimal-deps
       - if: ${{ !matrix.core_dependencies }}
+        id: running
         name: Run Unit Tests
         continue-on-error: true
         run: |
           source test_python/bin/activate
           make git-test
+      - run: |
+          echo $ {{ steps.running.outcome }}
+          echo $ {{ steps.running.conclusion }}
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
