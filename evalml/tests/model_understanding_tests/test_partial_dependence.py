@@ -280,7 +280,6 @@ def test_partial_dependence_more_categories_than_grid_resolution(logistic_regres
     # Check the case where grid_resolution < number of categorical features
     part_dep = partial_dependence(pipeline, X, 'currency', grid_resolution=round(num_cat_features / 2))
     part_dep_dict = dict(part_dep["partial_dependence"].value_counts())
-    import pdb; pdb.set_trace()
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
     # Check the case where grid_resolution == number of categorical features
