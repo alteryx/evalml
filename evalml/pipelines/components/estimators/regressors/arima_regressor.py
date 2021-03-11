@@ -49,7 +49,7 @@ class ARIMARegressor(Estimator):
                 X.index = y.index
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-        elif isinstance(y.index, pd.DatetimeIndex):
+        elif y is not None and isinstance(y.index, pd.DatetimeIndex):
             date_col = y.index
 
         if date_col is None:
