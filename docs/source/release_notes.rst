@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
-        * Added params to balanced classification data splitters for visibility :pr:``
+        * Added params to balanced classification data splitters for visibility :pr:`1966`
     * Fixes
     * Changes
     * Documentation Changes
