@@ -92,10 +92,9 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -126,10 +125,9 @@ def test_make_pipeline(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -160,10 +158,9 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -194,10 +191,9 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -225,10 +221,9 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -259,10 +254,9 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -270,6 +264,64 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             assert pipeline.component_graph == [Imputer, TextFeaturizer] + delayed_features + estimator_components
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_make_pipeline_only_text_columns(input_type, problem_type):
+    X = pd.DataFrame({"text": ["string one", "the evalml team is full of wonderful people", "text for a column, this should be a text column!!", "text string", "hello world"],
+                      "another text": ["ladidididididida", "cats are great", "text for a column, this should be a text column!!", "text string", "goodbye world"]})
+    y = pd.Series([0, 0, 1, 1, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+    estimators = get_estimators(problem_type=problem_type)
+
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
+
+    for estimator_class in estimators:
+        if problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type)
+            assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
+            delayed_features = []
+            if is_time_series(problem_type):
+                delayed_features = [DelayedFeatureTransformer]
+            standard_scaler = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                standard_scaler = [StandardScaler]
+            assert pipeline.component_graph == [TextFeaturizer] + delayed_features + standard_scaler + [estimator_class]
+
+
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_make_pipeline_only_datetime_columns(input_type, problem_type):
+    X = pd.DataFrame({"some dates": pd.date_range('2000-02-03', periods=5, freq='W'),
+                      "some other dates": pd.date_range('2000-05-19', periods=5, freq='W')})
+    y = pd.Series([0, 0, 1, 1, 0])
+    if input_type == 'ww':
+        X = ww.DataTable(X)
+        y = ww.DataColumn(y)
+    estimators = get_estimators(problem_type=problem_type)
+
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2])
+
+    for estimator_class in estimators:
+        if problem_type in estimator_class.supported_problem_types:
+            pipeline = make_pipeline(X, y, estimator_class, problem_type)
+            assert isinstance(pipeline, type(pipeline_class))
+            assert pipeline.custom_hyperparameters is None
+            delayed_features = []
+            if is_time_series(problem_type):
+                delayed_features = [DelayedFeatureTransformer]
+            standard_scaler = []
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                standard_scaler = [StandardScaler]
+            assert pipeline.component_graph == [DateTimeFeaturizer] + delayed_features + standard_scaler + [estimator_class]
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
@@ -286,10 +338,9 @@ def test_make_pipeline_numpy_input(problem_type):
         if problem_type in estimator_class.supported_problem_types:
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [StandardScaler, estimator_class]
             else:
@@ -317,10 +368,9 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
             pipeline = make_pipeline(X, y, estimator_class, problem_type)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
+            delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
-            else:
-                delayed_features = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
