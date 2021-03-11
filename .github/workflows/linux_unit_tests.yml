@@ -62,20 +62,23 @@ jobs:
           source test_python/bin/activate
           coverage erase
       - if: ${{ matrix.core_dependencies }}
+        id: running_core
         name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
           make git-test-minimal-deps
       - if: ${{ !matrix.core_dependencies }}
-        id: running
+        id: running_noncore
         name: Run Unit Tests
         continue-on-error: true
         run: |
           source test_python/bin/activate
           make git-test
       - run: |
-          echo $ {{ steps.running.outcome }}
-          echo $ {{ steps.running.conclusion }}
+          echo ${{ steps.running_core.outcome }}
+          echo ${{ steps.running_core.conclusion }}
+          echo ${{ steps.running_noncore.outcome }}
+          echo ${{ steps.running_noncore.conclusion }}
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
