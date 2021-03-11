@@ -74,13 +74,25 @@ jobs:
         run: |
           source test_python/bin/activate
           make git-test
-      - if: ${{ always() }}
+      - if: ${{ success() }} && ${{ matrix.codecov }}
         run: |
           echo ${{ steps.running_core.outcome }}
           echo ${{ steps.running_core.conclusion }}
           echo ${{ steps.running_noncore.outcome }}
           echo ${{ steps.running_noncore.conclusion }}
-      - if: ${{ matrix.codecov }}
+      - if: ${{ failure() }} && ${{ matrix.codecov }}
+        run: |
+          echo ${{ steps.running_core.outcome }}
+          echo ${{ steps.running_core.conclusion }}
+          echo ${{ steps.running_noncore.outcome }}
+          echo ${{ steps.running_noncore.conclusion }}
+      - if: ${{ success() }} && ${{ matrix.codecov }}
+        name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+      - if: ${{ failure() }} && ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
