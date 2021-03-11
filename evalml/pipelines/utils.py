@@ -44,7 +44,6 @@ from evalml.utils import deprecate_arg, get_logger, infer_feature_types
 logger = get_logger(__file__)
 
 
-
 def _get_preprocessing_components(X, y, problem_type, estimator_class):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
