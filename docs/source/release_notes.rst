@@ -2,17 +2,50 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+**v0.20.0 Mar. 10, 2021**
+    * Enhancements
+        * Added a GitHub Action for Detecting dependency changes :pr:`1933`
+        * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
         * Added a GitHub Action for Linux unit tests :pr:`1846`
         * Added ARIMARegressor :pr:`1894`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
+        * Added ``BalancedClassificationDataCVSplit`` and ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
+        * Update default classification data splitter to use downsampling for highly imbalanced data :pr:`1875`
+        * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
+        * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
+        * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
+        * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
+        * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
+        * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
     * Fixes
+        * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
         * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
+        * Fixed stack trace caused by passing pipelines with duplicate names to ``AutoMLSearch`` :pr:`1932`
+        * Fixed ``AutoMLSearch.get_pipelines`` returning pipelines with the same attributes :pr:`1958`
     * Changes
+        * Reversed GitHub Action for Linux unit tests until a fix for report generation is found :pr:`1920`
         * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
+        * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
+        * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
     * Documentation Changes
+        * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
     * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements
@@ -28,7 +61,7 @@ Release Notes
         * Added full error traceback to AutoMLSearch logger file :pr:`1840`
         * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
         * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
-        * Added custom random undersampling sampler for classification :pr:`1857`
+        * Added custom random undersampler data splitter for classification :pr:`1857`
         * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
         * Added ``Engines`` pipeline processing API :pr:`1838`
     * Fixes
@@ -134,7 +167,6 @@ Release Notes
         * Fixed stacking argument ``n_jobs`` for IterativeAlgorithm :pr:`1706`
         * Updated CatBoost estimators to return self in ``.fit()`` rather than the underlying model for consistency :pr:`1701`
         * Added ability to initialize pipeline parameters in ``AutoMLSearch`` constructor :pr:`1676`
-        * Make AutoMLSearch pipelines pickle-able :pr:`1721`
     * Changes
         * Added labeling to ``graph_confusion_matrix`` :pr:`1632`
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`

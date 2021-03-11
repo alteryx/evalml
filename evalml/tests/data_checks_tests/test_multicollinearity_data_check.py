@@ -46,7 +46,8 @@ def test_multicollinearity_returns_warning():
                                       details={'columns': [('col_1', 'col_2'), ('col_1', 'col_3'), ('col_1', 'col_4'), ('col_1', 'col_5'),
                                                            ('col_2', 'col_3'), ('col_2', 'col_4'), ('col_2', 'col_5'),
                                                            ('col_3', 'col_4'), ('col_3', 'col_5'), ('col_4', 'col_5')]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -68,7 +69,8 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
                                       details={'columns': [('col_1', 'col_2'), ('col_1', 'col_4'),
                                                            ('col_2', 'col_4'), ('col_3', 'col_5'),
                                                            ('col_3', 'col_6'), ('col_5', 'col_6')]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
@@ -76,4 +78,4 @@ def test_multicollinearity_data_check_input_formats():
     multi_check = MulticollinearityDataCheck(threshold=0.9)
 
     # test empty pd.DataFrame
-    assert multi_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
+    assert multi_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}

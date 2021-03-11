@@ -20,9 +20,15 @@ from .components import (
 )
 from .components.utils import all_components, handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    ObjectiveCreationError,
+    PipelineScoreError
+)
+from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
+from evalml.problem_types import is_binary
 from evalml.utils import (
     classproperty,
     deprecate_arg,
@@ -154,11 +160,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return self._component_graph.get_component(name)
 
-    def describe(self):
+    def describe(self, return_dict=False):
         """Outputs pipeline details including component parameters
 
         Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
+            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to False.
 
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
@@ -172,10 +178,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         # Summary of steps
         log_subtitle(logger, "Pipeline Steps")
+
+        pipeline_dict = {
+            "name": self.name,
+            "problem_type": self.problem_type,
+            "model_family": self.model_family,
+            "components": dict()
+        }
+
         for number, component in enumerate(self._component_graph, 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
-            component.describe(print_name=False)
+            pipeline_dict["components"].update({component.name: component.describe(print_name=False, return_dict=return_dict)})
+        if return_dict:
+            return pipeline_dict
 
     def compute_estimator_features(self, X, y=None):
         """Transforms the data by applying all pre-processing components.
@@ -518,3 +534,28 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
         has_stacked_ensembler = any(isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor)) for c in self._component_graph)
         return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs, has_stacked_ensembler])
+
+    @staticmethod
+    def create_objectives(objectives):
+        objective_instances = []
+        for objective in objectives:
+            try:
+                objective_instances.append(get_objective(objective, return_instance=True))
+            except ObjectiveCreationError as e:
+                msg = f"Cannot pass {objective} as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
+                raise ObjectiveCreationError(msg) from e
+        return objective_instances
+
+    def can_tune_threshold_with_objective(self, objective):
+        """Determine whether the threshold of a binary classification pipeline can be tuned.
+
+       Arguments:
+            pipeline (PipelineBase): Binary classification pipeline.
+            objective (ObjectiveBase): Primary AutoMLSearch objective.
+
+        Returns:
+            bool: True if the pipeline threshold can be tuned.
+
+        """
+        return objective.is_defined_for_problem_type(self.problem_type) and \
+            objective.can_optimize_threshold and is_binary(self.problem_type)

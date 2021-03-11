@@ -1,10 +1,8 @@
-import pickle
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.model_selection import StratifiedKFold
 from skopt.space import Categorical
 
 from evalml import AutoMLSearch
@@ -19,10 +17,6 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
-    GeneratedPipelineBinary,
-    GeneratedPipelineMulticlass,
-    GeneratedPipelineTimeSeriesBinary,
-    GeneratedPipelineTimeSeriesMulticlass,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     MulticlassClassificationPipeline,
@@ -32,7 +26,11 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import TimeSeriesSplit, split_data
+from evalml.preprocessing import (
+    BalancedClassificationDataCVSplit,
+    TimeSeriesSplit,
+    split_data
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -77,7 +75,7 @@ def test_get_pipeline_none(X_y_binary):
 def test_data_splitter(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=StratifiedKFold(cv_folds), max_iterations=1,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=BalancedClassificationDataCVSplit(n_splits=cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 
@@ -672,60 +670,9 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
         assert result['parameters']['pipeline'] == configuration
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-def test_automl_pickle_generated_pipeline(mock_binary_score, mock_binary_fit, mock_multi_score, mock_multi_fit,
-                                          problem_type, X_y_binary, X_y_multi):
-    mock_binary_score.return_value = {"Log Loss Binary": 1.0}
-    mock_multi_score.return_value = {"Log Loss Multiclass": 1.0}
-    if problem_type == ProblemTypes.BINARY:
-        X, y = X_y_binary
-        pipeline = GeneratedPipelineBinary
-
-    elif problem_type == ProblemTypes.MULTICLASS:
-        X, y = X_y_multi
-        pipeline = GeneratedPipelineMulticlass
-
-    a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type)
-    a.search()
-
-    for i, row in a.rankings.iterrows():
-        assert a.get_pipeline(row['id']).__class__ == pipeline
-        assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
-
-
-@pytest.mark.parametrize('problem_type', [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY])
-@patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.score')
-@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
-@patch('evalml.pipelines.TimeSeriesMulticlassClassificationPipeline.fit')
-@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
-def test_automl_time_series_classification_pickle_generated_pipeline(mock_binary_fit, mock_multi_fit,
-                                                                     mock_binary_score, mock_multiclass_score,
-                                                                     problem_type, X_y_binary, X_y_multi):
-    mock_binary_score.return_value = {"Log Loss Binary": 1.0}
-    mock_multiclass_score.return_value = {"Log Loss Multiclass": 1.0}
-    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
-        pipeline = GeneratedPipelineTimeSeriesBinary
-    else:
-        X, y = X_y_multi
-        pipeline = GeneratedPipelineTimeSeriesMulticlass
-
-    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
-    a = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, problem_configuration=configuration)
-    a.search()
-
-    for i, row in a.rankings.iterrows():
-        assert a.get_pipeline(row['id']).__class__ == pipeline
-        assert pickle.loads(pickle.dumps(a.get_pipeline(row['id'])))
-
-
 @pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary'])
 @pytest.mark.parametrize("optimize", [True, False])
-@patch('evalml.automl.automl_search.split_data')
+@patch('evalml.automl.engine.engine_base.split_data')
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
