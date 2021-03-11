@@ -16,6 +16,11 @@ from evalml.data_checks import (
 from evalml.exceptions import DataCheckInitError
 
 
+def test_data_checks_not_list_error(X_y_binary):
+    with pytest.raises(ValueError, match="Parameter data_checks must be a list."):
+        DataChecks(data_checks=1)
+
+
 def test_data_checks(X_y_binary):
     X, y = X_y_binary
 
