@@ -4,6 +4,7 @@ cloudpickle==1.6.0
 colorama==0.4.4
 featuretools==0.23.2
 graphviz==0.16
+imbalanced-learn==0.8.0
 ipywidgets==7.6.3
 kaleido==0.2.1
 lightgbm==3.0.0
