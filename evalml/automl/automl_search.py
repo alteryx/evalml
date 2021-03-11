@@ -1,6 +1,8 @@
 import copy
 import time
 from collections import defaultdict
+import traceback
+import sys
 
 import cloudpickle
 import numpy as np
@@ -12,12 +14,13 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.engine import SequentialEngine
+from evalml.automl.engine import SequentialEngine, train_pipeline
 from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
     make_data_splitter
 )
+from evalml.exceptions import PipelineScoreError
 from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
@@ -325,13 +328,7 @@ class AutoMLSearch:
             _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
             self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
 
-        self._engine = SequentialEngine(self.X_train,
-                                        self.y_train,
-                                        self.ensembling_indices,
-                                        self,
-                                        should_continue_callback=self._should_continue,
-                                        pre_evaluation_callback=self._pre_evaluation_callback,
-                                        post_evaluation_callback=self._post_evaluation_callback)
+        self._engine = SequentialEngine()
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -553,7 +550,20 @@ class AutoMLSearch:
                 logger.info('AutoML Algorithm out of recommendations, ending')
                 break
             try:
-                new_pipeline_ids = self._engine.evaluate_batch(current_batch_pipelines)
+                computations = []
+                for pipeline in current_batch_pipelines:
+                    self._pre_evaluation_callback(pipeline)
+                    computation = self._engine.submit_evaluation_job(self, pipeline)
+                    computations.append(computation)
+
+                while self._should_continue() and len(computations) > 0:
+                        computation = computations.pop(0)
+                        if computation.done():
+                            data, pipeline = computation.get_result()
+                            pipeline_id = self._post_evaluation_callback(pipeline, data)
+                            new_pipeline_ids.append(pipeline_id)
+                        else:
+                            computations.append(computation)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
@@ -597,7 +607,7 @@ class AutoMLSearch:
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
-                best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
+                best_pipeline = train_pipeline(best_pipeline, X_train, y_train,
                                                             self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
 
@@ -683,7 +693,10 @@ class AutoMLSearch:
             max_delay = self.problem_configuration['max_delay']
             baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
-        self._engine.evaluate_batch([baseline])
+        self._pre_evaluation_callback(baseline)
+        computation = self._engine.submit_evaluation_job(self, baseline)
+        data, pipeline = computation.get_result()
+        self._post_evaluation_callback(pipeline, data)
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
@@ -848,7 +861,9 @@ class AutoMLSearch:
             if pipeline.parameters == parameter:
                 return
 
-        self._engine.evaluate_batch([pipeline])
+        computation = self._engine.submit_evaluation_job(self, pipeline)
+        data, pipeline = computation.get_result()
+        self._post_evaluation_callback(pipeline, data)
         self._find_best_pipeline()
 
     @property
@@ -934,7 +949,26 @@ class AutoMLSearch:
             Note that the any pipelines that error out during training will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
-        return self._engine.train_batch(pipelines)
+        fitted_pipelines = {}
+        computations = []
+        for pipeline in pipelines:
+            computations.append(self._engine.submit_training_job(self, pipeline))
+
+        while computations:
+            computation = computations.pop(0)
+            if computation.done():
+                try:
+                    fitted_pipeline = computation.get_result()
+                    fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
+                except Exception as e:
+                    logger.error(f'Train error for {pipeline.name}: {str(e)}')
+                    tb = traceback.format_tb(sys.exc_info()[2])
+                    logger.error("Traceback:")
+                    logger.error("\n".join(tb))
+            else:
+                computations.append(computation)
+
+        return fitted_pipelines
 
     def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
         """Score a list of pipelines on the given holdout data.
@@ -950,4 +984,31 @@ class AutoMLSearch:
             Note that the any pipelines that error out during scoring will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
-        return self._engine.score_batch(pipelines, X_holdout, y_holdout, objectives)
+        scores = {}
+        objectives = [get_objective(o, return_instance=True) for o in objectives]
+
+        computations = []
+        for pipeline in pipelines:
+            computations.append(self._engine.submit_scoring_job(self, pipeline, X_holdout, y_holdout, objectives))
+
+        while computations:
+            computation = computations.pop(0)
+            if computation.done():
+                pipeline_name = computation.meta_data["pipeline_name"]
+                try:
+                    scores[pipeline_name] = computation.get_result()
+                except Exception as e:
+                    logger.error(f"Score error for {pipeline_name}: {str(e)}")
+                    if isinstance(e, PipelineScoreError):
+                        nan_scores = {objective: np.nan for objective in e.exceptions}
+                        scores[pipeline_name] = {**nan_scores, **e.scored_successfully}
+                    else:
+                        # Traceback already included in the PipelineScoreError so we only
+                        # need to include it for all other errors
+                        tb = traceback.format_tb(sys.exc_info()[2])
+                        logger.error("Traceback:")
+                        logger.error("\n".join(tb))
+                        scores[pipeline_name] = {objective.name: np.nan for objective in objectives}
+            else:
+                computations.append(computation)
+        return scores
