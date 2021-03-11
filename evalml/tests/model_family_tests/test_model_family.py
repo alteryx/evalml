@@ -24,7 +24,7 @@ def test_handle_string(correct_model_families):
     model_family = 'fake'
     error_msg = 'Model family \'fake\' does not exist'
     with pytest.raises(KeyError, match=error_msg):
-        handle_model_family(model_family) == ModelFamily.LINEAR_MODEL
+        handle_model_family(model_family) != ModelFamily.LINEAR_MODEL
 
 
 def test_handle_model_family(correct_model_families):
