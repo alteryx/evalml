@@ -74,7 +74,8 @@ jobs:
         run: |
           source test_python/bin/activate
           make git-test
-      - run: |
+      - if: ${{ steps.running_core.outcome }} == 'failure'
+        run: |
           echo ${{ steps.running_core.outcome }}
           echo ${{ steps.running_core.conclusion }}
           echo ${{ steps.running_noncore.outcome }}
