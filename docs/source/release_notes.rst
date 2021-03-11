@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
     * Fixes
     * Changes
     * Documentation Changes
@@ -20,7 +21,6 @@ Release Notes
         * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
         * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
-        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
