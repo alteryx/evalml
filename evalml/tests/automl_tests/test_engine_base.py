@@ -2,11 +2,13 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
-import pytest
+import woodwork as ww
 
 from evalml.automl.automl_search import AutoMLSearch
-from evalml.automl.engine import EngineBase
+from evalml.automl.engine import evaluate_pipeline, train_pipeline
 from evalml.objectives import F1, LogLossBinary
+from evalml.pipelines import StackedEnsembleClassifier
+from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.preprocessing import split_data
 
 
@@ -18,7 +20,7 @@ def test_train_and_score_pipelines(mock_fit, mock_score, dummy_binary_pipeline_c
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
                           allowed_pipelines=[dummy_binary_pipeline_class])
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train)
+    evaluation_result, _ = evaluate_pipeline(pipeline, automl.X_train, automl.y_train, automl)
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()
     assert mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get('training_time') is not None
@@ -36,7 +38,7 @@ def test_train_and_score_pipelines_error(mock_fit, mock_score, dummy_binary_pipe
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
                           allowed_pipelines=[dummy_binary_pipeline_class])
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train)
+    evaluation_result, _ = evaluate_pipeline(pipeline, automl.X_train, automl.y_train, automl)
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()
     assert mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get('training_time') is not None
@@ -57,8 +59,8 @@ def test_train_pipeline_trains_and_tunes_threshold(mock_split_data, mock_pipelin
     X, y = X_y_binary
     mock_split_data.return_value = split_data(X, y, "binary", test_size=0.2, random_seed=0)
 
-    _ = EngineBase.train_pipeline(dummy_binary_pipeline_class({}), X, y,
-                                  optimize_thresholds=True, objective=LogLossBinary())
+    _ = train_pipeline(dummy_binary_pipeline_class({}), X, y,
+                       optimize_thresholds=True, objective=LogLossBinary())
 
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_not_called()
@@ -68,36 +70,36 @@ def test_train_pipeline_trains_and_tunes_threshold(mock_split_data, mock_pipelin
     mock_optimize.reset_mock()
     mock_split_data.reset_mock()
 
-    _ = EngineBase.train_pipeline(dummy_binary_pipeline_class({}), X, y,
-                                  optimize_thresholds=True, objective=F1())
+    _ = train_pipeline(dummy_binary_pipeline_class({}), X, y,
+                       optimize_thresholds=True, objective=F1())
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_called_once()
     mock_split_data.assert_called_once()
 
 
-def test_engines_check_pipeline_names_unique(dummy_binary_pipeline_class):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dummy_binary_pipeline_class,
+                                                      stackable_classifiers):
+    X = ww.DataTable(pd.DataFrame({"a": [i for i in range(100)]}))
+    y = ww.DataColumn(pd.Series([i % 2 for i in range(100)]))
 
-    class MinimalEngine(EngineBase):
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=19, ensembling=True, _ensembling_split_size=0.25)
 
-        def evaluate_batch(self, pipelines):
-            """Docstring so codecov doesn't complain."""
+    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.25, random_seed=0)
+    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
 
-        def train_batch(self, pipelines):
-            super().train_batch(pipelines)
+    pipeline1 = dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}})
 
-        def score_batch(self, pipelines, X, y, objectives):
-            super().score_batch(pipelines, X, y, objectives)
+    _ = evaluate_pipeline(pipeline1, X, y, automl)
+    # check the fit length is correct, taking into account the data splits
+    assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(training_indices))
 
-    engine = MinimalEngine(X_train=pd.DataFrame(), y_train=pd.Series())
+    input_pipelines = [make_pipeline_from_components([classifier], problem_type='binary')
+                       for classifier in stackable_classifiers]
 
-    class Pipeline1(dummy_binary_pipeline_class):
-        custom_name = "My Pipeline"
-
-    class Pipeline2(dummy_binary_pipeline_class):
-        custom_name = "My Pipeline"
-
-    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
-        engine.train_batch([Pipeline2({}), Pipeline1({})])
-
-    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
-        engine.score_batch([Pipeline2({}), Pipeline1({})], None, None, None)
+    pipeline2 = make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=1)],
+                                              problem_type='binary',
+                                              custom_name="Stacked Ensemble Classification Pipeline")
+    _ = evaluate_pipeline(pipeline2, X, y, automl)
+    assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(ensembling_indices))

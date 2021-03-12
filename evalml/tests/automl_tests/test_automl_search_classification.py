@@ -202,7 +202,7 @@ def test_callback(X_y_binary):
                           n_jobs=1)
     automl.search()
 
-    assert counts["start_iteration_callback"] == max_iterations
+    assert counts["start_iteration_callback"] == 9
     assert counts["add_result_callback"] == max_iterations
 
 
@@ -630,7 +630,6 @@ def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_m
                           allowed_pipelines=allowed_pipelines, n_jobs=1)
     automl.search()
 
-    assert start_iteration_callback.call_count == 5
     assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineMulticlassPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
     assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class

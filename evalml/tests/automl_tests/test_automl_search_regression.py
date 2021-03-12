@@ -82,7 +82,7 @@ def test_callback(X_y_regression):
                           add_result_callback=add_result_callback, n_jobs=1)
     automl.search()
 
-    assert counts["start_iteration_callback"] == max_iterations
+    assert counts["start_iteration_callback"] == 9
     assert counts["add_result_callback"] == max_iterations
 
 

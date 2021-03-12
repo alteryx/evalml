@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import pandas as pd
 from sklearn.model_selection import KFold
 
@@ -15,7 +17,6 @@ from evalml.problem_types import (
     is_time_series
 )
 from evalml.utils import deprecate_arg
-from collections import namedtuple
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 
@@ -114,6 +115,6 @@ def check_all_pipeline_names_unique(pipelines):
         raise ValueError(f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.")
 
 
-AutoMLData= namedtuple("AutoMLData", ["X_train", "y_train", "ensembling_indices", "data_splitter", "problem_type",
-                                      "objective", "additional_objectives", "optimize_thresholds", "error_callback",
-                                      "random_seed"])
+AutoMLData = namedtuple("AutoMLData", ["X_train", "y_train", "ensembling_indices", "data_splitter", "problem_type",
+                                       "objective", "additional_objectives", "optimize_thresholds", "error_callback",
+                                       "random_seed"])

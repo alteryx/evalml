@@ -1,8 +1,8 @@
 import copy
-import time
-from collections import defaultdict
-import traceback
 import sys
+import time
+import traceback
+from collections import defaultdict
 
 import cloudpickle
 import numpy as np
@@ -16,19 +16,22 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine, train_pipeline
 from evalml.automl.utils import (
+    AutoMLData,
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
-    make_data_splitter,
-    AutoMLData
+    make_data_splitter
 )
-from evalml.exceptions import PipelineScoreError
 from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
     DefaultDataChecks,
     EmptyDataChecks
 )
-from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
+from evalml.exceptions import (
+    AutoMLSearchException,
+    PipelineNotFoundError,
+    PipelineScoreError
+)
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     get_core_objectives,
@@ -561,25 +564,24 @@ class AutoMLSearch:
                 break
             try:
                 computations = []
-
+                new_pipeline_ids = []
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
                     computation = self._engine.submit_evaluation_job(self.automl_data, pipeline)
                     computations.append(computation)
-
                 while self._should_continue() and len(computations) > 0:
-                        computation = computations.pop(0)
-                        if computation.done():
-                            data, pipeline = computation.get_result()
-                            pipeline_id = self._post_evaluation_callback(pipeline, data)
-                            new_pipeline_ids.append(pipeline_id)
-                        else:
-                            computations.append(computation)
+                    computation = computations.pop(0)
+                    if computation.done():
+                        data, pipeline = computation.get_result()
+                        pipeline_id = self._post_evaluation_callback(pipeline, data)
+                        new_pipeline_ids.append(pipeline_id)
+                    else:
+                        computations.append(computation)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
                 if self._handle_keyboard_interrupt():
-                    break
+                    self._interrupted = True
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings['id'].isin(new_pipeline_ids)
             current_batch_pipeline_scores = full_rankings[current_batch_idx]['score']
@@ -619,7 +621,7 @@ class AutoMLSearch:
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
                 best_pipeline = train_pipeline(best_pipeline, X_train, y_train,
-                                                            self.optimize_thresholds, self.objective)
+                                               self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
@@ -637,6 +639,7 @@ class AutoMLSearch:
             bool: True if yes, False if no.
         """
         if self._interrupted:
+            print("Here!")
             return False
 
         # for add_to_rankings

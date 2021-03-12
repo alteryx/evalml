@@ -1,4 +1,9 @@
-from evalml.automl.engine.engine_base import EngineBase, EngineComputation, train_pipeline, evaluate_pipeline
+from evalml.automl.engine.engine_base import (
+    EngineBase,
+    EngineComputation,
+    evaluate_pipeline,
+    train_pipeline
+)
 
 
 class DaskComputation(EngineComputation):

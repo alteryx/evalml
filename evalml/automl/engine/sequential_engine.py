@@ -1,4 +1,9 @@
-from evalml.automl.engine.engine_base import EngineBase, EngineComputation, train_pipeline, evaluate_pipeline
+from evalml.automl.engine.engine_base import (
+    EngineBase,
+    EngineComputation,
+    evaluate_pipeline,
+    train_pipeline
+)
 from evalml.objectives.utils import get_objective
 from evalml.utils import get_logger
 
@@ -42,7 +47,5 @@ class SequentialEngine(EngineBase):
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         computation = SequentialComputation(work=pipeline.score,
                                             X=X, y=y, objectives=objectives)
-        computation.meta_data["pipeline_name"] = pipeline.custom_name
+        computation.meta_data["pipeline_name"] = pipeline.name
         return computation
-
-

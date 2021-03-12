@@ -7,9 +7,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from evalml.automl.utils import (
-    tune_binary_threshold
-)
+from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
