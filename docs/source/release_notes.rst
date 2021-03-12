@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
+        * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
     * Fixes
     * Changes
