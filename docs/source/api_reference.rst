@@ -46,6 +46,14 @@ Data splitter classes for imbalanced classification datasets.
 
     BalancedClassificationDataTVSplit
     BalancedClassificationDataCVSplit
+    KMeansSMOTECVSplit
+    KMeansSMOTETVSplit
+    SMOTETomekCVSplit
+    SMOTETomekTVSplit
+    RandomUnderSamplerCVSplit
+    RandomUnderSamplerTVSplit
+    SMOTENCCVSplit
+    SMOTENCTVSplit
 
 
 .. currentmodule:: evalml.exceptions
