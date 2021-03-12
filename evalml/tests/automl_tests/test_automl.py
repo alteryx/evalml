@@ -1029,6 +1029,20 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
         automl.get_pipeline(0)
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_get_pipeline(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    automl.search()
+    for _, ranking in automl.rankings.iterrows():
+        pl = automl.get_pipeline(ranking.id)
+        assert pl.parameters == ranking.parameters
+        assert pl.name == ranking.pipeline_name
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @pytest.mark.parametrize("return_dict", [True, False])
