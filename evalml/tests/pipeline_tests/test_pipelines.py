@@ -1998,15 +1998,12 @@ def test_score_error_when_custom_objective_not_instantiated(problem_type, logist
         pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])
 
 
-def test_binary_pipeline_string_target_thresholding(make_data_type, X_y_binary):
-    class BinaryClass(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
-
+def test_binary_pipeline_string_target_thresholding(make_data_type, logistic_regression_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    X = make_data_type('ww', (X))
+    X = make_data_type('ww', X)
     y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
     objective = get_objective("F1", return_instance=True)
-    pipeline = BinaryClass(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     assert pipeline.threshold is None
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
@@ -2014,18 +2011,12 @@ def test_binary_pipeline_string_target_thresholding(make_data_type, X_y_binary):
     assert pipeline.threshold is not None
 
 
-def test_pipeline_thresholding_errors(make_data_type, X_y_multi, X_y_binary):
-    class BinaryClass(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
-
-    class MulticlassClass(MulticlassClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'Logistic Regression Classifier']
-
+def test_pipeline_thresholding_errors(make_data_type, logistic_regression_binary_pipeline_class, logistic_regression_multiclass_pipeline_class, X_y_multi, X_y_binary):
     X, y = X_y_multi
-    X = make_data_type('ww', (X))
+    X = make_data_type('ww', X)
     y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
     objective = get_objective("F1 Macro", return_instance=True)
-    pipeline = MulticlassClass(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     pred_proba = pipeline.predict(X, y)
     with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
@@ -2035,10 +2026,10 @@ def test_pipeline_thresholding_errors(make_data_type, X_y_multi, X_y_binary):
     with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
         pipeline.optimize_threshold(X, y, pred_proba, objective)
     X, y = X_y_binary
-    X = make_data_type('ww', (X))
+    X = make_data_type('ww', X)
     y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
     objective = get_objective("Log Loss Binary", return_instance=True)
-    pipeline = BinaryClass(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
     with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
