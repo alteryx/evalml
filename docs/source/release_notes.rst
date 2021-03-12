@@ -9,6 +9,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
 
 **v0.20.0 Mar. 10, 2021**
     * Enhancements
