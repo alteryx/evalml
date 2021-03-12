@@ -426,21 +426,10 @@ def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_mul
     clf.feature_importance
 
 
-def test_ts_binary_pipeline_string_target(make_data_type, time_series_binary_classification_pipeline_class, X_y_binary):
+def test_ts_binary_pipeline_target_thresholding(make_data_type, time_series_binary_classification_pipeline_class, X_y_binary):
     X, y = X_y_binary
     X = make_data_type('ww', X)
-    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
-    binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
-    binary_pipeline.fit(X, y)
-    binary_pipeline.predict_proba(X, y).iloc[:, 1]
-    binary_pipeline.predict(X, y)
-
-
-def test_ts_binary_pipeline_string_target_thresholding(make_data_type, time_series_binary_classification_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-    X = make_data_type('ww', X)
-    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    y = make_data_type('ww', y)
     objective = get_objective("F1", return_instance=True)
 
     binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
