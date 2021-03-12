@@ -11,6 +11,12 @@ Release Notes
     * Testing Changes
         * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
 
+.. warning::
+
+    **Breaking Changes**
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
+
+
 **v0.20.0 Mar. 10, 2021**
     * Enhancements
         * Added a GitHub Action for Detecting dependency changes :pr:`1933`
@@ -48,7 +54,6 @@ Release Notes
     **Breaking Changes**
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
-        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
 
 **v0.19.0 Feb. 23, 2021**
