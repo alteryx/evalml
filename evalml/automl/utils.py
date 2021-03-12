@@ -114,5 +114,6 @@ def check_all_pipeline_names_unique(pipelines):
         raise ValueError(f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.")
 
 
-AutoMLData= namedtuple("AutoMLData", ["X_train", "y_train", "data_splitter", "problem_type", "objective",
-                                      "additional_objectives", "optimize_thresholds", "error_callback", "random_seed"])
+AutoMLData= namedtuple("AutoMLData", ["X_train", "y_train", "ensembling_indices", "data_splitter", "problem_type",
+                                      "objective", "additional_objectives", "optimize_thresholds", "error_callback",
+                                      "random_seed"])

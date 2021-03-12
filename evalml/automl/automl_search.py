@@ -335,9 +335,10 @@ class AutoMLSearch:
         else:
             self._engine = engine
 
-        self.automl_data = AutoMLData(self.X_train, self.y_train, self.data_splitter, self.problem_type,
-                                      self.objective, self.additional_objectives, self.optimize_thresholds, self.error_callback,
-                                      self.random_seed)
+        self.automl_data = AutoMLData(self.X_train, self.y_train, self.ensembling_indices,
+                                      self.data_splitter, self.problem_type,
+                                      self.objective, self.additional_objectives, self.optimize_thresholds,
+                                      self.error_callback, self.random_seed)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -560,6 +561,7 @@ class AutoMLSearch:
                 break
             try:
                 computations = []
+
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
                     computation = self._engine.submit_evaluation_job(self.automl_data, pipeline)

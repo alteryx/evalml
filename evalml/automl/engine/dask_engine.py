@@ -1,4 +1,4 @@
-from evalml.automl.engine import EngineComputation, EngineBase, train_pipeline, train_and_score_pipeline
+from evalml.automl.engine.engine_base import EngineBase, EngineComputation, train_pipeline, evaluate_pipeline
 
 
 class DaskComputation(EngineComputation):
@@ -24,10 +24,10 @@ class DaskEngine(EngineBase):
         self.client = client
 
     def submit_evaluation_job(self, automl_data, pipeline) -> EngineComputation:
-        dask_future = self.client.submit(train_and_score_pipeline, pipeline=pipeline,
+        dask_future = self.client.submit(evaluate_pipeline, pipeline=pipeline,
                                          automl_data=automl_data,
-                                         full_X_train=automl_data.X_train,
-                                         full_y_train=automl_data.y_train)
+                                         X=automl_data.X_train,
+                                         y=automl_data.y_train)
         return DaskComputation(dask_future)
 
     def submit_training_job(self, automl_data, pipeline) -> EngineComputation:

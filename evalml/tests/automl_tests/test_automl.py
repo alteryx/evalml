@@ -2024,8 +2024,7 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
 
 
-@pytest.mark.parametrize("callback", [log_error_callback, silent_error_callback, raise_error_callback,
-                                      raise_and_save_error_callback, log_and_save_error_callback])
+@pytest.mark.parametrize("callback", [log_error_callback, silent_error_callback, raise_error_callback])
 @pytest.mark.parametrize("error_type", ['fit', 'score', 'fit-single'])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -2486,27 +2485,24 @@ def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class)
     assert automl._check_for_high_variance(pipeline, cv_scores)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.engine.EngineBase.train_and_score_pipeline')
-def test_automl_check_high_variance_logs_warning(mock_train, mock_fit_binary, mock_score_binary, X_y_binary, caplog):
+def test_automl_check_high_variance_logs_warning(mock_fit_binary, X_y_binary, caplog):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
-    mock_train.return_value = {'cv_scores': pd.Series([1, 1, 1]),
-                               'training_time': 0,
-                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
-    automl.search()
-    out = caplog.text
-    assert "High coefficient of variation" not in out
+
+    with patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 1}):
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+        automl.search()
+        out = caplog.text
+        assert "High coefficient of variation" not in out
 
     caplog.clear()
-    mock_train.return_value = {'cv_scores': pd.Series([0, 1, 2, 3]),
-                               'training_time': 0,
-                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
-    automl.search()
-    out = caplog.text
-    assert "High coefficient of variation" in out
+
+    desired_score_values = [{"Log Loss Binary": i} for i in [1, 2, 10] * 2]
+    with patch('evalml.pipelines.BinaryClassificationPipeline.score', side_effect=desired_score_values):
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2)
+        automl.search()
+        out = caplog.text
+        assert "High coefficient of variation" in out
 
 
 def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):

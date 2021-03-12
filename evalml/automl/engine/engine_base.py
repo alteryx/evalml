@@ -97,6 +97,7 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
     logger.info("\tStarting cross validation")
     X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
     y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
+    cv_pipeline = pipeline
     for i, (train, valid) in enumerate(automl_data.data_splitter.split(X_pd, y_pd)):
         if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
@@ -113,7 +114,6 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
             if diff_string:
                 raise Exception(diff_string)
         objectives_to_score = [automl_data.objective] + automl_data.additional_objectives
-        cv_pipeline = None
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
             cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_data.optimize_thresholds, automl_data.objective)
@@ -152,3 +152,16 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
     cv_score_mean = cv_scores.mean()
     logger.info(f"\tFinished cross validation - mean {automl_data.objective.name}: {cv_score_mean:.3f}")
     return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}, cv_pipeline
+
+
+def evaluate_pipeline(pipeline, X, y, automl_data):
+    X_train, y_train = X, y
+
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        X_train, y_train = X.iloc[automl_data.ensembling_indices], y.iloc[automl_data.ensembling_indices]
+    elif automl_data.ensembling_indices is not None:
+        training_indices = [i for i in range(len(X)) if i not in automl_data.ensembling_indices]
+        X_train = X.iloc[training_indices]
+        y_train = y.iloc[training_indices]
+
+    return train_and_score_pipeline(pipeline, automl_data=automl_data, full_X_train=X_train, full_y_train=y_train)
