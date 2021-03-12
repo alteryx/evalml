@@ -3,7 +3,6 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 from evalml.pipelines import PipelineBase
-from evalml.problem_types import is_binary
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
@@ -147,8 +146,8 @@ class ClassificationPipeline(PipelineBase):
             y_pred_proba (ww.DataColumn, np.nparray): The predicted probabilities of the target outputted by the pipeline
             objective (ObjectiveBase): The objective to threshold with. Must be thresholdable.
         """
-        if is_binary(self.problem_type) and objective.can_optimize_threshold:
+        if self.can_tune_threshold_with_objective(objective):
             targets = self._encode_targets(y.to_series())
             self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
         else:
-            raise ValueError("Problem type must be binary and objective must be optimizable")
+            raise ValueError("Problem type must be binary and objective must be optimizable.")
