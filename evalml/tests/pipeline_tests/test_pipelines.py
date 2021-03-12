@@ -2011,7 +2011,16 @@ def test_binary_pipeline_string_target_thresholding(make_data_type, logistic_reg
     assert pipeline.threshold is not None
 
 
-def test_pipeline_thresholding_errors(make_data_type, logistic_regression_binary_pipeline_class, logistic_regression_multiclass_pipeline_class, X_y_multi, X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
+def test_pipeline_thresholding_errors(mock_multi_predict, mock_multi_score, mock_multi_fit,
+                                      mock_binary_pred_proba, mock_binary_score, mock_binary_fit,
+                                      make_data_type, logistic_regression_binary_pipeline_class,
+                                      logistic_regression_multiclass_pipeline_class, X_y_multi, X_y_binary):
     X, y = X_y_multi
     X = make_data_type('ww', X)
     y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
