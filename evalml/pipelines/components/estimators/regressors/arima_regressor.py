@@ -49,23 +49,25 @@ class ARIMARegressor(Estimator):
                 X.index = y.index
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-        elif y is not None and isinstance(y.index, pd.DatetimeIndex):
+        elif isinstance(y.index, pd.DatetimeIndex):
             date_col = y.index
 
         if date_col is None:
-            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. If not it will look for the datetime column in the index of X or y."
+            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
+                  "If not it will look for the datetime column in the index of X or y."
             raise ValueError(msg)
         return date_col
 
     def fit(self, X, y=None):
-        p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
-        arima = import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
-        X, y = self._manage_woodwork(X, y)
-
-        dates = self.get_dates(X, y)
         if y is None:
             raise ValueError('ARIMA Regressor requires y as input.')
-        elif X is not None:
+
+        p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
+        arima = import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
+
+        X, y = self._manage_woodwork(X, y)
+        dates = self.get_dates(X, y)
+        if X is not None:
             arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **self.parameters)
         else:
             arima_with_data = arima.ARIMA(endog=y, dates=dates, **self.parameters)

@@ -29,26 +29,6 @@ def test_fit_predict_ts_with_X_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
 
-    X, y = ts_data
-
-    a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
-    a_clf.fit(solver='nm')
-    y_pred_a = a_clf.predict(params=(1, 0, 0))
-
-    clf = ARIMARegressor(p=1, d=0, q=0)
-    clf.fit(X=X, y=y)
-    y_pred = clf.predict(X=X, y=y)
-
-    assert (y_pred == y_pred_a).all()
-
-
-def test_fit_predict_ts_with_y_index(ts_data):
-    X, y = ts_data
-    X = X.reset_index(drop=True)
-    assert isinstance(y.index, pd.DatetimeIndex)
-
-    X, y = ts_data
-
     a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
     a_clf.fit(solver='nm')
     y_pred_a = a_clf.predict(params=(1, 0, 0))
