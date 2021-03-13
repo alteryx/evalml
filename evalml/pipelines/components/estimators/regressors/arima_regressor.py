@@ -42,6 +42,8 @@ class ARIMARegressor(Estimator):
     def get_dates(self, X, y):
         date_col = None
 
+        if isinstance(y.index, pd.DatetimeIndex):
+            date_col = y.index
         if X is not None:
             if self.date_column in X.columns:
                 date_col = X[self.date_column]
@@ -49,8 +51,9 @@ class ARIMARegressor(Estimator):
                 X.index = y.index
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-        elif isinstance(y.index, pd.DatetimeIndex):
-            date_col = y.index
+            else:
+                X.index = y.index
+            y.index = date_col if date_col is not None else y.index
 
         if date_col is None:
             msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \

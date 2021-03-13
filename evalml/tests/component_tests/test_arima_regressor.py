@@ -25,9 +25,10 @@ def test_feature_importance(ts_data):
     clf.feature_importance == np.zeros(1)
 
 
-def test_fit_predict_ts_with_X_index(ts_data):
+def test_fit_predict_ts_with_Xandy_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
+    assert isinstance(y.index, pd.DatetimeIndex)
 
     a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
     a_clf.fit(solver='nm')
@@ -38,6 +39,54 @@ def test_fit_predict_ts_with_X_index(ts_data):
     y_pred = clf.predict(X=X, y=y)
 
     assert (y_pred == y_pred_a).all()
+
+
+def test_fit_predict_ts_with_Xnoty_index(ts_data):
+    X, y = ts_data
+
+    a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
+    a_clf.fit(solver='nm')
+    y_pred_a = a_clf.predict(params=(1, 0, 0))
+
+    y = y.reset_index(drop=True)
+    assert isinstance(X.index, pd.DatetimeIndex)
+    assert not isinstance(y.index, pd.DatetimeIndex)
+
+    clf = ARIMARegressor(p=1, d=0, q=0)
+    clf.fit(X=X, y=y)
+    y_pred = clf.predict(X=X, y=y)
+
+    assert (y_pred == y_pred_a).all()
+
+
+def test_fit_predict_ts_with_ynotX_index(ts_data):
+    X, y = ts_data
+
+    a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
+    a_clf.fit(solver='nm')
+    y_pred_a = a_clf.predict(params=(1, 0, 0))
+
+    X = X.reset_index(drop=True)
+    assert isinstance(y.index, pd.DatetimeIndex)
+    assert not isinstance(X.index, pd.DatetimeIndex)
+
+    clf = ARIMARegressor(p=1, d=0, q=0)
+    clf.fit(X=X, y=y)
+    y_pred = clf.predict(X=X, y=y)
+
+    assert (y_pred == y_pred_a).all()
+
+
+def test_fit_ts_with_notXnoty_index(ts_data):
+    X, y = ts_data
+    X = X.reset_index(drop=True)
+    y = y.reset_index(drop=True)
+    assert not isinstance(y.index, pd.DatetimeIndex)
+    assert not isinstance(X.index, pd.DatetimeIndex)
+
+    clf = ARIMARegressor(p=1, d=0, q=0)
+    with pytest.raises(ValueError, match="ARIMA regressor requires input data"):
+       clf.fit(X=X, y=y)
 
 
 def test_fit_predict_ts_no_X(ts_data):
@@ -54,7 +103,7 @@ def test_fit_predict_ts_no_X(ts_data):
     assert (y_pred == y_pred_a).all()
 
 
-def test_fit_predict_date_col(ts_data):
+def test_fit_predict_date_col_named(ts_data):
     X, y = ts_data
 
     a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
@@ -67,13 +116,3 @@ def test_fit_predict_date_col(ts_data):
     y_pred = clf.predict(X=X, y=y)
 
     assert (y_pred == y_pred_a).all()
-
-
-def test_fit_predict_no_date_col_or_index(ts_data):
-    X, y = ts_data
-    X = X.reset_index(drop=True)
-    y = y.reset_index(drop=True)
-
-    clf = ARIMARegressor()
-    with pytest.raises(ValueError):
-        clf.fit(X, y)
