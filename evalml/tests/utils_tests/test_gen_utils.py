@@ -481,7 +481,6 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
 
 
 def test_deprecate_arg():
-
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
         assert deprecate_arg("foo", "bar", None, 5) == 5
