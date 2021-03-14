@@ -18,12 +18,6 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter
 )
-from evalml.data_checks import (
-    AutoMLDataChecks,
-    DataChecks,
-    DefaultDataChecks,
-    EmptyDataChecks
-)
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
@@ -44,12 +38,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    convert_to_seconds,
-    deprecate_arg,
-    infer_feature_types
-)
+from evalml.utils import convert_to_seconds, deprecate_arg, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -171,6 +160,8 @@ class AutoMLSearch:
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
+            pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
 
@@ -251,8 +242,6 @@ class AutoMLSearch:
             self.plot = PipelineSearchPlots(self)
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
-
-        self._data_check_results = None
 
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
@@ -382,11 +371,6 @@ class AutoMLSearch:
             return objective()
         return objective
 
-    @property
-    def data_check_results(self):
-        """If there are data checks, return any error messages that are found"""
-        return self._data_check_results
-
     def __str__(self):
         def _print_list(obj_list):
             lines = sorted(['\t{}'.format(o.name) for o in obj_list])
@@ -433,33 +417,6 @@ class AutoMLSearch:
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
 
-    def _validate_data_checks(self, data_checks):
-        """Validate data_checks parameter.
-
-        Arguments:
-            data_checks (DataChecks, list(Datacheck), str, None): Input to validate. If not of the right type,
-                raise an exception.
-
-        Returns:
-            An instance of DataChecks used to perform checks before search.
-        """
-        if isinstance(data_checks, DataChecks):
-            return data_checks
-        elif isinstance(data_checks, list):
-            return AutoMLDataChecks(data_checks)
-        elif isinstance(data_checks, str):
-            if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective, n_splits=self.data_splitter.get_n_splits())
-            elif data_checks == "disabled":
-                return EmptyDataChecks()
-            else:
-                raise ValueError("If data_checks is a string, it must be either 'auto' or 'disabled'. "
-                                 f"Received '{data_checks}'.")
-        elif data_checks is None:
-            return EmptyDataChecks()
-        else:
-            return DataChecks(data_checks)
-
     def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
 
@@ -481,15 +438,10 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, data_checks="auto", show_iteration_plot=True):
+    def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Arguments:
-            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
-                automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, `no` data checks will be done.
-                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
-
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
 
@@ -506,16 +458,6 @@ class AutoMLSearch:
                 get_ipython
             except NameError:
                 show_iteration_plot = False
-
-        data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
-                                                        _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for result in self._data_check_results["warnings"]:
-            logger.warning(result["message"])
-        for result in self._data_check_results["errors"]:
-            logger.error(result["message"])
-        if self._data_check_results["errors"]:
-            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
 
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)

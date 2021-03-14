@@ -5,7 +5,6 @@ import woodwork as ww
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
-    AutoMLDataChecks,
     DataCheck,
     DataCheckError,
     DataCheckMessageCode,
@@ -15,6 +14,11 @@ from evalml.data_checks import (
     EmptyDataChecks
 )
 from evalml.exceptions import DataCheckInitError
+
+
+def test_data_checks_not_list_error(X_y_binary):
+    with pytest.raises(ValueError, match="Parameter data_checks must be a list."):
+        DataChecks(data_checks=1)
 
 
 def test_data_checks(X_y_binary):
@@ -261,11 +265,6 @@ class MockCheck2(DataCheck):
 def test_data_checks_raises_value_errors_on_init(classes, params, expected_exception, expected_message):
     with pytest.raises(expected_exception, match=expected_message):
         DataChecks(classes, params)
-
-
-def test_automl_data_checks_raises_value_error():
-    with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
-        AutoMLDataChecks([1, MockCheck])
 
 
 @pytest.mark.parametrize("objective", ["Root Mean Squared Log Error", "Mean Squared Log Error", "Mean Absolute Percentage Error"])
