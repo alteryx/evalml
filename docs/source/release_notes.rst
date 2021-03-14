@@ -3,12 +3,14 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
+        * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
     * Fixes
     * Changes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
     * Documentation Changes
     * Testing Changes
+        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
 
 .. warning::
 

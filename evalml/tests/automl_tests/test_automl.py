@@ -290,7 +290,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=None,', 'n_splits=5, random_seed=0'),
+        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=4,', 'n_splits=5, random_seed=0'),
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
