@@ -9,7 +9,8 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Added tests to confirm support for Python 3.9 :pr:`1724`
 
 **v0.20.0 Mar. 10, 2021**
     * Enhancements
