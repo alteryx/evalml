@@ -2,10 +2,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import ObjectiveNotFoundError
+from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
     CostBenefitMatrix,
+    LogLossBinary,
     MulticlassClassificationObjective,
     RegressionObjective,
     get_all_objective_names,
@@ -61,7 +62,7 @@ def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
 
 def test_get_objective_return_instance_does_not_work_for_some_objectives():
 
-    with pytest.raises(TypeError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
+    with pytest.raises(ObjectiveCreationError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
         get_objective("Cost Benefit Matrix", return_instance=True)
 
     cbm = CostBenefitMatrix(0, 0, 0, 0)
@@ -126,3 +127,9 @@ def test_objective_outputs(X_y_binary, X_y_multi, binary_core_objectives,
                 y_predicted_pd = pd.DataFrame(y_predicted)
             np.testing.assert_almost_equal(objective.score(y_true_multi_np, y_predicted), expected_value)
             np.testing.assert_almost_equal(objective.score(pd.Series(y_true_multi_np), y_predicted_pd), expected_value)
+
+
+def test_is_defined_for_problem_type():
+    assert LogLossBinary.is_defined_for_problem_type(ProblemTypes.BINARY)
+    assert LogLossBinary.is_defined_for_problem_type('binary')
+    assert not LogLossBinary.is_defined_for_problem_type(ProblemTypes.MULTICLASS)

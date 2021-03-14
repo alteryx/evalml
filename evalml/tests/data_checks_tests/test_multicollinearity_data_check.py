@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -31,7 +30,7 @@ def test_multicollinearity_data_check_init():
 
 
 def test_multicollinearity_returns_warning():
-    col = pd.Series([1, 0, 2, 3, 4])
+    col = pd.Series([1, 0, 0, 3, 4])
     X = pd.DataFrame({'col_1': col,
                       'col_2': col * 3,
                       'col_3': ~col,
@@ -47,28 +46,31 @@ def test_multicollinearity_returns_warning():
                                       details={'columns': [('col_1', 'col_2'), ('col_1', 'col_3'), ('col_1', 'col_4'), ('col_1', 'col_5'),
                                                            ('col_2', 'col_3'), ('col_2', 'col_4'), ('col_2', 'col_5'),
                                                            ('col_3', 'col_4'), ('col_3', 'col_5'), ('col_4', 'col_5')]}).to_dict()],
-        "errors": []
+        "errors": [],
+        "actions": []
     }
 
 
 @pytest.mark.parametrize("data_type", ['pd', 'ww'])
-def test_multicollinearity_nonnumeric_cols(data_type):
+def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
     X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "a"],
-                      'col_2': ["w", "x", "y", "z", "b"],
+                      'col_2': ["w", "x", "y", "z", "w"],
                       'col_3': ["a", "a", "c", "d", "a"],
                       'col_4': ["a", "b", "c", "d", "a"],
                       'col_5': ["0", "0", "1", "2", "0"],
                       'col_6': [1, 1, 2, 3, 1]
                       })
-    if data_type == 'ww':
-        X = ww.DataTable(X)
+    X = make_data_type(data_type, X)
     multi_check = MulticollinearityDataCheck(threshold=0.9)
     assert multi_check.validate(X) == {
-        "warnings": [DataCheckWarning(message="Columns are likely to be correlated: [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6'), ('col_1', 'col_2'), ('col_2', 'col_4')]",
+        "warnings": [DataCheckWarning(message="Columns are likely to be correlated: [('col_1', 'col_2'), ('col_1', 'col_4'), ('col_2', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6')]",
                                       data_check_name=multi_data_check_name,
                                       message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
-                                      details={'columns': [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6'), ('col_1', 'col_2'), ('col_2', 'col_4')]}).to_dict()],
-        "errors": []
+                                      details={'columns': [('col_1', 'col_2'), ('col_1', 'col_4'),
+                                                           ('col_2', 'col_4'), ('col_3', 'col_5'),
+                                                           ('col_3', 'col_6'), ('col_5', 'col_6')]}).to_dict()],
+        "errors": [],
+        "actions": []
     }
 
 
@@ -76,4 +78,4 @@ def test_multicollinearity_data_check_input_formats():
     multi_check = MulticollinearityDataCheck(threshold=0.9)
 
     # test empty pd.DataFrame
-    assert multi_check.validate(pd.DataFrame()) == {"warnings": [], "errors": []}
+    assert multi_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}

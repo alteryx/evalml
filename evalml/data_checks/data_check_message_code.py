@@ -13,6 +13,9 @@ class DataCheckMessageCode(Enum):
     TARGET_INCOMPATIBLE_OBJECTIVE = "target_incompatible_objective"
     """Message code for target data that has incompatible values for the specified objective"""
 
+    TARGET_IS_NONE = "target_is_none"
+    """Message code for when target is None."""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
@@ -46,6 +49,9 @@ class DataCheckMessageCode(Enum):
     CLASS_IMBALANCE_BELOW_THRESHOLD = "class_imbalance_below_threshold"
     """Message code for when balance in classes is less than the threshold."""
 
+    CLASS_IMBALANCE_SEVERE = "class_imbalance_severe"
+    """Message code for when balance in classes is less than the threshold and minimum class is less than minimum number of accepted samples."""
+
     CLASS_IMBALANCE_BELOW_FOLDS = "class_imbalance_below_folds"
     """Message code for when the number of values for each target is below 2 * number of CV folds."""
 
@@ -57,3 +63,21 @@ class DataCheckMessageCode(Enum):
 
     IS_MULTICOLLINEAR = "is_multicollinear"
     """Message code for when data is potentially multicollinear."""
+
+    NOT_UNIQUE_ENOUGH = "not_unique_enough"
+    """Message code for when data does not possess enough unique values."""
+
+    TOO_UNIQUE = "too_unique"
+    """Message code for when data possesses too many unique values."""
+
+    TOO_SPARSE = "too sparse"
+    """Message code for when multiclass data has values that are too sparsely populated."""
+
+    MISMATCHED_INDICES = "mismatched_indices"
+    """Message code for when input target and features have mismatched indices."""
+
+    MISMATCHED_INDICES_ORDER = "mismatched_indices_order"
+    """Message code for when input target and features have mismatched indices order. The two inputs have the same index values, but shuffled."""
+
+    MISMATCHED_LENGTHS = "mismatched_lengths"
+    """Message code for when input target and features have different lengths."""

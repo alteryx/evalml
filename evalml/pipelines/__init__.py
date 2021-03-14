@@ -29,7 +29,9 @@ from .components import (
     StackedEnsembleRegressor,
     DelayedFeatureTransformer,
     DFSTransformer,
-    KNeighborsClassifier
+    KNeighborsClassifier,
+    SVMClassifier,
+    SVMRegressor
 )
 
 from .component_graph import ComponentGraph

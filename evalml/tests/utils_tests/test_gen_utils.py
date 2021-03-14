@@ -1,5 +1,6 @@
 import inspect
 import os
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -11,18 +12,14 @@ from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
-    check_random_state_equality,
     classproperty,
     convert_to_seconds,
+    deprecate_arg,
     drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
-    get_random_state,
     import_or_raise,
-    infer_feature_types,
     jupyter_check,
     pad_with_nans,
     save_plot
@@ -70,20 +67,6 @@ def test_convert_to_seconds():
 
     with pytest.raises(AssertionError, match="Invalid unit."):
         convert_to_seconds("10 years")
-
-
-def test_get_random_state_int():
-    assert abs(get_random_state(None).rand() - get_random_state(None).rand()) > 1e-6
-    assert get_random_state(42).rand() == np.random.RandomState(42).rand()
-    assert get_random_state(np.random.RandomState(42)).rand() == np.random.RandomState(42).rand()
-    assert get_random_state(SEED_BOUNDS.min_bound).rand() == np.random.RandomState(SEED_BOUNDS.min_bound).rand()
-    assert get_random_state(SEED_BOUNDS.max_bound).rand() == np.random.RandomState(SEED_BOUNDS.max_bound).rand()
-    with pytest.raises(ValueError, match=r'Seed "[-0-9]+" is not in the range \[{}, {}\], inclusive'.format(
-            SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)):
-        get_random_state(SEED_BOUNDS.min_bound - 1)
-    with pytest.raises(ValueError, match=r'Seed "[-0-9]+" is not in the range \[{}, {}\], inclusive'.format(
-            SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound)):
-        get_random_state(SEED_BOUNDS.max_bound + 1)
 
 
 def test_get_random_seed_rng():
@@ -205,29 +188,6 @@ def test_import_or_warn_errors(dummy_importlib):
         import_or_raise("attr_error_lib", warning=True)
 
 
-def test_check_random_state_equality():
-    assert check_random_state_equality(get_random_state(1), get_random_state(1))
-
-    rs_1 = get_random_state(1)
-    rs_2 = get_random_state(2)
-    assert not check_random_state_equality(rs_1, rs_2)
-
-    # Test equality
-    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
-    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
-    assert check_random_state_equality(rs_1, rs_2)
-
-    # Test numpy array value not equal
-    rs_1.set_state(tuple(['MT19937', np.array([0] * 624), 0, 1, 0.1]))
-    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
-    assert not check_random_state_equality(rs_1, rs_2)
-
-    # Test non-numpy array value not equal
-    rs_1.set_state(tuple(['MT19937', np.array([1] * 624), 0, 1, 0.1]))
-    rs_2.set_state(tuple(['MT19937', np.array([1] * 624), 1, 1, 0.1]))
-    assert not check_random_state_equality(rs_1, rs_2)
-
-
 @patch('evalml.utils.gen_utils.import_or_raise')
 def test_jupyter_check_errors(mock_import_or_raise):
     mock_import_or_raise.side_effect = ImportError
@@ -308,153 +268,6 @@ def test_rename_column_names_to_numeric():
     X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
     pd.testing.assert_frame_equal(X_renamed.to_dataframe(), X_expected)
     assert X_renamed.logical_types == {0: ww.logical_types.Categorical, 1: ww.logical_types.Categorical}
-
-
-def test_convert_woodwork_types_wrapper_with_nan():
-    y = _convert_woodwork_types_wrapper(pd.Series([1, 2, None], dtype="Int64"))
-    pd.testing.assert_series_equal(y, pd.Series([1, 2, np.nan], dtype="float64"))
-
-    y = _convert_woodwork_types_wrapper(pd.array([1, 2, None], dtype="Int64"))
-    pd.testing.assert_series_equal(y, pd.Series([1, 2, np.nan], dtype="float64"))
-
-    y = _convert_woodwork_types_wrapper(pd.Series(["a", "b", None], dtype="string"))
-    pd.testing.assert_series_equal(y, pd.Series(["a", "b", np.nan], dtype="object"))
-
-    y = _convert_woodwork_types_wrapper(pd.array(["a", "b", None], dtype="string"))
-    pd.testing.assert_series_equal(y, pd.Series(["a", "b", np.nan], dtype="object"))
-
-    y = _convert_woodwork_types_wrapper(pd.Series([True, False, None], dtype="boolean"))
-    pd.testing.assert_series_equal(y, pd.Series([True, False, np.nan]))
-
-    y = _convert_woodwork_types_wrapper(pd.array([True, False, None], dtype="boolean"))
-    pd.testing.assert_series_equal(y, pd.Series([True, False, np.nan]))
-
-
-def test_convert_woodwork_types_wrapper():
-    y = _convert_woodwork_types_wrapper(pd.Series([1, 2, 3], dtype="Int64"))
-    pd.testing.assert_series_equal(y, pd.Series([1, 2, 3], dtype="int64"))
-
-    y = _convert_woodwork_types_wrapper(pd.array([1, 2, 3], dtype="Int64"))
-    pd.testing.assert_series_equal(y, pd.Series([1, 2, 3], dtype="int64"))
-
-    y = _convert_woodwork_types_wrapper(pd.Series(["a", "b", "a"], dtype="string"))
-    pd.testing.assert_series_equal(y, pd.Series(["a", "b", "a"], dtype="object"))
-
-    y = _convert_woodwork_types_wrapper(pd.array(["a", "b", "a"], dtype="string"))
-    pd.testing.assert_series_equal(y, pd.Series(["a", "b", "a"], dtype="object"))
-
-    y = _convert_woodwork_types_wrapper(pd.Series([True, False, True], dtype="boolean"))
-    pd.testing.assert_series_equal(y, pd.Series([True, False, True], dtype="bool"))
-
-    y = _convert_woodwork_types_wrapper(pd.array([True, False, True], dtype="boolean"))
-    pd.testing.assert_series_equal(y, pd.Series([True, False, True], dtype="bool"))
-
-
-def test_convert_woodwork_types_wrapper_series_name():
-    name = "my series name"
-    series_with_name = pd.Series([1, 2, 3], name=name)
-    y = _convert_woodwork_types_wrapper(series_with_name)
-    assert y.name == name
-
-
-def test_convert_woodwork_types_wrapper_dataframe():
-    X = pd.DataFrame({"Int series": pd.Series([1, 2, 3], dtype="Int64"),
-                      "Int array": pd.array([1, 2, 3], dtype="Int64"),
-                      "Int series with nan": pd.Series([1, 2, None], dtype="Int64"),
-                      "Int array with nan": pd.array([1, 2, None], dtype="Int64"),
-                      "string series": pd.Series(["a", "b", "a"], dtype="string"),
-                      "string array": pd.array(["a", "b", "a"], dtype="string"),
-                      "string series with nan": pd.Series(["a", "b", None], dtype="string"),
-                      "string array with nan": pd.array(["a", "b", None], dtype="string"),
-                      "boolean series": pd.Series([True, False, True], dtype="boolean"),
-                      "boolean array": pd.array([True, False, True], dtype="boolean"),
-                      "boolean series with nan": pd.Series([True, False, None], dtype="boolean"),
-                      "boolean array with nan": pd.array([True, False, None], dtype="boolean")
-                      })
-    X_expected = pd.DataFrame({"Int series": pd.Series([1, 2, 3], dtype="int64"),
-                               "Int array": pd.array([1, 2, 3], dtype="int64"),
-                               "Int series with nan": pd.Series([1, 2, np.nan], dtype="float64"),
-                               "Int array with nan": pd.array([1, 2, np.nan], dtype="float64"),
-                               "string series": pd.Series(["a", "b", "a"], dtype="object"),
-                               "string array": pd.array(["a", "b", "a"], dtype="object"),
-                               "string series with nan": pd.Series(["a", "b", np.nan], dtype="object"),
-                               "string array with nan": pd.array(["a", "b", np.nan], dtype="object"),
-                               "boolean series": pd.Series([True, False, True], dtype="bool"),
-                               "boolean array": pd.array([True, False, True], dtype="bool"),
-                               "boolean series with nan": pd.Series([True, False, np.nan], dtype="object"),
-                               "boolean array with nan": pd.array([True, False, np.nan], dtype="object")
-                               })
-    pd.testing.assert_frame_equal(X_expected, _convert_woodwork_types_wrapper(X))
-
-
-def test_convert_to_woodwork_structure():
-    X_dt = ww.DataTable(pd.DataFrame([[1, 2], [3, 4]]))
-    pd.testing.assert_frame_equal(X_dt.to_dataframe(), _convert_to_woodwork_structure(X_dt).to_dataframe())
-
-    X_dc = ww.DataColumn(pd.Series([1, 2, 3, 4]))
-    pd.testing.assert_series_equal(X_dc.to_series(), _convert_to_woodwork_structure(X_dc).to_series())
-
-    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
-                         1: pd.Series([3, 4], dtype="Int64")})
-    pd.testing.assert_frame_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_dataframe())
-
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    pd.testing.assert_series_equal(X_pd, _convert_to_woodwork_structure(X_pd).to_series())
-
-    X_list = [1, 2, 3, 4]
-    X_expected = ww.DataColumn(pd.Series(X_list))
-    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_list).to_series())
-    assert X_list == [1, 2, 3, 4]
-
-    X_np = np.array([1, 2, 3, 4])
-    X_expected = ww.DataColumn(pd.Series(X_np))
-    pd.testing.assert_series_equal(X_expected.to_series(), _convert_to_woodwork_structure(X_np).to_series())
-    assert np.array_equal(X_np, np.array([1, 2, 3, 4]))
-
-    X_np = np.array([[1, 2], [3, 4]])
-    X_expected = ww.DataTable(pd.DataFrame(X_np))
-    pd.testing.assert_frame_equal(X_expected.to_dataframe(), _convert_to_woodwork_structure(X_np).to_dataframe())
-    assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
-
-
-def test_convert_to_woodwork_structure_series_name():
-    name = "column with name"
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64", name=name)
-    X_dc = _convert_to_woodwork_structure(X_pd)
-    assert X_dc.name == name
-    pd.testing.assert_series_equal(X_pd, X_dc.to_series())
-
-
-def test_infer_feature_types_dataframe():
-    X_pd = pd.DataFrame({0: pd.Series([1, 2]),
-                         1: pd.Series([3, 4])})
-    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe(), check_dtype=False)
-
-    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
-                         1: pd.Series([3, 4], dtype="Int64")})
-    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe())
-
-    X_expected = X_pd.copy()
-    X_expected[0] = X_expected[0].astype("category")
-    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: "categorical"}).to_dataframe())
-    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: ww.logical_types.Categorical}).to_dataframe())
-
-
-def test_infer_feature_types_series():
-    X_pd = pd.Series([1, 2, 3, 4])
-    X_expected = X_pd.astype("Int64")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd).to_series())
-
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd).to_series())
-
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, "categorical").to_series())
-
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical).to_series())
 
 
 @pytest.mark.parametrize("file_name,format,interactive",
@@ -665,3 +478,16 @@ def test_save_seaborn_default_format(file_name, format, interactive, fitted_tree
     assert os.path.exists(output_)
     assert isinstance(output_, str)
     assert os.path.basename(output_) == 'test_plot.png'
+
+
+def test_deprecate_arg():
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        assert deprecate_arg("foo", "bar", None, 5) == 5
+        assert not warn
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        assert deprecate_arg("foo", "bar", 4, 7) == 4
+        assert len(warn) == 1
+        assert str(warn[0].message).startswith("Argument 'foo' has been deprecated in favor of 'bar'")

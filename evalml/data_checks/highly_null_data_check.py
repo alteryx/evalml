@@ -3,10 +3,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -46,31 +43,33 @@ class HighlyNullDataCheck(DataCheck):
                                                                  "data_check_name": "HighlyNullDataCheck",\
                                                                  "level": "warning",\
                                                                  "code": "HIGHLY_NULL",\
-                                                                 "details": {"column": "lots_of_null"}}]}
+                                                                 "details": {"column": "lots_of_null"}}],\
+                                                    "actions": []}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         percent_null = (X.isnull().mean()).to_dict()
         if self.pct_null_threshold == 0.0:
             all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
             warning_msg = "Column '{}' is more than 0% null"
-            messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
-                                                          data_check_name=self.name,
-                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                                          details={"column": col_name}).to_dict()
-                                         for col_name in all_null_cols])
+            results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
+                                                         data_check_name=self.name,
+                                                         message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                                         details={"column": col_name}).to_dict()
+                                        for col_name in all_null_cols])
         else:
             highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
             warning_msg = "Column '{}' is {}% or more null"
-            messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
-                                                          data_check_name=self.name,
-                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                                          details={"column": col_name}).to_dict()
-                                         for col_name in highly_null_cols])
-        return messages
+            results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
+                                                         data_check_name=self.name,
+                                                         message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                                         details={"column": col_name}).to_dict()
+                                        for col_name in highly_null_cols])
+        return results

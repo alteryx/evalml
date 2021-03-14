@@ -1,19 +1,20 @@
 import copy
-import sys
 import time
-import traceback
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 import cloudpickle
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
+from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
+    check_all_pipeline_names_unique,
     get_default_primary_search_objective,
     make_data_splitter
 )
@@ -21,14 +22,9 @@ from evalml.data_checks import (
     AutoMLDataChecks,
     DataChecks,
     DefaultDataChecks,
-    EmptyDataChecks,
-    HighVarianceCVDataCheck
+    EmptyDataChecks
 )
-from evalml.exceptions import (
-    AutoMLSearchException,
-    PipelineNotFoundError,
-    PipelineScoreError
-)
+from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     get_core_objectives,
@@ -36,11 +32,9 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
-    BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
-    PipelineBase,
     TimeSeriesBaselineBinaryPipeline,
     TimeSeriesBaselineMulticlassPipeline,
     TimeSeriesBaselineRegressionPipeline
@@ -48,12 +42,13 @@ from evalml.pipelines import (
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, get_random_seed, get_random_state
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    convert_to_seconds,
+    deprecate_arg,
+    infer_feature_types
 )
 from evalml.utils.logger import (
     get_logger,
@@ -89,16 +84,17 @@ class AutoMLSearch:
                  add_result_callback=None,
                  error_callback=None,
                  additional_objectives=None,
-                 random_state=0,
+                 random_state=None,
+                 random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
-                 verbose=True,
                  optimize_thresholds=False,
                  ensembling=False,
                  max_batches=None,
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 _ensembling_split_size=0.2,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -157,12 +153,12 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
+            random_state (int): Deprecated - use random_seed instead.
+
+            random_seed (int): Seed for the random number generator. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
                 None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-
-            verbose (boolean): If True, turn verbosity on. Defaults to True.
 
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
                 If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
@@ -173,7 +169,10 @@ class AutoMLSearch:
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
                 in time series problems, values should be passed in for the gap and max_delay variables.
 
-            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
+            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
+
+            _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
+                Must be between 0 and 1, exclusive. Defaults to 0.2
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -192,7 +191,6 @@ class AutoMLSearch:
         self.add_result_callback = add_result_callback
         self.error_callback = error_callback or log_error_callback
         self.data_splitter = data_splitter
-        self.verbose = verbose
         self.optimize_thresholds = optimize_thresholds
         self.ensembling = ensembling
         if objective == 'auto':
@@ -239,13 +237,13 @@ class AutoMLSearch:
 
         self.patience = patience
         self.tolerance = tolerance or 0.0
+
         self._results = {
             'pipeline_results': {},
             'search_order': [],
             'errors': []
         }
-        self.random_state = get_random_state(random_state)
-        self.random_seed = get_random_seed(self.random_state)
+        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -259,7 +257,7 @@ class AutoMLSearch:
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
-        self._start = None
+        self._start = 0.0
         self._baseline_cv_scores = {}
         self.show_batch_output = False
 
@@ -269,14 +267,110 @@ class AutoMLSearch:
         self._best_pipeline = None
         self._searched = False
 
-        # make everything ww objects
-        self.X_train = _convert_to_woodwork_structure(X_train)
-        self.y_train = _convert_to_woodwork_structure(y_train)
+        self.X_train = infer_feature_types(X_train)
+        self.y_train = infer_feature_types(y_train)
+        self.ensembling_indices = None
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
-                                                   n_splits=3, shuffle=True, random_state=self.random_seed)
+                                                   n_splits=3, shuffle=True, random_seed=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
+        self.search_iteration_plot = None
+        self._interrupted = False
+
+        if self.allowed_pipelines is None:
+            logger.info("Generating pipelines to search over...")
+            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+
+        if self.allowed_pipelines == []:
+            raise ValueError("No allowed pipelines to search")
+        check_all_pipeline_names_unique(self.allowed_pipelines)
+
+        run_ensembling = self.ensembling
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
+            run_ensembling = False
+
+        if run_ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
+            if self.max_iterations < first_ensembling_iteration:
+                run_ensembling = False
+                logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
+            else:
+                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
+
+        if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
+            if run_ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    run_ensembling = False
+                    logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
+                else:
+                    logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
+
+                self.max_iterations = (1 + len(self.allowed_pipelines) +
+                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
+                                       num_ensemble_batches)
+            else:
+                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
+        if run_ensembling:
+            if not (0 < _ensembling_split_size < 1):
+                raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
+            X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
+            _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
+            self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
+
+        self._engine = SequentialEngine(self.X_train,
+                                        self.y_train,
+                                        self.ensembling_indices,
+                                        self,
+                                        should_continue_callback=self._should_continue,
+                                        pre_evaluation_callback=self._pre_evaluation_callback,
+                                        post_evaluation_callback=self._post_evaluation_callback)
+
+        self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
+
+        logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
+        logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
+        if len(self.problem_configuration):
+            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
+        else:
+            pipeline_params = self.pipeline_parameters
+
+        self._automl_algorithm = IterativeAlgorithm(
+            max_iterations=self.max_iterations,
+            allowed_pipelines=self.allowed_pipelines,
+            tuner_class=self.tuner_class,
+            random_seed=self.random_seed,
+            n_jobs=self.n_jobs,
+            number_features=self.X_train.shape[1],
+            pipelines_per_batch=self._pipelines_per_batch,
+            ensembling=run_ensembling,
+            pipeline_params=pipeline_params
+        )
+
+    def _pre_evaluation_callback(self, pipeline):
+        if self.start_iteration_callback:
+            self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
+        desc = f"{pipeline.name}"
+        if len(desc) > AutoMLSearch._MAX_NAME_LEN:
+            desc = desc[:AutoMLSearch._MAX_NAME_LEN - 3] + "..."
+        desc = desc.ljust(AutoMLSearch._MAX_NAME_LEN)
+        batch_number = 1
+        if self._automl_algorithm is not None and self._automl_algorithm.batch_number > 0:
+            batch_number = self._automl_algorithm.batch_number
+        update_pipeline(logger,
+                        desc,
+                        len(self._results['pipeline_results']) + 1,
+                        self.max_iterations,
+                        self._start,
+                        batch_number,
+                        self.show_batch_output)
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -319,9 +413,8 @@ class AutoMLSearch:
             f"Start Iteration Callback: {_get_funct_name(self.start_iteration_callback)}\n"
             f"Add Result Callback: {_get_funct_name(self.add_result_callback)}\n"
             f"Additional Objectives: {_print_list(self.additional_objectives or [])}\n"
-            f"Random State: {self.random_state}\n"
+            f"Random Seed: {self.random_seed}\n"
             f"n_jobs: {self.n_jobs}\n"
-            f"Verbose: {self.verbose}\n"
             f"Optimize Thresholds: {self.optimize_thresholds}\n"
         )
 
@@ -367,16 +460,11 @@ class AutoMLSearch:
         else:
             return DataChecks(data_checks)
 
-    def _handle_keyboard_interrupt(self, pipeline, current_batch_pipelines):
+    def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
 
-        Arguments:
-            pipeline (PipelineBase): Current pipeline in the search.
-            current_batch_pipelines (list): Other pipelines in the batch.
-
         Returns:
-            list: Next pipelines to search in the batch. If the user decides to stop the search,
-                an empty list will be returned.
+            bool: If True, search should terminate early
         """
         leading_char = "\n"
         start_of_loop = time.time()
@@ -384,12 +472,12 @@ class AutoMLSearch:
             choice = input(leading_char + "Do you really want to exit search (y/n)? ").strip().lower()
             if choice == "y":
                 logger.info("Exiting AutoMLSearch.")
-                return []
+                return True
             elif choice == "n":
                 # So that the time in this loop does not count towards the time budget (if set)
                 time_in_loop = time.time() - start_of_loop
                 self._start += time_in_loop
-                return [pipeline] + current_batch_pipelines
+                return False
             else:
                 leading_char = ""
 
@@ -419,11 +507,6 @@ class AutoMLSearch:
             except NameError:
                 show_iteration_plot = False
 
-        text_column_vals = self.X_train.select('natural_language')
-        text_columns = list(text_column_vals.to_dataframe().columns)
-        if len(text_columns) == 0:
-            text_columns = None
-
         data_checks = self._validate_data_checks(data_checks)
         self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
                                                         _convert_woodwork_types_wrapper(self.y_train.to_series()))
@@ -433,69 +516,11 @@ class AutoMLSearch:
             logger.error(result["message"])
         if self._data_check_results["errors"]:
             raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
-        if self.allowed_pipelines is None:
-            logger.info("Generating pipelines to search over...")
-            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
-            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, text_columns=text_columns) for estimator in allowed_estimators]
-
-        if self.allowed_pipelines == []:
-            raise ValueError("No allowed pipelines to search")
-
-        run_ensembling = self.ensembling
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (1 + len(self.allowed_pipelines) + len(self.allowed_pipelines) * self._pipelines_per_batch + 1)
-            if self.max_iterations < first_ensembling_iteration:
-                run_ensembling = False
-                logger.warning(f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling.")
-            else:
-                logger.info(f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that.")
-
-        if self.max_batches and self.max_iterations is None:
-            self.show_batch_output = True
-            if run_ensembling:
-                ensemble_nth_batch = len(self.allowed_pipelines) + 1
-                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
-                if num_ensemble_batches == 0:
-                    logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
-                else:
-                    logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
-
-                self.max_iterations = (1 + len(self.allowed_pipelines) +
-                                       self._pipelines_per_batch * (self.max_batches - 1 - num_ensemble_batches) +
-                                       num_ensemble_batches)
-            else:
-                self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
-        self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
-
-        logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
-        logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
-        if len(self.problem_configuration):
-            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
-        else:
-            pipeline_params = self.pipeline_parameters
-
-        self._automl_algorithm = IterativeAlgorithm(
-            max_iterations=self.max_iterations,
-            allowed_pipelines=self.allowed_pipelines,
-            tuner_class=self.tuner_class,
-            text_columns=text_columns,
-            random_state=self.random_state,
-            n_jobs=self.n_jobs,
-            number_features=self.X_train.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling,
-            pipeline_params=pipeline_params
-        )
 
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
         logger.info("{} score is better.\n".format('Greater' if self.objective.greater_is_better else 'Lower'))
+        logger.info(f"Using {self._engine.__class__.__name__} to train and score pipelines.")
 
         if self.max_batches is not None:
             logger.info(f"Searching up to {self.max_batches} batches for a total of {self.max_iterations} pipelines. ")
@@ -504,99 +529,113 @@ class AutoMLSearch:
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
-        search_iteration_plot = None
+        self.search_iteration_plot = None
         if self.plot:
-            search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
+            self.search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         self._start = time.time()
 
-        should_terminate = self._add_baseline_pipelines()
-        if should_terminate:
-            return
+        try:
+            self._add_baseline_pipelines()
+        except KeyboardInterrupt:
+            if self._handle_keyboard_interrupt():
+                self._interrupted = True
 
         current_batch_pipelines = []
         current_batch_pipeline_scores = []
-        while self._check_stopping_condition(self._start):
+        new_pipeline_ids = []
+        loop_interrupted = False
+        while self._should_continue():
             try:
-                if current_batch_pipeline_scores and np.isnan(np.array(current_batch_pipeline_scores, dtype=float)).all():
-                    raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
-                current_batch_pipelines = self._automl_algorithm.next_batch()
-                current_batch_pipeline_scores = []
+                if not loop_interrupted:
+                    current_batch_pipelines = self._automl_algorithm.next_batch()
             except StopIteration:
                 logger.info('AutoML Algorithm out of recommendations, ending')
                 break
+            try:
+                new_pipeline_ids = self._engine.evaluate_batch(current_batch_pipelines)
+                loop_interrupted = False
+            except KeyboardInterrupt:
+                loop_interrupted = True
+                if self._handle_keyboard_interrupt():
+                    break
+            full_rankings = self.full_rankings
+            current_batch_idx = full_rankings['id'].isin(new_pipeline_ids)
+            current_batch_pipeline_scores = full_rankings[current_batch_idx]['score']
+            if len(current_batch_pipeline_scores) and current_batch_pipeline_scores.isna().all():
+                raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
 
-            current_batch_size = len(current_batch_pipelines)
-            current_batch_pipeline_scores = self._evaluate_pipelines(current_batch_pipelines, search_iteration_plot=search_iteration_plot)
-
-            # Different size indicates early stopping
-            if len(current_batch_pipeline_scores) != current_batch_size:
-                break
-
+        self.search_duration = time.time() - self._start
         elapsed_time = time_elapsed(self._start)
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         logger.info(desc)
 
-        best_pipeline = self.rankings.iloc[0]
-        best_pipeline_name = best_pipeline["pipeline_name"]
         self._find_best_pipeline()
-        logger.info(f"Best pipeline: {best_pipeline_name}")
-        logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+        if self._best_pipeline is not None:
+            best_pipeline = self.rankings.iloc[0]
+            best_pipeline_name = best_pipeline["pipeline_name"]
+            logger.info(f"Best pipeline: {best_pipeline_name}")
+            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
         self._searched = True
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings
         If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
+        if len(self.rankings) == 0:
+            return
         best_pipeline = self.rankings.iloc[0]
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
-            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-                X_train, y_train = self.X_train, self.y_train
-                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_state=self.random_seed)
-                self._best_pipeline.fit(X_train, y_train)
-                self._best_pipeline = self._tune_binary_threshold(self._best_pipeline, X_threshold_tuning, y_threshold_tuning)
+                if best_pipeline.model_family == ModelFamily.ENSEMBLE:
+                    X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
+                else:
+                    X_train = self.X_train
+                    y_train = self.y_train
+                if hasattr(self.data_splitter, "transform_sample"):
+                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
+                    X_train = X_train.iloc[train_indices]
+                    y_train = y_train.iloc[train_indices]
+                best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
+                                                            self.optimize_thresholds, self.objective)
+            self._best_pipeline = best_pipeline
 
-    def _tune_binary_threshold(self, pipeline, X_threshold_tuning, y_threshold_tuning):
-        """Tunes the threshold of a binary pipeline to the X and y thresholding data
-
-        Arguments:
-            pipeline (Pipeline): Pipeline instance to threshold
-            X_threshold_tuning (ww DataTable): X data to tune pipeline to
-            y_threshold_tuning (ww DataColumn): Target data to tune pipeline to
+    def _num_pipelines(self):
+        """Return the number of pipeline evaluations which have been made
 
         Returns:
-            Trained pipeline instance
+            int: the number of pipeline evaluations made in the search
         """
-        if self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and is_binary(self.problem_type):
-            pipeline.threshold = 0.5
-            if X_threshold_tuning:
-                y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
-                if isinstance(y_predict_proba, pd.DataFrame):
-                    y_predict_proba = y_predict_proba.iloc[:, 1]
-                else:
-                    y_predict_proba = y_predict_proba[:, 1]
-                pipeline.threshold = self.objective.optimize_threshold(y_predict_proba, y_threshold_tuning, X=X_threshold_tuning)
-        return pipeline
+        return len(self._results['pipeline_results'])
 
-    def _check_stopping_condition(self, start):
-        should_continue = True
-        num_pipelines = len(self._results['pipeline_results'])
+    def _should_continue(self):
+        """Given the original stopping criterion and current state, should the search continue?
+
+        Returns:
+            bool: True if yes, False if no.
+        """
+        if self._interrupted:
+            return False
+
+        # for add_to_rankings
+        if self._searched:
+            return True
+
+        # Run at least one pipeline for every search
+        num_pipelines = self._num_pipelines()
+        if num_pipelines == 0:
+            return True
 
         # check max_time and max_iterations
-        elapsed = time.time() - start
+        elapsed = time.time() - self._start
         if self.max_time and elapsed >= self.max_time:
             return False
         elif self.max_iterations and num_pipelines >= self.max_iterations:
             return False
 
         # check for early stopping
-        if self.patience is None:
+        if self.patience is None or self.tolerance is None:
             return True
 
         first_id = self._results['search_order'][0]
@@ -614,7 +653,7 @@ class AutoMLSearch:
             if num_without_improvement >= self.patience:
                 logger.info("\n\n{} iterations without improvement. Stopping search early...".format(self.patience))
                 return False
-        return should_continue
+        return True
 
     def _validate_problem_type(self):
         for obj in self.additional_objectives:
@@ -629,12 +668,7 @@ class AutoMLSearch:
         """Fits a baseline pipeline to the data.
 
         This is the first pipeline fit during search.
-
-        Returns:
-            bool - If the user ends the search early, will return True and searching will immediately finish. Else,
-                will return False and more pipelines will be searched.
         """
-
         if self.problem_type == ProblemTypes.BINARY:
             baseline = ModeBaselineBinaryPipeline(parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
@@ -649,12 +683,7 @@ class AutoMLSearch:
             max_delay = self.problem_configuration['max_delay']
             baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
-
-        pipelines = [baseline]
-        scores = self._evaluate_pipelines(pipelines, baseline=True)
-        if scores == []:
-            return True
-        return False
+        self._engine.evaluate_batch([baseline])
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
@@ -669,83 +698,17 @@ class AutoMLSearch:
                     scores[field] += value
         return {objective: float(score) / n_folds for objective, score in scores.items()}
 
-    def _compute_cv_scores(self, pipeline):
-        start = time.time()
-        cv_data = []
-        logger.info("\tStarting cross validation")
-
-        X_pd = _convert_woodwork_types_wrapper(self.X_train.to_dataframe())
-        y_pd = _convert_woodwork_types_wrapper(self.y_train.to_series())
-        for i, (train, valid) in enumerate(self.data_splitter.split(X_pd, y_pd)):
-
-            if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
-                # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
-                logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
-                break
-            logger.debug(f"\t\tTraining and scoring on fold {i}")
-            X_train, X_valid = self.X_train.iloc[train], self.X_train.iloc[valid]
-            y_train, y_valid = self.y_train.iloc[train], self.y_train.iloc[valid]
-            if self.problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-                diff_train = set(np.setdiff1d(self.y_train.to_series(), y_train.to_series()))
-                diff_valid = set(np.setdiff1d(self.y_train.to_series(), y_valid.to_series()))
-                diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
-                diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
-                if diff_string:
-                    raise Exception(diff_string)
-            objectives_to_score = [self.objective] + self.additional_objectives
-            cv_pipeline = None
-            try:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-                if self.optimize_thresholds and self.objective.is_defined_for_problem_type(ProblemTypes.BINARY) and self.objective.can_optimize_threshold and is_binary(self.problem_type):
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_state=self.random_seed)
-                cv_pipeline = pipeline.clone(pipeline.random_state)
-                logger.debug(f"\t\t\tFold {i}: starting training")
-                cv_pipeline.fit(X_train, y_train)
-                logger.debug(f"\t\t\tFold {i}: finished training")
-                cv_pipeline = self._tune_binary_threshold(cv_pipeline, X_threshold_tuning, y_threshold_tuning)
-                if X_threshold_tuning:
-                    logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
-                logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
-                scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
-                logger.debug(f"\t\t\tFold {i}: {self.objective.name} score: {scores[self.objective.name]:.3f}")
-                score = scores[self.objective.name]
-            except Exception as e:
-                if self.error_callback is not None:
-                    self.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=self,
-                                        fold_num=i, pipeline=pipeline)
-                if isinstance(e, PipelineScoreError):
-                    nan_scores = {objective: np.nan for objective in e.exceptions}
-                    scores = {**nan_scores, **e.scored_successfully}
-                    scores = OrderedDict({o.name: scores[o.name] for o in [self.objective] + self.additional_objectives})
-                    score = scores[self.objective.name]
-                else:
-                    score = np.nan
-                    scores = OrderedDict(zip([n.name for n in self.additional_objectives], [np.nan] * len(self.additional_objectives)))
-
-            ordered_scores = OrderedDict()
-            ordered_scores.update({self.objective.name: score})
-            ordered_scores.update(scores)
-            ordered_scores.update({"# Training": y_train.shape[0]})
-            ordered_scores.update({"# Validation": y_valid.shape[0]})
-
-            evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
-            if isinstance(cv_pipeline, BinaryClassificationPipeline) and cv_pipeline.threshold is not None:
-                evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
-            cv_data.append(evaluation_entry)
-        training_time = time.time() - start
-        cv_scores = pd.Series([fold['score'] for fold in cv_data])
-        cv_score_mean = cv_scores.mean()
-        logger.info(f"\tFinished cross validation - mean {self.objective.name}: {cv_score_mean:.3f}")
-        return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}
-
-    def _add_result(self, trained_pipeline, parameters, training_time, cv_data, cv_scores):
+    def _post_evaluation_callback(self, pipeline, evaluation_results):
+        training_time = evaluation_results['training_time']
+        cv_data = evaluation_results['cv_data']
+        cv_scores = evaluation_results['cv_scores']
+        is_baseline = pipeline.model_family == ModelFamily.BASELINE
         cv_score = cv_scores.mean()
 
         percent_better_than_baseline = {}
         mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data, self.objective_name_to_class)
+        if is_baseline:
+            self._baseline_cv_scores = mean_cv_all_objectives
         for obj_name in mean_cv_all_objectives:
             objective_class = self.objective_name_to_class[obj_name]
 
@@ -755,23 +718,15 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        pipeline_name = trained_pipeline.name
-        pipeline_summary = trained_pipeline.summary
+        high_variance_cv = self._check_for_high_variance(pipeline, cv_scores)
+
         pipeline_id = len(self._results['pipeline_results'])
-
-        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
-        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
-        high_variance_cv = False
-
-        if high_variance_cv_check_results["warnings"]:
-            logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
-            high_variance_cv = True
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
-            "pipeline_name": pipeline_name,
-            "pipeline_class": type(trained_pipeline),
-            "pipeline_summary": pipeline_summary,
-            "parameters": parameters,
+            "pipeline_name": pipeline.name,
+            "pipeline_class": type(pipeline),
+            "pipeline_summary": pipeline.summary,
+            "parameters": pipeline.parameters,
             "score": cv_score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
@@ -780,77 +735,41 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
+            self._results['pipeline_results'][pipeline_id]["input_pipeline_ids"] = input_pipeline_ids
+
         self._results['search_order'].append(pipeline_id)
 
-        if self.add_result_callback:
-            self.add_result_callback(self._results['pipeline_results'][pipeline_id], trained_pipeline, self)
-
-    def _evaluate_pipelines(self, current_pipeline_batch, baseline=False, search_iteration_plot=None):
-        current_batch_pipeline_scores = []
-        add_single_pipeline = False
-        if isinstance(current_pipeline_batch, PipelineBase):
-            current_pipeline_batch = [current_pipeline_batch]
-            add_single_pipeline = True
-
-        while len(current_pipeline_batch) > 0 and (add_single_pipeline or baseline or self._check_stopping_condition(self._start)):
-            pipeline = current_pipeline_batch.pop()
+        if not is_baseline:
+            score_to_minimize = -cv_score if self.objective.greater_is_better else cv_score
             try:
-                parameters = pipeline.parameters
-                logger.debug('Evaluating pipeline {}'.format(pipeline.name))
-                logger.debug('Pipeline parameters: {}'.format(parameters))
+                self._automl_algorithm.add_result(score_to_minimize, pipeline, self._results['pipeline_results'][pipeline_id])
+            except PipelineNotFoundError:
+                pass
 
-                if self.start_iteration_callback:
-                    self.start_iteration_callback(pipeline.__class__, parameters, self)
-                desc = f"{pipeline.name}"
-                if len(desc) > self._MAX_NAME_LEN:
-                    desc = desc[:self._MAX_NAME_LEN - 3] + "..."
-                desc = desc.ljust(self._MAX_NAME_LEN)
+        if self.search_iteration_plot:
+            self.search_iteration_plot.update()
 
-                if not add_single_pipeline:
-                    update_pipeline(logger, desc, len(self._results['pipeline_results']) + 1, self.max_iterations,
-                                    self._start, 1 if baseline else self._automl_algorithm.batch_number, self.show_batch_output)
+        if self.add_result_callback:
+            self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
+        return pipeline_id
 
-                evaluation_results = self._compute_cv_scores(pipeline)
-                parameters = pipeline.parameters
+    def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
+        """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
+        pipeline_name = pipeline.name
+        high_variance_cv = bool(abs(cv_scores.std() / cv_scores.mean()) > threshold)
+        if high_variance_cv:
+            logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
+        return high_variance_cv
 
-                if baseline:
-                    self._baseline_cv_scores = self._get_mean_cv_scores_for_all_objectives(evaluation_results["cv_data"], self.objective_name_to_class)
-
-                logger.debug('Adding results for pipeline {}\nparameters {}\nevaluation_results {}'.format(pipeline.name, parameters, evaluation_results))
-                self._add_result(trained_pipeline=pipeline,
-                                 parameters=parameters,
-                                 training_time=evaluation_results['training_time'],
-                                 cv_data=evaluation_results['cv_data'],
-                                 cv_scores=evaluation_results['cv_scores'])
-                logger.debug('Adding results complete')
-
-                score = evaluation_results['cv_score_mean']
-                score_to_minimize = -score if self.objective.greater_is_better else score
-                current_batch_pipeline_scores.append(score_to_minimize)
-
-                if not baseline and not add_single_pipeline:
-                    self._automl_algorithm.add_result(score_to_minimize, pipeline)
-
-                if search_iteration_plot:
-                    search_iteration_plot.update()
-
-                if add_single_pipeline:
-                    add_single_pipeline = False
-
-            except KeyboardInterrupt:
-                current_pipeline_batch = self._handle_keyboard_interrupt(pipeline, current_pipeline_batch)
-                if current_pipeline_batch == []:
-                    return current_batch_pipeline_scores
-
-        return current_batch_pipeline_scores
-
-    def get_pipeline(self, pipeline_id, random_state=0):
+    def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
         initialized with the parameters used to train that pipeline during automl search.
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
-            random_state (int, np.random.RandomState): The random seed/state. Defaults to 0.
 
         Returns:
             PipelineBase: untrained pipeline instance associated with the provided ID
@@ -862,7 +781,7 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters, random_state=random_state)
+        return pipeline_class(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
@@ -883,6 +802,10 @@ class AutoMLSearch:
         pipeline_results = self._results['pipeline_results'][pipeline_id]
 
         pipeline.describe()
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            logger.info("Input for ensembler are pipelines with IDs: " + str(pipeline_results['input_pipeline_ids']))
+
         log_subtitle(logger, "Training")
         logger.info("Training for {} problems.".format(pipeline.problem_type))
 
@@ -924,7 +847,8 @@ class AutoMLSearch:
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-        self._evaluate_pipelines(pipeline)
+
+        self._engine.evaluate_batch([pipeline])
         self._find_best_pipeline()
 
     @property
@@ -996,3 +920,34 @@ class AutoMLSearch:
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def train_pipelines(self, pipelines):
+        """Train a list of pipelines on the training data.
+
+        This can be helpful for training pipelines once the search is complete.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+
+        Returns:
+            Dict[str, PipelineBase]: Dictionary keyed by pipeline name that maps to the fitted pipeline.
+            Note that the any pipelines that error out during training will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.train_batch(pipelines)
+
+    def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
+        """Score a list of pipelines on the given holdout data.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+            X_holdout (ww.DataTable, pd.DataFrame): Holdout features.
+            y_holdout (ww.DataTable, pd.DataFrame): Holdout targets for scoring.
+            objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
+
+        Returns:
+            Dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
+            Note that the any pipelines that error out during scoring will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.score_batch(pipelines, X_holdout, y_holdout, objectives)

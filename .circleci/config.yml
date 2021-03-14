@@ -32,12 +32,6 @@ commands:
             virtualenv test_python
             source test_python/bin/activate
             make installdeps-test
-  install_dependencies_dev:
-    steps:
-      - run: |
-            virtualenv test_python
-            source test_python/bin/activate
-            make installdeps-dev
   install_dependencies_docs:
     steps:
       - run: |
@@ -47,15 +41,15 @@ commands:
   install_dependencies_core:
     steps:
       - run: |
-            virtualenv test_python
-            source test_python/bin/activate
-            pip install --upgrade pip==20.3.3
-            pip install -e . --no-dependencies
-            pip install -r core-requirements.txt
-            pip install -r test-requirements.txt
-            # "!" negates return code. exit nonzero if any of these deps are found
-            ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
-            exit $?
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install --upgrade pip -q
+          pip install -e . --no-dependencies
+          pip install -r core-requirements.txt
+          pip install -r test-requirements.txt
+          # "!" negates return code. exit nonzero if any of these deps are found
+          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+          exit $?
   build_pkg:
     steps:
       - run: |
@@ -85,101 +79,13 @@ jobs:
     working_directory: ~/evalml/
     executor:
       name: python
-      python_version: "3.6"
+      python_version: "3.8"
     steps:
       - checkout
       - install_dependencies_test
       - setup_remote_docker:
           version: 19.03.12
       - build_pkg
-  lint_test:
-      parameters:
-        python_version:
-          type: string
-          default: "3.8"
-      executor:
-        name: python
-        python_version: << parameters.python_version >>
-      steps:
-        - checkout
-        - install_dependencies_dev
-        - run: |
-            source test_python/bin/activate
-            make lint
-  win_unit_tests:
-    working_directory: C:/evalml
-    parameters:
-      python_version:
-        type: string
-        default: "3.8"
-      miniconda_pkg_name:
-        type: string
-        default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
-      miniconda_hash:
-        type: string
-        default: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
-    executor:
-      name: windows/default
-    steps:
-      - checkout
-      - run:
-          name: Download Miniconda
-          command: |
-              $File = "./<< parameters.miniconda_pkg_name >>"
-              $Uri = "https://repo.anaconda.com/miniconda/<< parameters.miniconda_pkg_name >>"
-              $ProgressPreference = "silentlyContinue"
-              Invoke-WebRequest -Uri $Uri -Outfile $File
-              $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
-              $hashFromUrl = "<< parameters.miniconda_hash >>"
-              if ($hashFromFile.Hash -ne "$hashFromUrl") {
-                Throw "File hashes did not match!"
-              }
-      - run:
-          name: Install Miniconda
-          command: start /wait C:\evalml\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /AddToPath=1 /S /D=%UserProfile%\Miniconda3
-          shell: cmd.exe
-      - run:
-          name: Set Python Version
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda create -n curr_py python=<< parameters.python_version >>
-      - run:
-          name: Install make
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda config --add channels conda-forge
-              conda activate curr_py
-              conda install make -q -y
-      - run:
-          name: Install Graphviz
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate curr_py
-              conda install python-graphviz -q -y
-      - run:
-          name: Install numba (for shap)
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda config --add channels conda-forge
-              conda activate curr_py
-              conda install numba -q -y
-      - run:
-          name: Install EvalML
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate curr_py
-              python -m pip install .
-              python -m pip install -r test-requirements.txt
-      - run:
-          name: Run Unit Tests
-          command: |
-              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate curr_py
-              make win-circleci-test
-      - store_test_results:
-          path: C:/evalml/test-reports
-      - store_artifacts:
-          path: C:/evalml/test-reports
   unit_tests:
     resource_class: xlarge
     parameters:
@@ -193,8 +99,8 @@ jobs:
         type: boolean
         default: false
     executor:
-        name: python
-        python_version: << parameters.python_version >>
+      name: python
+      python_version: << parameters.python_version >>
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
@@ -215,13 +121,13 @@ jobs:
           steps:
             - run: |
                 source test_python/bin/activate
-                make circleci-test-minimal-deps
+                make git-test-minimal-deps
       - unless:
           condition: << parameters.core_dependencies >>
           steps:
             - run: |
                 source test_python/bin/activate
-                make circleci-test
+                make git-test
       - store_test_results:
           path: test-reports
       - store_artifacts:
@@ -233,124 +139,25 @@ jobs:
                 source test_python/bin/activate
                 codecov --required
 
-  release_notes_updated:
-    working_directory: ~/evalml
-    docker:
-      - image: busybox:latest
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-    steps:
-      - checkout
-      - run: | # debugging info
-          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
-            echo This is a release PR;
-          elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
-            echo This is a dependency update PR;
-          else
-            echo This is a regular PR;
-          fi
-          echo "${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}"
-      - run: |
-          # for release PRs: if the branch name matches a release regex, skip the check
-          if [[ $(expr match "${CIRCLE_BRANCH}" "release_v[0-9.]\+") -gt 0 ]]; then
-            exit 0;
-          elif [[ $(expr match "${CIRCLE_BRANCH}" "dep-update-[a-zA-Z0-9]*") -gt 0 ]]; then
-            exit 0;
-          fi
-          cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/alteryx/evalml/pull/}\`"
-
-  build_docs:
-    working_directory: ~/evalml/
-    executor:
-      name: python
-      python_version: "3.8"
-    steps:
-      - checkout
-      - install_dependencies_docs
-      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
-      - run: |
-          source test_python/bin/activate
-          make -C docs/ html
-      - run: ls docs/build/html
-  check_dependencies_updated_linux:
-    parameters:
-      python_version:
-        type: string
-        default: "3.8"
-    executor:
-      name: python
-      python_version: << parameters.python_version >>
-    steps:
-      - checkout
-      - install_dependencies
-      - run:
-          name: "Detect Dependency Changes"
-          command: |
-            source test_python/bin/activate
-            mkdir /tmp/dependencies_updated_artifacts
-            export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
-            evalml/tests/dependency_update_check/make_deps_diff.sh
-            diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
-            exit $?
-      - run:
-          name: "Display Dependency Diff"
-          command: |
-            echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
-            cat /tmp/dependencies_updated_artifacts/diff.txt
-          when: on_fail
-      - store_artifacts:
-          path: /tmp/dependencies_updated_artifacts
 
 workflows:
   version: 2
-  release_notes_updated:
-    jobs:
-      - release_notes_updated:
-          name: "release notes updated"
-          filters:
-            branches:
-              ignore: /^main?/
-  build_docs:
-    jobs:
-      - build_docs:
-          name: "build docs"
-  windows_test_all_python_versions:
-    jobs:
-        - win_unit_tests:
-            matrix:
-              parameters:
-                python_version: ["3.6", "3.7", "3.8", "3.9"]
-            name: "windows python << matrix.python_version >> unit tests"
-  check_dependencies_updated_linux:
-    jobs:
-        - check_dependencies_updated_linux:
-            name: "linux python 3.8 check dependencies for updates"
-            python_version: "3.8"
-            filters:
-              branches:
-                ignore: /^main?/
   test_all_python_versions:
     jobs:
-        - lint_test:
-            matrix:
-              parameters:
-                python_version: ["3.6", "3.7", "3.8", "3.9"]
-            name: "python << matrix.python_version >> lint test"
-        - unit_tests:
-            matrix:
-              parameters:
-                python_version: ["3.6", "3.7", "3.8"]
-                core_dependencies: [false]
-                codecov: [false]
-            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
-        - unit_tests:
-            matrix:
-              parameters:
-                python_version: ["3.9"]
-                core_dependencies: [false, true]
-                codecov: [true]
-            name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
+      - unit_tests:
+          matrix:
+            parameters:
+              python_version: [ "3.7" ]
+              core_dependencies: [ false ]
+              codecov: [ false ]
+          name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
+      - unit_tests:
+          matrix:
+            parameters:
+              python_version: [ "3.8" ]
+              core_dependencies: [ false, true ]
+              codecov: [ true ]
+          name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
   build_conda_pkg:
     jobs:
       - shellcheck/check

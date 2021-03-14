@@ -1,8 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
-)
+from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
 class DropNullColumns(Transformer):
@@ -10,7 +7,7 @@ class DropNullColumns(Transformer):
     name = "Drop Null Columns Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, pct_null_threshold=1.0, random_state=0, **kwargs):
+    def __init__(self, pct_null_threshold=1.0, random_state=None, random_seed=0, **kwargs):
         """Initalizes an transformer to drop features whose percentage of NaN values exceeds a specified threshold.
 
         Arguments:
@@ -26,11 +23,12 @@ class DropNullColumns(Transformer):
         self._cols_to_drop = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         pct_null_threshold = self.parameters["pct_null_threshold"]
-        X_t = _convert_to_woodwork_structure(X)
+        X_t = infer_feature_types(X)
         X_t = _convert_woodwork_types_wrapper(X_t.to_dataframe())
         percent_null = X_t.isnull().mean()
         if pct_null_threshold == 0.0:
@@ -44,12 +42,13 @@ class DropNullColumns(Transformer):
         """Transforms data X by dropping columns that exceed the threshold of null values.
 
         Arguments:
-            X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Data to transform
+            y (ww.DataColumn, pd.Series, optional): Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
-        X_t = _convert_to_woodwork_structure(X)
-        X_t = _convert_woodwork_types_wrapper(X_t.to_dataframe())
-        return X_t.drop(columns=self._cols_to_drop, axis=1)
+        X_t = infer_feature_types(X)
+        if len(self._cols_to_drop) == 0:
+            return X_t
+        return X_t.drop(self._cols_to_drop)

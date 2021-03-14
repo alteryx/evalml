@@ -2,9 +2,10 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer
 )
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
 )
 
 
@@ -13,7 +14,8 @@ class PerColumnImputer(Transformer):
     name = 'Per Column Imputer'
     hyperparameter_ranges = {}
 
-    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", random_state=0, **kwargs):
+    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent",
+                 random_state=None, random_seed=0, **kwargs):
         """Initializes a transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
@@ -39,7 +41,8 @@ class PerColumnImputer(Transformer):
 
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state)
+                         random_state=random_state,
+                         random_seed=random_seed)
 
     def fit(self, X, y=None):
         """Fits imputers on input data
@@ -51,7 +54,7 @@ class PerColumnImputer(Transformer):
         Returns:
             self
         """
-        X = _convert_to_woodwork_structure(X)
+        X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self.imputers = dict()
         for column in X.columns:
@@ -73,31 +76,17 @@ class PerColumnImputer(Transformer):
             y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
-            pd.DataFrame: Transformed X
+            ww.DataTable: Transformed X
         """
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X_ww = infer_feature_types(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():
-            transformed = imputer.transform(X[[column]])
+            transformed = imputer.transform(X[[column]]).to_dataframe()
             if transformed.empty:
                 cols_to_drop.append(column)
             else:
-                X_t[column] = transformed
+                X_t[column] = transformed[column]
         X_t = X_t.drop(cols_to_drop, axis=1)
-        return X_t
-
-    def fit_transform(self, X, y=None):
-        """Fits imputer and imputes missing values in input data.
-
-        Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
-
-        Returns:
-            pd.DataFrame: Transformed X
-        """
-
-        self.fit(X, y)
-        return self.transform(X, y)
+        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)

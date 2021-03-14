@@ -1,14 +1,148 @@
 Release Notes
 -------------
-
 **Future Releases**
+    * Enhancements
+        * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
+        * Added params to balanced classification data splitters for visibility :pr:`1966`
+        * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+
+**v0.20.0 Mar. 10, 2021**
+    * Enhancements
+        * Added a GitHub Action for Detecting dependency changes :pr:`1933`
+        * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
+        * Added a GitHub Action for Linux unit tests :pr:`1846`
+        * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
+        * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
+        * Added ``BalancedClassificationDataCVSplit`` and ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
+        * Update default classification data splitter to use downsampling for highly imbalanced data :pr:`1875`
+        * Updated ``describe_pipeline`` to return more information, including ``id`` of pipelines used for ensemble models :pr:`1909`
+        * Added utility method to create list of components from a list of ``DataCheckAction`` :pr:`1907`
+        * Updated ``validate`` method to include a ``action`` key in returned dictionary for all ``DataCheck``and ``DataChecks`` :pr:`1916`
+        * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
+        * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
+        * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
+    * Fixes
+        * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
+        * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
+        * Fixed stack trace in prediction explanation functions caused by mixed string/numeric pandas column names :pr:`1871`
+        * Fixed stack trace caused by passing pipelines with duplicate names to ``AutoMLSearch`` :pr:`1932`
+        * Fixed ``AutoMLSearch.get_pipelines`` returning pipelines with the same attributes :pr:`1958`
+    * Changes
+        * Reversed GitHub Action for Linux unit tests until a fix for report generation is found :pr:`1920`
+        * Updated ``add_results`` in ``AutoMLAlgorithm`` to take in entire pipeline results dictionary from ``AutoMLSearch`` :pr:`1891`
+        * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
+        * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+    * Documentation Changes
+        * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``explain_prediction`` function :pr:`1915`
+        * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+        * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
+
+**v0.19.0 Feb. 23, 2021**
+    * Enhancements
+        * Added a GitHub Action for Python windows unit tests :pr:`1844`
+        * Added a GitHub Action for checking updated release notes :pr:`1849`
+        * Added a GitHub Action for Python lint checks :pr:`1837`
+        * Adjusted ``explain_prediction``, ``explain_predictions`` and ``explain_predictions_best_worst`` to handle timeseries problems. :pr:`1818`
+        * Updated ``InvalidTargetDataCheck`` to check for mismatched indices in target and features :pr:`1816`
+        * Updated ``Woodwork`` structures returned from components to support ``Woodwork`` logical type overrides set by the user :pr:`1784`
+        * Updated estimators to keep track of input feature names during ``fit()`` :pr:`1794`
+        * Updated ``visualize_decision_tree`` to include feature names in output :pr:`1813`
+        * Added ``is_bounded_like_percentage`` property for objectives. If true, the ``calculate_percent_difference`` method will return the absolute difference rather than relative difference :pr:`1809`
+        * Added full error traceback to AutoMLSearch logger file :pr:`1840`
+        * Changed ``TargetEncoder`` to preserve custom indices in the data :pr:`1836`
+        * Refactored ``explain_predictions`` and ``explain_predictions_best_worst`` to only compute features once for all rows that need to be explained :pr:`1843`
+        * Added custom random undersampler data splitter for classification :pr:`1857`
+        * Updated ``OutliersDataCheck`` implementation to calculate the probability of having no outliers :pr:`1855`
+        * Added ``Engines`` pipeline processing API :pr:`1838`
+    * Fixes
+        * Changed EngineBase random_state arg to random_seed and same for user guide docs :pr:`1889`
+    * Changes
+        * Modified ``calculate_percent_difference`` so that division by 0 is now inf rather than nan :pr:`1809`
+        * Removed ``text_columns`` parameter from ``LSA`` and ``TextFeaturizer`` components :pr:`1652`
+        * Added ``random_seed`` as an argument to our automl/pipeline/component API. Using ``random_state`` will raise a warning :pr:`1798`
+        * Added ``DataCheckError`` message in ``InvalidTargetDataCheck`` if input target is None and removed exception raised :pr:`1866`
+    * Documentation Changes
+    * Testing Changes
+        * Added back coverage for ``_get_feature_provenance`` in ``TextFeaturizer`` after ``text_columns`` was removed :pr:`1842`
+        * Pin graphviz version for windows builds :pr:`1847`
+        * Unpin graphviz version for windows builds :pr:`1851`
+
+.. warning::
+
+    **Breaking Changes**
+        * Added a deprecation warning to ``explain_prediction``. It will be deleted in the next release. :pr:`1860`
+
+
+**v0.18.2 Feb. 10, 2021**
+    * Enhancements
+        * Added uniqueness score data check :pr:`1785`
+        * Added "dataframe" output format for prediction explanations :pr:`1781`
+        * Updated LightGBM estimators to handle ``pandas.MultiIndex`` :pr:`1770`
+        * Sped up permutation importance for some pipelines :pr:`1762`
+        * Added sparsity data check :pr:`1797`
+        * Confirmed support for threshold tuning for binary time series classification problems :pr:`1803`
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Added section on conda to the contributing guide :pr:`1771`
+        * Updated release process to reflect freezing `main` before perf tests :pr:`1787`
+        * Moving some prs to the right section of the release notes :pr:`1789`
+        * Tweak README.md. :pr:`1800`
+        * Fixed back arrow on install page docs :pr:`1795`
+        * Fixed docstring for `ClassImbalanceDataCheck.validate()` :pr:`1817`
+    * Testing Changes
+
+**v0.18.1 Feb. 1, 2021**
+    * Enhancements
+        * Added ``graph_t_sne`` as a visualization tool for high dimensional data :pr:`1731`
+        * Added the ability to see the linear coefficients of features in linear models terms :pr:`1738`
+        * Added support for ``scikit-learn`` ``v0.24.0`` :pr:`1733`
+        * Added support for ``scipy`` ``v1.6.0`` :pr:`1752`
+        * Added SVM Classifier and Regressor to estimators :pr:`1714` :pr:`1761`
+    * Fixes
+        * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
+        * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
+        * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
+        * Remove ``ProphetRegressor`` from main as windows tests were flaky :pr:`1764`
+    * Changes
+        * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
+        * Updated ``clone()`` for pipelines and components to copy over random state automatically :pr:`1753`
+        * Dropped support for Python version 3.6 :pr:`1751`
+        * Removed deprecated ``verbose`` flag from ``AutoMLSearch`` parameters :pr:`1772`
+    * Documentation Changes
+        * Add Twitter and Github link to documentation toolbar :pr:`1754`
+        * Added Open Graph info to documentation :pr:`1758`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
+        * Python 3.6 will not be actively supported due to discontinued support from EvalML dependencies.
+        * Deprecated ``verbose`` flag is removed for ``AutoMLSearch`` :pr:`1772`
+
+
+**v0.18.0 Jan. 26, 2021**
     * Enhancements
         * Added RMSLE, MSLE, and MAPE to core objectives while checking for negative target values in ``invalid_targets_data_check`` :pr:`1574`
         * Added validation checks for binary problems with regression-like datasets and multiclass problems without true multiclass targets in ``invalid_targets_data_check`` :pr:`1665`
         * Added time series support for ``make_pipeline`` :pr:`1566`
         * Added target name for output of pipeline ``predict`` method :pr:`1578`
         * Added multiclass check to ``InvalidTargetDataCheck`` for two examples per class :pr:`1596`
-        * Support graphviz 0.16 :pr:`1657`
+        * Added support for ``graphviz`` ``v0.16`` :pr:`1657`
         * Enhanced time series pipelines to accept empty features :pr:`1651`
         * Added KNN Classifier to estimators. :pr:`1650`
         * Added support for list inputs for objectives :pr:`1663`
@@ -41,6 +175,7 @@ Release Notes
         * Rerunning search for ``AutoMLSearch`` results in a message thrown rather than failing the search, and removed ``has_searched`` property :pr:`1647`
         * Changed tuner class to allow and ignore single parameter values as input :pr:`1686`
         * Capped LightGBM version limit to remove bug in docs :pr:`1711`
+        * Removed support for `np.random.RandomState` in EvalML :pr:`1727`
     * Documentation Changes
         * Update Model Understanding in the user guide to include ``visualize_decision_tree`` :pr:`1678`
         * Updated docs to include information about ``AutoMLSearch`` callback parameters and methods :pr:`1577`
@@ -53,6 +188,8 @@ Release Notes
 
     **Breaking Changes**
         * Removed ``has_searched`` property from ``AutoMLSearch`` :pr:`1647`
+        * Components and pipelines return ``Woodwork`` data structures instead of ``pandas`` data structures :pr:`1668`
+        * Removed support for `np.random.RandomState` in EvalML. Rather than passing ``np.random.RandomState`` as component and pipeline random_state values, we use int random_seed :pr:`1727`
 
 
 **v0.17.0 Dec. 29, 2020**
