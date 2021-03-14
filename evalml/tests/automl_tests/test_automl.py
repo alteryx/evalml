@@ -298,7 +298,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimi
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=None,', 'n_splits=5, random_seed=0'),
+        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=4,', 'n_splits=5, random_seed=0'),
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -1027,6 +1027,20 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     automl._results['pipeline_results'][0].pop('parameters')
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_get_pipeline(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+    mock_score.return_value = {'Log Loss Binary': 1.0}
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    automl.search()
+    for _, ranking in automl.rankings.iterrows():
+        pl = automl.get_pipeline(ranking.id)
+        assert pl.parameters == ranking.parameters
+        assert pl.name == ranking.pipeline_name
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
