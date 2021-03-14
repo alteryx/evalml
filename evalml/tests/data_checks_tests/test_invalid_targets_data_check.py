@@ -451,3 +451,14 @@ def test_invalid_target_data_check_different_lengths():
                                                                                                     "indices_not_in_target": [2]}).to_dict()],
                                                              "errors": [],
                                                              "actions": []}
+
+
+def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
+    y = pd.Series([1, 5, 1, 5, 1, 1])
+    X = pd.DataFrame({"col": range(len(y))})
+    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
+    assert invalid_targets_check.validate(X, y) == {
+        "warnings": [],
+        "errors": [],
+        "actions": []
+    }
