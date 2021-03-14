@@ -1,14 +1,8 @@
 import json
 
+from woodwork import logical_types
+
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .generated_pipelines import (
-    GeneratedPipelineBinary,
-    GeneratedPipelineMulticlass,
-    GeneratedPipelineRegression,
-    GeneratedPipelineTimeSeriesBinary,
-    GeneratedPipelineTimeSeriesMulticlass,
-    GeneratedPipelineTimeSeriesRegression
-)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -68,8 +62,10 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     all_null_cols = X_pd.columns[X_pd.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
-
-    pp_components.append(Imputer)
+    input_logical_types = set(X.logical_types.values())
+    types_imputer_handles = {logical_types.Boolean, logical_types.Categorical, logical_types.Double, logical_types.Integer}
+    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
+        pp_components.append(Imputer)
 
     text_columns = list(X.select('natural_language').columns)
     if len(text_columns) > 0:
@@ -146,26 +142,6 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         custom_hyperparameters = hyperparameters
 
     return GeneratedPipeline
-
-
-def get_generated_pipeline_class(problem_type):
-    """Returns the class for the generated pipeline based on the problem type
-
-    Arguments:
-        problem_type (ProblemTypes): The problem_type that the pipeline is for
-
-    Returns:
-        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
-    """
-    try:
-        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
-                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
-                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
-                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
-                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
-                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
-    except KeyError:
-        raise ValueError("ProblemType {} not recognized".format(problem_type))
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=None, random_seed=0):
