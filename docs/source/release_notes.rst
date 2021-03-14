@@ -13,7 +13,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` To run data checks, please call DataCheck.validate(X_train, y_train) or take a look at our documentation for more examples. :pr:`1935`
+        * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch``. To run the data checks which were previously run by default in ``AutoMLSearch``, please call ``DefaultDataChecks().validate(X_train, y_train)`` or take a look at our documentation for more examples. :pr:`1935`
 
 
 **v0.20.0 Mar. 10, 2021**
