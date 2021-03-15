@@ -115,4 +115,4 @@ Verify the latest version of `evalml` got installed by running
 
 ```shell
 python -c "import evalml; print(evalml.__version__)"
-``` 
+```
