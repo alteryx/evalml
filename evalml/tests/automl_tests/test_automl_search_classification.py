@@ -222,20 +222,21 @@ def test_additional_objectives(X_y_binary):
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary, caplog):
+def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, X_y_binary, caplog):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='precision', max_iterations=1, optimize_thresholds=True)
-    mock_score.return_value = {automl.objective.name: 1.0}
+    mock_score.return_value = {'precision': 1.0}
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
     mock_predict_proba.assert_called()
     mock_optimize_threshold.assert_called()
-    assert automl.best_pipeline.threshold is not None
+    assert automl.best_pipeline.threshold == 0.8
     assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.8
     assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.8
     assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.8
@@ -246,10 +247,11 @@ def test_optimizable_threshold_enabled(mock_fit, mock_score, mock_predict_proba,
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
+def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, X_y_binary):
     mock_optimize_threshold.return_value = 0.8
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='precision', max_iterations=1, optimize_thresholds=False)
@@ -259,7 +261,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
     mock_score.assert_called()
     assert not mock_predict_proba.called
     assert not mock_optimize_threshold.called
-    assert automl.best_pipeline.threshold is not None
+    assert automl.best_pipeline.threshold == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][0].get('binary_classification_threshold') == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][1].get('binary_classification_threshold') == 0.5
     assert automl.results['pipeline_results'][0]['cv_data'][2].get('binary_classification_threshold') == 0.5
@@ -270,7 +272,7 @@ def test_optimizable_threshold_disabled(mock_fit, mock_score, mock_predict_proba
 def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {"AUC": 1.0}
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', optimize_thresholds=False, max_iterations=1)
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -673,10 +675,11 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
 @pytest.mark.parametrize("optimize", [True, False])
 @patch('evalml.automl.engine.engine_base.split_data')
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.score')
 @patch('evalml.pipelines.TimeSeriesBinaryClassificationPipeline.fit')
-def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binary_score, mock_predict_proba, mock_optimize_threshold, mock_split_data,
+def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binary_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, mock_split_data,
                                                      optimize, objective, X_y_binary):
     X, y = X_y_binary
     mock_binary_score.return_value = {objective: 0.4}
@@ -704,3 +707,22 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
         mock_optimize_threshold.assert_not_called()
         assert automl.best_pipeline.threshold == 0.5
         mock_split_data.assert_not_called()
+
+
+@pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary', 'AUC'])
+@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+def test_tuning_threshold_objective(mock_predict, mock_fit, mock_score, mock_encode_targets, mock_optimize_threshold, objective, X_y_binary):
+    mock_optimize_threshold.return_value = 0.6
+    X, y = X_y_binary
+    mock_score.return_value = {objective: 0.5}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=objective)
+    automl.search()
+
+    if objective != "F1":
+        assert automl.best_pipeline.threshold is None
+    else:
+        assert automl.best_pipeline.threshold == 0.6

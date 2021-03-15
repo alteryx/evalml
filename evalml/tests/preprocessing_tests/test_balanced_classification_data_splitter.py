@@ -14,6 +14,20 @@ from evalml.preprocessing.data_splitters import (
 @pytest.mark.parametrize("splitter",
                          [BalancedClassificationDataCVSplit,
                           BalancedClassificationDataTVSplit])
+def test_data_splitter_params(splitter):
+    bcs = splitter()
+    assert bcs.balanced_ratio == 4
+    assert bcs.min_samples == 100
+
+    bcs = splitter(balanced_ratio=3, min_samples=1, min_percentage=0.5)
+    assert bcs.balanced_ratio == 3
+    assert bcs.min_samples == 1
+    assert bcs.min_percentage == 0.5
+
+
+@pytest.mark.parametrize("splitter",
+                         [BalancedClassificationDataCVSplit,
+                          BalancedClassificationDataTVSplit])
 def test_data_splitter_nsplits(splitter):
     if "TV" in splitter.__name__:
         assert splitter().get_n_splits() == 1

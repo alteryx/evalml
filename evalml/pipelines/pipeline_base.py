@@ -557,5 +557,4 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             bool: True if the pipeline threshold can be tuned.
 
         """
-        return objective.is_defined_for_problem_type(self.problem_type) and \
-            objective.can_optimize_threshold and is_binary(self.problem_type)
+        return is_binary(self.problem_type) and objective.is_defined_for_problem_type(self.problem_type) and objective.can_optimize_threshold

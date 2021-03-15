@@ -57,11 +57,12 @@ def test_train_and_score_pipelines_error(mock_fit, mock_score, dummy_binary_pipe
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.automl.engine.engine_base.split_data')
 def test_train_pipeline_trains_and_tunes_threshold(mock_split_data, mock_pipeline_fit,
-                                                   mock_predict_proba, mock_optimize, X_y_binary,
+                                                   mock_predict_proba, mock_encode_targets, mock_optimize, X_y_binary,
                                                    dummy_binary_pipeline_class):
     X, y = X_y_binary
     mock_split_data.return_value = split_data(X, y, "binary", test_size=0.2, random_seed=0)

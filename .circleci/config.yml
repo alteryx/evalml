@@ -138,33 +138,16 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov --required
-  build_docs:
-    working_directory: ~/evalml/
-    executor:
-      name: python
-      python_version: "3.8"
-    steps:
-      - checkout
-      - install_dependencies_docs
-      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
-      - run: |
-          source test_python/bin/activate
-          make -C docs/ html
-      - run: ls docs/build/html
 
 
 workflows:
   version: 2
-  build_docs:
-    jobs:
-      - build_docs:
-          name: "build docs"
   test_all_python_versions:
     jobs:
       - unit_tests:
           matrix:
             parameters:
-              python_version: [ "3.7" ]
+              python_version: [ "3.7", "3.9" ]
               core_dependencies: [ false ]
               codecov: [ false ]
           name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"
