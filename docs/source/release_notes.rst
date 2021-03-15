@@ -11,7 +11,8 @@ Release Notes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
     * Documentation Changes
     * Testing Changes
-        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Added tests to confirm support for Python 3.9 :pr:`1724`
 
 .. warning::
 
