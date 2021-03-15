@@ -49,7 +49,8 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "level": "warning",\
                                                                    "code": "HAS_ID_COLUMN",\
                                                                    "details": {"column": "df_id"}}],\
-                                                     "actions": []}
+                                                     "actions": [{"code": "DROP_COL",\
+                                                                 "details": {"column": "df_id"}}]}
         """
         results = {
             "warnings": [],
