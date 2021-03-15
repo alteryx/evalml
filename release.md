@@ -98,7 +98,7 @@ For help on how to push changes to the bot's PR please read this [document.](htt
 
 You may need to make other changes to the bot's PR. For example, we sometimes add new dependencies or change the allowed
 versions of our existing dependencies. These changes will break our conda-forge CI, so it's important to add them to the
-bot's PR beffore merging. To see the changes you need to make, compare the bot's branch to the `latest_release_changes` branch.
+bot's PR before merging. To see the changes you need to make, compare the bot's branch to the `latest_release_changes` branch.
 
 ```shell script
 git diff <bot-pr-branch-name> latest_release_changes -- recipe/meta.yaml
