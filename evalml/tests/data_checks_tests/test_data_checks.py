@@ -100,7 +100,10 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
                            details={"column": "also_all_null"}).to_dict()]
 
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'also_all_null'}).to_dict()]
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'also_all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'id'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict()
+                    ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
