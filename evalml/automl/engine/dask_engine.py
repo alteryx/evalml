@@ -29,10 +29,12 @@ class DaskEngine(EngineBase):
         self.client = client
 
     def submit_evaluation_job(self, automl_data, pipeline) -> EngineComputation:
+        logger = self.setup_job_log()
         dask_future = self.client.submit(evaluate_pipeline, pipeline=pipeline,
                                          automl_data=automl_data,
                                          X=automl_data.X_train,
-                                         y=automl_data.y_train)
+                                         y=automl_data.y_train,
+                                         logger=logger)
         return DaskComputation(dask_future)
 
     def submit_training_job(self, automl_data, pipeline) -> EngineComputation:

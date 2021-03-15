@@ -61,8 +61,7 @@ from evalml.utils.logger import (
     get_logger,
     log_subtitle,
     log_title,
-    time_elapsed,
-    update_pipeline
+    time_elapsed
 )
 
 logger = get_logger(__file__)
@@ -364,23 +363,15 @@ class AutoMLSearch:
             pipeline_params=pipeline_params
         )
 
-    def _pre_evaluation_callback(self, pipeline):
-        if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
-        desc = f"{pipeline.name}"
-        if len(desc) > AutoMLSearch._MAX_NAME_LEN:
-            desc = desc[:AutoMLSearch._MAX_NAME_LEN - 3] + "..."
-        desc = desc.ljust(AutoMLSearch._MAX_NAME_LEN)
+    def _get_batch_number(self):
         batch_number = 1
         if self._automl_algorithm is not None and self._automl_algorithm.batch_number > 0:
             batch_number = self._automl_algorithm.batch_number
-        update_pipeline(logger,
-                        desc,
-                        len(self._results['pipeline_results']) + 1,
-                        self.max_iterations,
-                        self._start,
-                        batch_number,
-                        self.show_batch_output)
+        return batch_number
+
+    def _pre_evaluation_callback(self, pipeline):
+        if self.start_iteration_callback:
+            self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
@@ -565,6 +556,7 @@ class AutoMLSearch:
             try:
                 computations = []
                 new_pipeline_ids = []
+                log_title(logger, f"Evaluating Batch Number {self._get_batch_number()}")
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
                     computation = self._engine.submit_evaluation_job(self.automl_data, pipeline)
@@ -572,8 +564,8 @@ class AutoMLSearch:
                 while self._should_continue() and len(computations) > 0:
                     computation = computations.pop(0)
                     if computation.done():
-                        data, pipeline = computation.get_result()
-                        pipeline_id = self._post_evaluation_callback(pipeline, data)
+                        data, pipeline, job_log = computation.get_result()
+                        pipeline_id = self._post_evaluation_callback(pipeline, data, job_log)
                         new_pipeline_ids.append(pipeline_id)
                     else:
                         computations.append(computation)
@@ -639,7 +631,6 @@ class AutoMLSearch:
             bool: True if yes, False if no.
         """
         if self._interrupted:
-            print("Here!")
             return False
 
         # for add_to_rankings
@@ -708,9 +699,10 @@ class AutoMLSearch:
             baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         self._pre_evaluation_callback(baseline)
+        logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
         computation = self._engine.submit_evaluation_job(self.automl_data, baseline)
-        data, pipeline = computation.get_result()
-        self._post_evaluation_callback(pipeline, data)
+        data, pipeline, job_log = computation.get_result()
+        self._post_evaluation_callback(pipeline, data, job_log)
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
@@ -725,7 +717,8 @@ class AutoMLSearch:
                     scores[field] += value
         return {objective: float(score) / n_folds for objective, score in scores.items()}
 
-    def _post_evaluation_callback(self, pipeline, evaluation_results):
+    def _post_evaluation_callback(self, pipeline, evaluation_results, job_log):
+        job_log.write_to_logger(logger)
         training_time = evaluation_results['training_time']
         cv_data = evaluation_results['cv_data']
         cv_scores = evaluation_results['cv_scores']
@@ -788,7 +781,7 @@ class AutoMLSearch:
         pipeline_name = pipeline.name
         high_variance_cv = bool(abs(cv_scores.std() / cv_scores.mean()) > threshold)
         if high_variance_cv:
-            logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
+            logger.warning(f"\t\tHigh coefficient of variation (cv >= {threshold}) within cross validation scores.\n\t\t{pipeline_name} may not perform as estimated on unseen data.")
         return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
@@ -876,8 +869,8 @@ class AutoMLSearch:
                 return
 
         computation = self._engine.submit_evaluation_job(self.automl_data, pipeline)
-        data, pipeline = computation.get_result()
-        self._post_evaluation_callback(pipeline, data)
+        data, pipeline, job_log = computation.get_result()
+        self._post_evaluation_callback(pipeline, data, job_log)
         self._find_best_pipeline()
 
     @property

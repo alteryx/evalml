@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -6,10 +6,12 @@ import woodwork as ww
 
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import evaluate_pipeline, train_pipeline
+from evalml.automl.engine.engine_base import JobLogger
 from evalml.objectives import F1, LogLossBinary
 from evalml.pipelines import StackedEnsembleClassifier
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.preprocessing import split_data
+from evalml.utils import get_logger
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -20,7 +22,7 @@ def test_train_and_score_pipelines(mock_fit, mock_score, dummy_binary_pipeline_c
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
                           allowed_pipelines=[dummy_binary_pipeline_class])
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result, _ = evaluate_pipeline(pipeline, automl.X_train, automl.y_train, automl)
+    evaluation_result, _, _ = evaluate_pipeline(pipeline, automl.X_train, automl.y_train, automl, logger=MagicMock())
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()
     assert mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get('training_time') is not None
@@ -38,7 +40,12 @@ def test_train_and_score_pipelines_error(mock_fit, mock_score, dummy_binary_pipe
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
                           allowed_pipelines=[dummy_binary_pipeline_class])
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result, _ = evaluate_pipeline(pipeline, automl.X_train, automl.y_train, automl)
+
+    job_log = JobLogger()
+    evaluation_result, _, job_log = evaluate_pipeline(pipeline, automl.X_train, automl.y_train, automl, logger=job_log)
+    logger = get_logger(__file__)
+    job_log.write_to_logger(logger)
+
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()
     assert mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get('training_time') is not None
@@ -91,7 +98,7 @@ def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dumm
 
     pipeline1 = dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}})
 
-    _ = evaluate_pipeline(pipeline1, X, y, automl)
+    _ = evaluate_pipeline(pipeline1, X, y, automl, logger=MagicMock())
     # check the fit length is correct, taking into account the data splits
     assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(training_indices))
 
@@ -101,5 +108,5 @@ def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dumm
     pipeline2 = make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=1)],
                                               problem_type='binary',
                                               custom_name="Stacked Ensemble Classification Pipeline")
-    _ = evaluate_pipeline(pipeline2, X, y, automl)
+    _ = evaluate_pipeline(pipeline2, X, y, automl, logger=MagicMock())
     assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(ensembling_indices))

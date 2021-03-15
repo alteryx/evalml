@@ -1739,12 +1739,7 @@ def test_max_batches_output(mock_pipeline_fit, mock_score, max_batches, X_y_bina
     automl.search(data_checks=None)
 
     output = caplog.text
-    for batch_number in range(1, max_batches + 1):
-        if batch_number == 1:
-            correct_output = len(automl.allowed_pipelines) + 1
-        else:
-            correct_output = automl._pipelines_per_batch
-        assert output.count(f"Batch {batch_number}: ") == correct_output
+    assert output.count("Batch Number") == max_batches
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})

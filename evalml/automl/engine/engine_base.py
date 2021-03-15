@@ -12,10 +12,7 @@ from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
 from evalml.problem_types import is_binary, is_multiclass
-from evalml.utils.logger import get_logger
 from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
-
-logger = get_logger(__file__)
 
 
 class EngineComputation(ABC):
@@ -38,7 +35,38 @@ class EngineComputation(ABC):
         """Cancel the computation."""
 
 
+class JobLogger:
+
+    def __init__(self):
+        self.logs = []
+
+    def info(self, msg):
+        self.logs.append(("info", msg))
+
+    def debug(self, msg):
+        self.logs.append(("debug", msg))
+
+    def warning(self, msg):
+        self.logs.append(("warning", msg))
+
+    def error(self, msg):
+        self.logs.append(("error", msg))
+
+    def write_to_logger(self, logger):
+        logger_method = {"info": logger.info,
+                         "debug": logger.debug,
+                         "warning": logger.warning,
+                         "error": logger.warning}
+        for level, message in self.logs:
+            method = logger_method[level]
+            method(message)
+
+
 class EngineBase(ABC):
+
+    @staticmethod
+    def setup_job_log():
+        return JobLogger()
 
     @abstractmethod
     def submit_evaluation_job(self, automl_data, pipeline) -> EngineComputation:
@@ -78,7 +106,7 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
     return cv_pipeline
 
 
-def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
+def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train, logger):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
 
     Arguments:
@@ -92,7 +120,7 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
     """
     start = time.time()
     cv_data = []
-    logger.info("\tStarting cross validation")
+    logger.info("\t\tStarting cross validation")
     X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
     y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
     cv_pipeline = pipeline
@@ -101,7 +129,7 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
             logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
             break
-        logger.debug(f"\t\tTraining and scoring on fold {i}")
+        logger.debug(f"\t\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
         y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
         if is_binary(automl_data.problem_type) or is_multiclass(automl_data.problem_type):
@@ -113,14 +141,14 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
                 raise Exception(diff_string)
         objectives_to_score = [automl_data.objective] + automl_data.additional_objectives
         try:
-            logger.debug(f"\t\t\tFold {i}: starting training")
+            logger.debug(f"\t\t\t\tFold {i}: starting training")
             cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_data.optimize_thresholds, automl_data.objective)
-            logger.debug(f"\t\t\tFold {i}: finished training")
+            logger.debug(f"\t\t\t\tFold {i}: finished training")
             if automl_data.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl_data.objective):
-                logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
-            logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
+                logger.debug(f"\t\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+            logger.debug(f"\t\t\t\tFold {i}: Scoring trained pipeline")
             scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
-            logger.debug(f"\t\t\tFold {i}: {automl_data.objective.name} score: {scores[automl_data.objective.name]:.3f}")
+            logger.debug(f"\t\t\t\tFold {i}: {automl_data.objective.name} score: {scores[automl_data.objective.name]:.3f}")
             score = scores[automl_data.objective.name]
         except Exception as e:
             if automl_data.error_callback is not None:
@@ -148,11 +176,12 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train):
     training_time = time.time() - start
     cv_scores = pd.Series([fold['score'] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
-    logger.info(f"\tFinished cross validation - mean {automl_data.objective.name}: {cv_score_mean:.3f}")
-    return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}, cv_pipeline
+    logger.info(f"\t\tFinished cross validation - mean {automl_data.objective.name}: {cv_score_mean:.3f}")
+    return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}, cv_pipeline, logger
 
 
-def evaluate_pipeline(pipeline, X, y, automl_data):
+def evaluate_pipeline(pipeline, X, y, automl_data, logger):
+    logger.info(f"\t{pipeline.name}:")
     X_train, y_train = X, y
 
     if pipeline.model_family == ModelFamily.ENSEMBLE:
@@ -162,4 +191,5 @@ def evaluate_pipeline(pipeline, X, y, automl_data):
         X_train = X.iloc[training_indices]
         y_train = y.iloc[training_indices]
 
-    return train_and_score_pipeline(pipeline, automl_data=automl_data, full_X_train=X_train, full_y_train=y_train)
+    return train_and_score_pipeline(pipeline, automl_data=automl_data, full_X_train=X_train, full_y_train=y_train,
+                                    logger=logger)

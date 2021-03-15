@@ -5,9 +5,6 @@ from evalml.automl.engine.engine_base import (
     train_pipeline
 )
 from evalml.objectives.utils import get_objective
-from evalml.utils import get_logger
-
-logger = get_logger(__file__)
 
 
 class SequentialComputation(EngineComputation):
@@ -31,10 +28,12 @@ class SequentialEngine(EngineBase):
     """The default engine for the AutoML search. Trains and scores pipelines locally, one after another."""
 
     def submit_evaluation_job(self, automl_data, pipeline) -> EngineComputation:
+        logger = self.setup_job_log()
         return SequentialComputation(work=evaluate_pipeline,
                                      pipeline=pipeline,
                                      automl_data=automl_data, X=automl_data.X_train,
-                                     y=automl_data.y_train)
+                                     y=automl_data.y_train,
+                                     logger=logger)
 
     def submit_training_job(self, automl_data, pipeline) -> EngineComputation:
         return SequentialComputation(work=train_pipeline,
