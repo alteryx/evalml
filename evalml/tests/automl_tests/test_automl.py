@@ -13,7 +13,7 @@ from sklearn.model_selection import KFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
-from evalml.automl import ParallelEngine, SequentialEngine
+from evalml.automl import SequentialEngine#, ParallelEngine
 from evalml.automl.callbacks import (
     log_and_save_error_callback,
     log_error_callback,
