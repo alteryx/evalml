@@ -54,7 +54,7 @@ commands:
     steps:
       - run: |
             git clone https://github.com/conda-forge/evalml-core-feedstock
-            git checkout -t latest_release_changes origin/latest_release_changes
+            git checkout -t origin/latest_release_changes
             source test_python/bin/activate
             mkdir evalml-core-feedstock/evalml
             cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
