@@ -99,11 +99,3 @@ class DataChecks:
             messages["actions"].extend(messages_new["actions"])
 
         return messages
-
-
-class AutoMLDataChecks(DataChecks):
-
-    def __init__(self, data_check_instances):
-        if not all(isinstance(check, DataCheck) for check in data_check_instances):
-            raise ValueError("All elements of parameter data_checks must be an instance of DataCheck.")
-        self.data_checks = data_check_instances
