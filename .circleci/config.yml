@@ -54,6 +54,7 @@ commands:
     steps:
       - run: |
             git clone https://github.com/conda-forge/evalml-core-feedstock
+            git checkout latest_release_changes
             source test_python/bin/activate
             mkdir evalml-core-feedstock/evalml
             cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
@@ -166,4 +167,4 @@ workflows:
             - shellcheck/check
           filters:
             branches:
-              only: main
+              only: conda-ci-use-working-changes-branch
