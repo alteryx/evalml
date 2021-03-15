@@ -2459,3 +2459,14 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline.name == original_pipeline.name
         assert fitted_pipeline._is_fitted
         assert fitted_pipeline != original_pipeline
+
+
+def test_automl_prepends_components_from_data_check_actions():
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    # check allowed_pipelines
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    # check allowed_pipelines
+

@@ -275,6 +275,7 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
+        self._prepended_components = None
         if data_check_actions is not None:
             self.data_check_actions = data_check_actions
             self._prepended_components = _make_component_list_from_actions(self.data_check_actions)

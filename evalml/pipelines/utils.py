@@ -130,7 +130,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, co
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
-    if complete_component_graph is not None:
+    if components_to_prepend is not None:
         complete_component_graph = components_to_prepend + complete_component_graph
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
