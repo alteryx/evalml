@@ -111,6 +111,5 @@ def test_sparsity_data_check_warnings():
         "errors": [],
         "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'most_sparse'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'more_sparse'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'sparse'}).to_dict(),
-        ]
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'sparse'}).to_dict()]
     }
