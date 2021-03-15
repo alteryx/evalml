@@ -1,10 +1,13 @@
 import pytest
+import time
 from collections import namedtuple
 from dask.distributed import Client
+from sklearn import datasets
 
 from evalml.objectives.utils import get_objective
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.automl.engine.dask_engine import DaskEngine
+from evalml.automl.engine.sequential_engine import SequentialEngine
 
 # client = Client()
 
@@ -35,47 +38,62 @@ def test_init():
 
 def test_submit_single_training_job(X_y_binary):
     X,y = X_y_binary
+    automl_data = test_automl_data()
 
     class TestBinaryClassificationPipeline(BinaryClassificationPipeline):
         component_graph = ["Logistic Regression Classifier"]
 
     pipeline = TestBinaryClassificationPipeline({})
 
-    automl_data = test_automl_data()
     # Client needs to be instantiated inside the test or it hangs.
     client = Client()
     engine = DaskEngine(client=client)
 
-    res = engine.submit_training_job(X=X, y=y, automl_data=automl_data, pipeline=pipeline)
+    future = engine.submit_training_job(X=X, y=y, automl_data=automl_data, pipeline=pipeline)
 
-    # ans = client.gather(res.work)
-    ans = res.get_result()
+    ans = future.get_result()
     print(ans)
     client.close()
-    import pdb; pdb.set_trace()
 
 
 def test_submit_multiple_training_jobs(X_y_binary):
-    X,y = X_y_binary
+    X, y = datasets.make_classification(n_samples=40000, n_features=20,
+                                        n_informative=2, n_redundant=2, random_state=0)
+
+    automl_data = test_automl_data()
 
     class TestBinaryClassificationPipeline(BinaryClassificationPipeline):
         component_graph = ["Logistic Regression Classifier"]
 
-    pipelines = [TestBinaryClassificationPipeline({}),
-                 TestBinaryClassificationPipeline({}),
-                 TestBinaryClassificationPipeline({}),
-                 TestBinaryClassificationPipeline({})]
+    num_pipelines = 8
+    pipelines = []
+    for i in range(num_pipelines):
+        pipelines.append(TestBinaryClassificationPipeline({}))
 
-    automl_data = test_automl_data()
     # Client needs to be instantiated inside the test or it hangs.
+
+    parallel_time_start = time.time()
     client = Client()
     engine = DaskEngine(client=client)
-
-    ress = []
+    futures = []
     for pipeline in pipelines:
-        ress.append(engine.submit_training_job(X=X, y=y, automl_data=automl_data, pipeline=pipeline))
-
-    ans = [f.get_result() for f in ress]
-    print(ans)
+        futures.append(engine.submit_training_job(X=X, y=y, automl_data=automl_data, pipeline=pipeline))
+    results = [f.get_result() for f in futures]
+    parallel_time_taken = time.time()-parallel_time_start
     client.close()
+    print(f"Parallel_time_taken: {parallel_time_taken}")
+    print(results)
+
+    sequential_time_start = time.time()
+    engine = SequentialEngine()
+    futures = []
+    for pipeline in pipelines:
+        futures.append(engine.submit_training_job(X=X, y=y, automl_data=automl_data, pipeline=pipeline))
+    results = [f.get_result() for f in futures]
+    sequential_time_taken = time.time()-sequential_time_start
+    print(f"Sequential_time_taken: {sequential_time_taken}")
+    print(results)
+
+    print(sequential_time_taken, parallel_time_taken)
     import pdb; pdb.set_trace()
+
