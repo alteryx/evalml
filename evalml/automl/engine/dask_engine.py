@@ -1,3 +1,5 @@
+import joblib
+
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -27,21 +29,30 @@ class DaskEngine(EngineBase):
 
     def __init__(self, client):
         self.client = client
+        self.cache = {}
 
-    def submit_evaluation_job(self, automl_data, pipeline) -> EngineComputation:
+    def get_scattered_data(self, X, y):
+        data_hash = joblib.hash(X), joblib.hash(y)
+        if data_hash in self.cache:
+            return self.cache[data_hash]
+        self.cache[data_hash] = self.client.scatter([X, y], broadcast=True)
+        return self.cache[data_hash]
+
+    def submit_evaluation_job(self, automl_data, pipeline, X, y) -> EngineComputation:
         logger = self.setup_job_log()
+        X, y = self.get_scattered_data(X, y)
         dask_future = self.client.submit(evaluate_pipeline, pipeline=pipeline,
                                          automl_data=automl_data,
-                                         X=automl_data.X_train,
-                                         y=automl_data.y_train,
+                                         X=X,
+                                         y=y,
                                          logger=logger)
         return DaskComputation(dask_future)
 
-    def submit_training_job(self, automl_data, pipeline) -> EngineComputation:
-
+    def submit_training_job(self, automl_data, pipeline, X, y) -> EngineComputation:
+        X, y = self.get_scattered_data(X, y)
         dask_future = self.client.submit(train_pipeline,
-                                         pipeline=pipeline, X=automl_data.X_train,
-                                         y=automl_data.y_train,
+                                         pipeline=pipeline, X=X,
+                                         y=y,
                                          optimize_thresholds=automl_data.optimize_thresholds,
                                          objective=automl_data.objective)
         return DaskComputation(dask_future)

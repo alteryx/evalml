@@ -69,11 +69,11 @@ class EngineBase(ABC):
         return JobLogger()
 
     @abstractmethod
-    def submit_evaluation_job(self, automl_data, pipeline) -> EngineComputation:
+    def submit_evaluation_job(self, automl_data, pipeline, X, y) -> EngineComputation:
         """Get the engine computation for pipeline evaluation during AutoMLSearch."""
 
     @abstractmethod
-    def submit_training_job(self, automl_data, pipeline) -> EngineComputation:
+    def submit_training_job(self, automl_data, pipeline, X, y) -> EngineComputation:
         """Get the engine computation for pipeline training."""
 
     @abstractmethod
@@ -180,8 +180,9 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train, 
     return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}, cv_pipeline, logger
 
 
-def evaluate_pipeline(pipeline, X, y, automl_data, logger):
+def evaluate_pipeline(pipeline, automl_data, X, y, logger):
     logger.info(f"\t{pipeline.name}:")
+
     X_train, y_train = X, y
 
     if pipeline.model_family == ModelFamily.ENSEMBLE:

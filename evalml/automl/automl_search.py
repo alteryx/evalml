@@ -337,7 +337,7 @@ class AutoMLSearch:
         else:
             self._engine = engine
 
-        self.automl_data = AutoMLData(self.X_train, self.y_train, self.ensembling_indices,
+        self.automl_data = AutoMLData(self.ensembling_indices,
                                       self.data_splitter, self.problem_type,
                                       self.objective, self.additional_objectives, self.optimize_thresholds,
                                       self.error_callback, self.random_seed)
@@ -559,7 +559,7 @@ class AutoMLSearch:
                 log_title(logger, f"Evaluating Batch Number {self._get_batch_number()}")
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
-                    computation = self._engine.submit_evaluation_job(self.automl_data, pipeline)
+                    computation = self._engine.submit_evaluation_job(self.automl_data, pipeline, self.X_train, self.y_train)
                     computations.append(computation)
                 while self._should_continue() and len(computations) > 0:
                     computation = computations.pop(0)
@@ -700,7 +700,7 @@ class AutoMLSearch:
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
-        computation = self._engine.submit_evaluation_job(self.automl_data, baseline)
+        computation = self._engine.submit_evaluation_job(self.automl_data, baseline, self.X_train, self.y_train)
         data, pipeline, job_log = computation.get_result()
         self._post_evaluation_callback(pipeline, data, job_log)
 
@@ -868,7 +868,7 @@ class AutoMLSearch:
             if pipeline.parameters == parameter:
                 return
 
-        computation = self._engine.submit_evaluation_job(self.automl_data, pipeline)
+        computation = self._engine.submit_evaluation_job(self.automl_data, pipeline, self.X_train, self.y_train)
         data, pipeline, job_log = computation.get_result()
         self._post_evaluation_callback(pipeline, data, job_log)
         self._find_best_pipeline()
@@ -959,7 +959,7 @@ class AutoMLSearch:
         fitted_pipelines = {}
         computations = []
         for pipeline in pipelines:
-            computations.append(self._engine.submit_training_job(self.automl_data, pipeline))
+            computations.append(self._engine.submit_training_job(self.automl_data, pipeline, self.X_train, self.y_train))
 
         while computations:
             computation = computations.pop(0)
