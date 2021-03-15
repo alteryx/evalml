@@ -160,10 +160,11 @@ def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold,
+def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold,
                                dummy_binary_pipeline_class, X_y_binary):
     mock_optimize_threshold.return_value = 0.42
     mock_score.return_value = {'F1': 1.0}
