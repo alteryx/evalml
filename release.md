@@ -116,5 +116,3 @@ Verify the latest version of `evalml` got installed by running
 ```shell
 python -c "import evalml; print(evalml.__version__)"
 ``` 
-
-Our `build_conda_pkg` job is based off of the `latest_release_changes` branch of our feedstock repo. In order to 
