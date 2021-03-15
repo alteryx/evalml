@@ -1,9 +1,9 @@
 from evalml.data_checks import (
     DataCheck,
-    DataCheckMessageCode,
-    DataCheckWarning,
     DataCheckAction,
-    DataCheckActionCode
+    DataCheckActionCode,
+    DataCheckMessageCode,
+    DataCheckWarning
 )
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
@@ -46,7 +46,8 @@ class HighlyNullDataCheck(DataCheck):
                                                                  "level": "warning",\
                                                                  "code": "HIGHLY_NULL",\
                                                                  "details": {"column": "lots_of_null"}}],\
-                                                    "actions": []}
+                                                    "actions": [{"code": "DROP_COL",\
+                                                                 "details": {"column": "lots_of_null"}}]}
         """
         results = {
             "warnings": [],
@@ -76,5 +77,7 @@ class HighlyNullDataCheck(DataCheck):
                                                          details={"column": col_name}).to_dict()
                                         for col_name in highly_null_cols])
         if len(highly_null_cols) > 0:
-            results["actions"].append([DataCheckAction(DataCheckActionCode.DROP_COL, details={"columns": highly_null_cols})])
+            results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                       details={"column": col_name}).to_dict()
+                                       for col_name in highly_null_cols])
         return results
