@@ -2,14 +2,24 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
         * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
     * Fixes
     * Changes
+        * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
     * Documentation Changes
     * Testing Changes
-        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Added tests to confirm support for Python 3.9 :pr:`1724`
+
+.. warning::
+
+    **Breaking Changes**
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
+        * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch``. To run the data checks which were previously run by default in ``AutoMLSearch``, please call ``DefaultDataChecks().validate(X_train, y_train)`` or take a look at our documentation for more examples. :pr:`1935`
+
 
 **v0.20.0 Mar. 10, 2021**
     * Enhancements
@@ -40,6 +50,7 @@ Release Notes
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+        * Removed warning in ``InvalidTargetDataCheck`` returned when numeric binary classification targets are not (0, 1) :pr:`1959`
     * Documentation Changes
         * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
     * Testing Changes
@@ -50,6 +61,7 @@ Release Notes
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
+
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements

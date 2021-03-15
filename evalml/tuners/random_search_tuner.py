@@ -40,8 +40,8 @@ class RandomSearchTuner(Tuner):
         not dependent on scores of previous parameters.
 
         Arguments:
-            pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
-            score (float): the score obtained by evaluating the pipeline with the provided parameters
+            pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
+            score (float): The score obtained by evaluating the pipeline with the provided parameters
         """
         pass
 
@@ -55,7 +55,7 @@ class RandomSearchTuner(Tuner):
         generate a unique set of parameters after ``replacement_max_attempts`` tries, then ``NoParamsException`` is raised.
 
         Returns:
-            dict: proposed pipeline parameters
+            dict: Proposed pipeline parameters
         """
         if not len(self._search_space_ranges):
             return self._convert_to_pipeline_parameters({})
