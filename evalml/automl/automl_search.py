@@ -34,7 +34,10 @@ from evalml.pipelines import (
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import (
+    _make_component_list_from_actions,
+    make_pipeline
+)
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
@@ -83,6 +86,7 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 data_check_actions=None,
                  _ensembling_split_size=0.2,
                  _pipelines_per_batch=5):
         """Automated pipeline search
@@ -163,6 +167,8 @@ class AutoMLSearch:
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
             pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+
+            data_check_actions (list(DataCheckActions)): A list of DataCheckAction objects which specify actions to take to further configure the AutoML object or pipelines created. Defaults to None.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -269,11 +275,17 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
+        if data_check_actions is not None:
+            self.data_check_actions = data_check_actions
+            self._prepended_components = _make_component_list_from_actions(self.data_check_actions)
+
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type,
+                                                    custom_hyperparameters=self.pipeline_parameters,
+                                                    components_to_prepend=self._prepended_components) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")

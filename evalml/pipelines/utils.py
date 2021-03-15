@@ -104,7 +104,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
+def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, components_to_prepend=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -116,6 +116,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
             with component name as key and dictionary of parameters as the value
+        components_to_prepend (list(ComponentBase)): List of components to prepend to the pipeline. Defaults to None.
 
     Returns:
         class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
@@ -129,6 +130,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
+    if complete_component_graph is not None:
+        complete_component_graph = components_to_prepend + complete_component_graph
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
