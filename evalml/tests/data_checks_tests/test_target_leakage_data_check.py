@@ -5,6 +5,8 @@ import pytest
 import woodwork as ww
 
 from evalml.data_checks import (
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
     TargetLeakageDataCheck
@@ -66,7 +68,10 @@ def test_target_leakage_data_check_warnings():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
     }
 
 
@@ -89,7 +94,7 @@ def test_target_leakage_data_check_input_formats():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected_messages = {
+    expected = {
         "warnings": [DataCheckWarning(message="Column 'a' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
@@ -107,13 +112,16 @@ def test_target_leakage_data_check_input_formats():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
     }
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
+    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
 
     # test y as list
-    assert leakage_check.validate(X, y.values) == expected_messages
+    assert leakage_check.validate(X, y.values) == expected
 
     # test X as np.array
     assert leakage_check.validate(X.to_numpy().astype(float), y) == {
@@ -134,7 +142,10 @@ def test_target_leakage_data_check_input_formats():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": 3}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 2}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 3}).to_dict()]
     }
 
 
@@ -146,13 +157,13 @@ def test_target_leakage_none():
     X["b"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected_messages = {
+    expected = {
         "warnings": [],
         "errors": [],
         "actions": []
     }
 
-    assert leakage_check.validate(X, y) == expected_messages
+    assert leakage_check.validate(X, y) == expected
 
 
 def test_target_leakage_types():
@@ -167,7 +178,7 @@ def test_target_leakage_types():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected_messages = {
+    expected = {
         "warnings": [DataCheckWarning(message="Column 'a' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
@@ -185,10 +196,13 @@ def test_target_leakage_types():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
     }
 
-    assert leakage_check.validate(X, y) == expected_messages
+    assert leakage_check.validate(X, y) == expected
 
 
 def test_target_leakage_multi():
@@ -205,7 +219,7 @@ def test_target_leakage_multi():
     X["d"] = [0, 0, 0, 0, 0, 0]
     X["e"] = ["a", "b", "c", "a", "b", "c"]
 
-    expected_messages = {
+    expected = {
         "warnings": [DataCheckWarning(message="Column 'a' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
@@ -219,14 +233,16 @@ def test_target_leakage_multi():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "c"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict()]
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
+    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
 
     #  test y as list
-    assert leakage_check.validate(X, y.values) == expected_messages
+    assert leakage_check.validate(X, y.values) == expected
 
 
 def test_target_leakage_regression():
@@ -243,7 +259,7 @@ def test_target_leakage_regression():
     X["d"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     X["e"] = ["a", "a", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
 
-    expected_messages = {
+    expected = {
         "warnings": [DataCheckWarning(message="Column 'a' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
@@ -261,14 +277,17 @@ def test_target_leakage_regression():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "e"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'e'}).to_dict()]
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
+    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
 
     #  test y as list
-    assert leakage_check.validate(X, y.values) == expected_messages
+    assert leakage_check.validate(X, y.values) == expected
 
 
 def test_target_leakage_data_check_warnings_pearson():
@@ -300,7 +319,10 @@ def test_target_leakage_data_check_warnings_pearson():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
     }
 
     y = ["a", "b", "a", "a"]
@@ -327,7 +349,7 @@ def test_target_leakage_data_check_input_formats_pearson():
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected_messages = {
+    expected = {
         "warnings": [DataCheckWarning(message="Column 'a' is 80.0% or more correlated with the target",
                                       data_check_name=target_leakage_data_check_name,
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
@@ -345,7 +367,10 @@ def test_target_leakage_data_check_input_formats_pearson():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
     }
 
     # test X as np.array
@@ -367,14 +392,17 @@ def test_target_leakage_data_check_input_formats_pearson():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": 3}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 2}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 3}).to_dict()]
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected_messages
+    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
 
     #  test y as list
-    assert leakage_check.validate(X, y.values) == expected_messages
+    assert leakage_check.validate(X, y.values) == expected
 
 
 def test_target_leakage_none_pearson():
@@ -385,10 +413,10 @@ def test_target_leakage_none_pearson():
     X["b"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected_messages = {
+    expected = {
         "warnings": [],
         "errors": [],
         "actions": []
     }
 
-    assert leakage_check.validate(X, y) == expected_messages
+    assert leakage_check.validate(X, y) == expected

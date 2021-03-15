@@ -76,8 +76,8 @@ class HighlyNullDataCheck(DataCheck):
                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
                                                          details={"column": col_name}).to_dict()
                                         for col_name in highly_null_cols])
-        if len(highly_null_cols) > 0:
-            results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                       details={"column": col_name}).to_dict()
-                                       for col_name in highly_null_cols])
+
+        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                   details={"column": col_name}).to_dict()
+                                   for col_name in highly_null_cols])
         return results
