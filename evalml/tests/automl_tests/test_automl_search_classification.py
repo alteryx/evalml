@@ -202,7 +202,7 @@ def test_callback(X_y_binary):
                           n_jobs=1)
     automl.search()
 
-    assert counts["start_iteration_callback"] == 9
+    assert counts["start_iteration_callback"] == len(get_estimators('binary')) + 1
     assert counts["add_result_callback"] == max_iterations
 
 
