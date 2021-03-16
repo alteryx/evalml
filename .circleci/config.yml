@@ -137,6 +137,8 @@ jobs:
           steps:
             - run: |
                 ls
+                dir evalml
+                ls
                 source test_python/bin/activate
                 codecov --required
 
