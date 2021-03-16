@@ -4,6 +4,8 @@ import pytest
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
     DataChecks,
@@ -37,7 +39,7 @@ def test_invalid_target_data_check_nan_error():
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                   details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True}).to_dict()]
     }
 
 
@@ -133,11 +135,8 @@ def test_invalid_target_data_input_formats():
                                   details={"target_values": []}).to_dict()],
         "actions": []
     }
-    #  test Woodwork
-    y = pd.Series([None, None, None, 0])
-    X = pd.DataFrame({"col": range(len(y))})
-    messages = invalid_targets_check.validate(X, y)
-    assert messages == {
+
+    expected = {
         "warnings": [],
         "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
                                   data_check_name=invalid_targets_data_check_name,
@@ -147,44 +146,27 @@ def test_invalid_target_data_input_formats():
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": [0]}).to_dict()],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True}).to_dict()]
     }
+    #  test Woodwork
+    y = pd.Series([None, None, None, 0])
+    X = pd.DataFrame({"col": range(len(y))})
+    messages = invalid_targets_check.validate(X, y)
+    assert messages == expected
 
     #  test list
     y = [None, None, None, 0]
     X = pd.DataFrame({"col": range(len(y))})
 
     messages = invalid_targets_check.validate(X, y)
-    assert messages == {
-        "warnings": [],
-        "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
-                                  data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-                                  details={"num_null_rows": 3, "pct_null_rows": 75}).to_dict(),
-                   DataCheckError(message="Binary class targets require exactly two unique values.",
-                                  data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": [0]}).to_dict()],
-        "actions": []
-    }
+    assert messages == expected
 
     # test np.array
     y = np.array([None, None, None, 0])
     X = pd.DataFrame({"col": range(len(y))})
 
     messages = invalid_targets_check.validate(X, y)
-    assert messages == {
-        "warnings": [],
-        "errors": [DataCheckError(message="3 row(s) (75.0%) of target values are null",
-                                  data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-                                  details={"num_null_rows": 3, "pct_null_rows": 75}).to_dict(),
-                   DataCheckError(message="Binary class targets require exactly two unique values.",
-                                  data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": [0]}).to_dict()],
-        "actions": []
-    }
+    assert messages == expected
 
 
 def test_invalid_target_data_check_n_unique():

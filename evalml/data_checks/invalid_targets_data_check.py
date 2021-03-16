@@ -2,6 +2,8 @@ import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning
@@ -89,6 +91,8 @@ class InvalidTargetDataCheck(DataCheck):
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                                     details={"num_null_rows": num_null_rows, "pct_null_rows": pct_null_rows}).to_dict())
+            results["actions"].append(DataCheckAction(DataCheckActionCode.IMPUTE_COL,
+                                                      details={"column": None, "is_target": True}).to_dict())
 
         value_counts = y_df.value_counts()
         unique_values = value_counts.index.tolist()
