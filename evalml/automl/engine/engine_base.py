@@ -36,23 +36,33 @@ class EngineComputation(ABC):
 
 
 class JobLogger:
+    """Mimics the behavior of a RootLogger but stores all messages rather than actually logging them.
+
+    This is used during engine jobs so that log messages are recorded after the job completes. This is desired so that
+    all of the messages for a single job are grouped together in the log.
+    """
 
     def __init__(self):
         self.logs = []
 
     def info(self, msg):
+        """Store message at the info level."""
         self.logs.append(("info", msg))
 
     def debug(self, msg):
+        """Store message at the debug level."""
         self.logs.append(("debug", msg))
 
     def warning(self, msg):
+        """Store message at the warning level."""
         self.logs.append(("warning", msg))
 
     def error(self, msg):
+        """Store message at the error level."""
         self.logs.append(("error", msg))
 
     def write_to_logger(self, logger):
+        """Write all the messages to the logger. First in First Out order."""
         logger_method = {"info": logger.info,
                          "debug": logger.debug,
                          "warning": logger.warning,
@@ -69,16 +79,16 @@ class EngineBase(ABC):
         return JobLogger()
 
     @abstractmethod
-    def submit_evaluation_job(self, automl_data, pipeline, X, y) -> EngineComputation:
-        """Get the engine computation for pipeline evaluation during AutoMLSearch."""
+    def submit_evaluation_job(self, automl_data, pipeline, X, y):
+        """Submit job for pipeline evaluation during AutoMLSearch."""
 
     @abstractmethod
-    def submit_training_job(self, automl_data, pipeline, X, y) -> EngineComputation:
-        """Get the engine computation for pipeline training."""
+    def submit_training_job(self, automl_data, pipeline, X, y):
+        """Submit job for pipeline training."""
 
     @abstractmethod
-    def submit_scoring_job(self, automl_data, pipeline, X, y, objectives) -> EngineComputation:
-        """Get the engine computation for pipeline scoring."""
+    def submit_scoring_job(self, automl_data, pipeline, X, y, objectives):
+        """Submit job for pipeline scoring."""
 
 
 def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
