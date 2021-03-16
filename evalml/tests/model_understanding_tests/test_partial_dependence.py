@@ -272,9 +272,9 @@ def test_partial_dependence_more_categories_than_grid_resolution(logistic_regres
     num_cat_features = len(set(X["currency"].to_series()))
     assert num_cat_features == 164
 
-    part_dep_ans = {0.1424060057413758: 154, 0.006837318701999957: 1, 0.24445532203317386: 1, 0.15637574440029903: 1,
-                    0.11676042311300606: 1, 0.13434069071819482: 1, 0.1502609021969637: 1, 0.14486201259150977: 1,
-                    0.16687406140200164: 1, 0.06815227785761911: 1, 0.0791821060634158: 1}
+    part_dep_ans = {0.1432616813857269: 154, 0.1502346349971562: 1, 0.14487916687594762: 1,
+                    0.1573183451314127: 1, 0.11695462432136654: 1, 0.07950579532536253: 1, 0.006794444792966759: 1,
+                    0.17745270478939879: 1, 0.1666874487986626: 1, 0.13357573073236878: 1, 0.06778096366056789: 1}
     part_dep_ans_rounded = round_dict_keys(part_dep_ans)
 
     # Check the case where grid_resolution < number of categorical features
