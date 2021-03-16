@@ -215,7 +215,7 @@ def _check_equality(data, expected, check_index_type=True):
         pd.testing.assert_frame_equal(data, expected, check_index_type)
 
 
-@pytest.mark.parametrize("data, num_to_pad, expected",
+@pytest.mark.parametrize("data,num_to_pad,expected",
                          [(pd.Series([1, 2, 3]), 1, pd.Series([np.nan, 1, 2, 3], dtype="Float64")),
                           (pd.Series([1, 2, 3]), 0, pd.Series([1, 2, 3])),
                           (pd.Series([1, 2, 3, 4], index=pd.date_range("2020-10-01", "2020-10-04")),
