@@ -809,6 +809,8 @@ def test_estimators_accept_all_kwargs(estimator_class,
         params = estimator.parameters
     else:
         params = estimator._component_obj.get_params()
+        if "random_state" in params:
+            del params["random_state"]
     estimator_class(**params)
 
 
@@ -861,8 +863,6 @@ def test_component_equality():
     # Test random_state and random_seed
     assert MockComponent(random_seed=10) == MockComponent(random_seed=10)
     assert MockComponent(random_seed=10) != MockComponent(random_seed=0)
-    assert MockComponent(random_state=10) == MockComponent(random_state=10)
-    assert MockComponent(random_state=10) != MockComponent(random_state=0)
 
     # Test parameters
     assert MockComponent(1, 2) == MockComponent(1, 2)
@@ -1014,19 +1014,6 @@ def test_generate_code_custom(test_classes):
     expected_code = "mockTransformer = MockTransformer(**{})"
     component_code = generate_component_code(MockTransformer())
     assert component_code == expected_code
-
-
-@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
-def test_components_raise_deprecated_random_state_warning(cls):
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        component = cls(random_state=31)
-        assert component.random_seed == 31
-        if component._component_obj is not None:
-            params = component._component_obj.get_params()
-            if "random_state" in params:
-                assert params['random_state'] == 31
-        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
 
 
 @pytest.mark.parametrize("transformer_class", _all_transformers())

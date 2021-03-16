@@ -17,9 +17,7 @@ class RFRegressorSelectFromModel(FeatureSelector):
     }
 
     def __init__(self, number_features=None, n_estimators=10, max_depth=None,
-                 percent_features=0.5, threshold=-np.inf, n_jobs=-1,
-                 random_state=None, random_seed=0, **kwargs):
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+                 percent_features=0.5, threshold=-np.inf, n_jobs=-1, random_seed=0, **kwargs):
 
         parameters = {"number_features": number_features,
                       "n_estimators": n_estimators,

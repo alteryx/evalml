@@ -15,7 +15,7 @@ class LinearDiscriminantAnalysis(Transformer):
     name = 'Linear Discriminant Analysis Transformer'
     hyperparameter_ranges = {}
 
-    def __init__(self, n_components=None, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, n_components=None, random_seed=0, **kwargs):
         """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
 
         Arguments:
@@ -28,7 +28,6 @@ class LinearDiscriminantAnalysis(Transformer):
         lda = SkLDA(n_components=n_components, **kwargs)
         super().__init__(parameters=parameters,
                          component_obj=lda,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y):

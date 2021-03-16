@@ -21,7 +21,6 @@ class Imputer(Transformer):
                  categorical_fill_value=None,
                  numeric_impute_strategy="mean",
                  numeric_fill_value=None,
-                 random_state=None,
                  random_seed=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
@@ -52,7 +51,6 @@ class Imputer(Transformer):
         self._categorical_cols = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y=None):

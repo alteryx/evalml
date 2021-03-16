@@ -8,7 +8,6 @@ from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     classproperty,
-    deprecate_arg,
     get_logger,
     infer_feature_types,
     log_subtitle,
@@ -22,8 +21,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components."""
     _default_parameters = None
 
-    def __init__(self, parameters=None, component_obj=None, random_state=None, random_seed=0, **kwargs):
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+    def __init__(self, parameters=None, component_obj=None,  random_seed=0, **kwargs):
+        self.random_seed = random_seed
         self._component_obj = component_obj
         self._parameters = parameters or {}
         self._is_fitted = False

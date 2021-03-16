@@ -18,7 +18,7 @@ class PCA(Transformer):
     hyperparameter_ranges = {
         "variance": Real(0.25, 1)}
 
-    def __init__(self, variance=0.95, n_components=None, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, variance=0.95, n_components=None, random_seed=0, **kwargs):
         """Initalizes an transformer that reduces the number of features using PCA."
 
         Arguments:
@@ -30,7 +30,6 @@ class PCA(Transformer):
         parameters = {"variance": variance,
                       "n_components": n_components}
         parameters.update(kwargs)
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         if n_components:
             pca = SkPCA(n_components=n_components, random_state=random_seed, **kwargs)
         else:

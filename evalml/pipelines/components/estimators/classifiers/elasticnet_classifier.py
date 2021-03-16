@@ -7,7 +7,6 @@ from skopt.space import Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import deprecate_arg
 
 
 class ElasticNetClassifier(Estimator):
@@ -21,7 +20,7 @@ class ElasticNetClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000, random_state=None,
+    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000,
                  random_seed=0, penalty='elasticnet',
                  **kwargs):
         parameters = {'alpha': alpha,
@@ -34,7 +33,6 @@ class ElasticNetClassifier(Estimator):
                           f". Originally received '{kwargs['loss']}'.")
         kwargs["loss"] = "log"
         parameters.update(kwargs)
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         en_classifier = SKElasticNetClassifier(random_state=random_seed,
                                                **parameters)
         super().__init__(parameters=parameters,

@@ -28,7 +28,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  drop=None,
                  handle_unknown="ignore",
                  handle_missing="error",
-                 random_state=None,
                  random_seed=0,
                  **kwargs):
         """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
@@ -72,7 +71,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
         self._initial_state = self.random_seed
         self._provenance = {}

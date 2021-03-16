@@ -19,14 +19,12 @@ class LSA(TextTransformer):
     name = "LSA Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, random_seed=0, **kwargs):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
 
         Arguments:
-            random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_seed))
         self._provenance = {}
         super().__init__(random_seed=random_seed,
