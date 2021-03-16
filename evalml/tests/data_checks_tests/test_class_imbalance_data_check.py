@@ -99,8 +99,8 @@ def test_class_imbalance_data_check_multiclass(input_type):
     y = pd.Series([0, 2, 1, 1])
     y_imbalanced_default_threshold = pd.Series([0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
     y_imbalanced_set_threshold = pd.Series([0, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    y_imbalanced_cv = pd.Series([0, 0, 1, 2, 2, 1, 1, 1])
-    y_long = pd.Series([0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4])
+    y_imbalanced_cv = pd.Series([0, 1, 2, 2, 1, 1, 1])
+    y_long = pd.Series([0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4])
 
     if input_type == "np":
         X = X.to_numpy()
