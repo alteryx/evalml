@@ -166,4 +166,4 @@ workflows:
             - shellcheck/check
           filters:
             branches:
-              only: conda-ci-use-working-changes-branch
+              only: main
