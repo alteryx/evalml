@@ -14,9 +14,7 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
-    log_and_save_error_callback,
     log_error_callback,
-    raise_and_save_error_callback,
     raise_error_callback,
     silent_error_callback
 )
@@ -1933,14 +1931,14 @@ def test_automl_error_callback(mock_fit, mock_score, error_type, callback, X_y_b
         msg = 'all your model are belong to us'
         mock_fit.side_effect = [Exception(msg)] * 3 + [None] * 100
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=callback, train_best_pipeline=False, n_jobs=1)
-    if callback in [log_error_callback, silent_error_callback, log_and_save_error_callback]:
+    if callback in [log_error_callback, silent_error_callback]:
         exception = AutoMLSearchException
         match = "All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"
     else:
         exception = Exception
         match = msg
 
-    if error_type == 'fit-single' and callback in [silent_error_callback, log_error_callback, log_and_save_error_callback]:
+    if error_type == 'fit-single' and callback in [silent_error_callback, log_error_callback]:
         automl.search()
     else:
         with pytest.raises(exception, match=match):
@@ -1948,25 +1946,12 @@ def test_automl_error_callback(mock_fit, mock_score, error_type, callback, X_y_b
 
     if callback == silent_error_callback:
         assert msg not in caplog.text
-    if callback == log_and_save_error_callback:
-        assert f"AutoML search encountered an exception: {msg}" in caplog.text
-        assert msg in caplog.text
     if callback == log_error_callback:
         assert f"Exception during automl search: {msg}" in caplog.text
         assert msg in caplog.text
-    if callback in [raise_error_callback, raise_and_save_error_callback]:
+    if callback in [raise_error_callback]:
         assert f"AutoML search raised a fatal exception: {msg}" in caplog.text
         assert msg in caplog.text
-
-    if callback == log_and_save_error_callback:
-        if error_type == 'fit-single':
-            assert len(automl._results['errors']) == 3
-        else:
-            # first automl batch, times 3 for 3-fold cross validation
-            assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
-    elif callback in [log_error_callback, silent_error_callback, raise_and_save_error_callback, log_and_save_error_callback]:
-        for e in automl._results['errors']:
-            assert str(e) == msg
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
