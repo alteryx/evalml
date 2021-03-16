@@ -36,6 +36,7 @@ Release Notes
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
         * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added support for ``pandas`` version 1.2.0 :pr:`1708`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
     * Fixes
         * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
