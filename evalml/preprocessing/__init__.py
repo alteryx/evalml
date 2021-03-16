@@ -5,4 +5,17 @@ from .utils import (
     target_distribution,
     drop_nan_target_rows
 )
-from .data_splitters import TrainingValidationSplit, TimeSeriesSplit
+from .data_splitters import (
+    TrainingValidationSplit,
+    TimeSeriesSplit,
+    BalancedClassificationDataCVSplit,
+    BalancedClassificationDataTVSplit,
+    KMeansSMOTETVSplit,
+    KMeansSMOTECVSplit,
+    SMOTETomekTVSplit,
+    SMOTETomekCVSplit,
+    RandomUnderSamplerCVSplit,
+    RandomUnderSamplerTVSplit,
+    SMOTENCCVSplit,
+    SMOTENCTVSplit
+)

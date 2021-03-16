@@ -20,9 +20,15 @@ from .components import (
 )
 from .components.utils import all_components, handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    ObjectiveCreationError,
+    PipelineScoreError
+)
+from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
+from evalml.problem_types import is_binary
 from evalml.utils import (
     classproperty,
     deprecate_arg,
@@ -528,3 +534,27 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
         has_stacked_ensembler = any(isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor)) for c in self._component_graph)
         return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs, has_stacked_ensembler])
+
+    @staticmethod
+    def create_objectives(objectives):
+        objective_instances = []
+        for objective in objectives:
+            try:
+                objective_instances.append(get_objective(objective, return_instance=True))
+            except ObjectiveCreationError as e:
+                msg = f"Cannot pass {objective} as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
+                raise ObjectiveCreationError(msg) from e
+        return objective_instances
+
+    def can_tune_threshold_with_objective(self, objective):
+        """Determine whether the threshold of a binary classification pipeline can be tuned.
+
+       Arguments:
+            pipeline (PipelineBase): Binary classification pipeline.
+            objective (ObjectiveBase): Primary AutoMLSearch objective.
+
+        Returns:
+            bool: True if the pipeline threshold can be tuned.
+
+        """
+        return is_binary(self.problem_type) and objective.is_defined_for_problem_type(self.problem_type) and objective.can_optimize_threshold

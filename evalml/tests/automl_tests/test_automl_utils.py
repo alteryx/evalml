@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold
 
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
@@ -14,6 +14,8 @@ from evalml.automl.utils import (
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
+    BalancedClassificationDataCVSplit,
+    BalancedClassificationDataTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -51,12 +53,16 @@ def test_make_data_splitter_default(problem_type, large_data):
         problem_configuration = {'gap': 1, 'max_delay': 7}
 
     data_splitter = make_data_splitter(X, y, problem_type, problem_configuration=problem_configuration)
-    if large_data:
-        assert isinstance(data_splitter, TrainingValidationSplit)
+    if large_data and problem_type in [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
+        if problem_type == ProblemTypes.REGRESSION:
+            assert isinstance(data_splitter, TrainingValidationSplit)
+            assert data_splitter.stratify is None
+            assert data_splitter.random_state == 0
+        else:
+            assert isinstance(data_splitter, BalancedClassificationDataTVSplit)
+            assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
-        assert data_splitter.stratify is None
-        assert data_splitter.random_state == 0
         return
 
     if problem_type == ProblemTypes.REGRESSION:
@@ -66,10 +72,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        assert isinstance(data_splitter, StratifiedKFold)
+        assert isinstance(data_splitter, BalancedClassificationDataCVSplit)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
-        assert data_splitter.random_state == 0
+        assert data_splitter.random_seed == 0
 
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                         ProblemTypes.TIME_SERIES_BINARY,
@@ -81,8 +87,8 @@ def test_make_data_splitter_default(problem_type, large_data):
 
 
 @pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
-                                                                  (ProblemTypes.BINARY, StratifiedKFold),
-                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
+                                                                  (ProblemTypes.BINARY, BalancedClassificationDataCVSplit),
+                                                                  (ProblemTypes.MULTICLASS, BalancedClassificationDataCVSplit)])
 def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
@@ -94,7 +100,10 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
-    assert data_splitter.random_state == random_seed
+    if str(problem_type) == 'regression':
+        assert data_splitter.random_state == random_seed
+    else:
+        assert data_splitter.random_seed == random_seed
 
 
 def test_make_data_splitter_parameters_time_series():
@@ -145,16 +154,17 @@ def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
         splitter = make_data_splitter(X, y, "binary", n_splits=5, shuffle=True, random_state=15)
-        assert splitter.random_state == 15
+        assert splitter.random_seed == 15
         assert str(warn[0].message).startswith(
             "Argument 'random_state' has been deprecated in favor of 'random_seed'")
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold,
+def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold,
                                dummy_binary_pipeline_class, X_y_binary):
     mock_optimize_threshold.return_value = 0.42
     mock_score.return_value = {'F1': 1.0}

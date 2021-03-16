@@ -138,68 +138,16 @@ jobs:
             - run: |
                 source test_python/bin/activate
                 codecov --required
-  build_docs:
-    working_directory: ~/evalml/
-    executor:
-      name: python
-      python_version: "3.8"
-    steps:
-      - checkout
-      - install_dependencies_docs
-      - run: sudo apt update && sudo apt install -y pandoc && sudo apt install -y graphviz
-      - run: |
-          source test_python/bin/activate
-          make -C docs/ html
-      - run: ls docs/build/html
-  check_dependencies_updated_linux:
-    parameters:
-      python_version:
-        type: string
-        default: "3.8"
-    executor:
-      name: python
-      python_version: << parameters.python_version >>
-    steps:
-      - checkout
-      - install_dependencies
-      - run:
-          name: "Detect Dependency Changes"
-          command: |
-            source test_python/bin/activate
-            mkdir /tmp/dependencies_updated_artifacts
-            export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
-            evalml/tests/dependency_update_check/make_deps_diff.sh
-            diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
-            exit $?
-      - run:
-          name: "Display Dependency Diff"
-          command: |
-            echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
-            cat /tmp/dependencies_updated_artifacts/diff.txt
-          when: on_fail
-      - store_artifacts:
-          path: /tmp/dependencies_updated_artifacts
+
 
 workflows:
   version: 2
-  build_docs:
-    jobs:
-      - build_docs:
-          name: "build docs"
-  check_dependencies_updated_linux:
-    jobs:
-        - check_dependencies_updated_linux:
-            name: "linux python 3.8 check dependencies for updates"
-            python_version: "3.8"
-            filters:
-              branches:
-                ignore: /^main?/
   test_all_python_versions:
     jobs:
       - unit_tests:
           matrix:
             parameters:
-              python_version: [ "3.7" ]
+              python_version: [ "3.7", "3.9" ]
               core_dependencies: [ false ]
               codecov: [ false ]
           name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"

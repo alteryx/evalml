@@ -2,7 +2,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-from evalml.objectives import get_objective
 from evalml.pipelines import PipelineBase
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
@@ -119,7 +118,7 @@ class ClassificationPipeline(PipelineBase):
         """
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         if y_predicted is not None:
@@ -137,3 +136,18 @@ class ClassificationPipeline(PipelineBase):
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)
         return y_predicted, y_predicted_proba
+
+    def optimize_threshold(self, X, y, y_pred_proba, objective):
+        """Optimize the pipeline threshold given the objective to use. Only used for binary problems with objectives whose thresholds can be tuned.
+
+        Arguments:
+            X (ww.DataTable): Input features
+            y (ww.DataColumn): Input target values
+            y_pred_proba (ww.DataColumn): The predicted probabilities of the target outputted by the pipeline
+            objective (ObjectiveBase): The objective to threshold with. Must have a tunable threshold.
+        """
+        if self.can_tune_threshold_with_objective(objective):
+            targets = self._encode_targets(y.to_series())
+            self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
+        else:
+            raise ValueError("Problem type must be binary and objective must be optimizable.")

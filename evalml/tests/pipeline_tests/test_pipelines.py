@@ -14,19 +14,20 @@ from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     IllFormattedClassNameError,
     MissingComponentError,
+    ObjectiveCreationError,
+    ObjectiveNotFoundError,
     PipelineNotYetFittedError,
     PipelineScoreError
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import FraudCost, Precision
+from evalml.objectives import (
+    CostBenefitMatrix,
+    FraudCost,
+    Precision,
+    get_objective
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    GeneratedPipelineBinary,
-    GeneratedPipelineMulticlass,
-    GeneratedPipelineRegression,
-    GeneratedPipelineTimeSeriesBinary,
-    GeneratedPipelineTimeSeriesMulticlass,
-    GeneratedPipelineTimeSeriesRegression,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline
@@ -46,13 +47,14 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     allowed_model_families
 )
-from evalml.pipelines.utils import (
-    generate_pipeline_code,
-    get_estimators,
-    get_generated_pipeline_class
-)
+from evalml.pipelines.utils import generate_pipeline_code, get_estimators
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_time_series
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -1950,22 +1952,6 @@ def test_get_component(logistic_regression_binary_pipeline_class, nonlinear_bina
     assert pipeline.get_component('Logistic Regression') == LogisticRegressionClassifier()
 
 
-@pytest.mark.parametrize("problem_type,resulting_class",
-                         [(ProblemTypes.BINARY, GeneratedPipelineBinary),
-                          (ProblemTypes.MULTICLASS, GeneratedPipelineMulticlass),
-                          (ProblemTypes.REGRESSION, GeneratedPipelineRegression),
-                          (ProblemTypes.TIME_SERIES_BINARY, GeneratedPipelineTimeSeriesBinary),
-                          (ProblemTypes.TIME_SERIES_MULTICLASS, GeneratedPipelineTimeSeriesMulticlass),
-                          (ProblemTypes.TIME_SERIES_REGRESSION, GeneratedPipelineTimeSeriesRegression),
-                          ("invalid", None)])
-def test_get_generated_pipeline_class(problem_type, resulting_class):
-    if problem_type != "invalid":
-        assert get_generated_pipeline_class(problem_type) == resulting_class
-    else:
-        with pytest.raises(ValueError, match="not recognized"):
-            get_generated_pipeline_class(problem_type)
-
-
 def test_pipelines_raise_deprecated_random_state_warning(dummy_binary_pipeline_class,
                                                          dummy_multiclass_pipeline_class,
                                                          dummy_regression_pipeline_class,
@@ -1985,3 +1971,75 @@ def test_pipelines_raise_deprecated_random_state_warning(dummy_binary_pipeline_c
     test_pipeline_class(dummy_time_series_regression_pipeline_class)
     test_pipeline_class(dummy_ts_binary_pipeline_class)
     test_pipeline_class(time_series_multiclass_classification_pipeline_class)
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_score_error_when_custom_objective_not_instantiated(problem_type, logistic_regression_binary_pipeline_class,
+                                                            dummy_multiclass_pipeline_class,
+                                                            dummy_regression_pipeline_class, X_y_binary):
+    pipeline = dummy_regression_pipeline_class({})
+    if is_binary(problem_type):
+        pipeline = logistic_regression_binary_pipeline_class({})
+    elif is_multiclass(problem_type):
+        pipeline = dummy_multiclass_pipeline_class({})
+
+    X, y = X_y_binary
+    pipeline.fit(X, y)
+    msg = "Cannot pass cost benefit matrix as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
+    with pytest.raises(ObjectiveCreationError, match=msg):
+        pipeline.score(X, y, objectives=["cost benefit matrix", "F1"])
+
+    # Verify ObjectiveCreationError only raised when string matches an existing objective
+    with pytest.raises(ObjectiveNotFoundError, match="cost benefit is not a valid Objective!"):
+        pipeline.score(X, y, objectives=["cost benefit", "F1"])
+
+    # Verify no exception when objective properly specified
+    if is_binary(problem_type):
+        pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])
+
+
+def test_binary_pipeline_string_target_thresholding(make_data_type, logistic_regression_binary_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+    X = make_data_type('ww', X)
+    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    objective = get_objective("F1", return_instance=True)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+    assert pipeline.threshold is None
+    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    pipeline.optimize_threshold(X, y, pred_proba, objective)
+    assert pipeline.threshold is not None
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
+def test_pipeline_thresholding_errors(mock_multi_predict, mock_multi_score, mock_multi_fit,
+                                      mock_binary_pred_proba, mock_binary_score, mock_binary_fit,
+                                      make_data_type, logistic_regression_binary_pipeline_class,
+                                      logistic_regression_multiclass_pipeline_class, X_y_multi, X_y_binary):
+    X, y = X_y_multi
+    X = make_data_type('ww', X)
+    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    objective = get_objective("F1 Macro", return_instance=True)
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+    pred_proba = pipeline.predict(X, y)
+    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
+        pipeline.optimize_threshold(X, y, pred_proba, objective)
+
+    objective = get_objective("Log Loss Multiclass")
+    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
+        pipeline.optimize_threshold(X, y, pred_proba, objective)
+    X, y = X_y_binary
+    X = make_data_type('ww', X)
+    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    objective = get_objective("Log Loss Binary", return_instance=True)
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
+        pipeline.optimize_threshold(X, y, pred_proba, objective)
