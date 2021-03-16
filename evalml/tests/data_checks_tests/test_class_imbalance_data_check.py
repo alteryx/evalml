@@ -98,7 +98,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
     X = pd.DataFrame()
     y = pd.Series([0, 2, 1, 1])
     y_imbalanced_default_threshold = pd.Series([0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
-    y_imbalanced_set_threshold = pd.Series([0, 2, 2, 2, 3, 1, 1, 1, 1, 1])
+    y_imbalanced_set_threshold = pd.Series([0, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
     y_imbalanced_cv = pd.Series([0, 0, 1, 2, 2, 1, 1, 1])
     y_long = pd.Series([0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4])
 
@@ -363,7 +363,7 @@ def test_class_imbalance_severe(min_samples, input_type):
 
 def test_class_imbalance_large_multiclass():
     X = pd.DataFrame()
-    y_values_multiclass_large = pd.Series([0] * 20 + [1] * 20 + [2] * 99 + [3] * 105 + [4] * 900 + [5] * 900)
+    y_values_multiclass_large = pd.Series([0] * 20 + [1] * 25 + [2] * 99 + [3] * 105 + [4] * 900 + [5] * 900)
     y_multiclass_huge = pd.Series([i % 200 for i in range(100000)])
     y_imbalanced_multiclass_huge = y_multiclass_huge.append(pd.Series([200] * 10), ignore_index=True)
 
