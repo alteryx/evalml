@@ -5,8 +5,6 @@ from skopt.space import Real
 
 from .feature_selector import FeatureSelector
 
-from evalml.utils import deprecate_arg
-
 
 class RFClassifierSelectFromModel(FeatureSelector):
     """Selects top features based on importance weights using a Random Forest classifier."""

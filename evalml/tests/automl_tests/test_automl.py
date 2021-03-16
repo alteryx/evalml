@@ -1,5 +1,4 @@
 import os
-import warnings
 from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch

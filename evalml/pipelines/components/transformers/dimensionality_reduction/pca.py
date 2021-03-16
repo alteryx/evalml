@@ -6,7 +6,6 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
-    deprecate_arg,
     infer_feature_types,
     is_all_numeric
 )

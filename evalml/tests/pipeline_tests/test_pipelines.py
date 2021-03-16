@@ -1,5 +1,4 @@
 import os
-import warnings
 from unittest.mock import patch
 
 import cloudpickle

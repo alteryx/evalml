@@ -21,7 +21,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components."""
     _default_parameters = None
 
-    def __init__(self, parameters=None, component_obj=None,  random_seed=0, **kwargs):
+    def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         self.random_seed = random_seed
         self._component_obj = component_obj
         self._parameters = parameters or {}

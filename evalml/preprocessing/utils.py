@@ -7,7 +7,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series
 )
-from evalml.utils import deprecate_arg, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
@@ -47,7 +47,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     return X, y
 
 
-def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_state=None, random_seed=0):
+def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_seed=0):
     """Splits data into train and test sets.
 
     Arguments:
@@ -57,14 +57,12 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the gap and max_delay variables.
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
-        random_state (None, int): Deprecated - use random_seed instead.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
         ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
 
-    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
