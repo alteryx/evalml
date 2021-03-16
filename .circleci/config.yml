@@ -136,6 +136,7 @@ jobs:
           condition: << parameters.codecov >>
           steps:
             - run: |
+                ls
                 source test_python/bin/activate
                 codecov --required
 
