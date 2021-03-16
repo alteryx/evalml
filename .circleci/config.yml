@@ -147,7 +147,7 @@ workflows:
       - unit_tests:
           matrix:
             parameters:
-              python_version: [ "3.7" ]
+              python_version: [ "3.7", "3.9" ]
               core_dependencies: [ false ]
               codecov: [ false ]
           name: "linux python << matrix.python_version >> unit tests, core dependencies << matrix.core_dependencies >>, codecov << matrix.codecov >>"

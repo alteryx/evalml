@@ -77,7 +77,7 @@ class AutoMLSearch:
                  random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
-                 optimize_thresholds=False,
+                 optimize_thresholds=True,
                  ensembling=False,
                  max_batches=None,
                  problem_configuration=None,
@@ -127,6 +127,8 @@ class AutoMLSearch:
             data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
+
+            optimize_thresholds (bool): Whether or not to optimize the binary pipeline threshold. Defaults to True.
 
             start_iteration_callback (callable): Function called before each pipeline training iteration.
                 Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.

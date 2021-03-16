@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
         * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
@@ -11,11 +12,13 @@ Release Notes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
     * Documentation Changes
     * Testing Changes
-        * Remove ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Added tests to confirm support for Python 3.9 :pr:`1724`
 
 .. warning::
 
     **Breaking Changes**
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch``. To run the data checks which were previously run by default in ``AutoMLSearch``, please call ``DefaultDataChecks().validate(X_train, y_train)`` or take a look at our documentation for more examples. :pr:`1935`
 
 
@@ -34,6 +37,7 @@ Release Notes
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
         * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added support for ``pandas`` version 1.2.0 :pr:`1708`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
     * Fixes
         * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`

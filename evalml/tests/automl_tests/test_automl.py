@@ -81,7 +81,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
         expected_pipeline_class = MulticlassClassificationPipeline
         X, y = X_y_multi
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, objective=objective, max_iterations=2, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, optimize_thresholds=False, objective=objective, max_iterations=2, n_jobs=1)
     automl.search()
     assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
     assert automl.results['search_order'] == [0, 1]
@@ -258,10 +258,11 @@ def test_rankings(X_y_binary, X_y_regression):
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold, X_y_binary):
+def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, X_y_binary):
     def _dummy_callback(param1, param2, param3):
         return None
 
@@ -928,9 +929,9 @@ def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
-    assert "0                      1.000     66.000       34.000" in out
-    assert "1                      1.000     67.000       33.000" in out
-    assert "2                      1.000     67.000       33.000" in out
+    assert "0                      1.000       66.0         34.0" in out
+    assert "1                      1.000       67.0         33.0" in out
+    assert "2                      1.000       67.0         33.0" in out
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
@@ -1119,7 +1120,7 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
     mock_input.side_effect = user_input
     X, y = X_y_binary
     callback = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5, start_iteration_callback=callback, objective="f1")
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5, start_iteration_callback=callback, optimize_thresholds=False, objective="f1")
     automl.search()
     assert len(automl._results['pipeline_results']) == number_results
     if number_results == 0:
@@ -1257,7 +1258,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
-                              additional_objectives=[], n_jobs=1)
+                              additional_objectives=[], optimize_thresholds=False, n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
@@ -1265,7 +1266,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
-                              additional_objectives=[], n_jobs=1)
+                              additional_objectives=[], optimize_thresholds=False, n_jobs=1)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
         if np.isnan(pipeline_scores).all():
@@ -2221,7 +2222,7 @@ def test_automl_ensembling_training(mock_fit, mock_score, ensemble_split_size, e
     # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
     ensemble_pipelines = len(get_estimators("binary")) + 2
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
-                          train_best_pipeline=False, optimize_thresholds=False, _ensembling_split_size=ensemble_split_size)
+                          train_best_pipeline=False, _ensembling_split_size=ensemble_split_size)
     automl.search()
     training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=ensemble_split_size, random_seed=0)
     training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
@@ -2298,7 +2299,7 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     y = ww.DataColumn(pd.Series(y))
     ensemble_pipelines = len(get_estimators("binary")) + 2
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=True,
-                          train_best_pipeline=True, optimize_thresholds=False)
+                          train_best_pipeline=True)
     assert automl.ensembling
     automl.search()
     # ensure we use the full X data for training the best pipeline, which isn't ensembling pipeline
