@@ -15,6 +15,7 @@ Release Notes
     * Testing Changes
         * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
         * Added tests to confirm support for Python 3.9 :pr:`1724`
+        * Changed ``build_conda_pkg`` job to use ``latest_release_changes`` branch in the feedstock. :pr:`1979`
 
 .. warning::
 
