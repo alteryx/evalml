@@ -76,7 +76,11 @@ jobs:
           echo "actual_sha=$(echo git log -1 --format='%H')" >> $GITHUB_ENV
           echo ${{ github.event.number }}
           echo  ${{ github.event.pull_request.head.sha }}
-          ls
+          ls -la
+          cd ..
+          ls -la
+          cd ..
+          ls -la
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1.2.1
