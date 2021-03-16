@@ -2221,7 +2221,7 @@ def test_automl_ensembling_training(mock_fit, mock_score, ensemble_split_size, e
     X, y = X_y_binary
     # don't train the best pipeline since we check usage of the ensembling CV through the .fit mock
     ensemble_pipelines = len(get_estimators("binary")) + 2
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
                           train_best_pipeline=False, _ensembling_split_size=ensemble_split_size)
     automl.search()
     training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=ensemble_split_size, random_seed=0)
@@ -2250,7 +2250,7 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     X = pd.DataFrame(X, index=indices)
     y = pd.Series(y, index=indices)
     ensemble_pipelines = len(get_estimators("binary")) + 2
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_batches=ensemble_pipelines,
                           ensembling=True, _ensembling_split_size=ensemble_split_size)
     ensembling_num = (1 + len(automl.allowed_pipelines) + len(automl.allowed_pipelines) * automl._pipelines_per_batch + 1) + best_pipeline
     mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
@@ -2275,7 +2275,7 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
 def test_automl_no_ensembling_best_pipeline(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     # does not ensemble
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_iterations=2)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_iterations=2)
     automl.search()
     assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
     assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
@@ -2286,7 +2286,7 @@ def test_automl_ensemble_split_size(ensemble_split_size, X_y_binary):
     X, y = X_y_binary
     ensemble_pipelines = len(get_estimators("binary")) + 2
     with pytest.raises(ValueError, match="Ensembling split size must be between"):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, ensembling=True, max_batches=ensemble_pipelines, _ensembling_split_size=ensemble_split_size)
+        AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, ensembling=True, max_batches=ensemble_pipelines, _ensembling_split_size=ensemble_split_size)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
@@ -2298,7 +2298,7 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     X = ww.DataTable(X, logical_types={1: "categorical", "text column": "categorical"})
     y = ww.DataColumn(pd.Series(y))
     ensemble_pipelines = len(get_estimators("binary")) + 2
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_state=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=True,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=True,
                           train_best_pipeline=True)
     assert automl.ensembling
     automl.search()
@@ -2307,15 +2307,6 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     # check that the logical types were preserved
     assert str(mock_fit.call_args_list[-1][0][0].logical_types[1]) == 'Categorical'
     assert str(mock_fit.call_args_list[-1][0][0].logical_types['text column']) == 'Categorical'
-
-
-def test_automl_raises_deprecated_random_state_warning(X_y_multi):
-    X, y = X_y_multi
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', random_state=10)
-        assert automl.random_seed == 10
-        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
 
 
 @patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform_sample', return_value=[0, 1, 2])

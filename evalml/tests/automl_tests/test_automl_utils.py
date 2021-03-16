@@ -149,16 +149,6 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
             make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
 
 
-def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
-    X, y = X_y_binary
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        splitter = make_data_splitter(X, y, "binary", n_splits=5, shuffle=True, random_state=15)
-        assert splitter.random_seed == 15
-        assert str(warn[0].message).startswith(
-            "Argument 'random_state' has been deprecated in favor of 'random_seed'")
-
-
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 @patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
