@@ -7,6 +7,7 @@ Release Notes
         * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
         * Updated ``class_imbalance_data_check`` to better handle multiclass imbalances :pr:``
+        * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
     * Fixes
     * Changes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`

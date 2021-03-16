@@ -1,5 +1,7 @@
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning
 )
@@ -44,7 +46,8 @@ class HighlyNullDataCheck(DataCheck):
                                                                  "level": "warning",\
                                                                  "code": "HIGHLY_NULL",\
                                                                  "details": {"column": "lots_of_null"}}],\
-                                                    "actions": []}
+                                                    "actions": [{"code": "DROP_COL",\
+                                                                 "details": {"column": "lots_of_null"}}]}
         """
         results = {
             "warnings": [],
@@ -56,14 +59,15 @@ class HighlyNullDataCheck(DataCheck):
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         percent_null = (X.isnull().mean()).to_dict()
+        highly_null_cols = []
         if self.pct_null_threshold == 0.0:
-            all_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
+            highly_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
             warning_msg = "Column '{}' is more than 0% null"
             results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
                                                          data_check_name=self.name,
                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
                                                          details={"column": col_name}).to_dict()
-                                        for col_name in all_null_cols])
+                                        for col_name in highly_null_cols])
         else:
             highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
             warning_msg = "Column '{}' is {}% or more null"
@@ -72,4 +76,8 @@ class HighlyNullDataCheck(DataCheck):
                                                          message_code=DataCheckMessageCode.HIGHLY_NULL,
                                                          details={"column": col_name}).to_dict()
                                         for col_name in highly_null_cols])
+
+        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                   details={"column": col_name}).to_dict()
+                                   for col_name in highly_null_cols])
         return results
