@@ -290,3 +290,25 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
     for check in default_data_check:
         if check.name == "InvalidTargetDataCheck":
             assert check.validate(X, y) == {"warnings": [], "errors": [data_check_error], "actions": []}
+
+
+def test_data_checks_do_not_duplicate_actions(X_y_binary):
+    X, y = X_y_binary
+
+    class MockDataCheck(DataCheck):
+        def validate(self, X, y):
+            return {"warnings": [], "errors": [], "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'col_to_drop'}).to_dict()]}
+
+    class MockDataCheckWithSameAction(DataCheck):
+        def validate(self, X, y):
+            return {"warnings": [], "errors": [], "actions": []}
+
+    data_checks_list = [MockDataCheck, MockDataCheckWithSameAction]
+    data_checks = DataChecks(data_checks=data_checks_list)
+
+    # Check duplicate actions are returned once
+    assert data_checks.validate(X, y) == {
+        "warnings": [],
+        "errors": [],
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'col_to_drop'}).to_dict()]
+    }
