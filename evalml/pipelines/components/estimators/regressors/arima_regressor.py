@@ -46,8 +46,7 @@ class ARIMARegressor(Estimator):
             date_col = y.index
         if X is not None:
             if self.date_column in X.columns:
-                date_col = X[self.date_column]
-                X.drop([self.date_column], axis=1, inplace=True)
+                date_col = X.pop(self.date_column)
                 X.index = y.index
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
