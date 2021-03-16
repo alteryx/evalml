@@ -136,13 +136,6 @@ jobs:
           condition: << parameters.codecov >>
           steps:
             - run: |
-                dir evalml/test-python/bin
-                ls -la
-                cd ..
-                cd ..
-                cd ..
-                ls -la
-                cd ..
                 ls -la
                 source test_python/bin/activate
                 codecov --required
