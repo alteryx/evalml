@@ -6,6 +6,9 @@ import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
 from evalml.objectives import get_objective
+from evalml.pipelines.binary_classification_pipeline import (
+    BinaryClassificationPipeline
+)
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
@@ -174,7 +177,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                                           objectives=objectives)
 
 
-class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+
+class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline, BinaryClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     problem_type = ProblemTypes.TIME_SERIES_BINARY
     _threshold = None
 
@@ -217,32 +221,32 @@ class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline, m
             predictions = predictions.iloc[:, 1]
         return TimeSeriesClassificationPipeline._score(X, y, predictions, objective)
 
-    def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
-        scored_successfully = OrderedDict()
-        exceptions = OrderedDict()
-        for objective in objectives:
-            try:
-                if not objective.is_defined_for_problem_type(self.problem_type):
-                    raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
-                y_pred_to_use = y_pred
-                if self.threshold is not None and not objective.score_needs_proba:
-                    y_pred_to_use = self._predict_with_objective(X, y_pred_proba, objective)
-                score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred_to_use, objective)
-                scored_successfully.update({objective.name: score})
-            except Exception as e:
-                tb = traceback.format_tb(sys.exc_info()[2])
-                exceptions[objective.name] = (e, tb)
-        if exceptions:
-            # If any objective failed, throw an PipelineScoreError
-            raise PipelineScoreError(exceptions, scored_successfully)
-        # No objectives failed, return the scores
-        return scored_successfully
+    # def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
+    #     scored_successfully = OrderedDict()
+    #     exceptions = OrderedDict()
+    #     for objective in objectives:
+    #         try:
+    #             if not objective.is_defined_for_problem_type(self.problem_type):
+    #                 raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
+    #             y_pred_to_use = y_pred
+    #             if self.threshold is not None and not objective.score_needs_proba:
+    #                 y_pred_to_use = self._predict_with_objective(X, y_pred_proba, objective)
+    #             score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred_to_use, objective)
+    #             scored_successfully.update({objective.name: score})
+    #         except Exception as e:
+    #             tb = traceback.format_tb(sys.exc_info()[2])
+    #             exceptions[objective.name] = (e, tb)
+    #     if exceptions:
+    #         # If any objective failed, throw an PipelineScoreError
+    #         raise PipelineScoreError(exceptions, scored_successfully)
+    #     # No objectives failed, return the scores
+    #     return scored_successfully
 
-    def _predict_with_objective(self, X, ypred_proba, objective):
-        ypred_proba = ypred_proba.iloc[:, 1]
-        if objective is None:
-            return ypred_proba > self.threshold
-        return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
+    # def _predict_with_objective(self, X, ypred_proba, objective):
+    #     ypred_proba = ypred_proba.iloc[:, 1]
+    #     if objective is None:
+    #         return ypred_proba > self.threshold
+    #     return objective.decision_function(ypred_proba, threshold=self.threshold, X=X)
 
 
 class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipeline):
