@@ -47,10 +47,10 @@ class TargetImputer(Transformer):
             self
         """
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_woodwork_types_wrapper(y.to_series()).to_frame()
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (y.dtype == bool):
+        if (y.dtypes == bool).all():
             y = y.astype('category')
 
         self._component_obj.fit(y)
@@ -67,14 +67,15 @@ class TargetImputer(Transformer):
             ww.DataTable: Transformed X
         """
         y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y = _convert_woodwork_types_wrapper(y_ww.to_series()).to_frame()
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (y.dtype == bool):
+        if (y.dtypes == bool).all():
             return y_ww
 
         y_t = self._component_obj.transform(y)
-        return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
+        # return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
+        return infer_feature_types(y_t)
 
     def fit_transform(self, X, y):
         """Fits on X and transforms X

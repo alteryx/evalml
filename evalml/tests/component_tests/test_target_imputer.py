@@ -13,7 +13,6 @@ from woodwork.logical_types import (
 
 from evalml.pipelines.components import TargetImputer
 
-
 # def test_simple_imputer_median():
 #     X = pd.DataFrame([[np.nan, 0, 1, np.nan],
 #                       [1, 2, 3, 2],

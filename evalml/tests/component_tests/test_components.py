@@ -692,14 +692,14 @@ def test_all_transformers_check_fit(X_y_binary):
 
         component = component_class()
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
-            component.transform(X)
+            component.transform(X, y)
 
         component.fit(X, y)
-        component.transform(X)
+        component.transform(X, y)
 
         component = component_class()
         component.fit_transform(X, y)
-        component.transform(X)
+        component.transform(X, y)
 
 
 def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
