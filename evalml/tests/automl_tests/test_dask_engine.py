@@ -1,12 +1,18 @@
-import pytest
 import time
-# import dask.distributed as distributed
-from distributed.utils_test import client, loop, cluster_fixture
 
+import pytest
 import woodwork as ww
-from evalml.automl.engine.dask_engine import DaskEngine, DaskComputation
+# import dask.distributed as distributed
+from distributed.utils_test import client, cluster_fixture, loop  # noqa: F401
+
+from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine
 from evalml.automl.engine.sequential_engine import SequentialEngine
-from evalml.tests.automl_tests.dask_testing import automl_data, TestLRCPipeline, TestSVMPipeline, TestCBPipeline
+from evalml.tests.automl_tests.dask_testing import (
+    TestCBPipeline,
+    TestLRCPipeline,
+    TestSVMPipeline,
+    automl_data
+)
 
 
 def test_init(client):
