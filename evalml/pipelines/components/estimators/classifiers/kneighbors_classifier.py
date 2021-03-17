@@ -5,7 +5,6 @@ from skopt.space import Integer
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import deprecate_arg
 
 
 class KNeighborsClassifier(Estimator):
@@ -30,7 +29,6 @@ class KNeighborsClassifier(Estimator):
                  algorithm="auto",
                  leaf_size=30,
                  p=2,
-                 random_state=None,
                  random_seed=0,
                  **kwargs):
         parameters = {"n_neighbors": n_neighbors,
@@ -40,7 +38,6 @@ class KNeighborsClassifier(Estimator):
                       "p": p}
         parameters.update(kwargs)
         knn_classifier = SKKNeighborsClassifier(**parameters)
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(parameters=parameters,
                          component_obj=knn_classifier,
                          random_seed=random_seed)

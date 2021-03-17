@@ -10,7 +10,6 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
-    deprecate_arg,
     import_or_raise,
     infer_feature_types
 )
@@ -34,8 +33,7 @@ class CatBoostClassifier(Estimator):
                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
     def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=True,
-                 allow_writing_files=False, random_state=None, random_seed=0, **kwargs):
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+                 allow_writing_files=False, random_seed=0, **kwargs):
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,

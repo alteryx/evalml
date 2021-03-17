@@ -42,7 +42,7 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
         self.balanced_ratio = balanced_ratio
         self.min_samples = min_samples
         self.min_percentage = min_percentage
-        self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_state=random_seed)
+        self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_seed=random_seed)
 
 
 class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
