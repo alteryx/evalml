@@ -20,6 +20,7 @@ class LinearDiscriminantAnalysis(Transformer):
 
         Arguments:
             n_components (int): The number of features to maintain after computation. Defaults to None.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if n_components and n_components < 1:
             raise ValueError("Invalid number of compponents for Linear Discriminant Analysis")

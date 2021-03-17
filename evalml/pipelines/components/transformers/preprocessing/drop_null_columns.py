@@ -14,6 +14,7 @@ class DropNullColumns(Transformer):
             pct_null_threshold(float): The percentage of NaN values in an input feature to drop.
                 Must be a value between [0, 1] inclusive. If equal to 0.0, will drop columns with any null values.
                 If equal to 1.0, will drop columns with all null values. Defaults to 0.95.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
             raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")

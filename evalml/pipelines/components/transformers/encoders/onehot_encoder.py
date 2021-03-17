@@ -48,6 +48,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 `fit` or `transform`. If this is set to "as_category" and NaN values are within the `n` most frequent,
                 "nan" values will be encoded as their own column. If this is set to "error", any missing
                 values encountered will raise an error. Defaults to "error".
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {"top_n": top_n,
                       "features_to_encode": features_to_encode,

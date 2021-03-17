@@ -28,6 +28,8 @@ class PerColumnImputer(Transformer):
             default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
                 Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
                 and "most_frequent", "constant" for object data types. Defaults to "most_frequent"
+
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {"impute_strategies": impute_strategies,
                       "default_impute_strategy": default_impute_strategy}

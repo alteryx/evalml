@@ -36,7 +36,9 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             handle_unknown (string): Determines how to handle unknown categories for a feature encountered. Options are 'value', 'error', nd 'return_nan'.
                 Defaults to 'value', which replaces with the target mean
             handle_missing (string): Determines how to handle missing values encountered during `fit` or `transform`. Options are 'value', 'error', and 'return_nan'.
-                Defaults to 'value', which replaces with the target mean"""
+                Defaults to 'value', which replaces with the target mean
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+            """
 
         parameters = {"cols": cols,
                       "smoothing": smoothing,

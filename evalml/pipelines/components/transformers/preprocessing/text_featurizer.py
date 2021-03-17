@@ -24,7 +24,6 @@ class TextFeaturizer(TextTransformer):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
-            random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self._trans = [nlp_primitives.DiversityScore,

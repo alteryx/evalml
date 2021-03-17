@@ -25,6 +25,7 @@ class PCA(Transformer):
                               number of features.
             n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override
                                 variance variable if set.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {"variance": variance,
                       "n_components": n_components}
