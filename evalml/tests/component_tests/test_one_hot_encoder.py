@@ -366,7 +366,7 @@ def test_large_number_of_categories():
     X = np.array(np.concatenate([X, X_extra]))
     X = pd.DataFrame(X, columns=['cat'])
     X['cat'] = X['cat'].astype('category')
-    encoder = OneHotEncoder(top_n=10)
+    encoder = OneHotEncoder(top_n=10, drop=None)
     encoder.fit(X)
     X_t = encoder.transform(X)
     expected_col_names = ['cat_' + str(200000 + i) for i in range(10)]

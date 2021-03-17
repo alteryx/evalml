@@ -26,7 +26,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  features_to_encode=None,
                  categories=None,
                  drop='if_binary',
-                 handle_unknown="error",
+                 handle_unknown="ignore",
                  handle_missing="error",
                  random_state=None,
                  random_seed=0,
@@ -118,9 +118,12 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 categories.append(unique_values)
 
         # Create an encoder to pass off the rest of the computation to
+        handle_unknown_to_use = self.parameters['handle_unknown']
+        if self.parameters['drop'] == 'if_binary':
+            handle_unknown_to_use = "error"
         self._encoder = SKOneHotEncoder(categories=categories,
                                         drop=self.parameters['drop'],
-                                        handle_unknown=self.parameters['handle_unknown'])
+                                        handle_unknown=handle_unknown_to_use)
         self._encoder.fit(X_t[self.features_to_encode])
         return self
 
