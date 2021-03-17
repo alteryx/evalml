@@ -66,12 +66,12 @@ def test_fit_predict_ts_with_ynotX_index(ts_data):
     a_clf.fit(solver='nm')
     y_pred_a = a_clf.predict(params=(1, 0, 0))
 
-    X = X.reset_index(drop=True)
+    X_no_ind = X.reset_index(drop=True)
     assert isinstance(y.index, pd.DatetimeIndex)
-    assert not isinstance(X.index, pd.DatetimeIndex)
+    assert not isinstance(X_no_ind.index, pd.DatetimeIndex)
 
     clf = ARIMARegressor(p=1, d=0, q=0)
-    clf.fit(X=X, y=y)
+    clf.fit(X=X_no_ind, y=y)
     y_pred = clf.predict(X=X, y=y)
 
     assert (y_pred == y_pred_a).all()
@@ -85,8 +85,19 @@ def test_fit_ts_with_notXnoty_index(ts_data):
     assert not isinstance(X.index, pd.DatetimeIndex)
 
     clf = ARIMARegressor(p=1, d=0, q=0)
-    with pytest.raises(ValueError, match="ARIMA regressor requires input data"):
+    with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X or y."):
        clf.fit(X=X, y=y)
+
+
+def test_predict_ts_with_notX_index(ts_data):
+    X, y = ts_data
+    X = X.reset_index(drop=True)
+    assert not isinstance(X.index, pd.DatetimeIndex)
+
+    clf = ARIMARegressor(p=1, d=0, q=0)
+    clf.fit(X=X, y=y)
+    with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X."):
+       clf.predict(X)
 
 
 def test_fit_predict_ts_no_X(ts_data):
@@ -98,7 +109,7 @@ def test_fit_predict_ts_no_X(ts_data):
 
     clf = ARIMARegressor(p=1, d=0, q=0)
     clf.fit(X=None, y=y)
-    y_pred = clf.predict(X=None, y=y)
+    y_pred = clf.predict(X=X, y=y)
 
     assert (y_pred == y_pred_a).all()
 

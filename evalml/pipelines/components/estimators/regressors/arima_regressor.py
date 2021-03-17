@@ -39,7 +39,7 @@ class ARIMARegressor(Estimator):
                          component_obj=None,
                          random_seed=random_seed)
 
-    def get_dates(self, X, y):
+    def get_dates_fit(self, X, y):
         date_col = None
 
         if isinstance(y.index, pd.DatetimeIndex):
@@ -50,13 +50,26 @@ class ARIMARegressor(Estimator):
                 X.index = y.index
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-            else:
-                X.index = y.index
-            y.index = date_col if date_col is not None else y.index
+            X.index = y.index
 
         if date_col is None:
             msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
                   "If not it will look for the datetime column in the index of X or y."
+            raise ValueError(msg)
+        return date_col
+
+    def get_dates_predict(self, X):
+        date_col = None
+
+        if X is not None:
+            if self.date_column in X.columns:
+                date_col = X.pop(self.date_column)
+            elif isinstance(X.index, pd.DatetimeIndex):
+                date_col = X.index
+
+        if date_col is None:
+            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
+                  "If not it will look for the datetime column in the index of X."
             raise ValueError(msg)
         return date_col
 
@@ -68,7 +81,7 @@ class ARIMARegressor(Estimator):
         arima = import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
 
         X, y = self._manage_woodwork(X, y)
-        dates = self.get_dates(X, y)
+        dates = self.get_dates_fit(X, y)
         if X is not None:
             arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **self.parameters)
         else:
@@ -80,7 +93,7 @@ class ARIMARegressor(Estimator):
 
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
-        dates = self.get_dates(X, y)
+        dates = self.get_dates_predict(X)
         start = dates.min()
         end = dates.max()
         params = self.parameters['order']
