@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
+from evalml.utils.gen_utils import is_all_numeric
+
 numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
 
 
@@ -98,3 +100,22 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
             except (ValueError, TypeError):
                 pass
     return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
+
+
+def _convert_numeric_dataset_pandas(X, y):
+    """Convert numeric and non-null data to pandas datatype. Raises ValueError if there is null or non-numeric data.
+    Used with data sampler strategies.
+
+    Arguments:
+        X (pd.DataFrame, np.ndarray, ww.DataTable): Data to transform
+        y (pd.Series, np.ndarray, ww.DataColumn): Target data
+
+    Returns:
+        Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
+    X_ww = infer_feature_types(X)
+    if not is_all_numeric(X_ww):
+        raise ValueError('Values not all numeric or there are null values provided in the dataset')
+    y_ww = infer_feature_types(y)
+    X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+    y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
+    return X_ww, y_ww

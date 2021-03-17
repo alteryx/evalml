@@ -39,6 +39,9 @@ class BalancedClassificationDataTVSplit(BaseUnderSamplingSplitter):
         super().__init__(sampler=self.sampler, n_splits=1, random_seed=random_seed)
         self.shuffle = shuffle
         self.test_size = test_size
+        self.balanced_ratio = balanced_ratio
+        self.min_samples = min_samples
+        self.min_percentage = min_percentage
         self.splitter = TrainingValidationSplit(test_size=test_size, shuffle=shuffle, random_state=random_seed)
 
 
@@ -69,4 +72,7 @@ class BalancedClassificationDataCVSplit(BaseUnderSamplingSplitter):
         self.sampler = BalancedClassificationSampler(balanced_ratio=balanced_ratio, min_samples=min_samples, min_percentage=min_percentage, random_seed=random_seed)
         super().__init__(sampler=self.sampler, n_splits=n_splits, random_seed=random_seed)
         self.shuffle = shuffle
+        self.balanced_ratio = balanced_ratio
+        self.min_samples = min_samples
+        self.min_percentage = min_percentage
         self.splitter = StratifiedKFold(n_splits=n_splits, shuffle=shuffle, random_state=random_seed)

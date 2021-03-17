@@ -632,8 +632,8 @@ EXPECTED_DATETIME_FEATURES_OHE = {'datetime_hour', 'datetime_year', 'datetime_mo
                                   'datetime_month_0', 'datetime_month_1', 'datetime_month_2', 'datetime_month_4',
                                   'datetime_month_5', 'datetime_month_6', 'datetime_month_7'}
 
-EXPECTED_CURRENCY_FEATURES = {'currency_XDR', 'currency_MUR', 'currency_NIS', 'currency_CNY', 'currency_TZS',
-                              'currency_LAK', 'currency_MOP', 'currency_IMP', 'currency_QAR', 'currency_EGP'}
+EXPECTED_CURRENCY_FEATURES = {'currency_XDR', 'currency_HTG', 'currency_PAB', 'currency_CNY', 'currency_TZS',
+                              'currency_LAK', 'currency_NAD', 'currency_IMP', 'currency_QAR', 'currency_EGP'}
 
 EXPECTED_PROVIDER_FEATURES_OHE = {'provider_JCB 16 digit', 'provider_Discover', 'provider_American Express',
                                   'provider_JCB 15 digit', 'provider_Maestro', 'provider_VISA 19 digit',

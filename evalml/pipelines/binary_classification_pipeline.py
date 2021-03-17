@@ -74,7 +74,7 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
-        if any(o.score_needs_proba for o in objectives) or (any(not o.score_needs_proba for o in objectives) and self.threshold is not None):
+        if any(o.score_needs_proba for o in objectives) or self.threshold is not None:
             y_predicted_proba = self.predict_proba(X, y) if time_series else self.predict_proba(X)
         if any(not o.score_needs_proba for o in objectives) and self.threshold is None:
             y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)

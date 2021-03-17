@@ -147,7 +147,7 @@ class EngineBase(ABC):
                 logger.debug(f"\t\t\tFold {i}: starting training")
                 cv_pipeline = EngineBase.train_pipeline(pipeline, X_train, y_train, automl.optimize_thresholds, automl.objective)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                if automl.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl.objective):
+                if automl.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl.objective) and automl.objective.can_optimize_threshold:
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
