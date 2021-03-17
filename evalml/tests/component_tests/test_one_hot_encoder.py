@@ -149,6 +149,19 @@ def test_drop_binary():
     assert col_names == expected_col_names
 
 
+def test_drop_binary_custom():
+    X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=None, drop='if_binary', handle_unknown='error')
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    col_names = set(X_t.columns)
+    expected_col_names = set(["col_1_a", "col_2_a",
+                              "col_2_b", "col_2_c", "col_3_a"])
+    assert col_names == expected_col_names
+
+
 def test_drop_parameter_is_array():
     X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
                       'col_2': ["a", "b", "a", "c", "b"],

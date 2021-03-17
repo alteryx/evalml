@@ -106,8 +106,13 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
         else:
             categories = []
+            values_to_drop = []
             for col in X_t[self.features_to_encode]:
+                unique_values_to_drop = None
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
+                if len(value_counts) == 2: # a column with only two categories
+                    unique_values = value_counts.index.tolist()[1:]
+                    unique_values_to_drop = value_counts.index.tolist()[0:1]
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
@@ -116,11 +121,17 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
                 categories.append(unique_values)
+                values_to_drop.append(unique_values_to_drop)
 
-        # Create an encoder to pass off the rest of the computation to
-        self._encoder = SKOneHotEncoder(categories=categories,
-                                        drop=self.parameters['drop'],
-                                        handle_unknown=self.parameters['handle_unknown'])
+        if self.parameters['drop'] == "if_binary":
+            # Create an encoder to pass off the rest of the computation to
+            self._encoder = SKOneHotEncoder(categories=categories,
+                                            drop=values_to_drop,
+                                            handle_unknown=self.parameters['handle_unknown'])
+        else:
+            self._encoder = SKOneHotEncoder(categories=categories,
+                                            drop=self.parameters['drop'],
+                                            handle_unknown=self.parameters['handle_unknown'])
         self._encoder.fit(X_t[self.features_to_encode])
         return self
 
