@@ -506,7 +506,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def partial_dependence(pipeline, X, features, grid_resolution=100):
+def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100):
     """Calculates one or two-way partial dependence.  If a single integer or
     string is given for features, one-way partial dependence is calculated. If
     a tuple of two integers or strings is given, two-way partial dependence
@@ -521,6 +521,8 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        percentiles (tuple[float]): The lower and upper percentile used to create the extreme values for the grid.
+            Must be in [0, 1]. Defaults to (0.05, 0.95).
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
             set to the max number of categories + 1.
@@ -566,11 +568,14 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
 
+    if ((isinstance(features, int) and X.iloc[:, features].value_counts(normalize=True).values[0] > 0.95) or (isinstance(features, str) and X[features].value_counts(normalize=True).values[0] > 0.95)):
+        raise ValueError(f"Feature {features} is mostly one value and cannot be used to compute partial dependence.")
+
     if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
 
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
 
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
