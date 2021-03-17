@@ -47,7 +47,7 @@ class TargetImputer(Transformer):
             self
         """
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y.to_series())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (y.dtype == bool):
@@ -67,7 +67,7 @@ class TargetImputer(Transformer):
             ww.DataTable: Transformed X
         """
         y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_dataframe())
+        y = _convert_woodwork_types_wrapper(y_ww.to_series())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (y.dtype == bool):

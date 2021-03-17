@@ -40,8 +40,8 @@ class SimpleImputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -72,7 +72,7 @@ class SimpleImputer(Transformer):
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
-            return X_ww
+            return infer_feature_types(X)
 
         X_null_dropped = X.copy()
         X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
