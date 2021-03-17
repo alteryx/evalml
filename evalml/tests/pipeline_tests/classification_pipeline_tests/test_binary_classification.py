@@ -71,20 +71,11 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     mock_transform.assert_called()
 
 
-@pytest.mark.parametrize("is_time_series", [True, False])
 @patch('evalml.objectives.FraudCost.decision_function')
-def test_binary_predict_pipeline_use_objective(mock_decision_function, is_time_series,
-                                               X_y_binary, logistic_regression_binary_pipeline_class, time_series_binary_classification_pipeline_class):
+def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binary, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    binary_pipeline = None
-    if is_time_series:
-        binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                                       "pipeline": {"gap": 0, "max_delay": 0}})
-        mock_decision_function.return_value = pd.Series([0] * 98)
-
-    else:
-        binary_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-        mock_decision_function.return_value = pd.Series([0] * 100)
+    binary_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    mock_decision_function.return_value = pd.Series([0] * 100)
 
     binary_pipeline.threshold = 0.7
     binary_pipeline.fit(X, y)

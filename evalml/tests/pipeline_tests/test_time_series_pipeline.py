@@ -7,7 +7,7 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.exceptions import PipelineNotYetFittedError
-from evalml.objectives import get_objective
+from evalml.objectives import FraudCost, get_objective
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -440,3 +440,16 @@ def test_ts_binary_pipeline_target_thresholding(make_data_type, time_series_bina
     pred_proba = binary_pipeline.predict_proba(X, y).iloc[:, 1]
     binary_pipeline.optimize_threshold(X, y, pred_proba, objective)
     assert binary_pipeline.threshold is not None
+
+
+@patch('evalml.objectives.FraudCost.decision_function')
+def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binary, time_series_binary_classification_pipeline_class):
+    X, y = X_y_binary
+    binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+    mock_decision_function.return_value = pd.Series([0] * 98)
+    binary_pipeline.threshold = 0.7
+    binary_pipeline.fit(X, y)
+    fraud_cost = FraudCost(amount_col=0)
+    binary_pipeline.score(X, y, ['precision', 'auc', fraud_cost])
+    mock_decision_function.assert_called()
