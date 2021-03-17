@@ -4,6 +4,10 @@ from collections import OrderedDict
 
 import pandas as pd
 
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin
+)
+
 from evalml.exceptions import PipelineScoreError
 from evalml.objectives import get_objective
 from evalml.pipelines.binary_classification_pipeline import (
@@ -177,18 +181,17 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                                           objectives=objectives)
 
 
-
-class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline, BinaryClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesBinaryClassificationPipeline(BinaryClassificationPipelineMixin, TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     problem_type = ProblemTypes.TIME_SERIES_BINARY
-    _threshold = None
+    # _threshold = None
 
-    @property
-    def threshold(self):
-        return self._threshold
+    # @property
+    # def threshold(self):
+    #     return self._threshold
 
-    @threshold.setter
-    def threshold(self, value):
-        self._threshold = value
+    # @threshold.setter
+    # def threshold(self, value):
+    #     self._threshold = value
 
     def _predict(self, X, y, objective=None, pad=False):
         features = self.compute_estimator_features(X, y)
