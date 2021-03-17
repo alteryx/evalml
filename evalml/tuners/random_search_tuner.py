@@ -1,7 +1,7 @@
 from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner
-from evalml.utils import deprecate_arg, get_random_state
+from evalml.utils import get_random_state
 
 
 class RandomSearchTuner(Tuner):
@@ -14,7 +14,7 @@ class RandomSearchTuner(Tuner):
         >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
     """
 
-    def __init__(self, pipeline_hyperparameter_ranges, random_state=None, random_seed=0, with_replacement=False, replacement_max_attempts=10):
+    def __init__(self, pipeline_hyperparameter_ranges, random_seed=0, with_replacement=False, replacement_max_attempts=10):
         """ Sets up check for duplication if needed.
 
         Arguments:
@@ -24,8 +24,8 @@ class RandomSearchTuner(Tuner):
             replacement_max_attempts (int): The maximum number of tries to get a unique
                 set of random parameters. Only used if tuner is initalized with
                 with_replacement=True
+            random_seed (int): Seed for random number generator. Defaults to 0.
         """
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         self._space = Space(self._search_space_ranges)
         self._random_state = get_random_state(random_seed)

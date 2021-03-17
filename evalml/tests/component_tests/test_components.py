@@ -842,14 +842,13 @@ def test_component_equality():
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
-        def __init__(self, param_1=0, param_2=0, random_seed=0, random_state=None, **kwargs):
+        def __init__(self, param_1=0, param_2=0, random_seed=0, **kwargs):
             parameters = {"param_1": param_1,
                           "param_2": param_2}
             parameters.update(kwargs)
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_seed=random_seed,
-                             random_state=random_state)
+                             random_seed=random_seed)
 
         def fit(self, X, y=None):
             return self

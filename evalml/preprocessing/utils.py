@@ -68,7 +68,7 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
 
     data_splitter = None
     if is_time_series(problem_type):
-        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_state=random_seed)
+        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_seed=random_seed)
     elif is_regression(problem_type):
         data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
     elif is_classification(problem_type):

@@ -56,7 +56,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         if problem_type == ProblemTypes.REGRESSION:
             assert isinstance(data_splitter, TrainingValidationSplit)
             assert data_splitter.stratify is None
-            assert data_splitter.random_state == 0
+            assert data_splitter.random_seed == 0
         else:
             assert isinstance(data_splitter, BalancedClassificationDataTVSplit)
             assert data_splitter.random_seed == 0
