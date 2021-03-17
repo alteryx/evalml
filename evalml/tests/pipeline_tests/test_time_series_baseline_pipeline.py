@@ -62,9 +62,11 @@ def test_time_series_baseline_predict_proba(pipeline_class, gap, X_none):
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 1), (1, 2), (2, 2), (7, 3), (2, 4)])
 @patch("evalml.pipelines.RegressionPipeline._score_all_objectives")
-@patch("evalml.pipelines.ClassificationPipeline._score_all_objectives")
+@patch("evalml.pipelines.TimeSeriesClassificationPipeline._score_all_objectives")
+@patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
 @patch("evalml.pipelines.ClassificationPipeline._encode_targets", side_effect=lambda y: y)
-def test_time_series_baseline_score_offset(mock_encode, mock_classification_score, mock_regression_score, gap, max_delay,
+def test_time_series_baseline_score_offset(mock_encode, mock_binary_classification_score, mock_multiclass_classification_score,
+                                           mock_regression_score, gap, max_delay,
                                            only_use_y, pipeline_class, ts_data):
     X, y = ts_data
 
@@ -73,7 +75,13 @@ def test_time_series_baseline_score_offset(mock_encode, mock_classification_scor
         expected_target = expected_target[1:]
     clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                      "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
-    mock_score = mock_regression_score if pipeline_class == TimeSeriesBaselineRegressionPipeline else mock_classification_score
+    mock_score = None
+    if pipeline_class == TimeSeriesBaselineRegressionPipeline:
+        mock_score = mock_regression_score
+    elif pipeline_class == TimeSeriesBaselineBinaryPipeline:
+        mock_score = mock_binary_classification_score
+    else:
+        mock_score = mock_multiclass_classification_score
     if only_use_y:
         clf.fit(None, y)
         clf.score(X=None, y=y, objectives=['MCC Binary'])

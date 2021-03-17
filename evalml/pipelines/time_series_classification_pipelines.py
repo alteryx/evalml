@@ -1,4 +1,9 @@
+
 import pandas as pd
+
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin
+)
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
@@ -169,17 +174,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                                           objectives=objectives)
 
 
-class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesBinaryClassificationPipeline(BinaryClassificationPipelineMixin, TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     problem_type = ProblemTypes.TIME_SERIES_BINARY
-    _threshold = None
-
-    @property
-    def threshold(self):
-        return self._threshold
-
-    @threshold.setter
-    def threshold(self, value):
-        self._threshold = value
 
     def _predict(self, X, y, objective=None, pad=False):
         features = self.compute_estimator_features(X, y)
