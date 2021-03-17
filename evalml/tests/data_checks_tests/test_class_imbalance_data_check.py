@@ -366,6 +366,7 @@ def test_class_imbalance_large_multiclass():
     y_values_multiclass_large = pd.Series([0] * 20 + [1] * 25 + [2] * 99 + [3] * 105 + [4] * 900 + [5] * 900)
     y_multiclass_huge = pd.Series([i % 200 for i in range(100000)])
     y_imbalanced_multiclass_huge = y_multiclass_huge.append(pd.Series([200] * 10), ignore_index=True)
+    y_imbalanced_multiclass_nan = y_multiclass_huge.append(pd.Series([np.nan] * 10), ignore_index=True)
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1)
     assert class_imbalance_check.validate(X, y_values_multiclass_large) == {
@@ -396,6 +397,12 @@ def test_class_imbalance_large_multiclass():
                                       data_check_name=class_imbalance_data_check_name,
                                       message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
                                       details={"target_values": [200]}).to_dict()],
+        "errors": [],
+        "actions": []
+    }
+
+    assert class_imbalance_check.validate(X, y_imbalanced_multiclass_nan) == {
+        "warnings": [],
         "errors": [],
         "actions": []
     }

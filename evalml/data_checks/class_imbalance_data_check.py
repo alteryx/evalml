@@ -77,7 +77,7 @@ class ClassImbalanceDataCheck(DataCheck):
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        fold_counts = y.value_counts(normalize=False)
+        fold_counts = y.value_counts(normalize=False, sort=True)
         if len(fold_counts) == 0:
             return results
         # search for targets that occur less than twice the number of cv folds first
