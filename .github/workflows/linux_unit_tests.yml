@@ -79,9 +79,5 @@ jobs:
           ls -la
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1.2.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-          override_pr: ${{ github.event.number }}
-          override_commit: ${{ github.event.pull_request.head.sha }}
+        run: |
+          bash <(curl -s https://codecov.io/bash)
