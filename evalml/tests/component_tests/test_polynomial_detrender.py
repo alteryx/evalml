@@ -1,9 +1,10 @@
-import pytest
-from evalml.pipelines.components import PolynomialDetrender
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
 import numpy as np
 import pandas as pd
+import pytest
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+
+from evalml.pipelines.components import PolynomialDetrender
 
 pytest.importorskip('sktime', reason='Skipping polynomial detrending tests because sktime not installed')
 
