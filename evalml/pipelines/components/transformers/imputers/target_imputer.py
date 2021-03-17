@@ -9,7 +9,7 @@ from evalml.utils import (
 )
 
 
-class SimpleImputer(Transformer):
+class TargetImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
     name = 'Simple Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
@@ -35,29 +35,28 @@ class SimpleImputer(Transformer):
                          random_state=random_state,
                          random_seed=random_seed)
 
-    def fit(self, X, y=None):
+    def fit(self, X, y):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
         """
-        X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        y = infer_feature_types(y)
+        y = _convert_woodwork_types_wrapper(y.to_dataframe())
 
-        # Convert all bool dtypes to category for fitting
-        if (X.dtypes == bool).all():
-            X = X.astype('category')
+        # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
+        if (y.dtype == bool):
+            y = y.astype('category')
 
-        self._component_obj.fit(X, y)
-        self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
+        self._component_obj.fit(y)
         return self
 
-    def transform(self, X, y=None):
+    def transform(self, X, y):
         """Transforms input by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Arguments:
@@ -67,25 +66,17 @@ class SimpleImputer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        y_ww = infer_feature_types(y)
+        y = _convert_woodwork_types_wrapper(y_ww.to_dataframe())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (X.dtypes == bool).all():
-            return X_ww
+        if (y.dtype == bool):
+            return y_ww
 
-        X_null_dropped = X.copy()
-        X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
-        X_t = self._component_obj.transform(X)
-        if X_null_dropped.empty:
-            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-            return infer_feature_types(X_t)
+        y_t = self._component_obj.transform(y)
+        return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
 
-        X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        X_t.index = X_null_dropped.index
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
-
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y):
         """Fits on X and transforms X
 
         Arguments:

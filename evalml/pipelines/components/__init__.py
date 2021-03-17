@@ -44,7 +44,8 @@ from .transformers import (
     LinearDiscriminantAnalysis,
     LSA,
     PCA,
-    DFSTransformer
+    DFSTransformer,
+    TargetImputer
 )
 from .ensemble import (
     StackedEnsembleClassifier,
