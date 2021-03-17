@@ -9,6 +9,7 @@ Release Notes
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
         * Added recommended actions for ``InvalidTargetDataCheck`` and update ``_make_component_list_from_actions`` to address this action :pr:`1989`
     * Fixes
+        * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
     * Documentation Changes
