@@ -102,6 +102,7 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'also_all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'id'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict()
                     ]
 
@@ -192,7 +193,7 @@ def test_default_data_checks_regression(input_type):
                                                  data_check_name="NoVarianceDataCheck",
                                                  message_code=DataCheckMessageCode.NO_VARIANCE,
                                                  details={"column": "Y"}).to_dict()],
-        "actions": expected_actions
+        "actions": expected_actions[:3] + expected_actions[4:]
     }
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
