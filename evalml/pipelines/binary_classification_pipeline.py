@@ -1,12 +1,7 @@
-import sys
-import traceback
-from collections import OrderedDict
-
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin
 )
 
-from evalml.exceptions import PipelineScoreError
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes

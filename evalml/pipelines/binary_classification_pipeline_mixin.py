@@ -2,6 +2,8 @@ import sys
 import traceback
 from collections import OrderedDict
 
+from evalml.exceptions import PipelineScoreError
+
 
 class BinaryClassificationPipelineMixin():
     _threshold = None
