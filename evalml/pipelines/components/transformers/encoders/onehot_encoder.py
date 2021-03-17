@@ -152,7 +152,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
             X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
-
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _handle_parameter_handle_missing(self, X):
