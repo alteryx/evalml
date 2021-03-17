@@ -86,7 +86,7 @@ def test_fit_ts_with_notXnoty_index(ts_data):
 
     clf = ARIMARegressor(p=1, d=0, q=0)
     with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X or y."):
-       clf.fit(X=X, y=y)
+        clf.fit(X=X, y=y)
 
 
 def test_predict_ts_with_notX_index(ts_data):
@@ -97,7 +97,7 @@ def test_predict_ts_with_notX_index(ts_data):
     clf = ARIMARegressor(p=1, d=0, q=0)
     clf.fit(X=X, y=y)
     with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X."):
-       clf.predict(X)
+        clf.predict(X)
 
 
 def test_fit_predict_ts_no_X(ts_data):

@@ -655,7 +655,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:
         graph_permutation_importance(test_pipeline, X, y, "log loss binary")
-        assert len(graph_valid) == 1 # ARIMARegressor divide by zero, subtract, etc warnings
+        assert len(graph_valid) == 1  # ARIMARegressor divide by zero, subtract, etc warnings
     with pytest.warns(None) as graph_valid:
         graph_confusion_matrix(y, y)
         assert len(graph_valid) == 0
