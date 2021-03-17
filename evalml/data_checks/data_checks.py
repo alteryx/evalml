@@ -96,6 +96,9 @@ class DataChecks:
             messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
-            messages["actions"].extend(messages_new["actions"])
 
+            new_actions = messages_new["actions"]
+            for new_action in new_actions:
+                if new_action not in messages["actions"]:
+                    messages["actions"].append(new_action)
         return messages

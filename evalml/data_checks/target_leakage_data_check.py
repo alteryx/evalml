@@ -2,6 +2,8 @@ import pandas as pd
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning
 )
@@ -81,7 +83,8 @@ class TargetLeakageDataCheck(DataCheck):
                                                                              "code": "TARGET_LEAKAGE",\
                                                                              "details": {"column": "leak"}}],\
                                                                "errors": [],\
-                                                               "actions": []}
+                                                               "actions": [{"code": "DROP_COL",\
+                                                                            "details": {"column": "leak"}}]}
         """
         results = {
             "warnings": [],
@@ -105,4 +108,7 @@ class TargetLeakageDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                                      details={"column": col_name}).to_dict()
                                     for col_name in highly_corr_cols])
+        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                   details={"column": col_name}).to_dict()
+                                   for col_name in highly_corr_cols])
         return results
