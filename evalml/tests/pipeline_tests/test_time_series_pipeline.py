@@ -159,12 +159,14 @@ def test_predict_pad_nans(mock_decode_targets,
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
-def test_score_drops_nans(mock_score, mock_encode_targets,
+@patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
+def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
                           mock_classifier_predict, mock_classifier_fit,
                           mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
-
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        mock_score = mock_binary_score
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
         pytest.skip("This would result in an empty feature dataframe.")
 
