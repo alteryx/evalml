@@ -56,7 +56,8 @@ from evalml.pipelines.components import (
     TimeSeriesBaselineEstimator,
     Transformer,
     XGBoostClassifier,
-    XGBoostRegressor
+    XGBoostRegressor,
+    PolynomialDetrender
 )
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
@@ -490,7 +491,8 @@ def test_components_init_kwargs():
             component = component_class(test_arg="test")
             component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters['test_arg'] == "test"
-            assert component._component_obj.test_arg == "test"
+            if not isinstance(component, PolynomialDetrender):
+                assert component._component_obj.test_arg == "test"
             # Test equality of different components with same or different kwargs
             assert component == component_class(test_arg="test")
             assert component != component_with_different_kwargs
@@ -518,6 +520,9 @@ def test_transformer_transform_output_type(X_y_binary):
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
 
     for component_class in _all_transformers():
+        if component_class == PolynomialDetrender:
+            # Skipping because this test is handled in test_polynomial_detrender
+            continue
         print('Testing transformer {}'.format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:
             print('Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'
@@ -1031,6 +1036,9 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
         check_names = False
         if use_custom_index:
             pytest.skip("The DFSTransformer changes the index so we skip it.")
+    if transformer_class == PolynomialDetrender:
+        pytest.skip("Skipping PolynomialDetrender because we test that it respects custom indices in "
+                    "test_polynomial_detrender.py")
 
     X, y = X_y_binary
 
