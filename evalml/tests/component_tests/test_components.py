@@ -157,8 +157,8 @@ def test_describe_component():
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
-                                                                                        'drop': None,
-                                                                                        'handle_unknown': 'ignore',
+                                                                                        'drop': 'if_binary',
+                                                                                        'handle_unknown': 'error',
                                                                                         'handle_missing': 'error'}}
     assert imputer.describe(return_dict=True) == {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': "most_frequent",
                                                                                     'categorical_fill_value': None,

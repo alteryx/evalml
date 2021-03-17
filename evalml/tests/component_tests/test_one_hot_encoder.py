@@ -22,14 +22,14 @@ from evalml.utils import (
 
 
 def test_init():
-    parameters = {'top_n': 10,
+    expected_parameters = {'top_n': 10,
                   'features_to_encode': None,
                   'categories': None,
-                  'drop': None,
-                  'handle_unknown': 'ignore',
+                  'drop': 'if_binary',
+                  'handle_unknown': 'error',
                   'handle_missing': 'error'}
     encoder = OneHotEncoder()
-    assert encoder.parameters == parameters
+    assert encoder.parameters == expected_parameters
 
 
 def test_parameters():
@@ -38,8 +38,8 @@ def test_parameters():
         'top_n': 123,
         'features_to_encode': None,
         'categories': None,
-        'drop': None,
-        'handle_unknown': 'ignore',
+        'drop': 'if_binary',
+        'handle_unknown': 'error',
         'handle_missing': 'error'
     }
     assert encoder.parameters == expected_parameters
