@@ -108,11 +108,12 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             categories = []
             values_to_drop = []
             for col in X_t[self.features_to_encode]:
-                unique_values_to_drop = None
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                if len(value_counts) == 2: # a column with only two categories
-                    unique_values = value_counts.index.tolist()[1:]
-                    unique_values_to_drop = value_counts.index.tolist()[0:1]
+                value_to_drop = None
+                if len(value_counts) == 2 and self.parameters['drop'] == "if_binary": # a column with only two categories. We want to drop the majority class.
+                    value_to_drop = value_counts.index.tolist()[1]
+                    # values_to_drop.append([1])
+
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
@@ -120,18 +121,21 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
+                # import pdb; pdb.set_trace()
+                if value_to_drop is not None:
+                    index_to_drop = np.where(unique_values == value_to_drop)[0]
+                    values_to_drop.append(index_to_drop)
+                else:
+                    values_to_drop.append(None)
                 categories.append(unique_values)
-                values_to_drop.append(unique_values_to_drop)
 
-        if self.parameters['drop'] == "if_binary":
-            # Create an encoder to pass off the rest of the computation to
-            self._encoder = SKOneHotEncoder(categories=categories,
-                                            drop=values_to_drop,
+        # Create an encoder to pass off the rest of the computation to
+        # if "drop" was set to "is_binary", pass None to scikit-learn because we manually handle
+        drop_to_use = values_to_drop if self.parameters['drop'] == "if_binary" else self.parameters['drop']
+        self._encoder = SKOneHotEncoder(categories=categories,
+                                            drop=drop_to_use,
                                             handle_unknown=self.parameters['handle_unknown'])
-        else:
-            self._encoder = SKOneHotEncoder(categories=categories,
-                                            drop=self.parameters['drop'],
-                                            handle_unknown=self.parameters['handle_unknown'])
+
         self._encoder.fit(X_t[self.features_to_encode])
         return self
 
@@ -161,7 +165,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
-            X_cat.columns = self.get_feature_names()
+            X_cat.columns=  self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
