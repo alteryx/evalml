@@ -21,10 +21,6 @@ from evalml.tests.automl_tests.dask_testing import (
 )
 
 
-def score_pipeline(pipeline, X, y, objectives):
-    return pipeline.score(X, y, objectives)
-
-
 @pytest.mark.usefixtures("X_y_binary_cls")
 class TestDaskEngine(unittest.TestCase):
 
