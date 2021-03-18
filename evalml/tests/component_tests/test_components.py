@@ -617,7 +617,7 @@ def test_estimator_check_for_fit(X_y_binary):
 
 
 def test_transformer_check_for_fit(X_y_binary):
-    class MockTransformerObj():
+    class MockTransformerObj:
         def __init__(self):
             pass
 
@@ -637,14 +637,21 @@ def test_transformer_check_for_fit(X_y_binary):
             transformer = MockTransformerObj()
             super().__init__(parameters=parameters, component_obj=transformer, random_seed=random_seed)
 
+        def inverse_transform(self, X, y=None):
+            return X, y
+
     X, y = X_y_binary
     trans = MockTransformer()
     with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         trans.transform(X)
 
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        trans.inverse_transform(X, y)
+
     trans.fit(X, y)
     trans.transform(X)
     trans.fit_transform(X, y)
+    trans.inverse_transform(X, y)
 
 
 def test_transformer_check_for_fit_with_overrides(X_y_binary):
