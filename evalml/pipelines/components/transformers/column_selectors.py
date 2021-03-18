@@ -6,7 +6,7 @@ from evalml.utils import infer_feature_types
 
 class ColumnSelector(Transformer):
 
-    def __init__(self, columns=None, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, columns=None, random_seed=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
 
         Arguments:
@@ -19,7 +19,6 @@ class ColumnSelector(Transformer):
         parameters.update(kwargs)
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def _check_input_for_columns(self, X):
