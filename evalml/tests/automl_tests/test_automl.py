@@ -118,7 +118,9 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
         index=['id', 'pipeline_name', 'score', "validation_score", 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
 
 
-@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION])
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.score')
+@patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
@@ -128,18 +130,22 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
 def test_pipeline_limits(mock_fit_binary, mock_score_binary,
                          mock_fit_multi, mock_score_multi,
                          mock_fit_regression, mock_score_regression,
+                         mock_fit_timeseries_regression, mock_score_timeseries_regression,
                          automl_type, caplog,
-                         X_y_binary, X_y_multi, X_y_regression):
+                         X_y_binary, X_y_multi, X_y_regression, ts_data):
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
     elif automl_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
+    elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
 
     mock_score_binary.return_value = {'Log Loss Binary': 1.0}
     mock_score_multi.return_value = {'Log Loss Multiclass': 1.0}
     mock_score_regression.return_value = {'R2': 1.0}
+    mock_score_timeseries_regression.return_value = {'R2': 1.0}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, max_iterations=1)
     automl.search()
@@ -692,7 +698,8 @@ def test_default_objective(X_y_binary):
     X, y = X_y_binary
     correct_matches = {ProblemTypes.MULTICLASS: 'Log Loss Multiclass',
                        ProblemTypes.BINARY: 'Log Loss Binary',
-                       ProblemTypes.REGRESSION: 'R2'}
+                       ProblemTypes.REGRESSION: 'R2',
+                       ProblemTypes.TIME_SERIES_REGRESSION: 'R2'}
     for problem_type in correct_matches:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type)
         assert automl.objective.name == correct_matches[problem_type]
