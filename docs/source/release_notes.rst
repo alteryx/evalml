@@ -6,6 +6,7 @@ Release Notes
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
         * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
+        * Updated ``ClassImbalanceDataCheck`` to better handle multiclass imbalances :pr:`1986`
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
