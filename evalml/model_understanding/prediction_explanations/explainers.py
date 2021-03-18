@@ -1,5 +1,6 @@
 import sys
 import traceback
+import warnings
 from collections import namedtuple
 
 import numpy as np
@@ -43,6 +44,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
         ValueError: if the requested index falls outside the input_feature's boundaries.
     """
+    warnings.warn("Here's a simple warning", DeprecationWarning)
     input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
 
