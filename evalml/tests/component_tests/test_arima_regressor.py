@@ -77,6 +77,20 @@ def test_fit_predict_ts_with_ynotX_index(ts_data):
     assert (y_pred == y_pred_a).all()
 
 
+def test_predict_ts_without_X(ts_data):
+    X, y = ts_data
+
+    a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), dates=X.index)
+    a_clf.fit(solver='nm')
+    y_pred_a = a_clf.predict(params=(1, 0, 0))
+
+    clf = ARIMARegressor(p=1, d=0, q=0)
+    clf.fit(X=X, y=y)
+    y_pred = clf.predict(y=y)
+
+    assert (y_pred == y_pred_a).all()
+
+
 def test_fit_ts_with_notXnoty_index(ts_data):
     X, y = ts_data
     X = X.reset_index(drop=True)
@@ -98,6 +112,14 @@ def test_predict_ts_with_notX_index(ts_data):
     clf.fit(X=X, y=y)
     with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X."):
         clf.predict(X)
+
+
+def test_fit_ts_without_y(ts_data):
+    X, y = ts_data
+
+    clf = ARIMARegressor(p=1, d=0, q=0)
+    with pytest.raises(ValueError, match="ARIMA Regressor requires y as input."):
+        clf.fit(X=X)
 
 
 def test_fit_predict_ts_no_X(ts_data):

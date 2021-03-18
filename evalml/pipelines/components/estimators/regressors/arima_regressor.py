@@ -58,9 +58,12 @@ class ARIMARegressor(Estimator):
             raise ValueError(msg)
         return date_col
 
-    def get_dates_predict(self, X):
+    def get_dates_predict(self, X, y):
         date_col = None
 
+        if y is not None:
+            if isinstance(y.index, pd.DatetimeIndex):
+                date_col = y.index
         if X is not None:
             if self.date_column in X.columns:
                 date_col = X.pop(self.date_column)
@@ -93,7 +96,7 @@ class ARIMARegressor(Estimator):
 
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
-        dates = self.get_dates_predict(X)
+        dates = self.get_dates_predict(X, y)
         start = dates.min()
         end = dates.max()
         params = self.parameters['order']
