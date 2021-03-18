@@ -32,5 +32,5 @@ class TestSVMPipeline(BinaryClassificationPipeline):
     component_graph = ["SVM Classifier"]
 
 
-class TestCBPipeline(BinaryClassificationPipeline):
-    component_graph = ["CatBoost Classifier"]
+class TestBaselinePipeline(BinaryClassificationPipeline):
+    component_graph = ["Baseline Classifier"]

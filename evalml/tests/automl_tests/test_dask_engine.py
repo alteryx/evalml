@@ -14,7 +14,7 @@ from evalml.automl.engine.engine_base import (
 from evalml.automl.engine.sequential_engine import SequentialEngine
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_testing import (
-    TestCBPipeline,
+    TestBaselinePipeline,
     TestLRCPipeline,
     TestSVMPipeline,
     automl_data
@@ -57,7 +57,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as the sequential engine. """
         X, y = self.X_y_binary
         pipelines = [TestLRCPipeline({}),
-                     TestCBPipeline({}),
+                     TestBaselinePipeline({}),
                      TestSVMPipeline({})]
 
         def fit_pipelines(pipelines, engine):
@@ -122,7 +122,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as the sequential engine. """
         X, y = self.X_y_binary
         pipelines = [TestLRCPipeline({}),
-                     TestCBPipeline({}),
+                     TestBaselinePipeline({}),
                      TestSVMPipeline({})]
 
         def eval_pipelines(pipelines, engine):
@@ -182,7 +182,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as the sequential engine. """
         X, y = self.X_y_binary
         pipelines = [TestLRCPipeline({}),
-                     TestCBPipeline({}),
+                     TestBaselinePipeline({}),
                      TestSVMPipeline({})]
 
         def score_pipelines(pipelines, engine):
