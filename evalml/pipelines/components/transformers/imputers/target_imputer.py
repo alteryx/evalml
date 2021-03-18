@@ -1,4 +1,5 @@
 import pandas as pd
+import woodwork as ww
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
@@ -46,6 +47,8 @@ class TargetImputer(Transformer):
         Returns:
             self
         """
+        if y is None:
+            raise ValueError("y cannot be None")
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series()).to_frame()
 
@@ -66,6 +69,8 @@ class TargetImputer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
+        if y is None:
+            raise ValueError("y cannot be None")
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series()).to_frame()
 
@@ -73,10 +78,14 @@ class TargetImputer(Transformer):
         if (y.dtypes == bool).all():
             return y_ww
 
-        y_t = pd.DataFrame(self._component_obj.transform(y))
-        y_t.index = y.index
-
-        # return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
+        # y_t = pd.DataFrame(self._component_obj.transform(y))
+        # y_t.index = y.index
+        transformed = self._component_obj.transform(y)
+        if transformed.shape[1] == 0:
+            return ww.DataColumn(pd.Series([]))
+        y_t = pd.Series(transformed[:, 0])
+        # y_t.index = y.index
+        return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
         return infer_feature_types(y_t)
 
     def fit_transform(self, X, y):
