@@ -11,7 +11,7 @@ from evalml.utils import (
 
 class TargetImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
-    name = 'Simple Imputer'
+    name = 'Target Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
     def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=None, random_seed=0, **kwargs):
@@ -73,7 +73,9 @@ class TargetImputer(Transformer):
         if (y.dtypes == bool).all():
             return y_ww
 
-        y_t = self._component_obj.transform(y)
+        y_t = pd.DataFrame(self._component_obj.transform(y))
+        y_t.index = y.index
+
         # return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
         return infer_feature_types(y_t)
 

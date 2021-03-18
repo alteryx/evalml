@@ -52,6 +52,7 @@ from evalml.pipelines.components import (
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
+    TargetImputer,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -543,6 +544,9 @@ def test_transformer_transform_output_type(X_y_binary):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
                 continue
+            elif isinstance(component, TargetImputer):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] == 1
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
@@ -558,6 +562,9 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
+            elif isinstance(component, TargetImputer):
+                assert transform_output.shape[0] == X.shape[0]
+                assert transform_output.shape[1] == 1
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
