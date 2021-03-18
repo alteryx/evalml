@@ -16,11 +16,12 @@ from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
-def test_all_components(has_minimal_dependencies):
+def test_all_components(has_minimal_dependencies, is_running_py_39_or_above):
     if has_minimal_dependencies:
         assert len(all_components()) == 35
     else:
-        assert len(all_components()) == 43
+        n_components = 42 if is_running_py_39_or_above else 43
+        assert len(all_components()) == n_components
 
 
 def test_handle_component_class_names():
