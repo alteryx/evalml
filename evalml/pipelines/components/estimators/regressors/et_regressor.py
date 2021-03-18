@@ -4,7 +4,6 @@ from skopt.space import Integer
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import deprecate_arg
 
 
 class ExtraTreesRegressor(Estimator):
@@ -25,7 +24,6 @@ class ExtraTreesRegressor(Estimator):
                  min_samples_split=2,
                  min_weight_fraction_leaf=0.0,
                  n_jobs=-1,
-                 random_state=None,
                  random_seed=0,
                  **kwargs):
         parameters = {"n_estimators": n_estimators,
@@ -35,7 +33,6 @@ class ExtraTreesRegressor(Estimator):
                       "min_weight_fraction_leaf": min_weight_fraction_leaf,
                       "n_jobs": n_jobs}
         parameters.update(kwargs)
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
 
         et_regressor = SKExtraTreesRegressor(random_state=random_seed,
                                              **parameters)

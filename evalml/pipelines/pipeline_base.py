@@ -31,7 +31,6 @@ from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
     classproperty,
-    deprecate_arg,
     get_logger,
     import_or_raise,
     infer_feature_types,
@@ -61,7 +60,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_state=None, random_seed=0):
+    def __init__(self, parameters, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -70,9 +69,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        self.random_seed = random_seed
         if isinstance(self.component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:

@@ -11,7 +11,6 @@ from evalml.utils import (
     SEED_BOUNDS,
     _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
-    deprecate_arg,
     import_or_raise,
     infer_feature_types
 )
@@ -37,9 +36,8 @@ class LightGBMRegressor(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, boosting_type="gbdt", learning_rate=0.1, n_estimators=20, max_depth=0, num_leaves=31,
-                 min_child_samples=20, n_jobs=-1, random_state=None, random_seed=0,
+                 min_child_samples=20, n_jobs=-1, random_seed=0,
                  bagging_fraction=0.9, bagging_freq=0, **kwargs):
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
 
         parameters = {"boosting_type": boosting_type,
                       "learning_rate": learning_rate,

@@ -11,7 +11,6 @@ from evalml.pipelines.components.transformers.preprocessing import (
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
-    deprecate_arg,
     infer_feature_types
 )
 
@@ -21,14 +20,12 @@ class TextFeaturizer(TextTransformer):
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
-    def __init__(self, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, random_seed=0, **kwargs):
         """Extracts features from text columns using featuretools' nlp_primitives
 
         Arguments:
-            random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         self._trans = [nlp_primitives.DiversityScore,
                        nlp_primitives.MeanCharactersPerWord,
                        nlp_primitives.PolarityScore]
