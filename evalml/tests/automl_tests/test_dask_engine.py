@@ -1,17 +1,18 @@
-import time
 import unittest
-import pytest
+
 import numpy as np
-import pandas as pd
+import pytest
+import woodwork as ww
 from distributed import Client
 
-import woodwork as ww
-
-from evalml.pipelines.pipeline_base import PipelineBase
-from evalml.automl.engine.engine_base import JobLogger
-from evalml.automl.engine.engine_base import train_pipeline, evaluate_pipeline
 from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine
+from evalml.automl.engine.engine_base import (
+    JobLogger,
+    evaluate_pipeline,
+    train_pipeline
+)
 from evalml.automl.engine.sequential_engine import SequentialEngine
+from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_testing import (
     TestCBPipeline,
     TestLRCPipeline,
@@ -19,9 +20,9 @@ from evalml.tests.automl_tests.dask_testing import (
     automl_data
 )
 
-from evalml.automl.engine.engine_base import train_pipeline, evaluate_pipeline, train_and_score_pipeline
+
 def score_pipeline(pipeline, X, y, objectives):
-    return pipeline.score(X,y,objectives)
+    return pipeline.score(X, y, objectives)
 
 
 @pytest.mark.usefixtures("X_y_binary_cls")
@@ -71,12 +72,12 @@ class TestDaskEngine(unittest.TestCase):
             return results
 
         # Verify all pipelines are trained and fitted.
-        seq_pipelines= fit_pipelines(pipelines, SequentialEngine())
+        seq_pipelines = fit_pipelines(pipelines, SequentialEngine())
         for pipeline in seq_pipelines:
             assert pipeline._is_fitted
 
         # Verify all pipelines are trained and fitted.
-        par_pipelines= fit_pipelines(pipelines, DaskEngine(client=self.client))
+        par_pipelines = fit_pipelines(pipelines, DaskEngine(client=self.client))
         for pipeline in par_pipelines:
             assert pipeline._is_fitted
 
@@ -140,7 +141,7 @@ class TestDaskEngine(unittest.TestCase):
         par_dicts = [s[0] for s in par_eval_results]
         par_scores = [s["cv_data"][0]["score"] for s in par_dicts]
         par_pipelines = [s[1] for s in par_eval_results]
-        
+
         seq_eval_results = eval_pipelines(pipelines, SequentialEngine())
         seq_dicts = [s[0] for s in seq_eval_results]
         seq_scores = [s["cv_data"][0]["score"] for s in seq_dicts]
@@ -170,8 +171,8 @@ class TestDaskEngine(unittest.TestCase):
                                                      automl_data=automl_data, pipeline=pipeline)
         pipeline = pipeline_future.get_result()
         pipeline_score_future = engine.submit_scoring_job(X=ww.DataTable(X), y=ww.DataColumn(y),
-                                                    automl_data=automl_data, pipeline=pipeline,
-                                                    objectives=objectives)
+                                                          automl_data=automl_data, pipeline=pipeline,
+                                                          objectives=objectives)
         assert isinstance(pipeline_score_future, DaskComputation)
         pipeline_score = pipeline_score_future.get_result()
 
@@ -211,29 +212,6 @@ class TestDaskEngine(unittest.TestCase):
         # Check there are the proper number of pipelines and all their scores are same.
         assert len(par_eval_results) == len(pipelines)
         assert set(par_scores) == set(seq_scores)
-
-    def test_freddy(self):
-        X, y = self.X_y_binary
-        pipelines = [TestLRCPipeline({}),
-                     TestCBPipeline({}),
-                     TestSVMPipeline({})]
-
-        batch_futures = []
-        for pipeline in pipelines:
-            p_f = self.client.submit(train_pipeline, pipeline=pipeline,
-                                     X=X, y=y, optimize_thresholds=True,
-                                     objective=automl_data.objective)
-            p_f = self.client.submit(score_pipeline, pipeline=p_f, X=X, y=y,
-                                     objectives=[automl_data.objective])
-            batch_futures.append(p_f)
-        batch_scores = self.client.gather(batch_futures)
-        """
-        assert batch_scores == [OrderedDict([('Log Loss Binary', 0.17764440547651003)]),
-                               OrderedDict([('Log Loss Binary', 0.4841126635831677)]),
-                               OrderedDict([('Log Loss Binary', 0.11584614593690136)])
-        """
-        # import pdb; pdb.set_trace()
-
 
     @classmethod
     def tearDownClass(cls) -> None:
