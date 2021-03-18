@@ -6,7 +6,7 @@ from evalml.automl.engine.engine_base import (
     EngineComputation,
     evaluate_pipeline,
     score_pipeline,
-    train_pipeline,
+    train_pipeline
 )
 
 
