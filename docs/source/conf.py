@@ -219,10 +219,10 @@ nbsphinx_execute = 'always'
 nbsphinx_timeout = 600 # sphinx defaults each cell to 30 seconds so we need to override here
 
 suppress_warnings = [
-'nbsphinx.localfile',
+# 'nbsphinx.localfile',
 # 'nbsphinx.gallery',
 # 'nbsphinx.thumbnail',
-# 'nbsphinx.notebooktitle',
+'nbsphinx.notebooktitle',
 # 'nbsphinx.ipywidgets',
 ]
 
