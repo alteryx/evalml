@@ -520,7 +520,7 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
             Must be in [0, 1]. Defaults to (0.05, 0.95).
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
-            set to the max number of categories + 1.
+            set to the max number of categories + 1. Defaults to 100.
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
@@ -574,7 +574,8 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
 
     if len(feature_list) and feature_list.value_counts(normalize=True).values[0] + 0.01 > percentiles[1]:
         val = feature_list.value_counts(normalize=True).index[0]
-        raise ValueError(f"Feature '{features}' is mostly one value, {val}, and cannot be used to compute partial dependence. Try raising the upper percentage value.")
+        feature_name = features if isinstance(features, str) else X.columns[features]
+        raise ValueError(f"Feature '{feature_name}' is mostly one value, {val}, and cannot be used to compute partial dependence. Try raising the upper percentage value.")
 
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
