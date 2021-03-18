@@ -28,7 +28,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  drop=None,
                  handle_unknown="ignore",
                  handle_missing="error",
-                 random_state=None,
                  random_seed=0,
                  **kwargs):
         """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
@@ -49,6 +48,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 `fit` or `transform`. If this is set to "as_category" and NaN values are within the `n` most frequent,
                 "nan" values will be encoded as their own column. If this is set to "error", any missing
                 values encountered will raise an error. Defaults to "error".
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {"top_n": top_n,
                       "features_to_encode": features_to_encode,
@@ -72,7 +72,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._encoder = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
         self._initial_state = self.random_seed
         self._provenance = {}
