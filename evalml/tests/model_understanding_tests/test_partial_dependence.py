@@ -238,10 +238,10 @@ def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
-        partial_dependence(pipeline, X, features=0, percentiles=(0, 1), grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=20)
 
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
-        partial_dependence(pipeline, X, features='a', percentiles=(0, 1), grid_resolution=20)
+        partial_dependence(pipeline, X, features='a', grid_resolution=20)
 
 
 def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
