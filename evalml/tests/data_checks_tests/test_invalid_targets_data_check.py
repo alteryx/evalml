@@ -72,7 +72,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
-                                  details={"least_populated_class_labels": [1, 0]}).to_dict()],
+                                  details={"least_populated_class_labels": [0, 1]}).to_dict()],
         "actions": []
     }
 
