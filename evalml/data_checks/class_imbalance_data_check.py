@@ -17,8 +17,9 @@ class ClassImbalanceDataCheck(DataCheck):
 
         Arguments:
             threshold (float): The minimum threshold allowed for class imbalance before a warning is raised.
-                A perfectly balanced dataset would have a threshold of (1/n_classes), ie 0.50 for binary classes.
-                Defaults to 0.10
+                This threshold is calculated by comparing the number of samples in each class to the sum of samples in that class and the majority class.
+                For example, a multiclass case with [900, 900, 100] samples per classes 0, 1, and 2, respectively,
+                would have a 0.10 threshold for class 2 (100 / (900 + 100)). Defaults to 0.10.
             min_samples (int): The minimum number of samples per accepted class. If the minority class is both below the threshold and min_samples,
                 then we consider this severely imbalanced. Must be greater than 0. Defaults to 100.
             num_cv_folds (int): The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning.
@@ -76,7 +77,9 @@ class ClassImbalanceDataCheck(DataCheck):
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
 
-        fold_counts = y.value_counts(normalize=False)
+        fold_counts = y.value_counts(normalize=False, sort=True)
+        if len(fold_counts) == 0:
+            return results
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
@@ -86,8 +89,7 @@ class ClassImbalanceDataCheck(DataCheck):
                                                   data_check_name=self.name,
                                                   message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                                   details={"target_values": below_threshold_values}), results)
-
-        counts = fold_counts / fold_counts.sum()
+        counts = fold_counts / (fold_counts + fold_counts.values[0])
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of results
         if len(below_threshold):
