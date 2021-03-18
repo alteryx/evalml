@@ -23,5 +23,5 @@ scipy==1.6.1
 seaborn==0.11.1
 shap==0.39.0
 texttable==1.6.3
-woodwork==0.0.10
+woodwork==0.0.11
 xgboost==1.2.1
