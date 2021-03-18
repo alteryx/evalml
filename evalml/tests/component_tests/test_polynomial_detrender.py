@@ -1,7 +1,7 @@
-import woodwork as ww
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -74,7 +74,7 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
     X, y = ts_data
     detrender = PolynomialDetrender(degree=2)
 
-    with pytest.raises(ValueError, match="The \(time\) index must be sorted \(monotonically increasing\)"):
+    with pytest.raises(ValueError, match="The \\(time\\) index must be sorted \\(monotonically increasing\\)"):
         y_shuffled = y.sample(frac=1, replace=False)
         detrender.fit_transform(X, y_shuffled)
 

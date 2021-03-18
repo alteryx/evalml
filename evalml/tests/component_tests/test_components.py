@@ -43,6 +43,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     PerColumnImputer,
+    PolynomialDetrender,
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
@@ -56,8 +57,7 @@ from evalml.pipelines.components import (
     TimeSeriesBaselineEstimator,
     Transformer,
     XGBoostClassifier,
-    XGBoostRegressor,
-    PolynomialDetrender
+    XGBoostRegressor
 )
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
