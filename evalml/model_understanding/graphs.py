@@ -563,12 +563,12 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
 
-    if ((isinstance(features, int) and X.iloc[:, features].value_counts(normalize=True).values[0] + 0.01 > percentiles[1]) or
-       (isinstance(features, str) and X[features].value_counts(normalize=True).values[0] + 0.01 > percentiles[1])):
-        raise ValueError(f"Feature {features} is mostly one value and cannot be used to compute partial dependence. Try raising the upper percentage value.")
-
     if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
+
+    if ((isinstance(features, int) and X.iloc[:, features].value_counts(normalize=True).values[0] + 0.01 > percentiles[1]) or
+        (isinstance(features, str) and X[features].value_counts(normalize=True).values[0] + 0.01 > percentiles[1])):
+        raise ValueError(f"Feature {features} is mostly one value and cannot be used to compute partial dependence. Try raising the upper percentage value.")
 
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
