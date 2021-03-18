@@ -92,7 +92,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                                     details={"num_null_rows": num_null_rows, "pct_null_rows": pct_null_rows}).to_dict())
             results["actions"].append(DataCheckAction(DataCheckActionCode.IMPUTE_COL,
-                                                      details={"column": None, "is_target": True}).to_dict())
+                                                      details={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict())
 
         value_counts = y_df.value_counts()
         unique_values = value_counts.index.tolist()

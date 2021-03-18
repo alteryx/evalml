@@ -83,7 +83,7 @@ class TargetImputer(Transformer):
         transformed = self._component_obj.transform(y)
         if transformed.shape[1] == 0:
             return ww.DataColumn(pd.Series([]))
-        y_t = pd.Series(transformed[:, 0])
+        y_t = pd.Series(transformed[:, 0], index=y.index)
         # y_t.index = y.index
         return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
         return infer_feature_types(y_t)

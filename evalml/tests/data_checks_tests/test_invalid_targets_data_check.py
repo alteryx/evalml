@@ -39,7 +39,7 @@ def test_invalid_target_data_check_nan_error():
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                   details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()],
-        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict()]
     }
 
 
@@ -146,7 +146,7 @@ def test_invalid_target_data_input_formats():
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": [0]}).to_dict()],
-        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict()]
     }
     #  test Woodwork
     y = pd.Series([None, None, None, 0])
