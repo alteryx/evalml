@@ -7,6 +7,7 @@ import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
 
+from evalml.demos import load_fraud
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import (
     get_core_objectives,
@@ -536,3 +537,8 @@ def make_data_type():
         return data
 
     return _make_data_type
+
+
+@pytest.fixture
+def fraud_100():
+    return load_fraud(n_rows=100)

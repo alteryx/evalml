@@ -5,8 +5,9 @@ import woodwork as ww
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
-    AutoMLDataChecks,
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
     DataChecks,
@@ -17,25 +18,33 @@ from evalml.data_checks import (
 from evalml.exceptions import DataCheckInitError
 
 
+def test_data_checks_not_list_error(X_y_binary):
+    with pytest.raises(ValueError, match="Parameter data_checks must be a list."):
+        DataChecks(data_checks=1)
+
+
 def test_data_checks(X_y_binary):
     X, y = X_y_binary
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": []}
+            return {"warnings": [], "errors": [], "actions": []}
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()], "errors": []}
+            return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()], "errors": [], "actions": []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [DataCheckError(message="error one", data_check_name=self.name, message_code=None).to_dict()]}
+            return {"warnings": [],
+                    "errors": [DataCheckError(message="error one", data_check_name=self.name, message_code=None).to_dict()],
+                    "actions": []}
 
     class MockDataCheckErrorAndWarning(DataCheck):
         def validate(self, X, y):
             return {"warnings": [DataCheckWarning(message="warning two", data_check_name=self.name, message_code=None).to_dict()],
-                    "errors": [DataCheckError(message="error two", data_check_name=self.name, message_code=None).to_dict()]}
+                    "errors": [DataCheckError(message="error two", data_check_name=self.name, message_code=None).to_dict()],
+                    "actions": []}
 
     data_checks_list = [MockDataCheck, MockDataCheckWarning, MockDataCheckError, MockDataCheckErrorAndWarning]
     data_checks = DataChecks(data_checks=data_checks_list)
@@ -43,7 +52,8 @@ def test_data_checks(X_y_binary):
         "warnings": [DataCheckWarning(message="warning one", data_check_name="MockDataCheckWarning").to_dict(),
                      DataCheckWarning(message="warning two", data_check_name="MockDataCheckErrorAndWarning").to_dict()],
         "errors": [DataCheckError(message="error one", data_check_name="MockDataCheckError").to_dict(),
-                   DataCheckError(message="error two", data_check_name="MockDataCheckErrorAndWarning").to_dict()]
+                   DataCheckError(message="error two", data_check_name="MockDataCheckErrorAndWarning").to_dict()],
+        "actions": []
     }
 
 
@@ -57,7 +67,7 @@ def test_empty_data_checks(input_type, X_y_binary):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
     data_checks = EmptyDataChecks()
-    assert data_checks.validate(X, y) == {"warnings": [], "errors": []}
+    assert data_checks.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
 
 messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
@@ -89,6 +99,12 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
                            message_code=DataCheckMessageCode.NO_VARIANCE,
                            details={"column": "also_all_null"}).to_dict()]
 
+expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'also_all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'id'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict()
+                    ]
+
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 def test_default_data_checks_classification(input_type):
@@ -107,17 +123,17 @@ def test_default_data_checks_classification(input_type):
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
 
-    imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [1.0, 0.0]",
+    imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                                details={"target_values": [1.0, 0.0]}).to_dict()]
+                                details={"target_values": [0.0, 1.0]}).to_dict()]
 
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance, "actions": expected_actions}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "binary",
                                                          "objective": get_default_primary_search_objective("binary")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:], "actions": expected_actions}
 
     # multiclass
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]",
@@ -135,12 +151,16 @@ def test_default_data_checks_classification(input_type):
         details={'class_to_value_ratio': 0.6}).to_dict()]
     # multiclass
     data_checks = DefaultDataChecks("multiclass", get_default_primary_search_objective("multiclass"))
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio, "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance}
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio,
+                                                     "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance,
+                                                     "actions": expected_actions}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                          "objective": get_default_primary_search_objective("multiclass")}})
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio, "errors": [messages[3]] + min_2_class_count + messages[4:]}
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio,
+                                                     "errors": [messages[3]] + min_2_class_count + messages[4:],
+                                                     "actions": expected_actions}
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -158,27 +178,27 @@ def test_default_data_checks_regression(input_type):
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
         y_no_variance = ww.DataColumn(y_no_variance)
-    id_leakage = [DataCheckWarning(message="Column 'id' is 95.0% or more correlated with the target",
-                                   data_check_name="TargetLeakageDataCheck",
-                                   message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                   details={"column": "id"}).to_dict()]
     null_leakage = [DataCheckWarning(message="Column 'lots_of_null' is 95.0% or more correlated with the target",
                                      data_check_name="TargetLeakageDataCheck",
                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                      details={"column": "lots_of_null"}).to_dict()]
     data_checks = DefaultDataChecks("regression", get_default_primary_search_objective("regression"))
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:], "actions": expected_actions}
 
     # Skip Invalid Target
-    assert data_checks.validate(X, y_no_variance) == {"warnings": messages[:3] + null_leakage, "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
-                                                                                                                                        data_check_name="NoVarianceDataCheck",
-                                                                                                                                        message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                                                                                                        details={"column": "Y"}).to_dict()]}
+    assert data_checks.validate(X, y_no_variance) == {
+        "warnings": messages[:3] + null_leakage,
+        "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
+                                                 data_check_name="NoVarianceDataCheck",
+                                                 message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                 details={"column": "Y"}).to_dict()],
+        "actions": expected_actions
+    }
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage, "errors": messages[3:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:], "actions": expected_actions}
 
 
 def test_default_data_checks_time_series_regression():
@@ -255,11 +275,6 @@ def test_data_checks_raises_value_errors_on_init(classes, params, expected_excep
         DataChecks(classes, params)
 
 
-def test_automl_data_checks_raises_value_error():
-    with pytest.raises(ValueError, match="All elements of parameter data_checks must be an instance of DataCheck."):
-        AutoMLDataChecks([1, MockCheck])
-
-
 @pytest.mark.parametrize("objective", ["Root Mean Squared Log Error", "Mean Squared Log Error", "Mean Absolute Percentage Error"])
 def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
     X, y = ts_data
@@ -274,4 +289,26 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
     default_data_check = DefaultDataChecks(problem_type="time series regression", objective=objective).data_checks
     for check in default_data_check:
         if check.name == "InvalidTargetDataCheck":
-            assert check.validate(X, y) == {"warnings": [], "errors": [data_check_error]}
+            assert check.validate(X, y) == {"warnings": [], "errors": [data_check_error], "actions": []}
+
+
+def test_data_checks_do_not_duplicate_actions(X_y_binary):
+    X, y = X_y_binary
+
+    class MockDataCheck(DataCheck):
+        def validate(self, X, y):
+            return {"warnings": [], "errors": [], "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'col_to_drop'}).to_dict()]}
+
+    class MockDataCheckWithSameAction(DataCheck):
+        def validate(self, X, y):
+            return {"warnings": [], "errors": [], "actions": []}
+
+    data_checks_list = [MockDataCheck, MockDataCheckWithSameAction]
+    data_checks = DataChecks(data_checks=data_checks_list)
+
+    # Check duplicate actions are returned once
+    assert data_checks.validate(X, y) == {
+        "warnings": [],
+        "errors": [],
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'col_to_drop'}).to_dict()]
+    }

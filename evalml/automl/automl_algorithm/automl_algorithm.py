@@ -25,7 +25,7 @@ class AutoMLAlgorithm(ABC):
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self.random_seed = random_seed
         self.allowed_pipelines = allowed_pipelines or []
@@ -45,12 +45,13 @@ class AutoMLAlgorithm(ABC):
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
-    def add_result(self, score_to_minimize, pipeline):
+    def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline
 
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
+            trained_pipeline_results (dict): Results from training a pipeline.
         """
         if pipeline.name not in self._tuners:
             raise PipelineNotFoundError(f"No such pipeline allowed in this AutoML search: {pipeline.name}")

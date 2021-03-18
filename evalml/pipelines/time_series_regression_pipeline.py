@@ -1,6 +1,6 @@
 import pandas as pd
 
-from evalml.objectives import get_objective
+from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -11,12 +11,12 @@ from evalml.utils import (
 )
 
 
-class TimeSeriesRegressionPipeline(RegressionPipeline):
+class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     """Pipeline base class for time series regression problems."""
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
-    def __init__(self, parameters, random_state=None, random_seed=0):
+    def __init__(self, parameters, random_seed=0):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 
         Required Class Variables:
@@ -27,7 +27,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
                  An empty dictionary {} implies using all default values for component parameters. Pipeline-level
                  parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
-            random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if "pipeline" not in parameters:
@@ -36,7 +35,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        super().__init__(parameters, random_state=random_state, random_seed=random_seed)
+        super().__init__(parameters, random_seed=random_seed)
 
     def fit(self, X, y):
         """Fit a time series regression pipeline.
@@ -61,6 +60,8 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
+        self.input_feature_names = self._component_graph.input_feature_names
+
         return self
 
     def predict(self, X, y=None, objective=None):
@@ -114,7 +115,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline):
         y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
 
         y_shifted = y.shift(-self.gap)
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
         y_shifted, y_predicted = drop_rows_with_nans(y_shifted, y_predicted)
         return self._score_all_objectives(X, y_shifted,
                                           y_predicted,

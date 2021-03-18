@@ -1,5 +1,7 @@
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning
 )
@@ -56,11 +58,14 @@ class SparsityDataCheck(DataCheck):
                                                             "data_check_name": "SparsityDataCheck",\
                                                             "level": "warning",\
                                                             "code": "TOO_SPARSE",\
-                                                            "details": {"column": "sparse", 'sparsity_score': 0.0}}]}
+                                                            "details": {"column": "sparse", 'sparsity_score': 0.0}}],\
+                                                       "actions": [{"code": "DROP_COL",\
+                                                                 "details": {"column": "sparse"}}]}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -68,13 +73,16 @@ class SparsityDataCheck(DataCheck):
 
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
-        messages["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
-                                                                                        self.problem_type),
-                                                      data_check_name=self.name,
-                                                      message_code=DataCheckMessageCode.TOO_SPARSE,
-                                                      details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
-                                     for col_name in too_sparse_cols])
-        return messages
+        results["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
+                                                                                       self.problem_type),
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.TOO_SPARSE,
+                                                     details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
+                                    for col_name in too_sparse_cols])
+        results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
+                                                   details={"column": col_name}).to_dict()
+                                   for col_name in too_sparse_cols])
+        return results
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):

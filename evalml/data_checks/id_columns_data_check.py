@@ -1,6 +1,8 @@
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning
 )
@@ -46,11 +48,14 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "data_check_name": "IDColumnsDataCheck",\
                                                                    "level": "warning",\
                                                                    "code": "HAS_ID_COLUMN",\
-                                                                   "details": {"column": "df_id"}}]}
+                                                                   "details": {"column": "df_id"}}],\
+                                                     "actions": [{"code": "DROP_COL",\
+                                                                 "details": {"column": "df_id"}}]}
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -71,9 +76,12 @@ class IDColumnsDataCheck(DataCheck):
 
         id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= self.id_threshold}
         warning_msg = "Column '{}' is {}% or more likely to be an ID column"
-        messages["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.id_threshold * 100),
-                                                      data_check_name=self.name,
-                                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                                      details={"column": col_name}).to_dict()
-                                     for col_name in id_cols_above_threshold])
-        return messages
+        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.id_threshold * 100),
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                                                     details={"column": col_name}).to_dict()
+                                    for col_name in id_cols_above_threshold])
+        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                   details={"column": col_name}).to_dict()
+                                   for col_name in id_cols_above_threshold])
+        return results

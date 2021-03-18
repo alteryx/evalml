@@ -85,7 +85,8 @@ class DataChecks:
         """
         messages = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
         X = infer_feature_types(X)
         if y is not None:
@@ -96,12 +97,8 @@ class DataChecks:
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
 
+            new_actions = messages_new["actions"]
+            for new_action in new_actions:
+                if new_action not in messages["actions"]:
+                    messages["actions"].append(new_action)
         return messages
-
-
-class AutoMLDataChecks(DataChecks):
-
-    def __init__(self, data_check_instances):
-        if not all(isinstance(check, DataCheck) for check in data_check_instances):
-            raise ValueError("All elements of parameter data_checks must be an instance of DataCheck.")
-        self.data_checks = data_check_instances

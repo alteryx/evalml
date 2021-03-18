@@ -6,11 +6,14 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+from evalml.exceptions import PipelineNotYetFittedError
+from evalml.objectives import FraudCost, get_objective
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
+from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
 
 
@@ -156,12 +159,14 @@ def test_predict_pad_nans(mock_decode_targets,
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
-def test_score_drops_nans(mock_score, mock_encode_targets,
+@patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
+def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
                           mock_classifier_predict, mock_classifier_fit,
                           mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
-
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        mock_score = mock_binary_score
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
         pytest.skip("This would result in an empty feature dataframe.")
 
@@ -231,7 +236,6 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
                            "target_delay_1": y_series.shift(1)}).dropna(axis=0, how='any')
 
     df_passed_to_estimator, target_passed_to_estimator = mock_fit.call_args[0]
-
     # Check the features have target values encoded as ints.
     assert_frame_equal(df_passed_to_estimator, answer)
 
@@ -363,3 +367,89 @@ def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, 
     with pytest.raises(ValueError, match="Objective Precision Micro is not defined for time series binary classification."):
         binary_pipeline.predict(X, y, "precision micro")
     mock_transform.assert_called()
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_REGRESSION])
+def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_multi, X_y_regression,
+                                               time_series_binary_classification_pipeline_class,
+                                               time_series_multiclass_classification_pipeline_class,
+                                               time_series_regression_pipeline_class):
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+        clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = X_y_regression
+        clf = time_series_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1},
+                                                                "pipeline": {"gap": 0, "max_delay": 0}})
+
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.predict(X)
+    with pytest.raises(PipelineNotYetFittedError):
+        clf.feature_importance
+
+    if is_classification(problem_type):
+        with pytest.raises(PipelineNotYetFittedError):
+            clf.predict_proba(X)
+
+    clf.fit(X, y)
+
+    if is_classification(problem_type):
+        to_patch = 'evalml.pipelines.TimeSeriesClassificationPipeline._predict'
+        if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+            to_patch = 'evalml.pipelines.TimeSeriesBinaryClassificationPipeline._predict'
+        with patch(to_patch) as mock_predict:
+            clf.predict(X, y)
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is None
+
+            mock_predict.reset_mock()
+            clf.predict(X, y, 'Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+            mock_predict.reset_mock()
+            clf.predict(X, y, objective='Log Loss Binary')
+            mock_predict.assert_called()
+            _, kwargs = mock_predict.call_args
+            assert kwargs['objective'] is not None
+
+            clf.predict_proba(X, y)
+    else:
+        clf.predict(X, y)
+    clf.feature_importance
+
+
+def test_ts_binary_pipeline_target_thresholding(make_data_type, time_series_binary_classification_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+    X = make_data_type('ww', X)
+    y = make_data_type('ww', y)
+    objective = get_objective("F1", return_instance=True)
+
+    binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+    binary_pipeline.fit(X, y)
+    assert binary_pipeline.threshold is None
+    pred_proba = binary_pipeline.predict_proba(X, y).iloc[:, 1]
+    binary_pipeline.optimize_threshold(X, y, pred_proba, objective)
+    assert binary_pipeline.threshold is not None
+
+
+@patch('evalml.objectives.FraudCost.decision_function')
+def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binary, time_series_binary_classification_pipeline_class):
+    X, y = X_y_binary
+    binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+    mock_decision_function.return_value = pd.Series([0] * 98)
+    binary_pipeline.threshold = 0.7
+    binary_pipeline.fit(X, y)
+    fraud_cost = FraudCost(amount_col=0)
+    binary_pipeline.score(X, y, ['precision', 'auc', fraud_cost])
+    mock_decision_function.assert_called()

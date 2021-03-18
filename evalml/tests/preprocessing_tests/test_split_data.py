@@ -1,5 +1,3 @@
-import warnings
-
 import pytest
 import woodwork as ww
 
@@ -42,16 +40,3 @@ def test_split_data(problem_type, data_type, X_y_binary, X_y_multi, X_y_regressi
     assert isinstance(X_test, ww.DataTable)
     assert isinstance(y_train, ww.DataColumn)
     assert isinstance(y_test, ww.DataColumn)
-
-
-def test_split_data_raises_deprecated_random_state_warning(X_y_binary):
-    X, y = X_y_binary
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        split_data(X, y, test_size=0.2, problem_type="binary", random_state=0)
-        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
-
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        split_data(X, y, test_size=0.2, problem_type="binary", random_seed=0)
-        assert not warn

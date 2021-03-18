@@ -1,7 +1,13 @@
+
 import pandas as pd
+
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin
+)
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
+from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -11,10 +17,10 @@ from evalml.utils import (
 )
 
 
-class TimeSeriesClassificationPipeline(ClassificationPipeline):
+class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     """Pipeline base class for time series classifcation problems."""
 
-    def __init__(self, parameters, random_state=None, random_seed=0):
+    def __init__(self, parameters, random_seed=0):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
         Required Class Variables:
@@ -25,7 +31,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
                  An empty dictionary {} implies using all default values for component parameters. Pipeline-level
                  parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if "pipeline" not in parameters:
             raise ValueError("gap and max_delay parameters cannot be omitted from the parameters dict. "
@@ -33,7 +39,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        super().__init__(parameters, random_state, random_seed)
+        super().__init__(parameters, random_seed)
 
     @staticmethod
     def _convert_to_woodwork(X, y):
@@ -63,6 +69,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
+        self.input_feature_names = self._component_graph.input_feature_names
         return self
 
     def _estimator_predict(self, features, y):
@@ -152,7 +159,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        objectives = [get_objective(o, return_instance=True) for o in objectives]
+        objectives = self.create_objectives(objectives)
 
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
@@ -167,17 +174,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline):
                                           objectives=objectives)
 
 
-class TimeSeriesBinaryClassificationPipeline(TimeSeriesClassificationPipeline):
+class TimeSeriesBinaryClassificationPipeline(BinaryClassificationPipelineMixin, TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     problem_type = ProblemTypes.TIME_SERIES_BINARY
-    _threshold = None
-
-    @property
-    def threshold(self):
-        return self._threshold
-
-    @threshold.setter
-    def threshold(self, value):
-        self._threshold = value
 
     def _predict(self, X, y, objective=None, pad=False):
         features = self.compute_estimator_features(X, y)
