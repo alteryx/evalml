@@ -251,13 +251,13 @@ def test_target_leakage_regression():
     # test empty pd.DataFrame, empty pd.Series
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {"warnings": [], "errors": [], "actions": []}
 
-    y = pd.Series([0.4, 0.4, 2.3, 4.3, 2.2, 1.8, 3.7, 3.6, 2.4, 0.9, 3.1, 2.8, 4.1, 1.6, 1.2])
+    y = pd.Series([0.4, 0.1, 2.3, 4.3, 2.2, 1.8, 3.7, 3.6, 2.4, 0.9, 3.1, 2.8, 4.1, 1.6, 1.2])
     X = pd.DataFrame()
     X["a"] = y * 3
     X["b"] = y - 1
     X["c"] = y / 10
     X["d"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    X["e"] = ["a", "a", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
+    X["e"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
 
     expected = {
         "warnings": [DataCheckWarning(message="Column 'a' is 80.0% or more correlated with the target",

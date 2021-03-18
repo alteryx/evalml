@@ -71,11 +71,11 @@ class TargetLeakageDataCheck(DataCheck):
         Example:
             >>> import pandas as pd
             >>> X = pd.DataFrame({
-            ...    'leak': [10, 44, 31, 51, 44],
+            ...    'leak': [10, 42, 31, 51, 61],
             ...    'x': [42, 54, 12, 64, 12],
             ...    'y': [13, 5, 13, 74, 24],
             ... })
-            >>> y = pd.Series([10, 42, 31, 51, 42])
+            >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
             >>> assert target_leakage_check.validate(X, y) == {"warnings": [{"message": "Column 'leak' is 95.0% or more correlated with the target",\
                                                                              "data_check_name": "TargetLeakageDataCheck",\
