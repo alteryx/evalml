@@ -38,7 +38,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, deprecate_arg, infer_feature_types
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -73,7 +73,6 @@ class AutoMLSearch:
                  add_result_callback=None,
                  error_callback=None,
                  additional_objectives=None,
-                 random_state=None,
                  random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
@@ -143,8 +142,6 @@ class AutoMLSearch:
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
-
-            random_state (int): Deprecated - use random_seed instead.
 
             random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -236,7 +233,7 @@ class AutoMLSearch:
             'search_order': [],
             'errors': []
         }
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        self.random_seed = random_seed
         self.n_jobs = n_jobs
 
         self.plot = None
