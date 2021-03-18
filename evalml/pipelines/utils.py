@@ -31,8 +31,8 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
-    TextFeaturizer,
-    TargetImputer
+    TargetImputer,
+    TextFeaturizer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import (
