@@ -28,13 +28,13 @@ class TestAutoMLSearchDask(unittest.TestCase):
         seq_automl.search()
         sequential_rankings = seq_automl.full_rankings
 
-        parallel_results = parallel_rankings.drop(columns=["id"])
-        sequential_results = sequential_rankings.drop(columns=["id"])
+        par_results = parallel_rankings.drop(columns=["id"])
+        seq_results = sequential_rankings.drop(columns=["id"])
 
-        assert parallel_results.drop(columns=["validation_score"]).equals(
-            sequential_results.drop(columns=["validation_score"]))
-        assert np.allclose(np.array(sequential_results["validation_score"]),
-                           np.array(parallel_results["validation_score"]))
+        assert all(seq_results["pipeline_name"] == par_results["pipeline_name"])
+        assert np.allclose(np.array(seq_results["score"]), np.array(par_results["score"]))
+        assert np.allclose(np.array(seq_results["validation_score"]), np.array(par_results["validation_score"]))
+        assert np.allclose(np.array(seq_results["percent_better_than_baseline"]), np.array(par_results["percent_better_than_baseline"]))
 
     def test_automl_max_iterations(self):
         """ Making sure that the max_iterations parameter limits the number of pipelines run. """
