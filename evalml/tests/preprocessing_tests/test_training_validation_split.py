@@ -39,7 +39,7 @@ def test_tvsplit_size():
 def test_tvsplit_shuffle():
     X = pd.DataFrame({'col1': np.arange(0, 10)})
     y = pd.Series(np.arange(100, 110), name='target')
-    splitter = TrainingValidationSplit(shuffle=True, random_state=0)
+    splitter = TrainingValidationSplit(shuffle=True, random_seed=0)
     splits = list(splitter.split(X, y=y))
     assert len(splits) == 1 and len(splits[0]) == 2
     np.testing.assert_equal(splits[0][0], [9, 1, 6, 7, 3, 0, 5])
@@ -49,18 +49,18 @@ def test_tvsplit_shuffle():
 def test_tvsplit_stratify():
     X = pd.DataFrame({'col1': np.arange(0, 10)})
     y = pd.Series(np.arange(5).repeat(2), name='target')
-    splitter = TrainingValidationSplit(train_size=5, test_size=5, shuffle=True, stratify=y, random_state=0)
+    splitter = TrainingValidationSplit(train_size=5, test_size=5, shuffle=True, stratify=y, random_seed=0)
     splits = list(splitter.split(X, y=y))
     assert len(splits) == 1 and len(splits[0]) == 2
     np.testing.assert_equal(splits[0][0], [1, 4, 2, 8, 7])
     np.testing.assert_equal(splits[0][1], [3, 6, 9, 0, 5])
 
 
-@pytest.mark.parametrize("random_state", [0, 11, 57, 99, 1000])
-def test_tvsplit_always_within_bounds_with_custom_index(random_state):
+@pytest.mark.parametrize("random_seed", [0, 11, 57, 99, 1000])
+def test_tvsplit_always_within_bounds_with_custom_index(random_seed):
     N = 11000
     X = pd.DataFrame({'col1': np.arange(0, N)}, index=np.arange(20000, 20000 + N))
-    splitter = TrainingValidationSplit(train_size=0.75, shuffle=True, random_state=random_state)
+    splitter = TrainingValidationSplit(train_size=0.75, shuffle=True, random_seed=random_seed)
     splits = list(splitter.split(X, y=None))
     assert np.all(np.logical_and(splits[0][0] < N, splits[0][0] >= 0))
     assert np.all(np.logical_and(splits[0][1] < N, splits[0][1] >= 0))

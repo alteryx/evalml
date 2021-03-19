@@ -12,7 +12,7 @@ matplotlib==3.3.4
 networkx==2.5
 nlp-primitives==1.1.0
 numpy==1.20.1
-pandas==1.1.5
+pandas==1.2.3
 plotly==4.14.3
 psutil==5.8.0
 pyzmq==21.0.2
@@ -23,5 +23,5 @@ scipy==1.6.1
 seaborn==0.11.1
 shap==0.39.0
 texttable==1.6.3
-woodwork==0.0.10
+woodwork==0.0.11
 xgboost==1.2.1

@@ -14,8 +14,7 @@ class PerColumnImputer(Transformer):
     name = 'Per Column Imputer'
     hyperparameter_ranges = {}
 
-    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent",
-                 random_state=None, random_seed=0, **kwargs):
+    def __init__(self, impute_strategies=None, default_impute_strategy="most_frequent", random_seed=0, **kwargs):
         """Initializes a transformer that imputes missing data according to the specified imputation strategy per column."
 
         Arguments:
@@ -29,6 +28,8 @@ class PerColumnImputer(Transformer):
             default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
                 Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
                 and "most_frequent", "constant" for object data types. Defaults to "most_frequent"
+
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {"impute_strategies": impute_strategies,
                       "default_impute_strategy": default_impute_strategy}
@@ -41,7 +42,6 @@ class PerColumnImputer(Transformer):
 
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y=None):
