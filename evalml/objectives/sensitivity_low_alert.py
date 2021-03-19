@@ -23,6 +23,7 @@ class SLA(BinaryClassificationObjective):
         """
         self.alert_rate = alert_rate
 
+
     def decision_function(self, ypred_proba, **kwargs):
         """Determine if an observation is high risk given an alert rate
 
@@ -41,7 +42,7 @@ class SLA(BinaryClassificationObjective):
         return ypred_proba.astype(float) >= prob_thresh
 
         
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, **kwargs):
         """Calculate sensitivity across all predictions, using the top alert_rate percent of observations as the predicted positive class
         
         Arguments:
