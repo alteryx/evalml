@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+from evalml.automl.utils import AutoMLData
 from evalml.objectives.utils import get_objective
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
@@ -10,8 +11,7 @@ def err_call(*args, **kwargs):
     return 1
 
 
-AutoMLSearchStruct = namedtuple("AutoML",
-                                "data_splitter problem_type objective additional_objectives optimize_thresholds error_callback random_seed ensembling_indices")
+ensembling_indices = [0]
 data_splitter = TrainingValidationSplit()
 problem_type = "binary"
 objective = get_objective("Log Loss Binary", return_instance=True)
@@ -19,9 +19,14 @@ additional_objectives = []
 optimize_thresholds = False
 error_callback = err_call
 random_seed = 0
-ensembling_indices = [0]
-automl_data = AutoMLSearchStruct(data_splitter, problem_type, objective, additional_objectives,
-                                 optimize_thresholds, error_callback, random_seed, ensembling_indices)
+automl_data = AutoMLData(ensembling_indices=ensembling_indices,
+                         data_splitter=data_splitter,
+                         problem_type=problem_type,
+                         objective=objective,
+                         additional_objectives=additional_objectives,
+                         optimize_thresholds=optimize_thresholds,
+                         error_callback=error_callback,
+                         random_seed=random_seed)
 
 
 class TestLRCPipeline(BinaryClassificationPipeline):
