@@ -577,14 +577,7 @@ class AutoMLSearch:
         if self._interrupted:
             return False
 
-        # for add_to_rankings
-        if self._searched:
-            return True
-
-        # Run at least one pipeline for every search
         num_pipelines = self._num_pipelines()
-        if num_pipelines == 0:
-            return True
 
         # check max_time and max_iterations
         elapsed = time.time() - self._start
