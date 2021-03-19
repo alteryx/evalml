@@ -59,7 +59,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                                    "code": "TARGET_HAS_NULL",\
                                                                    "details": {"num_null_rows": 2, "pct_null_rows": 50}}],\
                                                        "warnings": [],\
-                                                       "actions": [{'code': 'IMPUTE_COL', 'details': {'column': None, 'is_target': True}}]}
+                                                       "actions": [{'code': 'IMPUTE_COL', 'details': {'column': None, 'impute_strategy': 'most_frequent', 'is_target': True}}]}
         """
         results = {
             "warnings": [],

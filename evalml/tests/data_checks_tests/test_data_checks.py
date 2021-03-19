@@ -102,7 +102,7 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'also_all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'id'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, 'impute_strategy': 'most_frequent'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict()
                     ]
 
