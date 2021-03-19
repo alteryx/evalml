@@ -9,6 +9,7 @@ Release Notes
         * Updated ``ClassImbalanceDataCheck`` to better handle multiclass imbalances :pr:`1986`
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
+        * Added sensitivity at low alert rates as an objective :pr:`2001`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
