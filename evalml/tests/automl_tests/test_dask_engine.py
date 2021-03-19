@@ -39,24 +39,25 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that training a single pipeline using the parallel engine produces the
         same results as simply running the train_pipeline function. """
         X, y = self.X_y_binary
-        pipeline = TestLRCPipeline({})
         engine = DaskEngine(client=self.client)
+        pipeline = TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(X=X, y=y, automl_data=automl_data, pipeline=pipeline)
-        pipeline_fitted = pipeline_future.get_result()
-        assert pipeline_fitted._is_fitted
+        dask_pipeline_fitted = pipeline_future.get_result()
+        assert dask_pipeline_fitted._is_fitted
 
         # Verify parallelization has no affect on output of function
         original_pipeline_fitted = train_pipeline(pipeline, X, y, optimize_thresholds=automl_data.optimize_thresholds,
                                                   objective=automl_data.objective)
-        assert pipeline_fitted == original_pipeline_fitted
+        assert dask_pipeline_fitted == original_pipeline_fitted
+        assert dask_pipeline_fitted.predict(X) == original_pipeline_fitted.predict(X)
 
     def test_submit_training_jobs_multiple(self):
         """ Test that training multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
-        pipelines = [TestLRCPipeline({}),
+        pipelines = [TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}}),
                      TestBaselinePipeline({}),
                      TestSVMPipeline({})]
 
@@ -88,7 +89,7 @@ class TestDaskEngine(unittest.TestCase):
         X, y = self.X_y_binary
         X = ww.DataTable(X)
         y = ww.DataColumn(y)
-        pipeline = TestLRCPipeline({})
+        pipeline = TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})
         engine = DaskEngine(client=self.client)
 
         # Verify that engine evaluates a pipeline
@@ -121,7 +122,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that evaluating multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
-        pipelines = [TestLRCPipeline({}),
+        pipelines = [TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}}),
                      TestBaselinePipeline({}),
                      TestSVMPipeline({})]
 
@@ -159,7 +160,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that scoring a single pipeline using the parallel engine produces the
         same results as simply running the score_pipeline function. """
         X, y = self.X_y_binary
-        pipeline = TestLRCPipeline({})
+        pipeline = TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})
         engine = DaskEngine(client=self.client)
         objectives = [automl_data.objective]
 
@@ -181,7 +182,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that scoring multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
-        pipelines = [TestLRCPipeline({}),
+        pipelines = [TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}}),
                      TestBaselinePipeline({}),
                      TestSVMPipeline({})]
 
