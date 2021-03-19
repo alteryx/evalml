@@ -14,6 +14,15 @@ from woodwork.logical_types import (
 from evalml.pipelines.components import TargetImputer
 
 
+def test_target_imputer_no_y(X_y_binary):
+    X, y = X_y_binary
+    imputer = TargetImputer(impute_strategy='median')
+    with pytest.raises(ValueError, match="y cannot be None"):
+        imputer.fit_transform(None, None)
+    with pytest.raises(ValueError, match="y cannot be None"):
+        imputer.fit(X, None)
+
+
 def test_target_imputer_median():
     y = pd.Series([np.nan, 1, 10, 10, 6])
     imputer = TargetImputer(impute_strategy='median')
@@ -146,7 +155,6 @@ def test_target_imputer_with_none_non_numeric(y, y_expected):
 @pytest.mark.parametrize("has_nan", [True, False])
 @pytest.mark.parametrize("impute_strategy", ["mean", "median", "most_frequent"])
 def test_target_imputer_woodwork_custom_overrides_returned_by_components(y, has_nan, impute_strategy):
-    y = pd.Series([1, 2, 1])
     if has_nan:
         y[len(y) - 1] = np.nan
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]

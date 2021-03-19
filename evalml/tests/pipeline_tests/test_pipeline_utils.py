@@ -26,7 +26,8 @@ from evalml.pipelines.components import (
     StackedEnsembleRegressor,
     StandardScaler,
     TextFeaturizer,
-    Transformer
+    Transformer,
+    TargetImputer
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
@@ -521,7 +522,14 @@ def test_make_component_list_from_actions():
     actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']})]
     assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col'])]
 
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
+    DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
+    assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col']), TargetImputer(impute_strategy="most_frequent")]
+
+def test_make_component_list_from_actions_duplicates():
     actions_same_code = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
-                         DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
+                         DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
+                         DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col'],
+                         })]
     assert _make_component_list_from_actions(actions_same_code) == [DropColumns(columns=['some col']),
                                                                     DropColumns(columns=['some other col'])]
