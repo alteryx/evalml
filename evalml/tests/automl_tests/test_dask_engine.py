@@ -212,7 +212,3 @@ class TestDaskEngine(unittest.TestCase):
     @classmethod
     def tearDownClass(cls) -> None:
         cls.client.close()
-
-
-if __name__ == "__main__":
-    unittest.main()
