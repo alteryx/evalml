@@ -385,6 +385,7 @@ Domain-Specific Objectives
     FraudCost
     LeadScoring
     CostBenefitMatrix
+    SLA
 
 
 Classification Objectives
