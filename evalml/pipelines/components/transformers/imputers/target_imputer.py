@@ -72,21 +72,18 @@ class TargetImputer(Transformer):
         if y is None:
             raise ValueError("y cannot be None")
         y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series()).to_frame()
+        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y_df = y.to_frame()
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (y.dtypes == bool).all():
-            return y_ww
+        if (y_df.dtypes == bool).all():
+            return _retain_custom_types_and_initalize_woodwork(y_ww, y)
 
-        # y_t = pd.DataFrame(self._component_obj.transform(y))
-        # y_t.index = y.index
-        transformed = self._component_obj.transform(y)
+        transformed = self._component_obj.transform(y_df)
         if transformed.shape[1] == 0:
             return ww.DataColumn(pd.Series([]))
         y_t = pd.Series(transformed[:, 0], index=y.index)
-        # y_t.index = y.index
         return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
-        # return infer_feature_types(y_t)
 
     def fit_transform(self, X, y):
         """Fits on X and transforms X

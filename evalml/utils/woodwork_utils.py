@@ -88,7 +88,7 @@ def _retain_custom_types_and_initalize_woodwork(old_woodwork_data, new_pandas_da
     if isinstance(old_woodwork_data, ww.DataColumn):
         if str(new_pandas_data.dtype) != old_woodwork_data.logical_type.pandas_dtype:
             try:
-                return ww.DataColumn(new_pandas_data.astype(old_woodwork_data.logical_type.pandas_dtype))
+                return ww.DataColumn(new_pandas_data, logical_type=old_woodwork_data.logical_type)
             except (ValueError, TypeError):
                 pass
         return ww.DataColumn(new_pandas_data)

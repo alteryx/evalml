@@ -147,31 +147,33 @@ def test_target_imputer_with_none_non_numeric(y, y_expected):
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
-@pytest.mark.parametrize("y", [pd.Series([1, 2, 3], dtype="Int64"),
-                               pd.Series([1., 2., 3.], dtype="float"),
-                               pd.Series(['a', 'b', 'a'], dtype="category"),
-                               pd.Series([True, False, True], dtype="boolean"),
-                               pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")])
+@pytest.mark.parametrize("y_pd", [pd.Series([1, 2, 3], dtype="int64"),
+                                  pd.Series([1., 2., 3.], dtype="float"),
+                                  pd.Series(['a', 'b', 'a'], dtype="category"),
+                                  pd.Series([True, False, True], dtype="boolean"),
+                                  pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string")])
 @pytest.mark.parametrize("has_nan", [True, False])
 @pytest.mark.parametrize("impute_strategy", ["mean", "median", "most_frequent"])
-def test_target_imputer_woodwork_custom_overrides_returned_by_components(y, has_nan, impute_strategy):
+def test_target_imputer_woodwork_custom_overrides_returned_by_components(y_pd, has_nan, impute_strategy):
+    y_to_use = y_pd.copy()
     if has_nan:
-        y[len(y) - 1] = np.nan
-    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
+        y_to_use[len(y_pd) - 1] = np.nan
+    override_types = [Integer, Double, Categorical, Boolean]
     for logical_type in override_types:
         try:
-            y = ww.DataColumn(y, logical_type=logical_type)
+            y = ww.DataColumn(y_to_use.copy(), logical_type=logical_type)
         except TypeError:
             continue
 
         impute_strategy_to_use = impute_strategy
-        if logical_type in [NaturalLanguage, Categorical]:
+        if logical_type in [Categorical, NaturalLanguage]:
             impute_strategy_to_use = "most_frequent"
 
         imputer = TargetImputer(impute_strategy=impute_strategy_to_use)
         imputer.fit(None, y)
         transformed = imputer.transform(None, y)
         assert isinstance(transformed, ww.DataColumn)
+
         if impute_strategy_to_use == "most_frequent" or not has_nan:
             assert transformed.logical_type == logical_type
         else:
