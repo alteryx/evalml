@@ -4,7 +4,7 @@ import numpy as np
 
 from evalml import AutoMLSearch
 from evalml.objectives import SLA
-from evalml.tests.objective_tests.test_binary_objective import TestBinaryObjective
+from evalml.tests.objective_tests.test_binary_objective import TestBinaryObjective, fix_y_pred_na, fix_y_true, fix_y_pred_diff_len, fix_empty_array, fix_y_pred_multi
 
 class TestSLA(TestBinaryObjective):
     __test__ = True
@@ -40,4 +40,11 @@ class TestSLA(TestBinaryObjective):
     def test_score(self, y_true, y_predicted, expected_score):
         sensitivity = SLA(0.1).objective_function(y_true, y_predicted)
         assert (sensitivity is expected_score) or (sensitivity == expected_score)
+
+    def test_all_base_tests(self, fix_y_pred_na, fix_y_true, fix_y_pred_diff_len, fix_empty_array, fix_y_pred_multi):
+        self.assign_objective(0.1)
+        self.test_input_contains_nan_inf(fix_y_pred_na, fix_y_true)
+        self.test_different_input_lengths(fix_y_pred_diff_len, fix_y_true)
+        self.test_zero_input_lengths(fix_empty_array, fix_empty_array)
+        self.test_binary_more_than_two_unique_values(fix_y_true, fix_y_pred_multi)
         

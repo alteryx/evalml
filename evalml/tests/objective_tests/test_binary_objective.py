@@ -1,7 +1,28 @@
 from abc import abstractmethod, ABCMeta
 import pytest
+import numpy as np
 
 from evalml import AutoMLSearch
+
+@pytest.fixture()
+def fix_y_pred_na():
+    return np.array([np.nan, 0, 0])
+
+@pytest.fixture()
+def fix_y_true():
+    return np.array([1, 2, 1])
+
+@pytest.fixture()
+def fix_y_pred_diff_len():
+    return np.array([0, 1])
+
+@pytest.fixture()
+def fix_empty_array():
+    np.array([])
+
+@pytest.fixture()
+def fix_y_pred_multi():
+    return np.array([0, 1, 2])
 
 class TestBinaryObjective(metaclass=ABCMeta):
     __test__ = False
@@ -25,14 +46,33 @@ class TestBinaryObjective(metaclass=ABCMeta):
         pipeline.predict_proba(self.X)
         pipeline.score(self.X, self.y, [self.objective])
 
-    # def test_input_contains_nan():
+    @abstractmethod
+    def test_score(self, y_true, y_predicted, expected_score):
+        """Objective score matches expected score
 
-    # def test_input_contains_inf():
+        Args:
+            y_true (ww.DataColumn, pd.Series): true classes
+            y_predicted (ww.DataColumn, pd.Series): predicted classes
+            expected_score (float): expected output from objective.objective_function()
+        """
 
-    # def test_input_lengths():
+    @abstractmethod
+    def test_all_base_tests(self):
+        """Run all relevant tests from the base class
+        """
 
-    # def test_zero_input_lengths():
+    def test_input_contains_nan_inf(self, y_predicted, y_true):
+        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+            self.objective.score(y_true, y_predicted)
 
-    # def test_binary_more_than_two_unique_values():
+    def test_different_input_lengths(self, y_predicted, y_true):
+        with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+            self.objective.score(y_true, y_predicted)
 
-    # def test_objective_score():
+    def test_zero_input_lengths(self, y_predicted, y_true):
+        with pytest.raises(AttributeError, match="'NoneType' object has no attribute 'shape'"):
+            self.objective.score(y_true, y_predicted)
+
+    def test_binary_more_than_two_unique_values(self, y_predicted,  y_true):
+        with pytest.raises(ValueError, match="y_true contains more than two unique values"):
+            self.objective.score(y_true, y_predicted)
