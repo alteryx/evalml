@@ -1,4 +1,5 @@
 import pytest
+import pandas as pd
 
 from evalml import AutoMLSearch
 from evalml.objectives import SLA
@@ -25,8 +26,11 @@ class TestSLA(TestBinaryObjective):
         with pytest.raises(Exception):
             SLA(alert_rate)
 
-    # def test_single_pred_proba():
-
-    # def test_extreme_threshold():
+    @pytest.mark.parametrize("alert_rate, ypred_proba, high_risk", [
+        (0.1, pd.Series([0.5, 0.5, 0.5]), [True, True, True]),
+        (0.1, list(range(10)), [False if i != 9 else True for i in range(10)])])
+    def test_high_risk_output(self, alert_rate, ypred_proba, high_risk):
+        self.assign_objective(alert_rate)
+        assert self.objective.decision_function(ypred_proba).tolist() == high_risk
 
     # def test_sla_score():
