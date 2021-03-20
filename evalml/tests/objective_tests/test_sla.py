@@ -18,8 +18,8 @@ class TestSLA(TestBinaryObjective):
 
     @pytest.mark.parametrize("alert_rate", [0.01, 0.99])
     def test_valid_alert_rate(self, alert_rate):
-        object = SLA(alert_rate)
-        assert object.alert_rate == alert_rate
+        obj = SLA(alert_rate)
+        assert obj.alert_rate == alert_rate
 
     @pytest.mark.parametrize("alert_rate", [-1, 1.5])
     def test_invalid_alert_rate(self, alert_rate):
