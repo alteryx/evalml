@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+import numpy as np
 
 from evalml import AutoMLSearch
 from evalml.objectives import SLA
@@ -33,4 +34,10 @@ class TestSLA(TestBinaryObjective):
         self.assign_objective(alert_rate)
         assert self.objective.decision_function(ypred_proba).tolist() == high_risk
 
-    # def test_sla_score():
+    @pytest.mark.parametrize("y_true, y_predicted, expected_score", [
+        (pd.Series([False, False, False]), pd.Series([True, True, False]), np.nan),
+        (pd.Series([True, True, True, True]), pd.Series([True, True, False, False]), 0.5)])
+    def test_sla_score(self, y_true, y_predicted, expected_score):
+        sensitivity = SLA(0.1).objective_function(y_true, y_predicted)
+        assert (sensitivity is expected_score) or (sensitivity == expected_score)
+        
