@@ -21,6 +21,9 @@ class SLA(BinaryClassificationObjective):
             alert_rate (float): percentage of top scores to classify as high risk
         
         """
+        if (alert_rate > 1) or (alert_rate < 0):
+            raise Exception("Alert rate is outside of valid range [0,1]")
+
         self.alert_rate = alert_rate
 
 
