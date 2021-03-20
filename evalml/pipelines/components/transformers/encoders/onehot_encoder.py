@@ -105,14 +105,13 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
         else:
             categories = []
-            values_to_drop = []
+            self.binary_values_to_drop = []
             for col in X_t[self.features_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 value_to_drop = None
                 if len(value_counts) == 2 and self.parameters['drop'] == "if_binary": # a column with only two categories. We want to drop the majority class.
-                    value_to_drop = value_counts.index.tolist()[1]
-                    # values_to_drop.append([1])
-
+                    value_to_drop = value_counts.index.tolist()[0] # the minority class
+                    self.binary_values_to_drop.append((col, value_to_drop))
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
@@ -120,17 +119,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                     value_counts = value_counts.sort_values([col], ascending=False, kind='mergesort')
                     unique_values = value_counts.head(top_n).index.tolist()
                 unique_values = np.sort(unique_values)
-                # import pdb; pdb.set_trace()
-                if value_to_drop is not None:
-                    index_to_drop = np.where(unique_values == value_to_drop)[0]
-                    values_to_drop.append(index_to_drop)
-                else:
-                    values_to_drop.append(None)
                 categories.append(unique_values)
 
         # Create an encoder to pass off the rest of the computation to
         # if "drop" was set to "is_binary", pass None to scikit-learn because we manually handle
-        drop_to_use = values_to_drop if self.parameters['drop'] == "if_binary" else self.parameters['drop']
+        drop_to_use = None if self.parameters['drop'] == "if_binary" else self.parameters['drop']
         self._encoder = SKOneHotEncoder(categories=categories,
                                             drop=drop_to_use,
                                             handle_unknown=self.parameters['handle_unknown'])
@@ -233,6 +226,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 # Drop categories specified by the user
                 if self._encoder.drop_idx_ is not None and self._encoder.drop_idx_[col_index] is not None:
                     if cat_index == self._encoder.drop_idx_[col_index]:
+                        import pdb; pdb.set_trace()
                         continue
 
                 # Follow sklearn naming convention but if name has been seen before
