@@ -13,8 +13,7 @@ class TestSLA(TestBinaryObjective):
     def test_sla_objective(self, X_y_binary):
         self.assign_problem_type()
         self.assign_objective(0.1)
-        self.get_data(X_y_binary)
-        self.run_pipeline()
+        self.run_pipeline(X_y_binary)
 
     @pytest.mark.parametrize("alert_rate", [0.01, 0.99])
     def test_valid_alert_rate(self, alert_rate):

@@ -9,15 +9,16 @@ class TestBinaryObjective(metaclass=ABCMeta):
     def assign_problem_type(self):
         self.problem_type = 'binary'
 
-    def get_data(self, X_y_binary):
-        self.X, self.y = X_y_binary
+    # def get_data(self, X_y_binary):
+    #     self.X, self.y = X_y_binary
 
     @abstractmethod
     def assign_objective(self, **kwargs):
         """Get objective object using specified parameters
         """
 
-    def run_pipeline(self, **kwargs):
+    def run_pipeline(self, X_y_binary, **kwargs):
+        self.X, self.y = X_y_binary
         automl = AutoMLSearch(X_train=self.X, y_train=self.y, problem_type=self.problem_type, objective=self.objective, max_iterations=1)
         automl.search()
 
