@@ -9,9 +9,6 @@ class TestBinaryObjective(metaclass=ABCMeta):
     def assign_problem_type(self):
         self.problem_type = 'binary'
 
-    # def get_data(self, X_y_binary):
-    #     self.X, self.y = X_y_binary
-
     @abstractmethod
     def assign_objective(self, **kwargs):
         """Get objective object using specified parameters
