@@ -242,6 +242,5 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._provenance = provenance
         return unique_names
 
-
     def _get_feature_provenance(self):
         return self._provenance
