@@ -71,7 +71,7 @@ def test_all_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 10
     else:
-        assert len(_all_estimators_used_in_search()) == 16
+        assert len(_all_estimators_used_in_search()) == 17
 
 
 def test_get_estimators(has_minimal_dependencies):

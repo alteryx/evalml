@@ -24,22 +24,27 @@ class ARIMARegressor(Estimator):
     model_family = ModelFamily.ARIMA
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, date_column=None, p=1, d=0, q=0,
-                 random_seed=0, random_state=None, **kwargs):
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+    def __init__(self, date_column=None, trend='n', p=1, d=0, q=0,
+                 random_seed=0, **kwargs):
         order = (p, d, q)
-        parameters = {'order': order}
+        parameters = {'order': order,
+                      'trend': trend}
+
         parameters.update(kwargs)
         self.date_column = date_column
 
         p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
-        arima = import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
-        arima.ARIMA(endog=np.zeros(p + d + q + 1), **parameters)  # to validate parameters
+
+        arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
+        arima.ARIMA(endog=np.zeros(p + d + q + 1), **parameters)
+        parameters.update({'p': p,
+                           'd': d,
+                           'q': q})
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_seed=random_seed)
 
-    def get_dates_fit(self, X, y):
+    def _get_dates_fit(self, X, y):
         date_col = None
 
         if isinstance(y.index, pd.DatetimeIndex):
@@ -47,10 +52,13 @@ class ARIMARegressor(Estimator):
         if X is not None:
             if self.date_column in X.columns:
                 date_col = X.pop(self.date_column)
-                X.index = y.index
+                X.index = date_col
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-            X.index = y.index
+            elif date_col is not None:
+                X.index = date_col
+        if date_col is not None:
+            y.index = date_col
 
         if date_col is None:
             msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
@@ -58,7 +66,7 @@ class ARIMARegressor(Estimator):
             raise ValueError(msg)
         return date_col
 
-    def get_dates_predict(self, X, y):
+    def _get_dates_predict(self, X, y):
         date_col = None
 
         if y is not None:
@@ -81,22 +89,26 @@ class ARIMARegressor(Estimator):
             raise ValueError('ARIMA Regressor requires y as input.')
 
         p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
-        arima = import_or_raise("statsmodels.tsa.arima_model", error_msg=p_error_msg)
+        arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
 
         X, y = self._manage_woodwork(X, y)
-        dates = self.get_dates_fit(X, y)
+        dates = self._get_dates_fit(X, y)
+        new_params = {}
+        for key, val in self.parameters.items():
+            if key not in ['p', 'd', 'q']:
+                new_params[key] = val
         if X is not None:
-            arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **self.parameters)
+            arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **new_params)
         else:
-            arima_with_data = arima.ARIMA(endog=y, dates=dates, **self.parameters)
+            arima_with_data = arima.ARIMA(endog=y, dates=dates, **new_params)
 
-        self._component_obj = arima_with_data
-        self._component_obj.fit(solver='nm', disp=0)
+        component_obj = arima_with_data
+        self._component_obj = component_obj.fit()
         return self
 
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
-        dates = self.get_dates_predict(X, y)
+        dates = self._get_dates_predict(X, y)
         start = dates.min()
         end = dates.max()
         params = self.parameters['order']
@@ -109,6 +121,6 @@ class ARIMARegressor(Estimator):
     @property
     def feature_importance(self):
         """
-        Returns array of 0's with len(1) as feature_importance is not defined for ARIMA regressor.
+        Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor.
         """
         return np.zeros(1)
