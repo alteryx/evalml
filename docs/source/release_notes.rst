@@ -7,12 +7,15 @@ Release Notes
         * Added params to balanced classification data splitters for visibility :pr:`1966`
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
         * Updated ``AutoMLSearch`` to include  an ``actions`` parameter :pr:`1981`
+        * Updated ``ClassImbalanceDataCheck`` to better handle multiclass imbalances :pr:`1986`
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
+        * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
         * Deleted ``random_state`` argument :pr:`1985`
+        * Updated Woodwork version requirement to ``v0.0.11`` :pr:`1996`
     * Documentation Changes
     * Testing Changes
         * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
