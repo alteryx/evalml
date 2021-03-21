@@ -6,31 +6,6 @@ import pytest
 from evalml import AutoMLSearch
 
 
-@pytest.fixture()
-def fix_y_pred_na():
-    return np.array([np.nan, 0, 0])
-
-
-@pytest.fixture()
-def fix_y_true():
-    return np.array([1, 2, 1])
-
-
-@pytest.fixture()
-def fix_y_pred_diff_len():
-    return np.array([0, 1])
-
-
-@pytest.fixture()
-def fix_empty_array():
-    np.array([])
-
-
-@pytest.fixture()
-def fix_y_pred_multi():
-    return np.array([0, 1, 2])
-
-
 class TestBinaryObjective(metaclass=ABCMeta):
     __test__ = False
 
@@ -83,3 +58,26 @@ class TestBinaryObjective(metaclass=ABCMeta):
     def test_binary_more_than_two_unique_values(self, y_predicted, y_true):
         with pytest.raises(ValueError, match="y_true contains more than two unique values"):
             self.objective.score(y_true, y_predicted)
+
+    @pytest.fixture(scope='class')
+    def fix_y_pred_na(self):
+        return np.array([np.nan, 0, 0])
+
+    @pytest.fixture(scope='class')
+    def fix_y_true(self):
+        return np.array([1, 2, 1])
+
+
+    @pytest.fixture(scope='class')
+    def fix_y_pred_diff_len(self):
+        return np.array([0, 1])
+
+
+    @pytest.fixture(scope='class')
+    def fix_empty_array(self):
+        return np.array([])
+
+
+    @pytest.fixture(scope='class')
+    def fix_y_pred_multi(self):
+        return np.array([0, 1, 2])

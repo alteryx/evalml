@@ -3,15 +3,7 @@ import pandas as pd
 import pytest
 
 from evalml.objectives import SLA
-from evalml.tests.objective_tests.test_binary_objective import (
-    TestBinaryObjective
-)
-    # fix_empty_array,
-    # fix_y_pred_diff_len,
-    # fix_y_pred_multi,
-    # fix_y_pred_na,
-    # fix_y_true
-
+from evalml.tests.objective_tests.test_binary_objective import TestBinaryObjective
 
 class TestSLA(TestBinaryObjective):
     __test__ = True
