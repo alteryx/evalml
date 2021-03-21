@@ -69,8 +69,6 @@ class TargetImputer(Transformer):
         Returns:
             ww.DataTable: Transformed X
         """
-        if y is None:
-            raise ValueError("y cannot be None")
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         y_df = y.to_frame()
