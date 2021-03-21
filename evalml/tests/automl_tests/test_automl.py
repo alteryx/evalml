@@ -24,6 +24,7 @@ from evalml.automl.utils import (
     _LARGE_DATA_ROW_THRESHOLD,
     get_default_primary_search_objective
 )
+from evalml.data_checks import DataCheckAction, DataCheckActionCode
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -54,7 +55,10 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators
 )
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import (
+    _make_component_list_from_actions,
+    make_pipeline
+)
 from evalml.preprocessing import (
     BalancedClassificationDataCVSplit,
     BalancedClassificationDataTVSplit,
@@ -2450,21 +2454,6 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline._is_fitted
         assert fitted_pipeline != original_pipeline
 
-from evalml.data_checks import DataCheckAction, DataCheckActionCode
-
-
-# def test_make_component_list_from_actions():
-#     assert _make_component_list_from_actions([]) == []
-
-#     actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']})]
-#     assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col'])]
-
-#     actions_same_code = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
-#                          DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
-#     assert _make_component_list_from_actions(actions_same_code) == [DropColumns(columns=['some col']),
-#                                                                     DropColumns(columns=['some other col'])]
-
-from evalml.pipelines.utils import _make_component_list_from_actions
 
 def test_automl_prepends_components_from_data_check_actions(X_y_binary):
     X, y = X_y_binary
