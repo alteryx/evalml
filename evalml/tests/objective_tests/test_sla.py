@@ -1,10 +1,17 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
-from evalml import AutoMLSearch
 from evalml.objectives import SLA
-from evalml.tests.objective_tests.test_binary_objective import TestBinaryObjective, fix_y_pred_na, fix_y_true, fix_y_pred_diff_len, fix_empty_array, fix_y_pred_multi
+from evalml.tests.objective_tests.test_binary_objective import (
+    TestBinaryObjective
+)
+    # fix_empty_array,
+    # fix_y_pred_diff_len,
+    # fix_y_pred_multi,
+    # fix_y_pred_na,
+    # fix_y_true
+
 
 class TestSLA(TestBinaryObjective):
     __test__ = True
@@ -47,4 +54,3 @@ class TestSLA(TestBinaryObjective):
         self.test_different_input_lengths(fix_y_pred_diff_len, fix_y_true)
         self.test_zero_input_lengths(fix_empty_array, fix_empty_array)
         self.test_binary_more_than_two_unique_values(fix_y_true, fix_y_pred_multi)
-        
