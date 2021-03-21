@@ -5,6 +5,7 @@ import pytest
 from evalml.objectives import SLA
 from evalml.tests.objective_tests.test_binary_objective import TestBinaryObjective
 
+
 class TestSLA(TestBinaryObjective):
     __test__ = True
 
@@ -42,7 +43,7 @@ class TestSLA(TestBinaryObjective):
 
     def test_all_base_tests(self, fix_y_pred_na, fix_y_true, fix_y_pred_diff_len, fix_empty_array, fix_y_pred_multi):
         self.assign_objective(0.1)
-        self.test_input_contains_nan_inf(fix_y_pred_na, fix_y_true)
-        self.test_different_input_lengths(fix_y_pred_diff_len, fix_y_true)
-        self.test_zero_input_lengths(fix_empty_array, fix_empty_array)
-        self.test_binary_more_than_two_unique_values(fix_y_true, fix_y_pred_multi)
+        self.input_contains_nan_inf(fix_y_pred_na, fix_y_true)
+        self.different_input_lengths(fix_y_pred_diff_len, fix_y_true)
+        self.zero_input_lengths(fix_empty_array)
+        self.binary_more_than_two_unique_values(fix_y_pred_multi, fix_y_true)

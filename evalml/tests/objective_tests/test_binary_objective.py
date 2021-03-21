@@ -43,22 +43,6 @@ class TestBinaryObjective(metaclass=ABCMeta):
         """Run all relevant tests from the base class
         """
 
-    def test_input_contains_nan_inf(self, y_predicted, y_true):
-        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
-            self.objective.score(y_true, y_predicted)
-
-    def test_different_input_lengths(self, y_predicted, y_true):
-        with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
-            self.objective.score(y_true, y_predicted)
-
-    def test_zero_input_lengths(self, y_predicted, y_true):
-        with pytest.raises(ValueError, match="Length of inputs is 0"):
-            self.objective.score(y_true, y_predicted)
-
-    def test_binary_more_than_two_unique_values(self, y_predicted, y_true):
-        with pytest.raises(ValueError, match="y_true contains more than two unique values"):
-            self.objective.score(y_true, y_predicted)
-
     @pytest.fixture(scope='class')
     def fix_y_pred_na(self):
         return np.array([np.nan, 0, 0])
@@ -67,17 +51,30 @@ class TestBinaryObjective(metaclass=ABCMeta):
     def fix_y_true(self):
         return np.array([1, 2, 1])
 
-
     @pytest.fixture(scope='class')
     def fix_y_pred_diff_len(self):
         return np.array([0, 1])
-
 
     @pytest.fixture(scope='class')
     def fix_empty_array(self):
         return np.array([])
 
-
     @pytest.fixture(scope='class')
     def fix_y_pred_multi(self):
         return np.array([0, 1, 2])
+
+    def input_contains_nan_inf(self, fix_y_pred_na, fix_y_true):
+        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+            self.objective.score(fix_y_true, fix_y_pred_na)
+
+    def different_input_lengths(self, fix_y_pred_diff_len, fix_y_true):
+        with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
+            self.objective.score(fix_y_true, fix_y_pred_diff_len)
+
+    def zero_input_lengths(self, fix_empty_array):
+        with pytest.raises(ValueError, match="Length of inputs is 0"):
+            self.objective.score(fix_empty_array, fix_empty_array)
+
+    def binary_more_than_two_unique_values(self, fix_y_pred_multi, fix_y_true):
+        with pytest.raises(ValueError, match="y_predicted contains more than two unique values"):
+            self.objective.score(fix_y_true, fix_y_pred_multi)
