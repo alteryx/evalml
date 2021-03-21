@@ -25,7 +25,7 @@ def test_init():
     parameters = {'top_n': 10,
                   'features_to_encode': None,
                   'categories': None,
-                  'drop': None,
+                  'drop': 'if_binary',
                   'handle_unknown': 'ignore',
                   'handle_missing': 'error'}
     encoder = OneHotEncoder()
@@ -38,7 +38,7 @@ def test_parameters():
         'top_n': 123,
         'features_to_encode': None,
         'categories': None,
-        'drop': None,
+        'drop': 'if_binary',
         'handle_unknown': 'ignore',
         'handle_missing': 'error'
     }
@@ -144,19 +144,6 @@ def test_drop_binary():
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_names = set(X_t.columns)
-    expected_col_names = set(["col_1_b", "col_2_a",
-                              "col_2_b", "col_2_c", "col_3_a"])
-    assert col_names == expected_col_names
-
-
-def test_drop_binary_custom():
-    X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
-                      'col_2': ["a", "b", "a", "c", "b"],
-                      'col_3': ["a", "a", "a", "a", "a"]})
-    encoder = OneHotEncoder(top_n=None, drop='if_binary', handle_unknown='error')
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-    col_names = set(X_t.columns)
     expected_col_names = set(["col_1_a", "col_2_a",
                               "col_2_b", "col_2_c", "col_3_a"])
     assert col_names == expected_col_names
@@ -199,7 +186,7 @@ def test_no_top_n():
                       "col_2": ["a", "c", "d", "b", "e", "e", "f", "a", "b", "c", "d"],
                       "col_3": ["a", "a", "a", "a", "a", "a", "b", "a", "a", "b", "b"],
                       "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2]})
-    expected_col_names = set(["col_3_a", "col_3_b", "col_4"])
+    expected_col_names = set(["col_3_b", "col_4"])
     for val in X["col_1"]:
         expected_col_names.add("col_1_" + val)
     for val in X["col_2"]:
@@ -210,7 +197,7 @@ def test_no_top_n():
     X_t = encoder.transform(X)
 
     col_names = set(X_t.columns)
-    assert (X_t.shape == (11, 20))
+    assert (X_t.shape == (11, 19))
     assert (col_names == expected_col_names)
 
     # Make sure unknown values cause an error
@@ -293,7 +280,7 @@ def test_more_top_n_unique_values():
     col_2_counts = col_2_counts.sort_values(["col_2"], ascending=False, kind='mergesort')
     col_2_samples = col_2_counts.head(encoder.parameters['top_n']).index.tolist()
 
-    expected_col_names = set(["col_2_e", "col_3_a", "col_3_b", "col_4"])
+    expected_col_names = set(["col_2_e", "col_3_b", "col_4"])
     for val in col_1_samples:
         expected_col_names.add("col_1_" + val)
     for val in col_2_samples:
@@ -479,11 +466,11 @@ def test_ohe_features_to_encode_col_missing():
 
 
 def test_ohe_features_to_encode_no_col_names():
-    X = pd.DataFrame([["b", 0], ["a", 1]])
+    X = pd.DataFrame([["b", 0], ["a", 1], ["b", 1]])
     encoder = OneHotEncoder(top_n=5, features_to_encode=[0])
     encoder.fit(X)
     X_t = encoder.transform(X).to_dataframe()
-    expected_col_names = set([1, "0_a", "0_b"])
+    expected_col_names = set([1, "0_a"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
     assert ([X_t[col].dtype == "uint8" for col in X_t])
@@ -507,12 +494,19 @@ def test_ohe_column_names_unique():
     df = pd.DataFrame({"A": ["x_y"], "A_x": ["y"]})
     df_transformed = OneHotEncoder().fit_transform(df)
     assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1"}
-    df = pd.DataFrame({"A": ["x_y", "z"], "A_x": ["y_1", "y"], "A_x_y": ["1", "y"]})
+
+    df = pd.DataFrame({"A": ["x_y", "z", "z"], "A_x": ["y", "a", "a", ], "A_x_y": ["1", "y", "y"]})
+    df_transformed = OneHotEncoder().fit_transform(df)
+    # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
+    # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
+    assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1", "A_x_y_1_1"}
+
+    df = pd.DataFrame({"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]})
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
     # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
     # category 1 in A_x_y gets mapped to A_x_y_1_2 because A_x_y_1_1 already exists
-    assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_x_y_1", "A_x_y_1_1", "A_x_y_1_2", "A_x_y_y"}
+    assert set(df_transformed.columns) == {"A_x_y", "A_z", "A_a", "A_x_y_1", "A_x_y_1_1", "A_x_b", "A_x_y_1_2", "A_x_y_y", "A_x_y_c"}
 
 
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
