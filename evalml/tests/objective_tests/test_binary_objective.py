@@ -52,7 +52,7 @@ class TestBinaryObjective(metaclass=ABCMeta):
             self.objective.score(y_true, y_predicted)
 
     def test_zero_input_lengths(self, y_predicted, y_true):
-        with pytest.raises(AttributeError, match="'NoneType' object has no attribute 'shape'"):
+        with pytest.raises(ValueError, match="Length of inputs is 0"):
             self.objective.score(y_true, y_predicted)
 
     def test_binary_more_than_two_unique_values(self, y_predicted, y_true):
