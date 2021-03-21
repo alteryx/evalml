@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from evalml.objectives import SLA
-from evalml.tests.objective_tests.test_binary_objective import TestBinaryObjective
+from evalml.tests.objective_tests.test_binary_classification_objective import TestBinaryObjective
 
 
 class TestSLA(TestBinaryObjective):
