@@ -40,7 +40,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
             drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
-                a list specifying which method to use for each feature. Defaults to None.
+                a list specifying which method to use for each feature. Defaults to 'if_binary'.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
                 per column, this must be "ignore". Defaults to "ignore".
@@ -94,24 +94,21 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             raise ValueError("Could not find and encode {} in input data.".format(', '.join(invalid_features)))
 
         X_t = self._handle_parameter_handle_missing(X_t)
-        self.binary_values_to_drop = []
+        self._binary_values_to_drop = []
 
         if len(self.features_to_encode) == 0:
             categories = 'auto'
-
         elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
             if len(categories) != len(self.features_to_encode) or not isinstance(categories[0], list):
                 raise ValueError('Categories argument must contain a list of categories for each categorical feature')
-
         else:
             categories = []
             for col in X_t[self.features_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
-                value_to_drop = None
-                if len(value_counts) == 2 and self.parameters['drop'] == "if_binary":  # a column with only two categories. We want to drop the majority class.
-                    value_to_drop = value_counts.index.tolist()[0]  # the minority class
-                    self.binary_values_to_drop.append((col, value_to_drop))
+                if self.parameters['drop'] == "if_binary" and len(value_counts) == 2:
+                    value_to_drop = value_counts.index.tolist()[0]  # the majority class
+                    self._binary_values_to_drop.append((col, value_to_drop))
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
@@ -160,7 +157,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat.columns = self.get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
 
-            X_t = X_t.drop(columns=self.features_to_drop)
+            X_t = X_t.drop(columns=self._features_to_drop)
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _handle_parameter_handle_missing(self, X):
@@ -218,7 +215,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
-        self.features_to_drop = []
+        self._features_to_drop = []
         unique_names = []
         seen_before = set([])
         provenance = {}
@@ -235,8 +232,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 # Follow sklearn naming convention but if name has been seen before
                 # then add an int to make it unique
                 proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
-                if (col, category) in self.binary_values_to_drop:
-                    self.features_to_drop.append(proposed_name)
+                if (col, category) in self._binary_values_to_drop:
+                    self._features_to_drop.append(proposed_name)
 
                 unique_names.append(proposed_name)
                 unique_encoded_columns.append(proposed_name)
@@ -244,6 +241,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             provenance[col] = unique_encoded_columns
         self._provenance = provenance
         return unique_names
+
 
     def _get_feature_provenance(self):
         return self._provenance
