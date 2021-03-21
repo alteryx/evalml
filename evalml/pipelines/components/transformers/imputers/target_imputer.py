@@ -15,7 +15,7 @@ class TargetImputer(Transformer):
     name = 'Target Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_state=None, random_seed=0, **kwargs):
+    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -23,6 +23,7 @@ class TargetImputer(Transformer):
                numerical data, and "most_frequent", "constant" for object data types.
             fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         parameters = {"impute_strategy": impute_strategy,
                       "fill_value": fill_value}
@@ -30,19 +31,17 @@ class TargetImputer(Transformer):
         imputer = SkImputer(strategy=impute_strategy,
                             fill_value=fill_value,
                             **kwargs)
-        self._all_null_cols = None
         super().__init__(parameters=parameters,
                          component_obj=imputer,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y):
-        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
+        """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
+            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -60,14 +59,14 @@ class TargetImputer(Transformer):
         return self
 
     def transform(self, X, y):
-        """Transforms input by imputing missing values. 'None' and np.nan values are treated as the same.
+        """Transforms input target data by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (ww.DataTable, pd.DataFrame): Features. Ignored.
+            y (ww.DataColumn, pd.Series): Target data to impute.
 
         Returns:
-            ww.DataTable: Transformed X
+            ww.DataColumn: Transformed y
         """
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
@@ -84,13 +83,13 @@ class TargetImputer(Transformer):
         return _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
 
     def fit_transform(self, X, y):
-        """Fits on X and transforms X
+        """Fits on y and transforms y
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to fit and transform
-            y (ww.DataColumn, pd.Series, optional): Target data.
+            X (ww.DataTable, pd.DataFrame): Features. Ignored.
+            y (ww.DataColumn, pd.Series): Target data to impute.
 
         Returns:
-            ww.DataTable: Transformed X
+            ww.DataColumn: Transformed y
         """
         return self.fit(X, y).transform(X, y)
