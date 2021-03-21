@@ -273,9 +273,12 @@ class AutoMLSearch:
         self._interrupted = False
 
         self._prepended_components = None
+        self._prepended_components_parameters = {}
         if data_check_actions is not None:
             self.data_check_actions = data_check_actions
             self._prepended_components = _make_component_list_from_actions(self.data_check_actions)
+            for component, parameters in self._prepended_components:
+                self._prepended_components_parameters.update({component.name: parameters})
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -343,6 +346,7 @@ class AutoMLSearch:
         else:
             pipeline_params = self.pipeline_parameters
 
+        pipeline_params.update(self._prepended_components_parameters)
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
