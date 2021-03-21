@@ -1,7 +1,8 @@
+from abc import ABCMeta, abstractmethod
+
 import numpy as np
 import pandas as pd
 import pytest
-from abc import ABCMeta, abstractmethod
 
 from evalml import AutoMLSearch
 from evalml.objectives.standard_metrics import AUC, F1
