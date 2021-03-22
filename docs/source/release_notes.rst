@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for ``linux_unit_tests``:pr:`2013`
         * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
         * Added params to balanced classification data splitters for visibility :pr:`1966`
