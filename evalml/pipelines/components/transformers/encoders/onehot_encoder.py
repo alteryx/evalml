@@ -240,7 +240,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 unique_encoded_columns.append(proposed_name)
                 seen_before.add(proposed_name)
             self._features_to_drop.extend(encoded_features_to_drop)
-            unique_encoded_columns_without_dropped = encoded_features_to_drop
+            unique_encoded_columns_without_dropped = unique_encoded_columns
             for feature_to_drop in encoded_features_to_drop:
                 unique_encoded_columns_without_dropped.remove(feature_to_drop)
             provenance[col] = unique_encoded_columns_without_dropped
