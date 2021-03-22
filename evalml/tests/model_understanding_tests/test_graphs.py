@@ -1,55 +1,15 @@
-import os
 import warnings
-from collections import OrderedDict
-from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
-from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
-from sklearn.preprocessing import label_binarize
 from skopt.space import Real
 
 from evalml.model_understanding.graphs import (
-    binary_objective_vs_threshold,
-    calculate_permutation_importance,
     confusion_matrix,
-    decision_tree_data_from_estimator,
-    decision_tree_data_from_pipeline,
-    get_linear_coefficients,
-    get_prediction_vs_actual_data,
-    get_prediction_vs_actual_over_time_data,
-    graph_binary_objective_vs_threshold,
-    graph_confusion_matrix,
-    graph_partial_dependence,
-    graph_permutation_importance,
-    graph_precision_recall_curve,
-    graph_prediction_vs_actual,
-    graph_prediction_vs_actual_over_time,
-    graph_roc_curve,
-    graph_t_sne,
-    normalize_confusion_matrix,
-    precision_recall_curve,
-    roc_curve,
-    t_sne,
-    visualize_decision_tree
+    normalize_confusion_matrix
 )
-from evalml.objectives import CostBenefitMatrix
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    DecisionTreeRegressor,
-    ElasticNetRegressor,
-    LinearRegressor,
-    MulticlassClassificationPipeline,
-    RegressionPipeline
-)
-from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    get_random_state,
-    infer_feature_types
-)
+from evalml.pipelines import BinaryClassificationPipeline
 
 
 @pytest.fixture
