@@ -426,3 +426,18 @@ def test_sampler_ratio_dictionary_multiclass(sampling_ratio_dict, expected):
     y_new = y.iloc[indices]
     y_sampled_count = y_new.value_counts().to_dict()
     assert y_sampled_count == expected
+
+
+def test_classification_balanced_multirun():
+    X = pd.DataFrame({"a": [i for i in range(1000)]})
+    y = pd.Series([i % 3 for i in range(1000)])
+    bcs = BalancedClassificationSampler(random_seed=13117)
+    indices1 = bcs.fit_resample(X, y)
+    indices2 = bcs.fit_resample(X, y)
+    pd.testing.assert_series_equal(pd.Series(indices1), pd.Series(indices2))
+
+    bcs = BalancedClassificationSampler(random_seed=13117)
+    indices3 = bcs.fit_resample(X, y)
+    indices4 = bcs.fit_resample(X, y)
+    pd.testing.assert_series_equal(pd.Series(indices1), pd.Series(indices3))
+    pd.testing.assert_series_equal(pd.Series(indices1), pd.Series(indices4))

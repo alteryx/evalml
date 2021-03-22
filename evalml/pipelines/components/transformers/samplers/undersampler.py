@@ -1,10 +1,10 @@
+import numpy as np
 import pandas as pd
 
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler
-)
-from evalml.preprocessing.data_splitters.balanced_classification_sampler import (
-    BalancedClassificationSampler
+from evalml.pipelines.components.transformers import BaseSampler
+from evalml.utils.woodwork_utils import (
+    _convert_woodwork_types_wrapper,
+    infer_feature_types
 )
 
 
@@ -30,38 +30,49 @@ class Undersampler(BaseSampler):
                 Must be between 0 and 0.5, inclusive. Defaults to 0.1.
             random_seed (int): The seed to use for random sampling. Defaults to 0.
         """
+        if sampling_ratio <= 0 or sampling_ratio > 1:
+            raise ValueError(f"sampling_ratio must be within (0, 1], but received {sampling_ratio}")
+        if min_samples <= 0:
+            raise ValueError(f"min_sample must be greater than 0, but received {min_samples}")
+        if min_percentage <= 0 or min_percentage > 0.5:
+            raise ValueError(f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}")
         parameters = {"sampling_ratio": sampling_ratio,
                       "min_samples": min_samples,
                       "min_percentage": min_percentage,
                       "sampling_ratio_dict": sampling_ratio_dict}
         parameters.update(kwargs)
-
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_seed=random_seed)
 
-    def _initialize_undersampler(self, y):
-        """Helper function to initialize the undersampler component object.
+    def fit(self, X, y):
+        """Since our undersampler doesn't need to be fit, we do nothing here.
 
         Arguments:
-            y (pd.Series): The target data
+            X (ww.DataFrame): Training features. Ignored.
+            y (ww.DataColumn): Target.
+
+        Returns:
+            self
         """
-        param_dic = self._dictionary_to_params(self.parameters['sampling_ratio_dict'], y)
-        sampler = BalancedClassificationSampler(**param_dic, random_seed=self.random_seed)
-        self._component_obj = sampler
+        if y is None:
+            raise ValueError("y cannot be none")
+        return self
 
-    def fit_transform(self, X, y):
-        """Fit and transform the data using the undersampler. Used during training of the pipeline
+    def transform(self, X, y):
+        """Apply undersampling. Used during training of the pipeline.
 
         Arguments:
-            X (ww.DataFrame): Training features
-            y (ww.DataColumn): Target features
+            X (ww.DataFrame): Training features. Ignored for this component.
+            y (ww.DataColumn): Target.
 
          Returns:
             ww.DataTable, ww.DataColumn: Undersampled X and y data
         """
         X, y, X_pd, y_pd = self._prepare_data(X, y)
-        self._initialize_undersampler(y_pd)
+        param_dic = self._dictionary_to_params(self.parameters['sampling_ratio_dict'], y)
+        sampler = BalancedClassificationSampler(**param_dic, random_seed=self.random_seed)
+        self._component_obj = sampler
 
         index_df = pd.Series(y_pd.index)
         indices = self._component_obj.fit_resample(X_pd, y_pd)
