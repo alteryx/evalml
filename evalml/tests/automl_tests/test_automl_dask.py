@@ -63,7 +63,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
         X, y = self.X_y_binary
         pipelines = [TestPipelineWithError({})]
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
-                                  max_iterations=2, allowed_pipelines=[TestPipelineWithError])
+                              max_iterations=2, allowed_pipelines=[TestPipelineWithError])
         automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
 
         assert "Score error for PipelineWithError" in self._caplog.text
