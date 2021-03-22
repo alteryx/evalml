@@ -131,8 +131,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, co
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
     if components_to_prepend is not None:
-        component_classes_to_prepend = [component[0] for component in components_to_prepend]
-        complete_component_graph = component_classes_to_prepend + complete_component_graph
+        complete_component_graph = components_to_prepend + complete_component_graph
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
@@ -271,6 +270,5 @@ def _make_component_list_from_actions(actions):
     components = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
-            # components.append(DropColumns(columns=action.details["columns"]))
             components.append((DropColumns, {"columns": action.details["columns"]}))
     return components
