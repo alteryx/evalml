@@ -73,6 +73,10 @@ jobs:
           source test_python/bin/activate
           make git-test
       - run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install coverage
           echo "actual_sha=$(echo git log -1 --format='%H')" >> $GITHUB_ENV
           echo ${{ github.event.number }}
           echo  ${{ github.event.pull_request.head.sha }}
