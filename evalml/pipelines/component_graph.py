@@ -54,8 +54,7 @@ class ComponentGraph:
 
             component_dict[component_name] = [component_class]
             if previous_component is not None:
-                component_dict[component_name].extend([f"{previous_component}.x", f"{previous_component}.y"])
-                # component_dict[component_name].append(f"{previous_component}.y")
+                component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
         return cls(component_dict, random_seed=random_seed)
 
@@ -140,16 +139,15 @@ class ComponentGraph:
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
-            if '.y' not in parent:
-                parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-                if isinstance(parent_output, ww.DataColumn):
-                    parent_output = parent_output.to_series()
-                    parent_output = pd.DataFrame(parent_output, columns=[parent])
-                    parent_output = infer_feature_types(parent_output)
-                final_component_inputs.append(parent_output)
-            concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
-            if needs_fitting:
-                self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
+            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
+            if isinstance(parent_output, ww.DataColumn):
+                parent_output = parent_output.to_series()
+                parent_output = pd.DataFrame(parent_output, columns=[parent])
+                parent_output = infer_feature_types(parent_output)
+            final_component_inputs.append(parent_output)
+        concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
+        if needs_fitting:
+            self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
         return infer_feature_types(concatted)
 
     def predict(self, X):
@@ -204,6 +202,7 @@ class ComponentGraph:
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
+
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(input_x, input_y)
