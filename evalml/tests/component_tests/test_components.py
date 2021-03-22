@@ -20,7 +20,6 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     LSA,
     PCA,
-    ARIMARegressor,
     BaselineClassifier,
     BaselineRegressor,
     CatBoostClassifier,
