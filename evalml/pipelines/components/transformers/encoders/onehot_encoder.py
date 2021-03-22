@@ -107,8 +107,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             for col in X_t[self.features_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
                 if self.parameters['drop'] == "if_binary" and len(value_counts) == 2:
-                    value_to_drop = value_counts.index.tolist()[0]  # the majority class
-                    self._binary_values_to_drop.append((col, value_to_drop))
+                    majority_class_value = value_counts.index.tolist()[0]
+                    self._binary_values_to_drop.append((col, majority_class_value))
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
@@ -119,7 +119,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 categories.append(unique_values)
 
         # Create an encoder to pass off the rest of the computation to
-        # if "drop" was set to "is_binary", pass None to scikit-learn because we manually handle
+        # if "drop" is set to "if_binary", pass None to scikit-learn because we manually handle
         drop_to_use = None if self.parameters['drop'] == "if_binary" else self.parameters['drop']
         self._encoder = SKOneHotEncoder(categories=categories,
                                         drop=drop_to_use,
@@ -154,10 +154,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
-            X_cat.columns = self.get_feature_names()
+            X_cat.columns = self._get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
-
             X_t = X_t.drop(columns=self._features_to_drop)
+            self._feature_names = X_t.columns
+
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _handle_parameter_handle_missing(self, X):
@@ -202,9 +203,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             i += 1
         return name
 
-    def get_feature_names(self):
-        """TODO might need to make this private
-        Return feature names for the categorical features after fitting.
+    def _get_feature_names(self):
+        """Return feature names for the categorical features after fitting, before the majority class for binary encoded features are dropped.
 
         Feature names are formatted as {column name}_{category name}. In the event of a duplicate name,
         an integer will be added at the end of the feature name to distinguish it.
@@ -222,6 +222,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         for col_index, col in enumerate(self.features_to_encode):
             column_categories = self.categories(col)
             unique_encoded_columns = []
+            encoded_features_to_drop = []
             for cat_index, category in enumerate(column_categories):
 
                 # Drop categories specified by the user
@@ -233,14 +234,35 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 # then add an int to make it unique
                 proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
                 if (col, category) in self._binary_values_to_drop:
-                    self._features_to_drop.append(proposed_name)
+                    encoded_features_to_drop.append(proposed_name)
 
                 unique_names.append(proposed_name)
                 unique_encoded_columns.append(proposed_name)
                 seen_before.add(proposed_name)
-            provenance[col] = unique_encoded_columns
+            self._features_to_drop.extend(encoded_features_to_drop)
+            unique_encoded_columns_without_dropped = encoded_features_to_drop
+            for feature_to_drop in encoded_features_to_drop:
+                unique_encoded_columns_without_dropped.remove(feature_to_drop)
+            provenance[col] = unique_encoded_columns_without_dropped
         self._provenance = provenance
         return unique_names
+
+    def get_feature_names(self):
+        """Return feature names for the categorical features after fitting.
+
+        Feature names are formatted as {column name}_{category name}. In the event of a duplicate name,
+        an integer will be added at the end of the feature name to distinguish it.
+
+        For example, consider a dataframe with a column called "A" and category "x_y" and another column
+        called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
+
+        Returns:
+            np.ndarray: The feature names after encoding, provided in the same order as input_features.
+        """
+        feature_names = self._get_feature_names()
+        for feature_name in self._features_to_drop:
+            feature_names.remove(feature_name)
+        return feature_names
 
     def _get_feature_provenance(self):
         return self._provenance
