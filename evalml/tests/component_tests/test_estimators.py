@@ -24,6 +24,8 @@ from evalml.utils import get_random_state
 
 def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
     for estimator_class in _all_estimators_used_in_search():
+        if estimator_class.__name__ == 'ARIMARegressor':
+            continue
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
@@ -114,6 +116,8 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
 
     for component_class in _all_estimators_used_in_search():
+        if component_class.__name__ == 'ARIMARegressor':
+            continue
         for X, y, X_cols_expected, y_cols_expected in datatype_combos:
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
