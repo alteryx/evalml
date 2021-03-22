@@ -28,16 +28,13 @@ class ARIMARegressor(Estimator):
                  random_seed=0, **kwargs):
         """
         Arguments:
-            date_column (str): Specifies the name of the column in X that provides the datetime objects.
+            date_column (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
             trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
                 't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
                 as [1, 1, 0, 1].
-            p (int or list(int)): Autoregressive term.
-            d (int): Differencing term.
-            q (int or list(int)): Moving Average term.
-
-        Returns:
-            plotly.Figure representing the confusion matrix plot generated
+            p (int or list(int)): Autoregressive order.
+            d (int): Differencing degree.
+            q (int or list(int)): Moving Average order.
         """
         order = (p, d, q)
         parameters = {'order': order,
