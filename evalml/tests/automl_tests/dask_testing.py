@@ -1,6 +1,5 @@
-from collections import namedtuple
-
 from evalml.automl.utils import AutoMLData
+from evalml.exceptions import PipelineScoreError
 from evalml.objectives.utils import get_objective
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
@@ -39,3 +38,17 @@ class TestSVMPipeline(BinaryClassificationPipeline):
 
 class TestBaselinePipeline(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
+
+
+class TestPipelineWithError(BinaryClassificationPipeline):
+    component_graph = ["Baseline Classifier"]
+    custom_name = "PipelineWithError"
+
+    def score(self, X, y, objectives):
+        raise PipelineScoreError(exceptions={"AUC": (Exception(), []),
+                                             "Log Loss Binary": (Exception(), [])},
+                                 scored_successfully={"F1": 0.2,
+                                                      "MCC Binary": 0.2,
+                                                      "Precision": 0.8,
+                                                      "Balanced Accuracy Binary": 0.2,
+                                                      "Accuracy Binary": 0.2})

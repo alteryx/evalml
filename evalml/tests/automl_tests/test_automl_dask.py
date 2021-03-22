@@ -6,10 +6,15 @@ from distributed import Client
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engine import DaskEngine, SequentialEngine
+from evalml.tests.automl_tests.dask_testing import TestPipelineWithError
 
 
 @pytest.mark.usefixtures("X_y_binary_cls")
 class TestAutoMLSearchDask(unittest.TestCase):
+
+    @pytest.fixture(autouse=True)
+    def inject_fixtures(self, caplog):
+        self._caplog = caplog
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -52,6 +57,16 @@ class TestAutoMLSearchDask(unittest.TestCase):
 
         assert len(sequential_rankings) == len(parallel_rankings) == max_iterations
         # TODO: Figure out how to mock the train_and_score_pipelines call to assert the call count.
+
+    def test_automl_dask_error_callback(self):
+        self._caplog.clear()
+        X, y = self.X_y_binary
+        pipelines = [TestPipelineWithError({})]
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
+                                  max_iterations=2, allowed_pipelines=[TestPipelineWithError])
+        automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
+
+        assert "Score error for PipelineWithError" in self._caplog.text
 
     @classmethod
     def tearDownClass(cls) -> None:
