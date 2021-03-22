@@ -54,7 +54,7 @@ class ComponentGraph:
 
             component_dict[component_name] = [component_class]
             if previous_component is not None:
-                    component_dict[component_name].extend([f"{previous_component}.x", f"{previous_component}.y"])
+                component_dict[component_name].extend([f"{previous_component}.x", f"{previous_component}.y"])
                 # component_dict[component_name].append(f"{previous_component}.y")
             previous_component = component_name
         return cls(component_dict, random_seed=random_seed)
