@@ -1,5 +1,4 @@
 import os
-import warnings
 from unittest.mock import patch
 
 import cloudpickle
@@ -1952,27 +1951,6 @@ def test_get_component(logistic_regression_binary_pipeline_class, nonlinear_bina
     assert pipeline.get_component('Logistic Regression') == LogisticRegressionClassifier()
 
 
-def test_pipelines_raise_deprecated_random_state_warning(dummy_binary_pipeline_class,
-                                                         dummy_multiclass_pipeline_class,
-                                                         dummy_regression_pipeline_class,
-                                                         dummy_time_series_regression_pipeline_class,
-                                                         dummy_ts_binary_pipeline_class,
-                                                         time_series_multiclass_classification_pipeline_class):
-    def test_pipeline_class(pipeline_class):
-        with warnings.catch_warnings(record=True) as warn:
-            warnings.simplefilter("always")
-            pipeline = pipeline_class({"pipeline": {"gap": 3, "max_delay": 2}}, random_state=31)
-            assert pipeline.random_seed == 31
-            assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
-
-    test_pipeline_class(dummy_binary_pipeline_class)
-    test_pipeline_class(dummy_multiclass_pipeline_class)
-    test_pipeline_class(dummy_regression_pipeline_class)
-    test_pipeline_class(dummy_time_series_regression_pipeline_class)
-    test_pipeline_class(dummy_ts_binary_pipeline_class)
-    test_pipeline_class(time_series_multiclass_classification_pipeline_class)
-
-
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_score_error_when_custom_objective_not_instantiated(problem_type, logistic_regression_binary_pipeline_class,
                                                             dummy_multiclass_pipeline_class,
@@ -2009,37 +1987,3 @@ def test_binary_pipeline_string_target_thresholding(make_data_type, logistic_reg
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
     pipeline.optimize_threshold(X, y, pred_proba, objective)
     assert pipeline.threshold is not None
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
-@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
-@patch('evalml.pipelines.MulticlassClassificationPipeline.predict')
-def test_pipeline_thresholding_errors(mock_multi_predict, mock_multi_score, mock_multi_fit,
-                                      mock_binary_pred_proba, mock_binary_score, mock_binary_fit,
-                                      make_data_type, logistic_regression_binary_pipeline_class,
-                                      logistic_regression_multiclass_pipeline_class, X_y_multi, X_y_binary):
-    X, y = X_y_multi
-    X = make_data_type('ww', X)
-    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
-    objective = get_objective("F1 Macro", return_instance=True)
-    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    pipeline.fit(X, y)
-    pred_proba = pipeline.predict(X, y)
-    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
-        pipeline.optimize_threshold(X, y, pred_proba, objective)
-
-    objective = get_objective("Log Loss Multiclass")
-    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
-        pipeline.optimize_threshold(X, y, pred_proba, objective)
-    X, y = X_y_binary
-    X = make_data_type('ww', X)
-    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
-    objective = get_objective("Log Loss Binary", return_instance=True)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-    pipeline.fit(X, y)
-    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
-    with pytest.raises(ValueError, match="Problem type must be binary and objective must be optimizable"):
-        pipeline.optimize_threshold(X, y, pred_proba, objective)

@@ -689,7 +689,7 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
     configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     mock_optimize_threshold.return_value = 0.62
-    mock_split_data.return_value = split_data(X, y, problem_type, test_size=0.2, random_state=0)
+    mock_split_data.return_value = split_data(X, y, problem_type, test_size=0.2, random_seed=0)
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
                           problem_configuration=configuration, objective=objective, optimize_thresholds=optimize,
                           max_batches=2)

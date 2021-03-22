@@ -17,12 +17,11 @@ class BaselineRegressor(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, strategy="mean", random_state=None, random_seed=0, **kwargs):
+    def __init__(self, strategy="mean", random_seed=0, **kwargs):
         """Baseline regressor that uses a simple strategy to make predictions.
 
         Arguments:
             strategy (str): Method used to predict. Valid options are "mean", "median". Defaults to "mean".
-            random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mean", "median"]:
@@ -34,7 +33,6 @@ class BaselineRegressor(Estimator):
         self._num_features = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y=None):

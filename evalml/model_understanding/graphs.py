@@ -28,7 +28,6 @@ from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
-    deprecate_arg,
     import_or_raise,
     infer_feature_types,
     jupyter_check
@@ -349,8 +348,7 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     return {'importances_mean': np.mean(importances, axis=1)}
 
 
-def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None,
-                                     random_state=None, random_seed=0):
+def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=0):
     """Calculates permutation importance for features.
 
     Arguments:
@@ -361,7 +359,6 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_state (None, int): Deprecated - use random_seed instead.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
         pd.DataFrame, Mean feature importance scores over 5 shuffles.
@@ -370,8 +367,6 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     y = infer_feature_types(y)
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
     y = _convert_woodwork_types_wrapper(y.to_series())
-
-    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
 
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
@@ -506,7 +501,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def partial_dependence(pipeline, X, features, grid_resolution=100):
+def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100):
     """Calculates one or two-way partial dependence.  If a single integer or
     string is given for features, one-way partial dependence is calculated. If
     a tuple of two integers or strings is given, two-way partial dependence
@@ -521,9 +516,11 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        percentiles (tuple[float]): The lower and upper percentile used to create the extreme values for the grid.
+            Must be in [0, 1]. Defaults to (0.05, 0.95).
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
-            set to the max number of categories + 1.
+            set to the max number of categories + 1. Defaults to 100.
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
@@ -566,11 +563,22 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
 
-    if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
+    feature_list = []
+    if isinstance(features, int):
+        feature_list = X.iloc[:, features]
+    elif isinstance(features, str):
+        feature_list = X[features]
+
+    if len(feature_list) and feature_list.isnull().sum():
         warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
 
+    if len(feature_list) and feature_list.value_counts(normalize=True).values[0] + 0.01 > percentiles[1]:
+        val = feature_list.value_counts(normalize=True).index[0]
+        feature_name = features if isinstance(features, str) else X.columns[features]
+        raise ValueError(f"Feature '{feature_name}' is mostly one value, {val}, and cannot be used to compute partial dependence. Try raising the upper percentage value.")
+
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
 
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):

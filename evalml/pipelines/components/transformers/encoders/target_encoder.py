@@ -24,7 +24,6 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  smoothing=1.0,
                  handle_unknown='value',
                  handle_missing='value',
-                 random_state=None,
                  random_seed=0,
                  **kwargs):
         """Initializes a transformer that encodes categorical features into target encodings.
@@ -37,7 +36,9 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             handle_unknown (string): Determines how to handle unknown categories for a feature encountered. Options are 'value', 'error', nd 'return_nan'.
                 Defaults to 'value', which replaces with the target mean
             handle_missing (string): Determines how to handle missing values encountered during `fit` or `transform`. Options are 'value', 'error', and 'return_nan'.
-                Defaults to 'value', which replaces with the target mean"""
+                Defaults to 'value', which replaces with the target mean
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+            """
 
         parameters = {"cols": cols,
                       "smoothing": smoothing,
@@ -56,7 +57,6 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         category_encode = import_or_raise('category_encoders', error_msg='category_encoders not installed. Please install using `pip install category_encoders`')
         super().__init__(parameters=parameters,
                          component_obj=category_encode.target_encoder.TargetEncoder(**parameters),
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y):
