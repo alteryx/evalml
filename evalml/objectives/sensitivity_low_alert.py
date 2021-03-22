@@ -22,7 +22,7 @@ class SLA(BinaryClassificationObjective):
 
         """
         if (alert_rate > 1) or (alert_rate < 0):
-            raise Exception("Alert rate is outside of valid range [0,1]")
+            raise ValueError("Alert rate is outside of valid range [0,1]")
 
         self.alert_rate = alert_rate
 

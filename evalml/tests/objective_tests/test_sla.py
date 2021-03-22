@@ -26,7 +26,7 @@ class TestSLA(TestBinaryObjective):
 
     @pytest.mark.parametrize("alert_rate", [-1, 1.5])
     def test_invalid_alert_rate(self, alert_rate):
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             SLA(alert_rate)
 
     @pytest.mark.parametrize("alert_rate, ypred_proba, high_risk", [
