@@ -24,8 +24,6 @@ from evalml.utils import get_random_state
 
 def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
     for estimator_class in _all_estimators_used_in_search():
-        if estimator_class.__name__ == 'ARIMARegressor':
-            continue
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
