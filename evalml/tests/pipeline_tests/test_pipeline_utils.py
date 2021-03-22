@@ -106,7 +106,8 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline(input_type, problem_type):
+@pytest.mark.parametrize("prepended_components", [None, [], [DropColumns], [DropColumns, DropColumns]])
+def test_make_pipeline(input_type, problem_type, prepended_components):
     X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
                       "categorical": ["a", "b", "a", "c", "c"],
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
@@ -120,9 +121,10 @@ def test_make_pipeline(input_type, problem_type):
     if problem_type == ProblemTypes.MULTICLASS:
         y = pd.Series([0, 2, 1, 2])
 
+    components_to_prepend = prepended_components if prepended_components is not None else []
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
-            pipeline = make_pipeline(X, y, estimator_class, problem_type)
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, components_to_prepend=prepended_components)
             assert isinstance(pipeline, type(pipeline_class))
             assert pipeline.custom_hyperparameters is None
             delayed_features = []
@@ -134,7 +136,7 @@ def test_make_pipeline(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
-            assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
+            assert pipeline.component_graph == components_to_prepend + [DropNullColumns, Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
