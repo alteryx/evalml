@@ -1,5 +1,5 @@
 from evalml.automl.utils import AutoMLData
-from evalml.exceptions import PipelineScoreError
+from evalml.exceptions import PipelineNotYetFittedError, PipelineScoreError
 from evalml.objectives.utils import get_objective
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
@@ -40,7 +40,15 @@ class TestBaselinePipeline(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
 
 
-class TestPipelineWithError(BinaryClassificationPipeline):
+class TestPipelineWithFitError(BinaryClassificationPipeline):
+    component_graph = ["Baseline Classifier"]
+    custom_name = "PipelineWithError"
+
+    def fit(self, X, y):
+        raise Exception("Yikes")
+
+
+class TestPipelineWithScoreError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
 

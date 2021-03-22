@@ -6,7 +6,10 @@ from distributed import Client
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.engine import DaskEngine, SequentialEngine
-from evalml.tests.automl_tests.dask_testing import TestPipelineWithError
+from evalml.tests.automl_tests.dask_testing import (
+    TestPipelineWithFitError,
+    TestPipelineWithScoreError
+)
 
 
 @pytest.mark.usefixtures("X_y_binary_cls")
@@ -14,6 +17,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
 
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, caplog):
+        """ Gives the unittests access to the logger"""
         self._caplog = caplog
 
     @classmethod
@@ -56,16 +60,25 @@ class TestAutoMLSearchDask(unittest.TestCase):
         sequential_rankings = seq_automl.full_rankings
 
         assert len(sequential_rankings) == len(parallel_rankings) == max_iterations
-        # TODO: Figure out how to mock the train_and_score_pipelines call to assert the call count.
 
-    def test_automl_dask_error_callback(self):
+    def test_automl_train_dask_error_callback(self):
+        """ Make sure the pipeline training error message makes its way back from the workers. """
         self._caplog.clear()
         X, y = self.X_y_binary
-        pipelines = [TestPipelineWithError({})]
+        pipelines = [TestPipelineWithFitError({})]
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
-                              max_iterations=2, allowed_pipelines=[TestPipelineWithError])
-        automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
+                              max_iterations=2, allowed_pipelines=[TestPipelineWithFitError])
+        automl.train_pipelines(pipelines)
+        assert "Train error for PipelineWithError: Yikes" in self._caplog.text
 
+    def test_automl_score_dask_error_callback(self):
+        """ Make sure the pipeline scoring error message makes its way back from the workers. """
+        self._caplog.clear()
+        X, y = self.X_y_binary
+        pipelines = [TestPipelineWithScoreError({})]
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
+                              max_iterations=2, allowed_pipelines=[TestPipelineWithScoreError])
+        automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
         assert "Score error for PipelineWithError" in self._caplog.text
 
     @classmethod
