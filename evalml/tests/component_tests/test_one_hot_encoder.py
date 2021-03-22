@@ -430,6 +430,12 @@ def test_ohe_get_feature_names():
     ohe.fit(X)
     np.testing.assert_array_equal(ohe.get_feature_names(), np.array(['col_1_a', 'col_2_a', 'col_2_b']))
 
+    X = pd.DataFrame({'col_1': ['a'] * 4 + ['b'] * 6,
+                      'col_2': ['b'] * 3 + ['c'] * 7})
+    ohe = OneHotEncoder(drop='if_binary')
+    ohe.fit(X)
+    np.testing.assert_array_equal(ohe.get_feature_names(), np.array(['col_1_a', 'col_2_b']))
+
 
 def test_ohe_features_to_encode():
     # Test feature that doesn't need encoding and
