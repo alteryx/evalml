@@ -5,7 +5,7 @@ from skopt.space import Integer
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import deprecate_arg, import_or_raise
+from evalml.utils import import_or_raise
 
 
 class ARIMARegressor(Estimator):
@@ -36,10 +36,14 @@ class ARIMARegressor(Estimator):
         p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
 
         arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
-        arima.ARIMA(endog=np.zeros(p + d + q + 1), **parameters)
+        try:
+            arima.ARIMA(endog=np.zeros(p + d + q + 1), **parameters)
+        except TypeError:
+            raise TypeError("Unable to instantiate ARIMA due to an unexpected argument")
         parameters.update({'p': p,
                            'd': d,
                            'q': q})
+
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_seed=random_seed)
@@ -52,13 +56,8 @@ class ARIMARegressor(Estimator):
         if X is not None:
             if self.date_column in X.columns:
                 date_col = X.pop(self.date_column)
-                X.index = date_col
             elif isinstance(X.index, pd.DatetimeIndex):
                 date_col = X.index
-            elif date_col is not None:
-                X.index = date_col
-        if date_col is not None:
-            y.index = date_col
 
         if date_col is None:
             msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
@@ -84,6 +83,13 @@ class ARIMARegressor(Estimator):
             raise ValueError(msg)
         return date_col
 
+    def _match_indices(self, X, y, date_col):
+        if X is not None:
+            X.index = date_col
+        if y is not None:
+            y.index = date_col
+        return X, y
+
     def fit(self, X, y=None):
         if y is None:
             raise ValueError('ARIMA Regressor requires y as input.')
@@ -93,6 +99,7 @@ class ARIMARegressor(Estimator):
 
         X, y = self._manage_woodwork(X, y)
         dates = self._get_dates_fit(X, y)
+        X, y = self._match_indices(X, y, dates)
         new_params = {}
         for key, val in self.parameters.items():
             if key not in ['p', 'd', 'q']:
@@ -109,6 +116,7 @@ class ARIMARegressor(Estimator):
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
         dates = self._get_dates_predict(X, y)
+        X, y = self._match_indices(X, y, dates)
         start = dates.min()
         end = dates.max()
         params = self.parameters['order']
