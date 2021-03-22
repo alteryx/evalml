@@ -49,7 +49,6 @@ class SLA(BinaryClassificationObjective):
         Arguments:
             y_true (ww.DataColumn, pd.Series): True labels
             y_predicted (ww.DataColumn, pd.Series): Predicted labels based on alert_rate
-            X
 
         Returns:
             float: sensitivity using the observations with the top scores as the predicted positive class
