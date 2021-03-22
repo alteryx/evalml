@@ -25,7 +25,7 @@ def test_feature_importance(ts_data):
     clf.feature_importance == np.zeros(1)
 
 
-def test_fit_predict_ts_with_Xandy_index(ts_data):
+def test_fit_predict_ts_with_X_and_y_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -41,7 +41,7 @@ def test_fit_predict_ts_with_Xandy_index(ts_data):
     assert (y_pred == y_pred_a).all()
 
 
-def test_fit_predict_ts_with_Xnoty_index(ts_data):
+def test_fit_predict_ts_with_X_not_y_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -60,10 +60,10 @@ def test_fit_predict_ts_with_Xnoty_index(ts_data):
     assert (y_pred == y_pred_a).all()
 
 
-def test_fit_predict_ts_with_ynotX_index(ts_data):
+def test_fit_predict_ts_with_y_not_X_index_with_iterable_p_and_q(ts_data):
     X, y = ts_data
 
-    a_clf = arima.ARIMA(endog=y, exog=X, order=(1, 0, 0), trend='n', dates=X.index)
+    a_clf = arima.ARIMA(endog=y, exog=X, order=([1, 2], 0, [1, 2]), trend='n', dates=X.index)
     clf = a_clf.fit()
     y_pred_a = clf.predict(params=(1, 0, 0))
 
@@ -71,7 +71,7 @@ def test_fit_predict_ts_with_ynotX_index(ts_data):
     assert isinstance(y.index, pd.DatetimeIndex)
     assert not isinstance(X_no_ind.index, pd.DatetimeIndex)
 
-    m_clf = ARIMARegressor(p=1, d=0, q=0)
+    m_clf = ARIMARegressor(p=[1, 2], d=0, q=[1, 2])
     clf_ = m_clf.fit(X=X_no_ind, y=y)
     y_pred = clf_.predict(X=X, y=y)
 
@@ -92,7 +92,7 @@ def test_predict_ts_without_X(ts_data):
     assert (y_pred == y_pred_a).all()
 
 
-def test_fit_ts_with_notXnoty_index(ts_data):
+def test_fit_ts_with_not_X_not_y_index(ts_data):
     X, y = ts_data
     X = X.reset_index(drop=True)
     y = y.reset_index(drop=True)
@@ -104,7 +104,7 @@ def test_fit_ts_with_notXnoty_index(ts_data):
         clf.fit(X=X, y=y)
 
 
-def test_predict_ts_with_notX_index(ts_data):
+def test_predict_ts_with_not_X_index(ts_data):
     X, y = ts_data
     X = X.reset_index(drop=True)
     assert not isinstance(X.index, pd.DatetimeIndex)
