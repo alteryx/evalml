@@ -123,7 +123,7 @@ def test_null_values_in_dataframe():
         encoder.transform(X_missing)
 
 
-def test_drop():
+def test_drop_first():
     X = pd.DataFrame({'col_1': ["a", "b", "c", "d", "d"],
                       'col_2': ["a", "b", "a", "c", "b"],
                       'col_3': ["a", "a", "a", "a", "a"]})
@@ -158,6 +158,20 @@ def test_drop_parameter_is_array():
     X_t = encoder.transform(X)
     col_names = set(X_t.columns)
     expected_col_names = {"col_1_a", "col_2_a", "col_2_b"}
+    assert col_names == expected_col_names
+
+
+def test_drop_binary_and_top_n_2():
+    # Test that columns that originally had two values have one column dropped,
+    # but columns that end up with two values keep both values
+    X = pd.DataFrame({'col_1': ["a", "b", "b", "a", "b"],
+                      'col_2': ["a", "b", "a", "c", "b"],
+                      'col_3': ["a", "a", "a", "a", "a"]})
+    encoder = OneHotEncoder(top_n=2, drop='if_binary')
+    encoder.fit(X)
+    X_t = encoder.transform(X)
+    col_names = set(X_t.columns)
+    expected_col_names = set(["col_1_a", "col_2_a", "col_2_b", "col_3_a"])
     assert col_names == expected_col_names
 
 
