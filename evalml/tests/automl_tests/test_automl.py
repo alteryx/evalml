@@ -128,7 +128,6 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
 def test_pipeline_limits(mock_fit_binary, mock_score_binary,
                          mock_fit_multi, mock_score_multi,
                          mock_fit_regression, mock_score_regression,
-                         mock_fit_timeseries_regression, mock_score_timeseries_regression,
                          automl_type, caplog,
                          X_y_binary, X_y_multi, X_y_regression):
     if automl_type == ProblemTypes.BINARY:
