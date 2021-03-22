@@ -233,8 +233,8 @@ def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pi
 
 
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
-    X = pd.DataFrame({'a': [2, None, 2, 2], 'b': [1, 2, 2, 1]})
-    y = pd.Series([0, 1, 0, 1])
+    X = pd.DataFrame({'a': [1, 2, None, 2, 2], 'b': [1, 1, 2, 2, 1]})
+    y = pd.Series([0, 1, 0, 1, 0])
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
@@ -390,3 +390,23 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
     with pytest.raises(ValueError, match=msg):
         graph_partial_dependence(pipeline, X, features='alcohol', class_label='wine')
+
+
+def test_partial_dependence_percentile_errors(logistic_regression_binary_pipeline_class):
+    # random_col will be 5% 0, 95% 1
+    X = pd.DataFrame({"A": [i % 3 for i in range(1000)], "B": [(j + 3) % 5 for j in range(1000)], "random_col": [0 if i < 50 else 1 for i in range(1000)]})
+    y = pd.Series([i % 2 for i in range(1000)])
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="Feature 'random_col' is mostly one value, 1, and cannot be"):
+        partial_dependence(pipeline, X, features="random_col", grid_resolution=20)
+    with pytest.raises(ValueError, match="Feature 'random_col' is mostly one value, 1, and cannot be"):
+        partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.955), grid_resolution=20)
+    with pytest.raises(ValueError, match="Feature 'random_col' is mostly one value, 1, and cannot be"):
+        partial_dependence(pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=20)
+
+    part_dep = partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.96), grid_resolution=20)
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+    assert len(part_dep["partial_dependence"]) == 2
+    assert len(part_dep["feature_values"]) == 2
+    assert not part_dep.isnull().any(axis=None)

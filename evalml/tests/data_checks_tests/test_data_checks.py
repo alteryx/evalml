@@ -187,8 +187,8 @@ def test_default_data_checks_regression(input_type):
                                            data_check_name="TargetLeakageDataCheck",
                                            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                            details={"column": "id"}).to_dict()]
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:],
-                                          "actions": expected_actions}
+
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
