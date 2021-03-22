@@ -22,12 +22,11 @@ class BaselineClassifier(Estimator):
     model_family = ModelFamily.BASELINE
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    def __init__(self, strategy="mode", random_state=None, random_seed=0, **kwargs):
+    def __init__(self, strategy="mode", random_seed=0, **kwargs):
         """Baseline classifier that uses a simple strategy to make predictions.
 
         Arguments:
             strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_state (None, int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mode", "random", "random_weighted"]:
@@ -41,7 +40,6 @@ class BaselineClassifier(Estimator):
         self._mode = None
         super().__init__(parameters=parameters,
                          component_obj=None,
-                         random_state=random_state,
                          random_seed=random_seed)
 
     def fit(self, X, y=None):

@@ -1,22 +1,16 @@
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin
+)
+
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
-class BinaryClassificationPipeline(ClassificationPipeline):
+class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, ClassificationPipeline):
     """Pipeline subclass for all binary classification pipelines."""
-    _threshold = None
     problem_type = ProblemTypes.BINARY
-
-    @property
-    def threshold(self):
-        """Threshold used to make a prediction. Defaults to None."""
-        return self._threshold
-
-    @threshold.setter
-    def threshold(self, value):
-        self._threshold = value
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -37,10 +31,8 @@ class BinaryClassificationPipeline(ClassificationPipeline):
         if self.threshold is None:
             return self._component_graph.predict(X)
         ypred_proba = self.predict_proba(X).to_dataframe()
-        ypred_proba = ypred_proba.iloc[:, 1]
-        if objective is None:
-            return infer_feature_types(ypred_proba > self.threshold)
-        return infer_feature_types(objective.decision_function(ypred_proba, threshold=self.threshold, X=X))
+        predictions = self._predict_with_objective(X, ypred_proba, objective)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
