@@ -715,17 +715,20 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X, y)
 
 
-def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
-    X, y = X_y_binary
+def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions):
     estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineEstimator]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
+        if ProblemTypes.TIME_SERIES_REGRESSION in component_class.supported_problem_types:
+            X, y = ts_data
+        else:
+            X, y = X_y_binary
+
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
-
         if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
             with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
                 component.predict_proba(X)
@@ -766,8 +769,7 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, tmpdir, helper_functions):
-    X, y = X_y_binary
+def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
@@ -778,6 +780,11 @@ def test_serialization(X_y_binary, tmpdir, helper_functions):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)], n_jobs=1)
             elif (component_class == StackedEnsembleRegressor):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)], n_jobs=1)
+        if isinstance(component, Estimator) and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types:
+            X, y = ts_data
+        else:
+            X, y = X_y_binary
+
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
@@ -1071,7 +1078,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class,
-                                               X_y_binary, X_y_regression,
+                                               X_y_binary, X_y_regression, ts_data,
                                                logistic_regression_binary_pipeline_class,
                                                linear_regression_pipeline_class,
                                                helper_functions):
@@ -1085,15 +1092,22 @@ def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class
 
     supported_problem_types = estimator_class.supported_problem_types
 
-    if ProblemTypes.REGRESSION in supported_problem_types or ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+    ts_problem = False
+    if ProblemTypes.REGRESSION in supported_problem_types:
         X, y = X_y_regression
+    elif ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+        X, y = ts_data
+        ts_problem = True
     else:
         X, y = X_y_binary
 
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
-    if use_custom_index:
+    if use_custom_index and ts_problem:
+        X.index = pd.date_range("2020-10-01", "2020-10-31")
+        y.index = pd.date_range("2020-10-01", "2020-10-31")
+    elif use_custom_index and not ts_problem:
         gen = np.random.default_rng(seed=0)
         custom_index = gen.permutation(range(200, 200 + X.shape[0]))
         X.index = custom_index
