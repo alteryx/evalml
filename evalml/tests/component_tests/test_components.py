@@ -531,7 +531,7 @@ def test_transformer_transform_output_type(X_y_binary):
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
             if isinstance(component, TargetImputer):
-                assert isinstance(transform_output, ww.DataColumn)
+                assert isinstance(transform_output[1], ww.DataColumn)
             else:
                 assert isinstance(transform_output, ww.DataTable)
 
@@ -548,15 +548,16 @@ def test_transformer_transform_output_type(X_y_binary):
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
                 continue
             elif isinstance(component, TargetImputer):
-                assert transform_output.shape[0] == X.shape[0]
-                assert len(transform_output.shape) == 1
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
+                assert len(transform_output[1].shape) == 1
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
             if isinstance(component, TargetImputer):
-                assert isinstance(transform_output, ww.DataColumn)
+                assert isinstance(transform_output[1], ww.DataColumn)
             else:
                 assert isinstance(transform_output, ww.DataTable)
 
@@ -569,8 +570,9 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
             elif isinstance(component, TargetImputer):
-                assert transform_output.shape[0] == X.shape[0]
-                assert len(transform_output.shape) == 1
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
+                assert len(transform_output[1].shape) == 1
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))

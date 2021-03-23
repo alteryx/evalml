@@ -138,11 +138,7 @@ def test_invalid_target_data_input_formats():
         "errors": [DataCheckError(message="Target values are either empty or fully null.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
-                                  details={}).to_dict(),
-                   DataCheckError(message="Binary class targets require exactly two unique values.",
-                                  data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
-                                  details={"target_values": []}).to_dict()],
+                                  details={}).to_dict()],
         "actions": []
     }
 
