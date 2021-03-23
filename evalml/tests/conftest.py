@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -97,6 +98,11 @@ def pytest_addoption(parser):
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
+
+
+@pytest.fixture
+def is_running_py_39_or_above():
+    return sys.version_info >= (3, 9)
 
 
 @pytest.fixture

@@ -249,6 +249,7 @@ Transformers are components that take in data as input and output transformed da
     TextFeaturizer
     DelayedFeatureTransformer
     DFSTransformer
+    PolynomialDetrender
 
 Estimators
 ~~~~~~~~~~
@@ -286,6 +287,7 @@ Regressors are components that output a predicted target value.
     :template: estimator_class.rst
     :nosignatures:
 
+    ARIMARegressor
     CatBoostRegressor
     ElasticNetRegressor
     LinearRegressor

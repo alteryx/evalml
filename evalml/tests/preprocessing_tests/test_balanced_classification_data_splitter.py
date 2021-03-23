@@ -54,7 +54,7 @@ def test_data_splitter_no_error(splitter, value, X_y_binary):
 @pytest.mark.parametrize('balanced_splitter,data_splitter',
                          [
                              (BalancedClassificationDataTVSplit(balanced_ratio=1, min_samples=50, test_size=0.2, shuffle=True, random_seed=0),
-                              TrainingValidationSplit(test_size=0.2, shuffle=True, random_state=0)),
+                              TrainingValidationSplit(test_size=0.2, shuffle=True, random_seed=0)),
                              (BalancedClassificationDataCVSplit(balanced_ratio=1, min_samples=50, shuffle=True, n_splits=3, random_seed=0),
                               StratifiedKFold(shuffle=True, n_splits=3, random_state=0))
                          ])
@@ -88,7 +88,7 @@ def test_data_splitters_data_type(data_type, balanced_splitter, data_splitter, m
 @pytest.mark.parametrize('balanced_splitter,data_splitter',
                          [
                              (BalancedClassificationDataTVSplit(balanced_ratio=1, min_samples=50, test_size=0.2, shuffle=True, random_seed=0),
-                              TrainingValidationSplit(test_size=0.2, shuffle=True, random_state=0)),
+                              TrainingValidationSplit(test_size=0.2, shuffle=True, random_seed=0)),
                              (BalancedClassificationDataCVSplit(balanced_ratio=1, min_samples=50, shuffle=True, n_splits=3, random_seed=0),
                               StratifiedKFold(shuffle=True, n_splits=3, random_state=0))
                          ])
