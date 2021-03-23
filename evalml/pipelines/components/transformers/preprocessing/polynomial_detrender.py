@@ -21,9 +21,14 @@ class PolynomialDetrender(Transformer):
 
         Arguments:
             degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
-                If 2, quadratic model is fit, etc.
+                If 2, quadratic model is fit, etc. Default of 1.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
+        if not isinstance(degree, int):
+            if isinstance(degree, float) and degree.is_integer():
+                degree = int(degree)
+            else:
+                raise TypeError(f"Parameter Degree must be an integer!: Received {type(degree).__name__}")
 
         params = {"degree": degree}
         params.update(kwargs)
@@ -43,7 +48,7 @@ class PolynomialDetrender(Transformer):
 
         Arguments:
             X (ww.DataTable, pd.DataFrame, optional): Ignored.
-            y (ww.DataColumn, pd.Series): Target variable to detrend. Ignored.
+            y (ww.DataColumn, pd.Series): Target variable to detrend.
 
         Returns:
             self

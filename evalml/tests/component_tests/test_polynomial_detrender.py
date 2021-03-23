@@ -15,13 +15,28 @@ def test_polynomial_detrender_init():
     assert delayed_features.parameters == {"degree": 3}
 
 
+def test_polynomial_detrender_init_raises_error_if_degree_not_int():
+
+    with pytest.raises(TypeError, match="Received str"):
+        PolynomialDetrender(degree="1")
+
+    with pytest.raises(TypeError, match="Received float"):
+        PolynomialDetrender(degree=3.4)
+
+    _ = PolynomialDetrender(degree=3.0)
+
+
 def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
     X, y = ts_data
 
     with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
         PolynomialDetrender(degree=3).fit_transform(X, None)
 
+    with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
+        PolynomialDetrender(degree=3).fit(X, None)
+
     pdt = PolynomialDetrender(degree=3).fit(X, y)
+
     with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
         pdt.inverse_transform(X, None)
 
