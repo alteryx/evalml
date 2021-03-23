@@ -25,7 +25,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                  top_n=10,
                  features_to_encode=None,
                  categories=None,
-                 drop=None,
+                 drop='if_binary',
                  handle_unknown="ignore",
                  handle_missing="error",
                  random_seed=0,
@@ -40,7 +40,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
             drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
-                a list specifying which method to use for each feature. Defaults to None.
+                a list specifying which categories to drop for each feature. Defaults to 'if_binary'.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
                 per column, this must be "ignore". Defaults to "ignore".
@@ -94,19 +94,21 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             raise ValueError("Could not find and encode {} in input data.".format(', '.join(invalid_features)))
 
         X_t = self._handle_parameter_handle_missing(X_t)
+        self._binary_values_to_drop = []
 
         if len(self.features_to_encode) == 0:
             categories = 'auto'
-
         elif self.parameters['categories'] is not None:
             categories = self.parameters['categories']
             if len(categories) != len(self.features_to_encode) or not isinstance(categories[0], list):
                 raise ValueError('Categories argument must contain a list of categories for each categorical feature')
-
         else:
             categories = []
             for col in X_t[self.features_to_encode]:
                 value_counts = X_t[col].value_counts(dropna=False).to_frame()
+                if self.parameters['drop'] == "if_binary" and len(value_counts) == 2:
+                    majority_class_value = value_counts.index.tolist()[0]
+                    self._binary_values_to_drop.append((col, majority_class_value))
                 if top_n is None or len(value_counts) <= top_n:
                     unique_values = value_counts.index.tolist()
                 else:
@@ -117,9 +119,12 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
                 categories.append(unique_values)
 
         # Create an encoder to pass off the rest of the computation to
+        # if "drop" is set to "if_binary", pass None to scikit-learn because we manually handle
+        drop_to_use = None if self.parameters['drop'] == "if_binary" else self.parameters['drop']
         self._encoder = SKOneHotEncoder(categories=categories,
-                                        drop=self.parameters['drop'],
+                                        drop=drop_to_use,
                                         handle_unknown=self.parameters['handle_unknown'])
+
         self._encoder.fit(X_t[self.features_to_encode])
         return self
 
@@ -149,8 +154,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(self._encoder.transform(X_copy[self.features_to_encode]).toarray(), index=X_copy.index)
-            X_cat.columns = self.get_feature_names()
+            X_cat.columns = self._get_feature_names()
             X_t = pd.concat([X_t, X_cat], axis=1)
+            X_t = X_t.drop(columns=self._features_to_drop)
+            self._feature_names = X_t.columns
+
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def _handle_parameter_handle_missing(self, X):
@@ -195,6 +203,50 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             i += 1
         return name
 
+    def _get_feature_names(self):
+        """Return feature names for the categorical features after fitting, before the majority class for binary encoded features are dropped.
+
+        Feature names are formatted as {column name}_{category name}. In the event of a duplicate name,
+        an integer will be added at the end of the feature name to distinguish it.
+
+        For example, consider a dataframe with a column called "A" and category "x_y" and another column
+        called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
+
+        Returns:
+            np.ndarray: The feature names after encoding, provided in the same order as input_features.
+        """
+        self._features_to_drop = []
+        unique_names = []
+        seen_before = set([])
+        provenance = {}
+        for col_index, col in enumerate(self.features_to_encode):
+            column_categories = self.categories(col)
+            unique_encoded_columns = []
+            encoded_features_to_drop = []
+            for cat_index, category in enumerate(column_categories):
+
+                # Drop categories specified by the user
+                if self._encoder.drop_idx_ is not None and self._encoder.drop_idx_[col_index] is not None:
+                    if cat_index == self._encoder.drop_idx_[col_index]:
+                        continue
+
+                # Follow sklearn naming convention but if name has been seen before
+                # then add an int to make it unique
+                proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
+                if (col, category) in self._binary_values_to_drop:
+                    encoded_features_to_drop.append(proposed_name)
+
+                unique_names.append(proposed_name)
+                unique_encoded_columns.append(proposed_name)
+                seen_before.add(proposed_name)
+            self._features_to_drop.extend(encoded_features_to_drop)
+            unique_encoded_columns_without_dropped = unique_encoded_columns
+            for feature_to_drop in encoded_features_to_drop:
+                unique_encoded_columns_without_dropped.remove(feature_to_drop)
+            provenance[col] = unique_encoded_columns_without_dropped
+        self._provenance = provenance
+        return unique_names
+
     def get_feature_names(self):
         """Return feature names for the categorical features after fitting.
 
@@ -207,29 +259,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
-        unique_names = []
-        seen_before = set([])
-        provenance = {}
-        for col_index, col in enumerate(self.features_to_encode):
-            column_categories = self.categories(col)
-            unique_encoded_columns = []
-            for cat_index, category in enumerate(column_categories):
-
-                # Drop categories specified by the user
-                if self._encoder.drop_idx_ is not None and self._encoder.drop_idx_[col_index] is not None:
-                    if cat_index == self._encoder.drop_idx_[col_index]:
-                        continue
-
-                # Follow sklearn naming convention but if name has been seen before
-                # then add an int to make it unique
-                proposed_name = self._make_name_unique(f"{col}_{category}", seen_before)
-
-                unique_names.append(proposed_name)
-                unique_encoded_columns.append(proposed_name)
-                seen_before.add(proposed_name)
-            provenance[col] = unique_encoded_columns
-        self._provenance = provenance
-        return unique_names
+        feature_names = self._get_feature_names()
+        for feature_name in self._features_to_drop:
+            feature_names.remove(feature_name)
+        return feature_names
 
     def _get_feature_provenance(self):
         return self._provenance
