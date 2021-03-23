@@ -75,6 +75,7 @@ class DaskEngine(EngineBase):
 
     def submit_scoring_job(self, automl_data, pipeline, X, y, objectives):
         X, y = self.send_data_to_cluster(X, y)
+        print("Got scattered Data")
         dask_future = self.client.submit(score_pipeline, pipeline=pipeline,
                                          X=X, y=y, objectives=objectives)
         computation = DaskComputation(dask_future)
