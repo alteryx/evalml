@@ -18,6 +18,12 @@ from evalml.objectives import (
     MeanSquaredLogError,
     RootMeanSquaredLogError
 )
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_regression
+)
 from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 
 invalid_targets_data_check_name = InvalidTargetDataCheck.name
@@ -173,12 +179,13 @@ def test_invalid_target_data_input_formats():
     assert messages == expected
 
 
-def test_invalid_target_data_check_n_unique():
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY])
+def test_invalid_target_data_check_n_unique(problem_type):
     y = pd.Series(list(range(100, 200)) + list(range(200)))
     unique_values = y.value_counts().index.tolist()[:100]  # n_unique defaults to 100
     X = pd.DataFrame({"col": range(len(y))})
 
-    invalid_targets_check = InvalidTargetDataCheck("binary", get_default_primary_search_objective("binary"))
+    invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
     # Test default value of n_unique
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
@@ -351,25 +358,26 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
     assert invalid_targets_check.validate(X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary) == {"warnings": [], "errors": [data_check_error], "actions": []}
 
 
-def test_invalid_target_data_check_multiclass_problem_almostcontinuous_data():
-    invalid_targets_check = InvalidTargetDataCheck("multiclass", get_default_primary_search_objective("multiclass"))
+@pytest.mark.parametrize("problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS])
+def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(problem_type):
+    invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
     y_multiclass_high_classes = pd.Series(list(range(0, 100)) * 3)  # 100 classes, 300 samples, .33 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_high_classes))})
-    data_check_error = DataCheckWarning(
+    data_check_warning = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": 1 / 3}).to_dict()
-    assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {"warnings": [data_check_error], "errors": [], "actions": []}
+    assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {"warnings": [data_check_warning], "errors": [], "actions": []}
 
     y_multiclass_med_classes = pd.Series(list(range(0, 5)) * 20)  # 5 classes, 100 samples, .05 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_med_classes))})
-    data_check_error = DataCheckWarning(
+    data_check_warning = DataCheckWarning(
         message=f"Target has a large number of unique values, could be regression type problem.",
         data_check_name=invalid_targets_data_check_name,
         message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
         details={"class_to_value_ratio": .05}).to_dict()
-    assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {"warnings": [data_check_error], "errors": [], "actions": []}
+    assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {"warnings": [data_check_warning], "errors": [], "actions": []}
 
     y_multiclass_low_classes = pd.Series(list(range(0, 3)) * 100)  # 2 classes, 300 samples, .01 class/sample ratio
     X = pd.DataFrame({"col": range(len(y_multiclass_low_classes))})
@@ -448,3 +456,49 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
         "errors": [],
         "actions": []
     }
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_invalid_target_data_action_for_data_with_null(problem_type):
+    y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
+    X = pd.DataFrame({"col": range(len(y))})
+    invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
+    impute_strategy = "mean" if is_regression(problem_type) else "most_frequent"
+
+    expected = {
+        "warnings": [],
+        "errors": [DataCheckError(message="3 row(s) (30.0%) of target values are null",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 3, "pct_null_rows": 30.0}).to_dict()],
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict()]
+    }
+    if is_binary(problem_type):
+        expected["errors"].append(DataCheckError(message="Binary class targets require exactly two unique values.",
+                                                 data_check_name=invalid_targets_data_check_name,
+                                                 message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
+                                                 details={"target_values": [0]}).to_dict())
+    elif is_multiclass(problem_type):
+        expected["errors"].append(DataCheckError(message=f"Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
+                                                 data_check_name=invalid_targets_data_check_name,
+                                                 message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_ENOUGH_CLASSES,
+                                                 details={"num_classes": 1}).to_dict())
+        expected["warnings"].append(DataCheckWarning(message=f"Target has a large number of unique values, could be regression type problem.",
+                                                     data_check_name=invalid_targets_data_check_name,
+                                                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
+                                                     details={"class_to_value_ratio": 0.1}).to_dict())
+
+    messages = invalid_targets_check.validate(X, y)
+    assert messages == expected
+
+    y_all_null = pd.Series([None, None, None])
+    expected = {
+        "warnings": [],
+        "errors": [DataCheckError(message="Target values are either empty or fully null.",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
+                                  details={}).to_dict()],
+        "actions": []
+    }
+    messages = invalid_targets_check.validate(X, y_all_null)
+    assert messages == expected

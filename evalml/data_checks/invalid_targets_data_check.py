@@ -9,7 +9,13 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.objectives import get_objective
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_binary,
+    is_multiclass,
+    is_regression
+)
 from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
     infer_feature_types,
@@ -89,6 +95,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                                     details={}).to_dict())
+            return results
         elif null_rows.any():
             num_null_rows = null_rows.sum()
             pct_null_rows = null_rows.mean() * 100
@@ -96,13 +103,14 @@ class InvalidTargetDataCheck(DataCheck):
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                                     details={"num_null_rows": num_null_rows, "pct_null_rows": pct_null_rows}).to_dict())
+            impute_strategy = "mean" if is_regression(self.problem_type) else "most_frequent"
             results["actions"].append(DataCheckAction(DataCheckActionCode.IMPUTE_COL,
-                                                      details={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict())
+                                                      details={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict())
 
         value_counts = y_df.value_counts()
         unique_values = value_counts.index.tolist()
 
-        if self.problem_type == ProblemTypes.BINARY and len(value_counts) != 2:
+        if is_binary(self.problem_type) and len(value_counts) != 2:
             if self.n_unique is None:
                 details = {"target_values": unique_values}
             else:
@@ -118,7 +126,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
                                                     details={}).to_dict())
 
-        if self.problem_type == ProblemTypes.MULTICLASS:
+        if is_multiclass(self.problem_type):
             if value_counts.min() <= 1:
                 least_populated = value_counts[value_counts <= 1]
                 details = {"least_populated_class_labels": least_populated.index.tolist()}
