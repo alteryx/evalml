@@ -76,5 +76,5 @@ class DaskEngine(EngineBase):
         dask_future = self.client.submit(score_pipeline, pipeline=pipeline,
                                          X=X, y=y, objectives=objectives)
         computation = DaskComputation(dask_future)
-        computation.meta_data["pipeline_name"] = pipeline.custom_name
+        computation.meta_data["pipeline_name"] = pipeline.name
         return computation
