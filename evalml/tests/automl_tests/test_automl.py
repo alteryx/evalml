@@ -2449,3 +2449,11 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline.name == original_pipeline.name
         assert fitted_pipeline._is_fitted
         assert fitted_pipeline != original_pipeline
+
+
+def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    with pytest.warns(None) as warnings:
+        automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0]))
+    assert len(warnings) == 0
