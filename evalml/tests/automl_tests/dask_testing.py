@@ -1,3 +1,5 @@
+import time
+
 from evalml.automl.utils import AutoMLData
 from evalml.exceptions import PipelineScoreError
 from evalml.objectives.utils import get_objective
@@ -28,6 +30,18 @@ automl_data = AutoMLData(ensembling_indices=ensembling_indices,
                          random_seed=random_seed)
 
 
+def delayed(delay):
+    """ Decorator to delay function evaluation. """
+
+    def wrap(a_method):
+        def do_delay(*args, **kw):
+            time.sleep(delay)
+            return a_method(*args, **kw)
+
+        return do_delay
+
+    return wrap
+
 class TestLRCPipeline(BinaryClassificationPipeline):
     component_graph = ["Logistic Regression Classifier"]
 
@@ -44,6 +58,7 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
 
+    @delayed(5)
     def fit(self, X, y):
         raise Exception("Yikes")
 
@@ -62,18 +77,6 @@ class TestPipelineWithScoreError(BinaryClassificationPipeline):
                                                       "Accuracy Binary": 0.2})
 
 
-def delayed(delayer):
-    """ Decorator to delay function evaluation. """
-
-    def wrap(a_method):
-        def do_delay(*args, **kw):
-            delayer()
-            return a_method(*args, **kw)
-
-        return do_delay
-
-    return wrap
-
 
 class TestPipelineSlow(BinaryClassificationPipeline):
     """ Pipeline for testing whose fit() should take longer than the
@@ -82,7 +85,7 @@ class TestPipelineSlow(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "SlowPipeline"
 
-    @delayed(5)
+    @delayed(15)
     def fit(self, X, y):
         super().fit(X, y)
 
