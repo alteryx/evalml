@@ -111,3 +111,7 @@ def test_normalize_confusion_matrix_error(data_type, make_data_type):
         normalize_confusion_matrix(conf_mat, 'pred')
     with pytest.raises(ValueError, match="Sum of given axis is 0"):
         normalize_confusion_matrix(conf_mat, 'all')
+.children_right[0]]
+    # Check that the immediate left and right child of the root node have the correct values
+    assert all([a == b for a, b in zip(left_child_value_[0], tree_.value[tree_.children_left[0]][0])])
+    assert all([a == b for a, b in zip(right_child_value_[0], tree_.value[tree_.children_right[0]][0])])
