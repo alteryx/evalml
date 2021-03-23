@@ -663,7 +663,7 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, X_y_regres
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
         graph_partial_dependence(clf, X, features=0, grid_resolution=20)
-        assert len(graph_valid) == 1  # scikit-learn partial_dependence warning
+        assert len(graph_valid) == 1
         import_check.assert_called_with('ipywidgets', warning=True)
     with pytest.warns(None) as graph_valid:
         graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm)
