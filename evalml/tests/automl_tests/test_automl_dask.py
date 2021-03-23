@@ -98,7 +98,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
             automl.search()
 
         # Make sure the automl algorithm stopped after the broken pipeline raised
-        assert len(automl.full_rankings) == 2
+        assert len(automl.full_rankings) < len(pipelines)
         assert TestPipelineFast.custom_name in set(automl.full_rankings["pipeline_name"])
         assert TestPipelineSlow.custom_name not in set(automl.full_rankings["pipeline_name"])
         assert TestPipelineWithFitError.custom_name not in set(automl.full_rankings["pipeline_name"])
