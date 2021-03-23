@@ -40,7 +40,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
                 for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
             drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
-                a list specifying which method to use for each feature. Defaults to 'if_binary'.
+                a list specifying which categories to drop for each feature. Defaults to 'if_binary'.
             handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
                 during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
                 per column, this must be "ignore". Defaults to "ignore".

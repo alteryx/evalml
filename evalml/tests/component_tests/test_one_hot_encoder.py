@@ -518,7 +518,7 @@ def test_ohe_column_names_unique():
     df = pd.DataFrame({"A": ["x_y", "z", "z"], "A_x": ["y", "a", "a", ], "A_x_y": ["1", "y", "y"]})
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
-    # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists
+    # category 1 in A_x_y gets mapped to A_x_y_1_1 because A_x_y_1 already exists
     assert set(df_transformed.columns) == {"A_x_y", "A_x_y_1", "A_x_y_1_1"}
 
     df = pd.DataFrame({"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]})
