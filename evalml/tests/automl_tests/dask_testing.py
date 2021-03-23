@@ -42,6 +42,7 @@ def delayed(delay):
 
     return wrap
 
+
 class TestLRCPipeline(BinaryClassificationPipeline):
     component_graph = ["Logistic Regression Classifier"]
 
@@ -75,7 +76,6 @@ class TestPipelineWithScoreError(BinaryClassificationPipeline):
                                                       "Precision": 0.8,
                                                       "Balanced Accuracy Binary": 0.2,
                                                       "Accuracy Binary": 0.2})
-
 
 
 class TestPipelineSlow(BinaryClassificationPipeline):
