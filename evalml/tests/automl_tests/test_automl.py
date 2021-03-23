@@ -2457,3 +2457,8 @@ def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pi
     with pytest.warns(None) as warnings:
         automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0]))
     assert len(warnings) == 0
+
+    with pytest.warns(None) as warnings:
+        # mean is 0 but std is not
+        automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0, 1.0, -1.0]))
+    assert len(warnings) == 0
