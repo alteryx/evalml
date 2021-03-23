@@ -86,7 +86,7 @@ class UniquenessDataCheck(DataCheck):
                                                          details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                         for col_name in not_unique_enough_cols])
             results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
-                                                       details={"column": col_name}).to_dict()
+                                                       metadata={"column": col_name}).to_dict()
                                        for col_name in not_unique_enough_cols])
         elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
