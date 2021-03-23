@@ -1,5 +1,5 @@
 from evalml.automl.utils import AutoMLData
-from evalml.exceptions import PipelineNotYetFittedError, PipelineScoreError
+from evalml.exceptions import PipelineScoreError
 from evalml.objectives.utils import get_objective
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
@@ -60,3 +60,40 @@ class TestPipelineWithScoreError(BinaryClassificationPipeline):
                                                       "Precision": 0.8,
                                                       "Balanced Accuracy Binary": 0.2,
                                                       "Accuracy Binary": 0.2})
+
+
+def delayed(delayer):
+    """ Decorator to delay function evaluation. """
+
+    def wrap(a_method):
+        def do_delay(*args, **kw):
+            delayer()
+            return a_method(*args, **kw)
+
+        return do_delay
+
+    return wrap
+
+
+class TestPipelineSlow(BinaryClassificationPipeline):
+    """ Pipeline for testing whose fit() should take longer than the
+    fast pipeline.  This exists solely to test AutoMLSearch termination
+    and not complete fitting. """
+    component_graph = ["Baseline Classifier"]
+    custom_name = "SlowPipeline"
+
+    @delayed(5)
+    def fit(self, X, y):
+        super().fit(X, y)
+
+
+class TestPipelineFast(BinaryClassificationPipeline):
+    """ Pipeline for testing whose fit() should complete before the
+    slow pipeline.  This exists solely to test AutoMLSearch termination
+    and complete fitting. """
+    component_graph = ["Baseline Classifier"]
+    custom_name = "FastPipeline"
+
+    def fit(self, X, y):
+        self._is_fitted = True
+        super().fit(X, y)

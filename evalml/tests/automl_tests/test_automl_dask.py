@@ -5,8 +5,11 @@ import pytest
 from distributed import Client
 
 from evalml.automl import AutoMLSearch
+from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import DaskEngine, SequentialEngine
 from evalml.tests.automl_tests.dask_testing import (
+    TestPipelineFast,
+    TestPipelineSlow,
     TestPipelineWithFitError,
     TestPipelineWithScoreError
 )
@@ -80,6 +83,25 @@ class TestAutoMLSearchDask(unittest.TestCase):
                               max_iterations=2, allowed_pipelines=[TestPipelineWithScoreError])
         automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
         assert "Score error for PipelineWithError" in self._caplog.text
+
+    def test_automl_immediate_quit(self):
+        """ Make sure the AutoMLSearch quits when error_callback is defined and does no further work. """
+        self._caplog.clear()
+        X, y = self.X_y_binary
+        pipelines = [TestPipelineFast, TestPipelineWithFitError, TestPipelineSlow]
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
+                              max_iterations=4, allowed_pipelines=pipelines, error_callback=raise_error_callback,
+                              optimize_thresholds=False)
+
+        # Ensure the broken pipeline raises the error
+        with pytest.raises(Exception, match="Yikes"):
+            automl.search()
+
+        # Make sure the automl algorithm stopped after the broken pipeline raised
+        assert len(automl.full_rankings) == 2
+        assert TestPipelineFast.custom_name in set(automl.full_rankings["pipeline_name"])
+        assert TestPipelineSlow.custom_name not in set(automl.full_rankings["pipeline_name"])
+        assert TestPipelineWithFitError.custom_name not in set(automl.full_rankings["pipeline_name"])
 
     @classmethod
     def tearDownClass(cls) -> None:
