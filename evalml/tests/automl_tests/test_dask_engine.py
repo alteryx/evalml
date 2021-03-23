@@ -47,7 +47,7 @@ class TestDaskEngine(unittest.TestCase):
         dask_pipeline_fitted = pipeline_future.get_result()
         assert dask_pipeline_fitted._is_fitted
 
-        # Verify parallelization has no affect on output of function
+        # Verify parallelization has no effect on output of function
         original_pipeline_fitted = train_pipeline(pipeline, X, y, optimize_thresholds=automl_data.optimize_thresholds,
                                                   objective=automl_data.objective)
         assert dask_pipeline_fitted == original_pipeline_fitted
