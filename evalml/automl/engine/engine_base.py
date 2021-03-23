@@ -204,3 +204,7 @@ def evaluate_pipeline(pipeline, automl_data, X, y, logger):
 
     return train_and_score_pipeline(pipeline, automl_data=automl_data, full_X_train=X_train, full_y_train=y_train,
                                     logger=logger)
+
+
+def score_pipeline(pipeline, X, y, objectives):
+    return pipeline.score(X, y, objectives)
