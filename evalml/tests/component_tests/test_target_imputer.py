@@ -136,8 +136,7 @@ def test_target_imputer_does_not_reset_index():
 
 
 @pytest.mark.parametrize("y, y_expected", [(pd.Series([1, 0, 5, None]), pd.Series([1, 0, 5, 2])),
-                                           (pd.Series([0.1, 0.0, 0.5, None]), pd.Series([0.1, 0.0, 0.5, 0.2])),
-                                           (pd.Series([None, None, None, None]), pd.Series([]))])
+                                           (pd.Series([0.1, 0.0, 0.5, None]), pd.Series([0.1, 0.0, 0.5, 0.2]))])
 def test_target_imputer_with_none(y, y_expected):
     imputer = TargetImputer(impute_strategy="mean")
     _, y_t = imputer.fit_transform(None, y)

@@ -189,7 +189,8 @@ def test_default_data_checks_regression(input_type):
                                            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                            details={"column": "id"}).to_dict()]
 
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions}
+    impute_action = DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, 'impute_strategy': 'mean'}).to_dict()
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions[:3] + [impute_action] + expected_actions[4:]}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
@@ -204,7 +205,7 @@ def test_default_data_checks_regression(input_type):
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions[:3] + [impute_action] + expected_actions[4:]}
 
 
 def test_default_data_checks_time_series_regression():
