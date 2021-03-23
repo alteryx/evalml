@@ -25,7 +25,9 @@ class DaskComputation(EngineComputation):
 
         Raises Exception: If computation fails. Returns traceback.
         """
-        return self.work.result()
+        result = self.work.result()
+        self.work.cancel()
+        return result
 
     def cancel(self) -> None:
         """Cancel the current computation."""
@@ -53,7 +55,7 @@ class DaskEngine(EngineBase):
 
     def submit_evaluation_job(self, automl_data, pipeline, X, y) -> EngineComputation:
         logger = self.setup_job_log()
-        #X, y = self.send_data_to_cluster(X, y)
+        X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(evaluate_pipeline, pipeline=pipeline,
                                          automl_data=automl_data,
                                          X=X,
@@ -62,7 +64,7 @@ class DaskEngine(EngineBase):
         return DaskComputation(dask_future)
 
     def submit_training_job(self, automl_data, pipeline, X, y) -> EngineComputation:
-        #X, y = self.send_data_to_cluster(X, y)
+        X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(train_pipeline,
                                          pipeline=pipeline, X=X,
                                          y=y,
