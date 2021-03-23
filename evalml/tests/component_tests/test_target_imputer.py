@@ -27,7 +27,7 @@ def test_target_imputer_median():
     y = pd.Series([np.nan, 1, 10, 10, 6])
     imputer = TargetImputer(impute_strategy='median')
     y_expected = pd.Series([8, 1, 10, 10, 6])
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
@@ -35,7 +35,7 @@ def test_target_imputer_mean():
     y = pd.Series([np.nan, 2, 0])
     imputer = TargetImputer(impute_strategy='mean')
     y_expected = pd.Series([1, 2, 0])
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
@@ -45,7 +45,7 @@ def test_target_imputer_mean():
                                                        (3, pd.Series([np.nan, "a", "b"]), pd.Series([3, "a", "b"]).astype("category"))])
 def test_target_imputer_constant(fill_value, y, y_expected):
     imputer = TargetImputer(impute_strategy='constant', fill_value=fill_value)
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
@@ -53,13 +53,13 @@ def test_target_imputer_most_frequent():
     y = pd.Series([np.nan, "a", "b"])
     imputer = TargetImputer(impute_strategy='most_frequent')
     y_expected = pd.Series(["a", "a", "b"]).astype("category")
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
     y = pd.Series([np.nan, 1, 1, 2])
     imputer = TargetImputer(impute_strategy='most_frequent')
     y_expected = pd.Series([1, 1, 1, 2])
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
@@ -84,7 +84,7 @@ def test_target_imputer_all_bool_return_original(data_type, make_data_type):
     y_expected = pd.Series([True, True, False, True, True], dtype='boolean')
     imputer = TargetImputer()
     imputer.fit(None, y)
-    y_t = imputer.transform(None, y)
+    _, y_t = imputer.transform(None, y)
     assert_series_equal(y_expected, y_t.to_series())
 
 
@@ -95,23 +95,29 @@ def test_target_imputer_boolean_dtype(data_type, make_data_type):
     y = make_data_type(data_type, y)
     imputer = TargetImputer()
     imputer.fit(None, y)
-    y_t = imputer.transform(None, y)
+    _, y_t = imputer.transform(None, y)
     assert_series_equal(y_expected, y_t.to_series())
 
 
 def test_target_imputer_fit_transform_all_nan_empty():
     y = pd.Series([np.nan, np.nan])
+
     imputer = TargetImputer()
-    y_expected = pd.Series([])
-    y_t = imputer.fit_transform(None, y)
-    assert_series_equal(y_expected, y_t.to_series())
+    imputer.fit(None, y)
+    with pytest.raises(RuntimeError, match="Transformed data is empty"):
+        imputer.transform(None, y)
+
+    imputer = TargetImputer()
+    with pytest.raises(RuntimeError, match="Transformed data is empty"):
+        imputer.fit_transform(None, y)
 
 
 def test_target_imputer_numpy_input():
     y = np.array([np.nan, 0, 2])
     imputer = TargetImputer(impute_strategy='mean')
     y_expected = np.array([1, 0, 2])
-    assert np.allclose(y_expected, imputer.fit_transform(None, y).to_series())
+    _, y_t = imputer.fit_transform(None, y)
+    assert np.allclose(y_expected, y_t.to_series())
     np.testing.assert_almost_equal(y, np.array([np.nan, 0, 2]))
 
 
@@ -125,8 +131,8 @@ def test_target_imputer_does_not_reset_index():
 
     imputer = TargetImputer(impute_strategy="mean")
     imputer.fit(None, y=y)
-    transformed = imputer.transform(None, y)
-    pd.testing.assert_series_equal(pd.Series([1.0, 2, 3, 4, 5, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))), transformed.to_series())
+    _, y_t = imputer.transform(None, y)
+    pd.testing.assert_series_equal(pd.Series([1.0, 2, 3, 4, 5, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))), y_t.to_series())
 
 
 @pytest.mark.parametrize("y, y_expected", [(pd.Series([1, 0, 5, None]), pd.Series([1, 0, 5, 2])),
@@ -134,7 +140,7 @@ def test_target_imputer_does_not_reset_index():
                                            (pd.Series([None, None, None, None]), pd.Series([]))])
 def test_target_imputer_with_none(y, y_expected):
     imputer = TargetImputer(impute_strategy="mean")
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
@@ -143,7 +149,7 @@ def test_target_imputer_with_none(y, y_expected):
                                            (pd.Series(["b", "a", "a", None]), pd.Series(["b", "a", "a", "a"], dtype='category'))])
 def test_target_imputer_with_none_non_numeric(y, y_expected):
     imputer = TargetImputer()
-    y_t = imputer.fit_transform(None, y)
+    _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
 
 
@@ -171,10 +177,10 @@ def test_target_imputer_woodwork_custom_overrides_returned_by_components(y_pd, h
 
         imputer = TargetImputer(impute_strategy=impute_strategy_to_use)
         imputer.fit(None, y)
-        transformed = imputer.transform(None, y)
-        assert isinstance(transformed, ww.DataColumn)
+        _, y_t = imputer.transform(None, y)
+        assert isinstance(y_t, ww.DataColumn)
 
         if impute_strategy_to_use == "most_frequent" or not has_nan:
-            assert transformed.logical_type == logical_type
+            assert y_t.logical_type == logical_type
         else:
-            assert transformed.logical_type == Double
+            assert y_t.logical_type == Double

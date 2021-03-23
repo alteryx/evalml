@@ -35,11 +35,11 @@ def test_invalid_target_data_check_nan_error():
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": [], "actions": []}
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == {
         "warnings": [],
-        "errors": [DataCheckError(message="3 row(s) (100.0%) of target values are null",
+        "errors": [DataCheckError(message="Target values are either empty or fully null.",
                                   data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-                                  details={"num_null_rows": 3, "pct_null_rows": 100}).to_dict()],
-        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict()]
+                                  message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
+                                  details={}).to_dict()],
+        "actions": []
     }
 
 
@@ -129,7 +129,11 @@ def test_invalid_target_data_input_formats():
     messages = invalid_targets_check.validate(X, pd.Series())
     assert messages == {
         "warnings": [],
-        "errors": [DataCheckError(message="Binary class targets require exactly two unique values.",
+        "errors": [DataCheckError(message="Target values are either empty or fully null.",
+                                  data_check_name=invalid_targets_data_check_name,
+                                  message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
+                                  details={}).to_dict(),
+                   DataCheckError(message="Binary class targets require exactly two unique values.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": []}).to_dict()],
