@@ -11,6 +11,7 @@ Release Notes
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
+        * Added a ``PolynomialDetrender`` component :pr:`1992`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
