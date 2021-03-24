@@ -48,7 +48,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
 
     if pipeline.model_family == ModelFamily.ENSEMBLE:
-        raise ValueError(f"Pipeline must not be a stacked ensemble pipeline")
+        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
@@ -103,7 +103,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
 
     if pipeline.model_family == ModelFamily.ENSEMBLE:
-        raise ValueError(f"Pipeline must not be a stacked ensemble pipeline")
+        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not (input_features.shape[0] >= num_to_explain * 2):
         raise ValueError(f"Input features must be a dataframe with more than {num_to_explain * 2} rows! "
                          "Convert to a dataframe and select a smaller value for num_to_explain if you do not have "
