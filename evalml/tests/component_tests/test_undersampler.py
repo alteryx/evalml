@@ -1,0 +1,62 @@
+import numpy as np
+import pytest
+
+from evalml.pipelines.components import Undersampler
+
+
+def test_init():
+    parameters = {
+        "balanced_ratio": 1,
+        "min_samples": 1,
+        "min_percentage": 0.5,
+        "random_seed": 0
+    }
+    undersampler = Undersampler(**parameters)
+    assert undersampler.parameters == parameters
+
+
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_no_undersample(data_type, make_data_type, X_y_binary):
+    X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    undersampler = Undersampler()
+    new_X, new_y = undersampler.fit_transform(X, y)
+
+    if data_type == "ww":
+        X = X.to_dataframe().values
+        y = y.to_series().values
+    elif data_type == "pd":
+        X = X.values
+        y = y.values
+
+    np.testing.assert_equal(X, new_X.to_dataframe().values)
+    np.testing.assert_equal(y, new_y.to_series().values)
+
+
+@pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+def test_undersample_imbalanced(data_type, make_data_type):
+    X = np.array([[i] for i in range(1000)])
+    y = np.array([0] * 150 + [1] * 850)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    undersampler = Undersampler()
+    new_X, new_y = undersampler.fit_transform(X, y)
+
+    assert len(new_X) == 750
+    assert len(new_y) == 750
+    assert all(new_y.to_series().value_counts().values == [600, 150])
+
+    transform_X, transform_y = undersampler.transform(X, y)
+
+    if data_type == "ww":
+        X = X.to_dataframe().values
+        y = y.to_series().values
+    elif data_type == "pd":
+        X = X.values
+        y = y.values
+
+    np.testing.assert_equal(X, transform_X.to_dataframe().values)
+    np.testing.assert_equal(y, transform_y.to_series().values)

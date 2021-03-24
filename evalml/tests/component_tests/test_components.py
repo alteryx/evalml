@@ -56,6 +56,7 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
+    Undersampler,
     XGBoostClassifier,
     XGBoostRegressor
 )
@@ -155,6 +156,7 @@ def test_describe_component():
     pca = PCA()
     lda = LinearDiscriminantAnalysis()
     ft = DFSTransformer()
+    us = Undersampler()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -180,7 +182,7 @@ def test_describe_component():
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
-
+    assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"balanced_ratio": 4, "min_samples": 100, "min_percentage": 0.1}}
     # testing estimators
     base_classifier = BaselineClassifier()
     base_regressor = BaselineRegressor()
