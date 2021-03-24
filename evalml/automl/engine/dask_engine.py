@@ -1,4 +1,5 @@
 import joblib
+from dask.distributed import Client
 
 from evalml.automl.engine.engine_base import (
     EngineBase,
@@ -37,6 +38,8 @@ class DaskEngine(EngineBase):
     """The dask engine"""
 
     def __init__(self, client):
+        if not isinstance(client, Client):
+            raise TypeError(f"Expected dask.distributed.Client, received {type(client)}")
         self.client = client
         self.cache = {}
 
