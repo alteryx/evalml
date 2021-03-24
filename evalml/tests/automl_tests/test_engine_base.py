@@ -111,3 +111,14 @@ def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dumm
                                               custom_name="Stacked Ensemble Classification Pipeline")
     _ = evaluate_pipeline(pipeline2, automl, X, y, logger=MagicMock())
     assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(ensembling_indices))
+
+
+def test_job_logger_warning_and_error_messages(caplog):
+    job_log = JobLogger()
+    job_log.warning("This is a warning!")
+    job_log.error("This is an error!")
+    logger = get_logger(__file__)
+    job_log.write_to_logger(logger)
+
+    assert "This is a warning!" in caplog.text
+    assert "This is an error!" in caplog.text
