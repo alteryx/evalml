@@ -33,7 +33,6 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families
 )
-# from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
