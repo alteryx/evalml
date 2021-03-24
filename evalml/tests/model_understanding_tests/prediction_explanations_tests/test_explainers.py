@@ -822,3 +822,20 @@ def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, 
         assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
         assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
         assert set(explanation['drill_down']['datetime']['feature_names']) == {"datetime_year", "datetime_day_of_week"}
+
+
+@pytest.mark.parametrize("is_binary", [True, False])
+def test_explain_predictions_stacked_ensemble(is_binary, dummy_stacked_ensemble_classifier_pipeline, dummy_stacked_ensemble_regressor_pipeline, X_y_binary, X_y_regression):
+    if is_binary:
+        X, y = X_y_binary
+        pipeline = dummy_stacked_ensemble_classifier_pipeline
+    else:
+        X, y = X_y_regression
+        pipeline = dummy_stacked_ensemble_regressor_pipeline
+    
+    pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="Pipeline must not be a stacked ensemble"):
+        explain_predictions(pipeline, X, y, indices_to_explain=[0])
+    
+    with pytest.raises(ValueError, match="Pipeline must not be a stacked ensemble"):
+        explain_predictions_best_worst(pipeline, X, y)

@@ -33,6 +33,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families
 )
+# from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
@@ -338,6 +339,20 @@ def linear_regression_pipeline_class():
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
     return LinearRegressionPipeline
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_classifier_pipeline(logistic_regression_binary_pipeline_class):
+    p1 = logistic_regression_binary_pipeline_class({})
+    ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_pipeline
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_regressor_pipeline(linear_regression_pipeline_class):
+    p1 = linear_regression_pipeline_class({})
+    ensemble_pipeline = StackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
+    return ensemble_pipeline
 
 
 @pytest.fixture
