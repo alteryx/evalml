@@ -832,10 +832,10 @@ def test_explain_predictions_stacked_ensemble(is_binary, dummy_stacked_ensemble_
     else:
         X, y = X_y_regression
         pipeline = dummy_stacked_ensemble_regressor_pipeline
-    
+
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Pipeline must not be a stacked ensemble"):
         explain_predictions(pipeline, X, y, indices_to_explain=[0])
-    
+
     with pytest.raises(ValueError, match="Pipeline must not be a stacked ensemble"):
         explain_predictions_best_worst(pipeline, X, y)
