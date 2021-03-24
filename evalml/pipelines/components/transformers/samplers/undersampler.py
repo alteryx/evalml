@@ -80,7 +80,7 @@ class Undersampler(Transformer):
         Arguments:
             X (ww.DataFrame): Training features. Ignored.
             y (ww.DataColumn): Target features. Ignored.
-        
+
         Returns:
             ww.DataTable, ww.DataColumn: X and y data that was passed in.
         """
