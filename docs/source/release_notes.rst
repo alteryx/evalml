@@ -2,6 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.21.0 Mar. 24, 2021**
+    * Enhancements
         * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
         * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
         * Added params to balanced classification data splitters for visibility :pr:`1966`
@@ -10,6 +18,7 @@ Release Notes
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
+        * Added a ``PolynomialDetrender`` component :pr:`1992`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
