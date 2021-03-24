@@ -7,7 +7,7 @@ from evalml.utils.logger import get_logger
 logger = get_logger(__file__)
 
 
-class SLA(BinaryClassificationObjective):
+class SensitivityLowAlert(BinaryClassificationObjective):
     name = "Sensitivity at Low Alert Rates"
     greater_is_better = True
     score_needs_proba = False
@@ -15,7 +15,7 @@ class SLA(BinaryClassificationObjective):
     is_bounded_like_percentage = True
 
     def __init__(self, alert_rate=0.01):
-        """Create instance of SLA
+        """Create instance of SensitivityLowAlert
 
         Arguments:
             alert_rate (float): percentage of top scores to classify as high risk
