@@ -80,6 +80,7 @@ Release Notes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
         * Deleted ``random_state`` argument :pr:`1985`
         * Updated Woodwork version requirement to ``v0.0.11`` :pr:`1996`
+        * Remove 'warning' from docs tool output :pr:`2031`
     * Documentation Changes
     * Testing Changes
         * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
