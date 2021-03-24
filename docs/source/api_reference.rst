@@ -128,8 +128,6 @@ AutoML Callbacks
     silent_error_callback
     log_error_callback
     raise_error_callback
-    log_and_save_error_callback
-    raise_and_save_error_callback
 
 
 .. currentmodule:: evalml.pipelines
