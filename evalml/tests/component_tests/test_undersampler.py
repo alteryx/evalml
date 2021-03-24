@@ -8,8 +8,7 @@ def test_init():
     parameters = {
         "balanced_ratio": 1,
         "min_samples": 1,
-        "min_percentage": 0.5,
-        "random_seed": 0
+        "min_percentage": 0.5
     }
     undersampler = Undersampler(**parameters)
     assert undersampler.parameters == parameters

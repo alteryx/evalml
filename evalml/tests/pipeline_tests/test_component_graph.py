@@ -697,7 +697,7 @@ def test_custom_input_feature_types(example_graph):
     assert input_feature_names['Imputer'] == ['column_1', 'column_2']
     assert input_feature_names['OneHot_RandomForest'] == ['column_1', 'column_2']
     assert input_feature_names['OneHot_ElasticNet'] == ['column_1', 'column_2']
-    assert input_feature_names['Random Forest'] == ['column_1_a', 'column_1_b', 'column_2_3', 'column_2_4']
+    assert input_feature_names['Random Forest'] == ['column_1_a', 'column_1_b', 'column_2_4', 'column_2_5']
     assert input_feature_names['Elastic Net'] == ['column_1_a', 'column_1_b', 'column_1_c', 'column_2_3', 'column_2_4', 'column_2_5']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
 

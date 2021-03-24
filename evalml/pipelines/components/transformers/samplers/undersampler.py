@@ -19,7 +19,7 @@ class Undersampler(Transformer):
         'min_samples': Integer(50, 1000),
     }
 
-    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0):
+    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
         """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
         Arguments:
@@ -35,9 +35,9 @@ class Undersampler(Transformer):
         """
         parameters = {"balanced_ratio": balanced_ratio,
                       "min_samples": min_samples,
-                      "min_percentage": min_percentage,
-                      "random_seed": random_seed}
-        sampler = BalancedClassificationSampler(**parameters)
+                      "min_percentage": min_percentage}
+        parameters.update(kwargs)
+        sampler = BalancedClassificationSampler(**parameters, random_seed=random_seed)
 
         super().__init__(parameters=parameters,
                          component_obj=sampler,
