@@ -1150,9 +1150,6 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_future_get_result, 
                           objective="f1", optimize_thresholds=False)
     automl.search()
     assert len(automl._results['pipeline_results']) == number_results
-    if number_results == 0:
-        with pytest.raises(PipelineNotFoundError):
-            automl.best_pipeline
 
 
 def make_mock_rankings(scores):
