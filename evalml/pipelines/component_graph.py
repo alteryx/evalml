@@ -193,7 +193,6 @@ class ComponentGraph:
             x_inputs = []
             y_input = None
             for parent_input in self.get_parents(component_name):
-                print(parent_input)
                 if parent_input[-2:] == '.y':
                     if y_input is not None:
                         raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
