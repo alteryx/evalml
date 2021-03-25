@@ -2168,20 +2168,20 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
 def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
     mock_score.return_value = {'R2': 1.0}
     X, y = X_y_regression
-    params = {'Imputer': {'numeric_impute_strategy': ['median', 'most_frequent']},
-              'Decision Tree Regressor': {'max_depth': [17, 18, 19], 'max_features': Categorical(['auto'])},
-              'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": (0.01, 0.02, 0.03)}}
+    params = {'Imputer': {'numeric_impute_strategy': Categorical(['median', 'most_frequent'])},
+              'Decision Tree Regressor': {'max_depth': Categorical([17, 18, 19]), 'max_features': Categorical(['auto'])},
+              'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": Categorical((0.01, 0.02, 0.03))}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
         if 'Imputer' in row['parameters']:
-            assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'median'
+            assert row['parameters']['Imputer']['numeric_impute_strategy'] == Categorical(['median', 'most_frequent']).rvs(random_state=automl.random_seed)
         if 'Decision Tree Regressor' in row['parameters']:
-            assert row['parameters']['Decision Tree Regressor']['max_depth'] == 17
+            assert row['parameters']['Decision Tree Regressor']['max_depth'] == Categorical([17, 18, 19]).rvs(random_state=automl.random_seed)
             assert row['parameters']['Decision Tree Regressor']['max_features'] == 'auto'
         if 'Elastic Net Regressor' in row['parameters']:
             assert 0 < row['parameters']['Elastic Net Regressor']['alpha'] < 0.5
-            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == 0.01
+            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)
 
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
