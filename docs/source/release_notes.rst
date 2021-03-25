@@ -2,9 +2,11 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
     * Fixes
     * Changes
     * Documentation Changes
+        * Catch and suppress warnings in documentation :pr:`1991`
     * Testing Changes
 
 

@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._report_creator_factory import (
     _report_creator_factory
 )
@@ -22,7 +23,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
                         output_format="text"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
-    XGBoost models and CatBoost multiclass classifiers are not currently supported.
+    XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
@@ -46,6 +47,8 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
 
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
@@ -68,7 +71,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                                    include_shap_values=False, metric=None, output_format="text"):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
-    XGBoost models and CatBoost multiclass classifiers are not currently supported.
+    XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
@@ -108,6 +111,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                          f"true labels: {y_true.shape[0]} and {input_features.shape[0]}")
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
 
