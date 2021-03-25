@@ -2,9 +2,11 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
     * Fixes
     * Changes
     * Documentation Changes
+        * Catch and suppress warnings in documentation :pr:`1991`
     * Testing Changes
 
 
@@ -16,7 +18,6 @@ Release Notes
         * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
         * Updated ``ClassImbalanceDataCheck`` to better handle multiclass imbalances :pr:`1986`
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
-        * Catch and suppress warnings in documentation :pr:`1991`
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
         * Added a ``PolynomialDetrender`` component :pr:`1992`
