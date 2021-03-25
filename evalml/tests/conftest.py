@@ -387,7 +387,8 @@ def time_series_multiclass_classification_pipeline_class():
 
 @pytest.fixture
 def dummy_stacked_ensemble_ts_binary_estimator(time_series_binary_classification_pipeline_class):
-    p1 = time_series_binary_classification_pipeline_class({})
+    p1 = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                      "pipeline": {"gap": 0, "max_delay": 0}})
     ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
     return ensemble_estimator
 
