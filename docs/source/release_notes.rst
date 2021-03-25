@@ -2,10 +2,12 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
     * Fixes
     * Changes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
     * Documentation Changes
+        * Catch and suppress warnings in documentation :pr:`1991`
     * Testing Changes
 
 
