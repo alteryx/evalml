@@ -50,7 +50,7 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "code": "HAS_ID_COLUMN",\
                                                                    "details": {"column": "df_id"}}],\
                                                      "actions": [{"code": "DROP_COL",\
-                                                                 "details": {"column": "df_id"}}]}
+                                                                 "metadata": {"column": "df_id"}}]}
         """
         results = {
             "warnings": [],
@@ -82,6 +82,6 @@ class IDColumnsDataCheck(DataCheck):
                                                      details={"column": col_name}).to_dict()
                                     for col_name in id_cols_above_threshold])
         results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   details={"column": col_name}).to_dict()
+                                                   metadata={"column": col_name}).to_dict()
                                    for col_name in id_cols_above_threshold])
         return results
