@@ -833,7 +833,6 @@ def test_explain_predictions_stacked_ensemble(is_binary, dummy_stacked_ensemble_
         X, y = X_y_regression
         pipeline = dummy_stacked_ensemble_regressor_pipeline
 
-    pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"):
         explain_predictions(pipeline, X, y, indices_to_explain=[0])
 
