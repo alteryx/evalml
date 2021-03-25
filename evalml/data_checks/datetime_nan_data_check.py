@@ -24,7 +24,20 @@ class DateTimeNaNDataCheck(DataCheck):
         Returns:
             dict: dict with a DataCheckError if NaN values are present in datetime columns.
 
-        # TODO: Add Example.
+        Example:
+            >>> import pandas as pd
+            >>> import woodwork as ww
+            >>> import numpy as np
+            >>> dates = np.arange(np.datetime64('2017-01-01'), np.datetime64('2017-01-08'))
+            >>> dates[0] = np.datetime64('NaT')
+            >>> ww_input = ww.DataTable(pd.DataFrame(dates, columns=['index']))
+            >>> dt_nan_check = DateTimeNaNDataCheck()
+            >>> assert dt_nan_check.validate(ww_input) == {"warnings": [],
+            ...                                             "actions": [],
+            ...                                             "errors": [DataCheckError(message='Input datetime column (index) contains NaN values.',
+            ...                                                                     data_check_name=DateTimeNaNDataCheck.name,
+            ...                                                                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+            ...                                                                     details={"column": 'index'})]}
         """
         results = {
             "warnings": [],
