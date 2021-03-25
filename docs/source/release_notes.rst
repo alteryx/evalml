@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
     * Fixes
+        * Updated Engine's ``train_batch`` to apply undersampling :pr:`2038`
     * Changes
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
     * Documentation Changes
