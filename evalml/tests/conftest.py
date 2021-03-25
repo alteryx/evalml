@@ -341,24 +341,24 @@ def linear_regression_pipeline_class():
 
 
 @pytest.fixture
-def dummy_stacked_ensemble_binary_pipeline(logistic_regression_binary_pipeline_class):
+def dummy_stacked_ensemble_binary_estimator(logistic_regression_binary_pipeline_class):
     p1 = logistic_regression_binary_pipeline_class({})
-    ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
-    return ensemble_pipeline
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
 
 
 @pytest.fixture
-def dummy_stacked_ensemble_multiclass_pipeline(logistic_regression_multiclass_pipeline_class):
+def dummy_stacked_ensemble_multiclass_estimator(logistic_regression_multiclass_pipeline_class):
     p1 = logistic_regression_multiclass_pipeline_class({})
-    ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
-    return ensemble_pipeline
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
 
 
 @pytest.fixture
-def dummy_stacked_ensemble_regressor_pipeline(linear_regression_pipeline_class):
+def dummy_stacked_ensemble_regressor_estimator(linear_regression_pipeline_class):
     p1 = linear_regression_pipeline_class({})
-    ensemble_pipeline = StackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
-    return ensemble_pipeline
+    ensemble_estimator = StackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
 
 
 @pytest.fixture
@@ -386,10 +386,10 @@ def time_series_multiclass_classification_pipeline_class():
 
 
 @pytest.fixture
-def dummy_stacked_ensemble_ts_binary_pipeline(time_series_binary_classification_pipeline_class):
+def dummy_stacked_ensemble_ts_binary_estimator(time_series_binary_classification_pipeline_class):
     p1 = time_series_binary_classification_pipeline_class({})
-    ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
-    return ensemble_pipeline
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
 
 
 @pytest.fixture

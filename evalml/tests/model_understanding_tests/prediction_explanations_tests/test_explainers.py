@@ -24,7 +24,8 @@ from evalml.problem_types import (
     ProblemTypes,
     is_binary,
     is_multiclass,
-    is_regression
+    is_regression,
+    is_time_series
 )
 
 
@@ -830,21 +831,21 @@ def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, 
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.REGRESSION])
-def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemble_binary_pipeline, dummy_stacked_ensemble_multiclass_pipeline,
-                                              dummy_stacked_ensemble_ts_binary_pipeline, dummy_stacked_ensemble_regressor_pipeline,
+def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemble_binary_estimator, dummy_stacked_ensemble_multiclass_estimator,
+                                              dummy_stacked_ensemble_ts_binary_estimator, dummy_stacked_ensemble_regressor_estimator,
                                               X_y_binary, X_y_multiclass, X_y_regression):
     if is_binary(problem_type):
         X, y = X_y_binary
-        if problem_type == ProblemTypes.BINARY:
-            pipeline = dummy_stacked_ensemble_binary_pipeline
+        if is_time_series(problem_type):
+            pipeline = dummy_stacked_ensemble_ts_binary_estimator
         else:
-            pipeline = dummy_stacked_ensemble_ts_binary_pipeline
+            pipeline = dummy_stacked_ensemble_binary_estimator
     elif is_multiclass(problem_type):
         X, y = X_y_multiclass
-        pipeline = dummy_stacked_ensemble_multiclass_pipeline
+        pipeline = dummy_stacked_ensemble_multiclass_estimator
     else:
         X, y = X_y_regression
-        pipeline = dummy_stacked_ensemble_regressor_pipeline
+        pipeline = dummy_stacked_ensemble_regressor_estimator
 
     with pytest.raises(ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"):
         explain_predictions(pipeline, X, y, indices_to_explain=[0])
