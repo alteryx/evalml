@@ -43,7 +43,6 @@ class SequentialEngine(EngineBase):
             index += 1
         return new_pipeline_ids
 
-    
     def train_batch(self, pipelines):
         """Train a batch of pipelines using the current dataset.
 

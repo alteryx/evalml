@@ -174,13 +174,15 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
     exceptions_to_check = [str(e) for e in pipeline_fit_side_effect if isinstance(e, Exception)]
 
     X, y = X_y_binary
+    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.2, random_seed=0)
+    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
-                          train_best_pipeline=False, n_jobs=1)
-
+                          train_best_pipeline=False, n_jobs=1, ensembling=True)
     engine = SequentialEngine(X_train=automl.X_train,
                               y_train=automl.y_train,
-                              automl=automl)
+                              automl=automl,
+                              ensembling_indices=ensembling_indices)
 
     def make_pipeline_name(index):
         class DummyPipeline(dummy_binary_pipeline_class):
