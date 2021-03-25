@@ -341,8 +341,15 @@ def linear_regression_pipeline_class():
 
 
 @pytest.fixture
-def dummy_stacked_ensemble_classifier_pipeline(logistic_regression_binary_pipeline_class):
+def dummy_stacked_ensemble_binary_pipeline(logistic_regression_binary_pipeline_class):
     p1 = logistic_regression_binary_pipeline_class({})
+    ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_pipeline
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_multiclass_pipeline(logistic_regression_multiclass_pipeline_class):
+    p1 = logistic_regression_multiclass_pipeline_class({})
     ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
     return ensemble_pipeline
 
@@ -376,6 +383,13 @@ def time_series_multiclass_classification_pipeline_class():
         """Logistic Regression Pipeline for time series multiclass classification problems."""
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
     return TSMultiPipeline
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_ts_binary_pipeline(time_series_binary_classification_pipeline_class):
+    p1 = time_series_binary_classification_pipeline_class({})
+    ensemble_pipeline = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_pipeline
 
 
 @pytest.fixture
