@@ -89,7 +89,5 @@ class Undersampler(Transformer):
             ww.DataTable, ww.DataColumn: X and y data that was passed in.
         """
         X = infer_feature_types(X)
-        if y is None:
-            raise ValueError("y cannot be none")
         y = infer_feature_types(y)
         return X, y
