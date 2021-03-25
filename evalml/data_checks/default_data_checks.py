@@ -5,6 +5,7 @@ from .id_columns_data_check import IDColumnsDataCheck
 from .invalid_targets_data_check import InvalidTargetDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
+from .datetime_nan_data_check import DateTimeNaNDataCheck
 
 from evalml.problem_types import ProblemTypes, handle_problem_types
 
@@ -19,11 +20,12 @@ class DefaultDataChecks(DataChecks):
         - `InvalidTargetDataCheck`
         - `NoVarianceDataCheck`
         - `ClassImbalanceDataCheck` (for classification problem types)
+        - `DateTimeNaNDataCheck`
 
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
-                                   TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
+                                   TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck, DateTimeNaNDataCheck]
 
     def __init__(self, problem_type, objective, n_splits=3):
         """
