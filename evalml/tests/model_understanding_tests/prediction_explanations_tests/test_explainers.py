@@ -24,8 +24,7 @@ from evalml.problem_types import (
     ProblemTypes,
     is_binary,
     is_multiclass,
-    is_regression,
-    is_time_series
+    is_regression
 )
 
 
@@ -830,18 +829,14 @@ def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, 
         assert set(explanation['drill_down']['datetime']['feature_names']) == {"datetime_year", "datetime_day_of_week"}
 
 
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemble_binary_estimator, dummy_stacked_ensemble_multiclass_estimator,
-                                              dummy_stacked_ensemble_ts_binary_estimator, dummy_stacked_ensemble_regressor_estimator,
-                                              X_y_binary, X_y_multiclass, X_y_regression):
+                                              dummy_stacked_ensemble_regressor_estimator, X_y_binary, X_y_multi, X_y_regression):
     if is_binary(problem_type):
         X, y = X_y_binary
-        if is_time_series(problem_type):
-            pipeline = dummy_stacked_ensemble_ts_binary_estimator
-        else:
-            pipeline = dummy_stacked_ensemble_binary_estimator
+        pipeline = dummy_stacked_ensemble_binary_estimator
     elif is_multiclass(problem_type):
-        X, y = X_y_multiclass
+        X, y = X_y_multi
         pipeline = dummy_stacked_ensemble_multiclass_estimator
     else:
         X, y = X_y_regression
