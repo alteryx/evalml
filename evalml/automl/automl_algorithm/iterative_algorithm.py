@@ -145,8 +145,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
                     elif isinstance(value, Categorical):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
-                    elif isinstance(value, (list, tuple)):
-                        component_parameters[param_name] = value[0]
                     else:
                         component_parameters[param_name] = value
             if 'pipeline' in self._pipeline_params:
