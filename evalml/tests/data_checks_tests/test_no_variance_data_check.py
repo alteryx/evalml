@@ -42,7 +42,7 @@ labels_1_unique = DataCheckError(message="Y has 1 unique value.",
                                  data_check_name=no_variance_data_check_name,
                                  message_code=DataCheckMessageCode.NO_VARIANCE,
                                  details={"column": "Y"}).to_dict()
-drop_feature_action = DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "feature"}).to_dict()
+drop_feature_action = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "feature"}).to_dict()
 
 cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": [], "actions": []}),
          ([[1], [2], [3], [4]], [1, 2, 3, 2], False, {"warnings": [], "errors": [], "actions": []}),
