@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
     * Documentation Changes
     * Testing Changes
 
