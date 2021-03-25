@@ -1075,14 +1075,14 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if 'sampler' not in transformer.name:
-        X_t = transformer.transform(X, y).to_dataframe()
-    else:
+    if 'sampler' in transformer.name:
         X_t, y_t = transformer.transform(X, y)
         X_t = X_t.to_dataframe()
         pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
+    else:
+        X_t = transformer.transform(X, y).to_dataframe()
+        pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
-    pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())

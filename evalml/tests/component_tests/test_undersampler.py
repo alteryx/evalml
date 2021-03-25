@@ -56,7 +56,7 @@ def test_undersample_imbalanced(data_type, make_data_type):
 
     assert len(new_X) == 750
     assert len(new_y) == 750
-    assert all(new_y.to_series().value_counts().values == [600, 150])
+    pd.testing.assert_series_equal(new_y.to_series().value_counts(), pd.Series([600, 150], index=[1, 0]), check_dtype=False)
 
     transform_X, transform_y = undersampler.transform(X, y)
 
