@@ -60,7 +60,7 @@ class SparsityDataCheck(DataCheck):
                                                             "code": "TOO_SPARSE",\
                                                             "details": {"column": "sparse", 'sparsity_score': 0.0}}],\
                                                        "actions": [{"code": "DROP_COL",\
-                                                                 "details": {"column": "sparse"}}]}
+                                                                 "metadata": {"column": "sparse"}}]}
         """
         results = {
             "warnings": [],
@@ -80,7 +80,7 @@ class SparsityDataCheck(DataCheck):
                                                      details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
                                     for col_name in too_sparse_cols])
         results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
-                                                   details={"column": col_name}).to_dict()
+                                                   metadata={"column": col_name}).to_dict()
                                    for col_name in too_sparse_cols])
         return results
 
