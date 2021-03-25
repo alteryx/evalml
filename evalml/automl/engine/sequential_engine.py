@@ -43,6 +43,7 @@ class SequentialEngine(EngineBase):
             index += 1
         return new_pipeline_ids
 
+    
     def train_batch(self, pipelines):
         """Train a batch of pipelines using the current dataset.
 
@@ -56,13 +57,21 @@ class SequentialEngine(EngineBase):
         fitted_pipelines = {}
         for pipeline in pipelines:
             try:
-                fitted_pipeline = EngineBase.train_pipeline(
-                    pipeline, self.X_train, self.y_train,
-                    self.automl.optimize_thresholds,
-                    self.automl.objective
-                )
-
-                fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
+                if pipeline.model_family == ModelFamily.ENSEMBLE:
+                    X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
+                else:
+                    X_train = self.X_train
+                    y_train = self.y_train
+                if hasattr(self.automl.data_splitter, "transform_sample"):
+                    train_indices = self.automl.data_splitter.transform_sample(X_train, y_train)
+                    X_train = X_train.iloc[train_indices]
+                    y_train = y_train.iloc[train_indices]
+                    fitted_pipeline = EngineBase.train_pipeline(
+                        pipeline, X_train, y_train,
+                        self.automl.optimize_thresholds,
+                        self.automl.objective
+                    )
+                    fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
             except Exception as e:
                 logger.error(f'Train error for {pipeline.name}: {str(e)}')
                 tb = traceback.format_tb(sys.exc_info()[2])
