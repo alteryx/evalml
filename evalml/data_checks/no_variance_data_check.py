@@ -81,7 +81,7 @@ class NoVarianceDataCheck(DataCheck):
                 continue
             DataCheck._add_message(message, results)
             results["actions"].append(DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                      metadata={"column": col_name}).to_dict())
+                                                      metadata={"columns": col_name}).to_dict())
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"

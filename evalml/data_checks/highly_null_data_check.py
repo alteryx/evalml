@@ -78,6 +78,6 @@ class HighlyNullDataCheck(DataCheck):
                                         for col_name in highly_null_cols])
 
         results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   metadata={"column": col_name}).to_dict()
+                                                   metadata={"columns": col_name}).to_dict()
                                    for col_name in highly_null_cols])
         return results

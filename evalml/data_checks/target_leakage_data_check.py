@@ -109,6 +109,6 @@ class TargetLeakageDataCheck(DataCheck):
                                                      details={"column": col_name}).to_dict()
                                     for col_name in highly_corr_cols])
         results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   metadata={"column": col_name}).to_dict()
+                                                   metadata={"columns": col_name}).to_dict()
                                    for col_name in highly_corr_cols])
         return results

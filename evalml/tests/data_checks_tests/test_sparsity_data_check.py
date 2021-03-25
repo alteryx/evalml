@@ -109,7 +109,7 @@ def test_sparsity_data_check_warnings():
             details={"column": "sparse",
                      'sparsity_score': 0.3333333333333333}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'most_sparse'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'more_sparse'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'sparse'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": 'most_sparse'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": 'more_sparse'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": 'sparse'}).to_dict()]
     }

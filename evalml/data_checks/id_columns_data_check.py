@@ -82,6 +82,6 @@ class IDColumnsDataCheck(DataCheck):
                                                      details={"column": col_name}).to_dict()
                                     for col_name in id_cols_above_threshold])
         results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   metadata={"column": col_name}).to_dict()
+                                                   metadata={"columns": col_name}).to_dict()
                                    for col_name in id_cols_above_threshold])
         return results
