@@ -537,6 +537,7 @@ def test_transformer_transform_output_type(X_y_binary):
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
             if 'sampler' in component.name:
+                assert isinstance(transform_output[1], ww.DataColumn)
                 transform_output = transform_output[0]
             assert isinstance(transform_output, ww.DataTable)
 
@@ -558,6 +559,7 @@ def test_transformer_transform_output_type(X_y_binary):
 
             transform_output = component.fit_transform(X, y=y)
             if 'sampler' in component.name:
+                assert isinstance(transform_output[1], ww.DataColumn)
                 transform_output = transform_output[0]
             assert isinstance(transform_output, ww.DataTable)
 
@@ -710,14 +712,14 @@ def test_all_transformers_check_fit(X_y_binary):
 
         component = component_class()
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
-            component.transform(X)
+            component.transform(X, y)
 
         component.fit(X, y)
-        component.transform(X)
+        component.transform(X, y)
 
         component = component_class()
         component.fit_transform(X, y)
-        component.transform(X)
+        component.transform(X, y)
 
 
 def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions):
@@ -1076,8 +1078,9 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     if 'sampler' not in transformer.name:
         X_t = transformer.transform(X, y).to_dataframe()
     else:
-        X_t, _ = transformer.transform(X, y)
+        X_t, y_t = transformer.transform(X, y)
         X_t = X_t.to_dataframe()
+        pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
     pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
 

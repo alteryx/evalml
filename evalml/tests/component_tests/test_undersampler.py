@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.pipelines.components import Undersampler
@@ -12,6 +13,15 @@ def test_init():
     }
     undersampler = Undersampler(**parameters)
     assert undersampler.parameters == parameters
+
+
+def test_none_y():
+    X = pd.DataFrame([[i] for i in range(5)])
+    undersampler = Undersampler()
+    with pytest.raises(ValueError, match="y cannot be none"):
+        undersampler.fit(X, None)
+    with pytest.raises(ValueError, match="y cannot be none"):
+        undersampler.fit_transform(X, None)
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
