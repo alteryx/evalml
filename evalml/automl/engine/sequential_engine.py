@@ -56,11 +56,8 @@ class SequentialEngine(EngineBase):
         fitted_pipelines = {}
         for pipeline in pipelines:
             try:
-                if pipeline.model_family == ModelFamily.ENSEMBLE:
-                    X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
-                else:
-                    X_train = self.X_train
-                    y_train = self.y_train
+                X_train = self.X_train
+                y_train = self.y_train
                 if hasattr(self.automl.data_splitter, "transform_sample"):
                     train_indices = self.automl.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
