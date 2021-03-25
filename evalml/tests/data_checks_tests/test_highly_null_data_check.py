@@ -48,8 +48,8 @@ def test_highly_null_data_check_warnings():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict()]
     }
 
     some_null_check = HighlyNullDataCheck(pct_null_threshold=0.5)
@@ -63,8 +63,8 @@ def test_highly_null_data_check_warnings():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict()]
 
     }
 
@@ -75,7 +75,7 @@ def test_highly_null_data_check_warnings():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict()]
     }
 
 
@@ -99,9 +99,9 @@ def test_highly_null_data_check_input_formats():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": 2}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 2}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 2}).to_dict()]
     }
     #  test Woodwork
     ww_input = ww.DataTable(pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]]))

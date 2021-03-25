@@ -68,10 +68,10 @@ def test_target_leakage_data_check_warnings():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
 
 
@@ -112,10 +112,10 @@ def test_target_leakage_data_check_input_formats():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
     # test X as ww.DataTable, y as ww.DataColumn
     assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
@@ -142,10 +142,10 @@ def test_target_leakage_data_check_input_formats():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": 3}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 2}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 3}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 2}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 3}).to_dict()]
     }
 
 
@@ -196,10 +196,10 @@ def test_target_leakage_types():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
 
     assert leakage_check.validate(X, y) == expected
@@ -233,9 +233,9 @@ def test_target_leakage_multi():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "c"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict()]
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
@@ -277,10 +277,10 @@ def test_target_leakage_regression():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "e"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'e'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'e'}).to_dict()]
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
@@ -319,10 +319,10 @@ def test_target_leakage_data_check_warnings_pearson():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
 
     y = ["a", "b", "a", "a"]
@@ -367,10 +367,10 @@ def test_target_leakage_data_check_input_formats_pearson():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": "d"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'a'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'b'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'c'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'd'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'a'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'b'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
 
     # test X as np.array
@@ -392,10 +392,10 @@ def test_target_leakage_data_check_input_formats_pearson():
                                       message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                       details={"column": 3}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 2}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 3}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 2}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 3}).to_dict()]
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
