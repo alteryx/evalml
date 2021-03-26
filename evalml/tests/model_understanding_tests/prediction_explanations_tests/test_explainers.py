@@ -20,7 +20,12 @@ from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
-from evalml.problem_types import ProblemTypes, is_binary, is_regression
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_regression
+)
 
 
 def compare_two_tables(table_1, table_2):
@@ -822,3 +827,23 @@ def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, 
         assert set(explanation['drill_down']['currency']['feature_names']) == EXPECTED_CURRENCY_FEATURES
         assert set(explanation['drill_down']['provider']['feature_names']) == EXPECTED_PROVIDER_FEATURES_OHE
         assert set(explanation['drill_down']['datetime']['feature_names']) == {"datetime_year", "datetime_day_of_week"}
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemble_binary_estimator, dummy_stacked_ensemble_multiclass_estimator,
+                                              dummy_stacked_ensemble_regressor_estimator, X_y_binary, X_y_multi, X_y_regression):
+    if is_binary(problem_type):
+        X, y = X_y_binary
+        pipeline = dummy_stacked_ensemble_binary_estimator
+    elif is_multiclass(problem_type):
+        X, y = X_y_multi
+        pipeline = dummy_stacked_ensemble_multiclass_estimator
+    else:
+        X, y = X_y_regression
+        pipeline = dummy_stacked_ensemble_regressor_estimator
+
+    with pytest.raises(ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"):
+        explain_predictions(pipeline, X, y, indices_to_explain=[0])
+
+    with pytest.raises(ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"):
+        explain_predictions_best_worst(pipeline, X, y)

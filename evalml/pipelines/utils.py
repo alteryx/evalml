@@ -267,5 +267,5 @@ def _make_component_list_from_actions(actions):
     components = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append(DropColumns(columns=action.details["columns"]))
+            components.append(DropColumns(columns=action.metadata["columns"]))
     return components

@@ -61,10 +61,10 @@ def test_id_columns_warning():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_3_id"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "Id"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_1_id"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_2"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_3_id"}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "Id"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_1_id"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_2"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_3_id"}).to_dict()]
     }
 
     X = pd.DataFrame.from_dict(X_dict)
@@ -79,8 +79,8 @@ def test_id_columns_warning():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_1_id"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "Id"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_1_id"}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "Id"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_1_id"}).to_dict()]
     }
 
 
@@ -112,10 +112,10 @@ def test_id_columns_strings():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_3_id"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "Id"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_1_id"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_2"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_3_id"}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "Id"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_1_id"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_2"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_3_id"}).to_dict()]
     }
 
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
@@ -129,8 +129,8 @@ def test_id_columns_strings():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": "col_1_id"}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "Id"}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": "col_1_id"}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "Id"}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "col_1_id"}).to_dict()]
     }
 
 
@@ -152,8 +152,8 @@ def test_id_cols_data_check_input_formats():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": 1}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict()]
     }
 
     #  test 2D list
@@ -167,8 +167,8 @@ def test_id_cols_data_check_input_formats():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": 1}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict()]
     }
 
     # test np.array
@@ -182,6 +182,6 @@ def test_id_cols_data_check_input_formats():
                                       message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                       details={"column": 1}).to_dict()],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 0}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 1}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict()]
     }
