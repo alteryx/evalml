@@ -78,7 +78,7 @@ class Undersampler(Transformer):
         train_indices = index_df[index_df.isin(indices)].dropna().index.values.tolist()
         return X.iloc[train_indices], y.iloc[train_indices]
 
-    def transform(self, X, y):
+    def transform(self, X, y=None):
         """No transformation needs to be done here.
 
         Arguments:
@@ -89,5 +89,6 @@ class Undersampler(Transformer):
             ww.DataTable, ww.DataColumn: X and y data that was passed in.
         """
         X = infer_feature_types(X)
-        y = infer_feature_types(y)
+        if y is not None:
+            y = infer_feature_types(y)
         return X, y

@@ -22,6 +22,8 @@ def test_none_y():
         undersampler.fit(X, None)
     with pytest.raises(ValueError, match="y cannot be none"):
         undersampler.fit_transform(X, None)
+    undersampler.fit(X, pd.Series([0] * 4 + [1]))
+    undersampler.transform(X, None)
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
