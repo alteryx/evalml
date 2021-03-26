@@ -50,7 +50,7 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "code": "HAS_ID_COLUMN",\
                                                                    "details": {"column": "df_id"}}],\
                                                      "actions": [{"code": "DROP_COL",\
-                                                                 "metadata": {"column": "df_id"}}]}
+                                                                 "metadata": {"columns": "df_id"}}]}
         """
         results = {
             "warnings": [],

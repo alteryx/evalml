@@ -60,7 +60,7 @@ class SparsityDataCheck(DataCheck):
                                                             "code": "TOO_SPARSE",\
                                                             "details": {"column": "sparse", 'sparsity_score': 0.0}}],\
                                                        "actions": [{"code": "DROP_COL",\
-                                                                 "metadata": {"column": "sparse"}}]}
+                                                                 "metadata": {"columns": "sparse"}}]}
         """
         results = {
             "warnings": [],

@@ -47,7 +47,7 @@ class HighlyNullDataCheck(DataCheck):
                                                                  "code": "HIGHLY_NULL",\
                                                                  "details": {"column": "lots_of_null"}}],\
                                                     "actions": [{"code": "DROP_COL",\
-                                                                 "metadata": {"column": "lots_of_null"}}]}
+                                                                 "metadata": {"columns": "lots_of_null"}}]}
         """
         results = {
             "warnings": [],

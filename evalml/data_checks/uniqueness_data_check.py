@@ -64,7 +64,7 @@ class UniquenessDataCheck(DataCheck):
                                                                  "code": "NOT_UNIQUE_ENOUGH",\
                                                                  "details": {"column": "regression_not_unique_enough", 'uniqueness_score': 0.0}}],\
                                                          "actions": [{"code": "DROP_COL",\
-                                                                      "metadata": {"column": "regression_not_unique_enough"}}]}
+                                                                      "metadata": {"columns": "regression_not_unique_enough"}}]}
         """
         results = {
             "warnings": [],
