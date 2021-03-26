@@ -4,4 +4,4 @@ pytest-cov==2.6.1
 nbval==0.9.3
 IPython>=5.0.0
 codecov==2.1.0
-PyYAML==5.3.1
+PyYAML==5.4

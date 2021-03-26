@@ -64,7 +64,7 @@ class UniquenessDataCheck(DataCheck):
                                                                  "code": "NOT_UNIQUE_ENOUGH",\
                                                                  "details": {"column": "regression_not_unique_enough", 'uniqueness_score': 0.0}}],\
                                                          "actions": [{"code": "DROP_COL",\
-                                                                 "details": {"column": "regression_not_unique_enough"}}]}
+                                                                      "metadata": {"column": "regression_not_unique_enough"}}]}
         """
         results = {
             "warnings": [],
@@ -86,7 +86,7 @@ class UniquenessDataCheck(DataCheck):
                                                          details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                         for col_name in not_unique_enough_cols])
             results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
-                                                       details={"column": col_name}).to_dict()
+                                                       metadata={"column": col_name}).to_dict()
                                        for col_name in not_unique_enough_cols])
         elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
@@ -97,7 +97,7 @@ class UniquenessDataCheck(DataCheck):
                                                          details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
                                         for col_name in too_unique_cols])
             results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
-                                                       details={"column": col_name}).to_dict()
+                                                       metadata={"column": col_name}).to_dict()
                                        for col_name in too_unique_cols])
         return results
 
