@@ -75,7 +75,7 @@ class Undersampler(Transformer):
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
         index_df = pd.Series(y_pd.index)
         indices = self._component_obj.fit_resample(X_pd, y_pd)
-        train_indices = index_df[index_df.isin(indices)].dropna().index.values.tolist()
+        train_indices = index_df[index_df.isin(indices)].index.values.tolist()
         return X.iloc[train_indices], y.iloc[train_indices]
 
     def transform(self, X, y=None):
