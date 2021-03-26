@@ -99,10 +99,10 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
                            message_code=DataCheckMessageCode.NO_VARIANCE,
                            details={"column": "also_all_null"}).to_dict()]
 
-expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'all_null'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'also_all_null'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'id'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'lots_of_null'}).to_dict()
+expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'id'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict()
                     ]
 
 
@@ -302,7 +302,7 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'col_to_drop'}).to_dict()]}
+            return {"warnings": [], "errors": [], "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'col_to_drop'}).to_dict()]}
 
     class MockDataCheckWithSameAction(DataCheck):
         def validate(self, X, y):
@@ -315,5 +315,5 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
     assert data_checks.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, details={"column": 'col_to_drop'}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'col_to_drop'}).to_dict()]
     }
