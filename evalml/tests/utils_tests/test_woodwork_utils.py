@@ -87,74 +87,76 @@ def test_convert_woodwork_types_wrapper_dataframe():
     pd.testing.assert_frame_equal(X_expected, _convert_woodwork_types_wrapper(X))
 
 
-def testinfer_feature_types():
-    X_dt = ww.DataTable(pd.DataFrame([[1, 2], [3, 4]]))
-    pd.testing.assert_frame_equal(X_dt.to_dataframe(), infer_feature_types(X_dt).to_dataframe())
+def test_infer_feature_types():
+    X_dt = pd.DataFrame([[1, 2], [3, 4]])
+    X_dt.ww.init()
+    pd.testing.assert_frame_equal(X_dt, infer_feature_types(X_dt))
 
-    X_dc = ww.DataColumn(pd.Series([1, 2, 3, 4]))
-    pd.testing.assert_series_equal(X_dc.to_series(), infer_feature_types(X_dc).to_series())
+    X_dc = ww.init_series(pd.Series([1, 2, 3, 4]))
+    pd.testing.assert_series_equal(X_dc, infer_feature_types(X_dc))
 
     X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
                          1: pd.Series([3, 4], dtype="Int64")})
-    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe())
+    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd))
 
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd).to_series())
+    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd))
 
     X_list = [1, 2, 3, 4]
-    X_expected = ww.DataColumn(pd.Series(X_list))
-    pd.testing.assert_series_equal(X_expected.to_series(), infer_feature_types(X_list).to_series())
+    X_expected = ww.init_series(pd.Series(X_list))
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_list))
     assert X_list == [1, 2, 3, 4]
 
     X_np = np.array([1, 2, 3, 4])
-    X_expected = ww.DataColumn(pd.Series(X_np))
-    pd.testing.assert_series_equal(X_expected.to_series(), infer_feature_types(X_np).to_series())
+    X_expected = ww.init_series(pd.Series(X_np))
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_np))
     assert np.array_equal(X_np, np.array([1, 2, 3, 4]))
 
     X_np = np.array([[1, 2], [3, 4]])
-    X_expected = ww.DataTable(pd.DataFrame(X_np))
-    pd.testing.assert_frame_equal(X_expected.to_dataframe(), infer_feature_types(X_np).to_dataframe())
+    X_expected = pd.DataFrame(X_np)
+    X_expected.ww.init()
+    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_np))
     assert np.array_equal(X_np, np.array([[1, 2], [3, 4]]))
 
 
-def testinfer_feature_types_series_name():
+def test_infer_feature_types_series_name():
     name = "column with name"
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64", name=name)
     X_dc = infer_feature_types(X_pd)
     assert X_dc.name == name
-    pd.testing.assert_series_equal(X_pd, X_dc.to_series())
+    pd.testing.assert_series_equal(X_pd, X_dc)
 
 
 def test_infer_feature_types_dataframe():
     X_pd = pd.DataFrame({0: pd.Series([1, 2]),
                          1: pd.Series([3, 4])})
-    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe(), check_dtype=False)
+    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd), check_dtype=False)
 
     X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="Int64"),
                          1: pd.Series([3, 4], dtype="Int64")})
-    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd).to_dataframe())
+    pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd))
 
     X_expected = X_pd.copy()
     X_expected[0] = X_expected[0].astype("category")
-    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: "categorical"}).to_dataframe())
-    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: ww.logical_types.Categorical}).to_dataframe())
+    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: "categorical"}))
+    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: ww.logical_types.Categorical}))
 
 
 def test_infer_feature_types_series():
     X_pd = pd.Series([1, 2, 3, 4])
     X_expected = X_pd.astype("Int64")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd).to_series())
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd))
 
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd).to_series())
-
-    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
-    X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, "categorical").to_series())
+    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd))
 
     X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
     X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical).to_series())
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, "categorical"))
+
+    X_pd = pd.Series([1, 2, 3, 4], dtype="Int64")
+    X_expected = X_pd.astype("category")
+    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical))
 
 
 @pytest.mark.parametrize("value,error",
@@ -181,7 +183,7 @@ def test_convert_numeric_dataset_pandas(datatype, value, error, make_data_type):
         X_ww = infer_feature_types(X)
         y_ww = infer_feature_types(y)
 
-        X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
+        X_ww = _convert_woodwork_types_wrapper(X_ww)
+        y_ww = _convert_woodwork_types_wrapper(y_ww)
         pd.testing.assert_frame_equal(X_ww, X_transformed)
         pd.testing.assert_series_equal(y_ww, y_transformed)

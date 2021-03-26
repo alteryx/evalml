@@ -42,8 +42,6 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
-    X = infer_feature_types(X)
-    y = infer_feature_types(y)
     return X, y
 
 

@@ -558,9 +558,9 @@ def make_data_type():
                 data = pd.DataFrame(data)
         if data_type == "ww":
             if len(data.shape) == 1:
-                data = ww.DataColumn(data)
+                data = ww.init_series(data)
             else:
-                data = ww.DataTable(data)
+                data.ww.init()
         return data
 
     return _make_data_type

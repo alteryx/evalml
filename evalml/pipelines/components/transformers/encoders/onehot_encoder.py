@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from evalml.pipelines.components import ComponentBaseMeta

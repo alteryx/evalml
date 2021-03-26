@@ -8,6 +8,18 @@ from evalml.utils.gen_utils import is_all_numeric
 numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
 
 
+def _numpy_to_pandas(array):
+    if len(array.shape) == 1:
+        data = pd.Series(array)
+    else:
+        data = pd.DataFrame(array)
+    return data
+
+
+def _list_to_pandas(list):
+    return _numpy_to_pandas(np.array(list))
+
+
 def infer_feature_types(data, feature_types=None):
     """Create a Woodwork structure from the given list, pandas, or numpy input, with specified types for columns.
         If a column's type is not specified, it will be inferred by Woodwork.
@@ -21,17 +33,17 @@ def infer_feature_types(data, feature_types=None):
     Returns:
         A Woodwork data structure where the data type of each column was either specified or inferred.
     """
-    ww_data = data
-    if isinstance(data, ww.DataTable) or isinstance(data, ww.DataColumn):
-        return ww_data
     if isinstance(data, list):
-        ww_data = np.array(data)
+        data = _list_to_pandas(data)
+    elif isinstance(data, np.ndarray):
+        data = _numpy_to_pandas(data)
 
-    ww_data = ww_data.copy()
-    if len(ww_data.shape) == 1:
-        name = ww_data.name if isinstance(ww_data, pd.Series) else None
-        return ww.DataColumn(ww_data, name=name, logical_type=feature_types)
-    return ww.DataTable(ww_data, logical_types=feature_types)
+    if isinstance(data, pd.Series):
+        data = ww.init_series(data, logical_type=feature_types)
+    else:
+        data.ww.init(logical_types=feature_types)
+
+    return data
 
 
 def _convert_woodwork_types_wrapper(pd_data):
@@ -116,6 +128,6 @@ def _convert_numeric_dataset_pandas(X, y):
     if not is_all_numeric(X_ww):
         raise ValueError('Values not all numeric or there are null values provided in the dataset')
     y_ww = infer_feature_types(y)
-    X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-    y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
+    X_ww = _convert_woodwork_types_wrapper(X_ww)
+    y_ww = _convert_woodwork_types_wrapper(y_ww)
     return X_ww, y_ww
