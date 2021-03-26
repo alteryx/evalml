@@ -62,12 +62,12 @@ class SequentialEngine(EngineBase):
                     train_indices = self.automl.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
-                    fitted_pipeline = EngineBase.train_pipeline(
-                        pipeline, X_train, y_train,
-                        self.automl.optimize_thresholds,
-                        self.automl.objective
-                    )
-                    fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
+                fitted_pipeline = EngineBase.train_pipeline(
+                    pipeline, X_train, y_train,
+                    self.automl.optimize_thresholds,
+                    self.automl.objective
+                )
+                fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
             except Exception as e:
                 logger.error(f'Train error for {pipeline.name}: {str(e)}')
                 tb = traceback.format_tb(sys.exc_info()[2])
