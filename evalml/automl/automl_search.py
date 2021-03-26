@@ -700,7 +700,12 @@ class AutoMLSearch:
     def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
         """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
         pipeline_name = pipeline.name
-        high_variance_cv = bool(abs(cv_scores.std() / cv_scores.mean()) > threshold)
+
+        high_variance_cv = False
+        cv_scores_std = cv_scores.std()
+        cv_scores_mean = cv_scores.mean()
+        if cv_scores_std != 0 and cv_scores_mean != 0:
+            high_variance_cv = bool(abs(cv_scores_std / cv_scores_mean) > threshold)
         if high_variance_cv:
             logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
         return high_variance_cv
