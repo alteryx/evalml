@@ -1976,7 +1976,6 @@ def test_score_error_when_custom_objective_not_instantiated(problem_type, logist
         pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])
 
 
-
 def test_binary_pipeline_string_target_thresholding(make_data_type, time_series_binary_classification_pipeline_class,
                                                     logistic_regression_binary_pipeline_class,
                                                     X_y_binary):
