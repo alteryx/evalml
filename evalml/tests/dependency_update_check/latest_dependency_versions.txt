@@ -8,7 +8,7 @@ imbalanced-learn==0.8.0
 ipywidgets==7.6.3
 kaleido==0.2.1
 lightgbm==3.0.0
-matplotlib==3.3.4
+matplotlib==3.4.0
 networkx==2.5
 nlp-primitives==1.1.0
 numpy==1.20.1
