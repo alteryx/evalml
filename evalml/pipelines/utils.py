@@ -268,7 +268,9 @@ def _make_component_list_from_actions(actions):
         List of components used to address the input actions
     """
     components = []
-    for action in actions:
-        if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append((DropColumns, {"columns": action.metadata["columns"]}))
+    cols_to_drop = []
+    for drop_action in [action for action in actions if action.action_code == DataCheckActionCode.DROP_COL]:
+        cols_to_drop.extend(drop_action.metadata["columns"])
+    if cols_to_drop:
+        components.append((DropColumns, {"columns": cols_to_drop}))
     return components

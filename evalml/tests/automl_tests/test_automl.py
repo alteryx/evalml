@@ -2471,7 +2471,8 @@ def test_automl_prepends_components_from_data_check_actions(X_y_binary):
     for pipeline, other_pipeline in zip(automl_with_actions.allowed_pipelines, pipelines_without_actions):
         pipeline_with_prepended = [component[0] for component in components_from_actions]
         assert pipeline.component_graph == pipeline_with_prepended + other_pipeline.component_graph
-
+    automl_with_actions.search(X, y)
+    # test output
 
 def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary

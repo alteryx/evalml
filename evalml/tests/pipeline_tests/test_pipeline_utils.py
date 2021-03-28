@@ -525,5 +525,4 @@ def test_make_component_list_from_actions():
 
     actions_same_code = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
                          DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
-    assert _make_component_list_from_actions(actions_same_code) == [(DropColumns, {"columns": ['some col']}),
-                                                                    (DropColumns, {"columns": ['some other col']})]
+    assert _make_component_list_from_actions(actions_same_code) == [(DropColumns, {"columns": ['some col', 'some other col']})]
