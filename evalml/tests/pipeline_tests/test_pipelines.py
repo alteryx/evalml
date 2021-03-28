@@ -1976,12 +1976,18 @@ def test_score_error_when_custom_objective_not_instantiated(problem_type, logist
         pipeline.score(X, y, objectives=[CostBenefitMatrix(1, 1, -1, -1), "F1"])
 
 
-def test_binary_pipeline_string_target_thresholding(make_data_type, logistic_regression_binary_pipeline_class, X_y_binary):
+@pytest.mark.parametrize("is_time_series", [True, False])
+def test_binary_pipeline_string_target_thresholding(is_time_series, make_data_type, time_series_binary_classification_pipeline_class,
+                                                    logistic_regression_binary_pipeline_class,
+                                                    X_y_binary):
     X, y = X_y_binary
     X = make_data_type('ww', X)
     y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
     objective = get_objective("F1", return_instance=True)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline_class = time_series_binary_classification_pipeline_class if is_time_series else logistic_regression_binary_pipeline_class
+
+    pipeline = pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                          "pipeline": {"gap": 0, "max_delay": 1}})
     pipeline.fit(X, y)
     assert pipeline.threshold is None
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
