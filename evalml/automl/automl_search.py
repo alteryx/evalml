@@ -165,7 +165,7 @@ class AutoMLSearch:
 
             pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
 
-            data_check_actions (list(DataCheckActions)): A list of DataCheckAction objects which specify actions to take to further configure the AutoML object or pipelines created. Defaults to None.
+            data_check_actions (list(DataCheckActions)): A list of DataCheckAction objects which specify actions to take to further configure the AutoML object or pipelines created for search. Defaults to None.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -278,9 +278,8 @@ class AutoMLSearch:
             self.data_check_actions = data_check_actions
             _prepended_components_and_parameters = _make_component_list_from_actions(self.data_check_actions)
             for component, parameters in _prepended_components_and_parameters:
-                self._prepended_components.append(component)
                 self._prepended_components_parameters.update({component.name: parameters})
-
+                self._prepended_components.append(component)
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
@@ -347,7 +346,6 @@ class AutoMLSearch:
         else:
             pipeline_params = self.pipeline_parameters
 
-        pipeline_params.update(self._prepended_components_parameters)
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
@@ -357,7 +355,8 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
-            pipeline_params=pipeline_params
+            pipeline_params=pipeline_params,
+            _prepended_params=self._prepended_components_parameters
         )
 
     def _pre_evaluation_callback(self, pipeline):

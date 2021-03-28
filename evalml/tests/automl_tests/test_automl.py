@@ -2474,6 +2474,7 @@ def test_automl_prepends_components_from_data_check_actions(X_y_binary):
     automl_with_actions.search(X, y)
     # test output
 
+
 def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")

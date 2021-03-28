@@ -23,7 +23,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
                  ensembling=False,
-                 pipeline_params=None):
+                 pipeline_params=None,
+                 _prepended_params=None):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -36,6 +37,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
+            _prepended_params (dict or None): Component parameters that are fixed and should be passed to the proposed pipelines.
         """
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
@@ -48,6 +50,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
+        self.prepended_params = prepended_params or {}
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -152,4 +155,5 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
+        parameters.update(self.prepended_params)
         return parameters
