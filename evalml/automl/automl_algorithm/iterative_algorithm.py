@@ -50,7 +50,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
-        self.prepended_params = prepended_params or {}
+        self._prepended_params = _prepended_params or {}
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -155,5 +155,5 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
-        parameters.update(self.prepended_params)
+        parameters.update(self._prepended_params)
         return parameters
