@@ -62,9 +62,9 @@ def test_datetime_nan_data_check_multiple_dt_no_nan():
 def test_datetime_nan_data_check_multiple_nan_dt():
     data = pd.DataFrame()
     data['A'] = pd.Series(pd.date_range('20200101', periods=3))
-    data.iloc[0][0] = None
+    data.loc[0][0] = None
     data['B'] = pd.Series(pd.date_range('20200101', periods=3))
-    data.iloc[0][1] = None
+    data.loc[0][1] = None
     data['C'] = np.random.randint(0, 5, size=len(data))
 
     dt_nan_check = DateTimeNaNDataCheck()
