@@ -1086,7 +1086,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
 
     if transformer_class == TargetImputer:
         X_t, y_t = transformer.transform(X, y)
-        pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
+        pd.testing.assert_index_equal(X_t.to_dataframe().index, X_original_index, check_names=check_names)
         pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
     else:
         X_t = transformer.transform(X, y).to_dataframe()
