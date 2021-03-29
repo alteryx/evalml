@@ -303,14 +303,14 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         else:
             dft.fit(X, y)
             transformed = dft.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
+        assert isinstance(transformed, pd.DataFrame)
         if logical_type in [Integer, Double, Categorical]:
-            assert transformed.logical_types == {0: logical_type,
-                                                 '0_delay_1': Double,
-                                                 'target_delay_0': Integer,
-                                                 'target_delay_1': Double}
+            assert transformed.ww.logical_types == {0: logical_type,
+                                                    '0_delay_1': Double,
+                                                    'target_delay_0': Integer,
+                                                    'target_delay_1': Double}
         else:
-            assert transformed.logical_types == {0: logical_type,
-                                                 '0_delay_1': logical_type,
-                                                 'target_delay_0': Integer,
-                                                 'target_delay_1': Double}
+            assert transformed.ww.logical_types == {0: logical_type,
+                                                    '0_delay_1': logical_type,
+                                                    'target_delay_0': Integer,
+                                                    'target_delay_1': Double}
