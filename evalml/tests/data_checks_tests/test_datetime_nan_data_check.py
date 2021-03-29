@@ -9,7 +9,7 @@ from evalml.data_checks import (
 )
 
 
-def test_highly_null_data_check_errors(ts_data):
+def test_datetime_nan_data_check_errors(ts_data):
     data, _ = ts_data
     data.reset_index(inplace=True, drop=False)
     data.at[0, 'index'] = np.NaN
@@ -24,7 +24,7 @@ def test_highly_null_data_check_errors(ts_data):
     }
 
 
-def test_highly_null_data_check_input_formats():
+def test_datetime_nan_check_input_formats():
     dt_nan_check = DateTimeNaNDataCheck()
 
     # test empty pd.DataFrame
