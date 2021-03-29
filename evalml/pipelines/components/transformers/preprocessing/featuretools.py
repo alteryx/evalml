@@ -51,7 +51,7 @@ class DFSTransformer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         X.columns = X.columns.astype(str)
         es = self._make_entity_set(X)
         self.features = dfs(entityset=es,
@@ -70,8 +70,8 @@ class DFSTransformer(Transformer):
             ww.DataTable: Feature matrix
         """
         X_ww = infer_feature_types(X)
-        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_t.columns = X_t.columns.astype(str)
+        X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
+        X_t = _convert_woodwork_types_wrapper(X_ww)
         es = self._make_entity_set(X_t)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
         return _retain_custom_types_and_initalize_woodwork(X_ww, feature_matrix)

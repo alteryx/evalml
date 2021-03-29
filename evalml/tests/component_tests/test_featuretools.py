@@ -76,15 +76,15 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         feature.fit(X)
         X_t = feature.transform(X)
 
-        assert_frame_equal(feature_matrix, X_t.to_dataframe())
+        assert_frame_equal(feature_matrix, X_t)
         assert features == feature.features
 
         feature.fit(X, y)
         feature.transform(X)
 
-        X_ww = ww.DataTable(X_pd)
-        feature.fit(X_ww)
-        feature.transform(X_ww)
+        X_pd.ww.init()
+        feature.fit(X_pd)
+        feature.transform(X_pd)
 
 
 def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
@@ -104,7 +104,7 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         feature.fit(X_fit)
         X_t = feature.transform(X_transform)
 
-        assert_frame_equal(feature_matrix, X_t.to_dataframe())
+        assert_frame_equal(feature_matrix, X_t)
 
 
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
@@ -116,15 +116,16 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
     override_types = [Integer, Double, Categorical, Datetime, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df.copy(), logical_types={0: logical_type})
-        except TypeError:
+            X = X_df
+            X.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
 
         dft = DFSTransformer()
         dft.fit(X, y)
         transformed = dft.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
+        assert isinstance(transformed, pd.DataFrame)
         if logical_type == Datetime:
-            assert transformed.logical_types == {'DAY(0)': Integer, 'MONTH(0)': Integer, 'WEEKDAY(0)': Integer, 'YEAR(0)': Integer}
+            assert transformed.ww.logical_types == {'DAY(0)': Integer, 'MONTH(0)': Integer, 'WEEKDAY(0)': Integer, 'YEAR(0)': Integer}
         else:
-            assert transformed.logical_types == {'0': logical_type}
+            assert transformed.ww.logical_types == {'0': logical_type}
