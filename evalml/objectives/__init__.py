@@ -2,6 +2,7 @@ from .binary_classification_objective import BinaryClassificationObjective
 from .cost_benefit_matrix import CostBenefitMatrix
 from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
+from .sensitivity_low_alert import SensitivityLowAlert
 from .multiclass_classification_objective import (
     MulticlassClassificationObjective
 )
