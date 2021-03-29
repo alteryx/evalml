@@ -54,5 +54,5 @@ class DateTimeNaNDataCheck(DataCheck):
             results["errors"].append(DataCheckError(message=error_contains_nan.format(cols_str),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                                                    details={"columns": cols_str}))
+                                                    details={"columns": cols_str}).to_dict())
         return results

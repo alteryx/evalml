@@ -101,7 +101,7 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
             DataCheckError(message='Input datetime column(s) (nan_dt_col) contains NaN values. Please impute NaN values or drop these rows or columns.',
                            data_check_name="DateTimeNaNDataCheck",
                            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                           details={"columns": 'nan_dt_col'})]
+                           details={"columns": 'nan_dt_col'}).to_dict()]
 
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
@@ -208,11 +208,11 @@ def test_default_data_checks_regression(input_type):
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
         "warnings": messages[:3] + null_leakage,
-        "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
-                                                 data_check_name="NoVarianceDataCheck",
-                                                 message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                 details={"column": "Y"}).to_dict()],
-        "actions": expected_actions_with_nan_dt
+        "errors": messages[4:7] + [DataCheckError(message="Y has 1 unique value.",
+                                                  data_check_name="NoVarianceDataCheck",
+                                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                  details={"column": "Y"}).to_dict()] + [messages[7]],
+        "actions": expected_actions
     }
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
