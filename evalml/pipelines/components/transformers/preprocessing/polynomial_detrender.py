@@ -56,7 +56,7 @@ class PolynomialDetrender(Transformer):
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")
         y_dt = infer_feature_types(y)
-        y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
+        y_series = _convert_woodwork_types_wrapper(y_dt)
         self._component_obj.fit(y_series)
         return self
 
@@ -74,9 +74,9 @@ class PolynomialDetrender(Transformer):
         if y is None:
             return X, y
         y_dt = infer_feature_types(y)
-        y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
+        y_series = _convert_woodwork_types_wrapper(y_dt)
         y_t = self._component_obj.transform(y_series)
-        y_t = ww.DataColumn(pd.Series(y_t, index=y_series.index))
+        y_t = infer_feature_types(pd.Series(y_t, index=y_series.index))
         return X, y_t
 
     def fit_transform(self, X, y=None):
@@ -106,7 +106,7 @@ class PolynomialDetrender(Transformer):
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")
         y_dt = infer_feature_types(y)
-        y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
+        y_series = _convert_woodwork_types_wrapper(y_dt)
         y_t = self._component_obj.inverse_transform(y_series)
-        y_t = ww.DataColumn(pd.Series(y_t, index=y_series.index))
+        y_t = infer_feature_types(pd.Series(y_t, index=y_series.index))
         return X, y_t

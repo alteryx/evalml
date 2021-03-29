@@ -25,7 +25,7 @@ def infer_feature_types(data, feature_types=None):
         If a column's type is not specified, it will be inferred by Woodwork.
 
     Arguments:
-        data (pd.DataFrame): Input data to convert to a Woodwork data structure.
+        data (pd.DataFrame, pd.Series): Input data to convert to a Woodwork data structure.
         feature_types (string, ww.logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
             mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
             a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
