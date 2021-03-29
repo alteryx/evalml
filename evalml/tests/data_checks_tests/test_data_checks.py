@@ -179,6 +179,7 @@ def test_default_data_checks_regression(input_type):
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100],
                       'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
+    X['nan_dt_col'][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
 
