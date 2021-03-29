@@ -1,5 +1,3 @@
-import pandas as pd
-
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils.woodwork_utils import (
     _convert_woodwork_types_wrapper,
@@ -32,7 +30,7 @@ class BaseSampler(Transformer):
             y (ww.DataColumn): Target features
 
          Returns:
-            ww.DataTable, ww.DataColumn: Prepared X and y data
+            ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series: Prepared X and y data, both woodwork and pandas
         """
         X = infer_feature_types(X)
         if y is None:
@@ -40,7 +38,7 @@ class BaseSampler(Transformer):
         y = infer_feature_types(y)
         X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(y.to_series())
-        return X_pd, y_pd
+        return X, y, X_pd, y_pd
 
     def transform(self, X, y=None):
         """No transformation needs to be done here.
