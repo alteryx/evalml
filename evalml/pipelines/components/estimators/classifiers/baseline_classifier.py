@@ -47,7 +47,7 @@ class BaselineClassifier(Estimator):
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_woodwork_types_wrapper(y)
 
         vals, counts = np.unique(y, return_counts=True)
         self._classes = list(vals)

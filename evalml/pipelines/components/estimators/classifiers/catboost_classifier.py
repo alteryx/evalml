@@ -57,7 +57,7 @@ class CatBoostClassifier(Estimator):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        cat_cols = list(X.select('category').columns)
+        cat_cols = list(X.ww.select('category').columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -69,7 +69,7 @@ class CatBoostClassifier(Estimator):
 
     def predict(self, X):
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()

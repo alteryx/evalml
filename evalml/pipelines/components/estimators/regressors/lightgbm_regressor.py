@@ -74,7 +74,7 @@ class LightGBMRegressor(Estimator):
         """Encodes each categorical feature using ordinal encoding."""
         X = infer_feature_types(X)
         cat_cols = list(X.select('category').columns)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         if fit:
             self.input_feature_names = list(X.columns)
         X_encoded = _rename_column_names_to_numeric(X)
@@ -96,7 +96,7 @@ class LightGBMRegressor(Estimator):
         X_encoded = self._encode_categories(X, fit=True)
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
+            y = _convert_woodwork_types_wrapper(y)
         self._component_obj.fit(X_encoded, y)
         return self
 

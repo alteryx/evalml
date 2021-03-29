@@ -40,7 +40,7 @@ class BaselineRegressor(Estimator):
             raise ValueError("Cannot fit Baseline regressor if y is None")
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_woodwork_types_wrapper(y)
 
         if self.parameters["strategy"] == "mean":
             self._prediction_value = y.mean()
