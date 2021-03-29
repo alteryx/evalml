@@ -177,7 +177,6 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
                           train_best_pipeline=False, n_jobs=1)
-
     engine = SequentialEngine(X_train=automl.X_train,
                               y_train=automl.y_train,
                               automl=automl)
@@ -196,9 +195,7 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
         caplog.clear()
         with patch('evalml.pipelines.BinaryClassificationPipeline.fit') as mock_fit:
             mock_fit.side_effect = pipeline_fit_side_effect
-
             trained_pipelines = engine.train_batch(pipelines)
-
             assert len(trained_pipelines) == len(pipeline_fit_side_effect) - len(exceptions_to_check)
             assert mock_fit.call_count == len(pipeline_fit_side_effect)
             for exception in exceptions_to_check:
@@ -211,6 +208,30 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
     automl.search()
 
     train_batch_and_check()
+
+
+@patch('evalml.automl.EngineBase.train_pipeline')
+def test_train_batch_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
+    X = ww.DataTable(X)
+    y = ww.DataColumn(y)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
+                          train_best_pipeline=False, n_jobs=1)
+    engine = SequentialEngine(X_train=automl.X_train,
+                              y_train=automl.y_train,
+                              automl=automl)
+
+    train_indices = automl.data_splitter.transform_sample(X, y)
+    X_train = X.iloc[train_indices]
+    y_train = y.iloc[train_indices]
+
+    pipelines = [dummy_binary_pipeline_class({})]
+    engine.train_batch(pipelines)
+
+    args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
+    pd.testing.assert_frame_equal(X_train.to_dataframe(), args[1].to_dataframe())
+    pd.testing.assert_series_equal(y_train.to_series(), args[2].to_series())
 
 
 no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
