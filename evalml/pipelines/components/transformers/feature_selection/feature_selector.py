@@ -32,7 +32,7 @@ class FeatureSelector(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww)
         self.input_feature_names = list(X.columns.values)
 
         try:
