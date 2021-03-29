@@ -97,7 +97,11 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
             DataCheckError(message="also_all_null has 0 unique value.",
                            data_check_name="NoVarianceDataCheck",
                            message_code=DataCheckMessageCode.NO_VARIANCE,
-                           details={"column": "also_all_null"}).to_dict()]
+                           details={"column": "also_all_null"}).to_dict(),
+            DataCheckError(message='Input datetime column(s) (nan_dt_col) contains NaN values. Please impute NaN values or drop these rows or columns.',
+                           data_check_name="DateTimeNaNDataCheck",
+                           message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+                           details={"columns": 'nan_dt_col'})]
 
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
@@ -113,7 +117,10 @@ def test_default_data_checks_classification(input_type):
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 4, 5],
                       'id': [0, 1, 2, 3, 4],
-                      'has_label_leakage': [100, 200, 100, 200, 100]})
+                      'has_label_leakage': [100, 200, 100, 200, 100],
+                      'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
+    X['nan_dt_col'][0] = None
+
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
     if input_type == "ww":
@@ -122,7 +129,7 @@ def test_default_data_checks_classification(input_type):
         y_multiclass = ww.DataColumn(y_multiclass)
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
-
+    print(data_checks.data_checks)
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
@@ -170,7 +177,8 @@ def test_default_data_checks_regression(input_type):
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 5, 5],
                       'id': [0, 1, 2, 3, 4],
-                      'has_label_leakage': [100, 200, 100, 200, 100]})
+                      'has_label_leakage': [100, 200, 100, 200, 100],
+                      'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
 
