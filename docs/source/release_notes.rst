@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
+        * Added sensitivity at low alert rates as an objective :pr:`2001`
     * Fixes
     * Changes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
