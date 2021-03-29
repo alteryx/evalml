@@ -131,6 +131,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None, co
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
     if components_to_prepend is not None:
+        if len(set(components_to_prepend)) != len(components_to_prepend):
+            raise ValueError("`make_pipelines` does not support duplicate components")
         complete_component_graph = components_to_prepend + complete_component_graph
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):

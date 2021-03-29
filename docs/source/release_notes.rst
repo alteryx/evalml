@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Updated ``AutoMLSearch`` to include  an ``actions`` parameter :pr:`1981`
+        * Updated ``AutoMLSearch`` to include  an ``actions`` parameter that will add components to prepend to each pipeline :pr:`1981`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
     * Fixes
