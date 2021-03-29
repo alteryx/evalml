@@ -65,7 +65,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                                    "code": "TARGET_HAS_NULL",\
                                                                    "details": {"num_null_rows": 2, "pct_null_rows": 50}}],\
                                                        "warnings": [],\
-                                                       "actions": [{'code': 'IMPUTE_COL', 'details': {'column': None, 'impute_strategy': 'most_frequent', 'is_target': True}}]}
+                                                       "actions": [{'code': 'IMPUTE_COL', 'metadata': {'column': None, 'impute_strategy': 'most_frequent', 'is_target': True}}]}
         """
         results = {
             "warnings": [],
@@ -105,7 +105,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     details={"num_null_rows": num_null_rows, "pct_null_rows": pct_null_rows}).to_dict())
             impute_strategy = "mean" if is_regression(self.problem_type) else "most_frequent"
             results["actions"].append(DataCheckAction(DataCheckActionCode.IMPUTE_COL,
-                                                      details={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict())
+                                                      metadata={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict())
 
         value_counts = y_df.value_counts()
         unique_values = value_counts.index.tolist()

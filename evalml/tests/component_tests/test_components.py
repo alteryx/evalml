@@ -536,6 +536,7 @@ def test_transformer_transform_output_type(X_y_binary):
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
             if isinstance(component, TargetImputer):
+                assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
             else:
                 assert isinstance(transform_output, ww.DataTable)
@@ -562,6 +563,7 @@ def test_transformer_transform_output_type(X_y_binary):
 
             transform_output = component.fit_transform(X, y=y)
             if isinstance(component, TargetImputer):
+                assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
             else:
                 assert isinstance(transform_output, ww.DataTable)

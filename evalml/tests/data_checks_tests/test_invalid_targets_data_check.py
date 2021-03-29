@@ -152,7 +152,7 @@ def test_invalid_target_data_input_formats():
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                   details={"target_values": [0]}).to_dict()],
-        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"}).to_dict()]
     }
     #  test Woodwork
     y = pd.Series([None, None, None, 0])
@@ -467,7 +467,7 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_HAS_NULL,
                                   details={"num_null_rows": 3, "pct_null_rows": 30.0}).to_dict()],
-        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict()]
+        "actions": [DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict()]
     }
     if is_binary(problem_type):
         expected["errors"].append(DataCheckError(message="Binary class targets require exactly two unique values.",

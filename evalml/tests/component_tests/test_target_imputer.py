@@ -127,7 +127,7 @@ def test_target_imputer_does_not_reset_index():
     assert y.index.tolist() == list(range(10))
 
     y.drop(0, inplace=True)
-    pd.testing.assert_series_equal(pd.Series([1.0, 2, 3, 4, np.nan, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))), y)
+    pd.testing.assert_series_equal(pd.Series([1, 2, 3, 4, np.nan, 6, 7, 8, 9], dtype=float, index=list(range(1, 10))), y)
 
     imputer = TargetImputer(impute_strategy="mean")
     imputer.fit(None, y=y)

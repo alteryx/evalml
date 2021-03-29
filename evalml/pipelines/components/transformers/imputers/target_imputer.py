@@ -37,9 +37,11 @@ class TargetImputer(Transformer):
     def fit(self, X, y):
         """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are
             treated as the same.
+
         Arguments:
             X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples].
+
         Returns:
             self
         """
@@ -57,12 +59,16 @@ class TargetImputer(Transformer):
 
     def transform(self, X, y):
         """Transforms input target data by imputing missing values. 'None' and np.nan values are treated as the same.
+
         Arguments:
             X (ww.DataTable, pd.DataFrame): Features. Ignored.
             y (ww.DataColumn, pd.Series): Target data to impute.
+
         Returns:
-            ww.DataColumn: Transformed y
+            (ww.DataTable, ww.DataColumn): The original X, transformed y
         """
+        X = infer_feature_types(X)
+
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         y_df = y.to_frame()
@@ -78,11 +84,13 @@ class TargetImputer(Transformer):
         return X, _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
 
     def fit_transform(self, X, y):
-        """Fits on y and transforms y
+        """Fits on and transforms the input target data.
+
         Arguments:
             X (ww.DataTable, pd.DataFrame): Features. Ignored.
             y (ww.DataColumn, pd.Series): Target data to impute.
+
         Returns:
-            ww.DataColumn: Transformed y
+            (ww.DataTable, ww.DataColumn): The original X, transformed y
         """
         return self.fit(X, y).transform(X, y)

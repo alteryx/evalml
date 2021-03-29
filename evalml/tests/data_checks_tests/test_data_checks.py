@@ -32,7 +32,8 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()], "errors": [], "actions": []}
+            return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()],
+                    "errors": [], "actions": []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
@@ -102,7 +103,7 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'id'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, 'impute_strategy': 'most_frequent'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'most_frequent'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict()]
 
 
@@ -188,7 +189,7 @@ def test_default_data_checks_regression(input_type):
                                            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                            details={"column": "id"}).to_dict()]
 
-    impute_action = DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, 'impute_strategy': 'mean'}).to_dict()
+    impute_action = DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'mean'}).to_dict()
     assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions[:3] + [impute_action] + expected_actions[4:]}
 
     # Skip Invalid Target

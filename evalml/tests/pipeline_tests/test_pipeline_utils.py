@@ -522,6 +522,7 @@ def test_make_component_list_from_actions():
     actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']})]
     assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col'])]
 
-    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
-               DataCheckAction(DataCheckActionCode.IMPUTE_COL, details={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
-    assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col']), TargetImputer(impute_strategy="most_frequent")]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": ['some col']}),
+               DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
+    assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col']),
+                                                          TargetImputer(impute_strategy="most_frequent")]
