@@ -77,7 +77,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = X.select("datetime").columns
+        self._date_time_col_names = X.ww.select("datetime").columns
         return self
 
     def transform(self, X, y=None):
@@ -91,7 +91,7 @@ class DateTimeFeaturizer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X_t = _convert_woodwork_types_wrapper(X_ww.ww.copy())
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return infer_feature_types(X_t)

@@ -68,13 +68,13 @@ def test_delayed_feature_extractor_maxdelay3_gap1(encode_X_as_str, encode_y_as_s
         answer["feature"] = X.feature.astype("Int64")
     if not encode_y_as_str:
         answer["target_delay_0"] = y_answer.astype("Int64")
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=1).fit_transform(X=X, y=y).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=1).fit_transform(X=X, y=y))
 
     answer_only_y = pd.DataFrame({"target_delay_0": y_answer.astype("Int64"),
                                   "target_delay_1": y_answer.shift(1),
                                   "target_delay_2": y_answer.shift(2),
                                   "target_delay_3": y_answer.shift(3)})
-    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=1).fit_transform(X=None, y=y).to_dataframe())
+    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=1).fit_transform(X=None, y=y))
 
 
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
@@ -96,7 +96,7 @@ def test_delayed_feature_extractor_maxdelay5_gap1(encode_X_as_str, encode_y_as_s
                            "target_delay_5": y_answer.shift(5)})
     if not encode_X_as_str:
         answer["feature"] = X.feature.astype("Int64")
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=5, gap=1).fit_transform(X, y).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=5, gap=1).fit_transform(X, y))
 
     answer_only_y = pd.DataFrame({"target_delay_0": y_answer.astype("Int64"),
                                   "target_delay_1": y_answer.shift(1),
@@ -104,7 +104,7 @@ def test_delayed_feature_extractor_maxdelay5_gap1(encode_X_as_str, encode_y_as_s
                                   "target_delay_3": y_answer.shift(3),
                                   "target_delay_4": y_answer.shift(4),
                                   "target_delay_5": y_answer.shift(5)})
-    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=5, gap=1).fit_transform(X=None, y=y).to_dataframe())
+    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=5, gap=1).fit_transform(X=None, y=y))
 
 
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
@@ -122,13 +122,13 @@ def test_delayed_feature_extractor_maxdelay3_gap7(encode_X_as_str, encode_y_as_s
                            "target_delay_3": y_answer.shift(3)})
     if not encode_X_as_str:
         answer["feature"] = X.feature.astype("Int64")
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y))
 
     answer_only_y = pd.DataFrame({"target_delay_0": y_answer.astype("Int64"),
                                   "target_delay_1": y_answer.shift(1),
                                   "target_delay_2": y_answer.shift(2),
                                   "target_delay_3": y_answer.shift(3)})
-    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y).to_dataframe())
+    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y))
 
 
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
@@ -148,13 +148,13 @@ def test_delayed_feature_extractor_numpy(encode_X_as_str, encode_y_as_str, delay
                            "target_delay_3": y_answer.shift(3)})
     if not encode_X_as_str:
         answer[0] = X.feature.astype("Int64")
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X_np, y_np).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X_np, y_np))
 
     answer_only_y = pd.DataFrame({"target_delay_0": y_answer.astype("Int64"),
                                   "target_delay_1": y_answer.shift(1),
                                   "target_delay_2": y_answer.shift(2),
                                   "target_delay_3": y_answer.shift(3)})
-    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y_np).to_dataframe())
+    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y_np))
 
 
 @pytest.mark.parametrize("delay_features,delay_target", [(False, True), (True, False), (False, False)])
@@ -182,7 +182,7 @@ def test_lagged_feature_extractor_delay_features_delay_target(encode_y_as_str, e
 
     transformer = DelayedFeatureTransformer(max_delay=3, gap=1,
                                             delay_features=delay_features, delay_target=delay_target)
-    assert_frame_equal(all_delays, transformer.fit_transform(X, y).to_dataframe())
+    assert_frame_equal(all_delays, transformer.fit_transform(X, y))
 
 
 @pytest.mark.parametrize("delay_features,delay_target", [(False, True), (True, False), (False, False)])
@@ -201,7 +201,7 @@ def test_lagged_feature_extractor_delay_target(encode_y_as_str, encode_X_as_str,
 
     transformer = DelayedFeatureTransformer(max_delay=3, gap=1,
                                             delay_features=delay_features, delay_target=delay_target)
-    assert_frame_equal(answer, transformer.fit_transform(None, y).to_dataframe())
+    assert_frame_equal(answer, transformer.fit_transform(None, y))
 
 
 @pytest.mark.parametrize("gap", [0, 1, 7])
@@ -216,13 +216,13 @@ def test_target_delay_when_gap_is_0(gap, delayed_features_data):
         expected = expected.drop(columns=["target_delay_0"])
 
     transformer = DelayedFeatureTransformer(max_delay=1, gap=gap)
-    assert_frame_equal(expected, transformer.fit_transform(X, y).to_dataframe())
+    assert_frame_equal(expected, transformer.fit_transform(X, y))
     expected = pd.DataFrame({"target_delay_0": y.astype("Int64"),
                              "target_delay_1": y.shift(1)})
 
     if gap == 0:
         expected = expected.drop(columns=["target_delay_0"])
-    assert_frame_equal(expected, transformer.fit_transform(None, y).to_dataframe())
+    assert_frame_equal(expected, transformer.fit_transform(None, y))
 
 
 @pytest.mark.parametrize('encode_X_as_str', [True, False])
@@ -250,13 +250,13 @@ def test_delay_feature_transformer_supports_custom_index(encode_X_as_str, encode
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y))
 
     answer_only_y = pd.DataFrame({"target_delay_0": y_answer.astype("Int64"),
                                   "target_delay_1": y_answer.shift(1),
                                   "target_delay_2": y_answer.shift(2),
                                   "target_delay_3": y_answer.shift(3)}, index=pd.RangeIndex(50, 81))
-    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y).to_dataframe())
+    assert_frame_equal(answer_only_y, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y))
 
 
 def test_delay_feature_transformer_multiple_categorical_columns(delayed_features_data):
@@ -271,7 +271,7 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
                            "target_delay_0": y_answer.astype("Int64"),
                            "target_delay_1": y_answer.shift(1),
                            })
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y))
 
 
 def test_delay_feature_transformer_y_is_none(delayed_features_data):
@@ -279,7 +279,7 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
     answer = pd.DataFrame({"feature": X.feature.astype("Int64"),
                            "feature_delay_1": X.feature.shift(1),
                            })
-    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y=None).to_dataframe())
+    assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y=None))
 
 
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
@@ -293,8 +293,9 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
     override_types = [Integer, Double, Categorical, Datetime, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df
+            X.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
         dft = DelayedFeatureTransformer(max_delay=1, gap=11)
         if fit_transform:
