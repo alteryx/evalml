@@ -4,7 +4,7 @@ from evalml.utils.woodwork_utils import (
     infer_feature_types
 )
 
-error_contains_nan = "Input datetime column ({}) contains NaN values. Please input NaN values or drop this column."
+error_contains_nan = "Input datetime column ({}) contains NaN values. Please impute NaN values or drop this column."
 
 
 class DateTimeNaNDataCheck(DataCheck):

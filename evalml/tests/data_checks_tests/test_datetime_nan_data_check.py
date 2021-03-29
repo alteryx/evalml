@@ -17,7 +17,7 @@ def test_datetime_nan_data_check_errors(ts_data):
     assert dt_nan_check.validate(data) == {
         "warnings": [],
         "actions": [],
-        "errors": [DataCheckError(message='Input datetime column (index) contains NaN values. Please input NaN values or drop this column.',
+        "errors": [DataCheckError(message='Input datetime column (index) contains NaN values. Please impute NaN values or drop this column.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                                   details={"column": 'index'})]
@@ -33,7 +33,7 @@ def test_datetime_nan_check_input_formats():
     expected = {
         "warnings": [],
         "actions": [],
-        "errors": [DataCheckError(message='Input datetime column (index) contains NaN values. Please input NaN values or drop this column.',
+        "errors": [DataCheckError(message='Input datetime column (index) contains NaN values. Please impute NaN values or drop this column.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                                   details={"column": 'index'})]
@@ -49,7 +49,7 @@ def test_datetime_nan_check_input_formats():
     expected = {
         "warnings": [],
         "actions": [],
-        "errors": [DataCheckError(message='Input datetime column (0) contains NaN values. Please input NaN values or drop this column.',
+        "errors": [DataCheckError(message='Input datetime column (0) contains NaN values. Please impute NaN values or drop this column.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                                   details={'column': 0})]
