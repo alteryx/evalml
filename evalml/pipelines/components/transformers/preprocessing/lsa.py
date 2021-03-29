@@ -34,7 +34,7 @@ class LSA(TextTransformer):
         self._text_columns = self._get_text_columns(X)
         if len(self._text_columns) == 0:
             return self
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         corpus = X[self._text_columns].values.flatten()
         # we assume non-str values will have been filtered out prior to calling LSA.fit. this is a safeguard.
         corpus = corpus.astype(str)
@@ -56,7 +56,7 @@ class LSA(TextTransformer):
         if len(self._text_columns) == 0:
             return X_ww
 
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww)
         X_t = X.copy()
         provenance = {}
         for col in self._text_columns:
