@@ -67,7 +67,8 @@ class TargetImputer(Transformer):
         Returns:
             (ww.DataTable, ww.DataColumn): The original X, transformed y
         """
-        X = infer_feature_types(X)
+        if X is not None:
+            X = infer_feature_types(X)
 
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())

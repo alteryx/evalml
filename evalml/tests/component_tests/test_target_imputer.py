@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from pandas.testing import assert_series_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -21,6 +21,17 @@ def test_target_imputer_no_y(X_y_binary):
         imputer.fit_transform(None, None)
     with pytest.raises(ValueError, match="y cannot be None"):
         imputer.fit(X, None)
+
+
+def test_target_imputer_with_X():
+    X = pd.DataFrame({"some col": [1, 3, np.nan]})
+    y = pd.Series([np.nan, 1, 3])
+    imputer = TargetImputer(impute_strategy='median')
+    y_expected = pd.Series([2, 1, 3])
+    X_expected = pd.DataFrame({"some col": [1, 3, np.nan]})
+    X_t, y_t = imputer.fit_transform(X, y)
+    assert_series_equal(y_expected, y_t.to_series(), check_dtype=False)
+    assert_frame_equal(X_expected, X_t.to_dataframe(), check_dtype=False)
 
 
 def test_target_imputer_median():
