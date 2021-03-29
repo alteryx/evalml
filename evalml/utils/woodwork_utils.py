@@ -39,7 +39,7 @@ def infer_feature_types(data, feature_types=None):
         data = _numpy_to_pandas(data)
 
     if isinstance(data, pd.Series):
-        if data.ww.schema is not None:
+        if data.ww._schema is not None:
             return data
         data = ww.init_series(data, logical_type=feature_types)
     else:
@@ -105,8 +105,7 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
         ltypes_to_ignore = []
     col_intersection = set(old_datatable.columns).intersection(set(new_dataframe.columns))
     logical_types = old_datatable.ww.logical_types
-    logical_types = {col: logical_types[col] for col in col_intersection if col not in ltypes_to_ignore}
-
+    logical_types = {col: logical_types[col] for col in col_intersection if logical_types[col] not in ltypes_to_ignore}
     new_dataframe.ww.init(logical_types=logical_types)
     return new_dataframe
 

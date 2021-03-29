@@ -64,10 +64,10 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def transform(self, X, y=None):
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww)
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
+            y = _convert_woodwork_types_wrapper(y)
         X_t = self._component_obj.transform(X, y)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Categorical])
