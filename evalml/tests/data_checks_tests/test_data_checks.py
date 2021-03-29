@@ -129,7 +129,6 @@ def test_default_data_checks_classification(input_type):
         y_multiclass = ww.DataColumn(y_multiclass)
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
-    print(data_checks.data_checks)
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
@@ -196,8 +195,12 @@ def test_default_data_checks_regression(input_type):
                                            data_check_name="TargetLeakageDataCheck",
                                            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                            details={"column": "id"}).to_dict()]
+    nan_dt_leakage_warning = [DataCheckWarning(message="Column 'nan_dt_col' is 95.0% or more correlated with the target",
+                                               data_check_name="TargetLeakageDataCheck",
+                                               message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                               details={"column": "nan_dt_col"}).to_dict()]
 
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning, "errors": messages[3:], "actions": expected_actions}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
