@@ -80,7 +80,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _get_cat_cols(X):
         """Get names of categorical columns in the input Woodwork DataTable."""
-        return list(X.select(include=['category']).columns.keys())
+        return list(X.ww.select(include=['category']).columns)
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']
@@ -88,7 +88,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X)
 
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         X_t = X
         invalid_features = [col for col in self.features_to_encode if col not in list(X.columns)]
         if len(invalid_features) > 0:
@@ -140,7 +140,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             ww.DataTable: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
         X_ww = infer_feature_types(X)
-        X_copy = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X_copy = _convert_woodwork_types_wrapper(X_ww)
         X_copy = self._handle_parameter_handle_missing(X_copy)
 
         X_t = pd.DataFrame()

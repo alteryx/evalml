@@ -36,10 +36,10 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww)
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
+            y = _convert_woodwork_types_wrapper(y)
         try:
             X_t = self._component_obj.transform(X, y)
         except AttributeError:
@@ -58,10 +58,10 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X_pd = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X_pd = _convert_woodwork_types_wrapper(X_ww)
         if y is not None:
             y_ww = infer_feature_types(y)
-            y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
+            y_pd = _convert_woodwork_types_wrapper(y_ww)
         try:
             X_t = self._component_obj.fit_transform(X_pd, y_pd)
             return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)

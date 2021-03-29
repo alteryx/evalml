@@ -39,8 +39,12 @@ def infer_feature_types(data, feature_types=None):
         data = _numpy_to_pandas(data)
 
     if isinstance(data, pd.Series):
+        if data.ww.schema is not None:
+            return data
         data = ww.init_series(data, logical_type=feature_types)
     else:
+        if data.ww.schema is not None:
+            return data
         data.ww.init(logical_types=feature_types)
 
     return data
@@ -97,21 +101,14 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
         A new DataTable where any of the columns that exist in the old input DataTable and the new DataFrame try to retain
         the original logical type, if possible and not specified to be ignored.
     """
-    retained_logical_types = {}
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
     col_intersection = set(old_datatable.columns).intersection(set(new_dataframe.columns))
-    logical_types = old_datatable.logical_types
-    for col in col_intersection:
-        if logical_types[col] in ltypes_to_ignore:
-            continue
-        if str(new_dataframe[col].dtype) != logical_types[col].pandas_dtype:
-            try:
-                new_dataframe[col].astype(logical_types[col].pandas_dtype)
-                retained_logical_types[col] = old_datatable[col].logical_type
-            except (ValueError, TypeError):
-                pass
-    return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
+    logical_types = old_datatable.ww.logical_types
+    logical_types = {col: logical_types[col] for col in col_intersection if col not in ltypes_to_ignore}
+
+    new_dataframe.ww.init(logical_types=logical_types)
+    return new_dataframe
 
 
 def _convert_numeric_dataset_pandas(X, y):
