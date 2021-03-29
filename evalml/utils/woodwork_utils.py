@@ -40,14 +40,15 @@ def infer_feature_types(data, feature_types=None):
 
     if isinstance(data, pd.Series):
         if data.ww._schema is not None:
-            return data
-        data = ww.init_series(data, logical_type=feature_types)
+            return data.ww.copy()
+        ww_data = ww.init_series(data, logical_type=feature_types)
     else:
         if data.ww.schema is not None:
-            return data
-        data.ww.init(logical_types=feature_types)
+            return data.ww.copy()
+        ww_data = data.copy()
+        ww_data.ww.init(logical_types=feature_types)
 
-    return data
+    return ww_data
 
 
 def _convert_woodwork_types_wrapper(pd_data):
@@ -105,8 +106,17 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
         ltypes_to_ignore = []
     col_intersection = set(old_datatable.columns).intersection(set(new_dataframe.columns))
     logical_types = old_datatable.ww.logical_types
-    logical_types = {col: logical_types[col] for col in col_intersection if logical_types[col] not in ltypes_to_ignore}
-    new_dataframe.ww.init(logical_types=logical_types)
+    retained_logical_types = {}
+    for col in col_intersection:
+        if logical_types[col] in ltypes_to_ignore:
+            continue
+        if str(new_dataframe[col].dtype) != logical_types[col].primary_dtype:
+            try:
+                new_dataframe[col].astype(logical_types[col].primary_dtype)
+                retained_logical_types[col] = logical_types[col]
+            except (ValueError, TypeError):
+                pass
+    new_dataframe.ww.init(logical_types=retained_logical_types)
     return new_dataframe
 
 

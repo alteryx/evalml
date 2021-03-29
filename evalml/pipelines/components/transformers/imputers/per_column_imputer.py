@@ -55,7 +55,7 @@ class PerColumnImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
@@ -79,11 +79,11 @@ class PerColumnImputer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww)
         X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():
-            transformed = imputer.transform(X[[column]]).to_dataframe()
+            transformed = imputer.transform(X[[column]])
             if transformed.empty:
                 cols_to_drop.append(column)
             else:

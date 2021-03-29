@@ -47,7 +47,7 @@ class SimpleImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
 
         # Convert all bool dtypes to category for fitting
         if (X.dtypes == bool).all():
@@ -68,7 +68,7 @@ class SimpleImputer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X_ww)
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():

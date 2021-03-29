@@ -54,7 +54,7 @@ def test_all_strategies():
 
     transformer = PerColumnImputer(impute_strategies=strategies)
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
 
 
 def test_fit_transform():
@@ -79,7 +79,7 @@ def test_fit_transform():
     transformer = PerColumnImputer(impute_strategies=strategies)
     X_fit_transform = transformer.fit_transform(X)
 
-    assert_frame_equal(X_t.to_dataframe(), X_fit_transform.to_dataframe())
+    assert_frame_equal(X_t, X_fit_transform)
 
 
 def test_non_numeric_errors(non_numeric_df):
@@ -118,7 +118,7 @@ def test_non_numeric_valid(non_numeric_df):
                                "D": pd.Series(["a", "b", "a", "a"], dtype="category")})
 
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
 
     # constant with all strings
     strategies = {'D': {"impute_strategy": "constant", "fill_value": 100}}
@@ -134,7 +134,7 @@ def test_non_numeric_valid(non_numeric_df):
                                "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
                                "D": pd.Series(["a", "b", "a", 100], dtype="category")})
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
 
 
 def test_fit_transform_drop_all_nan_columns():
@@ -147,7 +147,7 @@ def test_fit_transform_drop_all_nan_columns():
     transformer = PerColumnImputer(impute_strategies=strategies)
     X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
     assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                                         "some_nan": [np.nan, 1, 0],
                                         "another_col": [0, 1, 2]}))
@@ -165,7 +165,7 @@ def test_transform_drop_all_nan_columns():
     X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
     X_t = transformer.transform(X)
 
-    assert_frame_equal(X_expected_arr, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
     assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                                         "some_nan": [np.nan, 1, 0],
                                         "another_col": [0, 1, 2]}))
@@ -175,13 +175,13 @@ def test_transform_drop_all_nan_columns_empty():
     X = pd.DataFrame([[np.nan, np.nan, np.nan]])
     strategies = {'0': {"impute_strategy": "most_frequent"}, }
     transformer = PerColumnImputer(impute_strategies=strategies)
-    assert transformer.fit_transform(X).to_dataframe().empty
+    assert transformer.fit_transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
     strategies = {'0': {"impute_strategy": "most_frequent"}}
     transformer = PerColumnImputer(impute_strategies=strategies)
     transformer.fit(X)
-    assert transformer.transform(X).to_dataframe().empty
+    assert transformer.transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
 
@@ -198,12 +198,13 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_d
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df
+            X.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
 
         imputer = PerColumnImputer()
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {0: logical_type}
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {0: logical_type}
