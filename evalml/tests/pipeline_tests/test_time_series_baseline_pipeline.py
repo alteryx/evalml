@@ -16,8 +16,9 @@ from evalml.pipelines.time_series_baselines import (
 @pytest.mark.parametrize('gap', [0, 1])
 @pytest.mark.parametrize('pipeline_class', [TimeSeriesBaselineRegressionPipeline,
                                             TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline])
+@patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets", side_effect=lambda y: y)
-def test_time_series_baseline(mock_decode, pipeline_class, gap, X_none, ts_data):
+def test_time_series_baseline(mock_decode, mock_encode, pipeline_class, gap, X_none, ts_data):
     X, y = ts_data
 
     clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1},
