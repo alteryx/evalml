@@ -2455,8 +2455,12 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline != original_pipeline
 
 
-def test_automl_prepends_components_from_data_check_actions(X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_automl_prepends_components_from_data_check_actions(mock_fit_binary, mock_score_binary, X_y_binary):
     X, y = X_y_binary
+    mock_score_binary.return_value = {'Log Loss Binary': 1.0}
+
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
     pipelines_without_actions = automl.allowed_pipelines
 
@@ -2464,15 +2468,19 @@ def test_automl_prepends_components_from_data_check_actions(X_y_binary):
     for pipeline, other_pipeline in zip(automl_with_empty_actions.allowed_pipelines, pipelines_without_actions):
         assert pipeline.component_graph == other_pipeline.component_graph
 
-    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
-               DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": [0]}),
+               DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": [1]})]
     components_from_actions = _make_component_list_from_actions(actions)
     automl_with_actions = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", data_check_actions=actions)
     for pipeline, other_pipeline in zip(automl_with_actions.allowed_pipelines, pipelines_without_actions):
         pipeline_with_prepended = [component[0] for component in components_from_actions]
         assert pipeline.component_graph == pipeline_with_prepended + other_pipeline.component_graph
-    automl_with_actions.search(X, y)
-    # test output
+    automl_with_actions.search()
+
+    for i, row in automl_with_actions.rankings.iterrows():
+        if 'Baseline Classifier' in row['parameters']:
+            continue
+        assert row['parameters']['Drop Columns Transformer'] == {'columns': [0, 1]}
 
 
 def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline_class):
