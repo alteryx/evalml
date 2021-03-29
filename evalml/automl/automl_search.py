@@ -173,6 +173,9 @@ class AutoMLSearch:
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
+
+            engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
+                be used.
         """
         if X_train is None:
             raise ValueError('Must specify training data as a 2d array using the X_train argument')
@@ -720,7 +723,7 @@ class AutoMLSearch:
         if cv_scores_std != 0 and cv_scores_mean != 0:
             high_variance_cv = bool(abs(cv_scores_std / cv_scores_mean) > threshold)
         if high_variance_cv:
-            logger.warning(f"\t\tHigh coefficient of variation (cv >= {threshold}) within cross validation scores.\n\t\t{pipeline_name} may not perform as estimated on unseen data.")
+            logger.warning(f"\tHigh coefficient of variation (cv >= {threshold}) within cross validation scores.\n\t{pipeline_name} may not perform as estimated on unseen data.")
         return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
@@ -895,6 +898,7 @@ class AutoMLSearch:
             Note that the any pipelines that error out during training will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
+        check_all_pipeline_names_unique(pipelines)
         fitted_pipelines = {}
         computations = []
         for pipeline in pipelines:
@@ -930,6 +934,7 @@ class AutoMLSearch:
             Note that the any pipelines that error out during scoring will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
+        check_all_pipeline_names_unique(pipelines)
         scores = {}
         objectives = [get_objective(o, return_instance=True) for o in objectives]
 

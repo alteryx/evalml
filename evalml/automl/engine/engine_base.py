@@ -20,23 +20,23 @@ class EngineComputation(ABC):
 
     @abstractmethod
     def get_result(self):
-        """Get the computation result.
+        """Gets the computation result.
         Will block until the computation is finished.
 
         Raises Exception: If computation fails. Returns traceback.
         """
 
     @abstractmethod
-    def done(self) -> bool:
-        """Is the computation done?"""
+    def done(self):
+        """Whether the computation is done."""
 
     @abstractmethod
-    def cancel(self) -> None:
+    def cancel(self):
         """Cancel the computation."""
 
 
 class JobLogger:
-    """Mimics the behavior of a RootLogger but stores all messages rather than actually logging them.
+    """Mimics the behavior of a python logging.Logger but stores all messages rather than actually logging them.
 
     This is used during engine jobs so that log messages are recorded after the job completes. This is desired so that
     all of the messages for a single job are grouped together in the log.
@@ -62,7 +62,7 @@ class JobLogger:
         self.logs.append(("error", msg))
 
     def write_to_logger(self, logger):
-        """Write all the messages to the logger. First in First Out order."""
+        """Write all the messages to the logger. First In First Out order."""
         logger_method = {"info": logger.info,
                          "debug": logger.debug,
                          "warning": logger.warning,
@@ -102,7 +102,7 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
         objective (ObjectiveBase): Objective used in threshold tuning.
 
     Returns:
-        pipeline (PipelineBase) - trained pipeline.
+        pipeline (PipelineBase): trained pipeline.
     """
     X_threshold_tuning = None
     y_threshold_tuning = None
@@ -121,16 +121,17 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train, 
 
     Arguments:
         pipeline (PipelineBase): The pipeline to score
-        automl_data (AutoMLSearch): The AutoML search, used to access config and for the error callback
+        automl_data (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
         full_X_train (ww.DataTable): Training features
         full_y_train (ww.DataColumn): Training target
 
     Returns:
-        dict: A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
+        tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
+            Second - The pipeline class we trained and scored. Third - the job logger instance with all the recorded messages.
     """
     start = time.time()
     cv_data = []
-    logger.info("\t\tStarting cross validation")
+    logger.info("\tStarting cross validation")
     X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
     y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
     cv_pipeline = pipeline
@@ -139,7 +140,7 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train, 
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
             logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
             break
-        logger.debug(f"\t\t\tTraining and scoring on fold {i}")
+        logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
         y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
         if is_binary(automl_data.problem_type) or is_multiclass(automl_data.problem_type):
@@ -151,14 +152,14 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train, 
                 raise Exception(diff_string)
         objectives_to_score = [automl_data.objective] + automl_data.additional_objectives
         try:
-            logger.debug(f"\t\t\t\tFold {i}: starting training")
+            logger.debug(f"\t\t\tFold {i}: starting training")
             cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_data.optimize_thresholds, automl_data.objective)
-            logger.debug(f"\t\t\t\tFold {i}: finished training")
+            logger.debug(f"\t\t\tFold {i}: finished training")
             if automl_data.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl_data.objective):
-                logger.debug(f"\t\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
-            logger.debug(f"\t\t\t\tFold {i}: Scoring trained pipeline")
+                logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+            logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
             scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
-            logger.debug(f"\t\t\t\tFold {i}: {automl_data.objective.name} score: {scores[automl_data.objective.name]:.3f}")
+            logger.debug(f"\t\t\tFold {i}: {automl_data.objective.name} score: {scores[automl_data.objective.name]:.3f}")
             score = scores[automl_data.objective.name]
         except Exception as e:
             if automl_data.error_callback is not None:
@@ -186,12 +187,12 @@ def train_and_score_pipeline(pipeline, automl_data, full_X_train, full_y_train, 
     training_time = time.time() - start
     cv_scores = pd.Series([fold['score'] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
-    logger.info(f"\t\tFinished cross validation - mean {automl_data.objective.name}: {cv_score_mean:.3f}")
+    logger.info(f"\tFinished cross validation - mean {automl_data.objective.name}: {cv_score_mean:.3f}")
     return {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean}, cv_pipeline, logger
 
 
 def evaluate_pipeline(pipeline, automl_data, X, y, logger):
-    logger.info(f"\t{pipeline.name}:")
+    logger.info(f"{pipeline.name}:")
 
     X_train, y_train = X, y
 

@@ -2572,6 +2572,26 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
     score_batch_and_check()
 
 
+def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(X_y_binary, dummy_binary_pipeline_class):
+
+    class Pipeline1(dummy_binary_pipeline_class):
+        custom_name = "My Pipeline"
+
+    class Pipeline2(dummy_binary_pipeline_class):
+        custom_name = "My Pipeline"
+
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
+        automl.train_pipelines([Pipeline2({}), Pipeline1({})])
+
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
+        automl.score_pipelines([Pipeline2({}), Pipeline1({})], None, None, None)
+
+
 def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_binary_pipeline_class, caplog):
     X, y = X_y_binary
 

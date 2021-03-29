@@ -17,19 +17,19 @@ class DaskComputation(EngineComputation):
         self.work = dask_future
         self.meta_data = {}
 
-    def done(self) -> bool:
-        """Is the computation done?"""
+    def done(self):
+        """Whether the computation is done."""
         return self.work.done()
 
     def get_result(self):
-        """Get the computation result.
+        """Gets the computation result.
         Will block until the computation is finished.
 
         Raises Exception: If computation fails. Returns traceback.
         """
         return self.work.result()
 
-    def cancel(self) -> None:
+    def cancel(self):
         """Cancel the current computation."""
         return self.work.cancel()
 
