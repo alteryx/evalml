@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckAction,
@@ -104,7 +103,8 @@ def test_highly_null_data_check_input_formats():
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 2}).to_dict()]
     }
     #  test Woodwork
-    ww_input = ww.DataTable(pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]]))
+    ww_input = pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]])
+    ww_input.ww.init()
     assert highly_null_check.validate(ww_input) == expected
 
     #  test 2D list

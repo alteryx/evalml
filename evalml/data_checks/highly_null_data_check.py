@@ -56,7 +56,7 @@ class HighlyNullDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
 
         percent_null = (X.isnull().mean()).to_dict()
         highly_null_cols = []

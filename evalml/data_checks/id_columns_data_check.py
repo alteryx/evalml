@@ -64,8 +64,8 @@ class IDColumnsDataCheck(DataCheck):
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        X = X.select(include=['Integer', 'Categorical'])
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = X.ww.select(include=['Integer', 'Categorical'])
+        X = _convert_woodwork_types_wrapper(X)
 
         check_all_unique = (X.nunique() == len(X))
         cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique

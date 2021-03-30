@@ -63,7 +63,8 @@ def test_outliers_data_check_input_formats():
 
     # test Woodwork
     outliers_check = OutliersDataCheck()
-    assert outliers_check.validate(ww.DataTable(X)) == {
+    X.ww.init()
+    assert outliers_check.validate(X) == {
         "warnings": [DataCheckWarning(message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                                       data_check_name=outliers_data_check_name,
                                       message_code=DataCheckMessageCode.HAS_OUTLIERS,

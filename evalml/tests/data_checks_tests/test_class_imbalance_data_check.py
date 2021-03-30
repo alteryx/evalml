@@ -46,10 +46,10 @@ def test_class_imbalance_data_check_binary(input_type):
         y_balanced = y_balanced.to_numpy()
 
     elif input_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
-        y_long = ww.DataColumn(y_long)
-        y_balanced = ww.DataColumn(y_balanced)
+        X.ww.init()
+        y = ww.init_series(y)
+        y_long = ww.init_series(y_long)
+        y_balanced = ww.init_series(y_balanced)
 
     class_imbalance_check = ClassImbalanceDataCheck(min_samples=1, num_cv_folds=0)
     assert class_imbalance_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
@@ -111,12 +111,12 @@ def test_class_imbalance_data_check_multiclass(input_type):
         y_long = y_long.to_numpy()
 
     elif input_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
-        y_imbalanced_default_threshold = ww.DataColumn(y_imbalanced_default_threshold)
-        y_imbalanced_set_threshold = ww.DataColumn(y_imbalanced_set_threshold)
-        y_imbalanced_cv = ww.DataColumn(y_imbalanced_cv)
-        y_long = ww.DataColumn(y_long)
+        X = X.ww.init()
+        y = ww.init_series(y)
+        y_imbalanced_default_threshold = ww.init_series(y_imbalanced_default_threshold)
+        y_imbalanced_set_threshold = ww.init_series(y_imbalanced_set_threshold)
+        y_imbalanced_cv = ww.init_series(y_imbalanced_cv)
+        y_long = ww.init_series(y_long)
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=0)
     assert class_imbalance_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
@@ -184,9 +184,9 @@ def test_class_imbalance_empty_and_nan(input_type):
         y_has_nan = y_has_nan.to_numpy()
 
     elif input_type == "ww":
-        X = ww.DataTable(X)
-        y_empty = ww.DataColumn(y_empty)
-        y_has_nan = ww.DataColumn(y_has_nan)
+        X.ww.init()
+        y_empty = ww.init_series(y_empty)
+        y_has_nan = ww.init_series(y_has_nan)
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=0)
 
     assert class_imbalance_check.validate(X, y_empty) == {"warnings": [], "errors": [], "actions": []}
@@ -240,10 +240,10 @@ def test_class_imbalance_nonnumeric(input_type):
     y_multiclass_imbalanced_folds = pd.Series(["No", "Maybe", "Maybe", "No", "Yes"])
     y_binary_imbalanced_folds = pd.Series(["No", "Yes", "No", "Yes", "No"])
     if input_type == "ww":
-        X = ww.DataTable(X)
-        y_bools = ww.DataColumn(y_bools)
-        y_binary = ww.DataColumn(y_binary)
-        y_multiclass = ww.DataColumn(y_multiclass)
+        X.ww.init()
+        y_bools = ww.init_series(y_bools)
+        y_binary = ww.init_series(y_binary)
+        y_multiclass = ww.init_series(y_multiclass)
 
     class_imbalance_check = ClassImbalanceDataCheck(threshold=0.25, min_samples=1, num_cv_folds=0)
     assert class_imbalance_check.validate(X, y_bools) == {
@@ -315,10 +315,10 @@ def test_class_imbalance_nonnumeric_balanced(input_type):
     y_binary_balanced = pd.Series(["No", "Yes", "No", "Yes"])
     y_multiclass_balanced = pd.Series(["red", "green", "red", "red", "blue", "green", "red", "blue", "green", "red"])
     if input_type == "ww":
-        X = ww.DataTable(X)
-        y_bools_balanced = ww.DataColumn(y_bools_balanced)
-        y_binary_balanced = ww.DataColumn(y_binary_balanced)
-        y_multiclass_balanced = ww.DataColumn(y_multiclass_balanced)
+        X.ww.init()
+        y_bools_balanced = ww.init_series(y_bools_balanced)
+        y_binary_balanced = ww.init_series(y_binary_balanced)
+        y_multiclass_balanced = ww.init_series(y_multiclass_balanced)
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1)
     assert class_imbalance_check.validate(X, y_multiclass_balanced) == {"warnings": [], "errors": [], "actions": []}
@@ -334,9 +334,9 @@ def test_class_imbalance_severe(min_samples, input_type):
     y_values_binary = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] * 50)
     y_values_multiclass = pd.Series([0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2] * 50)
     if input_type == "ww":
-        X = ww.DataTable(X)
-        y_values_binary = ww.DataColumn(y_values_binary)
-        y_values_multiclass = ww.DataColumn(y_values_multiclass)
+        X.ww.init()
+        y_values_binary = ww.init_series(y_values_binary)
+        y_values_multiclass = ww.init_series(y_values_multiclass)
 
     class_imbalance_check = ClassImbalanceDataCheck(min_samples=min_samples, num_cv_folds=1)
     warnings = [DataCheckWarning(message="The following labels fall below 10% of the target: [0]",

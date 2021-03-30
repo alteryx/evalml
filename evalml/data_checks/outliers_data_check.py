@@ -48,8 +48,8 @@ class OutliersDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = X.select('numeric')
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = X.ww.select('numeric')
+        X = _convert_woodwork_types_wrapper(X)
 
         if len(X.columns) == 0:
             return results

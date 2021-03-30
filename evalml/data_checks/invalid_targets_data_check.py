@@ -73,14 +73,14 @@ class InvalidTargetDataCheck(DataCheck):
             return results
 
         y = infer_feature_types(y)
-        is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
+        is_supported_type = y.ww.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
         if not is_supported_type:
             results["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
-                                                    .format(y.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
+                                                    .format(y.ww.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
-                                                    details={"unsupported_type": y.logical_type.type_string}).to_dict())
-        y_df = _convert_woodwork_types_wrapper(y.to_series())
+                                                    details={"unsupported_type": y.ww.logical_type.type_string}).to_dict())
+        y_df = _convert_woodwork_types_wrapper(y)
         null_rows = y_df.isnull()
         if null_rows.any():
             num_null_rows = null_rows.sum()
@@ -103,7 +103,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                     details=details).to_dict())
 
-        if self.problem_type == ProblemTypes.REGRESSION and "numeric" not in y.semantic_tags:
+        if self.problem_type == ProblemTypes.REGRESSION and "numeric" not in y.ww.semantic_tags:
             results["errors"].append(DataCheckError(message="Target data type should be numeric for regression type problems.",
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
@@ -134,7 +134,7 @@ class InvalidTargetDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                     details=details).to_dict())
 
-        any_neg = not (y_df > 0).all() if y.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
+        any_neg = not (y_df > 0).all() if y.ww.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
         if any_neg and self.objective.positive_only:
             details = {"Count of offending values": sum(val <= 0 for val in y_df.values.flatten())}
             results["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective.name}",
@@ -144,7 +144,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         if X is not None:
             X = infer_feature_types(X)
-            X_index = list(X.to_dataframe().index)
+            X_index = list(X.index)
             y_index = list(y_df.index)
             X_length = len(X_index)
             y_length = len(y_index)

@@ -37,7 +37,7 @@ class MulticollinearityDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        mutual_info_df = X.mutual_information()
+        mutual_info_df = X.ww.mutual_information()
         if mutual_info_df.empty:
             return results
         above_threshold = mutual_info_df.loc[mutual_info_df['mutual_info'] >= self.threshold]

@@ -64,8 +64,8 @@ def test_empty_data_checks(input_type, X_y_binary):
         X = pd.DataFrame(X)
         y = pd.Series(y)
     if input_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
     data_checks = EmptyDataChecks()
     assert data_checks.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
@@ -117,9 +117,9 @@ def test_default_data_checks_classification(input_type):
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
     if input_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
-        y_multiclass = ww.DataColumn(y_multiclass)
+        X.ww.init()
+        y = ww.init_series(y)
+        y_multiclass = ww.init_series(y_multiclass)
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
 
@@ -175,9 +175,9 @@ def test_default_data_checks_regression(input_type):
     y_no_variance = pd.Series([5] * 5)
 
     if input_type == "ww":
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
-        y_no_variance = ww.DataColumn(y_no_variance)
+        X.ww.init()
+        y = ww.init_series(y)
+        y_no_variance = ww.init_series(y_no_variance)
     null_leakage = [DataCheckWarning(message="Column 'lots_of_null' is 95.0% or more correlated with the target",
                                      data_check_name="TargetLeakageDataCheck",
                                      message_code=DataCheckMessageCode.TARGET_LEAKAGE,
