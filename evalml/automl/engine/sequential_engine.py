@@ -53,15 +53,21 @@ class SequentialEngine(EngineBase):
         """
         super().train_batch(pipelines)
 
+        X_train = self.X_train
+        y_train = self.y_train
+        if hasattr(self.automl.data_splitter, "transform_sample"):
+            train_indices = self.automl.data_splitter.transform_sample(X_train, y_train)
+            X_train = X_train.iloc[train_indices]
+            y_train = y_train.iloc[train_indices]
+
         fitted_pipelines = {}
         for pipeline in pipelines:
             try:
                 fitted_pipeline = EngineBase.train_pipeline(
-                    pipeline, self.X_train, self.y_train,
+                    pipeline, X_train, y_train,
                     self.automl.optimize_thresholds,
                     self.automl.objective
                 )
-
                 fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
             except Exception as e:
                 logger.error(f'Train error for {pipeline.name}: {str(e)}')

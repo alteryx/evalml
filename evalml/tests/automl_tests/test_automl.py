@@ -2460,3 +2460,35 @@ def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pi
         # mean is 0 but std is not
         automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0, 1.0, -1.0]))
     assert len(warnings) == 0
+
+
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.3})
+@patch('evalml.pipelines.ClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.automl.engine.EngineBase.train_pipeline')
+def test_automl_supports_float_targets_for_classification(mock_train, mock_binary_score, mock_multi_score, mock_regression_score,
+                                                          automl_type, X_y_binary, X_y_multi, X_y_regression,
+                                                          dummy_binary_pipeline_class,
+                                                          dummy_regression_pipeline_class,
+                                                          dummy_multiclass_pipeline_class):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        y = pd.Series(y).map({0: -5.19, 1: 6.7})
+        mock_train.return_value = dummy_binary_pipeline_class({})
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        y = pd.Series(y).map({0: -5.19, 1: 6.7, 2: 2.03})
+        mock_train.return_value = dummy_multiclass_pipeline_class({})
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        y = pd.Series(y)
+        mock_train.return_value = dummy_regression_pipeline_class({})
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, random_seed=0, n_jobs=1)
+    automl.search()
+
+    # Assert that we train pipeline on the original target, not the encoded one used in EngineBase for data splitting
+    mock_train_args, _ = mock_train.call_args
+    mock_y = mock_train_args[2]  # args are pipeline, X, y, optimize_thresholds, objective
+    pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
