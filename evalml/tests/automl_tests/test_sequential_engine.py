@@ -34,8 +34,8 @@ def test_add_ensemble_data():
     pd.testing.assert_frame_equal(engine.X_train, X)
     assert engine.ensembling_indices is None
 
-    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.2, random_seed=0)
-    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
+    training_indices, ensembling_indices, _, _ = split_data(pd.DataFrame(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.2, random_seed=0)
+    training_indices, ensembling_indices = training_indices[0].tolist(), ensembling_indices[0].tolist()
     engine = SequentialEngine(X_train=X,
                               y_train=y,
                               ensembling_indices=ensembling_indices,
@@ -54,8 +54,8 @@ def test_ensemble_data(mock_fit, mock_score, dummy_binary_pipeline_class, stacka
     mock_pre_evaluation_callback = MagicMock()
     mock_post_evaluation_callback = MagicMock()
 
-    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.25, random_seed=0)
-    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
+    training_indices, ensembling_indices, _, _ = split_data(pd.DataFrame(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.25, random_seed=0)
+    training_indices, ensembling_indices = training_indices[0].tolist(), ensembling_indices[0].tolist()
 
     engine = SequentialEngine(X_train=infer_feature_types(X),
                               y_train=infer_feature_types(y),

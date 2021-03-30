@@ -309,9 +309,9 @@ class AutoMLSearch:
         if run_ensembling:
             if not (0 < _ensembling_split_size < 1):
                 raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
-            X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
+            X_shape = pd.DataFrame(np.arange(self.X_train.shape[0]))
             _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
-            self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
+            self.ensembling_indices = ensembling_indices[0].tolist()
 
         self._engine = SequentialEngine(self.X_train,
                                         self.y_train,
@@ -538,6 +538,7 @@ class AutoMLSearch:
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
+                X_train.ww.init(logical_types=self.X_train.ww.logical_types)
                 best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
                                                             self.optimize_thresholds, self.objective)
             self._best_pipeline = best_pipeline
