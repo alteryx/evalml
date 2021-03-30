@@ -1,5 +1,5 @@
 import pytest
-import woodwork as ww
+import pandas as pd
 
 from evalml.preprocessing import split_data
 from evalml.problem_types import (
@@ -36,7 +36,7 @@ def test_split_data(problem_type, data_type, X_y_binary, X_y_multi, X_y_regressi
     assert len(X_test) == test_size
     assert len(y_train) == train_size
     assert len(y_test) == test_size
-    assert isinstance(X_train, ww.DataTable)
-    assert isinstance(X_test, ww.DataTable)
-    assert isinstance(y_train, ww.DataColumn)
-    assert isinstance(y_test, ww.DataColumn)
+    assert isinstance(X_train, pd.DataFrame)
+    assert isinstance(X_test, pd.DataFrame)
+    assert isinstance(y_train, pd.Series)
+    assert isinstance(y_test, pd.Series)
