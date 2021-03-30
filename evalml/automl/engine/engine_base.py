@@ -14,7 +14,7 @@ from evalml.automl.utils import (
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
-from evalml.problem_types import is_binary, is_multiclass
+from evalml.problem_types import is_binary, is_classification, is_multiclass
 from evalml.utils.logger import get_logger
 from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 
@@ -126,7 +126,12 @@ class EngineBase(ABC):
         logger.info("\tStarting cross validation")
         X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
-        for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd)):
+        y_pd_encoded = y_pd
+        # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
+        if is_classification(automl.problem_type):
+            y_mapping = {original_target: encoded_target for (encoded_target, original_target) in enumerate(y_pd.value_counts().index)}
+            y_pd_encoded = y_pd.map(y_mapping)
+        for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd_encoded)):
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
