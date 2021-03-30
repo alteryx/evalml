@@ -60,7 +60,6 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
     Returns:
         ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
     """
-
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
@@ -74,10 +73,10 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
 
     train, test = next(data_splitter.split(X, y))
 
-    X_train = X.iloc[train]
-    X_test = X.iloc[test]
-    y_train = y.iloc[train]
-    y_test = y.iloc[test]
+    X_train = X.ww.iloc[train]
+    X_test = X.ww.iloc[test]
+    y_train = y.ww.iloc[train]
+    y_test = y.ww.iloc[test]
 
     return X_train, X_test, y_train, y_test
 

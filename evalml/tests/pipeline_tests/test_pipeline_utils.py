@@ -112,8 +112,8 @@ def test_make_pipeline(input_type, problem_type):
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 0, 1, 0, 0])
     if input_type == 'ww':
-        X.ww.init() 
-        y = ww.init_series(y) 
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -145,7 +145,7 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 1, 1, 0, 0])
     if input_type == 'ww':
-        X.ww.init() 
+        X.ww.init()
         y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
@@ -178,8 +178,8 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
                       "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan]})
     y = pd.Series([0, 1, 1, 0, 0])
     if input_type == 'ww':
-        X.ww.init() 
-        y = ww.init_series(y) 
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -274,7 +274,7 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
         X.ww.init()
-        y = ww.init_series(y) 
+        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -303,7 +303,7 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
         X.ww.init()
-        y = ww.init_series(y) 
+        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)

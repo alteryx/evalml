@@ -1,7 +1,8 @@
 import os
 
-from evalml.preprocessing import load_data
 import woodwork as ww
+
+from evalml.preprocessing import load_data
 
 
 def load_churn(n_rows=None, verbose=True, return_pandas=False):

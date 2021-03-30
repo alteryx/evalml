@@ -713,7 +713,7 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
     mock_imputer.return_value = X
     mock_ohe.return_value = X
-    mock_scaler.return_value =X_expected
+    mock_scaler.return_value = X_expected
     X_expected = X_expected.astype("Int64")
 
     pipeline = logistic_regression_binary_pipeline_class({})

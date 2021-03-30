@@ -1,5 +1,5 @@
-import pytest
 import pandas as pd
+import pytest
 
 from evalml.preprocessing import split_data
 from evalml.problem_types import (

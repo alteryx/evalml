@@ -421,7 +421,7 @@ def test_fit_features_nonlinear(mock_predict, mock_fit, mock_fit_transform, exam
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value =pd.Series(y)
+    mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
@@ -629,22 +629,22 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
 
     assert_frame_equal(mock_transa.call_args[0][0], X)
     assert_frame_equal(mock_transb.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
+                                                                  'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
     assert_frame_equal(mock_transc.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                 'feature a': np.ones(6),
-                                                                                 'feature b': np.ones(6) * 2},
-                                                                                columns=['feature trans', 'feature a', 'feature b']))
+                                                                  'feature a': np.ones(6),
+                                                                  'feature b': np.ones(6) * 2},
+                                                                 columns=['feature trans', 'feature a', 'feature b']))
     assert_frame_equal(mock_preda.call_args[0][0], X)
     assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                'feature a': np.ones(6)},
-                                                                               columns=['feature trans', 'feature a']))
+                                                                 'feature a': np.ones(6)},
+                                                                columns=['feature trans', 'feature a']))
     assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                'feature a': np.ones(6),
-                                                                                'estimator a': pd.Series([0, 0, 0, 1, 0, 0], dtype="Int64"),
-                                                                                'feature b': np.ones(6) * 2,
-                                                                                'estimator b': pd.Series([0, 0, 0, 0, 1, 0], dtype="Int64"),
-                                                                                'feature c': np.ones(6) * 3},
-                                                                               columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
+                                                                 'feature a': np.ones(6),
+                                                                 'estimator a': pd.Series([0, 0, 0, 1, 0, 0], dtype="Int64"),
+                                                                 'feature b': np.ones(6) * 2,
+                                                                 'estimator b': pd.Series([0, 0, 0, 0, 1, 0], dtype="Int64"),
+                                                                 'feature c': np.ones(6) * 3},
+                                                                columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
     assert_series_equal(pd.Series([0, 0, 0, 0, 0, 1], dtype="Int64"), predict_out)
 
 
