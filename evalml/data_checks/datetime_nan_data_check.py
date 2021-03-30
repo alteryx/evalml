@@ -37,7 +37,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                                             "errors": [DataCheckError(message='Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.',
             ...                                                                     data_check_name=DateTimeNaNDataCheck.name,
             ...                                                                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-            ...                                                                     details={"columns": 'index'})]}
+            ...                                                                     details={"columns": 'index'}).to_dict()]}
         """
         results = {
             "warnings": [],
