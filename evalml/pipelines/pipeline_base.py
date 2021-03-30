@@ -240,9 +240,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         X = infer_feature_types(X)
         predictions = self._component_graph.predict(X)
-        predictions_series = predictions.to_series()
-        predictions_series.name = self.input_target_name
-        return infer_feature_types(predictions_series)
+        predictions.name = self.input_target_name
+        return infer_feature_types(predictions)
 
     @abstractmethod
     def score(self, X, y, objectives):

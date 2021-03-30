@@ -93,7 +93,7 @@ class ComponentGraph:
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -140,12 +140,12 @@ class ComponentGraph:
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, ww.DataColumn):
-                parent_output = parent_output.to_series()
+            if isinstance(parent_output, pd.Series):
+                parent_output = parent_output
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = infer_feature_types(parent_output)
             final_component_inputs.append(parent_output)
-        concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
+        concatted = pd.concat([component_input for component_input in final_component_inputs], axis=1)
         if needs_fitting:
             self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
         return infer_feature_types(concatted)
@@ -195,10 +195,10 @@ class ComponentGraph:
                     y_input = output_cache[parent_input]
                 else:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
-                    if isinstance(parent_x, ww.DataTable):
-                        parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
-                    elif isinstance(parent_x, ww.DataColumn):
-                        parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
+                    if isinstance(parent_x, pd.DataFrame):
+                        parent_x = _convert_woodwork_types_wrapper(parent_x)
+                    elif isinstance(parent_x, pd.Series):
+                        parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x), name=parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})

@@ -38,7 +38,7 @@ class ClassificationPipeline(PipelineBase):
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_woodwork_types_wrapper(y)
         self._encoder.fit(y)
         y = self._encode_targets(y)
         self._fit(X, y)
@@ -87,7 +87,7 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             ww.DataColumn: Estimated labels
         """
-        predictions = self._predict(X, objective=objective).to_series()
+        predictions = self._predict(X, objective=objective)
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
         return infer_feature_types(predictions)
 
@@ -101,7 +101,7 @@ class ClassificationPipeline(PipelineBase):
             ww.DataTable: Probability estimates
         """
         X = self.compute_estimator_features(X, y=None)
-        proba = self.estimator.predict_proba(X).to_dataframe()
+        proba = self.estimator.predict_proba(X)
         proba.columns = self._encoder.classes_
         return infer_feature_types(proba)
 
@@ -117,14 +117,14 @@ class ClassificationPipeline(PipelineBase):
             dict: Ordered dictionary of objective scores
         """
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_woodwork_types_wrapper(y)
         objectives = self.create_objectives(objectives)
         y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         if y_predicted is not None:
-            y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+            y_predicted = _convert_woodwork_types_wrapper(y_predicted)
         if y_predicted_proba is not None:
-            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba.to_dataframe())
+            y_predicted_proba = _convert_woodwork_types_wrapper(y_predicted_proba)
         return self._score_all_objectives(X, y, y_predicted, y_predicted_proba, objectives)
 
     def _compute_predictions(self, X, y, objectives, time_series=False):
