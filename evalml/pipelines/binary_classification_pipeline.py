@@ -30,7 +30,7 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
 
         if self.threshold is None:
             return self._component_graph.predict(X)
-        ypred_proba = self.predict_proba(X).to_dataframe()
+        ypred_proba = self.predict_proba(X)
         predictions = self._predict_with_objective(X, ypred_proba, objective)
         return infer_feature_types(predictions)
 

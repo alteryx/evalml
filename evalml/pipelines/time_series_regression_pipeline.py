@@ -52,10 +52,9 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        X = _convert_woodwork_types_wrapper(X)
+        y = _convert_woodwork_types_wrapper(y)
         X_t = self._compute_features_during_fit(X, y)
-        X_t = X_t.to_dataframe()
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
@@ -79,15 +78,15 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
             X = pd.DataFrame()
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        X = _convert_woodwork_types_wrapper(X)
+        y = _convert_woodwork_types_wrapper(y)
         features = self.compute_estimator_features(X, y)
-        features = _convert_woodwork_types_wrapper(features.to_dataframe())
+        features = _convert_woodwork_types_wrapper(features)
         features_no_nan, y = drop_rows_with_nans(features, y)
         y_arg = None
         if self.estimator.predict_uses_y:
             y_arg = y
-        predictions = self.estimator.predict(features_no_nan, y_arg).to_series()
+        predictions = self.estimator.predict(features_no_nan, y_arg)
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
         return infer_feature_types(padded)
@@ -107,12 +106,12 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         if X is None:
             X = pd.DataFrame()
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        y = _convert_woodwork_types_wrapper(y)
 
         y_predicted = self.predict(X, y)
-        y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
+        y_predicted = _convert_woodwork_types_wrapper(y_predicted)
 
         y_shifted = y.shift(-self.gap)
         objectives = self.create_objectives(objectives)

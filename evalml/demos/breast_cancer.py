@@ -16,4 +16,6 @@ def load_breast_cancer(return_pandas=False):
     if return_pandas:
         return X, y
 
-    return ww.DataTable(X), ww.DataColumn(y)
+    X.ww.init()
+    y = ww.init_series(y)
+    return X, y

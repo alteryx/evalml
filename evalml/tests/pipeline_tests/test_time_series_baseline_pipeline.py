@@ -29,7 +29,7 @@ def test_time_series_baseline(mock_decode, pipeline_class, gap, X_none, ts_data)
     if X_none:
         X = None
     clf.fit(X, y)
-    assert_series_equal(expected_y, clf.predict(X, y).to_series())
+    assert_series_equal(expected_y, clf.predict(X, y))
 
 
 @pytest.mark.parametrize('X_none', [True, False])
@@ -54,7 +54,7 @@ def test_time_series_baseline_predict_proba(pipeline_class, gap, X_none):
     if X_none:
         X = None
     clf.fit(X, y)
-    assert_frame_equal(expected_proba, clf.predict_proba(X, y).to_dataframe())
+    assert_frame_equal(expected_proba, clf.predict_proba(X, y))
 
 
 @pytest.mark.parametrize('pipeline_class', [TimeSeriesBaselineRegressionPipeline,

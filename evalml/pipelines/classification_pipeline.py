@@ -102,7 +102,7 @@ class ClassificationPipeline(PipelineBase):
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X)
-        proba.columns = self._encoder.classes_
+        proba = proba.ww.rename(columns={col: new_col for col, new_col in zip(proba.columns, self._encoder.classes_)})
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives):

@@ -14,4 +14,8 @@ def load_diabetes(return_pandas=False):
     y = pd.Series(data.target)
     if return_pandas:
         return X, y
-    return ww.DataTable(X), ww.DataColumn(y)
+
+    X.ww.init()
+    y = ww.init_series(y)
+
+    return X, y

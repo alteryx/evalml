@@ -500,7 +500,7 @@ def make_mock_multiclass_pipeline():
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
     X, y = X_y_regression
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2']
@@ -513,7 +513,7 @@ def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_nonlinear_regression(mock_predict, mock_fit, nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = nonlinear_regression_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['r2']
@@ -561,8 +561,8 @@ def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary
 @patch('evalml.pipelines.ComponentGraph.predict')
 def test_score_nonlinear_multiclass(mock_predict, mock_fit, mock_encode, nonlinear_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
-    mock_predict.return_value = ww.DataColumn(y)
-    mock_encode.return_value = y
+    mock_predict.return_value = pd.Series(y)
+    mock_encode.return_value = pd.Series(y)
     clf = nonlinear_multiclass_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['f1 micro', 'precision micro']
@@ -575,7 +575,7 @@ def test_score_nonlinear_multiclass(mock_predict, mock_fit, mock_encode, nonline
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
@@ -622,7 +622,7 @@ def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
 def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
@@ -666,7 +666,7 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
 def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, nonlinear_binary_pipeline_class, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     mock_encode.return_value = y
     clf = nonlinear_binary_pipeline_class({})
     clf.fit(X, y)
@@ -711,16 +711,16 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
-    mock_imputer.return_value = ww.DataTable(X)
-    mock_ohe.return_value = ww.DataTable(X)
-    mock_scaler.return_value = ww.DataTable(X_expected)
+    mock_imputer.return_value = X
+    mock_ohe.return_value = X
+    mock_scaler.return_value =X_expected
     X_expected = X_expected.astype("Int64")
 
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
 
     X_t = pipeline.compute_estimator_features(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
     assert mock_scaler.call_count == 2
@@ -732,17 +732,17 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
 @patch('evalml.pipelines.components.ElasticNetClassifier.predict')
 def test_compute_estimator_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, X_y_binary, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
-    mock_imputer.return_value = ww.DataTable(X)
-    mock_ohe.return_value = ww.DataTable(X)
-    mock_en_predict.return_value = ww.DataColumn(np.ones(X.shape[0]))
-    mock_rf_predict.return_value = ww.DataColumn(np.zeros(X.shape[0]))
+    mock_imputer.return_value = pd.DataFrame(X)
+    mock_ohe.return_value = pd.DataFrame(X)
+    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
     X_expected_df = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
 
     pipeline = nonlinear_binary_pipeline_class({})
     pipeline.fit(X, y)
     X_t = pipeline.compute_estimator_features(X)
 
-    assert_frame_equal(X_expected_df, X_t.to_dataframe())
+    assert_frame_equal(X_expected_df, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
     assert mock_en_predict.call_count == 2
@@ -967,7 +967,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(pd.Series([1] * 100))
+    mock_predict.return_value = pd.Series([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         clf = dummy_regression_pipeline_class(parameters={})
@@ -1086,7 +1086,7 @@ def test_clone_fitted(is_linear, X_y_binary, logistic_regression_binary_pipeline
     pipeline_clone.fit(X, y)
 
     X_t_clone = pipeline_clone.predict_proba(X)
-    assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
+    assert_frame_equal(X_t, X_t_clone)
 
 
 def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
@@ -1237,7 +1237,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
     if target_type == "category":
-        y = pd.Categorical(y)
+        y = pd.Series(pd.Categorical(y))
     else:
         y = y.astype(target_type)
     unique_vals = y.unique()
@@ -1248,7 +1248,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     for pipeline_class in pipeline_classes:
         pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
         pipeline.fit(X, y)
-        predictions = pipeline.predict(X, objective).to_series()
+        predictions = pipeline.predict(X, objective)
         assert set(predictions.unique()).issubset(unique_vals)
         predict_proba = pipeline.predict_proba(X)
         assert set(predict_proba.columns) == set(unique_vals)

@@ -17,12 +17,12 @@ def test_baseline_binary_random(X_y_binary):
     clf = BaselineBinaryPipeline(parameters=parameters)
     clf.fit(X, y)
     expected_predictions = pd.Series(get_random_state(0).choice(np.unique(y), len(X)), dtype="Int64")
-    assert_series_equal(expected_predictions, clf.predict(X).to_series())
+    assert_series_equal(expected_predictions, clf.predict(X))
 
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     expected_predictions_proba = pd.DataFrame(np.array([[0.5 for i in range(len(values))]] * len(X)))
-    assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
+    assert_frame_equal(expected_predictions_proba, predicted_proba)
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
@@ -42,12 +42,12 @@ def test_baseline_binary_random_weighted(X_y_binary):
     clf.fit(X, y)
 
     expected_predictions = pd.Series(get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="Int64")
-    assert_series_equal(expected_predictions, clf.predict(X).to_series())
+    assert_series_equal(expected_predictions, clf.predict(X))
 
     expected_predictions_proba = pd.DataFrame(np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
-    assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
+    assert_frame_equal(expected_predictions_proba, predicted_proba)
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
@@ -64,12 +64,12 @@ def test_baseline_binary_mode():
     clf.fit(X, y)
 
     expected_predictions = pd.Series(np.array([10] * len(X)), dtype="Int64")
-    assert_series_equal(expected_predictions, clf.predict(X).to_series())
+    assert_series_equal(expected_predictions, clf.predict(X))
 
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 2)
     expected_predictions_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
-    assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
+    assert_frame_equal(expected_predictions_proba, predicted_proba)
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
@@ -86,12 +86,12 @@ def test_baseline_multi_random(X_y_multi):
     clf.fit(X, y)
 
     expected_predictions = pd.Series(get_random_state(0).choice(np.unique(y), len(X)), dtype="Int64")
-    assert_series_equal(expected_predictions, clf.predict(X).to_series())
+    assert_series_equal(expected_predictions, clf.predict(X))
 
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     expected_predictions_proba = pd.DataFrame(np.array([[1. / 3 for i in range(len(values))]] * len(X)))
-    assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
+    assert_frame_equal(expected_predictions_proba, predicted_proba)
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
@@ -110,12 +110,12 @@ def test_baseline_multi_random_weighted(X_y_multi):
     clf.fit(X, y)
 
     expected_predictions = pd.Series(get_random_state(0).choice(np.unique(y), len(X), p=percent_freq), dtype="Int64")
-    assert_series_equal(expected_predictions, clf.predict(X).to_series())
+    assert_series_equal(expected_predictions, clf.predict(X))
 
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     expected_predictions_proba = pd.DataFrame(np.array([[percent_freq[i] for i in range(len(values))]] * len(X)))
-    assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
+    assert_frame_equal(expected_predictions_proba, predicted_proba)
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
@@ -131,11 +131,11 @@ def test_baseline_multi_mode():
     clf = BaselineMulticlassPipeline(parameters=parameters)
     clf.fit(X, y)
     expected_predictions = pd.Series(np.array([11] * len(X)), dtype="Int64")
-    assert_series_equal(expected_predictions, clf.predict(X).to_series())
+    assert_series_equal(expected_predictions, clf.predict(X))
 
     predicted_proba = clf.predict_proba(X)
     assert predicted_proba.shape == (len(X), 3)
     expected_predictions_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
-    assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
+    assert_frame_equal(expected_predictions_proba, predicted_proba)
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))

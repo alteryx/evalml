@@ -18,7 +18,7 @@ def test_baseline_mean(X_y_regression):
 
     expected_predictions = pd.Series([mean] * len(X))
     predictions = clf.predict(X)
-    assert_series_equal(expected_predictions, predictions.to_series())
+    assert_series_equal(expected_predictions, predictions)
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
@@ -34,5 +34,5 @@ def test_baseline_median(X_y_regression):
     clf.fit(X, y)
     expected_predictions = pd.Series([median] * len(X))
     predictions = clf.predict(X)
-    assert_series_equal(expected_predictions, predictions.to_series())
+    assert_series_equal(expected_predictions, predictions)
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
