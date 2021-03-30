@@ -83,4 +83,4 @@ class DataCheckMessageCode(Enum):
     """Message code for when input target and features have different lengths."""
 
     DATETIME_HAS_NAN = "datetime_has_nan"
-    """Message code for when input datetime columns and contain NaN values."""
+    """Message code for when input datetime columns contain NaN values."""
