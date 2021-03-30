@@ -20,7 +20,7 @@ def test_datetime_nan_data_check_error(ts_data):
         "errors": [DataCheckError(message='Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                                  details={"columns": 'index'})]
+                                  details={"columns": 'index'}).to_dict()]
     }
 
 
@@ -74,7 +74,7 @@ def test_datetime_nan_data_check_multiple_nan_dt():
         "errors": [DataCheckError(message='Input datetime column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                                  details={"columns": 'A, B'})]
+                                  details={"columns": 'A, B'}).to_dict()]
     }
 
 
@@ -90,7 +90,7 @@ def test_datetime_nan_check_input_formats():
         "errors": [DataCheckError(message='Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                                  details={"columns": 'index'})]
+                                  details={"columns": 'index'}).to_dict()]
     }
 
     dates = np.arange(np.datetime64('2017-01-01'), np.datetime64('2017-01-08'))
@@ -106,7 +106,7 @@ def test_datetime_nan_check_input_formats():
         "errors": [DataCheckError(message='Input datetime column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.',
                                   data_check_name=DateTimeNaNDataCheck.name,
                                   message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                                  details={'columns': '0'})]
+                                  details={'columns': '0'}).to_dict()]
     }
 
     #  test 2D list
