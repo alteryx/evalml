@@ -32,7 +32,7 @@ def test_time_series_baseline(ts_data):
     clf = TimeSeriesBaselineEstimator(gap=1)
     clf.fit(X, y)
 
-    assert_series_equal(y.astype("Int64"), clf.predict(X, y).to_series())
+    assert_series_equal(y.astype("Int64"), clf.predict(X, y))
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -44,7 +44,7 @@ def test_time_series_baseline_gap_0(ts_data):
     clf = TimeSeriesBaselineEstimator(gap=0)
     clf.fit(X, y)
 
-    assert_series_equal(y_true, clf.predict(X, y).to_series())
+    assert_series_equal(y_true, clf.predict(X, y))
     np.testing.assert_allclose(clf.feature_importance, np.array([0.0] * X.shape[1]))
 
 
@@ -54,5 +54,5 @@ def test_time_series_baseline_no_X(ts_data):
     clf = TimeSeriesBaselineEstimator()
     clf.fit(X=None, y=y)
 
-    assert_series_equal(y.astype("Int64"), clf.predict(X=None, y=y).to_series())
+    assert_series_equal(y.astype("Int64"), clf.predict(X=None, y=y))
     np.testing.assert_allclose(clf.feature_importance, np.array([]))
