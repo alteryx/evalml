@@ -155,8 +155,8 @@ def precision_recall_curve(y_true, y_pred_proba):
     """
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
+    y_true = _convert_woodwork_types_wrapper(y_true)
+    y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba)
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
@@ -210,11 +210,11 @@ def roc_curve(y_true, y_pred_proba):
     """
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
-    if isinstance(y_pred_proba, ww.DataTable):
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
+    if isinstance(y_pred_proba, pd.DataFrame):
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba).to_numpy()
     else:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba).to_numpy()
+    y_true = _convert_woodwork_types_wrapper(y_true).to_numpy()
 
     if len(y_pred_proba.shape) == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
@@ -323,7 +323,7 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     Only used for pipelines that support this optimization.
     """
 
-    precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
+    precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y))
 
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
@@ -331,10 +331,10 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
             preds = pipeline.estimator.predict_proba(features)
-            preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
+            preds = _convert_woodwork_types_wrapper(preds)
         else:
             preds = pipeline.estimator.predict(features)
-            preds = _convert_woodwork_types_wrapper(preds.to_series())
+            preds = _convert_woodwork_types_wrapper(preds)
         score = pipeline._score(X, y, preds, objective)
         return score if objective.greater_is_better else -score
 
@@ -365,8 +365,8 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
-    y = _convert_woodwork_types_wrapper(y.to_series())
+    X = _convert_woodwork_types_wrapper(X)
+    y = _convert_woodwork_types_wrapper(y)
 
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
@@ -546,11 +546,11 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     X = infer_feature_types(X)
     # Dynamically set the grid resolution to the maximum number of categories
     # in the categorical variables if there are more categories than resolution cells
-    X_cats = X.select("categorical")
+    X_cats = X.ww.select("categorical")
     if X_cats.shape[1] != 0:
-        max_num_cats = max(X_cats.describe().loc["nunique"])
+        max_num_cats = max(X_cats.ww.describe().loc["nunique"])
         grid_resolution = max([max_num_cats + 1, grid_resolution])
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    X = _convert_woodwork_types_wrapper(X)
 
     if isinstance(features, (list, tuple)):
         if len(features) != 2:
@@ -734,9 +734,9 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
     y_true = infer_feature_types(y_true)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    y_true = _convert_woodwork_types_wrapper(y_true)
     y_pred = infer_feature_types(y_pred)
-    y_pred = _convert_woodwork_types_wrapper(y_pred.to_series())
+    y_pred = _convert_woodwork_types_wrapper(y_pred)
 
     predictions = y_pred.reset_index(drop=True)
     actual = y_true.reset_index(drop=True)
@@ -929,8 +929,8 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
 
-    dates = _convert_woodwork_types_wrapper(dates.to_series())
-    y = _convert_woodwork_types_wrapper(y.to_series())
+    dates = _convert_woodwork_types_wrapper(dates)
+    y = _convert_woodwork_types_wrapper(y)
     return pd.DataFrame({"dates": dates.reset_index(drop=True),
                          "target": y.reset_index(drop=True),
                          "prediction": prediction.reset_index(drop=True)})
@@ -1012,7 +1012,7 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
         raise ValueError("The parameter perplexity must be non-negative")
 
     X = infer_feature_types(X)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    X = _convert_woodwork_types_wrapper(X)
     t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
     X_new = t_sne_.fit_transform(X)
     return X_new

@@ -45,7 +45,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
         ValueError: if the requested index falls outside the input_feature's boundaries.
     """
     input_features = infer_feature_types(input_features)
-    input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    input_features = _convert_woodwork_types_wrapper(input_features)
 
     if pipeline.model_family == ModelFamily.ENSEMBLE:
         raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
@@ -56,7 +56,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     if any([x < 0 or x >= len(input_features) for x in indices_to_explain]):
         raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
 
-    pipeline_features = pipeline.compute_estimator_features(input_features, y).to_dataframe()
+    pipeline_features = pipeline.compute_estimator_features(input_features, y)
 
     data = _ReportData(pipeline, pipeline_features, input_features, y_true=y, y_pred=None,
                        y_pred_values=None, errors=None, index_list=indices_to_explain, metric=None)
@@ -98,9 +98,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     input_features = infer_feature_types(input_features)
-    input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
+    input_features = _convert_woodwork_types_wrapper(input_features)
     y_true = infer_feature_types(y_true)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
+    y_true = _convert_woodwork_types_wrapper(y_true)
 
     if not (input_features.shape[0] >= num_to_explain * 2):
         raise ValueError(f"Input features must be a dataframe with more than {num_to_explain * 2} rows! "
@@ -119,19 +119,19 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     try:
         if is_regression(pipeline.problem_type):
             if is_time_series(pipeline.problem_type):
-                y_pred = pipeline.predict(input_features, y=y_true).to_series()
+                y_pred = pipeline.predict(input_features, y=y_true)
             else:
-                y_pred = pipeline.predict(input_features).to_series()
+                y_pred = pipeline.predict(input_features)
             y_pred_values = None
             y_true_no_nan, y_pred_no_nan = drop_rows_with_nans(y_true, y_pred)
             errors = metric(y_true_no_nan, y_pred_no_nan)
         else:
             if is_time_series(pipeline.problem_type):
-                y_pred = pipeline.predict_proba(input_features, y=y_true).to_dataframe()
-                y_pred_values = pipeline.predict(input_features, y=y_true).to_series()
+                y_pred = pipeline.predict_proba(input_features, y=y_true)
+                y_pred_values = pipeline.predict(input_features, y=y_true)
             else:
-                y_pred = pipeline.predict_proba(input_features).to_dataframe()
-                y_pred_values = pipeline.predict(input_features).to_series()
+                y_pred = pipeline.predict_proba(input_features)
+                y_pred_values = pipeline.predict(input_features)
             y_true_no_nan, y_pred_no_nan, y_pred_values_no_nan = drop_rows_with_nans(y_true, y_pred, y_pred_values)
             errors = metric(pipeline._encode_targets(y_true_no_nan), y_pred_no_nan)
     except Exception as e:
@@ -144,7 +144,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     worst_indices = sorted_scores.index[-num_to_explain:]
     index_list = best_indices.tolist() + worst_indices.tolist()
 
-    pipeline_features = pipeline.compute_estimator_features(input_features, y_true).to_dataframe()
+    pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
 
     data = _ReportData(pipeline, pipeline_features, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 

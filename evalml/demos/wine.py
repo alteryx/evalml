@@ -15,4 +15,6 @@ def load_wine(return_pandas=False):
     y = y.map(lambda x: data["target_names"][x])
     if return_pandas:
         return X, y
-    return ww.DataTable(X), ww.DataColumn(y)
+    X.ww.init()
+    y = ww.init_series(y)
+    return X, y

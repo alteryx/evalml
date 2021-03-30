@@ -36,7 +36,7 @@ class DoubleColumns(Transformer):
 
     def transform(self, X, y=None):
         self._provenance = {col: [f"{col}_doubled"] for col in X.columns}
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = _convert_woodwork_types_wrapper(X)
         new_X = X.assign(**{f"{col}_doubled": 2 * X.loc[:, col] for col in X.columns})
         if self.drop_old_columns:
             new_X = new_X.drop(columns=X.columns)
@@ -145,14 +145,14 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
 @pytest.mark.parametrize('pipeline_class, parameters', test_cases)
 @patch('evalml.pipelines.PipelineBase._supports_fast_permutation_importance', new_callable=PropertyMock)
 def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_importance, pipeline_class, parameters,
-                                                            has_minimal_dependencies):
+                                                            has_minimal_dependencies, fraud_100):
     if has_minimal_dependencies and pipeline_class == LinearPipelineWithTargetEncoderAndOHE:
         pytest.skip("Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
                     "dependency not installed.")
-    X, y = load_fraud(100)
+    X, y = fraud_100
 
     if pipeline_class == LinearPipelineWithTextFeatures:
-        X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
+        X.ww.set_types(logical_types={'provider': 'NaturalLanguage'})
 
     # Do this to make sure we use the same int as sklearn under the hood
     random_state = np.random.RandomState(0)

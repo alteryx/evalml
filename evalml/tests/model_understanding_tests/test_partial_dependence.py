@@ -101,7 +101,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
                       'string': ['a', 'b', 'a', 'c'],
                       'also string': ['c', 'b', 'a', 'd']})
     if data_type == "ww":
-        X = ww.DataTable(X)
+        X.ww.init()
     y = [0, 0.2, 1.4, 1]
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     pipeline.fit(X, y)
@@ -202,7 +202,7 @@ def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_c
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
 
-    num_classes = y.to_series().nunique()
+    num_classes = y.nunique()
     grid_resolution = 20
 
     one_way_part_dep = partial_dependence(pipeline=pipeline,
@@ -269,7 +269,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(logistic_regres
     X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
-    num_cat_features = len(set(X["currency"].to_series()))
+    num_cat_features = len(set(X["currency"]))
     assert num_cat_features == 164
 
     part_dep_ans = {0.1432616813857269: 154, 0.1502346349971562: 1, 0.14487916687594762: 1,
