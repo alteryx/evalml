@@ -72,7 +72,7 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
     elif is_classification(problem_type):
         data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
 
-    train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
+    train, test = next(data_splitter.split(X, y))
 
     X_train = X.iloc[train]
     X_test = X.iloc[test]

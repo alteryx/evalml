@@ -108,8 +108,8 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
         """
         X_ww = infer_feature_types(X)
         y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        X = _convert_woodwork_types_wrapper(X_ww)
+        y = _convert_woodwork_types_wrapper(y_ww)
         index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
@@ -127,7 +127,7 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
                 list: List of indices to keep
         """
         y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y = _convert_woodwork_types_wrapper(y_ww)
         index_df = pd.Series(y.index)
         train_index_drop = self.sampler.fit_resample(X, y)
         # convert the indices of the y column into index indices of the original pre-split y

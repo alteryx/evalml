@@ -124,8 +124,8 @@ class EngineBase(ABC):
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
-        X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
-        y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
+        X_pd = _convert_woodwork_types_wrapper(full_X_train)
+        y_pd = _convert_woodwork_types_wrapper(full_y_train)
         for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd)):
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
@@ -135,8 +135,8 @@ class EngineBase(ABC):
             X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
             y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
             if is_binary(automl.problem_type) or is_multiclass(automl.problem_type):
-                diff_train = set(np.setdiff1d(full_y_train.to_series(), y_train.to_series()))
-                diff_valid = set(np.setdiff1d(full_y_train.to_series(), y_valid.to_series()))
+                diff_train = set(np.setdiff1d(full_y_train, y_train))
+                diff_valid = set(np.setdiff1d(full_y_train, y_valid))
                 diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
                 diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
                 if diff_string:

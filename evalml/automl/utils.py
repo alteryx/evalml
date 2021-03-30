@@ -85,7 +85,7 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
     """
     if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and objective.can_optimize_threshold:
         pipeline.threshold = 0.5
-        if X_threshold_tuning:
+        if X_threshold_tuning is not None:
             y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
             y_predict_proba = y_predict_proba.iloc[:, 1]
             pipeline.optimize_threshold(X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective)

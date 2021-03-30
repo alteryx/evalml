@@ -78,7 +78,7 @@ class BalancedClassificationSampler(SamplerBase):
             list: Indices to keep for training data
         """
         y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y = _convert_woodwork_types_wrapper(y_ww)
         result = self._find_ideal_samples(y)
         indices_to_drop = []
         if len(result):

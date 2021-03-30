@@ -92,10 +92,6 @@ class ObjectiveBase(ABC):
         """
         if isinstance(input_data, (pd.Series, pd.DataFrame)):
             return _convert_woodwork_types_wrapper(input_data)
-        if isinstance(input_data, ww.DataTable):
-            return _convert_woodwork_types_wrapper(input_data.to_dataframe())
-        if isinstance(input_data, ww.DataColumn):
-            return _convert_woodwork_types_wrapper(input_data.to_series())
         if isinstance(input_data, list):
             if isinstance(input_data[0], list):
                 return pd.DataFrame(input_data)
