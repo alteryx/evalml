@@ -158,7 +158,7 @@ _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBas
                        'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
                        'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
                        'TimeSeriesBaselineRegressionPipeline', 'TimeSeriesBaselineBinaryPipeline',
-                       'TimeSeriesBaselineMulticlassPipeline', 'KNeighborsClassifier',
+                       'TimeSeriesBaselineMulticlassPipeline',
                        'SVMClassifier', 'SVMRegressor', 'ARIMARegressor'}
 
 

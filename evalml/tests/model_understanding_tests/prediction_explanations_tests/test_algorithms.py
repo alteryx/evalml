@@ -108,6 +108,9 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 
     if problem_type == ProblemTypes.MULTICLASS and estimator.model_family == ModelFamily.CATBOOST:
         pytest.skip("Skipping Catboost for multiclass problems.")
+    # The SHAP package runs LassoLarsCV and ends up feeding in infinity values for KNN
+    if estimator.model_family == ModelFamily.K_NEIGHBORS:
+        pytest.skip("Skipping KNN")
 
     if problem_type == ProblemTypes.BINARY:
         training_data, y = X_y_binary
