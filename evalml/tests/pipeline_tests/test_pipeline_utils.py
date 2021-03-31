@@ -30,9 +30,9 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
-    make_pipeline_from_actions,
     get_estimators,
     make_pipeline,
+    make_pipeline_from_actions,
     make_pipeline_from_components
 )
 from evalml.problem_types import ProblemTypes, is_time_series
@@ -516,22 +516,32 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
-def test_make_pipeline_from_actions(problem_type):
-    # Skipping because make_pipeline_from_components does not yet work for time series.
-
-    pipeline_base_class = _get_pipeline_base_class(problem_type)
-    class ExpectedEmptyActionsPipeline(pipeline_base_class):
-        component_graph = []
-
-    import pdb; pdb.set_trace()
+def test_make_pipeline_from_actions_drop_cols(problem_type):
+    # Skipping time series because make_pipeline_from_components does not yet work for time series.
     action_pipeline = make_pipeline_from_actions([], problem_type)
     assert action_pipeline.component_graph == []
     assert action_pipeline.parameters == {}
-    # actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']})]
 
-    # assert make_pipeline_from_actions(actions, problem_type) == [DropColumns(columns=['some col'])]
+    actions_no_metadata = [DataCheckAction(DataCheckActionCode.DROP_COL, {})]
+    action_pipeline = make_pipeline_from_actions(actions_no_metadata, problem_type)
+    assert action_pipeline.component_graph == []
+    assert action_pipeline.parameters == {}
 
-    # actions_same_code = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
-    #                      DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
-    # assert make_pipeline_from_actions(actions_same_code, problem_type) == [DropColumns(columns=['some col']),
-    #                                                                 DropColumns(columns=['some other col'])]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']})]
+    action_pipeline = make_pipeline_from_actions(actions, problem_type)
+    assert action_pipeline.component_graph == [DropColumns]
+    assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some col']}}
+
+    actions_same_code = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
+                         DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
+
+    action_pipeline = make_pipeline_from_actions(actions_same_code, problem_type)
+    assert action_pipeline.component_graph == [DropColumns]
+    assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some col', 'some other col']}}
+
+    actions_same_cols = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some same col']}),
+                         DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some same col']})]
+
+    action_pipeline = make_pipeline_from_actions(actions_same_cols, problem_type)
+    assert action_pipeline.component_graph == [DropColumns]
+    assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some same col']}}

@@ -168,8 +168,6 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     for i, component in enumerate(component_instances):
         if not isinstance(component, ComponentBase):
             raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
-        if i == len(component_instances) - 1 and not isinstance(component, Estimator):
-            raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
 
     if custom_name and not isinstance(custom_name, str):
         raise TypeError("Custom pipeline name must be a string")
@@ -265,7 +263,11 @@ def make_pipeline_from_actions(actions, problem_type):
         List of components used to address the input actions
     """
     components = []
-    for action in actions:
-        if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append(DropColumns(columns=action.metadata["columns"]))
+    cols_to_drop = []
+    for drop_action in [action for action in actions if action.action_code == DataCheckActionCode.DROP_COL]:
+        drop_action_cols = drop_action.metadata.get("columns", [])
+        new_cols = [col for col in drop_action_cols if col not in cols_to_drop]
+        cols_to_drop.extend(new_cols)
+    if cols_to_drop:
+        components.append(DropColumns(columns=cols_to_drop))
     return make_pipeline_from_components(components, problem_type)
