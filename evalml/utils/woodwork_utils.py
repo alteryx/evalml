@@ -38,15 +38,19 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
+    ww_data = data.copy()
+
     if isinstance(data, pd.Series):
         if data.ww._schema is not None:
-            return data.ww.copy()
-        ww_data = ww.init_series(data, logical_type=feature_types)
+            ww_data = ww.init_series(ww_data, **data.ww._schema)
+        else:
+            ww_data = ww.init_series(ww_data, logical_type=feature_types)
     else:
         if data.ww.schema is not None:
-            return data.ww.copy()
-        ww_data = data.copy()
-        ww_data.ww.init(logical_types=feature_types)
+            ww_data.ww.init(logical_types=data.ww.logical_types,
+                            semantic_tags=data.ww.semantic_tags)
+        else:
+            ww_data.ww.init(logical_types=feature_types)
 
     return ww_data
 
