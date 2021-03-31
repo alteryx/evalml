@@ -14,7 +14,7 @@ from .pipeline_search_plots import PipelineSearchPlots
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
-from evalml.automl.engine import SequentialEngine, train_pipeline
+from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
     AutoMLData,
     check_all_pipeline_names_unique,
@@ -556,8 +556,8 @@ class AutoMLSearch:
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
-                best_pipeline = train_pipeline(best_pipeline, X_train, y_train,
-                                               self.optimize_thresholds, self.objective)
+                best_pipeline = self._engine.submit_training_job(self.automl_data, best_pipeline,
+                                                                 X_train, y_train).get_result()
             self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
