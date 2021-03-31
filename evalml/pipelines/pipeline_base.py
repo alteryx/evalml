@@ -80,9 +80,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self.input_feature_names = {}
         self.input_target_name = None
-
-        final_component = self._component_graph.get_last_component()
-        self.estimator = final_component if isinstance(final_component, Estimator) else None
+        self.estimator = None
+        if len(self._component_graph.compute_order) > 0:
+            final_component = self._component_graph.get_last_component()
+            self.estimator = final_component if isinstance(final_component, Estimator) else None
         self._estimator_name = self._component_graph.compute_order[-1] if self.estimator is not None else None
 
         self._validate_estimator_problem_type()

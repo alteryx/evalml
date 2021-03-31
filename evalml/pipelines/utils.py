@@ -254,7 +254,7 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
                                              random_seed=random_seed)
 
 
-def _make_component_list_from_actions(actions):
+def make_pipeline_from_actions(actions, problem_type):
     """
     Creates a list of components from the input DataCheckAction list
 
@@ -268,4 +268,4 @@ def _make_component_list_from_actions(actions):
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
             components.append(DropColumns(columns=action.metadata["columns"]))
-    return components
+    return make_pipeline_from_components(components, problem_type)
