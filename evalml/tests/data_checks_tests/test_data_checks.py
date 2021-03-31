@@ -99,7 +99,11 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
             DataCheckError(message="also_all_null has 0 unique value.",
                            data_check_name="NoVarianceDataCheck",
                            message_code=DataCheckMessageCode.NO_VARIANCE,
-                           details={"column": "also_all_null"}).to_dict()]
+                           details={"column": "also_all_null"}).to_dict(),
+            DataCheckError(message='Input datetime column(s) (nan_dt_col) contains NaN values. Please impute NaN values or drop these rows or columns.',
+                           data_check_name="DateTimeNaNDataCheck",
+                           message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+                           details={"columns": 'nan_dt_col'}).to_dict()]
 
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
@@ -115,7 +119,10 @@ def test_default_data_checks_classification(input_type):
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 4, 5],
                       'id': [0, 1, 2, 3, 4],
-                      'has_label_leakage': [100, 200, 100, 200, 100]})
+                      'has_label_leakage': [100, 200, 100, 200, 100],
+                      'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
+    X['nan_dt_col'][0] = None
+
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
     if input_type == "ww":
@@ -124,7 +131,6 @@ def test_default_data_checks_classification(input_type):
         y_multiclass = ww.DataColumn(y_multiclass)
 
     data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
-
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
                                 data_check_name="ClassImbalanceDataCheck",
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
@@ -172,7 +178,9 @@ def test_default_data_checks_regression(input_type):
                       'also_all_null': [None, None, None, None, None],
                       'no_null': [1, 2, 3, 5, 5],
                       'id': [0, 1, 2, 3, 4],
-                      'has_label_leakage': [100, 200, 100, 200, 100]})
+                      'has_label_leakage': [100, 200, 100, 200, 100],
+                      'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
+    X['nan_dt_col'][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
 
@@ -189,24 +197,34 @@ def test_default_data_checks_regression(input_type):
                                            data_check_name="TargetLeakageDataCheck",
                                            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                            details={"column": "id"}).to_dict()]
+    nan_dt_leakage_warning = [DataCheckWarning(message="Column 'nan_dt_col' is 95.0% or more correlated with the target",
+                                               data_check_name="TargetLeakageDataCheck",
+                                               message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                                               details={"column": "nan_dt_col"}).to_dict()]
 
     impute_action = DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'mean'}).to_dict()
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions[:3] + [impute_action] + expected_actions[4:]}
+    nan_dt_action = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'nan_dt_col'}).to_dict()
+    expected_actions_with_drop_and_impute = expected_actions[:3] + [nan_dt_action, impute_action] + expected_actions[4:]
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
+                                          "errors": messages[3:],
+                                          "actions": expected_actions_with_drop_and_impute}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
         "warnings": messages[:3] + null_leakage,
-        "errors": messages[4:] + [DataCheckError(message="Y has 1 unique value.",
-                                                 data_check_name="NoVarianceDataCheck",
-                                                 message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                 details={"column": "Y"}).to_dict()],
+        "errors": messages[4:7] + [DataCheckError(message="Y has 1 unique value.",
+                                                  data_check_name="NoVarianceDataCheck",
+                                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                  details={"column": "Y"}).to_dict()] + [messages[7]],
         "actions": expected_actions[:3] + expected_actions[4:]
     }
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning, "errors": messages[3:], "actions": expected_actions[:3] + [impute_action] + expected_actions[4:]}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
+                                          "errors": messages[3:],
+                                          "actions": expected_actions_with_drop_and_impute}
 
 
 def test_default_data_checks_time_series_regression():

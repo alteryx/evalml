@@ -84,3 +84,6 @@ class DataCheckMessageCode(Enum):
 
     MISMATCHED_LENGTHS = "mismatched_lengths"
     """Message code for when input target and features have different lengths."""
+
+    DATETIME_HAS_NAN = "datetime_has_nan"
+    """Message code for when input datetime columns contain NaN values."""
