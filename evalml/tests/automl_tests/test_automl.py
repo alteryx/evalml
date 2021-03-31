@@ -2259,12 +2259,10 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     # the ensembling_num formula is taken from AutoMLSearch
     if best_pipeline == -1:
         assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
-        assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
-        assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
     else:
         assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
-        assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
-        assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+    assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+    assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
