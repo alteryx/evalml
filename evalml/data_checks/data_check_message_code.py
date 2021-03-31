@@ -16,6 +16,9 @@ class DataCheckMessageCode(Enum):
     TARGET_IS_NONE = "target_is_none"
     """Message code for when target is None."""
 
+    TARGET_IS_EMPTY_OR_FULLY_NULL = "target_is_empty_or_fully_null"
+    """Message code for target data that is empty or has all null values."""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
