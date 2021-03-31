@@ -21,6 +21,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestClassifier,
     StandardScaler,
+    TargetImputer,
     Transformer,
     Undersampler
 )
@@ -778,3 +779,25 @@ def test_component_graph_sampler_list():
     assert component_graph.get_parents('One Hot Encoder') == ['Imputer.x']
     assert component_graph.get_parents('Undersampler') == ['One Hot Encoder.x']
     assert component_graph.get_parents('Random Forest Classifier') == ['Undersampler.x', 'Undersampler.y']
+
+
+def test_component_graph_dataset_with_target_imputer():
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, np.nan])
+    graph = {'Target Imputer': [TargetImputer],
+             'OneHot': [OneHotEncoder, 'Target Imputer.x', 'Target Imputer.y'],
+             'Random Forest': [RandomForestClassifier, 'OneHot.x', 'Target Imputer.y'],
+             'Elastic Net': [ElasticNetClassifier, 'OneHot.x', 'Target Imputer.y'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net', 'Target Imputer.y']}
+
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    assert component_graph.get_parents('Target Imputer') == []
+    assert component_graph.get_parents('OneHot') == ['Target Imputer.x', 'Target Imputer.y']
+    assert component_graph.get_parents('Random Forest') == ['OneHot.x', 'Target Imputer.y']
+    assert component_graph.get_parents('Elastic Net') == ['OneHot.x', 'Target Imputer.y']
+
+    component_graph.fit(X, y)
+    predictions = component_graph.predict(X)
+    assert not pd.isnull(predictions.to_series()).any()

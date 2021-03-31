@@ -25,6 +25,7 @@ from evalml.pipelines.components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    TargetImputer,
     TextFeaturizer,
     Transformer
 )
@@ -521,7 +522,7 @@ def test_make_component_list_from_actions():
     actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']})]
     assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col'])]
 
-    actions_same_code = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some col']}),
-                         DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ['some other col']})]
-    assert _make_component_list_from_actions(actions_same_code) == [DropColumns(columns=['some col']),
-                                                                    DropColumns(columns=['some other col'])]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": ['some col']}),
+               DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
+    assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col']),
+                                                          TargetImputer(impute_strategy="most_frequent")]

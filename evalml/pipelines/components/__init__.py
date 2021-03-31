@@ -46,8 +46,9 @@ from .transformers import (
     LSA,
     PCA,
     DFSTransformer,
-    PolynomialDetrender,
-    Undersampler
+    Undersampler,
+    TargetImputer,
+    PolynomialDetrender
 )
 from .ensemble import (
     StackedEnsembleClassifier,

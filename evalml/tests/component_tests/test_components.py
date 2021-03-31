@@ -53,6 +53,7 @@ from evalml.pipelines.components import (
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
+    TargetImputer,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
@@ -536,10 +537,11 @@ def test_transformer_transform_output_type(X_y_binary):
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
-            if 'sampler' in component.name:
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
+                assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
-                transform_output = transform_output[0]
-            assert isinstance(transform_output, ww.DataTable)
+            else:
+                assert isinstance(transform_output, ww.DataTable)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
@@ -553,15 +555,20 @@ def test_transformer_transform_output_type(X_y_binary):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
                 continue
+            elif isinstance(component, TargetImputer):
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
+                assert len(transform_output[1].shape) == 1
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
-            if 'sampler' in component.name:
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
+                assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
-                transform_output = transform_output[0]
-            assert isinstance(transform_output, ww.DataTable)
+            else:
+                assert isinstance(transform_output, ww.DataTable)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
@@ -571,6 +578,10 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
+            elif isinstance(component, TargetImputer):
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
+                assert len(transform_output[1].shape) == 1
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
@@ -1075,7 +1086,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if 'sampler' in transformer.name:
+    if 'sampler' in transformer.name or transformer_class == TargetImputer:
         X_t, y_t = transformer.transform(X, y)
         X_t = X_t.to_dataframe()
         pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)

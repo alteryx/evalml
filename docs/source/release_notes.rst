@@ -2,7 +2,11 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+<<<<<<< HEAD
         * Added ``Undersampler`` transformer component :pr:`2030`
+=======
+        * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
+>>>>>>> main
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
         * Added sensitivity at low alert rates as an objective :pr:`2001`
