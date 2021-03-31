@@ -41,7 +41,7 @@ def test_invalid_target_data_check_nan_error():
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {"warnings": [], "errors": [], "actions": []}
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == {
         "warnings": [],
-        "errors": [DataCheckError(message="Target values are either empty or fully null.",
+        "errors": [DataCheckError(message="Target is either empty or fully null.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                   details={}).to_dict()],
@@ -135,7 +135,7 @@ def test_invalid_target_data_input_formats():
     messages = invalid_targets_check.validate(X, pd.Series())
     assert messages == {
         "warnings": [],
-        "errors": [DataCheckError(message="Target values are either empty or fully null.",
+        "errors": [DataCheckError(message="Target is either empty or fully null.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                   details={}).to_dict()],
@@ -490,7 +490,7 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
     y_all_null = pd.Series([None, None, None])
     expected = {
         "warnings": [],
-        "errors": [DataCheckError(message="Target values are either empty or fully null.",
+        "errors": [DataCheckError(message="Target is either empty or fully null.",
                                   data_check_name=invalid_targets_data_check_name,
                                   message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                   details={}).to_dict()],

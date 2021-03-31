@@ -16,11 +16,12 @@ from evalml.pipelines.components import TargetImputer
 
 def test_target_imputer_no_y(X_y_binary):
     X, y = X_y_binary
-    imputer = TargetImputer(impute_strategy='median')
-    with pytest.raises(ValueError, match="y cannot be None"):
-        imputer.fit_transform(None, None)
-    with pytest.raises(ValueError, match="y cannot be None"):
-        imputer.fit(X, None)
+    imputer = TargetImputer()
+    assert imputer.fit_transform(None, None) == (None, None)
+
+    imputer = TargetImputer()
+    imputer.fit(None, None)
+    assert imputer.transform(None, None) == (None, None)
 
 
 def test_target_imputer_with_X():

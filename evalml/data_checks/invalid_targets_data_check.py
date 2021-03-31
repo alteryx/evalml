@@ -91,7 +91,7 @@ class InvalidTargetDataCheck(DataCheck):
         y_df = _convert_woodwork_types_wrapper(y.to_series())
         null_rows = y_df.isnull()
         if null_rows.all():
-            results["errors"].append(DataCheckError(message="Target values are either empty or fully null.",
+            results["errors"].append(DataCheckError(message="Target is either empty or fully null.",
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                                     details={}).to_dict())

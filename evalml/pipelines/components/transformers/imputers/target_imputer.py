@@ -1,7 +1,11 @@
 
+from functools import wraps
+
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 
+from evalml.exceptions import ComponentNotYetFittedError
+from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -10,7 +14,25 @@ from evalml.utils import (
 )
 
 
-class TargetImputer(Transformer):
+class TargetImputerMeta(ComponentBaseMeta):
+    """A version of the ComponentBaseMeta class which handles when input features is None"""
+
+    @classmethod
+    def check_for_fit(cls, method):
+        """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
+            It raises an exception if `False` and calls and returns the wrapped method if `True`.
+        """
+        @wraps(method)
+        def _check_for_fit(self, X=None, y=None):
+            klass = type(self).__name__
+            if not self._is_fitted and self.needs_fitting:
+                raise ComponentNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
+            else:
+                return method(self, X, y)
+        return _check_for_fit
+
+
+class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     """Imputes missing target data according to a specified imputation strategy."""
     name = 'Target Imputer'
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
@@ -46,7 +68,7 @@ class TargetImputer(Transformer):
             self
         """
         if y is None:
-            raise ValueError("y cannot be None")
+            return self
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series()).to_frame()
 
@@ -67,9 +89,11 @@ class TargetImputer(Transformer):
         Returns:
             (ww.DataTable, ww.DataColumn): The original X, transformed y
         """
+
         if X is not None:
             X = infer_feature_types(X)
-
+        if y is None:
+            return X, None
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
         y_df = y.to_frame()
