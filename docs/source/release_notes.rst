@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Add ``KNeighborsClassifier`` to AutoML :pr:`2057`
+        * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
         * Added sensitivity at low alert rates as an objective :pr:`2001`
@@ -29,6 +30,7 @@ Release Notes
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
         * Added a ``PolynomialDetrender`` component :pr:`1992`
+        * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
