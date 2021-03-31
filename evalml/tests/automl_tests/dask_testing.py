@@ -9,7 +9,7 @@ from evalml.preprocessing.data_splitters import TrainingValidationSplit
 
 # Top-level replacement for AutoML object to supply data for testing purposes.
 def err_call(*args, **kwargs):
-    return 1
+    """No-op"""
 
 
 ensembling_indices = [0]

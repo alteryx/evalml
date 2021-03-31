@@ -8,7 +8,14 @@ from evalml.objectives.utils import get_objective
 
 
 class SequentialComputation(EngineComputation):
-    """A Future-like api for jobs created by the SequentialEngine."""
+    """A Future-like api for jobs created by the SequentialEngine.
+
+    In order to separate the engine from the AutoMLSearch loop, we need the sequential computations to behave the same
+    way as concurrent computations from AutoMLSearch's point-of-view. One way to do this is by delaying the computation
+    in the sequential engine until get_result is called. Since AutoMLSearch will call get_result only when the
+    computation is "done", by always returning True in done() we make sure that get_result is called in the order that
+    the jobs are submitted. So the computations happen sequentially!
+    """
 
     def __init__(self, work, **kwargs):
         self.work = work
