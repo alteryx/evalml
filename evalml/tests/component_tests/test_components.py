@@ -559,6 +559,9 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
                 assert len(transform_output[1].shape) == 1
+            elif 'sampler' in component.name:
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
@@ -582,6 +585,9 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
                 assert len(transform_output[1].shape) == 1
+            elif 'sampler' in component.name:
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
