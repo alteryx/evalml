@@ -32,7 +32,9 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()], "errors": [], "actions": []}
+            return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()],
+                    "errors": [],
+                    "actions": []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
@@ -106,8 +108,8 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'id'}).to_dict(),
-                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict()
-                    ]
+                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'most_frequent'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict()]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -200,10 +202,12 @@ def test_default_data_checks_regression(input_type):
                                                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                                                details={"column": "nan_dt_col"}).to_dict()]
 
+    impute_action = DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'mean'}).to_dict()
     nan_dt_action = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'nan_dt_col'}).to_dict()
-    expected_actions_with_nan_dt = expected_actions.copy()
-    expected_actions_with_nan_dt.insert(3, nan_dt_action)
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning, "errors": messages[3:], "actions": expected_actions_with_nan_dt}
+    expected_actions_with_drop_and_impute = expected_actions[:3] + [nan_dt_action, impute_action] + expected_actions[4:]
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
+                                          "errors": messages[3:],
+                                          "actions": expected_actions_with_drop_and_impute}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
@@ -212,13 +216,15 @@ def test_default_data_checks_regression(input_type):
                                                   data_check_name="NoVarianceDataCheck",
                                                   message_code=DataCheckMessageCode.NO_VARIANCE,
                                                   details={"column": "Y"}).to_dict()] + [messages[7]],
-        "actions": expected_actions
+        "actions": expected_actions[:3] + expected_actions[4:]
     }
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning, "errors": messages[3:], "actions": expected_actions_with_nan_dt}
+    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
+                                          "errors": messages[3:],
+                                          "actions": expected_actions_with_drop_and_impute}
 
 
 def test_default_data_checks_time_series_regression():

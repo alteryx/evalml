@@ -25,6 +25,7 @@ from evalml.pipelines.components import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    TargetImputer,
     TextFeaturizer,
     Transformer
 )
@@ -389,9 +390,7 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pipeline_class):
-    with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
-        make_pipeline_from_components([Imputer()], problem_type='binary')
+def test_make_pipeline_from_components_errors():
 
     with pytest.raises(KeyError, match="Problem type 'invalid_type' does not exist"):
         make_pipeline_from_components([RandomForestClassifier()], problem_type='invalid_type')
@@ -405,6 +404,27 @@ def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pi
     with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
         make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
 
+
+def test_make_pipeline_from_components_without_estimator():
+    imp = Imputer(numeric_impute_strategy='median', random_seed=5)
+    pipeline = make_pipeline_from_components([imp], ProblemTypes.BINARY, custom_name='My Pipeline',
+                                             random_seed=15)
+    assert [c.__class__ for c in pipeline] == [Imputer]
+    assert [(c.random_seed == 15) for c in pipeline]
+    assert pipeline.problem_type == ProblemTypes.BINARY
+    assert pipeline.custom_name == 'My Pipeline'
+    expected_parameters = {
+        'Imputer': {
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'median',
+            'categorical_fill_value': None,
+            'numeric_fill_value': None},
+    }
+    assert pipeline.parameters == expected_parameters
+    assert pipeline.random_seed == 15
+
+
+def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pipeline_class):
     imp = Imputer(numeric_impute_strategy='median', random_seed=5)
     est = RandomForestClassifier(random_seed=7)
     pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
@@ -545,3 +565,13 @@ def test_make_pipeline_from_actions_drop_cols(problem_type):
     action_pipeline = make_pipeline_from_actions(actions_same_cols, problem_type)
     assert action_pipeline.component_graph == [DropColumns]
     assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some same col']}}
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_make_pipeline_from_actions(problem_type):
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": ['some col']}),
+               DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
+    action_pipeline = make_pipeline_from_actions(actions, problem_type)
+    assert action_pipeline.component_graph == [DropColumns, TargetImputer]
+    assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some col']},
+                                          'Target Imputer': {'fill_value': None, 'impute_strategy': 'most_frequent'}}

@@ -31,6 +31,7 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    TargetImputer,
     TextFeaturizer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
@@ -270,4 +271,9 @@ def make_pipeline_from_actions(actions, problem_type):
         cols_to_drop.extend(new_cols)
     if cols_to_drop:
         components.append(DropColumns(columns=cols_to_drop))
+    for action in actions:
+        if action.action_code == DataCheckActionCode.IMPUTE_COL:
+            metadata = action.metadata
+            if metadata["is_target"]:
+                components.append(TargetImputer(impute_strategy=metadata["impute_strategy"]))
     return make_pipeline_from_components(components, problem_type)
