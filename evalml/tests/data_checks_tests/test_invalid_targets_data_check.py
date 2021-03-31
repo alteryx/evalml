@@ -487,7 +487,14 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
     messages = invalid_targets_check.validate(X, y)
     assert messages == expected
 
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_invalid_target_data_action_for_all_null(problem_type):
+    invalid_targets_check = InvalidTargetDataCheck(problem_type, get_default_primary_search_objective(problem_type))
+
     y_all_null = pd.Series([None, None, None])
+    X = pd.DataFrame({"col": range(len(y_all_null))})
+
     expected = {
         "warnings": [],
         "errors": [DataCheckError(message="Target is either empty or fully null.",

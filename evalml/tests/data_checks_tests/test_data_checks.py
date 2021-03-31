@@ -33,7 +33,8 @@ def test_data_checks(X_y_binary):
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
             return {"warnings": [DataCheckWarning(message="warning one", data_check_name=self.name, message_code=None).to_dict()],
-                    "errors": [], "actions": []}
+                    "errors": [],
+                    "actions": []}
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
