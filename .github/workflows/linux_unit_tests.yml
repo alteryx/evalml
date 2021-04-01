@@ -79,4 +79,4 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           pip install coverage
-          bash <(curl -s https://codecov.io/bash)
+          bash <(curl -s https://codecov.io/bash) -C ${{ github.event.pull_request.head.sha }}
