@@ -17,3 +17,4 @@ from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .multicollinearity_data_check import MulticollinearityDataCheck
 from .sparsity_data_check import SparsityDataCheck
 from .uniqueness_data_check import UniquenessDataCheck
+from .datetime_nan_data_check import DateTimeNaNDataCheck

@@ -529,7 +529,7 @@ Data Check Classes
     NoVarianceDataCheck
     ClassImbalanceDataCheck
     MulticollinearityDataCheck
-
+    DateTimeNaNDataCheck
 
 .. autosummary::
     :toctree: generated
