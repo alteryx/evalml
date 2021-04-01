@@ -2,11 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
         * Added sensitivity at low alert rates as an objective :pr:`2001`
     * Fixes
+        * Updated Engine's ``train_batch`` to apply undersampling :pr:`2038`
         * Fixed bug in where Time Series Classification pipelines were not encoding targets in ``predict`` and ``predict_proba`` :pr:`2040`
+        * Fixed data splitting errors if target is float for classification problems :pr:`2050`
     * Changes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
@@ -26,6 +29,7 @@ Release Notes
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
         * Added a ``PolynomialDetrender`` component :pr:`1992`
+        * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
     * Fixes
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes

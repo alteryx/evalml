@@ -46,6 +46,7 @@ from .transformers import (
     LSA,
     PCA,
     DFSTransformer,
+    TargetImputer,
     PolynomialDetrender
 )
 from .ensemble import (

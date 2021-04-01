@@ -69,15 +69,15 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
-def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, ltypes_to_ignore=None):
+def _retain_custom_types_and_initalize_woodwork(old_woodwork_data, new_pandas_data, ltypes_to_ignore=None):
     """
-    Helper method which will take an old Woodwork DataTable and a new pandas DataFrame and return a
-    new DataTable that will try to retain as many logical types from the old DataTable that exist in the new
-    pandas DataFrame as possible.
+    Helper method which will take an old Woodwork data structure and a new pandas data structure and return a
+    new data structure that will try to retain as many logical types from the old data structure that exist in the new
+    pandas data structure as possible.
 
     Arguments:
-        old_datatable (ww.DataTable): Woodwork DataTable to use
-        new_dataframe (pd.DataFrame): Pandas data structure
+        old_woodwork_data (ww.DataTable): Woodwork data structure to use
+        new_pandas_data (pd.DataFrame): Pandas data structure
         ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataTable that have a logical type
         specified in this list will not have their logical types carried over to the new DataTable returned
 
@@ -85,21 +85,29 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
         A new DataTable where any of the columns that exist in the old input DataTable and the new DataFrame try to retain
         the original logical type, if possible and not specified to be ignored.
     """
+    if isinstance(old_woodwork_data, ww.DataColumn):
+        if str(new_pandas_data.dtype) != old_woodwork_data.logical_type.pandas_dtype:
+            try:
+                return ww.DataColumn(new_pandas_data, logical_type=old_woodwork_data.logical_type)
+            except (ValueError, TypeError):
+                pass
+        return ww.DataColumn(new_pandas_data)
+
     retained_logical_types = {}
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
-    col_intersection = set(old_datatable.columns).intersection(set(new_dataframe.columns))
-    logical_types = old_datatable.logical_types
+    col_intersection = set(old_woodwork_data.columns).intersection(set(new_pandas_data.columns))
+    logical_types = old_woodwork_data.logical_types
     for col in col_intersection:
         if logical_types[col] in ltypes_to_ignore:
             continue
-        if str(new_dataframe[col].dtype) != logical_types[col].pandas_dtype:
+        if str(new_pandas_data[col].dtype) != logical_types[col].pandas_dtype:
             try:
-                new_dataframe[col].astype(logical_types[col].pandas_dtype)
-                retained_logical_types[col] = old_datatable[col].logical_type
+                new_pandas_data[col].astype(logical_types[col].pandas_dtype)
+                retained_logical_types[col] = old_woodwork_data[col].logical_type
             except (ValueError, TypeError):
                 pass
-    return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
+    return ww.DataTable(new_pandas_data, logical_types=retained_logical_types)
 
 
 def _convert_numeric_dataset_pandas(X, y):
