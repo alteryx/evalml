@@ -17,6 +17,7 @@ Release Notes
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
     * Documentation Changes
         * Catch and suppress warnings in documentation :pr:`1991`
+        * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
     * Testing Changes
 
 
