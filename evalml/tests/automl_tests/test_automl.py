@@ -290,7 +290,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=4,', 'n_splits=5, random_seed=0'),
+        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=0.25,', 'n_splits=5, random_seed=0'),
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -922,15 +922,16 @@ def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary
     caplog.clear()
     automl_dict = automl.describe_pipeline(0, return_dict=return_dict)
     out = caplog.text
+    print(out)
     assert "Mode Baseline Binary Classification Pipeline" in out
     assert "Problem Type: binary" in out
     assert "Model Family: Baseline" in out
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
-    assert "0                      1.000       66.0         34.0" in out
-    assert "1                      1.000       67.0         33.0" in out
-    assert "2                      1.000       67.0         33.0" in out
+    assert "0                      1.000     66.000       34.000" in out
+    assert "1                      1.000     67.000       33.000" in out
+    assert "2                      1.000     67.000       33.000" in out
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out

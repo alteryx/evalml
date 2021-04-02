@@ -53,7 +53,7 @@ def test_undersample_imbalanced(data_type, make_data_type):
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    balanced_ratio = 4
+    balanced_ratio = 0.25
     undersampler = Undersampler(balanced_ratio=balanced_ratio)
     new_X, new_y = undersampler.fit_transform(X, y)
 
