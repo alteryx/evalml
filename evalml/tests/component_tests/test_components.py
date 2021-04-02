@@ -57,6 +57,7 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
+    Undersampler,
     XGBoostClassifier,
     XGBoostRegressor
 )
@@ -156,6 +157,7 @@ def test_describe_component():
     pca = PCA()
     lda = LinearDiscriminantAnalysis()
     ft = DFSTransformer()
+    us = Undersampler()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
@@ -181,7 +183,7 @@ def test_describe_component():
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
-
+    assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"balanced_ratio": 4, "min_samples": 100, "min_percentage": 0.1}}
     # testing estimators
     base_classifier = BaselineClassifier()
     base_regressor = BaselineRegressor()
@@ -535,7 +537,7 @@ def test_transformer_transform_output_type(X_y_binary):
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
-            if isinstance(component, TargetImputer):
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
                 assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
             else:
@@ -557,12 +559,15 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
                 assert len(transform_output[1].shape) == 1
+            elif 'sampler' in component.name:
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
-            if isinstance(component, TargetImputer):
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
                 assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
             else:
@@ -580,6 +585,9 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
                 assert len(transform_output[1].shape) == 1
+            elif 'sampler' in component.name:
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
@@ -1084,14 +1092,14 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if transformer_class == TargetImputer:
+    if 'sampler' in transformer.name or transformer_class == TargetImputer:
         X_t, y_t = transformer.transform(X, y)
-        pd.testing.assert_index_equal(X_t.to_dataframe().index, X_original_index, check_names=check_names)
+        X_t = X_t.to_dataframe()
         pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
     else:
         X_t = transformer.transform(X, y).to_dataframe()
-        pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
         pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
+    pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
