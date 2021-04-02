@@ -50,6 +50,9 @@ from evalml.pipelines.components import (
     RFRegressorSelectFromModel,
     SelectColumns,
     SimpleImputer,
+    SMOTENCSampler,
+    SMOTENSampler,
+    SMOTESampler,
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
@@ -184,6 +187,15 @@ def test_describe_component():
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
     assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"balanced_ratio": 4, "min_samples": 100, "min_percentage": 0.1}}
+    try:
+        smote = SMOTESampler()
+        assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_strategy': 'auto', 'k_neighbors': 5}}
+        smote = SMOTENCSampler()
+        assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'categorical_features': [], 'sampling_strategy': 'auto', 'k_neighbors': 5}}
+        smote = SMOTENSampler()
+        assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_strategy': 'auto', 'k_neighbors': 5}}
+    except ImportError:
+        pass
     # testing estimators
     base_classifier = BaselineClassifier()
     base_regressor = BaselineRegressor()
@@ -534,6 +546,8 @@ def test_transformer_transform_output_type(X_y_binary):
                           y.name if isinstance(y, pd.Series) else None))
 
             component = component_class()
+            if component_class.name == "SMOTENC Oversampler":
+                component = component_class(categorical_features=[0])
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
@@ -728,6 +742,9 @@ def test_all_transformers_check_fit(X_y_binary):
             continue
 
         component = component_class()
+        if component_class.name == "SMOTENC Oversampler":
+            component = component_class(categorical_features=[0])
+
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.transform(X, y)
 
@@ -735,6 +752,8 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X, y)
 
         component = component_class()
+        if component_class.name == "SMOTENC Oversampler":
+            component = component_class(categorical_features=[0])
         component.fit_transform(X, y)
         component.transform(X, y)
 

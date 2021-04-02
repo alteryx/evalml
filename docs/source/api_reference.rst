@@ -251,6 +251,9 @@ Transformers are components that take in data as input and output transformed da
     DFSTransformer
     PolynomialDetrender
     Undersampler
+    SMOTESampler
+    SMOTENCSampler
+    SMOTENSampler
 
 Estimators
 ~~~~~~~~~~
