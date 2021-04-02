@@ -14,11 +14,23 @@ class SMOTESampler(BaseSampler):
         'k_neighbors': Integer(2, 10)
     }
 
-    def __init__(self, sampling_strategy='auto', k_neighbors=5, random_seed=0, **kwargs):
+    def __init__(self, sampling_strategy='auto', k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
+        """Initialize the SMOTE Oversampler component.
+
+        Arguments:
+            sampling_strategy (float, dictionary): If float, this is the goal ratio of the minority to majority class.
+                A value of 0.25 means we want a 1:4 ratio of the minority to majority class after oversampling.
+                If dictionary, the keys correspond to each class, and the values are the number of samples we want to oversample to for each class key.
+                Defaults to 'auto', which oversamples all classes to become equal.
+                Note that float is only compatible with binary classification problems, and dictionary or 'auto' should be used for multiclass.
+            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
+            n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         parameters = {"sampling_strategy": sampling_strategy,
-                      "k_neighbors": k_neighbors}
+                      "k_neighbors": k_neighbors,
+                      "n_jobs": n_jobs}
         parameters.update(kwargs)
         sampler = im.SMOTE(**parameters, random_state=random_seed)
         super().__init__(parameters=parameters,
@@ -48,12 +60,26 @@ class SMOTENCSampler(BaseSampler):
         'k_neighbors': Integer(2, 10)
     }
 
-    def __init__(self, categorical_features=[], sampling_strategy='auto', k_neighbors=5, random_seed=0, **kwargs):
+    def __init__(self, categorical_features=[], sampling_strategy='auto', k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
+        """Initialize the SMOTENC Oversampler component.
+
+        Arguments:
+            categorical_features (list): A list of indices of the categorical columns, or a list of booleans for each column,
+                where True represents a categorical column and False represents a numeric. Defaults empty list.
+            sampling_strategy (float, dictionary): If float, this is the goal ratio of the minority to majority class.
+                A value of 0.25 means we want a 1:4 ratio of the minority to majority class after oversampling.
+                If dictionary, the keys correspond to each class, and the values are the number of samples we want to oversample to for each class key.
+                Defaults to 'auto', which oversamples all classes to become equal.
+                Note that float is only compatible with binary classification problems, and dictionary or 'auto' should be used for multiclass.
+            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
+            n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         parameters = {"categorical_features": categorical_features,
                       "sampling_strategy": sampling_strategy,
-                      "k_neighbors": k_neighbors}
+                      "k_neighbors": k_neighbors,
+                      "n_jobs": n_jobs}
         parameters.update(kwargs)
         sampler = im.SMOTENC(**parameters, random_state=random_seed)
         super().__init__(parameters=parameters,
@@ -76,11 +102,23 @@ class SMOTENSampler(BaseSampler):
         'k_neighbors': Integer(2, 10)
     }
 
-    def __init__(self, sampling_strategy='auto', k_neighbors=5, random_seed=0, **kwargs):
+    def __init__(self, sampling_strategy='auto', k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
+        """Initialize the SMOTEN Oversampler component.
+
+        Arguments:
+            sampling_strategy (float, dictionary): If float, this is the goal ratio of the minority to majority class.
+                A value of 0.25 means we want a 1:4 ratio of the minority to majority class after oversampling.
+                If dictionary, the keys correspond to each class, and the values are the number of samples we want to oversample to for each class key.
+                Defaults to 'auto', which oversamples all classes to become equal.
+                Note that float is only compatible with binary classification problems, and dictionary or 'auto' should be used for multiclass.
+            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
+            n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         parameters = {"sampling_strategy": sampling_strategy,
-                      "k_neighbors": k_neighbors}
+                      "k_neighbors": k_neighbors,
+                      "n_jobs": n_jobs}
         parameters.update(kwargs)
         sampler = im.SMOTEN(**parameters, random_state=random_seed)
         super().__init__(parameters=parameters,

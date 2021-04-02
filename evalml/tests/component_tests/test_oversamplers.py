@@ -15,7 +15,8 @@ pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imba
 def test_init(sampler):
     parameters = {
         "sampling_strategy": 1.0,
-        "k_neighbors": 2
+        "k_neighbors": 2,
+        "n_jobs": -1
     }
     if 'SMOTENC' in sampler.name:
         parameters['categorical_features'] = [0]
