@@ -11,7 +11,7 @@ Release Notes
         * Updated Engine's ``train_batch`` to apply undersampling :pr:`2038`
         * Fixed bug in where Time Series Classification pipelines were not encoding targets in ``predict`` and ``predict_proba`` :pr:`2040`
         * Fixed data splitting errors if target is float for classification problems :pr:`2050`
-        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2076`
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
     * Changes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
@@ -22,7 +22,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2076`
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
 
 **v0.21.0 Mar. 24, 2021**
     * Enhancements
