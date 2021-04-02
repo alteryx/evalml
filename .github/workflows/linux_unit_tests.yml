@@ -48,8 +48,8 @@ jobs:
           source test_python/bin/activate
           pip install --upgrade pip -q
           pip install -e . --no-dependencies
-          pip install -r core-requirements.txt
-          pip install -r test-requirements.txt
+          make installdeps-core
+          make installdeps-test
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
