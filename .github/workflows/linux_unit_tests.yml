@@ -24,6 +24,9 @@ jobs:
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
+          - python_version: "3.9"
+            core_dependencies: true
+            codecov: false
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -53,7 +56,6 @@ jobs:
       - if: ${{ !matrix.core_dependencies }}
         name: Installing Dependencies
         run: |
-          pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps
@@ -75,7 +77,6 @@ jobs:
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         run: |
-          pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           pip install coverage
