@@ -78,7 +78,6 @@ class ObjectiveBase(ABC):
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
-        y_true = y_true.reset_index(drop=True)
         return self.objective_function(y_true, y_predicted, X=X)
 
     @staticmethod

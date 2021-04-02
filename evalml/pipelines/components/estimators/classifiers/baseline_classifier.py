@@ -38,7 +38,6 @@ class BaselineClassifier(Estimator):
         self._num_features = None
         self._num_unique = None
         self._mode = None
-        self._feature_type = None
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_seed=random_seed)
@@ -48,7 +47,6 @@ class BaselineClassifier(Estimator):
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        self._feature_type = y.logical_type
         y = _convert_woodwork_types_wrapper(y.to_series())
 
         vals, counts = np.unique(y, return_counts=True)
@@ -70,7 +68,7 @@ class BaselineClassifier(Estimator):
             predictions = get_random_state(self.random_seed).choice(self._classes, len(X))
         else:
             predictions = get_random_state(self.random_seed).choice(self._classes, len(X), p=self._percentage_freq)
-        return infer_feature_types(predictions, self._feature_type)
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         X = infer_feature_types(X)
