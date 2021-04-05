@@ -85,7 +85,7 @@ def test_classification_imbalanced_balanced_ratio(num_classes, balanced_ratio):
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
-    if balanced_ratio <= 1/3:
+    if balanced_ratio <= 1 / 3:
         # the classes are considered balanced, do nothing
         pd.testing.assert_frame_equal(X, X2)
         pd.testing.assert_series_equal(y, y2)
