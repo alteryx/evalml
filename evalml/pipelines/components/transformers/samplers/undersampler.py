@@ -51,7 +51,7 @@ class Undersampler(BaseSampler):
          Returns:
             ww.DataTable, ww.DataColumn: Undersampled X and y data
         """
-        _, _, X_pd, y_pd = self._prepare_data(X, y)
+        X, y, X_pd, y_pd = self._prepare_data(X, y)
         index_df = pd.Series(y_pd.index)
         indices = self._component_obj.fit_resample(X_pd, y_pd)
         train_indices = index_df[index_df.isin(indices)].index.values.tolist()
