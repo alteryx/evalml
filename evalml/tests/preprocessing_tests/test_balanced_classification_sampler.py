@@ -85,7 +85,7 @@ def test_classification_imbalanced_balanced_ratio(num_classes, balanced_ratio):
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
-    if balanced_ratio <= .3:
+    if balanced_ratio <= 1/3:
         # the classes are considered balanced, do nothing
         pd.testing.assert_frame_equal(X, X2)
         pd.testing.assert_series_equal(y, y2)
@@ -170,7 +170,7 @@ def test_classification_imbalanced_normal_imbalance_binary(min_samples, balanced
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
-    if balanced_ratio < .2:
+    if balanced_ratio < 0.2:
         # data is balanced, do nothing
         pd.testing.assert_frame_equal(X2, X)
     else:
@@ -376,3 +376,12 @@ def test_classification_data_drop():
     y2 = y.loc[indices]
     assert len(X2) == 400
     assert y2.value_counts().values[0] == 100
+
+
+def test_balance_ratio_value():
+    X = pd.DataFrame({"a": [i for i in range(1000)]})
+    y = pd.Series([0] * 200 + [1] * 800)
+    bcs = BalancedClassificationSampler(balanced_ratio=0.1)
+    indices = bcs.fit_resample(X, y)
+    # make sure there was no resampling done
+    assert len(indices) == 1000

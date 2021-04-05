@@ -50,9 +50,10 @@ class BalancedClassificationSampler(SamplerBase):
         """
         counts = y.value_counts()
         normalized_counts = y.value_counts(normalize=True)
-        class_ratios = min(normalized_counts) / normalized_counts
+        minority_class_count = min(normalized_counts)
+        class_ratios = minority_class_count / normalized_counts
         # if no class ratios are larger than what we consider balanced, then the target is balanced
-        if all(class_ratios < self.balanced_ratio):
+        if all(class_ratios >= self.balanced_ratio):
             return {}
         # if any classes have less than min_samples counts and are less than min_percentage of the total data,
         # then it's severely imbalanced

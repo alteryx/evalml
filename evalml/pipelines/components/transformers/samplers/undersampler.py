@@ -13,7 +13,7 @@ class Undersampler(BaseSampler):
     """Random undersampler component. This component is only run during training and not during predict."""
     name = "Undersampler"
     hyperparameter_ranges = {
-        'balanced_ratio': Real(0.000001, 1),
+        'balanced_ratio': Real(1e-10, 1),
         'min_samples': Integer(50, 1000),
     }
 
