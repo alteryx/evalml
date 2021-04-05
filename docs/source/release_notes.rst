@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for ``linux_unit_tests``:pr:`2013`
         * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
@@ -11,6 +12,7 @@ Release Notes
         * Updated Engine's ``train_batch`` to apply undersampling :pr:`2038`
         * Fixed bug in where Time Series Classification pipelines were not encoding targets in ``predict`` and ``predict_proba`` :pr:`2040`
         * Fixed data splitting errors if target is float for classification problems :pr:`2050`
+        * Pinned ``docutils`` to <0.17 to fix ReadtheDocs warning issues :pr:`2088`
     * Changes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
