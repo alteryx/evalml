@@ -1,4 +1,4 @@
-catboost==0.25
+catboost==0.25.1
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
