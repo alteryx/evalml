@@ -6,9 +6,14 @@ class BaselineRegressionPipeline(RegressionPipeline):
     _name = "Baseline Regression Pipeline"
     component_graph = ["Baseline Regressor"]
 
+    def __init__(self, parameters):
+        return super().__init__(self.component_graph, self._name, {})
 
 class MeanBaselineRegressionPipeline(RegressionPipeline):
     """Baseline Pipeline for regression problems."""
     _name = "Mean Baseline Regression Pipeline"
     component_graph = ["Baseline Regressor"]
     custom_hyperparameters = {"strategy": ["mean"]}
+
+    def __init__(self, parameters):
+        return super().__init__(self.component_graph, self._name, {})

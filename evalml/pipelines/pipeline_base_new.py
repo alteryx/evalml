@@ -96,14 +96,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns a name describing the pipeline.
         By default, this will take the class name and add a space between each capitalized word (class name should be in Pascal Case). If the pipeline has a custom_name attribute, this will be returned instead.
         """
-        if self.custom_name:
-            name = self.custom_name
-        else:
-            rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
-            name = rex.sub(' ', cls.__name__)
-            if name == self.__name__:
-                raise IllFormattedClassNameError("Pipeline Class {} needs to follow Pascal Case standards or `custom_name` must be defined.".format(cls.__name__))
-        return name
+        return self.summary
 
     @classproperty
     def summary(cls):
@@ -563,3 +556,4 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         """
         return is_binary(self.problem_type) and objective.is_defined_for_problem_type(self.problem_type) and objective.can_optimize_threshold
+

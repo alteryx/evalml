@@ -103,7 +103,7 @@ def check_all_pipeline_names_unique(pipelines):
     Raises:
         ValueError: if any pipeline names are duplicated.
     """
-    name_count = pd.Series([p.name for p in pipelines]).value_counts()
+    name_count = pd.Series([p.name() for p in pipelines]).value_counts()
     duplicate_names = name_count[name_count > 1].index.tolist()
 
     if duplicate_names:
