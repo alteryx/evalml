@@ -54,7 +54,10 @@ class ComponentGraph:
 
             component_dict[component_name] = [component_class]
             if previous_component is not None:
-                component_dict[component_name].append(f"{previous_component}.x")
+                if "sampler" in previous_component:
+                    component_dict[component_name].extend([f"{previous_component}.x", f"{previous_component}.y"])
+                else:
+                    component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
         return cls(component_dict, random_seed=random_seed)
 
@@ -144,7 +147,8 @@ class ComponentGraph:
                 parent_output = parent_output.to_series()
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = infer_feature_types(parent_output)
-            final_component_inputs.append(parent_output)
+            if parent_output is not None:
+                final_component_inputs.append(parent_output)
         concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
         if needs_fitting:
             self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
