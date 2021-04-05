@@ -18,7 +18,7 @@ class SMOTESampler(BaseSampler):
         """Initialize the SMOTE Oversampler component.
 
         Arguments:
-            sampling_strategy (float, dictionary): If float, this is the goal ratio of the minority to majority class.
+            sampling_strategy (float, dictionary, str): If float, this is the goal ratio of the minority to majority class.
                 A value of 0.25 means we want a 1:4 ratio of the minority to majority class after oversampling.
                 If dictionary, the keys correspond to each class, and the values are the number of samples we want to oversample to for each class key.
                 Defaults to 'auto', which oversamples all classes to become equal.
@@ -66,7 +66,7 @@ class SMOTENCSampler(BaseSampler):
         Arguments:
             categorical_features (list): A list of indices of the categorical columns, or a list of booleans for each column,
                 where True represents a categorical column and False represents a numeric. Defaults empty list.
-            sampling_strategy (float, dictionary): If float, this is the goal ratio of the minority to majority class.
+            sampling_strategy (float, dictionary, str): If float, this is the goal ratio of the minority to majority class.
                 A value of 0.25 means we want a 1:4 ratio of the minority to majority class after oversampling.
                 If dictionary, the keys correspond to each class, and the values are the number of samples we want to oversample to for each class key.
                 Defaults to 'auto', which oversamples all classes to become equal.
@@ -106,7 +106,7 @@ class SMOTENSampler(BaseSampler):
         """Initialize the SMOTEN Oversampler component.
 
         Arguments:
-            sampling_strategy (float, dictionary): If float, this is the goal ratio of the minority to majority class.
+            sampling_strategy (float, dictionary, str): If float, this is the goal ratio of the minority to majority class.
                 A value of 0.25 means we want a 1:4 ratio of the minority to majority class after oversampling.
                 If dictionary, the keys correspond to each class, and the values are the number of samples we want to oversample to for each class key.
                 Defaults to 'auto', which oversamples all classes to become equal.
