@@ -9,7 +9,7 @@ ipywidgets==7.6.3
 kaleido==0.2.1
 lightgbm==3.0.0
 matplotlib==3.4.1
-networkx==2.5
+networkx==2.5.1
 nlp-primitives==1.1.0
 numpy==1.20.2
 pandas==1.2.3
