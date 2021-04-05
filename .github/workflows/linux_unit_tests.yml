@@ -25,7 +25,7 @@ jobs:
             core_dependencies: true
             codecov: true
           - python_version: "3.9"
-            core_dependencies: true
+            core_dependencies: false
             codecov: false
     steps:
       - name: Set up Python ${{ matrix.python_version }}
