@@ -40,6 +40,7 @@ Release Notes
         * Added a ``PolynomialDetrender`` component :pr:`1992`
         * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
     * Fixes
+        * Changed best pipeline to train on the entire dataset rather than just ensemble indices for ensemble problems :pr:`2037`
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
