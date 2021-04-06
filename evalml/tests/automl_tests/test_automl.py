@@ -2257,8 +2257,6 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     # when best_pipeline == -1, model is ensembling,
     # otherwise, the model is a different model
     # the ensembling_num formula is taken from AutoMLSearch
-    print(len(ensembling_indices))
-    print(len(X))
     if best_pipeline == -1:
         assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
     else:
