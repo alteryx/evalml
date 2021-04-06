@@ -16,6 +16,7 @@ import evalml
 import os
 import sys
 import subprocess
+import shutil
 from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 
 
