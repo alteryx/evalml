@@ -41,7 +41,7 @@ class DaskEngine(EngineBase):
         if not isinstance(client, Client):
             raise TypeError(f"Expected dask.distributed.Client, received {type(client)}")
         self.client = client
-        self.cache = {}
+        self._data_futures_cache = {}
 
     def send_data_to_cluster(self, X, y):
         """Send data to the cluster.
@@ -56,10 +56,10 @@ class DaskEngine(EngineBase):
             dask.Future: the modeling data
         """
         data_hash = joblib.hash(X), joblib.hash(y)
-        if data_hash in self.cache:
-            return self.cache[data_hash]
-        self.cache[data_hash] = self.client.scatter([X, y], broadcast=True)
-        return self.cache[data_hash]
+        if data_hash in self._data_futures_cache:
+            return self._data_futures_cache[data_hash]
+        self._data_futures_cache[data_hash] = self.client.scatter([X, y], broadcast=True)
+        return self._data_futures_cache[data_hash]
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
