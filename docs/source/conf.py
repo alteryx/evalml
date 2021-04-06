@@ -266,7 +266,9 @@ def setup(app):
     print("THIS IS PATH", os.path.abspath(os.getcwd()))
     for folder in glob.glob("/home/docs/*"):
         print("GLOB", folder)
-    os.mkdir("/home/docs/.ipython/profile_default/startup/")
+    os.mkdir("/home/docs/.ipython")
+    os.mkdir("/home/docs/.ipython/profile_default")
+    os.mkdir("/home/docs/.ipython/profile_default/startup")
     for folder in glob.glob("/home/docs/*"):
         print("NEW GLOB", folder)
     # shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/disable-warnings.py")
