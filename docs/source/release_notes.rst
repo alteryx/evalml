@@ -19,6 +19,7 @@ Release Notes
     * Documentation Changes
         * Catch and suppress warnings in documentation :pr:`1991`
         * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
+        * Fixed start code on README :pr:``
     * Testing Changes
 
 

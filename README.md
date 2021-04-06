@@ -28,7 +28,7 @@ pip install evalml
 ```python
 import evalml
 X, y = evalml.demos.load_breast_cancer()
-X_train, X_test, y_train, y_test = evalml.preprocessing.split_data(X, y)
+X_train, X_test, y_train, y_test = evalml.preprocessing.split_data(X, y, problem_type='binary')
 ```
 
 #### Run AutoML
