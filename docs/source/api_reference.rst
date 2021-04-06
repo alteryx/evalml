@@ -250,6 +250,7 @@ Transformers are components that take in data as input and output transformed da
     DelayedFeatureTransformer
     DFSTransformer
     PolynomialDetrender
+    Undersampler
 
 Estimators
 ~~~~~~~~~~
