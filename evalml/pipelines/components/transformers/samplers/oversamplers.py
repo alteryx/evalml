@@ -1,5 +1,4 @@
 import copy
-from skopt.space import Integer
 
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler
@@ -34,6 +33,7 @@ class SMOTESampler(BaseSampler):
         super().__init__(parameters=parameters,
                          component_obj=None,
                          random_seed=random_seed)
+
     def fit(self, X, y):
         """Fits the sampler to the data.
 

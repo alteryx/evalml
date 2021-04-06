@@ -15,16 +15,16 @@ pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imba
 binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
-@pytest.mark.parametrize("y,sampling_ratio,result", [
-                                                     (binary, 1, {0:800, 1:800}),
-                                                     (binary, 0.5, {0:800, 1:400}),
-                                                     (binary, 0.25, {0:800, 1:200}),
-                                                     (binary, 0.1, {0:800, 1:200}),
-                                                     (multiclass, 1, {0:800, 1:800, 2:800}),
-                                                     (multiclass, 0.5, {0:800, 1:400, 2:400}),
-                                                     (multiclass, 0.25, {0: 800, 1:200, 2:200}),
-                                                     (multiclass, 0.1, {0:800, 1: 150, 2: 80})
-                                                     ])
+
+@pytest.mark.parametrize("y,sampling_ratio,result",
+                         [(binary, 1, {0: 800, 1: 800}),
+                          (binary, 0.5, {0: 800, 1: 400}),
+                          (binary, 0.25, {0: 800, 1: 200}),
+                          (binary, 0.1, {0: 800, 1: 200}),
+                          (multiclass, 1, {0: 800, 1: 800, 2: 800}),
+                          (multiclass, 0.5, {0: 800, 1: 400, 2: 400}),
+                          (multiclass, 0.25, {0: 800, 1: 200, 2: 200}),
+                          (multiclass, 0.1, {0: 800, 1: 150, 2: 80})])
 def test_make_balancing_dictionary(y, sampling_ratio, result):
     dic = make_balancing_dictionary(y, sampling_ratio)
     assert dic == result
@@ -171,7 +171,7 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
         if 'NC' in sampler.name:
             oversampler = sampler(categorical_features=[1], sampling_ratio=1, random_seed=seed)
         samplers.append(oversampler)
-    
+
     # iterate through different indices in samplers
     # in group 1, first two oversamplers in samplers should be equal
     # in group 2, calling same oversamplers twice should be equal
@@ -199,7 +199,7 @@ def test_sampler_dic_overrides_ratio(sampler):
     oversampler = sampler(sampling_ratio=1, sampling_ratio_dict=goal_value_dic)
     if 'NC' in sampler.name:
         oversampler = sampler(categorical_features=[1], sampling_ratio=1, sampling_ratio_dict=goal_value_dic)
-    
+
     new_X, new_y = oversampler.fit_transform(X, y)
     assert len(new_X) == sum(goal_value_dic.values())
     assert len(new_y) == sum(goal_value_dic.values())

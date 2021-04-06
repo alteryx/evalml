@@ -276,7 +276,7 @@ def make_balancing_dictionary(y, sampling_ratio):
         for each class that will satisfy sampling_ratio.
     """
     value_counts = y.value_counts()
-    ratios = value_counts/value_counts.values[0]
+    ratios = value_counts / value_counts.values[0]
     class_dic = {}
     sample_amount = int(value_counts.values[0] * sampling_ratio)
     for index, value in ratios.items():
