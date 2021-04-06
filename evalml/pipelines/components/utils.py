@@ -212,7 +212,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
 
 
 def scikit_learn_wrapped_estimator(evalml_obj):
-    from evalml.pipelines.pipeline_base import PipelineBase
+    from evalml.pipelines.pipeline_base_new import PipelineBase
 
     """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
     if isinstance(evalml_obj, PipelineBase):

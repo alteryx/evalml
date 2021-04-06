@@ -182,8 +182,13 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
 
     class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
         custom_name = pipeline_name
+        name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_seed=random_seed)
+    
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+    return TemplatedPipeline(parameters={c.name: c.parameters for c in component_instances}, random_seed=random_seed)
 
 
 def generate_pipeline_code(element):
