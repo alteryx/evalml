@@ -1,6 +1,6 @@
 import time
 
-from evalml.automl.utils import AutoMLData
+from evalml.automl.utils import AutoMLConfig
 from evalml.exceptions import PipelineScoreError
 from evalml.objectives.utils import get_objective
 from evalml.pipelines import BinaryClassificationPipeline
@@ -20,14 +20,14 @@ additional_objectives = []
 optimize_thresholds = False
 error_callback = err_call
 random_seed = 0
-automl_data = AutoMLData(ensembling_indices=ensembling_indices,
-                         data_splitter=data_splitter,
-                         problem_type=problem_type,
-                         objective=objective,
-                         additional_objectives=additional_objectives,
-                         optimize_thresholds=optimize_thresholds,
-                         error_callback=error_callback,
-                         random_seed=random_seed)
+automl_data = AutoMLConfig(ensembling_indices=ensembling_indices,
+                           data_splitter=data_splitter,
+                           problem_type=problem_type,
+                           objective=objective,
+                           additional_objectives=additional_objectives,
+                           optimize_thresholds=optimize_thresholds,
+                           error_callback=error_callback,
+                           random_seed=random_seed)
 
 
 def delayed(delay):

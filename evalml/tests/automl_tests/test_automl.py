@@ -83,7 +83,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, optimize_thresholds=False, objective=objective, max_iterations=2, n_jobs=1)
     automl.search()
-    assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
+    assert automl.results.keys() == {'pipeline_results', 'search_order'}
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
@@ -1010,8 +1010,7 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
 
     assert automl.results == {'pipeline_results': {},
-                              'search_order': [],
-                              'errors': []}
+                              'search_order': []}
 
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl.search()
@@ -1150,6 +1149,25 @@ def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_future_get_result, 
                           objective="f1", optimize_thresholds=False)
     automl.search()
     assert len(automl._results['pipeline_results']) == number_results
+
+
+@patch("builtins.input", return_value="Y")
+@patch('evalml.automl.engine.sequential_engine.SequentialComputation.done',
+       side_effect=KeyboardInterruptOnKthPipeline(k=4, starting_index=2))
+@patch('evalml.automl.engine.sequential_engine.SequentialComputation.cancel')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_jobs_cancelled_when_keyboard_interrupt(mock_fit, mock_score, mock_cancel, mock_done, mock_input, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=6,
+                          objective="f1", optimize_thresholds=False)
+    automl.search()
+    assert len(automl._results['pipeline_results']) == 3
+
+    # Since we trigger KeyBoardInterrupt the 4th time we call done, we've successfully evaluated the baseline plus 2
+    # pipelines in the first batch. Since there are len(automl.allowed_pipelines) pipelines in the first batch,
+    # we should cancel len(automl.allowed_pipelines) - 2 computations
+    assert mock_cancel.call_count == len(automl.allowed_pipelines) - 3 + 1
 
 
 def make_mock_rankings(scores):

@@ -16,7 +16,7 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
-    AutoMLData,
+    AutoMLConfig,
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
     make_data_splitter
@@ -241,7 +241,6 @@ class AutoMLSearch:
         self._results = {
             'pipeline_results': {},
             'search_order': [],
-            'errors': []
         }
         self.random_seed = random_seed
         self.n_jobs = n_jobs
@@ -328,10 +327,10 @@ class AutoMLSearch:
         else:
             self._engine = engine
 
-        self.automl_data = AutoMLData(self.ensembling_indices,
-                                      self.data_splitter, self.problem_type,
-                                      self.objective, self.additional_objectives, self.optimize_thresholds,
-                                      self.error_callback, self.random_seed)
+        self.automl_config = AutoMLConfig(self.ensembling_indices,
+                                          self.data_splitter, self.problem_type,
+                                          self.objective, self.additional_objectives, self.optimize_thresholds,
+                                          self.error_callback, self.random_seed)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -491,6 +490,7 @@ class AutoMLSearch:
         new_pipeline_ids = []
         loop_interrupted = False
         while self._should_continue():
+            computations = []
             try:
                 if not loop_interrupted:
                     current_batch_pipelines = self._automl_algorithm.next_batch()
@@ -498,26 +498,31 @@ class AutoMLSearch:
                 logger.info('AutoML Algorithm out of recommendations, ending')
                 break
             try:
-                computations = []
                 new_pipeline_ids = []
                 log_title(logger, f"Evaluating Batch Number {self._get_batch_number()}")
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
-                    computation = self._engine.submit_evaluation_job(self.automl_data, pipeline, self.X_train, self.y_train)
+                    computation = self._engine.submit_evaluation_job(self.automl_config, pipeline, self.X_train, self.y_train)
                     computations.append(computation)
+                current_computation_index = 0
                 while self._should_continue() and len(computations) > 0:
-                    computation = computations.pop(0)
+                    computation = computations[current_computation_index]
                     if computation.done():
-                        data, pipeline, job_log = computation.get_result()
+                        evaluation = computation.get_result()
+                        data, pipeline, job_log = evaluation.get('scores'), evaluation.get("pipeline"), evaluation.get("logger")
                         pipeline_id = self._post_evaluation_callback(pipeline, data, job_log)
                         new_pipeline_ids.append(pipeline_id)
-                    else:
-                        computations.append(computation)
+                        computations.pop(current_computation_index)
+                    current_computation_index = (current_computation_index + 1) % max(len(computations), 1)
+                    time.sleep(0.1)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
                 if self._handle_keyboard_interrupt():
                     self._interrupted = True
+                    for computation in computations:
+                        computation.cancel()
+
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings['id'].isin(new_pipeline_ids)
             current_batch_pipeline_scores = full_rankings[current_batch_idx]['score']
@@ -556,7 +561,7 @@ class AutoMLSearch:
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
                     y_train = y_train.iloc[train_indices]
-                best_pipeline = self._engine.submit_training_job(self.automl_data, best_pipeline,
+                best_pipeline = self._engine.submit_training_job(self.automl_config, best_pipeline,
                                                                  X_train, y_train).get_result()
             self._best_pipeline = best_pipeline
 
@@ -637,8 +642,9 @@ class AutoMLSearch:
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
-        computation = self._engine.submit_evaluation_job(self.automl_data, baseline, self.X_train, self.y_train)
-        data, pipeline, job_log = computation.get_result()
+        computation = self._engine.submit_evaluation_job(self.automl_config, baseline, self.X_train, self.y_train)
+        evaluation = computation.get_result()
+        data, pipeline, job_log = evaluation.get('scores'), evaluation.get("pipeline"), evaluation.get("logger")
         self._post_evaluation_callback(pipeline, data, job_log)
 
     @staticmethod
@@ -810,8 +816,9 @@ class AutoMLSearch:
             if pipeline.parameters == parameter:
                 return
 
-        computation = self._engine.submit_evaluation_job(self.automl_data, pipeline, self.X_train, self.y_train)
-        data, pipeline, job_log = computation.get_result()
+        computation = self._engine.submit_evaluation_job(self.automl_config, pipeline, self.X_train, self.y_train)
+        evaluation = computation.get_result()
+        data, pipeline, job_log = evaluation.get('scores'), evaluation.get("pipeline"), evaluation.get("logger")
         self._post_evaluation_callback(pipeline, data, job_log)
         self._find_best_pipeline()
 
@@ -902,7 +909,7 @@ class AutoMLSearch:
         fitted_pipelines = {}
         computations = []
         for pipeline in pipelines:
-            computations.append(self._engine.submit_training_job(self.automl_data, pipeline, self.X_train, self.y_train))
+            computations.append(self._engine.submit_training_job(self.automl_config, pipeline, self.X_train, self.y_train))
 
         while computations:
             computation = computations.pop(0)
@@ -940,7 +947,7 @@ class AutoMLSearch:
 
         computations = []
         for pipeline in pipelines:
-            computations.append(self._engine.submit_scoring_job(self.automl_data, pipeline, X_holdout, y_holdout, objectives))
+            computations.append(self._engine.submit_scoring_job(self.automl_config, pipeline, X_holdout, y_holdout, objectives))
 
         while computations:
             computation = computations.pop(0)

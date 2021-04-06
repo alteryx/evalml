@@ -14,6 +14,11 @@ Release Notes
         * Catch and suppress warnings in documentation :pr:`1991`
     * Testing Changes
 
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the "errors" key from automl results :pr:`1974`
+        * Deleted the ``raise_and_save_error_callback`` and the ``log_and_save_error_callback`` :pr:`1974`
 
 **v0.21.0 Mar. 24, 2021**
     * Enhancements

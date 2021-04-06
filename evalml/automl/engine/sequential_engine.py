@@ -41,22 +41,22 @@ class SequentialComputation(EngineComputation):
 class SequentialEngine(EngineBase):
     """The default engine for the AutoML search. Trains and scores pipelines locally and sequentially."""
 
-    def submit_evaluation_job(self, automl_data, pipeline, X, y):
+    def submit_evaluation_job(self, automl_config, pipeline, X, y):
         logger = self.setup_job_log()
         return SequentialComputation(work=evaluate_pipeline,
                                      pipeline=pipeline,
-                                     automl_data=automl_data, X=X,
+                                     automl_config=automl_config, X=X,
                                      y=y,
                                      logger=logger)
 
-    def submit_training_job(self, automl_data, pipeline, X, y):
+    def submit_training_job(self, automl_config, pipeline, X, y):
         return SequentialComputation(work=train_pipeline,
                                      pipeline=pipeline, X=X,
                                      y=y,
-                                     optimize_thresholds=automl_data.optimize_thresholds,
-                                     objective=automl_data.objective)
+                                     optimize_thresholds=automl_config.optimize_thresholds,
+                                     objective=automl_config.objective)
 
-    def submit_scoring_job(self, automl_data, pipeline, X, y, objectives):
+    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         computation = SequentialComputation(work=pipeline.score,
                                             X=X, y=y, objectives=objectives)

@@ -55,26 +55,26 @@ class DaskEngine(EngineBase):
         self.cache[data_hash] = self.client.scatter([X, y], broadcast=True)
         return self.cache[data_hash]
 
-    def submit_evaluation_job(self, automl_data, pipeline, X, y) -> EngineComputation:
+    def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         logger = self.setup_job_log()
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(evaluate_pipeline, pipeline=pipeline,
-                                         automl_data=automl_data,
+                                         automl_config=automl_config,
                                          X=X,
                                          y=y,
                                          logger=logger)
         return DaskComputation(dask_future)
 
-    def submit_training_job(self, automl_data, pipeline, X, y) -> EngineComputation:
+    def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(train_pipeline,
                                          pipeline=pipeline, X=X,
                                          y=y,
-                                         optimize_thresholds=automl_data.optimize_thresholds,
-                                         objective=automl_data.objective)
+                                         optimize_thresholds=automl_config.optimize_thresholds,
+                                         objective=automl_config.objective)
         return DaskComputation(dask_future)
 
-    def submit_scoring_job(self, automl_data, pipeline, X, y, objectives):
+    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(score_pipeline, pipeline=pipeline,
                                          X=X, y=y, objectives=objectives)
