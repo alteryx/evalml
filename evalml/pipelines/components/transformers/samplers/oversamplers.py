@@ -46,6 +46,7 @@ class SMOTESampler(BaseSampler):
             self
         """
         super().fit(X, y)
+        _, _, _, y_pd = self._prepare_data(X, y)
         sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
         if self.parameters['sampling_ratio_dict'] is not None and len(self.parameters['sampling_ratio_dict']):
             # dictionary provided, which takes priority
@@ -53,7 +54,7 @@ class SMOTESampler(BaseSampler):
         else:
             sampling_ratio = self.parameters['sampling_ratio']
             # no dictionary provided. We pass the float if we have a binary situation
-            if len(y.value_counts()) == 2:
+            if len(y_pd.value_counts()) == 2:
                 sampler_params['sampling_strategy'] = sampling_ratio if sampling_ratio != 1 else 'auto'
             else:
                 # otherwise, we make the dictionary
@@ -72,8 +73,8 @@ class SMOTESampler(BaseSampler):
          Returns:
             ww.DataTable, ww.DataColumn: Undersampled X and y data
         """
+        self.fit(X, y)
         _, _, X_pd, y_pd = self._prepare_data(X, y)
-        self.fit(X_pd, y_pd)
         X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
         return infer_feature_types(X_new), infer_feature_types(y_new)
 
@@ -120,6 +121,7 @@ class SMOTENCSampler(BaseSampler):
             self
         """
         super().fit(X, y)
+        _, _, _, y_pd = self._prepare_data(X, y)
         sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
         if self.parameters['sampling_ratio_dict'] is not None and len(self.parameters['sampling_ratio_dict']):
             # dictionary provided, which takes priority
@@ -127,7 +129,7 @@ class SMOTENCSampler(BaseSampler):
         else:
             sampling_ratio = self.parameters['sampling_ratio']
             # no dictionary provided. We pass the float if we have a binary situation
-            if len(y.value_counts()) == 2:
+            if len(y_pd.value_counts()) == 2:
                 sampler_params['sampling_strategy'] = sampling_ratio if sampling_ratio != 1 else 'auto'
             else:
                 # otherwise, we make the dictionary
@@ -139,8 +141,8 @@ class SMOTENCSampler(BaseSampler):
     def fit_transform(self, X, y):
         """Resample the data
         """
+        self.fit(X, y)
         _, _, X_pd, y_pd = self._prepare_data(X, y)
-        self.fit(X_pd, y_pd)
         X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
         return infer_feature_types(X_new), infer_feature_types(y_new)
 
@@ -184,6 +186,7 @@ class SMOTENSampler(BaseSampler):
             self
         """
         super().fit(X, y)
+        _, _, _, y_pd = self._prepare_data(X, y)
         sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
         if self.parameters['sampling_ratio_dict'] is not None and len(self.parameters['sampling_ratio_dict']):
             # dictionary provided, which takes priority
@@ -191,7 +194,7 @@ class SMOTENSampler(BaseSampler):
         else:
             sampling_ratio = self.parameters['sampling_ratio']
             # no dictionary provided. We pass the float if we have a binary situation
-            if len(y.value_counts()) == 2:
+            if len(y_pd.value_counts()) == 2:
                 sampler_params['sampling_strategy'] = sampling_ratio if sampling_ratio != 1 else 'auto'
             else:
                 # otherwise, we make the dictionary
@@ -203,7 +206,7 @@ class SMOTENSampler(BaseSampler):
     def fit_transform(self, X, y):
         """Resample the data
         """
+        self.fit(X, y)
         _, _, X_pd, y_pd = self._prepare_data(X, y)
-        self.fit(X_pd, y_pd)
         X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
         return infer_feature_types(X_new), infer_feature_types(y_new)
