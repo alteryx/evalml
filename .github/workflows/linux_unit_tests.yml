@@ -1,0 +1,84 @@
+name: Linux Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+jobs:
+  unit_tests:
+    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - python_version: "3.7"
+            core_dependencies: false
+            codecov: false
+          - python_version: "3.8"
+            core_dependencies: false
+            codecov: true
+          - python_version: "3.8"
+            core_dependencies: true
+            codecov: true
+          - python_version: "3.9"
+            core_dependencies: false
+            codecov: false
+    steps:
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 2
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - if: ${{ matrix.core_dependencies }}
+        name: Installing Core Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install --upgrade pip -q
+          pip install -e . --no-dependencies
+          pip install -r core-requirements.txt
+          pip install -r test-requirements.txt
+          # "!" negates return code. exit nonzero if any of these deps are found
+          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+          exit $?
+      - if: ${{ !matrix.core_dependencies }}
+        name: Installing Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps
+          make installdeps-test
+      - name: Erase Coverage
+        run: |
+          source test_python/bin/activate
+          coverage erase
+      - if: ${{ matrix.core_dependencies }}
+        name: Run unit tests with minimal dependencies
+        run: |
+          source test_python/bin/activate
+          make git-test-minimal-deps
+      - if: ${{ !matrix.core_dependencies }}
+        name: Run unit tests
+        run: |
+          source test_python/bin/activate
+          make git-test
+      - if: ${{ matrix.codecov }}
+        name: Upload coverage to Codecov
+        run: |
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install coverage
+          bash <(curl -s https://codecov.io/bash) -C ${{ github.event.pull_request.head.sha }}

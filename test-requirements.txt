@@ -3,5 +3,5 @@ pytest-xdist==1.26.1
 pytest-cov==2.6.1
 nbval==0.9.3
 IPython>=5.0.0
-codecov==2.1.0
+codecov==2.1.11
 PyYAML==5.4
