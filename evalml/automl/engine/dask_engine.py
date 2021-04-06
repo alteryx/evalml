@@ -33,6 +33,11 @@ class DaskComputation(EngineComputation):
         """Cancel the current computation."""
         return self.work.cancel()
 
+    @property
+    def is_cancelled(self):
+        """Returns whether computation was cancelled."""
+        return self.work.status
+
 
 class DaskEngine(EngineBase):
     """The dask engine"""
@@ -120,3 +125,13 @@ class DaskEngine(EngineBase):
         computation = DaskComputation(dask_future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
+
+    def cancel_job(self, computation):
+        """Cancels an existing future.
+
+        Args:
+            computation (DaskComputation): the future-like computation that needs to be canceled.
+        Returns:
+            None
+        """
+        computation.cancel()
