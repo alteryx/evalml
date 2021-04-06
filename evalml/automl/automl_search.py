@@ -552,11 +552,8 @@ class AutoMLSearch:
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
             best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                if best_pipeline.model_family == ModelFamily.ENSEMBLE:
-                    X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
-                else:
-                    X_train = self.X_train
-                    y_train = self.y_train
+                X_train = self.X_train
+                y_train = self.y_train
                 if hasattr(self.data_splitter, "transform_sample"):
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
@@ -908,8 +905,17 @@ class AutoMLSearch:
         check_all_pipeline_names_unique(pipelines)
         fitted_pipelines = {}
         computations = []
+        X_train = self.X_train
+        y_train = self.y_train
+
+        # Apply sampling
+        if hasattr(self.data_splitter, "transform_sample"):
+            train_indices = self.data_splitter.transform_sample(X_train, y_train)
+            X_train = X_train.iloc[train_indices]
+            y_train = y_train.iloc[train_indices]
+
         for pipeline in pipelines:
-            computations.append(self._engine.submit_training_job(self.automl_config, pipeline, self.X_train, self.y_train))
+            computations.append(self._engine.submit_training_job(self.automl_config, pipeline, X_train, y_train))
 
         while computations:
             computation = computations.pop(0)

@@ -1993,3 +1993,38 @@ def test_binary_pipeline_string_target_thresholding(is_time_series, make_data_ty
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
     pipeline.optimize_threshold(X, y, pred_proba, objective)
     assert pipeline.threshold is not None
+
+
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_undersampler_component_in_pipeline_fit(mock_fit):
+    class BinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'Undersampler', 'Logistic Regression Classifier']
+
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 3 for i in range(1000)]})
+    y = pd.Series([0] * 100 + [1] * 900)
+    pipeline = BinaryPipeline({})
+    pipeline.fit(X, y)
+    # make sure we undersample to 500 values in the X and y
+    assert len(mock_fit.call_args[0][0]) == 500
+    assert all(mock_fit.call_args[0][1].to_series().value_counts().values == [400, 100])
+
+    # balance the data
+    y_balanced = pd.Series([0] * 400 + [1] * 600)
+    pipeline.fit(X, y_balanced)
+    assert len(mock_fit.call_args[0][0]) == 1000
+
+
+def test_undersampler_component_in_pipeline_predict():
+    class BinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'Undersampler', 'Logistic Regression Classifier']
+
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 3 for i in range(1000)]})
+    y = pd.Series([0] * 100 + [1] * 900)
+    pipeline = BinaryPipeline({})
+    pipeline.fit(X, y)
+    preds = pipeline.predict(X)
+    assert len(preds) == 1000
+    preds = pipeline.predict_proba(X)
+    assert len(preds) == 1000

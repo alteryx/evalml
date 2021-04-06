@@ -2278,19 +2278,15 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     ensembling_num = (1 + len(automl.allowed_pipelines) + len(automl.allowed_pipelines) * automl._pipelines_per_batch + 1) + best_pipeline
     mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
     automl.search()
-    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=ensemble_split_size, random_seed=0)
-    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
     # when best_pipeline == -1, model is ensembling,
     # otherwise, the model is a different model
     # the ensembling_num formula is taken from AutoMLSearch
     if best_pipeline == -1:
         assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
-        assert len(mock_fit.call_args_list[-1][0][0]) == len(ensembling_indices)
-        assert len(mock_fit.call_args_list[-1][0][1]) == len(ensembling_indices)
     else:
         assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
-        assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
-        assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
+    assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
+    assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
@@ -2518,6 +2514,28 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
     train_batch_and_check()
 
 
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
+def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
+    X = ww.DataTable(X)
+    y = ww.DataColumn(y)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
+                          train_best_pipeline=False, n_jobs=1)
+
+    train_indices = automl.data_splitter.transform_sample(X, y)
+    X_train = X.iloc[train_indices]
+    y_train = y.iloc[train_indices]
+
+    pipelines = [dummy_binary_pipeline_class({})]
+    mock_train.reset_mock()
+    automl.train_pipelines(pipelines)
+
+    args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
+    pd.testing.assert_frame_equal(X_train.to_dataframe(), kwargs['X'].to_dataframe())
+    pd.testing.assert_series_equal(y_train.to_series(), kwargs['y'].to_series())
+
+
 no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
 
 
@@ -2636,3 +2654,37 @@ def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pi
         # mean is 0 but std is not
         automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0, 1.0, -1.0]))
     assert len(warnings) == 0
+
+
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.3})
+@patch('evalml.pipelines.ClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.3})
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
+def test_automl_supports_float_targets_for_classification(mock_train, mock_binary_score, mock_multi_score, mock_regression_score,
+                                                          automl_type, X_y_binary, X_y_multi, X_y_regression,
+                                                          dummy_binary_pipeline_class,
+                                                          dummy_regression_pipeline_class,
+                                                          dummy_multiclass_pipeline_class):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        y = pd.Series(y).map({0: -5.19, 1: 6.7})
+        mock_train.return_value = dummy_binary_pipeline_class({})
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        y = pd.Series(y).map({0: -5.19, 1: 6.7, 2: 2.03})
+        mock_train.return_value = dummy_multiclass_pipeline_class({})
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        y = pd.Series(y)
+        mock_train.return_value = dummy_regression_pipeline_class({})
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, random_seed=0, n_jobs=1)
+    automl.search()
+
+    # Assert that we train pipeline on the original target, not the encoded one used in EngineBase for data splitting
+    _, kwargs = mock_train.call_args
+    mock_y = kwargs["y"]
+    pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
+
+

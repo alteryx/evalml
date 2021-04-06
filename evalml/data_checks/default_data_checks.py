@@ -1,5 +1,6 @@
 from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .data_checks import DataChecks
+from .datetime_nan_data_check import DateTimeNaNDataCheck
 from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .invalid_targets_data_check import InvalidTargetDataCheck
@@ -19,11 +20,12 @@ class DefaultDataChecks(DataChecks):
         - `InvalidTargetDataCheck`
         - `NoVarianceDataCheck`
         - `ClassImbalanceDataCheck` (for classification problem types)
+        - `DateTimeNaNDataCheck`
 
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
-                                   TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck]
+                                   TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck, DateTimeNaNDataCheck]
 
     def __init__(self, problem_type, objective, n_splits=3):
         """

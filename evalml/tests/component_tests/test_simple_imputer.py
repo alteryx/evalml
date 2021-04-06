@@ -253,7 +253,7 @@ def test_simple_imputer_does_not_reset_index():
     imputer = SimpleImputer(impute_strategy="mean")
     imputer.fit(X, y=y)
     transformed = imputer.transform(X)
-    pd.testing.assert_frame_equal(pd.DataFrame({'input_val': [1.0, 2, 3, 4, 5, 6, 7, 8, 9]},
+    pd.testing.assert_frame_equal(pd.DataFrame({'input_val': [1, 2, 3, 4, 5, 6, 7, 8, 9]},
                                                dtype=float,
                                                index=list(range(1, 10))),
                                   transformed.to_dataframe())
