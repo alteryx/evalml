@@ -46,7 +46,6 @@ automl.rankings
 #### Get best pipeline and predict on new data
 ```python
 pipeline = automl.best_pipeline
-pipeline.fit(X_train, y_train)
 pipeline.predict(X_test)
 ```
 
