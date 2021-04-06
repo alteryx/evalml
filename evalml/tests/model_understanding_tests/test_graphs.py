@@ -214,12 +214,31 @@ def test_precision_recall_curve_return_type():
     assert isinstance(precision_recall_curve_data['auc_score'], float)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'li', 'ww'])
 def test_precision_recall_curve(data_type, make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
     y_true = make_data_type(data_type, y_true)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
+
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
+
+    precision = precision_recall_curve_data.get('precision')
+    recall = precision_recall_curve_data.get('recall')
+    thresholds = precision_recall_curve_data.get('thresholds')
+
+    precision_expected = np.array([0.66666667, 0.5, 1, 1])
+    recall_expected = np.array([1, 0.5, 0.5, 0])
+    thresholds_expected = np.array([0.35, 0.4, 0.8])
+
+    np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
+    np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
+    np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+
+def test_precision_recall_curve_1d_y_pred_proba(make_data_type):
+    y_true = np.array([0, 0, 1, 1])
+    y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
 
     precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
 

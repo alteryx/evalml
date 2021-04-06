@@ -22,7 +22,7 @@ from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
-from evalml.exceptions import NullsInColumnWarning
+from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
@@ -137,7 +137,7 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     return fig
 
 
-def precision_recall_curve(y_true, y_pred_proba):
+def precision_recall_curve(y_true, y_pred_proba, pos_label):
     """
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
@@ -157,9 +157,14 @@ def precision_recall_curve(y_true, y_pred_proba):
     y_pred_proba = infer_feature_types(y_pred_proba)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     if isinstance(y_pred_proba, ww.DataTable):
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe())
     else:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
+
+    if pos_label not in y_true.unique():
+        raise NoPositiveLabelException(f'Positive label "{pos_label}" not found in y_true')
+    if pos_label not in y_pred_proba.columns:
+        raise NoPositiveLabelException(f'Positive label "{pos_label}" not found in y_true')
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
