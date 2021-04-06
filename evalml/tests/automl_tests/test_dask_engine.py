@@ -13,7 +13,7 @@ from evalml.automl.engine.engine_base import (
 )
 from evalml.automl.engine.sequential_engine import SequentialEngine
 from evalml.pipelines.pipeline_base import PipelineBase
-from evalml.tests.automl_tests.dask_testing import (
+from evalml.tests.automl_tests.dask_test_utils import (
     TestBaselinePipeline,
     TestLRCPipeline,
     TestSVMPipeline,

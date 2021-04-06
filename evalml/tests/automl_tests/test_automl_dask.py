@@ -7,7 +7,7 @@ from distributed import Client
 from evalml.automl import AutoMLSearch
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import DaskEngine, SequentialEngine
-from evalml.tests.automl_tests.dask_testing import (
+from evalml.tests.automl_tests.dask_test_utils import (
     TestPipelineFast,
     TestPipelineSlow,
     TestPipelineWithFitError,
