@@ -11,6 +11,7 @@ from evalml.utils.woodwork_utils import infer_feature_types
 class SMOTESampler(BaseSampler):
     """SMOTE Oversampler component. Works on numerical datasets only. This component is only run during training and not during predict."""
     name = "SMOTE Oversampler"
+    hyperparameter_ranges = {}
 
     def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
         """Initialize the SMOTE Oversampler component.
@@ -81,6 +82,7 @@ class SMOTENCSampler(BaseSampler):
     """SMOTENC Oversampler component. Uses SMOTENC to generate synthetic samples. Works on a mix of nomerical and categorical columns.
        This component is only run during training and not during predict."""
     name = "SMOTENC Oversampler"
+    hyperparameter_ranges = {}
 
     def __init__(self, categorical_features=[], sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
         """Initialize the SMOTENC Oversampler component.
@@ -147,6 +149,7 @@ class SMOTENSampler(BaseSampler):
     """SMOTEN Oversampler component. Uses SMOTEN to generate synthetic samples. Works for purely categorical datasets.
        This component is only run during training and not during predict."""
     name = "SMOTEN Oversampler"
+    hyperparameter_ranges = {}
 
     def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
         """Initialize the SMOTEN Oversampler component.
