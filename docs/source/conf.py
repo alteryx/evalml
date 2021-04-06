@@ -263,7 +263,7 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 
 def setup(app):
-    print(oos.path.abspath(os.getcwd()))
+    print(os.path.abspath(os.getcwd()))
     for folder in glob.glob("/home/docs/.ipython/*"):
         print(folder)
     shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup")
