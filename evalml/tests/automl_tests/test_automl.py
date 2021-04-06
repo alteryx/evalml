@@ -2686,5 +2686,3 @@ def test_automl_supports_float_targets_for_classification(mock_train, mock_binar
     _, kwargs = mock_train.call_args
     mock_y = kwargs["y"]
     pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
-
-

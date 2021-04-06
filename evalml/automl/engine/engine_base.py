@@ -11,9 +11,7 @@ from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
-
 from evalml.problem_types import is_binary, is_classification, is_multiclass
-
 from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 
 
