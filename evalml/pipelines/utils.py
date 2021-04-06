@@ -277,3 +277,30 @@ def make_pipeline_from_actions(actions, problem_type):
             if metadata["is_target"]:
                 components.append(TargetImputer(impute_strategy=metadata["impute_strategy"]))
     return make_pipeline_from_components(components, problem_type)
+
+from evalml.pipelines.components.utils import handle_component_class
+
+def combine_two_pipelines(pipeline, pipeline_to_prepend, problem_type):
+    component_list = pipeline_to_prepend.component_graph + pipeline.component_graph
+    component_set = set()
+    component_list_ordered = []
+    idx = 0
+    for component in pipeline_to_prepend.component_graph:
+        component_name_to_use = component.name
+        if component_name_to_use in component_set:
+            component_name_to_use = f'{component_name_to_use}_{idx}'
+        component_set.add(component_name_to_use)
+        component_list_ordered.append((component_name_to_use, pipeline_to_prepend.parameters[component.name]))        
+        idx += 1
+    for component in pipeline.component_graph:
+        component_name_to_use = component.name
+        if component_name_to_use in component_set:
+            component_name_to_use = f'{component_name_to_use}_{idx}'
+        component_set.add(component_name_to_use)
+        component_list_ordered.append((component_name_to_use, pipeline.parameters[component.name]))        
+        idx += 1
+
+    class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
+        component_graph = component_list
+    import pdb; pdb.set_trace()
+    return TemplatedPipeline({c[0]: c[1] for c in component_list_ordered}, random_seed=0)

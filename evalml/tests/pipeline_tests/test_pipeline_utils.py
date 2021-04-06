@@ -34,7 +34,8 @@ from evalml.pipelines.utils import (
     get_estimators,
     make_pipeline,
     make_pipeline_from_actions,
-    make_pipeline_from_components
+    make_pipeline_from_components,
+    combine_two_pipelines
 )
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -575,3 +576,19 @@ def test_make_pipeline_from_actions(problem_type):
     assert action_pipeline.component_graph == [DropColumns, TargetImputer]
     assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some col']},
                                           'Target Imputer': {'fill_value': None, 'impute_strategy': 'most_frequent'}}
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+def test_combine_two_pipelines(problem_type):
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": ['some col']}),
+               DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
+    action_pipeline = make_pipeline_from_actions(actions, problem_type)
+    assert action_pipeline.component_graph == [DropColumns, TargetImputer]
+    assert action_pipeline.parameters == {'Drop Columns Transformer': {'columns': ['some col']},
+                                          'Target Imputer': {'fill_value': None, 'impute_strategy': 'most_frequent'}}
+    
+    actions_2 = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"columns": ['some other col']}),
+               DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "mean"})]
+    
+    action_pipeline_2 = make_pipeline_from_actions(actions_2, problem_type)
+    combine_two_pipelines(action_pipeline, action_pipeline_2, problem_type)
