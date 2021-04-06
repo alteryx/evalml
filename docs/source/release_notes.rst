@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added a GitHub Action for ``linux_unit_tests``:pr:`2013`
         * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
@@ -34,6 +35,7 @@ Release Notes
         * Added a ``PolynomialDetrender`` component :pr:`1992`
         * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
     * Fixes
+        * Changed best pipeline to train on the entire dataset rather than just ensemble indices for ensemble problems :pr:`2037`
         * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
     * Changes
         * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
