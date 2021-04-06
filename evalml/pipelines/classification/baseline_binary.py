@@ -6,7 +6,7 @@ class BaselineBinaryPipeline(BinaryClassificationPipeline):
     custom_name = "Baseline Classification Pipeline"
     component_graph = ["Baseline Classifier"]
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, {})
 
 
@@ -16,5 +16,5 @@ class ModeBaselineBinaryPipeline(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_hyperparameters = {"strategy": ["mode"]}
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, {})

@@ -271,7 +271,6 @@ class AutoMLSearch:
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
-
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         check_all_pipeline_names_unique(self.allowed_pipelines)
