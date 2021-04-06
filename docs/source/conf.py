@@ -263,9 +263,9 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 
 def setup(app):
-    print(os.path.abspath(os.getcwd()))
-    for folder in glob.glob("/home/docs/.ipython/*"):
-        print(folder)
+    print("THIS IS PATH", os.path.abspath(os.getcwd()))
+    for folder in glob.glob("/home/docs/*"):
+        print("GLOB", folder)
     shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/disable-warnings.py")
     app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")
