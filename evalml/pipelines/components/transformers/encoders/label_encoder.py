@@ -23,7 +23,7 @@ class LabelEncoder(Transformer):
         if X is not None:
             X = infer_feature_types(X)
         if y is None:
-            return X, None
+            return self
         y_ww = infer_feature_types(y)
         self._y_logical_type = y_ww.logical_type
 
