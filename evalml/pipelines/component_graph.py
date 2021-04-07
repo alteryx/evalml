@@ -151,7 +151,9 @@ class ComponentGraph:
             ww.DataTable, ww.DataColumn: Transformed values, and the outputted target.
         """
         if len(self.compute_order) <= 1:
-            return infer_feature_types(X)
+            if y is not None:
+                y = infer_feature_types(y)
+            return infer_feature_types(X), y
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs, final_component_target = self._compute_inputs(X, y, self.compute_order[-1], component_outputs)
         if needs_fitting:
