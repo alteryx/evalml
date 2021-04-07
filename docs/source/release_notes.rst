@@ -18,8 +18,9 @@ Release Notes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
     * Documentation Changes
-        * Catch and suppress warnings in documentation :pr:`1991`
+        * Catch and suppress warnings in documentation :pr:`1991` :pr:`2097`
         * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
+        * Fixed start code on README :pr:`2108`
     * Testing Changes
 
 .. warning::
