@@ -6,7 +6,7 @@ class BaselineMulticlassPipeline(MulticlassClassificationPipeline):
     custom_name = "Baseline Multiclass Classification Pipeline"
     component_graph = ["Baseline Classifier"]
 
-    def __init__(self, parameters, random_seed=0):
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, {})
 
 
@@ -16,5 +16,5 @@ class ModeBaselineMulticlassPipeline(MulticlassClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_hyperparameters = {"strategy": ["mode"]}
 
-    def __init__(self, parameters, random_seed=0):
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, {})

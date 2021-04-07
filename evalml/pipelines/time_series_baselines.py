@@ -7,17 +7,26 @@ from evalml.pipelines import (
 
 class TimeSeriesBaselineRegressionPipeline(TimeSeriesRegressionPipeline):
     """Baseline Pipeline for time series regression problems."""
-    _name = "Time Series Baseline Regression Pipeline"
+    custom_name = "Time Series Baseline Regression Pipeline"
     component_graph = ["Time Series Baseline Estimator"]
+
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, {})
 
 
 class TimeSeriesBaselineBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
     """Baseline Pipeline for time series binary classification problems."""
-    _name = "Time Series Baseline Binary Pipeline"
+    custom_name = "Time Series Baseline Binary Pipeline"
     component_graph = ["Time Series Baseline Estimator"]
+
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, {})
 
 
 class TimeSeriesBaselineMulticlassPipeline(TimeSeriesMulticlassClassificationPipeline):
     """Baseline Pipeline for time series multiclass classification problems."""
-    _name = "Time Series Baseline Multiclass Pipeline"
+    custom_name = "Time Series Baseline Multiclass Pipeline"
     component_graph = ["Time Series Baseline Estimator"]
+
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, {})

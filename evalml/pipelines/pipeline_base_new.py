@@ -111,7 +111,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
-    
     def linearized_component_graph(cls):
         """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
         if isinstance(cls._component_graph, list):
@@ -482,7 +481,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         # return self.__class__(self.parameters, random_seed=self.random_seed)
         return self.__class__(self._component_graph.component_dict, self.name, self.parameters, None, self.random_seed)
- 
+
     def new(self, parameters, random_seed):
         """Constructs a new pipeline with the same components, parameters, and random state.
 
@@ -556,4 +555,3 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         """
         return is_binary(self.problem_type) and objective.is_defined_for_problem_type(self.problem_type) and objective.can_optimize_threshold
-

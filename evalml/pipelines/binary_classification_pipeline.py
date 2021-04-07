@@ -54,7 +54,6 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
         return ClassificationPipeline._score(X, y, predictions, objective)
 
 
-
 class PipelineWithComponentGraph(BinaryClassificationPipeline):
 
     component_graph = ["One Hot Encoder", "Random Forest Classifier"]

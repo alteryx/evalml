@@ -91,7 +91,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                                   'percent_better_than_baseline', 'validation_score'}
         assert results['id'] == pipeline_id
         assert isinstance(results['pipeline_name'], str)
-        assert issubclass(results['pipeline_class'], expected_pipeline_class)
+        assert isinstance(results['pipeline_class'], expected_pipeline_class)
         assert isinstance(results['pipeline_summary'], str)
         assert isinstance(results['parameters'], dict)
         assert isinstance(results['score'], float)

@@ -67,7 +67,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             next_batch = [pipeline.new(parameters=self._transform_parameters(pipeline, {}), random_seed=self.random_seed)
                           for pipeline in self.allowed_pipelines]
 
-
         # One after training all pipelines one round
         elif (self.ensembling and
               self._batch_number != 1 and
@@ -77,7 +76,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class.new(parameters=self._transform_parameters(pipeline_class, pipeline_params),
-                                                      random_seed=self.random_seed))
+                                                          random_seed=self.random_seed))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_seed=self.random_seed,
                                                        n_jobs=self.n_jobs)
@@ -120,9 +119,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family() != ModelFamily.ENSEMBLE:
             # TODO: can no longer use pipeline class
             self._best_pipeline_info.update({pipeline.model_family(): {'score': score_to_minimize,
-                                                                     'pipeline_class': pipeline,
-                                                                     'parameters': pipeline.parameters,
-                                                                     'id': trained_pipeline_results['id']}
+                                                                       'pipeline_class': pipeline,
+                                                                       'parameters': pipeline.parameters,
+                                                                       'id': trained_pipeline_results['id']}
                                              })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):

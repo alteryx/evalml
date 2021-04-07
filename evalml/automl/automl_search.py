@@ -611,17 +611,17 @@ class AutoMLSearch:
         if self.problem_type == ProblemTypes.BINARY:
             baseline = ModeBaselineBinaryPipeline(None, None, parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
-            baseline = ModeBaselineMulticlassPipeline(parameters={})
+            baseline = ModeBaselineMulticlassPipeline(None, None, parameters={})
         elif self.problem_type == ProblemTypes.REGRESSION:
-            baseline = MeanBaselineRegressionPipeline(parameters={})
+            baseline = MeanBaselineRegressionPipeline(None, None, parameters={})
         else:
             pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
                               ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,
                               ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
-                                                  "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
+            baseline = pipeline_class(None, None, parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+                                                              "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         self._engine.evaluate_batch([baseline])
 
     @staticmethod
@@ -663,8 +663,8 @@ class AutoMLSearch:
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline.name,
-            "pipeline_class": type(pipeline),
-            "pipeline_summary": pipeline.summary,
+            "pipeline_class": pipeline,
+            "pipeline_summary": pipeline.summary(),
             "parameters": pipeline.parameters,
             "score": cv_score,
             "high_variance_cv": high_variance_cv,
@@ -725,7 +725,7 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters, random_seed=self.random_seed)
+        return pipeline_class.new(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline

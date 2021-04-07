@@ -186,7 +186,7 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         custom_name = pipeline_name
         name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
-    
+
         def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
             return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
