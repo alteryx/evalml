@@ -84,7 +84,7 @@ class ComponentGraph:
             for parent_name in parent_names:
                 if parent_name.endswith(".state"):
                     component_state_parents.append(parent_name[:-6])
-            if len(state_parents):
+            if len(component_state_parents):
                 state_parents[component_name] = component_state_parents
 
             try:
