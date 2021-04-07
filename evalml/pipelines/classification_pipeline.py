@@ -1,6 +1,5 @@
 
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 
 from evalml.pipelines import PipelineBase
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
@@ -21,7 +20,6 @@ class ClassificationPipeline(PipelineBase):
             random_state (int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._encoder = LabelEncoder()
         super().__init__(parameters, random_seed=random_seed)
 
     def fit(self, X, y):
@@ -39,24 +37,8 @@ class ClassificationPipeline(PipelineBase):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-        self._encoder.fit(y)
-        y = self._encode_targets(y)
         self._fit(X, y)
         return self
-
-    def _encode_targets(self, y):
-        """Converts target values from their original values to integer values that can be processed."""
-        try:
-            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-        except ValueError as e:
-            raise ValueError(str(e))
-
-    def _decode_targets(self, y):
-        """Converts encoded numerical values to their original target values.
-            Note: we cast y as ints first to address boolean values that may be returned from
-            calculating predictions which we would not be able to otherwise transform if we
-            originally had integer targets."""
-        return self._encoder.inverse_transform(y.astype(int))
 
     @property
     def classes_(self):
@@ -102,7 +84,8 @@ class ClassificationPipeline(PipelineBase):
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
-        proba.columns = self._encoder.classes_
+        if hasattr(self._encoder, "classes_"):
+            proba.columns = self._encoder.classes_
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives):
