@@ -27,7 +27,6 @@ class LabelEncoder(Transformer):
             raise ValueError(str(e))
 
     def fit_transform(self, X, y):
-        import pdb; pdb.set_trace()
         return self.fit(X, y).transform(X, y)
 
 
