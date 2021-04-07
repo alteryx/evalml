@@ -9,7 +9,7 @@ class LabelEncoder(Transformer):
     hyperparameter_ranges = {}
 
     def __init__(self, random_seed=0):
-        super().init__(parameters={}, component_obj=None, random_seed=random_seed)
+        super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y):
         self._encoder = LabelEncoder()
@@ -28,7 +28,7 @@ class LabelDecoder(Transformer):
     hyperparameter_ranges = {}
 
     def __init__(self, random_seed=0):
-        super().init__(parameters={}, component_obj=None, random_seed=random_seed)
+        super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y):
         """No-op"""
