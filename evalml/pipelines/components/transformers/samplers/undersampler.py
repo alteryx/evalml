@@ -12,10 +12,7 @@ from evalml.preprocessing.data_splitters.balanced_classification_sampler import 
 class Undersampler(BaseSampler):
     """Random undersampler component. This component is only run during training and not during predict."""
     name = "Undersampler"
-    hyperparameter_ranges = {
-        'balanced_ratio': Real(1, 10),
-        'min_samples': Integer(50, 1000),
-    }
+    hyperparameter_ranges = {}
 
     def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
         """Initializes an undersampling transformer to downsample the majority classes in the dataset.
