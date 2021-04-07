@@ -626,10 +626,15 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
     Raises:
         ValueError: if a graph is requested for a class name that isn't present in the pipeline
     """
+    X = infer_feature_types(X)
     if isinstance(features, (list, tuple)):
         mode = "two-way"
     elif isinstance(features, (int, str)):
         mode = "one-way"
+        if isinstance(features, int):
+            is_categorical = X[X.to_dataframe().columns[features]].logical_type == ww.logical_types.Categorical
+        else:
+            is_categorical = X[features].logical_type == ww.logical_types.Categorical
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -674,8 +679,12 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
             elif mode == "one-way":
                 x = label_df['feature_values']
                 y = label_df['partial_dependence']
-                fig.add_trace(_go.Scatter(x=x, y=y, line=dict(width=3), name=label),
-                              row=(i + 2) // 2, col=(i % 2) + 1)
+                if is_categorical:
+                    trace = _go.Bar(x=x, y=y, name=label)
+                else:
+                    trace = _go.Scatter(x=x, y=y, line=dict(width=3), name=label)
+                fig.add_trace(trace, row=(i + 2) // 2, col=(i % 2) + 1)
+
         fig.update_layout(layout)
 
         if mode == "two-way":
@@ -685,7 +694,7 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
             fig.update_layout(coloraxis=dict(colorscale='Bluered_r'), showlegend=False)
         elif mode == "one-way":
             title = f'{feature_name}'
-            xrange = _calculate_axis_range(part_dep['feature_values'])
+            xrange = _calculate_axis_range(part_dep['feature_values']) if not is_categorical else None
             yrange = _calculate_axis_range(part_dep['partial_dependence'])
         fig.update_xaxes(title=title, range=xrange)
         fig.update_yaxes(range=yrange)
@@ -696,10 +705,14 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
                                 z=part_dep.values,
                                 name="Partial Dependence")
         elif mode == "one-way":
-            trace = _go.Scatter(x=part_dep['feature_values'],
-                                y=part_dep['partial_dependence'],
-                                name='Partial Dependence',
-                                line=dict(width=3))
+            if is_categorical:
+                trace = _go.Bar(x=part_dep['feature_values'], y=part_dep['partial_dependence'],
+                                name="Partial Dependence")
+            else:
+                trace = _go.Scatter(x=part_dep['feature_values'],
+                                    y=part_dep['partial_dependence'],
+                                    name='Partial Dependence',
+                                    line=dict(width=3))
         fig = _go.Figure(layout=layout, data=[trace])
 
     return fig

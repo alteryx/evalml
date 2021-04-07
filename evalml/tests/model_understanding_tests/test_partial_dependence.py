@@ -410,3 +410,47 @@ def test_partial_dependence_percentile_errors(logistic_regression_binary_pipelin
     assert len(part_dep["partial_dependence"]) == 2
     assert len(part_dep["feature_values"]) == 2
     assert not part_dep.isnull().any(axis=None)
+
+
+@pytest.mark.parametrize('problem_type', ['binary', 'regression'])
+def test_partial_dependence_regression_and_binary_categorical(problem_type, linear_regression_pipeline_class,
+                                                              X_y_regression, X_y_binary,
+                                                              logistic_regression_binary_pipeline_class):
+    if problem_type == 'binary':
+        X, y = X_y_binary
+        pipeline = logistic_regression_binary_pipeline_class({})
+    else:
+        X, y = X_y_regression
+        pipeline = linear_regression_pipeline_class({})
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    X['categorical_column'] = pd.Series([i % 3 for i in range(X.shape[0])]).astype('str')
+
+    pipeline.fit(X, y)
+    fig = graph_partial_dependence(pipeline, X, features='categorical_column')
+    plot_data = fig.to_dict()['data'][0]
+    assert plot_data['type'] == 'bar'
+    assert plot_data['x'].tolist() == ['0', '1', '2']
+
+
+@pytest.mark.parametrize('class_label', [None, 'class_1'])
+def test_partial_dependence_multiclass_categorical(class_label,
+                                                   logistic_regression_multiclass_pipeline_class):
+
+    X, y = load_wine()
+    X['categorical_column'] = ww.DataColumn(pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
+                                            logical_type="Categorical")
+
+    pipeline = logistic_regression_multiclass_pipeline_class({})
+
+    pipeline.fit(X, y)
+    fig = graph_partial_dependence(pipeline, X, features='categorical_column', class_label=class_label)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'bar'
+        assert plot_data['x'].tolist() == ['0', '1', '2']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label
