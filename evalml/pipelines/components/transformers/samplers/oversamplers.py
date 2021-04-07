@@ -104,12 +104,6 @@ class SMOTENCSampler(BaseSampler):
             self
         """
         super().fit(X, y)
-        # Ensure that the data has a mix of both numeric and categorical features
-        cat_feat = self.parameters['categorical_features']
-        all_unique_indices = len(set(cat_feat)) == len(cat_feat)
-        same_length = len(cat_feat) == X.shape[1]
-        if len(cat_feat) == 0 or (same_length and (all(cat_feat) or all_unique_indices)) or not any(cat_feat):
-            raise ValueError("The length of categorical_features must be longer than 0, but the dataset cannot all be categorical features!")
         super()._initialize_oversampler(X, y, self.im.SMOTENC)
 
     def fit_transform(self, X, y):

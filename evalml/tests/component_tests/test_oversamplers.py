@@ -44,28 +44,12 @@ def test_init(sampler):
     assert oversampler.parameters == parameters
 
 
-@pytest.mark.parametrize("cat_cols,fails", [([], True),
-                                            ([False], True),
-                                            ([i for i in range(20)], True),
-                                            ([True for i in range(20)], True),
-                                            ([1, 2, 3], False),
-                                            ([True for i in range(19)] + [False], False),
-                                            ([0, 1, 9], False)])
-def test_smotenc_fails(cat_cols, fails, X_y_binary):
-    # X has 20 columns
-    X, y = X_y_binary
-    if fails:
-        with pytest.raises(ValueError, match='categorical_features must be longer'):
-            SMOTENCSampler(sampling_ratio=1, categorical_features=cat_cols).fit_transform(X, y)
-    else:
-        SMOTENCSampler(sampling_ratio=1, categorical_features=cat_cols).fit_transform(X, y)
-
-
 @pytest.mark.parametrize("sampler", [SMOTESampler(sampling_ratio=1),
                                      SMOTENCSampler(sampling_ratio=1, categorical_features=[0]),
                                      SMOTENSampler(sampling_ratio=1)])
 def test_none_y(sampler):
-    X = pd.DataFrame([[i] for i in range(5)])
+    X = pd.DataFrame({"a": [i for i in range(5)],
+                      "b": [1 for i in range(5)]})
     oversampler = sampler
     with pytest.raises(ValueError, match="y cannot be none"):
         oversampler.fit(X, None)
