@@ -242,7 +242,9 @@ class ComponentGraph:
                 if 'y' in parent_input_type:
                     if y_input is not None:
                         raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
-                    y_input = output_cache[parent_input]
+                    # don't error here if a y input isn't found; allow components to decide whether to error if y is None.
+                    if parent_input in output_cache:
+                        y_input = output_cache[parent_input]
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
             kwargs = dict()
