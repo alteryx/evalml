@@ -71,7 +71,7 @@ class ClassificationPipeline(PipelineBase):
             ww.DataColumn: Estimated labels
         """
         predictions = self._predict(X, objective=objective).to_series()
-        predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+        predictions = pd.Series(predictions, name=self.input_target_name)
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):

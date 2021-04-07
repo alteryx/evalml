@@ -119,7 +119,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         predictions = _convert_woodwork_types_wrapper(predictions.to_series())
         # In case gap is 0 and this is a baseline pipeline, we drop the nans in the
         # predictions before decoding them
-        predictions = pd.Series(self._decode_targets(predictions.dropna()), name=self.input_target_name)
+        predictions = pd.Series(predictions.dropna(), name=self.input_target_name)
         padded = pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
         return infer_feature_types(padded)
 
