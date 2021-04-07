@@ -211,7 +211,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=ensembling_value)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.allowed_pipelines == [logistic_regression_binary_pipeline_class]
+    assert algo.allowed_pipelines == []
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
