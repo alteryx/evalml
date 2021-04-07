@@ -718,9 +718,9 @@ def test_iteration(example_graph):
 
 
 def test_custom_input_feature_types(example_graph):
-    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
-                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
-    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    X = pd.DataFrame({'column_1': ['a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'd', 'd'],
+                      'column_2': [1, 2, 2, 3, 3, 3, 4, 4, 4, 4]})
+    y = pd.Series([1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
     X = infer_feature_types(X, {"column_2": "categorical"})
 
     component_graph = ComponentGraph(example_graph)
@@ -733,8 +733,8 @@ def test_custom_input_feature_types(example_graph):
     assert input_feature_names['Imputer'] == ['column_1', 'column_2']
     assert input_feature_names['OneHot_RandomForest'] == ['column_1', 'column_2']
     assert input_feature_names['OneHot_ElasticNet'] == ['column_1', 'column_2']
-    assert input_feature_names['Random Forest'] == ['column_1_a', 'column_1_b', 'column_2_4', 'column_2_5']
-    assert input_feature_names['Elastic Net'] == ['column_1_a', 'column_1_b', 'column_1_c', 'column_2_3', 'column_2_4', 'column_2_5']
+    assert input_feature_names['Random Forest'] == ['column_1_c', 'column_1_d', 'column_2_3', 'column_2_4']
+    assert input_feature_names['Elastic Net'] == ['column_1_b', 'column_1_c', 'column_1_d', 'column_2_2', 'column_2_3', 'column_2_4']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
 
 
