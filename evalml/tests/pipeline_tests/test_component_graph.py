@@ -92,18 +92,24 @@ def example_graph():
     return graph
 
 
-def test_label_encoder_pass_state():
+@pytest.fixture()
+def label_encoder_data_str():
     np.random.seed(13117)
     # n_rows, n_cols
     shape = (10, 3)
     X = pd.DataFrame(np.random.randint(0, 10, shape))
-
     # string target
     repeat_factor = 2.0
     y = pd.Series(np.arange(shape[0] / repeat_factor, dtype=int).repeat(repeat_factor))
     alpha = "abcdefghijklmnopqrstuvwxyz"
     y = y.apply(lambda x: alpha[x % len(alpha)])
+    return X, y
 
+@pytest.mark.parametrize("dtype", ['pd', 'ww'])
+def test_label_encoder_pass_state(dtype, label_encoder_data_str):
+    X, y = label_encoder_data_str
+    if dtype == 'ww':
+        y = ww.DataColumn(y, logical_type='NaturalLanguage')
     cg = ComponentGraph(component_dict={
         'label_encoder_0': ['Label Encoder'],
         'rf': ['Random Forest Classifier', 'label_encoder_0.y'],
@@ -111,6 +117,11 @@ def test_label_encoder_pass_state():
     })
     cg.instantiate({})
     cg.fit(X, y)
+    predictions = cg.predict(X)
+    if dtype == 'ww':
+        pd.testing.assert_series_equal(predictions.to_series(), y.to_series())
+    else:
+        pd.testing.assert_series_equal(predictions.to_series(), y.astype('category'))
 
 
 def test_init(example_graph):
