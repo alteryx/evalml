@@ -17,6 +17,8 @@ from evalml.pipelines.components import (
     ElasticNetClassifier,
     Estimator,
     Imputer,
+    LabelEncoder,
+    LabelDecoder,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
@@ -88,6 +90,27 @@ def example_graph():
              'Elastic Net': [ElasticNetClassifier, 'OneHot_ElasticNet.x'],
              'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net']}
     return graph
+
+
+def test_label_encoder_pass_state():
+    np.random.seed(13117)
+    # n_rows, n_cols
+    shape = (10, 3)
+    X = pd.DataFrame(np.random.randint(0, 10, shape))
+
+    # string target
+    repeat_factor = 2.0
+    y = pd.Series(np.arange(shape[0] / repeat_factor, dtype=int).repeat(repeat_factor))
+    alpha = "abcdefghijklmnopqrstuvwxyz"
+    y = y.apply(lambda x: alpha[x % len(alpha)])
+
+    cg = ComponentGraph(component_dict={
+        'label_encoder_0': ['Label Encoder'],
+        'rf': ['Random Forest Classifier', 'label_encoder_0.y'],
+        'label_decoder_0': ['Label Decoder', 'rf.y', 'label_encoder_0.state']
+    })
+    cg.instantiate({})
+    cg.fit(X, y)
 
 
 def test_init(example_graph):
