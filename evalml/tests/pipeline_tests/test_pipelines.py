@@ -522,47 +522,39 @@ def test_score_nonlinear_regression(mock_predict, mock_fit, nonlinear_regression
     assert scores == {'R2': 1.0}
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_binary_single(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ['f1']
     scores = clf.score(X, y, objective_names)
-    mock_encode.assert_called()
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {'F1': 1.0}
 
 
-@patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_multiclass_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ['f1 micro']
     scores = clf.score(X, y, objective_names)
-    mock_encode.assert_called()
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {'F1 Micro': 1.0}
 
 
-@patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.ComponentGraph.predict')
-def test_score_nonlinear_multiclass(mock_predict, mock_fit, mock_encode, nonlinear_multiclass_pipeline_class, X_y_multi):
+def test_score_nonlinear_multiclass(mock_predict, mock_fit, nonlinear_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
     mock_predict.return_value = ww.DataColumn(y)
-    mock_encode.return_value = y
     clf = nonlinear_multiclass_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['f1 micro', 'precision micro']
@@ -584,30 +576,25 @@ def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     assert scores == {'R2': 1.0, 'MSE': 0.0}
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_binary_list(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ['f1', 'precision']
     scores = clf.score(X, y, objective_names)
     mock_fit.assert_called()
-    mock_encode.assert_called()
     mock_predict.assert_called()
     assert scores == {'F1': 1.0, 'Precision': 1.0}
 
 
-@patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_multi_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ['f1 micro', 'precision micro']
@@ -637,15 +624,13 @@ def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective
         assert "R2" in e.exceptions
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
 @patch('evalml.objectives.F1.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary):
+def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ['f1', 'precision']
@@ -659,15 +644,13 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
         assert 'finna kabooom 💣' in e.message
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets')
 @patch('evalml.objectives.F1.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.ComponentGraph.predict')
-def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, nonlinear_binary_pipeline_class, X_y_binary):
+def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_objective_score, nonlinear_binary_pipeline_class, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
     mock_predict.return_value = ww.DataColumn(y)
-    mock_encode.return_value = y
     clf = nonlinear_binary_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['f1', 'precision']
@@ -681,15 +664,13 @@ def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_obj
         assert 'finna kabooom 💣' in e.message
 
 
-@patch('evalml.pipelines.MulticlassClassificationPipeline._encode_targets')
 @patch('evalml.objectives.F1Micro.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.components.Estimator.predict')
-def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary):
+def test_score_multiclass_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ['f1 micro', 'precision micro']
