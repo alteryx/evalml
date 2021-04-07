@@ -43,9 +43,11 @@ class LabelDecoder(Transformer):
         return self
 
     def transform(self, X, y=None, dependent_components=None):
-        if dependent_components is None:
+        if dependent_components is None or not len(dependent_components) or not isinstance(dependent_components[0], LabelEncoder):
             raise Exception('A reference to a previously-used label encoder component must be provided in order to decode labels.')
-        return X, self._encoder.inverse_transform(y.astype(int))
+        label_encoder = dependent_components[0]
+        y_pd = _convert_woodwork_types_wrapper(y.to_series())
+        return X, label_encoder._encoder.inverse_transform(y_pd.astype(int))
 
     def fit_transform(self, X, y, dependent_components=None):
         if dependent_components is None:
