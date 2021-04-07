@@ -178,7 +178,24 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(outputs.get(final_component, outputs.get(f'{final_component}.x')))
+        return infer_feature_types(outputs.get(f'{final_component}.y', outputs.get(f'{final_component}.x')))
+
+    def transform(self, X):
+        """Output the features after applying a series of transformations. Will error if an estimator is the final step.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+
+        Returns:
+            ww.DataColumn: Predicted values.
+        """
+        if len(self.compute_order) == 0:
+            return infer_feature_types(X)
+        final_component = self.compute_order[-1]
+        if not isinstance(self.component_instances[final_component], Transformer):
+            raise Exception('Final component must be a transformer in order to use ComponentGraph.transform')
+        outputs = self._compute_features(self.compute_order, X)
+        return infer_feature_types(outputs.get(f'{final_component}.x'))
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -241,14 +258,11 @@ class ComponentGraph:
                     output_x, output_y = output[0], output[1]
                 else:
                     output_x = output
-                    output_y = None
             else:
                 if fit:
                     component_instance.fit(input_x, input_y)
                 if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
                     output_y = component_instance.predict(input_x)
-                else:
-                    output_y = None
             if output_x is not None:
                 output_cache[f"{component_name}.x"] = output_x
             if output_y is not None:
