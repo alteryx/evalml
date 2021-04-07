@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder as SkLabelEncoder
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import _convert_woodwork_types_wrapper
+from evalml.utils import _convert_woodwork_types_wrapper, _retain_custom_types_and_initalize_woodwork, infer_feature_types
 
 
 class LabelEncoder(Transformer):
@@ -14,17 +14,31 @@ class LabelEncoder(Transformer):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y):
+        if X is not None:
+            X = infer_feature_types(X)
+        if y is None:
+            return X, None
+        y_ww = infer_feature_types(y)
+
         self._encoder = SkLabelEncoder()
-        y_pd = _convert_woodwork_types_wrapper(y.to_series())
+        y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
         self._encoder.fit(y_pd)
         return self
 
     def transform(self, X, y=None):
-        y_pd = _convert_woodwork_types_wrapper(y.to_series())
+        if X is not None:
+            X = infer_feature_types(X)
+        if y is None:
+            return X, None
+        y_ww = infer_feature_types(y)
+
+        y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
         try:
-            return X, pd.Series(self._encoder.transform(y_pd), index=y_pd.index, name=y.name)
+            y_encoded = self._encoder.transform(y_pd)
         except ValueError as e:
             raise ValueError(str(e))
+        y_t = pd.Series(y_encoded, index=y_pd.index)
+        return X, _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)
@@ -46,8 +60,16 @@ class LabelDecoder(Transformer):
         if dependent_components is None or not len(dependent_components) or not isinstance(dependent_components[0], LabelEncoder):
             raise Exception('A reference to a previously-used label encoder component must be provided in order to decode labels.')
         label_encoder = dependent_components[0]
-        y_pd = _convert_woodwork_types_wrapper(y.to_series())
-        return X, label_encoder._encoder.inverse_transform(y_pd.astype(int))
+
+        if X is not None:
+            X = infer_feature_types(X)
+        if y is None:
+            return X, None
+        y_ww = infer_feature_types(y)
+        y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y_decoded = label_encoder._encoder.inverse_transform(y_pd.astype(int))
+        y_t = pd.Series(y_decoded, index=y_pd.index)
+        return X, _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
 
     def fit_transform(self, X, y, dependent_components=None):
         if dependent_components is None:
