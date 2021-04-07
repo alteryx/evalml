@@ -136,7 +136,7 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        final_component_inputs, _ = self._fit_transform_features_helper(False, X, y)[0]
+        final_component_inputs, _ = self._fit_transform_features_helper(False, X, y)
         return final_component_inputs
 
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
