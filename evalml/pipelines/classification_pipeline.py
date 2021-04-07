@@ -1,6 +1,5 @@
 
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 
 from evalml.pipelines import PipelineBase
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
@@ -21,7 +20,6 @@ class ClassificationPipeline(PipelineBase):
             random_state (int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._encoder = LabelEncoder()
         super().__init__(parameters, random_seed=random_seed)
 
     def fit(self, X, y):
@@ -39,31 +37,16 @@ class ClassificationPipeline(PipelineBase):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
-        self._encoder.fit(y)
-        y = self._encode_targets(y)
         self._fit(X, y)
         return self
-
-    def _encode_targets(self, y):
-        """Converts target values from their original values to integer values that can be processed."""
-        try:
-            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-        except ValueError as e:
-            raise ValueError(str(e))
-
-    def _decode_targets(self, y):
-        """Converts encoded numerical values to their original target values.
-            Note: we cast y as ints first to address boolean values that may be returned from
-            calculating predictions which we would not be able to otherwise transform if we
-            originally had integer targets."""
-        return self._encoder.inverse_transform(y.astype(int))
 
     @property
     def classes_(self):
         """Gets the class names for the problem."""
-        if not hasattr(self._encoder, "classes_"):
+        encoder = self._component_graph.get_component('Label Encoder')._encoder
+        if not hasattr(encoder, "classes_"):
             raise AttributeError("Cannot access class names before fitting the pipeline.")
-        return self._encoder.classes_
+        return encoder.classes_
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -88,7 +71,7 @@ class ClassificationPipeline(PipelineBase):
             ww.DataColumn: Estimated labels
         """
         predictions = self._predict(X, objective=objective).to_series()
-        predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
+        predictions = pd.Series(predictions, name=self.input_target_name)
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):
@@ -102,7 +85,11 @@ class ClassificationPipeline(PipelineBase):
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
-        proba.columns = self._encoder.classes_
+        try:
+            classes = self.classes_
+            proba.columns = classes
+        except Exception:
+            pass
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives):
@@ -119,7 +106,6 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = self.create_objectives(objectives)
-        y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         if y_predicted is not None:
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())

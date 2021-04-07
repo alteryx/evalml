@@ -48,7 +48,9 @@ from .transformers import (
     DFSTransformer,
     Undersampler,
     TargetImputer,
-    PolynomialDetrender
+    PolynomialDetrender,
+    LabelEncoder,
+    LabelDecoder
 )
 from .ensemble import (
     StackedEnsembleClassifier,

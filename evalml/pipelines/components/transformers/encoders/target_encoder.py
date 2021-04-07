@@ -72,9 +72,6 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Categorical])
 
-    def fit_transform(self, X, y):
-        return self.fit(X, y).transform(X, y)
-
     def get_feature_names(self):
         """Return feature names for the input features after fitting.
 

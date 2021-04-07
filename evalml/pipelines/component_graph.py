@@ -34,6 +34,7 @@ class ComponentGraph:
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
+        self._state_parents = dict()
 
     @classmethod
     def from_list(cls, component_list, random_seed=0):
@@ -74,8 +75,17 @@ class ComponentGraph:
 
         self._is_instantiated = True
         component_instances = {}
+        state_parents = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
+
+            component_state_parents = []
+            parent_names = self.get_parents(component_name)
+            for parent_name in parent_names:
+                if parent_name.endswith(".state"):
+                    component_state_parents.append(parent_name[:-6])
+            if len(component_state_parents):
+                state_parents[component_name] = component_state_parents
 
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
@@ -86,6 +96,7 @@ class ComponentGraph:
 
             component_instances[component_name] = new_component
         self.component_instances = component_instances
+        self._state_parents = state_parents
         return self
 
     def fit(self, X, y):
@@ -111,7 +122,8 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        return self._fit_transform_features_helper(True, X, y)
+        final_component_inputs, _ = self._fit_transform_features_helper(True, X, y)
+        return final_component_inputs
 
     def compute_final_component_features(self, X, y=None):
         """Transform all components save the final one, and gathers the data from any number of parents
@@ -124,7 +136,8 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        return self._fit_transform_features_helper(False, X, y)
+        final_component_inputs, _ = self._fit_transform_features_helper(False, X, y)
+        return final_component_inputs
 
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
         """Helper function that transforms the input data based on the component graph components.
@@ -135,24 +148,41 @@ class ComponentGraph:
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            ww.DataTable: Transformed values.
+            ww.DataTable, ww.DataColumn: Transformed values, and the outputted target.
         """
         if len(self.compute_order) <= 1:
-            return infer_feature_types(X)
+            if y is not None:
+                y = infer_feature_types(y)
+            return infer_feature_types(X), y
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
-        final_component_inputs = []
-        for parent in self.get_parents(self.compute_order[-1]):
-            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, ww.DataColumn):
-                parent_output = parent_output.to_series()
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = infer_feature_types(parent_output)
-            if parent_output is not None:
-                final_component_inputs.append(parent_output)
-        concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
+        final_component_inputs, final_component_target = self._compute_inputs(X, y, self.compute_order[-1], component_outputs)
         if needs_fitting:
-            self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
-        return infer_feature_types(concatted)
+            self.input_feature_names.update({self.compute_order[-1]: list(final_component_inputs.columns)})
+        return final_component_inputs, final_component_target
+
+    def _compute_inputs(self, X, y, component_name, output_cache):
+        x_inputs = []
+        y_input = None
+        for parent_input in self.get_parents(component_name):
+            parent_input_type = self._component_output_type(parent_input)
+            if 'x' in parent_input_type:
+                # if the '.x' name is not found, this could be an estimator with no qualifier. if so, provide y as input feature.
+                parent_x = output_cache.get(parent_input,
+                                            output_cache.get(f'{parent_input}.x',
+                                                             output_cache.get(f'{parent_input}.y')))
+                if isinstance(parent_x, ww.DataTable):
+                    parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
+                elif isinstance(parent_x, ww.DataColumn):
+                    parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
+                x_inputs.append(parent_x)
+            if 'y' in parent_input_type:
+                if y_input is not None:
+                    raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
+                # don't error here if a y input isn't found; allow components to decide whether to error if y is None.
+                if parent_input in output_cache:
+                    y_input = output_cache[parent_input]
+        input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
+        return input_x, input_y
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -167,7 +197,45 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(outputs.get(final_component, outputs.get(f'{final_component}.x')))
+        return infer_feature_types(outputs.get(f'{final_component}.y'))
+
+    def transform(self, X, y=None):
+        """Output the features after applying a series of transformations. Will error if an estimator is the final step.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+
+        Returns:
+            ww.DataColumn: Predicted values.
+        """
+        if len(self.compute_order) == 0:
+            return infer_feature_types(X), None
+        final_component = self.compute_order[-1]
+        if not isinstance(self.component_instances[final_component], Transformer):
+            raise Exception('Final component must be a transformer in order to use ComponentGraph.transform')
+        outputs = self._compute_features(self.compute_order, X, y=y, fit=False)
+        X_out = infer_feature_types(outputs.get(f'{final_component}.x'))
+        for component_name in self.compute_order[::-1]:
+            y_name = f'{component_name}.y'
+            if y_name in outputs:
+                y_out = outputs.get(y_name)
+                break
+        if y_out is not None:
+            y_out = infer_feature_types(y_out)
+        return X_out, y_out
+
+    def _component_output_type(self, component_name):
+        if component_name.endswith('.x'):
+            return {'x'}
+        if component_name.endswith('.y'):
+            return {'y'}
+        if component_name.endswith('.state'):
+            return {'state'}
+        component_instance = self.get_component(component_name)
+        # if name is an estimator with no modifications, provide predictions as an input feature
+        if isinstance(component_instance, Estimator):
+            return {'x'}
+        return {'x', 'y'}
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -190,43 +258,32 @@ class ComponentGraph:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
-            x_inputs = []
-            y_input = None
-            for parent_input in self.get_parents(component_name):
-                if parent_input[-2:] == '.y':
-                    if y_input is not None:
-                        raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
-                    y_input = output_cache[parent_input]
-                else:
-                    parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
-                    if isinstance(parent_x, ww.DataTable):
-                        parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
-                    elif isinstance(parent_x, ww.DataColumn):
-                        parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
-                    x_inputs.append(parent_x)
-            input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
+            input_x, input_y = self._compute_inputs(X, y, component_name, output_cache)
             self.input_feature_names.update({component_name: list(input_x.columns)})
-
+            kwargs = dict()
+            component_state_parents = self._state_parents.get(component_name, [])
+            component_refs = [self.get_component(name) for name in component_state_parents]
+            if len(component_refs):
+                kwargs["dependent_components"] = component_refs
+            output_x, output_y = (None, None)
             if isinstance(component_instance, Transformer):
                 if fit:
-                    output = component_instance.fit_transform(input_x, input_y)
+                    output = component_instance.fit_transform(input_x, input_y, **kwargs)
                 else:
-                    output = component_instance.transform(input_x, input_y)
+                    output = component_instance.transform(input_x, input_y, **kwargs)
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
                 else:
                     output_x = output
-                    output_y = None
-                output_cache[f"{component_name}.x"] = output_x
-                output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
                     component_instance.fit(input_x, input_y)
                 if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(input_x)
-                else:
-                    output = None
-                output_cache[component_name] = output
+                    output_y = component_instance.predict(input_x)
+            if output_x is not None:
+                output_cache[f"{component_name}.x"] = output_x
+            if output_y is not None:
+                output_cache[f"{component_name}.y"] = output_y
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):
@@ -390,18 +447,23 @@ class ComponentGraph:
                                         for key, val in component_class.parameters.items()])  # noqa: W605
                 label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape='record', label=label)
+        # TODO figure out how to display state edges. Would be nice to use dotted lines
         edges = self._get_edges(self.component_dict)
         graph.edges(edges)
         return graph
 
     @staticmethod
-    def _get_edges(component_dict):
+    def _get_edges(component_dict, include_state_edges=False):
         edges = []
         for component_name, component_info in component_dict.items():
             if len(component_info) > 1:
                 for parent in component_info[1:]:
-                    if parent[-2:] == '.x' or parent[-2:] == '.y':
+                    if parent.endswith('.x') or parent.endswith('.y'):
                         parent = parent[:-2]
+                    if parent.endswith('.state'):
+                        if not include_state_edges:
+                            continue
+                        parent = parent[:-6]
                     edges.append((parent, component_name))
         return edges
 
