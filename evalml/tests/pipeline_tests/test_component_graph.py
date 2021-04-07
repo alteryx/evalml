@@ -17,8 +17,6 @@ from evalml.pipelines.components import (
     ElasticNetClassifier,
     Estimator,
     Imputer,
-    LabelEncoder,
-    LabelDecoder,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
@@ -574,8 +572,11 @@ def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary)
     mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
 
     component_graph.fit(X, y)
-    output = component_graph.predict(X)
-    assert_frame_equal(pd.DataFrame(X), output.to_dataframe())
+    X_out, y_out = component_graph.transform(X)
+    assert_frame_equal(pd.DataFrame(X), X_out.to_dataframe())
+    assert_series_equal(pd.Series(y, dtype='Int64'), y_out.to_series())
+    y_out = component_graph.predict(X)
+    assert_series_equal(pd.Series(y, dtype='Int64'), y_out.to_series())
 
 
 def test_no_instantiate_before_fit(X_y_binary):

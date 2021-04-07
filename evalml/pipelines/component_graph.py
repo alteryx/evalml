@@ -195,7 +195,7 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(outputs.get(f'{final_component}.y', outputs.get(f'{final_component}.x')))
+        return infer_feature_types(outputs.get(f'{final_component}.y'))
 
     def transform(self, X):
         """Output the features after applying a series of transformations. Will error if an estimator is the final step.
@@ -212,7 +212,11 @@ class ComponentGraph:
         if not isinstance(self.component_instances[final_component], Transformer):
             raise Exception('Final component must be a transformer in order to use ComponentGraph.transform')
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(outputs.get(f'{final_component}.x'))
+        X_out = infer_feature_types(outputs.get(f'{final_component}.x'))
+        y_out = outputs.get(f'{final_component}.y')
+        if y_out is not None:
+            y_out = infer_feature_types(y_out)
+        return X_out, y_out
 
     def _component_output_type(self, component_name):
         if component_name.endswith('.x'):
