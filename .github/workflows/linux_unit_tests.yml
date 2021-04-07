@@ -24,6 +24,9 @@ jobs:
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
+          - python_version: "3.9"
+            core_dependencies: false
+            codecov: false
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -34,6 +37,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
       - if: ${{ matrix.core_dependencies }}
@@ -73,7 +77,8 @@ jobs:
           make git-test
       - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+        run: |
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install coverage
+          bash <(curl -s https://codecov.io/bash) -C ${{ github.event.pull_request.head.sha }}

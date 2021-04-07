@@ -16,8 +16,7 @@ class DelayedFeatureTransformer(Transformer):
     hyperparameter_ranges = {}
     needs_fitting = False
 
-    def __init__(self, max_delay=2, delay_features=True, delay_target=True, gap=1,
-                 random_state=None, random_seed=0, **kwargs):
+    def __init__(self, max_delay=2, delay_features=True, delay_target=True, gap=1, random_seed=0, **kwargs):
         """Creates a DelayedFeatureTransformer.
 
         Arguments:
@@ -28,7 +27,6 @@ class DelayedFeatureTransformer(Transformer):
                 when the target is collected. For example, if you are predicting the next time step's target, gap=1.
                 This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
                 at 1.
-            random_state (int): Deprecated - use random_seed instead.
             random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
         """
         self.max_delay = max_delay
@@ -41,7 +39,7 @@ class DelayedFeatureTransformer(Transformer):
         parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
                       "gap": gap}
         parameters.update(kwargs)
-        super().__init__(parameters=parameters, random_state=random_state, random_seed=random_seed)
+        super().__init__(parameters=parameters, random_seed=random_seed)
 
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer.
@@ -94,7 +92,6 @@ class DelayedFeatureTransformer(Transformer):
         X_ww = infer_feature_types(X)
         categorical_columns = self._get_categorical_columns(X_ww)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(X[categorical_columns])
             for col_name in X:
@@ -102,7 +99,6 @@ class DelayedFeatureTransformer(Transformer):
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
                 X = X.assign(**{f"{col_name}_delay_{t}": col.shift(t) for t in range(1, self.max_delay + 1)})
-
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
             y = infer_feature_types(y)

@@ -7,11 +7,14 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from evalml.automl.utils import tune_binary_threshold
+from evalml.automl.utils import (
+    check_all_pipeline_names_unique,
+    tune_binary_threshold
+)
 from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
-from evalml.problem_types import is_binary, is_multiclass
+from evalml.problem_types import is_binary, is_classification, is_multiclass
 from evalml.utils.logger import get_logger
 from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 
@@ -21,16 +24,17 @@ logger = get_logger(__file__)
 class EngineBase(ABC):
     """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML."""
 
-    def __init__(self, X_train=None, y_train=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
+    def __init__(self, X_train=None, y_train=None, ensembling_indices=None, automl=None, should_continue_callback=None, pre_evaluation_callback=None, post_evaluation_callback=None):
         """Base class for the engine API which handles the fitting and evaluation of pipelines during AutoML.
 
         Arguments:
-            X_train (ww.DataTable): training features
-            y_train (ww.DataColumn): training target
-            automl (AutoMLSearch): a reference to the AutoML search. Used to access configuration and by the error callback.
-            should_continue_callback (function): returns True if another pipeline from the list should be evaluated, False otherwise.
-            pre_evaluation_callback (function): optional callback invoked before pipeline evaluation.
-            post_evaluation_callback (function): optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
+            X_train (ww.DataTable): Training features
+            y_train (ww.DataColumn): Training target
+            ensembling_indices (list): Ensembling indices for ensembling data
+            automl (AutoMLSearch): A reference to the AutoML search. Used to access configuration and by the error callback.
+            should_continue_callback (function): Returns True if another pipeline from the list should be evaluated, False otherwise.
+            pre_evaluation_callback (function): Optional callback invoked before pipeline evaluation.
+            post_evaluation_callback (function): Optional callback invoked after pipeline evaluation, with args pipeline and evaluation results. Expected to return a list of pipeline IDs corresponding to each pipeline evaluation.
         """
         self.X_train = X_train
         self.y_train = y_train
@@ -38,6 +42,7 @@ class EngineBase(ABC):
         self._should_continue_callback = should_continue_callback
         self._pre_evaluation_callback = pre_evaluation_callback
         self._post_evaluation_callback = post_evaluation_callback
+        self.ensembling_indices = ensembling_indices
 
     @abstractmethod
     def evaluate_batch(self, pipelines):
@@ -47,28 +52,86 @@ class EngineBase(ABC):
             pipeline_batch (list(PipelineBase)): A batch of pipelines to be fitted and evaluated
 
         Returns:
-            list (int): a list of the new pipeline IDs which were created by the AutoML search.
+            list (int): A list of the new pipeline IDs which were created by the AutoML search.
         """
+
+    @abstractmethod
+    def train_batch(self, pipelines):
+        """Train a batch of pipelines using the current dataset.
+
+        Arguments:
+            pipelines (list(PipelineBase)): A batch of pipelines to fit.
+        Returns:
+            list(PipelineBase): List of fitted pipelines
+        """
+        if self.X_train is None or self.y_train is None:
+            raise ValueError("Dataset has not been loaded into the engine.")
+
+        check_all_pipeline_names_unique(pipelines)
+
+    @abstractmethod
+    def score_batch(self, pipelines, X, y, objectives):
+        """Score a batch of pipelines.
+
+        Arguments:
+            pipelines (list(PipelineBase)): A batch of fitted pipelines to score.
+            X (ww.DataTable, pd.DataFrame): Features to score on.
+            y (ww.DataTable, pd.DataFrame): Data to score on.
+            objectives (list(ObjectiveBase), list(str)): Objectives to score on.
+        Returns:
+            Dict[pipeline name, score]: Scores for all objectives for all pipelines.
+        """
+        check_all_pipeline_names_unique(pipelines)
+
+    @staticmethod
+    def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
+        """Train a pipeline and tune the threshold if necessary.
+
+        Arguments:
+            pipeline (PipelineBase): Pipeline to train.
+            X (ww.DataTable, pd.DataFrame): Features to train on.
+            y (ww.DataColumn, pd.Series): Target to train on.
+            optimize_thresholds (bool): Whether to tune the threshold (if pipeline supports it).
+            objective (ObjectiveBase): Objective used in threshold tuning.
+
+        Returns:
+            pipeline (PipelineBase) - trained pipeline.
+        """
+        X_threshold_tuning = None
+        y_threshold_tuning = None
+        if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
+            X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
+                                                                      test_size=0.2, random_seed=pipeline.random_seed)
+        cv_pipeline = pipeline.clone()
+        cv_pipeline.fit(X, y)
+        tune_binary_threshold(cv_pipeline, objective, cv_pipeline.problem_type,
+                              X_threshold_tuning, y_threshold_tuning)
+        return cv_pipeline
 
     @staticmethod
     def train_and_score_pipeline(pipeline, automl, full_X_train, full_y_train):
         """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
 
         Arguments:
-            pipeline (PipelineBase): the pipeline to score
-            automl (AutoMLSearch): the AutoML search, used to access config and for the error callback
-            full_X_train (ww.DataTable): training features
-            full_y_train (ww.DataColumn): training target
+            pipeline (PipelineBase): The pipeline to score
+            automl (AutoMLSearch): The AutoML search, used to access config and for the error callback
+            full_X_train (ww.DataTable): Training features
+            full_y_train (ww.DataColumn): Training target
 
         Returns:
-            dict: a dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
+            dict: A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
         """
         start = time.time()
         cv_data = []
         logger.info("\tStarting cross validation")
         X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
         y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
-        for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd)):
+        y_pd_encoded = y_pd
+        # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
+        if is_classification(automl.problem_type):
+            y_mapping = {original_target: encoded_target for (encoded_target, original_target) in enumerate(y_pd.value_counts().index)}
+            y_pd_encoded = y_pd.map(y_mapping)
+        for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd_encoded)):
             if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
@@ -86,20 +149,10 @@ class EngineBase(ABC):
             objectives_to_score = [automl.objective] + automl.additional_objectives
             cv_pipeline = None
             try:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-                if automl.optimize_thresholds and automl.objective.is_defined_for_problem_type(automl.problem_type) and \
-                   automl.objective.can_optimize_threshold and is_binary(automl.problem_type):
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, automl.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_seed=automl.random_seed)
-                cv_pipeline = pipeline.clone()
                 logger.debug(f"\t\t\tFold {i}: starting training")
-                cv_pipeline.fit(X_train, y_train)
+                cv_pipeline = EngineBase.train_pipeline(pipeline, X_train, y_train, automl.optimize_thresholds, automl.objective)
                 logger.debug(f"\t\t\tFold {i}: finished training")
-                tune_binary_threshold(cv_pipeline, automl.objective, automl.problem_type,
-                                      X_threshold_tuning, y_threshold_tuning)
-                if X_threshold_tuning:
+                if automl.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl.objective) and automl.objective.can_optimize_threshold:
                     logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
                 logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
                 scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)

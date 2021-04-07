@@ -1,14 +1,8 @@
 import json
 
+from woodwork import logical_types
+
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .generated_pipelines import (
-    GeneratedPipelineBinary,
-    GeneratedPipelineMulticlass,
-    GeneratedPipelineRegression,
-    GeneratedPipelineTimeSeriesBinary,
-    GeneratedPipelineTimeSeriesMulticlass,
-    GeneratedPipelineTimeSeriesRegression
-)
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline
 )
@@ -19,6 +13,7 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
+from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
@@ -27,6 +22,7 @@ from evalml.pipelines.components import (  # noqa: F401
     ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
+    DropColumns,
     DropNullColumns,
     Estimator,
     Imputer,
@@ -35,6 +31,7 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    TargetImputer,
     TextFeaturizer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
@@ -43,7 +40,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_time_series
 )
-from evalml.utils import deprecate_arg, get_logger, infer_feature_types
+from evalml.utils import get_logger, infer_feature_types
 
 logger = get_logger(__file__)
 
@@ -66,8 +63,10 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     all_null_cols = X_pd.columns[X_pd.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
-
-    pp_components.append(Imputer)
+    input_logical_types = set(X.logical_types.values())
+    types_imputer_handles = {logical_types.Boolean, logical_types.Categorical, logical_types.Double, logical_types.Integer}
+    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
+        pp_components.append(Imputer)
 
     text_columns = list(X.select('natural_language').columns)
     if len(text_columns) > 0:
@@ -146,27 +145,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     return GeneratedPipeline
 
 
-def get_generated_pipeline_class(problem_type):
-    """Returns the class for the generated pipeline based on the problem type
-
-    Arguments:
-        problem_type (ProblemTypes): The problem_type that the pipeline is for
-
-    Returns:
-        GeneratedPipelineClass (GeneratedPipelineClass): The generated pipeline class for the problem type
-    """
-    try:
-        return {ProblemTypes.BINARY: GeneratedPipelineBinary,
-                ProblemTypes.MULTICLASS: GeneratedPipelineMulticlass,
-                ProblemTypes.REGRESSION: GeneratedPipelineRegression,
-                ProblemTypes.TIME_SERIES_REGRESSION: GeneratedPipelineTimeSeriesRegression,
-                ProblemTypes.TIME_SERIES_BINARY: GeneratedPipelineTimeSeriesBinary,
-                ProblemTypes.TIME_SERIES_MULTICLASS: GeneratedPipelineTimeSeriesMulticlass}[problem_type]
-    except KeyError:
-        raise ValueError("ProblemType {} not recognized".format(problem_type))
-
-
-def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_state=None, random_seed=0):
+def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):
     """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
     The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
     untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
@@ -176,7 +155,6 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         component_instances (list): a list of all of the components to include in the pipeline
         problem_type (str or ProblemTypes): problem type for the pipeline to generate
         custom_name (string): a name for the new pipeline
-        random_state(int): Deprecated. Use random_seed instead.
         random_seed (int): Random seed used to intialize the pipeline.
 
     Returns:
@@ -188,7 +166,6 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         >>> pipeline.describe()
 
     """
-    random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
     for i, component in enumerate(component_instances):
         if not isinstance(component, ComponentBase):
             raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
@@ -276,3 +253,24 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
         return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
                                              custom_name="Stacked Ensemble Regression Pipeline",
                                              random_seed=random_seed)
+
+
+def _make_component_list_from_actions(actions):
+    """
+    Creates a list of components from the input DataCheckAction list
+
+    Arguments:
+        actions (list(DataCheckAction)): List of DataCheckAction objects used to create list of components
+
+    Returns:
+        List of components used to address the input actions
+    """
+    components = []
+    for action in actions:
+        if action.action_code == DataCheckActionCode.DROP_COL:
+            components.append(DropColumns(columns=action.metadata["columns"]))
+        if action.action_code == DataCheckActionCode.IMPUTE_COL:
+            metadata = action.metadata
+            if metadata["is_target"]:
+                components.append(TargetImputer(impute_strategy=metadata["impute_strategy"]))
+    return components

@@ -1,5 +1,7 @@
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning
@@ -60,9 +62,10 @@ class NoVarianceDataCheck(DataCheck):
         Returns:
             dict: dict of warnings/errors corresponding to features or target with no variance.
         """
-        messages = {
+        results = {
             "warnings": [],
-            "errors": []
+            "errors": [],
+            "actions": []
         }
 
         X = infer_feature_types(X)
@@ -72,15 +75,17 @@ class NoVarianceDataCheck(DataCheck):
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
-        for name in unique_counts:
-            message = self._check_for_errors(name, unique_counts[name], any_nulls[name])
+        for col_name in unique_counts:
+            message = self._check_for_errors(col_name, unique_counts[col_name], any_nulls[col_name])
             if not message:
                 continue
-            DataCheck._add_message(message, messages)
+            DataCheck._add_message(message, results)
+            results["actions"].append(DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                      metadata={"column": col_name}).to_dict())
         y_name = getattr(y, "name")
         if not y_name:
             y_name = "Y"
         target_message = self._check_for_errors(y_name, y.nunique(dropna=self._dropnan), y.isnull().any())
         if target_message:
-            DataCheck._add_message(target_message, messages)
-        return messages
+            DataCheck._add_message(target_message, results)
+        return results

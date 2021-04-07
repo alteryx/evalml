@@ -154,6 +154,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             random_seeds_the_same = [(estimator.pipeline.random_seed == algo.random_seed)
                                      for estimator in estimators_used_in_ensemble]
             assert all(random_seeds_the_same)
+            assert ModelFamily.ENSEMBLE not in algo._best_pipeline_info
 
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
@@ -282,17 +283,18 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_r
     assert seen_ensemble
 
 
-@pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, [1, 3, 4], (2, 3, 4)])
+@pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Categorical((2, 3, 4))])
 def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
+                              random_seed=0,
                               pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
                                                'Mock Classifier': {'dummy_parameter': parameters}})
 
     next_batch = algo.next_batch()
     parameter = parameters
-    if isinstance(parameter, (list, tuple)):
-        parameter = parameters[0]
+    if isinstance(parameter, Categorical):
+        parameter = parameter.rvs(random_state=0)
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
     assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": parameter, "n_jobs": -1} for p in next_batch])
 
@@ -304,7 +306,7 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
     for i in range(1, 5):
         next_batch = algo.next_batch()
         for p in next_batch:
-            if isinstance(parameters, (tuple, list)):
+            if isinstance(parameters, Categorical):
                 assert p.parameters['Mock Classifier']['dummy_parameter'] in parameters
             else:
                 assert p.parameters['Mock Classifier']['dummy_parameter'] == parameter

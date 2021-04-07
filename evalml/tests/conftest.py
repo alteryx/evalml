@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -7,6 +8,7 @@ import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
 
+from evalml.demos import load_fraud
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import (
     get_core_objectives,
@@ -96,6 +98,11 @@ def pytest_addoption(parser):
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
+
+
+@pytest.fixture
+def is_running_py_39_or_above():
+    return sys.version_info >= (3, 9)
 
 
 @pytest.fixture
@@ -334,6 +341,27 @@ def linear_regression_pipeline_class():
 
 
 @pytest.fixture
+def dummy_stacked_ensemble_binary_estimator(logistic_regression_binary_pipeline_class):
+    p1 = logistic_regression_binary_pipeline_class({})
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_multiclass_estimator(logistic_regression_multiclass_pipeline_class):
+    p1 = logistic_regression_multiclass_pipeline_class({})
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_regressor_estimator(linear_regression_pipeline_class):
+    p1 = linear_regression_pipeline_class({})
+    ensemble_estimator = StackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
+
+
+@pytest.fixture
 def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
@@ -536,3 +564,8 @@ def make_data_type():
         return data
 
     return _make_data_type
+
+
+@pytest.fixture
+def fraud_100():
+    return load_fraud(n_rows=100)

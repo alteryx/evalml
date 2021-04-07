@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.exceptions import ObjectiveNotFoundError
+from evalml.exceptions import ObjectiveCreationError, ObjectiveNotFoundError
 from evalml.objectives import (
     BinaryClassificationObjective,
     CostBenefitMatrix,
@@ -62,7 +62,7 @@ def test_get_objective_does_raises_error_for_incorrect_name_or_random_class():
 
 def test_get_objective_return_instance_does_not_work_for_some_objectives():
 
-    with pytest.raises(TypeError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
+    with pytest.raises(ObjectiveCreationError, match="In get_objective, cannot pass in return_instance=True for Cost Benefit Matrix"):
         get_objective("Cost Benefit Matrix", return_instance=True)
 
     cbm = CostBenefitMatrix(0, 0, 0, 0)
@@ -89,7 +89,7 @@ def test_can_get_only_core_and_all_objective_names():
 
 def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
-    assert len(get_core_objectives(ProblemTypes.BINARY)) == 7
+    assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
     assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
 

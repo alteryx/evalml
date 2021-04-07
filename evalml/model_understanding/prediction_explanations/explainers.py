@@ -1,67 +1,29 @@
 import sys
 import traceback
-import warnings
 from collections import namedtuple
 
 import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._report_creator_factory import (
     _report_creator_factory
-)
-from evalml.model_understanding.prediction_explanations._user_interface import (
-    _make_single_prediction_shap_table
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 from evalml.utils.gen_utils import drop_rows_with_nans
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
-_ReportData = namedtuple("ReportData", ["pipeline", "pipeline_features",
+_ReportData = namedtuple("ReportData", ["pipeline", "pipeline_features", "input_features",
                                         "y_true", "y_pred", "y_pred_values", "errors", "index_list", "metric"])
-
-
-def explain_prediction(pipeline, input_features, y, index_to_explain, top_k_features=3, include_shap_values=False,
-                       output_format="text"):
-    """Creates table summarizing the top_k positive and top_k negative contributing features to the prediction of a single datapoint.
-
-    XGBoost models and CatBoost multiclass classifiers are not currently supported.
-
-    Arguments:
-        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (ww.DataTable, pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
-        y (ww.DataColumn, pd.Series): Labels for the input data.
-        index_to_explain (int): The index of the row to explain in the input features.
-        top_k_features (int): How many of the highest/lowest features to include in the table.  Default is 3.
-        include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
-            Default is False.
-        output_format (str): Either "text", "dict", or "dataframe". Default is "text".
-
-    Returns:
-        str, dict, or pd.DataFrame - A report explaining the most positive/negative contributing features to the predictions.
-
-    Raises:
-        ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
-    """
-    warnings.warn("The explain_prediction function will be deleted in the next release. "
-                  "Please use the explain_predictions function instead.")
-    input_features = infer_feature_types(input_features)
-    pipeline_features = pipeline.compute_estimator_features(input_features, y).to_dataframe()
-
-    if output_format not in {"text", "dict", "dataframe"}:
-        raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
-    if any([x < 0 or x >= len(input_features) for x in [index_to_explain]]):
-        raise ValueError(f"Explained indices should be between 0 and {len(input_features) - 1}")
-    return _make_single_prediction_shap_table(pipeline, pipeline_features, index_to_explain, top_k_features, include_shap_values,
-                                              output_format=output_format)
 
 
 def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_features=3, include_shap_values=False,
                         output_format="text"):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
-    XGBoost models and CatBoost multiclass classifiers are not currently supported.
+    XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
@@ -85,6 +47,8 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     input_features = infer_feature_types(input_features)
     input_features = _convert_woodwork_types_wrapper(input_features.to_dataframe())
 
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
@@ -94,7 +58,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
 
     pipeline_features = pipeline.compute_estimator_features(input_features, y).to_dataframe()
 
-    data = _ReportData(pipeline, pipeline_features, y_true=y, y_pred=None,
+    data = _ReportData(pipeline, pipeline_features, input_features, y_true=y, y_pred=None,
                        y_pred_values=None, errors=None, index_list=indices_to_explain, metric=None)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions",
@@ -107,7 +71,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                                    include_shap_values=False, metric=None, output_format="text"):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
-    XGBoost models and CatBoost multiclass classifiers are not currently supported.
+    XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
@@ -147,6 +111,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                          f"true labels: {y_true.shape[0]} and {input_features.shape[0]}")
     if output_format not in {"text", "dict", "dataframe"}:
         raise ValueError(f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}")
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
 
@@ -180,7 +146,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
 
     pipeline_features = pipeline.compute_estimator_features(input_features, y_true).to_dataframe()
 
-    data = _ReportData(pipeline, pipeline_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
+    data = _ReportData(pipeline, pipeline_features, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,

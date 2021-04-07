@@ -5,6 +5,7 @@ from collections import defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -13,16 +14,9 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
+    check_all_pipeline_names_unique,
     get_default_primary_search_objective,
-    make_data_splitter,
-    tune_binary_threshold
-)
-from evalml.data_checks import (
-    AutoMLDataChecks,
-    DataChecks,
-    DefaultDataChecks,
-    EmptyDataChecks,
-    HighVarianceCVDataCheck
+    make_data_splitter
 )
 from evalml.exceptions import AutoMLSearchException, PipelineNotFoundError
 from evalml.model_family import ModelFamily
@@ -40,16 +34,11 @@ from evalml.pipelines import (
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import get_generated_pipeline_class, make_pipeline
+from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_binary
+from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    convert_to_seconds,
-    deprecate_arg,
-    infer_feature_types
-)
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -84,16 +73,16 @@ class AutoMLSearch:
                  add_result_callback=None,
                  error_callback=None,
                  additional_objectives=None,
-                 random_state=None,
                  random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
-                 optimize_thresholds=False,
+                 optimize_thresholds=True,
                  ensembling=False,
                  max_batches=None,
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 _ensembling_split_size=0.2,
                  _pipelines_per_batch=5):
         """Automated pipeline search
 
@@ -138,6 +127,8 @@ class AutoMLSearch:
 
             tuner_class: The tuner class to use. Defaults to SKOptTuner.
 
+            optimize_thresholds (bool): Whether or not to optimize the binary pipeline threshold. Defaults to True.
+
             start_iteration_callback (callable): Function called before each pipeline training iteration.
                 Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
 
@@ -151,8 +142,6 @@ class AutoMLSearch:
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
-
-            random_state (int): Deprecated - use random_seed instead.
 
             random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -168,7 +157,12 @@ class AutoMLSearch:
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
                 in time series problems, values should be passed in for the gap and max_delay variables.
 
-            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True
+            train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
+
+            pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+
+            _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
+                Must be between 0 and 1, exclusive. Defaults to 0.2
 
             _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
                 The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
@@ -239,7 +233,7 @@ class AutoMLSearch:
             'search_order': [],
             'errors': []
         }
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        self.random_seed = random_seed
         self.n_jobs = n_jobs
 
         self.plot = None
@@ -247,8 +241,6 @@ class AutoMLSearch:
             self.plot = PipelineSearchPlots(self)
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
-
-        self._data_check_results = None
 
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
@@ -265,6 +257,7 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
+        self.ensembling_indices = None
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_seed=self.random_seed)
@@ -272,13 +265,6 @@ class AutoMLSearch:
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
         self._interrupted = False
-
-        self._engine = SequentialEngine(self.X_train,
-                                        self.y_train,
-                                        self,
-                                        should_continue_callback=self._should_continue,
-                                        pre_evaluation_callback=self._pre_evaluation_callback,
-                                        post_evaluation_callback=self._post_evaluation_callback)
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -288,6 +274,7 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+        check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
         if run_ensembling and len(self.allowed_pipelines) == 1:
@@ -309,6 +296,7 @@ class AutoMLSearch:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
                 num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
                 if num_ensemble_batches == 0:
+                    run_ensembling = False
                     logger.warning(f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling.")
                 else:
                     logger.info(f"Ensembling will run every {ensemble_nth_batch} batches.")
@@ -318,6 +306,21 @@ class AutoMLSearch:
                                        num_ensemble_batches)
             else:
                 self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
+        if run_ensembling:
+            if not (0 < _ensembling_split_size < 1):
+                raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
+            X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
+            _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
+            self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
+
+        self._engine = SequentialEngine(self.X_train,
+                                        self.y_train,
+                                        self.ensembling_indices,
+                                        self,
+                                        should_continue_callback=self._should_continue,
+                                        pre_evaluation_callback=self._pre_evaluation_callback,
+                                        post_evaluation_callback=self._post_evaluation_callback)
+
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -367,11 +370,6 @@ class AutoMLSearch:
             return objective()
         return objective
 
-    @property
-    def data_check_results(self):
-        """If there are data checks, return any error messages that are found"""
-        return self._data_check_results
-
     def __str__(self):
         def _print_list(obj_list):
             lines = sorted(['\t{}'.format(o.name) for o in obj_list])
@@ -418,33 +416,6 @@ class AutoMLSearch:
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
 
-    def _validate_data_checks(self, data_checks):
-        """Validate data_checks parameter.
-
-        Arguments:
-            data_checks (DataChecks, list(Datacheck), str, None): Input to validate. If not of the right type,
-                raise an exception.
-
-        Returns:
-            An instance of DataChecks used to perform checks before search.
-        """
-        if isinstance(data_checks, DataChecks):
-            return data_checks
-        elif isinstance(data_checks, list):
-            return AutoMLDataChecks(data_checks)
-        elif isinstance(data_checks, str):
-            if data_checks == "auto":
-                return DefaultDataChecks(problem_type=self.problem_type, objective=self.objective, n_splits=self.data_splitter.get_n_splits())
-            elif data_checks == "disabled":
-                return EmptyDataChecks()
-            else:
-                raise ValueError("If data_checks is a string, it must be either 'auto' or 'disabled'. "
-                                 f"Received '{data_checks}'.")
-        elif data_checks is None:
-            return EmptyDataChecks()
-        else:
-            return DataChecks(data_checks)
-
     def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
 
@@ -466,15 +437,10 @@ class AutoMLSearch:
             else:
                 leading_char = ""
 
-    def search(self, data_checks="auto", show_iteration_plot=True):
+    def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
         Arguments:
-            data_checks (DataChecks, list(Datacheck), str, None): A collection of data checks to run before
-                automl search. If data checks produce any errors, an exception will be thrown before the
-                search begins. If "disabled" or None, `no` data checks will be done.
-                If set to "auto", DefaultDataChecks will be done. Default value is set to "auto".
-
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
 
@@ -491,16 +457,6 @@ class AutoMLSearch:
                 get_ipython
             except NameError:
                 show_iteration_plot = False
-
-        data_checks = self._validate_data_checks(data_checks)
-        self._data_check_results = data_checks.validate(_convert_woodwork_types_wrapper(self.X_train.to_dataframe()),
-                                                        _convert_woodwork_types_wrapper(self.y_train.to_series()))
-        for result in self._data_check_results["warnings"]:
-            logger.warning(result["message"])
-        for result in self._data_check_results["errors"]:
-            logger.error(result["message"])
-        if self._data_check_results["errors"]:
-            raise ValueError("Data checks raised some warnings and/or errors. Please see `self.data_check_results` for more information or pass data_checks='disabled' to search() to disable data checking.")
 
         log_title(logger, "Beginning pipeline search")
         logger.info("Optimizing for %s. " % self.objective.name)
@@ -571,18 +527,17 @@ class AutoMLSearch:
             return
         best_pipeline = self.rankings.iloc[0]
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
-            self._best_pipeline = self.get_pipeline(best_pipeline['id'])
+            best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                X_threshold_tuning = None
-                y_threshold_tuning = None
-                X_train, y_train = self.X_train, self.y_train
-                if is_binary(self.problem_type) and self.objective.is_defined_for_problem_type(self.problem_type) \
-                   and self.optimize_thresholds and self.objective.can_optimize_threshold:
-                    X_train, X_threshold_tuning, y_train, y_threshold_tuning = split_data(X_train, y_train, self.problem_type,
-                                                                                          test_size=0.2,
-                                                                                          random_seed=self.random_seed)
-                self._best_pipeline.fit(X_train, y_train)
-                tune_binary_threshold(self._best_pipeline, self.objective, self.problem_type, X_threshold_tuning, y_threshold_tuning)
+                X_train = self.X_train
+                y_train = self.y_train
+                if hasattr(self.data_splitter, "transform_sample"):
+                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
+                    X_train = X_train.iloc[train_indices]
+                    y_train = y_train.iloc[train_indices]
+                best_pipeline = self._engine.train_pipeline(best_pipeline, X_train, y_train,
+                                                            self.optimize_thresholds, self.objective)
+            self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
         """Return the number of pipeline evaluations which have been made
@@ -701,18 +656,12 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        pipeline_name = pipeline.name
-        high_variance_cv_check = HighVarianceCVDataCheck(threshold=0.2)
-        high_variance_cv_check_results = high_variance_cv_check.validate(pipeline_name=pipeline_name, cv_scores=cv_scores)
-        high_variance_cv = False
-        if high_variance_cv_check_results["warnings"]:
-            logger.warning(high_variance_cv_check_results["warnings"][0]["message"])
-            high_variance_cv = True
+        high_variance_cv = self._check_for_high_variance(pipeline, cv_scores)
 
         pipeline_id = len(self._results['pipeline_results'])
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
-            "pipeline_name": pipeline_name,
+            "pipeline_name": pipeline.name,
             "pipeline_class": type(pipeline),
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
@@ -724,6 +673,11 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
+            self._results['pipeline_results'][pipeline_id]["input_pipeline_ids"] = input_pipeline_ids
+
         self._results['search_order'].append(pipeline_id)
 
         if not is_baseline:
@@ -739,6 +693,19 @@ class AutoMLSearch:
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
         return pipeline_id
+
+    def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
+        """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
+        pipeline_name = pipeline.name
+
+        high_variance_cv = False
+        cv_scores_std = cv_scores.std()
+        cv_scores_mean = cv_scores.mean()
+        if cv_scores_std != 0 and cv_scores_mean != 0:
+            high_variance_cv = bool(abs(cv_scores_std / cv_scores_mean) > threshold)
+        if high_variance_cv:
+            logger.warning(f"High coefficient of variation (cv >= {threshold}) within cross validation scores. {pipeline_name} may not perform as estimated on unseen data.")
+        return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
@@ -757,11 +724,7 @@ class AutoMLSearch:
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        pipeline = get_generated_pipeline_class(self.problem_type)
-        pipeline.custom_hyperparameters = pipeline_class.custom_hyperparameters
-        pipeline.custom_name = pipeline_class.name
-        pipeline.component_graph = pipeline_class.component_graph
-        return pipeline(parameters, random_seed=self.random_seed)
+        return pipeline_class(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
@@ -782,6 +745,10 @@ class AutoMLSearch:
         pipeline_results = self._results['pipeline_results'][pipeline_id]
 
         pipeline.describe()
+
+        if pipeline.model_family == ModelFamily.ENSEMBLE:
+            logger.info("Input for ensembler are pipelines with IDs: " + str(pipeline_results['input_pipeline_ids']))
+
         log_subtitle(logger, "Training")
         logger.info("Training for {} problems.".format(pipeline.problem_type))
 
@@ -896,3 +863,34 @@ class AutoMLSearch:
         """
         with open(file_path, 'rb') as f:
             return cloudpickle.load(f)
+
+    def train_pipelines(self, pipelines):
+        """Train a list of pipelines on the training data.
+
+        This can be helpful for training pipelines once the search is complete.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+
+        Returns:
+            Dict[str, PipelineBase]: Dictionary keyed by pipeline name that maps to the fitted pipeline.
+            Note that the any pipelines that error out during training will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.train_batch(pipelines)
+
+    def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
+        """Score a list of pipelines on the given holdout data.
+
+        Arguments:
+            pipelines (list(PipelineBase)): List of pipelines to train.
+            X_holdout (ww.DataTable, pd.DataFrame): Holdout features.
+            y_holdout (ww.DataTable, pd.DataFrame): Holdout targets for scoring.
+            objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
+
+        Returns:
+            Dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
+            Note that the any pipelines that error out during scoring will not be included in the dictionary
+            but the exception and stacktrace will be displayed in the log.
+        """
+        return self._engine.score_batch(pipelines, X_holdout, y_holdout, objectives)

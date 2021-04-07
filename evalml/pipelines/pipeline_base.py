@@ -20,12 +20,17 @@ from .components import (
 )
 from .components.utils import all_components, handle_component_class
 
-from evalml.exceptions import IllFormattedClassNameError, PipelineScoreError
+from evalml.exceptions import (
+    IllFormattedClassNameError,
+    ObjectiveCreationError,
+    PipelineScoreError
+)
+from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
+from evalml.problem_types import is_binary
 from evalml.utils import (
     classproperty,
-    deprecate_arg,
     get_logger,
     import_or_raise,
     infer_feature_types,
@@ -55,7 +60,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_state=None, random_seed=0):
+    def __init__(self, parameters, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -64,9 +69,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        self.random_seed = random_seed
         if isinstance(self.component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:
@@ -154,11 +159,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return self._component_graph.get_component(name)
 
-    def describe(self):
+    def describe(self, return_dict=False):
         """Outputs pipeline details including component parameters
 
         Arguments:
-            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to false
+            return_dict (bool): If True, return dictionary of information about pipeline. Defaults to False.
 
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
@@ -172,10 +177,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         # Summary of steps
         log_subtitle(logger, "Pipeline Steps")
+
+        pipeline_dict = {
+            "name": self.name,
+            "problem_type": self.problem_type,
+            "model_family": self.model_family,
+            "components": dict()
+        }
+
         for number, component in enumerate(self._component_graph, 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
-            component.describe(print_name=False)
+            pipeline_dict["components"].update({component.name: component.describe(print_name=False, return_dict=return_dict)})
+        if return_dict:
+            return pipeline_dict
 
     def compute_estimator_features(self, X, y=None):
         """Transforms the data by applying all pre-processing components.
@@ -267,6 +282,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             try:
                 if not objective.is_defined_for_problem_type(self.problem_type):
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
+                y_pred = self._select_y_pred_for_score(X, y, y_pred, y_pred_proba, objective)
                 score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
                 scored_successfully.update({objective.name: score})
             except Exception as e:
@@ -277,6 +293,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             raise PipelineScoreError(exceptions, scored_successfully)
         # No objectives failed, return the scores
         return scored_successfully
+
+    def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
+        return y_pred
 
     @classproperty
     def model_family(cls):
@@ -518,3 +537,27 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
         has_stacked_ensembler = any(isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor)) for c in self._component_graph)
         return not any([has_more_than_one_estimator, has_custom_components, has_dim_reduction, has_dfs, has_stacked_ensembler])
+
+    @staticmethod
+    def create_objectives(objectives):
+        objective_instances = []
+        for objective in objectives:
+            try:
+                objective_instances.append(get_objective(objective, return_instance=True))
+            except ObjectiveCreationError as e:
+                msg = f"Cannot pass {objective} as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
+                raise ObjectiveCreationError(msg) from e
+        return objective_instances
+
+    def can_tune_threshold_with_objective(self, objective):
+        """Determine whether the threshold of a binary classification pipeline can be tuned.
+
+       Arguments:
+            pipeline (PipelineBase): Binary classification pipeline.
+            objective (ObjectiveBase): Primary AutoMLSearch objective.
+
+        Returns:
+            bool: True if the pipeline threshold can be tuned.
+
+        """
+        return is_binary(self.problem_type) and objective.is_defined_for_problem_type(self.problem_type) and objective.can_optimize_threshold

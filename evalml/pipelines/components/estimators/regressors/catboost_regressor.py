@@ -5,7 +5,7 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import deprecate_arg, import_or_raise, infer_feature_types
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class CatBoostRegressor(Estimator):
@@ -25,8 +25,7 @@ class CatBoostRegressor(Estimator):
     supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=False,
-                 allow_writing_files=False, random_state=None, random_seed=0, **kwargs):
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+                 allow_writing_files=False, random_seed=0, **kwargs):
         parameters = {"n_estimators": n_estimators,
                       "eta": eta,
                       "max_depth": max_depth,

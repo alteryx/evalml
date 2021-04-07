@@ -30,7 +30,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
             pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch.
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
@@ -115,7 +115,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
         current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
-        if score_to_minimize is not None and score_to_minimize < current_best_score:
+        if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family != ModelFamily.ENSEMBLE:
             self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
                                                                      'pipeline_class': pipeline.__class__,
                                                                      'parameters': pipeline.parameters,
@@ -145,8 +145,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
                     elif isinstance(value, Categorical):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
-                    elif isinstance(value, (list, tuple)):
-                        component_parameters[param_name] = value[0]
                     else:
                         component_parameters[param_name] = value
             if 'pipeline' in self._pipeline_params:

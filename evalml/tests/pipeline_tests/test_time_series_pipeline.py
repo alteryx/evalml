@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from pandas.testing import assert_frame_equal, assert_series_equal
+from pandas.testing import assert_series_equal
 
 from evalml.exceptions import PipelineNotYetFittedError
+from evalml.objectives import FraudCost, get_objective
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -158,12 +159,14 @@ def test_predict_pad_nans(mock_decode_targets,
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets", side_effect=lambda y: y)
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
-def test_score_drops_nans(mock_score, mock_encode_targets,
+@patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
+def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
                           mock_classifier_predict, mock_classifier_fit,
                           mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
                           estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
-
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        mock_score = mock_binary_score
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
         pytest.skip("This would result in an empty feature dataframe.")
 
@@ -211,14 +214,24 @@ def test_score_drops_nans(mock_score, mock_encode_targets,
 
 @pytest.mark.parametrize("pipeline_class", [TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline])
 @patch("evalml.pipelines.LogisticRegressionClassifier.fit")
+@patch("evalml.pipelines.LogisticRegressionClassifier.predict_proba")
 @patch("evalml.pipelines.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._score_all_objectives")
-def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_fit, pipeline_class, X_y_binary):
+@patch("evalml.pipelines.ClassificationPipeline._decode_targets")
+@patch("evalml.pipelines.ClassificationPipeline._encode_targets")
+def test_classification_pipeline_encodes_targets(mock_encode, mock_decode,
+                                                 mock_score, mock_predict, mock_predict_proba,
+                                                 mock_fit, pipeline_class, X_y_binary):
     X, y = X_y_binary
     y_series = pd.Series(y)
     mock_predict.return_value = ww.DataColumn(y_series)
+    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame({"negative": y_series,
+                                                                 "positive": y_series}))
     X = pd.DataFrame({"feature": range(len(y))})
     y_encoded = y_series.map(lambda label: "positive" if label == 1 else "negative")
+
+    mock_encode.return_value = y_series
+    mock_decode.return_value = y_encoded
 
     class MyTsPipeline(pipeline_class):
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
@@ -226,31 +239,27 @@ def test_classification_pipeline_encodes_targets(mock_score, mock_predict, mock_
     pl = MyTsPipeline({"Delayed Feature Transformer": {"gap": 0, "max_delay": 1},
                        "pipeline": {"gap": 0, "max_delay": 1}})
 
+    # Check fit encodes target
     pl.fit(X, y_encoded)
-
-    answer = pd.DataFrame({"feature": X.feature,
-                           "feature_delay_1": X.feature.shift(1),
-                           "target_delay_1": y_series.shift(1)}).dropna(axis=0, how='any')
-
-    df_passed_to_estimator, target_passed_to_estimator = mock_fit.call_args[0]
-
-    # Check the features have target values encoded as ints.
-    assert_frame_equal(df_passed_to_estimator, answer)
+    _, target_passed_to_estimator = mock_fit.call_args[0]
 
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
     assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
 
+    # Check predict encodes target
+    mock_encode.reset_mock()
     pl.predict(X, y_encoded)
-    # Best way to get the argument since the api changes between 3.6/3.7 and 3.8
-    df_passed_to_predict = mock_predict.call_args[0][0]
-    assert_frame_equal(df_passed_to_predict, answer)
+    mock_encode.assert_called_once()
 
-    mock_predict.reset_mock()
+    # Check predict proba encodes target
+    mock_encode.reset_mock()
+    pl.predict_proba(X, y_encoded)
+    mock_encode.assert_called_once()
 
-    # Since we mock score_all_objectives, the objective doesn't matter
+    # Check score encodes target
+    mock_encode.reset_mock()
     pl.score(X, y_encoded, objectives=['MCC Binary'])
-    df_passed_to_predict = mock_predict.call_args[0][0]
-    assert_frame_equal(df_passed_to_predict, answer)
+    mock_encode.assert_called_once()
 
 
 @pytest.mark.parametrize("pipeline_class,objectives", [(TimeSeriesBinaryClassificationPipeline, ["MCC Binary"]),
@@ -423,3 +432,31 @@ def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_mul
     else:
         clf.predict(X, y)
     clf.feature_importance
+
+
+def test_ts_binary_pipeline_target_thresholding(make_data_type, time_series_binary_classification_pipeline_class, X_y_binary):
+    X, y = X_y_binary
+    X = make_data_type('ww', X)
+    y = make_data_type('ww', y)
+    objective = get_objective("F1", return_instance=True)
+
+    binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+    binary_pipeline.fit(X, y)
+    assert binary_pipeline.threshold is None
+    pred_proba = binary_pipeline.predict_proba(X, y).iloc[:, 1]
+    binary_pipeline.optimize_threshold(X, y, pred_proba, objective)
+    assert binary_pipeline.threshold is not None
+
+
+@patch('evalml.objectives.FraudCost.decision_function')
+def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binary, time_series_binary_classification_pipeline_class):
+    X, y = X_y_binary
+    binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+    mock_decision_function.return_value = pd.Series([0] * 98)
+    binary_pipeline.threshold = 0.7
+    binary_pipeline.fit(X, y)
+    fraud_cost = FraudCost(amount_col=0)
+    binary_pipeline.score(X, y, ['precision', 'auc', fraud_cost])
+    mock_decision_function.assert_called()

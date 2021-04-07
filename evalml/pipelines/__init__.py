@@ -31,7 +31,8 @@ from .components import (
     DFSTransformer,
     KNeighborsClassifier,
     SVMClassifier,
-    SVMRegressor
+    SVMRegressor,
+    ARIMARegressor
 )
 
 from .component_graph import ComponentGraph
@@ -57,11 +58,3 @@ from .regression import (
     MeanBaselineRegressionPipeline,
 )
 from .time_series_baselines import TimeSeriesBaselineRegressionPipeline, TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline
-from .generated_pipelines import (
-    GeneratedPipelineBinary,
-    GeneratedPipelineMulticlass,
-    GeneratedPipelineRegression,
-    GeneratedPipelineTimeSeriesBinary,
-    GeneratedPipelineTimeSeriesMulticlass,
-    GeneratedPipelineTimeSeriesRegression
-)

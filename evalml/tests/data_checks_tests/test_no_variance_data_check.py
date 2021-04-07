@@ -4,6 +4,8 @@ import pytest
 import woodwork as ww
 
 from evalml.data_checks import (
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -40,16 +42,16 @@ labels_1_unique = DataCheckError(message="Y has 1 unique value.",
                                  data_check_name=no_variance_data_check_name,
                                  message_code=DataCheckMessageCode.NO_VARIANCE,
                                  details={"column": "Y"}).to_dict()
+drop_feature_action = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "feature"}).to_dict()
 
-
-cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
-         ([[1], [2], [3], [4]], [1, 2, 3, 2], False, {"warnings": [], "errors": []}),
-         (np.arange(12).reshape(4, 3), [1, 2, 3], True, {"warnings": [], "errors": []}),
-         (all_null_X, all_distinct_y, False, {"warnings": [], "errors": [feature_0_unique]}),
-         (all_null_X, [1] * 4, False, {"warnings": [], "errors": [feature_0_unique, labels_1_unique]}),
-         (all_null_X, all_distinct_y, True, {"warnings": [], "errors": [feature_1_unique]}),
-         (all_distinct_X, all_null_y, True, {"warnings": [], "errors": [labels_1_unique]}),
-         (all_distinct_X, all_null_y, False, {"warnings": [], "errors": [labels_0_unique]}),
+cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": [], "actions": []}),
+         ([[1], [2], [3], [4]], [1, 2, 3, 2], False, {"warnings": [], "errors": [], "actions": []}),
+         (np.arange(12).reshape(4, 3), [1, 2, 3], True, {"warnings": [], "errors": [], "actions": []}),
+         (all_null_X, all_distinct_y, False, {"warnings": [], "errors": [feature_0_unique], "actions": [drop_feature_action]}),
+         (all_null_X, [1] * 4, False, {"warnings": [], "errors": [feature_0_unique, labels_1_unique], "actions": [drop_feature_action]}),
+         (all_null_X, all_distinct_y, True, {"warnings": [], "errors": [feature_1_unique], "actions": [drop_feature_action]}),
+         (all_distinct_X, all_null_y, True, {"warnings": [], "errors": [labels_1_unique], "actions": []}),
+         (all_distinct_X, all_null_y, False, {"warnings": [], "errors": [labels_0_unique], "actions": []}),
          (two_distinct_with_nulls_X, two_distinct_with_nulls_y, True,
           {"warnings": [DataCheckWarning(message="feature has two unique values including nulls. Consider encoding the nulls for "
                                          "this column to be useful for machine learning.",
@@ -61,12 +63,15 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
                                          data_check_name=no_variance_data_check_name,
                                          message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                                          details={"column": "Y"}).to_dict()],
-           "errors": []}),
-         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
-         (all_distinct_X, all_null_y_with_name, False, {"warnings": [], "errors": [DataCheckError(message="Labels has 0 unique value.",
-                                                                                                  data_check_name=no_variance_data_check_name,
-                                                                                                  message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                                                                  details={"column": "Labels"}).to_dict()]}),
+           "errors": [],
+           "actions": [drop_feature_action]}),
+         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique], "actions": [drop_feature_action]}),
+         (all_distinct_X, all_null_y_with_name, False, {"warnings": [],
+                                                        "errors": [DataCheckError(message="Labels has 0 unique value.",
+                                                                                  data_check_name=no_variance_data_check_name,
+                                                                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                                                                  details={"column": "Labels"}).to_dict()],
+                                                        "actions": []}),
          (ww.DataTable(two_distinct_with_nulls_X), ww.DataColumn(two_distinct_with_nulls_y), True,
           {"warnings": [DataCheckWarning(message="feature has two unique values including nulls. Consider encoding the nulls for "
                                          "this column to be useful for machine learning.",
@@ -78,8 +83,9 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": []}),
                                          data_check_name=no_variance_data_check_name,
                                          message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                                          details={"column": "Y"}).to_dict()],
-           "errors": []}),
-         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique]}),
+           "errors": [],
+           "actions": [drop_feature_action]}),
+         (two_distinct_with_nulls_X, two_distinct_with_nulls_y, False, {"warnings": [], "errors": [feature_1_unique, labels_1_unique], "actions": [drop_feature_action]}),
 
          ]
 
