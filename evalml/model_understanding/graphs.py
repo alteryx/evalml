@@ -25,7 +25,7 @@ import evalml
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
-from evalml.problem_types import ProblemTypes, is_classification
+from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     import_or_raise,
