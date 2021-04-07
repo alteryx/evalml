@@ -11,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``balanced_ratio`` to ``sampling_ratio`` for the ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassficationSampler``:pr:`2113`
 
 **v0.22.0 Apr. 06, 2021**
     * Enhancements

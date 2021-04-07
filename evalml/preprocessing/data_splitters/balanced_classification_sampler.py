@@ -10,10 +10,10 @@ from evalml.utils.woodwork_utils import (
 class BalancedClassificationSampler(SamplerBase):
     """Class for balanced classification downsampler."""
 
-    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0):
+    def __init__(self, sampling_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0):
         """
         Arguments:
-            balanced_ratio (float): The largest majority:minority ratio that is accepted as 'balanced'. For instance, a 4:1 ratio would be
+            sampling_ratio (float): The largest majority:minority ratio that is accepted as 'balanced'. For instance, a 4:1 ratio would be
                 represented as 4, while a 6:5 ratio is 1.2. Must be greater than or equal to 1 (or 1:1). Defaults to 4.
 
             min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
@@ -27,13 +27,13 @@ class BalancedClassificationSampler(SamplerBase):
             random_seed (int): The seed to use for random sampling. Defaults to 0.
         """
         super().__init__(random_seed=random_seed)
-        if balanced_ratio < 1:
-            raise ValueError(f"balanced_ratio must be at least 1, but received {balanced_ratio}")
+        if sampling_ratio < 1:
+            raise ValueError(f"sampling_ratio must be at least 1, but received {sampling_ratio}")
         if min_samples <= 0:
             raise ValueError(f"min_sample must be greater than 0, but received {min_samples}")
         if min_percentage <= 0 or min_percentage > 0.5:
             raise ValueError(f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}")
-        self.balanced_ratio = balanced_ratio
+        self.sampling_ratio = sampling_ratio
         self.min_samples = min_samples
         self.min_percentage = min_percentage
         self.random_state = np.random.RandomState(self.random_seed)
@@ -52,17 +52,17 @@ class BalancedClassificationSampler(SamplerBase):
         normalized_counts = y.value_counts(normalize=True)
         class_ratios = normalized_counts / min(normalized_counts)
         # if no class ratios are greater than what we consider balanced, then the target is balanced
-        if all(class_ratios <= self.balanced_ratio):
+        if all(class_ratios <= self.sampling_ratio):
             return {}
         # if any classes have less than min_samples counts and are less than min_percentage of the total data,
         # then it's severely imbalanced
         if any(counts < self.min_samples) and any(normalized_counts < self.min_percentage):
             return {}
         # otherwise, we are imbalanced enough to perform on this
-        undersample_classes = counts[class_ratios > self.balanced_ratio].index.values
+        undersample_classes = counts[class_ratios > self.sampling_ratio].index.values
         # find goal size, round it down if it's a float
         minority_class = min(counts.values)
-        goal_value = max(int((self.balanced_ratio * minority_class) // 1), self.min_samples)
+        goal_value = max(int((self.sampling_ratio * minority_class) // 1), self.min_samples)
         # we don't want to drop less than 0 rows
         drop_values = {k: max(0, counts[k] - goal_value) for k in undersample_classes}
         return {k: v for k, v in drop_values.items() if v > 0}

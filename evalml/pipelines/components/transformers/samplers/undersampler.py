@@ -13,11 +13,11 @@ class Undersampler(BaseSampler):
     name = "Undersampler"
     hyperparameter_ranges = {}
 
-    def __init__(self, balanced_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
+    def __init__(self, sampling_ratio=4, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
         """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
         Arguments:
-            balanced_ratio (float): The largest majority:minority ratio that is accepted as 'balanced'. For instance, a 4:1 ratio would be
+            sampling_ratio (float): The largest majority:minority ratio that is accepted as 'balanced'. For instance, a 4:1 ratio would be
                 represented as 4, while a 6:5 ratio is 1.2. Must be greater than or equal to 1 (or 1:1). Defaults to 4.
             min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
                 To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
@@ -27,7 +27,7 @@ class Undersampler(BaseSampler):
                 Must be between 0 and 0.5, inclusive. Defaults to 0.1.
             random_seed (int): The seed to use for random sampling. Defaults to 0.
         """
-        parameters = {"balanced_ratio": balanced_ratio,
+        parameters = {"sampling_ratio": sampling_ratio,
                       "min_samples": min_samples,
                       "min_percentage": min_percentage}
         parameters.update(kwargs)

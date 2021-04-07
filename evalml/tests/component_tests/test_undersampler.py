@@ -7,7 +7,7 @@ from evalml.pipelines.components import Undersampler
 
 def test_init():
     parameters = {
-        "balanced_ratio": 1,
+        "sampling_ratio": 1,
         "min_samples": 1,
         "min_percentage": 0.5
     }
@@ -53,14 +53,14 @@ def test_undersample_imbalanced(data_type, make_data_type):
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    balanced_ratio = 4
-    undersampler = Undersampler(balanced_ratio=balanced_ratio)
+    sampling_ratio = 4
+    undersampler = Undersampler(sampling_ratio=sampling_ratio)
     new_X, new_y = undersampler.fit_transform(X, y)
 
     assert len(new_X) == 750
     assert len(new_y) == 750
     value_counts = new_y.to_series().value_counts()
-    assert value_counts.values[0] / value_counts.values[1] == balanced_ratio
+    assert value_counts.values[0] / value_counts.values[1] == sampling_ratio
     pd.testing.assert_series_equal(value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False)
 
     transform_X, transform_y = undersampler.transform(X, y)
