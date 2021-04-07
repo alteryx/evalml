@@ -390,6 +390,7 @@ class ComponentGraph:
                                         for key, val in component_class.parameters.items()])  # noqa: W605
                 label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape='record', label=label)
+        # TODO figure out how to display state edges. Would be nice to use dotted lines
         edges = self._get_edges(self.component_dict)
         graph.edges(edges)
         return graph
