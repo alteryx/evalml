@@ -103,6 +103,7 @@ def label_encoder_data_str():
     y = y.apply(lambda x: alpha[x % len(alpha)])
     return X, y
 
+
 @pytest.mark.parametrize("dtype", ['pd', 'ww'])
 def test_label_encoder_pass_state(dtype, label_encoder_data_str):
     X, y = label_encoder_data_str
