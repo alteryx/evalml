@@ -122,7 +122,8 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        return self._fit_transform_features_helper(True, X, y)
+        final_component_inputs, _ = self._fit_transform_features_helper(True, X, y)
+        return final_component_inputs
 
     def compute_final_component_features(self, X, y=None):
         """Transform all components save the final one, and gathers the data from any number of parents
@@ -135,7 +136,8 @@ class ComponentGraph:
         Returns:
             ww.DataTable: Transformed values.
         """
-        return self._fit_transform_features_helper(False, X, y)
+        final_component_inputs, _ = self._fit_transform_features_helper(False, X, y)[0]
+        return final_component_inputs
 
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
         """Helper function that transforms the input data based on the component graph components.
@@ -146,24 +148,39 @@ class ComponentGraph:
             y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            ww.DataTable: Transformed values.
+            ww.DataTable, ww.DataColumn: Transformed values, and the outputted target.
         """
         if len(self.compute_order) <= 1:
             return infer_feature_types(X)
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
-        final_component_inputs = []
-        for parent in self.get_parents(self.compute_order[-1]):
-            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, ww.DataColumn):
-                parent_output = parent_output.to_series()
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = infer_feature_types(parent_output)
-            if parent_output is not None:
-                final_component_inputs.append(parent_output)
-        concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
+        final_component_inputs, final_component_target = self._compute_inputs(X, y, self.compute_order[-1], component_outputs)
         if needs_fitting:
-            self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
-        return infer_feature_types(concatted)
+            self.input_feature_names.update({self.compute_order[-1]: list(final_component_inputs.columns)})
+        return final_component_inputs, final_component_target
+
+    def _compute_inputs(self, X, y, component_name, output_cache):
+        x_inputs = []
+        y_input = None
+        for parent_input in self.get_parents(component_name):
+            parent_input_type = self._component_output_type(parent_input)
+            if 'x' in parent_input_type:
+                # if the '.x' name is not found, this could be an estimator with no qualifier. if so, provide y as input feature.
+                parent_x = output_cache.get(parent_input,
+                                            output_cache.get(f'{parent_input}.x',
+                                                             output_cache.get(f'{parent_input}.y')))
+                if isinstance(parent_x, ww.DataTable):
+                    parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
+                elif isinstance(parent_x, ww.DataColumn):
+                    parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
+                x_inputs.append(parent_x)
+            if 'y' in parent_input_type:
+                if y_input is not None:
+                    raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
+                # don't error here if a y input isn't found; allow components to decide whether to error if y is None.
+                if parent_input in output_cache:
+                    y_input = output_cache[parent_input]
+        input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
+        return input_x, input_y
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -231,27 +248,7 @@ class ComponentGraph:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError('All components must be instantiated before fitting or predicting')
-            x_inputs = []
-            y_input = None
-            for parent_input in self.get_parents(component_name):
-                parent_input_type = self._component_output_type(parent_input)
-                if 'x' in parent_input_type:
-                    # if the '.x' name is not found, this could be an estimator with no qualifier. if so, provide y as input feature.
-                    parent_x = output_cache.get(parent_input,
-                                                output_cache.get(f'{parent_input}.x',
-                                                                 output_cache.get(f'{parent_input}.y')))
-                    if isinstance(parent_x, ww.DataTable):
-                        parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
-                    elif isinstance(parent_x, ww.DataColumn):
-                        parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
-                    x_inputs.append(parent_x)
-                if 'y' in parent_input_type:
-                    if y_input is not None:
-                        raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
-                    # don't error here if a y input isn't found; allow components to decide whether to error if y is None.
-                    if parent_input in output_cache:
-                        y_input = output_cache[parent_input]
-            input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
+            input_x, input_y = self._compute_inputs(X, y, component_name, output_cache)
             self.input_feature_names.update({component_name: list(input_x.columns)})
             kwargs = dict()
             component_state_parents = self._state_parents.get(component_name, [])
