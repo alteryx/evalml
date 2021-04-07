@@ -1,9 +1,13 @@
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder as SkLabelEncoder
 import woodwork as ww
+from sklearn.preprocessing import LabelEncoder as SkLabelEncoder
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import _convert_woodwork_types_wrapper, _retain_custom_types_and_initalize_woodwork, infer_feature_types
+from evalml.utils import (
+    _convert_woodwork_types_wrapper,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
+)
 
 
 class LabelEncoder(Transformer):
