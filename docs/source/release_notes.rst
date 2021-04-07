@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Removed ``hyperparameter_ranges`` from Undersampler :pr:``
+        * Removed ``hyperparameter_ranges`` from Undersampler :pr:`2113`
     * Documentation Changes
     * Testing Changes
 
