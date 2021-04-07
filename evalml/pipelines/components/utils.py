@@ -268,13 +268,17 @@ def make_balancing_dictionary(y, sampling_ratio):
     otherwise, we don't want to sample at all, and we leave the data as is.
 
     Arguments:
-        y (ww.DataColumn): Target data
+        y (pd.Series): Target data
         sampling_ratio (float): The balanced ratio we want the samples to meet
 
     Returns:
         Dictionary where keys are the classes, and the corresponding values are the counts of samples
         for each class that will satisfy sampling_ratio.
     """
+    if sampling_ratio <= 0 or sampling_ratio > 1:
+        raise ValueError("Sampling ratio must be in range (0, 1], received {}".format(sampling_ratio))
+    if len(y) == 0:
+        raise ValueError("Target data must not be empty")
     value_counts = y.value_counts()
     ratios = value_counts / value_counts.values[0]
     class_dic = {}
