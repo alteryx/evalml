@@ -197,14 +197,17 @@ class ComponentGraph:
         outputs = self._compute_features(self.compute_order, X)
         return infer_feature_types(outputs.get(f'{final_component}.x'))
 
-    @staticmethod
-    def _component_output_type(component_name):
+    def _component_output_type(self, component_name):
         if component_name.endswith('.x'):
             return {'x'}
         if component_name.endswith('.y'):
             return {'y'}
         if component_name.endswith('.state'):
             return {'state'}
+        component_instance = self.get_component(component_name)
+        # if name is an estimator with no modifications, provide predictions as an input feature
+        if isinstance(component_instance, Estimator):
+            return {'x'}
         return {'x', 'y'}
 
     def _compute_features(self, component_list, X, y=None, fit=False):
@@ -233,7 +236,10 @@ class ComponentGraph:
             for parent_input in self.get_parents(component_name):
                 parent_input_type = self._component_output_type(parent_input)
                 if 'x' in parent_input_type:
-                    parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
+                    # if the '.x' name is not found, this could be an estimator with no qualifier. if so, provide y as input feature.
+                    parent_x = output_cache.get(parent_input,
+                                                output_cache.get(f'{parent_input}.x',
+                                                                 output_cache.get(f'{parent_input}.y')))
                     if isinstance(parent_x, ww.DataTable):
                         parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
                     elif isinstance(parent_x, ww.DataColumn):
