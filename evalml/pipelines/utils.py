@@ -26,6 +26,8 @@ from evalml.pipelines.components import (  # noqa: F401
     DropNullColumns,
     Estimator,
     Imputer,
+    LabelDecoder,
+    LabelEncoder,
     OneHotEncoder,
     RandomForestClassifier,
     StackedEnsembleClassifier,
@@ -38,6 +40,7 @@ from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_classification,
     is_time_series
 )
 from evalml.utils import get_logger, infer_feature_types
@@ -130,6 +133,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
     complete_component_graph = preprocessing_components + [estimator]
+    if is_classification(problem_type):
+        complete_component_graph = ['Label Encoder'] + complete_component_graph + ['Label Decoder']
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
