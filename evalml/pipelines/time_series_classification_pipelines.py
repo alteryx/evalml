@@ -62,8 +62,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        self._encoder.fit(y)
-        y = self._encode_targets(y)
         X_t = self._compute_features_during_fit(X, y)
         X_t = _convert_woodwork_types_wrapper(X_t.to_dataframe())
         y_shifted = y.shift(-self.gap)
@@ -116,7 +114,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        y = self._encode_targets(y)
         n_features = max(len(y), X.shape[0])
         predictions = self._predict(X, y, objective=objective, pad=False)
         predictions = _convert_woodwork_types_wrapper(predictions.to_series())
@@ -138,12 +135,15 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         X, y = self._convert_to_woodwork(X, y)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = _convert_woodwork_types_wrapper(y.to_series())
-        y = self._encode_targets(y)
         features = self.compute_estimator_features(X, y)
         features = _convert_woodwork_types_wrapper(features.to_dataframe())
         features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
         proba = self._estimator_predict_proba(features_no_nan, y_no_nan).to_dataframe()
-        proba.columns = self._encoder.classes_
+        try:
+            classes = self.classes_
+            proba.columns = classes
+        except Exception:
+            pass
         padded = pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
         return infer_feature_types(padded)
 
@@ -163,8 +163,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = self.create_objectives(objectives)
 
-        y_encoded = self._encode_targets(y)
-        y_shifted = y_encoded.shift(-self.gap)
+        y_shifted = y.shift(-self.gap)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives, time_series=True)
         if y_predicted is not None:
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())

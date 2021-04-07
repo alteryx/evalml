@@ -43,9 +43,10 @@ class ClassificationPipeline(PipelineBase):
     @property
     def classes_(self):
         """Gets the class names for the problem."""
-        if not hasattr(self._encoder, "classes_"):
+        encoder = self._component_graph.get_component('Label Encoder')._encoder
+        if not hasattr(encoder, "classes_"):
             raise AttributeError("Cannot access class names before fitting the pipeline.")
-        return self._encoder.classes_
+        return encoder.classes_
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -84,8 +85,11 @@ class ClassificationPipeline(PipelineBase):
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X).to_dataframe()
-        if hasattr(self._encoder, "classes_"):
-            proba.columns = self._encoder.classes_
+        try:
+            classes = self.classes_
+            proba.columns = classes
+        except Exception:
+            pass
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives):
