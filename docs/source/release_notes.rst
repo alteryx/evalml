@@ -20,6 +20,7 @@ Release Notes
         * Catch and suppress warnings in documentation :pr:`1991` :pr:`2097`
         * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
         * Fixed start code on README :pr:`2108`
+        * Fixed ``conf.py`` file :pr:`2112`
     * Testing Changes
 
 
