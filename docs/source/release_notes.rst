@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added Oversampler transformer component to EvalML :pr:`2079`
     * Fixes
     * Changes
     * Documentation Changes
@@ -19,7 +20,6 @@ Release Notes
         * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
         * Added sensitivity at low alert rates as an objective :pr:`2001`
         * Added ``Undersampler`` transformer component :pr:`2030`
-        * Added Oversampler transformer component to EvalML :pr:`2079`
     * Fixes
         * Updated Engine's ``train_batch`` to apply undersampling :pr:`2038`
         * Fixed bug in where Time Series Classification pipelines were not encoding targets in ``predict`` and ``predict_proba`` :pr:`2040`
