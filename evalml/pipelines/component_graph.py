@@ -209,6 +209,8 @@ class ComponentGraph:
                     parent_input_type = 'x'
                 if parent_input.endswith('.y'):
                     parent_input_type = 'y'
+                if parent_input.endswith('.state'):
+                    parent_input_type = 'state'
                 if parent_input_type in ['both', 'x']:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
                     if isinstance(parent_x, ww.DataTable):
@@ -228,11 +230,6 @@ class ComponentGraph:
             if len(component_refs):
                 kwargs["dependent_components"] = component_refs
 
-            component_output_type = 'both'
-            if component_name.endswith('.x'):
-                component_output_type = 'x'
-            if component_name.endswith('.y'):
-                component_output_type = 'y'
             output_x = None
             output_y = None
             if isinstance(component_instance, Transformer):
@@ -252,14 +249,10 @@ class ComponentGraph:
                     output_y = component_instance.predict(input_x)
                 else:
                     output_y = None
-                output_cache[component_name] = output_y
-            if component_output_type == 'both':
+            if output_x is not None:
                 output_cache[f"{component_name}.x"] = output_x
+            if output_y is not None:
                 output_cache[f"{component_name}.y"] = output_y
-            elif component_output_type == 'x':
-                output_cache[f"{component_name}"] = output_x
-            elif component_output_type == 'y':
-                output_cache[f"{component_name}"] = output_y
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):
