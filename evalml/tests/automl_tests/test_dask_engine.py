@@ -13,9 +13,10 @@ from evalml.automl.engine.engine_base import (
 )
 from evalml.automl.engine.sequential_engine import SequentialEngine
 from evalml.pipelines.pipeline_base import PipelineBase
-from evalml.tests.automl_tests.dask_testing import (
+from evalml.tests.automl_tests.dask_test_utils import (
     TestBaselinePipeline,
     TestLRCPipeline,
+    TestPipelineSlow,
     TestSVMPipeline,
     automl_data
 )
@@ -211,6 +212,18 @@ class TestDaskEngine(unittest.TestCase):
         # Check there are the proper number of pipelines and all their scores are same.
         assert len(par_eval_results) == len(pipelines)
         assert set(par_scores) == set(seq_scores)
+
+    def test_cancel_job(self):
+        """ Test that training a single pipeline using the parallel engine produces the
+                same results as simply running the train_pipeline function. """
+        X, y = self.X_y_binary
+        engine = DaskEngine(client=self.client)
+        pipeline = TestPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
+
+        # Verify that engine fits a pipeline
+        pipeline_future = engine.submit_training_job(X=X, y=y, automl_config=automl_data, pipeline=pipeline)
+        pipeline_future.cancel()
+        assert pipeline_future.is_cancelled
 
     @classmethod
     def tearDownClass(cls) -> None:
