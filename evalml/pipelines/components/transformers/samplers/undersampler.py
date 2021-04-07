@@ -1,5 +1,4 @@
 import pandas as pd
-from skopt.space import Integer, Real
 
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler
