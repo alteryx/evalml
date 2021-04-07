@@ -325,9 +325,6 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
 
     precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
 
-    if is_classification(pipeline.problem_type):
-        y = pipeline._encode_targets(y)
-
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
             preds = pipeline.estimator.predict_proba(features)

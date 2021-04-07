@@ -133,7 +133,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
                 y_pred = pipeline.predict_proba(input_features).to_dataframe()
                 y_pred_values = pipeline.predict(input_features).to_series()
             y_true_no_nan, y_pred_no_nan, y_pred_values_no_nan = drop_rows_with_nans(y_true, y_pred, y_pred_values)
-            errors = metric(pipeline._encode_targets(y_true_no_nan), y_pred_no_nan)
+            errors = metric(y_true_no_nan, y_pred_no_nan)
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])
         raise PipelineScoreError(exceptions={metric.__name__: (e, tb)}, scored_successfully={})

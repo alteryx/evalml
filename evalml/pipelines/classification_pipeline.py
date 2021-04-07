@@ -106,7 +106,6 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y.to_series())
         objectives = self.create_objectives(objectives)
-        y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         if y_predicted is not None:
             y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series())
