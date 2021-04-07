@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.pipelines.components.transformers import Transformer
 
 
