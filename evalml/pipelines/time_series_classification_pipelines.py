@@ -20,7 +20,7 @@ from evalml.utils import (
 class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     """Pipeline base class for time series classifcation problems."""
 
-    def __init__(self, parameters, random_seed=0):
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
         Required Class Variables:
@@ -39,7 +39,9 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        super().__init__(parameters, random_seed)
+        self._component_graph = component_graph
+        self.component_graph = component_graph
+        super().__init__(component_graph, custom_name, parameters, custom_hyperparameters, random_seed=random_seed)
 
     @staticmethod
     def _convert_to_woodwork(X, y):

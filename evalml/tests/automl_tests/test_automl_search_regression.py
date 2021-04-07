@@ -153,9 +153,10 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(X_y_regression):
 @patch('evalml.pipelines.RegressionPipeline.fit')
 def test_automl_allowed_pipelines_specified_allowed_pipelines(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=None)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', 
+    allowed_pipelines=[dummy_regression_pipeline_class()], allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
-    expected_pipelines = [dummy_regression_pipeline_class]
+    expected_pipelines = [dummy_regression_pipeline_class()]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
     assert automl.allowed_model_families == [ModelFamily.NONE]
@@ -199,7 +200,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified(mock_fit, mock
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.REGRESSION) for estimator in get_estimators(ProblemTypes.REGRESSION, model_families=None)]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -209,11 +210,11 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified(mock_fit, mock
 @patch('evalml.pipelines.RegressionPipeline.fit')
 def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression, assert_allowed_pipelines_equal_helper):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class()], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
-    expected_pipelines = [dummy_regression_pipeline_class]
+    expected_pipelines = [dummy_regression_pipeline_class()]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -225,7 +226,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
     X, y = X_y_regression
     mock_score.return_value = {'R2': 1.0}
 
-    allowed_pipelines = [dummy_regression_pipeline_class]
+    allowed_pipelines = [dummy_regression_pipeline_class()]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
@@ -239,7 +240,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
 def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
 
-    allowed_pipelines = [nonlinear_regression_pipeline_class]
+    allowed_pipelines = [nonlinear_regression_pipeline_class()]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines, n_jobs=1)
@@ -247,7 +248,7 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
 
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class
+    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class #TODO: why has this not changed?
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
@@ -263,7 +264,7 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:
-            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline
+            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline(parameters={'Time Series Baseline Estimator':{'gap': 0, 'max_delay': 0}, 'pipeline':{'gap': 0, 'max_delay': 0}})
             continue
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration

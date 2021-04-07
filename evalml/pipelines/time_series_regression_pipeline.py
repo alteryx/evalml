@@ -16,7 +16,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
-    def __init__(self, parameters, random_seed=0):
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 
         Required Class Variables:
@@ -35,7 +35,10 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        super().__init__(parameters, random_seed=random_seed)
+        self._component_graph = component_graph
+        self.component_graph = component_graph
+
+        super().__init__(component_graph, custom_name, parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)
 
     def fit(self, X, y):
         """Fit a time series regression pipeline.

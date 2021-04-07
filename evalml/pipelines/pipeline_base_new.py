@@ -92,6 +92,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._is_fitted = False
         self._pipeline_params = parameters.get("pipeline", {})
         self.name = self.summary()
+        self.component_graph = self._component_graph
 
     def summary(cls):
         """Returns a short summary of the pipeline structure, describing the list of components used.
@@ -496,10 +497,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         random_seed_eq = self.random_seed == other.random_seed
         if not random_seed_eq:
             return False
-        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
+        attributes_to_check = ['parameters', '_is_fitted', 'input_feature_names', 'input_target_name']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
+        if self.component_graph.component_dict != other.component_graph.component_dict: # TODO
+            return False
         return True
 
     def __str__(self):

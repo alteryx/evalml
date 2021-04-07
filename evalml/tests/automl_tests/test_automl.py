@@ -362,7 +362,7 @@ def test_automl_str_no_param_search(X_y_binary):
             assert value in str_rep
     assert "Search Results" not in str_rep
 
-
+# TODO
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
@@ -371,13 +371,19 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
 
     class MockFeatureSelectionPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-
+        def __init__(self, parameters):
+            return super().__init__(self.component_graph, None, parameters)
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+        def clone(self):
+            return self.__class__(self.parameters)
         def fit(self, X, y):
             """Mock fit, noop"""
 
-    allowed_pipelines = [MockFeatureSelectionPipeline]
+    allowed_pipelines = [MockFeatureSelectionPipeline({})]
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2, start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
+    start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
     automl.search()
 
     assert start_iteration_callback.call_count == 2

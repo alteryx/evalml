@@ -137,6 +137,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
+    parameters = hyperparameters or {}
 
     # class GeneratedPipeline(base_class):
     #     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
@@ -147,7 +148,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     #         return super().__init__(self.component_graph, self.name, parameters, random_seed=random_seed)
 
     # return GeneratedPipeline
-    return base_class(complete_component_graph, name, {}, custom_hyperparameters, 0)
+    # custom_hyperparameters mixed with parameters :grimace
+    return base_class(complete_component_graph, name, parameters, custom_hyperparameters, 0)
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):

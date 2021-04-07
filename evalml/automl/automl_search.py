@@ -266,11 +266,17 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
+        if len(self.problem_configuration):
+            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
+        else:
+            pipeline_params = self.pipeline_parameters
+
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+            # import pdb; pdb.set_trace()
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         check_all_pipeline_names_unique(self.allowed_pipelines)
@@ -323,10 +329,7 @@ class AutoMLSearch:
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
-        if len(self.problem_configuration):
-            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
-        else:
-            pipeline_params = self.pipeline_parameters
+
 
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
@@ -620,7 +623,7 @@ class AutoMLSearch:
                               ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = pipeline_class(None, None, parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+            baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                                               "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         self._engine.evaluate_batch([baseline])
 
