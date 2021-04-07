@@ -395,13 +395,17 @@ class ComponentGraph:
         return graph
 
     @staticmethod
-    def _get_edges(component_dict):
+    def _get_edges(component_dict, include_state_edges=False):
         edges = []
         for component_name, component_info in component_dict.items():
             if len(component_info) > 1:
                 for parent in component_info[1:]:
-                    if parent[-2:] == '.x' or parent[-2:] == '.y':
+                    if parent.endswith('.x') or parent.endswith('.y'):
                         parent = parent[:-2]
+                    if parent.endswith('.state'):
+                        if not include_state_edges:
+                            continue
+                        parent = parent[:-6]
                     edges.append((parent, component_name))
         return edges
 
