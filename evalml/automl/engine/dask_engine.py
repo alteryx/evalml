@@ -51,7 +51,9 @@ class DaskEngine(EngineBase):
         """
         data_hash = joblib.hash(X), joblib.hash(y)
         if data_hash in self.cache:
-            return self.cache[data_hash]
+            X_future, y_future = self.cache[data_hash]
+            if not (X_future.cancelled() or y_future.cancelled()):
+                return X_future, y_future
         self.cache[data_hash] = self.client.scatter([X, y], broadcast=True)
         return self.cache[data_hash]
 
