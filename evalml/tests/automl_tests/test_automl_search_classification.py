@@ -426,7 +426,7 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, 
 def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
-    allowed_pipelines=[dummy_binary_pipeline_class()], allowed_model_families=None)
+                          allowed_pipelines=[dummy_binary_pipeline_class()], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class()]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
@@ -443,8 +443,8 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, m
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_allowed_pipelines_specified_allowed_pipelines_multi(mock_fit, mock_score, dummy_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', 
-    allowed_pipelines=[dummy_multiclass_pipeline_class()], allowed_model_families=None)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass',
+                          allowed_pipelines=[dummy_multiclass_pipeline_class()], allowed_model_families=None)
     expected_pipelines = [dummy_multiclass_pipeline_class()]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
@@ -606,10 +606,13 @@ def test_categorical_hyperparam(X_y_multi):
                 'impute_strategy': Categorical(['mean', 'most_frequent'])
             }
         }
+
         def __init__(self):
             return super().__init__(self.component_graph, None, {})
+
         def new(self, parameters, random_seed):
             return self.__class__()
+
         def clone(self):
             return self.__class__()
 
@@ -623,7 +626,7 @@ def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class
     allowed_pipelines = [nonlinear_binary_pipeline_class()]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
-    start_iteration_callback=start_iteration_callback,
+                          start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines, n_jobs=1)
     automl.search()
 
@@ -637,8 +640,8 @@ def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_m
 
     allowed_pipelines = [nonlinear_multiclass_pipeline_class()]
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_iterations=5, 
-    start_iteration_callback=start_iteration_callback,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_iterations=5,
+                          start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines, n_jobs=1)
     automl.search()
 
@@ -657,12 +660,12 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
                                                     problem_type, X_y_binary, X_y_multi):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
-        baseline = TimeSeriesBaselineBinaryPipeline(parameters={'Time Series Baseline Estimator':{'gap': 0, 'max_delay': 0}, 'pipeline':{'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesBaselineBinaryPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_binary_score.return_value = {"Log Loss Binary": 0.2}
         problem_type = 'time series binary'
     else:
         X, y = X_y_multi
-        baseline = TimeSeriesBaselineMulticlassPipeline(parameters={'Time Series Baseline Estimator':{'gap': 0, 'max_delay': 0}, 'pipeline':{'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesBaselineMulticlassPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
         problem_type = 'time series multiclass'
 

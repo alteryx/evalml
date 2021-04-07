@@ -71,10 +71,13 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
 
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
+
         def __init__(self):
             return super().__init__(self.component_graph, None, {})
+
         def new(self, parameters, random_seed):
             return self.__class__()
+
         def clone(self):
             return self.__class__()
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
@@ -124,10 +127,13 @@ def test_predict_pad_nans(mock_decode_targets,
 
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
+
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
+
         def new(self, parameters, random_seed):
             return self.__class__(parameters)
+
         def clone(self):
             return self.__class__(self.parameters)
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
@@ -191,10 +197,13 @@ def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
 
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
+
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
+
         def new(self, parameters, random_seed):
             return self.__class__(parameters)
+
         def clone(self):
             return self.__class__(self.parameters)
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
@@ -250,10 +259,13 @@ def test_classification_pipeline_encodes_targets(mock_encode, mock_decode,
 
     class MyTsPipeline(pipeline_class):
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
+
         def new(self, parameters, random_seed):
             return self.__class__(parameters)
+
         def clone(self):
             return self.__class__(self.parameters)
     pl = MyTsPipeline({"Delayed Feature Transformer": {"gap": 0, "max_delay": 1},

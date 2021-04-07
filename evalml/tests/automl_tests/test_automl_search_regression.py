@@ -153,8 +153,8 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(X_y_regression):
 @patch('evalml.pipelines.RegressionPipeline.fit')
 def test_automl_allowed_pipelines_specified_allowed_pipelines(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', 
-    allowed_pipelines=[dummy_regression_pipeline_class()], allowed_model_families=None)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression',
+                          allowed_pipelines=[dummy_regression_pipeline_class()], allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_regression_pipeline_class()]
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -248,7 +248,7 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
 
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class #TODO: why has this not changed?
+    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class  # TODO: why has this not changed?
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
@@ -264,7 +264,7 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:
-            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline(parameters={'Time Series Baseline Estimator':{'gap': 0, 'max_delay': 0}, 'pipeline':{'gap': 0, 'max_delay': 0}})
+            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
             continue
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration

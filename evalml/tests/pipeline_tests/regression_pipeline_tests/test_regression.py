@@ -14,7 +14,7 @@ def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipel
     if target_type == "bool":
         X, y = load_breast_cancer(return_pandas=True)
         y = y.map({"malignant": False, "benign": True})
-    mock_regression_pipeline = dummy_regression_pipeline_class(parameters={})
+    mock_regression_pipeline = dummy_regression_pipeline_class({})
     with pytest.raises(ValueError, match="Regression pipeline can only handle numeric target data"):
         mock_regression_pipeline.fit(X, y)
 
@@ -31,10 +31,12 @@ def test_custom_indices():
         component_graph = ['Imputer', 'One Hot Encoder', 'Linear Regressor']
         custom_name = "My Pipeline"
 
+        def __init__(self):
+            return super().__init__(self.component_graph, "My Pipeline", {})
     X = pd.DataFrame({"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]})
     y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0], index=[7, 2, 1, 4, 5, 3, 6, 8])
 
     x1, x2, y1, y2 = split_data(X, y, problem_type='regression')
-    pipeline = MyPipeline({})
+    pipeline = MyPipeline()
     pipeline.fit(x2, y2)
     assert not pd.isnull(pipeline.predict(X).to_series()).any()

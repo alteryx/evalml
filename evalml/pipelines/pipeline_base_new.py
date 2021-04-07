@@ -501,7 +501,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
-        if self.component_graph.component_dict != other.component_graph.component_dict: # TODO
+        if self.component_graph.component_dict != other.component_graph.component_dict:  # TODO
             return False
         return True
 

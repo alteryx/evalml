@@ -13,11 +13,12 @@ class TimeSeriesBaselineRegressionPipeline(TimeSeriesRegressionPipeline):
     def __init__(self, parameters, custom_hyperparameters=None, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, parameters)
 
-
     def new(self, parameters, random_seed):
         return self.__class__(self.component_graph, self.custom_name, parameters)
+
     def clone(self):
         return self.__class__(self.component_graph, self.custom_name, parameters)
+
 
 class TimeSeriesBaselineBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
     """Baseline Pipeline for time series binary classification problems."""
@@ -26,8 +27,10 @@ class TimeSeriesBaselineBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
 
     def __init__(self, parameters, custom_hyperparameters=None, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, parameters)
+
     def new(self, parameters, random_seed):
         return self.__class__(self.component_graph, self.custom_name, parameters)
+
     def clone(self):
         return self.__class__(self.component_graph, self.custom_name, parameters)
 
@@ -39,7 +42,9 @@ class TimeSeriesBaselineMulticlassPipeline(TimeSeriesMulticlassClassificationPip
 
     def __init__(self, parameters, custom_hyperparameters=None, random_seed=0):
         return super().__init__(self.component_graph, self.custom_name, parameters)
+
     def new(self, parameters, random_seed):
         return self.__class__(self.component_graph, self.custom_name, parameters)
+
     def clone(self):
         return self.__class__(self.component_graph, self.custom_name, parameters)

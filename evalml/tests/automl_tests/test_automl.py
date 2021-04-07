@@ -371,19 +371,23 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
 
     class MockFeatureSelectionPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
+
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters)
+
         def clone(self):
             return self.__class__(self.parameters)
+
         def fit(self, X, y):
             """Mock fit, noop"""
 
     allowed_pipelines = [MockFeatureSelectionPipeline({})]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
-    start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
+                          start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
     automl.search()
 
     assert start_iteration_callback.call_count == 2
@@ -427,7 +431,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     mock_algo_init.side_effect = Exception('mock algo init')
     X, y = X_y_binary
 
-    allowed_pipelines = [dummy_binary_pipeline_class]
+    allowed_pipelines = [dummy_binary_pipeline_class()]
     with pytest.raises(Exception, match='mock algo init'):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
     assert mock_algo_init.call_count == 1
@@ -2266,11 +2270,11 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     # otherwise, the model is a different model
     # the ensembling_num formula is taken from AutoMLSearch
     if best_pipeline == -1:
-        assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
+        assert automl.best_pipeline.model_family() == ModelFamily.ENSEMBLE
         assert len(mock_fit.call_args_list[-1][0][0]) == len(ensembling_indices)
         assert len(mock_fit.call_args_list[-1][0][1]) == len(ensembling_indices)
     else:
-        assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
+        assert automl.best_pipeline.model_family() != ModelFamily.ENSEMBLE
         assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
         assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
 
@@ -2377,30 +2381,74 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
         custom_name = "Custom Pipeline"
         component_graph = ["Imputer", "Random Forest Classifier"]
 
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
+
+        def new(self, parameters, random_seed):
+            return self.__class__()
+
+        def clone(self):
+            return self.__class__()
+
     class MyPipeline2(BinaryClassificationPipeline):
         custom_name = "Custom Pipeline"
         component_graph = ["Imputer", "Logistic Regression Classifier"]
+
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
+
+        def new(self, parameters, random_seed):
+            return self.__class__()
+
+        def clone(self):
+            return self.__class__()
 
     class MyPipeline3(BinaryClassificationPipeline):
         custom_name = "My Pipeline 3"
         component_graph = ["Logistic Regression Classifier"]
 
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
+
+        def new(self, parameters, random_seed):
+            return self.__class__()
+
+        def clone(self):
+            return self.__class__()
+
     class MyPipeline4(BinaryClassificationPipeline):
         custom_name = "My Pipeline 3"
         component_graph = ["Random Forest Classifier"]
+
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
+
+        def new(self, parameters, random_seed):
+            return self.__class__()
+
+        def clone(self):
+            return self.__class__()
 
     class OtherPipeline(BinaryClassificationPipeline):
         custom_name = "Other Pipeline"
         component_graph = ["Extra Trees Classifier"]
 
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
+
+        def new(self, parameters, random_seed):
+            return self.__class__()
+
+        def clone(self):
+            return self.__class__()
     with pytest.raises(ValueError,
                        match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated."):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2, MyPipeline3])
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1(), MyPipeline2(), MyPipeline3()])
 
     with pytest.raises(ValueError,
                        match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated."):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2,
-                                                                     MyPipeline3, MyPipeline4, OtherPipeline])
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1(), MyPipeline2(),
+                                                                     MyPipeline3(), MyPipeline4(), OtherPipeline()])
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
