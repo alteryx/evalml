@@ -1,9 +1,6 @@
-import copy
-
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler
 )
-from evalml.pipelines.components.utils import make_balancing_dictionary
 from evalml.utils import import_or_raise
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -46,22 +43,7 @@ class SMOTESampler(BaseSampler):
             self
         """
         super().fit(X, y)
-        _, _, _, y_pd = self._prepare_data(X, y)
-        sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
-        if self.parameters['sampling_ratio_dict'] is not None and len(self.parameters['sampling_ratio_dict']):
-            # dictionary provided, which takes priority
-            sampler_params['sampling_strategy'] = self.parameters['sampling_ratio_dict']
-        else:
-            sampling_ratio = self.parameters['sampling_ratio']
-            # no dictionary provided. We pass the float if we have a binary situation
-            if len(y_pd.value_counts()) == 2:
-                sampler_params['sampling_strategy'] = sampling_ratio if sampling_ratio != 1 else 'auto'
-            else:
-                # otherwise, we make the dictionary
-                dic = make_balancing_dictionary(y, sampling_ratio)
-                sampler_params['sampling_strategy'] = dic
-        sampler = self.im.SMOTE(**sampler_params, random_state=self.random_seed)
-        self._component_obj = sampler
+        super()._initialize_oversampler(X, y, self.im.SMOTE)
 
     def fit_transform(self, X, y):
         """Fit and transform the data using the undersampler. Used during training of the pipeline
@@ -90,7 +72,8 @@ class SMOTENCSampler(BaseSampler):
 
         Arguments:
             categorical_features (list): A list of indices of the categorical columns, or a list of booleans for each column,
-                where True represents a categorical column and False represents a numeric. Defaults empty list.
+                where True represents a categorical column and False represents a numeric. There must exist a mix of both categorical and numeric columns.
+                Defaults to an empty list.
             sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
                 of the minority to majority class after oversampling. If the targets are multiclass, will create a dictionary using this ratio. Defaults to 0.25.
             sampling_ratio_dict (dict): Dictionary which has keys corresponding to each class, and the values are the number of samples we want to oversample to for each class key.
@@ -121,22 +104,13 @@ class SMOTENCSampler(BaseSampler):
             self
         """
         super().fit(X, y)
-        _, _, _, y_pd = self._prepare_data(X, y)
-        sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
-        if self.parameters['sampling_ratio_dict'] is not None and len(self.parameters['sampling_ratio_dict']):
-            # dictionary provided, which takes priority
-            sampler_params['sampling_strategy'] = self.parameters['sampling_ratio_dict']
-        else:
-            sampling_ratio = self.parameters['sampling_ratio']
-            # no dictionary provided. We pass the float if we have a binary situation
-            if len(y_pd.value_counts()) == 2:
-                sampler_params['sampling_strategy'] = sampling_ratio if sampling_ratio != 1 else 'auto'
-            else:
-                # otherwise, we make the dictionary
-                dic = make_balancing_dictionary(y, sampling_ratio)
-                sampler_params['sampling_strategy'] = dic
-        sampler = self.im.SMOTENC(**sampler_params, random_state=self.random_seed)
-        self._component_obj = sampler
+        # Ensure that the data has a mix of both numeric and categorical features
+        cat_feat = self.parameters['categorical_features']
+        all_unique_indices = len(set(cat_feat)) == len(cat_feat)
+        same_length = len(cat_feat) == X.shape[1]
+        if len(cat_feat) == 0 or (same_length and (all(cat_feat) or all_unique_indices)) or not any(cat_feat):
+            raise ValueError("The length of categorical_features must be longer than 0, but the dataset cannot all be categorical features!")
+        super()._initialize_oversampler(X, y, self.im.SMOTENC)
 
     def fit_transform(self, X, y):
         """Resample the data
@@ -186,22 +160,7 @@ class SMOTENSampler(BaseSampler):
             self
         """
         super().fit(X, y)
-        _, _, _, y_pd = self._prepare_data(X, y)
-        sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
-        if self.parameters['sampling_ratio_dict'] is not None and len(self.parameters['sampling_ratio_dict']):
-            # dictionary provided, which takes priority
-            sampler_params['sampling_strategy'] = self.parameters['sampling_ratio_dict']
-        else:
-            sampling_ratio = self.parameters['sampling_ratio']
-            # no dictionary provided. We pass the float if we have a binary situation
-            if len(y_pd.value_counts()) == 2:
-                sampler_params['sampling_strategy'] = sampling_ratio if sampling_ratio != 1 else 'auto'
-            else:
-                # otherwise, we make the dictionary
-                dic = make_balancing_dictionary(y, sampling_ratio)
-                sampler_params['sampling_strategy'] = dic
-        sampler = self.im.SMOTEN(**sampler_params, random_state=self.random_seed)
-        self._component_obj = sampler
+        super()._initialize_oversampler(X, y, self.im.SMOTEN)
 
     def fit_transform(self, X, y):
         """Resample the data

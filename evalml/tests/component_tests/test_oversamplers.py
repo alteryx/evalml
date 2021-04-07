@@ -9,7 +9,7 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.components.utils import make_balancing_dictionary
 
-pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+im = pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
 
 
 binary = pd.Series([0] * 800 + [1] * 200)
@@ -42,6 +42,23 @@ def test_init(sampler):
         parameters['categorical_features'] = [0]
     oversampler = sampler(**parameters)
     assert oversampler.parameters == parameters
+
+
+@pytest.mark.parametrize("cat_cols,fails", [([], True),
+                                            ([False], True),
+                                            ([i for i in range(20)], True),
+                                            ([True for i in range(20)], True),
+                                            ([1, 2, 3], False),
+                                            ([True for i in range(19)] + [False], False),
+                                            ([0, 1, 9], False)])
+def test_smotenc_fails(cat_cols, fails, X_y_binary):
+    # X has 20 columns
+    X, y = X_y_binary
+    if fails:
+        with pytest.raises(ValueError, match='categorical_features must be longer'):
+            SMOTENCSampler(sampling_ratio=1, categorical_features=cat_cols).fit_transform(X, y)
+    else:
+        SMOTENCSampler(sampling_ratio=1, categorical_features=cat_cols).fit_transform(X, y)
 
 
 @pytest.mark.parametrize("sampler", [SMOTESampler(sampling_ratio=1),
@@ -203,3 +220,38 @@ def test_sampler_dic_overrides_ratio(sampler):
     new_X, new_y = oversampler.fit_transform(X, y)
     assert len(new_X) == sum(goal_value_dic.values())
     assert len(new_y) == sum(goal_value_dic.values())
+
+
+@pytest.mark.parametrize("component_sampler,imblearn_sampler",
+                         [(SMOTESampler, im.SMOTE),
+                          (SMOTENCSampler, im.SMOTENC),
+                          (SMOTENSampler, im.SMOTEN)])
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+def test_samplers_perform_equally(problem_type, component_sampler, imblearn_sampler, X_y_binary, X_y_multi):
+    if problem_type == 'binary':
+        X, _ = X_y_binary
+        y = np.array([0] * 90 + [1] * 10)
+        sampling_ratio = 0.5
+        sampling_dic = {'sampling_ratio': sampling_ratio}
+        expected_y = np.array([0] * 90 + [1] * 45)
+    else:
+        X, _ = X_y_multi
+        y = np.array([0] * 70 + [1] * 20 + [2] * 10)
+        sampling_ratio = {0: 70, 1: 40, 2: 20}
+        sampling_dic = {'sampling_ratio_dict': sampling_ratio}
+        expected_y = np.array([0] * 70 + [1] * 40 + [2] * 20)
+
+    random_seed = 1
+    if component_sampler != SMOTENCSampler:
+        component = component_sampler(**sampling_dic, random_seed=random_seed)
+        imb_sampler = imblearn_sampler(sampling_strategy=sampling_ratio, random_state=random_seed)
+    else:
+        component = component_sampler(**sampling_dic, categorical_features=[1, 2, 3, 4], random_seed=random_seed)
+        imb_sampler = imblearn_sampler(sampling_strategy=sampling_ratio, categorical_features=[1, 2, 3, 4], random_state=random_seed)
+
+    X_com, y_com = component.fit_transform(X, y)
+    X_im, y_im = imb_sampler.fit_resample(X, y)
+
+    np.testing.assert_equal(X_com.to_dataframe().values, X_im)
+    np.testing.assert_equal(y_com.to_series().values, y_im)
+    np.testing.assert_equal(sorted(y_im), expected_y)
