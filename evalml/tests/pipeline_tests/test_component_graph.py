@@ -90,51 +90,6 @@ def example_graph():
     return graph
 
 
-@pytest.fixture()
-def label_encoder_data_str():
-    np.random.seed(13117)
-    # n_rows, n_cols
-    shape = (10, 3)
-    X = pd.DataFrame(np.random.randint(0, 10, shape))
-    # string target
-    repeat_factor = 2.0
-    y = pd.Series(np.arange(shape[0] / repeat_factor, dtype=int).repeat(repeat_factor))
-    alpha = "abcdefghijklmnopqrstuvwxyz"
-    y = y.apply(lambda x: alpha[x % len(alpha)])
-    return X, y
-
-
-@pytest.mark.parametrize("dtype", ['pd', 'ww'])
-def test_label_encoder_pass_state(dtype, label_encoder_data_str):
-    X, y = label_encoder_data_str
-    if dtype == 'ww':
-        y = ww.DataColumn(y, logical_type='NaturalLanguage')
-    cg = ComponentGraph(component_dict={
-        'label_encoder_0': ['Label Encoder'],
-        'rf': ['Random Forest Classifier', 'label_encoder_0.y'],
-        'label_decoder_0': ['Label Decoder', 'rf.y', 'label_encoder_0.state']
-    })
-    cg.instantiate({})
-    cg.fit(X, y)
-    predictions = cg.predict(X)
-    if dtype == 'ww':
-        pd.testing.assert_series_equal(predictions.to_series(), y.to_series())
-    else:
-        pd.testing.assert_series_equal(predictions.to_series(), y.astype('category'))
-
-
-def test_init(example_graph):
-    comp_graph = ComponentGraph()
-    assert len(comp_graph.component_dict) == 0
-
-    graph = example_graph
-    comp_graph = ComponentGraph(graph)
-    assert len(comp_graph.component_dict) == 6
-
-    expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
-    assert comp_graph.compute_order == expected_order
-
-
 def test_init_str_components():
     graph = {'Imputer': ['Imputer'],
              'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
@@ -837,3 +792,48 @@ def test_component_graph_dataset_with_target_imputer():
     component_graph.fit(X, y)
     predictions = component_graph.predict(X)
     assert not pd.isnull(predictions.to_series()).any()
+
+
+@pytest.fixture()
+def label_encoder_data_str():
+    np.random.seed(13117)
+    # n_rows, n_cols
+    shape = (10, 3)
+    X = pd.DataFrame(np.random.randint(0, 10, shape))
+    # string target
+    repeat_factor = 2.0
+    y = pd.Series(np.arange(shape[0] / repeat_factor, dtype=int).repeat(repeat_factor))
+    alpha = "abcdefghijklmnopqrstuvwxyz"
+    y = y.apply(lambda x: alpha[x % len(alpha)])
+    return X, y
+
+
+@pytest.mark.parametrize("dtype", ['pd', 'ww'])
+def test_label_encoder_pass_state(dtype, label_encoder_data_str):
+    X, y = label_encoder_data_str
+    if dtype == 'ww':
+        y = ww.DataColumn(y, logical_type='NaturalLanguage')
+    cg = ComponentGraph(component_dict={
+        'label_encoder_0': ['Label Encoder'],
+        'rf': ['Random Forest Classifier', 'label_encoder_0.y'],
+        'label_decoder_0': ['Label Decoder', 'rf.y', 'label_encoder_0.state']
+    })
+    cg.instantiate({})
+    cg.fit(X, y)
+    predictions = cg.predict(X)
+    if dtype == 'ww':
+        pd.testing.assert_series_equal(predictions.to_series(), y.to_series())
+    else:
+        pd.testing.assert_series_equal(predictions.to_series(), y.astype('category'))
+
+
+def test_init(example_graph):
+    comp_graph = ComponentGraph()
+    assert len(comp_graph.component_dict) == 0
+
+    graph = example_graph
+    comp_graph = ComponentGraph(graph)
+    assert len(comp_graph.component_dict) == 6
+
+    expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
+    assert comp_graph.compute_order == expected_order
