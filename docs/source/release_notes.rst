@@ -4,14 +4,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Removed ``hyperparameter_ranges`` from Undersampler :pr:`2113`
+        * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
-        * Renamed ``balanced_ratio`` to ``sampling_ratio`` for the ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassficationSampler``:pr:`2113`
+        * Renamed ``balanced_ratio`` to ``sampling_ratio`` for the ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, ``BalancedClassficationSampler``, and Undersampler :pr:`2113`
 
 **v0.22.0 Apr. 06, 2021**
     * Enhancements
