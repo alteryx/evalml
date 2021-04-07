@@ -204,17 +204,22 @@ class ComponentGraph:
             x_inputs = []
             y_input = None
             for parent_input in self.get_parents(component_name):
-                if parent_input[-2:] == '.y':
-                    if y_input is not None:
-                        raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
-                    y_input = output_cache[parent_input]
-                else:
+                parent_input_type = 'both'
+                if parent_input.endswith('.x'):
+                    parent_input_type = 'x'
+                if parent_input.endswith('.y'):
+                    parent_input_type = 'y'
+                if parent_input_type in ['both', 'x']:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
                     if isinstance(parent_x, ww.DataTable):
                         parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
                     elif isinstance(parent_x, ww.DataColumn):
                         parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
                     x_inputs.append(parent_x)
+                if parent_input_type in ['both', 'y']:
+                    if y_input is not None:
+                        raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
+                    y_input = output_cache[parent_input]
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
             kwargs = dict()
@@ -223,6 +228,13 @@ class ComponentGraph:
             if len(component_refs):
                 kwargs["dependent_components"] = component_refs
 
+            component_output_type = 'both'
+            if component_name.endswith('.x'):
+                component_output_type = 'x'
+            if component_name.endswith('.y'):
+                component_output_type = 'y'
+            output_x = None
+            output_y = None
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(input_x, input_y, **kwargs)
@@ -233,16 +245,21 @@ class ComponentGraph:
                 else:
                     output_x = output
                     output_y = None
-                output_cache[f"{component_name}.x"] = output_x
-                output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
                     component_instance.fit(input_x, input_y)
                 if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(input_x)
+                    output_y = component_instance.predict(input_x)
                 else:
-                    output = None
-                output_cache[component_name] = output
+                    output_y = None
+                output_cache[component_name] = output_y
+            if component_output_type == 'both':
+                output_cache[f"{component_name}.x"] = output_x
+                output_cache[f"{component_name}.y"] = output_y
+            elif component_output_type == 'x':
+                output_cache[f"{component_name}"] = output_x
+            elif component_output_type == 'y':
+                output_cache[f"{component_name}"] = output_y
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):
