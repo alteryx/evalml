@@ -3,6 +3,17 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Add ``KNeighborsClassifier`` to AutoML :pr:`2057`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.22.0 Apr. 06, 2021**
+    * Enhancements
         * Added a GitHub Action for ``linux_unit_tests``:pr:`2013`
         * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
@@ -18,8 +29,9 @@ Release Notes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
     * Documentation Changes
-        * Catch and suppress warnings in documentation :pr:`1991`
+        * Catch and suppress warnings in documentation :pr:`1991` :pr:`2097`
         * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
+        * Fixed start code on README :pr:`2108`
     * Testing Changes
 
 
