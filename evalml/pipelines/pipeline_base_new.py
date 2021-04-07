@@ -60,7 +60,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     # custom_name = None
     problem_type = None
 
-    def __init__(self, component_graph, custom_name, parameters, random_seed=0):
+    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -72,13 +72,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         custom_name = None
+        if custom_hyperparameters is not None:
+            self.custom_hyperparameters = custom_hyperparameters
         self.random_seed = random_seed
         if isinstance(component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(component_graph, random_seed=self.random_seed)
         else:
             self._component_graph = ComponentGraph(component_dict=component_graph, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
-
         self.input_feature_names = {}
         self.input_target_name = None
         self.estimator = None
@@ -90,20 +91,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._validate_estimator_problem_type()
         self._is_fitted = False
         self._pipeline_params = parameters.get("pipeline", {})
+        self.name = self.summary()
 
-
-    def name(self):
-        """Returns a name describing the pipeline.
-        By default, this will take the class name and add a space between each capitalized word (class name should be in Pascal Case). If the pipeline has a custom_name attribute, this will be returned instead.
-        """
-        return self.summary
-
-    @classproperty
     def summary(cls):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.linearized_component_graph)]
+        component_graph = [handle_component_class(component_class) for component_class in copy.copy(cls.linearized_component_graph())]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -117,13 +111,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
-    @classproperty
+    
     def linearized_component_graph(cls):
         """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
-        if isinstance(cls.component_graph, list):
-            return cls.component_graph
+        if isinstance(cls._component_graph, list):
+            return cls._component_graph
         else:
-            return [component_info[0] for component_info in cls.component_graph.values()]
+            return [component_info[0] for component_info in cls._component_graph.component_dict.values()]
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -292,22 +286,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
         return y_pred
 
-    @classproperty
     def model_family(cls):
         """Returns model family of this pipeline template"""
-        component_graph = copy.copy(cls.component_graph)
+        component_graph = copy.copy(cls._component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
         else:
-            order = ComponentGraph.generate_order(component_graph)
+            order = ComponentGraph.generate_order(component_graph.component_dict)
             final_component = order[-1]
-            return handle_component_class(component_graph[final_component][0]).model_family
+            return handle_component_class(component_graph[final_component].__class__).model_family
 
-    @classproperty
     def hyperparameters(cls):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
-        component_graph = copy.copy(cls.component_graph)
+        component_graph = copy.copy(cls._component_graph)
         if isinstance(component_graph, list):
             for component_class in component_graph:
                 component_class = handle_component_class(component_class)
@@ -316,7 +308,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     component_hyperparameters.update(cls.custom_hyperparameters.get(component_class.name, {}))
                 hyperparameter_ranges[component_class.name] = component_hyperparameters
         else:
-            for component_name, component_info in component_graph.items():
+            for component_name, component_info in component_graph.component_dict.items():
                 component_class = handle_component_class(component_info[0])
                 component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
                 if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
@@ -337,7 +329,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_parameters['pipeline'] = self._pipeline_params
         return component_parameters
 
-    @classproperty
     def default_parameters(cls):
         """Returns the default parameter dictionary for this pipeline.
 
@@ -489,7 +480,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(self.parameters, random_seed=self.random_seed)
+        # return self.__class__(self.parameters, random_seed=self.random_seed)
+        return self.__class__(self._component_graph.component_dict, self.name, self.parameters, None, self.random_seed)
+ 
+    def new(self, parameters, random_seed):
+        """Constructs a new pipeline with the same components, parameters, and random state.
+
+        Returns:
+            A new instance of this pipeline with identical components, parameters, and random state.
+        """
+        return self.__class__(component_graph=self._component_graph.component_dict, custom_name=self.name, parameters=parameters, random_seed=random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

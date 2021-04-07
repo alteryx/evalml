@@ -32,7 +32,7 @@ class SequentialEngine(EngineBase):
             pipeline = pipelines[index]
             self._pre_evaluation_callback(pipeline)
             X, y = self.X_train, self.y_train
-            if pipeline.model_family == ModelFamily.ENSEMBLE:
+            if pipeline.model_family() == ModelFamily.ENSEMBLE:
                 X, y = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
             elif self.ensembling_indices is not None:
                 training_indices = [i for i in range(len(self.X_train)) if i not in self.ensembling_indices]

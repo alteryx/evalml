@@ -62,8 +62,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-            next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_seed=self.random_seed)
-                          for pipeline_class in self.allowed_pipelines]
+            # next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_seed=self.random_seed)
+            #               for pipeline_class in self.allowed_pipelines]
+            next_batch = [pipeline.new(parameters=self._transform_parameters(pipeline, {}), random_seed=self.random_seed)
+                          for pipeline in self.allowed_pipelines]
+
 
         # One after training all pipelines one round
         elif (self.ensembling and
@@ -73,7 +76,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for pipeline_dict in self._best_pipeline_info.values():
                 pipeline_class = pipeline_dict['pipeline_class']
                 pipeline_params = pipeline_dict['parameters']
-                input_pipelines.append(pipeline_class(parameters=self._transform_parameters(pipeline_class, pipeline_params),
+                input_pipelines.append(pipeline_class.new(parameters=self._transform_parameters(pipeline_class, pipeline_params),
                                                       random_seed=self.random_seed))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_seed=self.random_seed,
@@ -87,7 +90,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
-                next_batch.append(pipeline_class(parameters=pl_parameters, random_seed=self.random_seed))
+                next_batch.append(pipeline_class.new(parameters=pl_parameters, random_seed=self.random_seed))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -112,12 +115,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             else:
                 super().add_result(score_to_minimize, pipeline, trained_pipeline_results)
         if self.batch_number == 1:
-            self._first_batch_results.append((score_to_minimize, pipeline.__class__))
-
-        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
-        if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family != ModelFamily.ENSEMBLE:
-            self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
-                                                                     'pipeline_class': pipeline.__class__,
+            self._first_batch_results.append((score_to_minimize, pipeline))
+        current_best_score = self._best_pipeline_info.get(pipeline.model_family(), {}).get('score', np.inf)
+        if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family() != ModelFamily.ENSEMBLE:
+            # TODO: can no longer use pipeline class
+            self._best_pipeline_info.update({pipeline.model_family(): {'score': score_to_minimize,
+                                                                     'pipeline_class': pipeline,
                                                                      'parameters': pipeline.parameters,
                                                                      'id': trained_pipeline_results['id']}
                                              })
@@ -127,7 +130,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
-        component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph]
+        component_graph = None
+        try:
+            component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph()]
+        except AttributeError:
+            # import pdb; pdb.set_trace()
+            print ("eh")
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
             init_params = inspect.signature(component_class.__init__).parameters

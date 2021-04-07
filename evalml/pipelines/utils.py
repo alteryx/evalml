@@ -136,16 +136,18 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
 
     hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
+    name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
 
-    class GeneratedPipeline(base_class):
-        name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-        component_graph = complete_component_graph
-        custom_hyperparameters = hyperparameters
+    # class GeneratedPipeline(base_class):
+    #     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
+    #     component_graph = complete_component_graph
+    #     custom_hyperparameters = hyperparameters
 
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, random_seed=random_seed)
+    #     def __init__(self, parameters, random_seed=0):
+    #         return super().__init__(self.component_graph, self.name, parameters, random_seed=random_seed)
 
-    return GeneratedPipeline
+    # return GeneratedPipeline
+    return base_class(complete_component_graph, name, {}, custom_hyperparameters, 0)
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):
@@ -185,10 +187,10 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
         name = pipeline_name
         component_graph = [c.__class__ for c in component_instances]
     
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+        def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
-    return TemplatedPipeline(parameters={c.name: c.parameters for c in component_instances}, random_seed=random_seed)
+    return TemplatedPipeline(None, None, {c.name: c.parameters for c in component_instances}, custom_hyperparameters=None, random_seed=random_seed)
 
 
 def generate_pipeline_code(element):

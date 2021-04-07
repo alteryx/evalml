@@ -319,8 +319,7 @@ class AutoMLSearch:
                                         should_continue_callback=self._should_continue,
                                         pre_evaluation_callback=self._pre_evaluation_callback,
                                         post_evaluation_callback=self._post_evaluation_callback)
-
-        self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
+        self.allowed_model_families = list(set([p.model_family() for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
@@ -610,7 +609,7 @@ class AutoMLSearch:
         This is the first pipeline fit during search.
         """
         if self.problem_type == ProblemTypes.BINARY:
-            baseline = ModeBaselineBinaryPipeline(parameters={})
+            baseline = ModeBaselineBinaryPipeline(None, None, parameters={})
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = ModeBaselineMulticlassPipeline(parameters={})
         elif self.problem_type == ProblemTypes.REGRESSION:
