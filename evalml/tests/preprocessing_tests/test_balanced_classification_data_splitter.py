@@ -16,11 +16,11 @@ from evalml.preprocessing.data_splitters import (
                           BalancedClassificationDataTVSplit])
 def test_data_splitter_params(splitter):
     bcs = splitter()
-    assert bcs.balanced_ratio == 4
+    assert bcs.balanced_ratio == 0.25
     assert bcs.min_samples == 100
 
-    bcs = splitter(balanced_ratio=3, min_samples=1, min_percentage=0.5)
-    assert bcs.balanced_ratio == 3
+    bcs = splitter(balanced_ratio=0.3, min_samples=1, min_percentage=0.5)
+    assert bcs.balanced_ratio == 0.3
     assert bcs.min_samples == 1
     assert bcs.min_percentage == 0.5
 
