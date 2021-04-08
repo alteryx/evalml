@@ -528,11 +528,8 @@ class AutoMLSearch:
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
             best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                if best_pipeline.model_family == ModelFamily.ENSEMBLE:
-                    X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
-                else:
-                    X_train = self.X_train
-                    y_train = self.y_train
+                X_train = self.X_train
+                y_train = self.y_train
                 if hasattr(self.data_splitter, "transform_sample"):
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
                     X_train = X_train.iloc[train_indices]
