@@ -5,6 +5,7 @@ Release Notes
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
     * Fixes
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -14,6 +15,7 @@ Release Notes
     **Breaking Changes**
         * Deleted the "errors" key from automl results :pr:`1975`
         * Deleted the ``raise_and_save_error_callback`` and the ``log_and_save_error_callback`` :pr:`1975`
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
 
 
 **v0.22.0 Apr. 06, 2021**
