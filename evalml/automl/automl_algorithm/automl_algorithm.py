@@ -33,7 +33,7 @@ class AutoMLAlgorithm(ABC):
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         for pipeline in self.allowed_pipelines:
-            self._tuners[pipeline.name] = self._tuner_class(pipeline.hyperparameters(), random_seed=self.random_seed)
+            self._tuners[pipeline.name] = self._tuner_class(pipeline.hyperparameters, random_seed=self.random_seed)
         self._pipeline_number = 0
         self._batch_number = 0
 

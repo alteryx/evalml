@@ -295,9 +295,10 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
 
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor]
+        custom_name = "Mock Regression Pipeline"
 
         def __init__(self, parameters):
-            return super().__init__(self.component_graph, None, parameters)
+            return super().__init__(self.component_graph, self.custom_name, parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters)

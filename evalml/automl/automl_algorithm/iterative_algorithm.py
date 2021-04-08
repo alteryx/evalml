@@ -115,13 +115,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 super().add_result(score_to_minimize, pipeline, trained_pipeline_results)
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline))
-        current_best_score = self._best_pipeline_info.get(pipeline.model_family(), {}).get('score', np.inf)
-        if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family() != ModelFamily.ENSEMBLE:
+        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
+        if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family != ModelFamily.ENSEMBLE:
             # TODO: can no longer use pipeline class
-            self._best_pipeline_info.update({pipeline.model_family(): {'score': score_to_minimize,
-                                                                       'pipeline_class': pipeline,
-                                                                       'parameters': pipeline.parameters,
-                                                                       'id': trained_pipeline_results['id']}
+            self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
+                                                                     'pipeline_class': pipeline,
+                                                                     'parameters': pipeline.parameters,
+                                                                     'id': trained_pipeline_results['id']}
                                              })
 
     def _transform_parameters(self, pipeline_class, proposed_parameters):
@@ -129,12 +129,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
-        component_graph = None
-        try:
-            component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph()]
-        except AttributeError:
-            # import pdb; pdb.set_trace()
-            print ("eh")
+        component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph()]
         for component_class in component_graph:
             component_parameters = proposed_parameters.get(component_class.name, {})
             init_params = inspect.signature(component_class.__init__).parameters

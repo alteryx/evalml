@@ -522,7 +522,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_binary(mock_fi
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -538,7 +538,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -556,7 +556,7 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, m
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -574,7 +574,7 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
 
     automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     mock_fit.assert_called()
     mock_score.assert_called()
 
@@ -597,6 +597,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
 
 
 def test_categorical_hyperparam(X_y_multi):
+    # TODO WHAT IS THIS TESTING??
     X, y = X_y_multi
 
     class CustomPipeline(MulticlassClassificationPipeline):

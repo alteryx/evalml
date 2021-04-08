@@ -200,7 +200,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified(mock_fit, mock
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.REGRESSION) for estimator in get_estimators(ProblemTypes.REGRESSION, model_families=None)]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -214,7 +214,7 @@ def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_sco
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_regression_pipeline_class()]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    assert set(automl.allowed_model_families) == set([p.model_family() for p in expected_pipelines])
+    assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()

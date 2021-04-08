@@ -36,7 +36,7 @@ from .components import (
 )
 
 from .component_graph import ComponentGraph
-from .pipeline_base_new import PipelineBase
+from .pipeline_base import PipelineBase
 from .classification_pipeline import ClassificationPipeline
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import MulticlassClassificationPipeline

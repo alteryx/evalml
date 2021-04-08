@@ -275,7 +275,6 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            # import pdb; pdb.set_trace()
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -325,7 +324,7 @@ class AutoMLSearch:
                                         should_continue_callback=self._should_continue,
                                         pre_evaluation_callback=self._pre_evaluation_callback,
                                         post_evaluation_callback=self._post_evaluation_callback)
-        self.allowed_model_families = list(set([p.model_family() for p in (self.allowed_pipelines)]))
+        self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
@@ -529,7 +528,7 @@ class AutoMLSearch:
         if not (self._best_pipeline and self._best_pipeline == self.get_pipeline(best_pipeline['id'])):
             best_pipeline = self.get_pipeline(best_pipeline['id'])
             if self._train_best_pipeline:
-                if best_pipeline.model_family() == ModelFamily.ENSEMBLE:
+                if best_pipeline.model_family == ModelFamily.ENSEMBLE:
                     X_train, y_train = self.X_train.iloc[self.ensembling_indices], self.y_train.iloc[self.ensembling_indices]
                 else:
                     X_train = self.X_train

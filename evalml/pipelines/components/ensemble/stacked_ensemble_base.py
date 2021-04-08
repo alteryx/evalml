@@ -37,7 +37,7 @@ class StackedEnsembleBase(Estimator):
         """
         if not input_pipelines:
             raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
-        if [pipeline for pipeline in input_pipelines if pipeline.model_family() in _nonstackable_model_families]:
+        if [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]:
             raise ValueError("Pipelines with any of the following model families cannot be used as base pipelines: {}".format(_nonstackable_model_families))
 
         parameters = {

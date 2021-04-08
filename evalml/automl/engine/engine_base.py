@@ -132,7 +132,7 @@ class EngineBase(ABC):
             y_mapping = {original_target: encoded_target for (encoded_target, original_target) in enumerate(y_pd.value_counts().index)}
             y_pd_encoded = y_pd.map(y_mapping)
         for i, (train, valid) in enumerate(automl.data_splitter.split(X_pd, y_pd_encoded)):
-            if pipeline.model_family() == ModelFamily.ENSEMBLE and i > 0:
+            if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
                 # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
                 logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
                 break

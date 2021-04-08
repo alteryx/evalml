@@ -2270,11 +2270,11 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     # otherwise, the model is a different model
     # the ensembling_num formula is taken from AutoMLSearch
     if best_pipeline == -1:
-        assert automl.best_pipeline.model_family() == ModelFamily.ENSEMBLE
+        assert automl.best_pipeline.model_family == ModelFamily.ENSEMBLE
         assert len(mock_fit.call_args_list[-1][0][0]) == len(ensembling_indices)
         assert len(mock_fit.call_args_list[-1][0][1]) == len(ensembling_indices)
     else:
-        assert automl.best_pipeline.model_family() != ModelFamily.ENSEMBLE
+        assert automl.best_pipeline.model_family != ModelFamily.ENSEMBLE
         assert len(mock_fit.call_args_list[-1][0][0]) == len(X)
         assert len(mock_fit.call_args_list[-1][0][1]) == len(y)
 
@@ -2382,7 +2382,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
         component_graph = ["Imputer", "Random Forest Classifier"]
 
         def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+            return super().__init__(self.component_graph, self.custom_name, {})
 
         def new(self, parameters, random_seed):
             return self.__class__()
@@ -2395,7 +2395,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
         component_graph = ["Imputer", "Logistic Regression Classifier"]
 
         def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+            return super().__init__(self.component_graph, self.custom_name, {})
 
         def new(self, parameters, random_seed):
             return self.__class__()
@@ -2408,7 +2408,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
         component_graph = ["Logistic Regression Classifier"]
 
         def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+            return super().__init__(self.component_graph, self.custom_name, {})
 
         def new(self, parameters, random_seed):
             return self.__class__()
@@ -2421,7 +2421,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
         component_graph = ["Random Forest Classifier"]
 
         def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+            return super().__init__(self.component_graph, self.custom_name, {})
 
         def new(self, parameters, random_seed):
             return self.__class__()
@@ -2434,7 +2434,7 @@ def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline
         component_graph = ["Extra Trees Classifier"]
 
         def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+            return super().__init__(self.component_graph, self.custom_name, {})
 
         def new(self, parameters, random_seed):
             return self.__class__()
@@ -2487,9 +2487,26 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
     class RfPipeline(BinaryClassificationPipeline):
         component_graph = ["Random Forest Classifier"]
 
+        def __init__(self, parameters):
+            return super().__init__(self.component_graph, None, parameters)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
+
     class LogisticPipeline(BinaryClassificationPipeline):
         component_graph = ["Logistic Regression Classifier"]
 
+        def __init__(self, parameters):
+            return super().__init__(self.component_graph, None, parameters)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
     pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
                  LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
 
@@ -2503,6 +2520,7 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline.name == original_pipeline.name
         assert fitted_pipeline._is_fitted
         assert fitted_pipeline != original_pipeline
+        assert fitted_pipeline.parameters == original_pipeline.parameters
 
 
 def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline_class):
