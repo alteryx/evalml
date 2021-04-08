@@ -36,10 +36,6 @@ Release Notes
         * Fixed start code on README :pr:`2108`
     * Testing Changes
 
-.. warning::
-
-    **Breaking Changes**
-
 
 **v0.21.0 Mar. 24, 2021**
     * Enhancements
