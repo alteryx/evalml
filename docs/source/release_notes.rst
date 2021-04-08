@@ -7,12 +7,14 @@ Release Notes
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
     * Changes
+        * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``balanced_ratio`` to ``sampling_ratio`` for the ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, ``BalancedClassficationSampler``, and Undersampler :pr:`2113`
         * Deleted the "errors" key from automl results :pr:`1975`
         * Deleted the ``raise_and_save_error_callback`` and the ``log_and_save_error_callback`` :pr:`1975`
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
