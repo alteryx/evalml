@@ -414,8 +414,8 @@ def test_partial_dependence_percentile_errors(logistic_regression_binary_pipelin
 
 @pytest.mark.parametrize('problem_type', ['binary', 'regression'])
 def test_graph_partial_dependence_regression_and_binary_categorical(problem_type, linear_regression_pipeline_class,
-                                                              X_y_regression, X_y_binary,
-                                                              logistic_regression_binary_pipeline_class):
+                                                                    X_y_regression, X_y_binary,
+                                                                    logistic_regression_binary_pipeline_class):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     if problem_type == 'binary':
@@ -440,7 +440,6 @@ def test_graph_partial_dependence_regression_and_binary_categorical(problem_type
 def test_partial_dependence_multiclass_categorical(class_label,
                                                    logistic_regression_multiclass_pipeline_class):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
-
 
     X, y = load_wine()
     X['categorical_column'] = ww.DataColumn(pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
