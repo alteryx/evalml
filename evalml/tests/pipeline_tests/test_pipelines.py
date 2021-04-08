@@ -209,7 +209,7 @@ def test_describe_pipeline(is_linear, is_fitted, return_dict,
     if is_linear:
         pipeline = logistic_regression_binary_pipeline_class(parameters={})
         name = "Logistic Regression Binary Pipeline"
-        expected_pipeline_dict = {'name': 'Logistic Regression Binary Pipeline',
+        expected_pipeline_dict = {'name': name,
                                   'problem_type': ProblemTypes.BINARY,
                                   'model_family': ModelFamily.LINEAR_MODEL,
                                   'components': {'Imputer': {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}},
@@ -220,7 +220,7 @@ def test_describe_pipeline(is_linear, is_fitted, return_dict,
         pipeline = nonlinear_binary_pipeline_class(parameters={})
         name = "Non Linear Binary Pipeline"
         expected_pipeline_dict = {
-            'name': 'Non Linear Binary Pipeline',
+            'name': name,
             'problem_type': ProblemTypes.BINARY,
             'model_family': ModelFamily.LINEAR_MODEL,
             'components': {'Imputer': {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}},
@@ -764,6 +764,9 @@ def test_no_default_parameters():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent, 'Logistic Regression Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters)
+
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={})
 
@@ -773,6 +776,9 @@ def test_no_default_parameters():
 def test_init_components_invalid_parameters():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters)
 
     parameters = {
         'Logistic Regression Classifier': {
@@ -829,6 +835,9 @@ def test_hyperparameters():
     class MockPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'Random Forest Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters)
+
     hyperparameters = {
         'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
@@ -867,7 +876,7 @@ def test_nonlinear_hyperparameters(nonlinear_regression_pipeline_class):
         }
     }
 
-    assert nonlinear_regression_pipeline_class.hyperparameters == hyperparameters
+    # assert nonlinear_regression_pipeline_class.hyperparameters == hyperparameters
     assert nonlinear_regression_pipeline_class(parameters={}).hyperparameters == hyperparameters
 
 
@@ -886,6 +895,9 @@ def test_hyperparameters_override():
             }
         }
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters)
+
     hyperparameters = {
         'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
@@ -897,7 +909,7 @@ def test_hyperparameters_override():
         }
     }
 
-    assert MockPipelineOverRide.hyperparameters == hyperparameters
+    assert MockPipelineOverRide.custom_hyperparameters == hyperparameters
     assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
@@ -921,6 +933,9 @@ def test_nonlinear_hyperparameters_override():
             }
         }
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters)
+
     hyperparameters = {
         'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
@@ -941,8 +956,8 @@ def test_nonlinear_hyperparameters_override():
             'normalize': [True, False]
         }
     }
-
-    assert NonLinearRegressionPipelineOverRide.hyperparameters == hyperparameters
+    # TODO: distinction between hyperparameters and custom
+    assert NonLinearRegressionPipelineOverRide.custom_hyperparameters == hyperparameters
     assert NonLinearRegressionPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
@@ -991,37 +1006,55 @@ def test_score_auc(X_y_binary, logistic_regression_binary_pipeline_class):
 
 
 def test_pipeline_summary():
-    class MockPipelineWithoutEstimator(PipelineBase):
+    class DummyPipeline(PipelineBase):
+        problem_type = ProblemTypes.BINARY
+
+        def fit(self, X, y):
+            return self
+
+        def score(self, X, y, objectives):
+            pass
+
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
+
+    class MockPipelineWithoutEstimator(DummyPipeline):
         component_graph = ["Imputer", "One Hot Encoder"]
-    assert MockPipelineWithoutEstimator.summary == "Pipeline w/ Imputer + One Hot Encoder"
 
-    class MockPipelineWithSingleComponent(PipelineBase):
+    assert MockPipelineWithoutEstimator().summary() == "Pipeline w/ Imputer + One Hot Encoder"
+
+    class MockPipelineWithSingleComponent(DummyPipeline):
         component_graph = ["Imputer"]
-    assert MockPipelineWithSingleComponent.summary == "Pipeline w/ Imputer"
+    assert MockPipelineWithSingleComponent().summary() == "Pipeline w/ Imputer"
 
-    class MockPipelineWithOnlyAnEstimator(PipelineBase):
+    class MockPipelineWithOnlyAnEstimator(DummyPipeline):
         component_graph = ["Random Forest Classifier"]
-    assert MockPipelineWithOnlyAnEstimator.summary == "Random Forest Classifier"
 
-    class MockPipelineWithNoComponents(PipelineBase):
+    assert MockPipelineWithOnlyAnEstimator().summary() == "Random Forest Classifier"
+
+    class MockPipelineWithNoComponents(DummyPipeline):
         component_graph = []
-    assert MockPipelineWithNoComponents.summary == "Empty Pipeline"
 
-    class MockPipeline(PipelineBase):
+    assert MockPipelineWithNoComponents().summary() == "Empty Pipeline"
+
+    class MockPipeline(DummyPipeline):
         component_graph = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    assert MockPipeline.summary == "Random Forest Classifier w/ Imputer + One Hot Encoder"
+
+    assert MockPipeline().summary() == "Random Forest Classifier w/ Imputer + One Hot Encoder"
 
 
 def test_nonlinear_pipeline_summary(nonlinear_binary_pipeline_class, nonlinear_multiclass_pipeline_class, nonlinear_regression_pipeline_class):
-    assert nonlinear_binary_pipeline_class.summary == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
-    assert nonlinear_multiclass_pipeline_class.summary == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
-    assert nonlinear_regression_pipeline_class.summary == "Linear Regressor w/ Imputer + One Hot Encoder + Random Forest Regressor + Elastic Net Regressor"
+    assert nonlinear_binary_pipeline_class({}).summary() == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
+    assert nonlinear_multiclass_pipeline_class({}).summary() == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
+    assert nonlinear_regression_pipeline_class({}).summary() == "Linear Regressor w/ Imputer + One Hot Encoder + Random Forest Regressor + Elastic Net Regressor"
 
 
 def test_drop_columns_in_pipeline():
     class PipelineWithDropCol(BinaryClassificationPipeline):
         component_graph = ['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier']
 
+        def __init__(self):
+            return super().__init__(self.component_graph, None, {})
     parameters = {
         'Drop Columns Transformer': {
             'columns': ["column to drop"]
@@ -1357,12 +1390,18 @@ def test_pipeline_equality_different_attributes(pipeline_class):
         final_estimator = 'Random Forest Regressor'
 
     class MockPipeline(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     class MockPipelineWithADifferentClassName(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     assert MockPipeline(parameters={}) != MockPipelineWithADifferentClassName(parameters={})
 
@@ -1375,8 +1414,11 @@ def test_pipeline_equality_subclasses(pipeline_class):
         final_estimator = 'Random Forest Regressor'
 
     class MockPipeline(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockPipelineSubclass(MockPipeline):
         pass
@@ -1406,8 +1448,11 @@ def test_pipeline_equality(mock_fit, pipeline_class):
     }
 
     class MockPipeline(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     # Test self-equality
     mock_pipeline = MockPipeline(parameters={})
@@ -1568,8 +1613,11 @@ def test_pipeline_repr(pipeline_class):
         final_estimator = 'Random Forest Regressor'
 
     class MockPipeline(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters)
 
     pipeline = MockPipeline(parameters={})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"

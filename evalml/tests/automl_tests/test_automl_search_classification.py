@@ -426,8 +426,8 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, 
 def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
-                          allowed_pipelines=[dummy_binary_pipeline_class()], allowed_model_families=None)
-    expected_pipelines = [dummy_binary_pipeline_class()]
+                          allowed_pipelines=[dummy_binary_pipeline_class({})], allowed_model_families=None)
+    expected_pipelines = [dummy_binary_pipeline_class({})]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
     assert automl.allowed_model_families == [ModelFamily.NONE]
@@ -444,8 +444,8 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, m
 def test_automl_allowed_pipelines_specified_allowed_pipelines_multi(mock_fit, mock_score, dummy_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass',
-                          allowed_pipelines=[dummy_multiclass_pipeline_class()], allowed_model_families=None)
-    expected_pipelines = [dummy_multiclass_pipeline_class()]
+                          allowed_pipelines=[dummy_multiclass_pipeline_class({})], allowed_model_families=None)
+    expected_pipelines = [dummy_multiclass_pipeline_class({})]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
     assert automl.allowed_model_families == [ModelFamily.NONE]
@@ -547,9 +547,9 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary, assert_allowed_pipelines_equal_helper):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class()], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class({})], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
-    expected_pipelines = [dummy_binary_pipeline_class()]
+    expected_pipelines = [dummy_binary_pipeline_class({})]
     assert automl.allowed_pipelines == expected_pipelines
     # the dummy binary pipeline estimator has model family NONE
     assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
@@ -565,9 +565,9 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, m
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mock_score, dummy_multiclass_pipeline_class, X_y_multi, assert_allowed_pipelines_equal_helper):
     X, y = X_y_multi
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=[dummy_multiclass_pipeline_class()], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=[dummy_multiclass_pipeline_class({})], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
-    expected_pipelines = [dummy_multiclass_pipeline_class()]
+    expected_pipelines = [dummy_multiclass_pipeline_class({})]
     assert automl.allowed_pipelines == expected_pipelines
     # the dummy multiclass pipeline estimator has model family NONE
     assert set(automl.allowed_model_families) == set([ModelFamily.NONE])
@@ -585,7 +585,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    allowed_pipelines = [dummy_binary_pipeline_class()]
+    allowed_pipelines = [dummy_binary_pipeline_class({})]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
@@ -624,7 +624,7 @@ def test_categorical_hyperparam(X_y_multi):
 def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
 
-    allowed_pipelines = [nonlinear_binary_pipeline_class()]
+    allowed_pipelines = [nonlinear_binary_pipeline_class({})]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
                           start_iteration_callback=start_iteration_callback,

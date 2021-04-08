@@ -281,9 +281,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns model family of this pipeline template"""
         component_graph = copy.copy(self._component_graph)
         if isinstance(component_graph, list):
+            if len(component_graph) == 0:  # handle empty pipelines
+                return None
             return handle_component_class(component_graph[-1]).model_family
         else:
             order = ComponentGraph.generate_order(component_graph.component_dict)
+            if len(order) == 0:
+                return None
             final_component = order[-1]
             return handle_component_class(component_graph[final_component].__class__).model_family
 

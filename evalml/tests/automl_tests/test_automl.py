@@ -431,7 +431,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     mock_algo_init.side_effect = Exception('mock algo init')
     X, y = X_y_binary
 
-    allowed_pipelines = [dummy_binary_pipeline_class()]
+    allowed_pipelines = [dummy_binary_pipeline_class({})]
     with pytest.raises(Exception, match='mock algo init'):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
     assert mock_algo_init.call_count == 1
