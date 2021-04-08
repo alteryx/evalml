@@ -105,6 +105,7 @@ def check_all_pipeline_names_unique(pipelines):
     """
     name_count = pd.Series([p.name for p in pipelines]).value_counts()
     duplicate_names = name_count[name_count > 1].index.tolist()
+
     if duplicate_names:
         plural, tense = ("s", "were") if len(duplicate_names) > 1 else ("", "was")
         duplicates = ", ".join([f"'{name}'" for name in sorted(duplicate_names)])

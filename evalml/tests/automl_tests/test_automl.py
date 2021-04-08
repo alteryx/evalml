@@ -639,7 +639,7 @@ def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_cla
     AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
 
     with pytest.raises(ValueError, match="is not compatible with problem_type"):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
+        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class({})])
 
 
 def test_main_objective_problem_type_mismatch(X_y_binary):
@@ -718,7 +718,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
     automl.search()
     assert len(automl.rankings) == 1
     assert len(automl.full_rankings) == 1
@@ -752,7 +752,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     mock_score.return_value = {'Log Loss Binary': 0.5234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
@@ -814,7 +814,7 @@ def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_c
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 0.1234}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class({})])
     automl.search()
     best_pipeline = automl.best_pipeline
     test_pipeline = dummy_binary_pipeline_class(parameters={})

@@ -48,7 +48,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     problem_type = None
 
-    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -105,10 +105,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def linearized_component_graph(self):
         """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
-        if isinstance(self._component_graph, list):
-            return self._component_graph
+        if isinstance(self.component_graph, list):
+            return self.component_graph
         else:
-            return [component_info[0] for component_info in self._component_graph.component_dict.values()]
+            return [component_info[0] for component_info in self.component_graph.values()]
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -471,16 +471,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        # return self.__class__(self.parameters, random_seed=self.random_seed)
-        return self.__class__(self._component_graph.component_dict, self.name, self.parameters, None, self.random_seed)
+        return self.__class__(self.component_graph, self.name, self.parameters, self.custom_hyperparameters, self.random_seed)
 
     def new(self, parameters, random_seed):
-        """Constructs a new pipeline with the same components, parameters, and random state.
-
-        Returns:
-            A new instance of this pipeline with identical components, parameters, and random state.
-        """
-        return self.__class__(component_graph=self._component_graph.component_dict, custom_name=self.name, parameters=parameters, random_seed=random_seed)
+        return self.__class__(self.component_graph, self.name, parameters, self.custom_hyperparameters, random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -488,12 +482,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         random_seed_eq = self.random_seed == other.random_seed
         if not random_seed_eq:
             return False
-        attributes_to_check = ['parameters', '_is_fitted', 'input_feature_names', 'input_target_name']
+        attributes_to_check = ['parameters', '_is_fitted', 'component_graph', 'input_feature_names', 'input_target_name']
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
-        if self.component_graph.component_dict != other.component_graph.component_dict:  # TODO
-            return False
         return True
 
     def __str__(self):

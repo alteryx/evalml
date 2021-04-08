@@ -26,6 +26,8 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
 
     class Pipeline(pipeline_class):
         component_graph = components + [estimator]
+        def __init__(self, parameters):
+            return super().__init__(self.component_graph, None, parameters)
 
     if "Delayed Feature Transformer" not in components:
         pl = Pipeline({'pipeline': {"gap": 3, "max_delay": 5}})
@@ -72,14 +74,9 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
 
-        def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+        def __init__(self, parameters):
+            return super().__init__(self.component_graph, None, parameters)
 
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
                                                    "delay_features": include_delayed_features,
                                                    "delay_target": include_delayed_features},
@@ -131,11 +128,6 @@ def test_predict_pad_nans(mock_decode_targets,
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
 
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters)
-
-        def clone(self):
-            return self.__class__(self.parameters)
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
                                                    "delay_features": include_delayed_features,
                                                    "delay_target": include_delayed_features},
@@ -201,11 +193,6 @@ def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
 
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters)
-
-        def clone(self):
-            return self.__class__(self.parameters)
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
                                                    "delay_features": include_delayed_features,
                                                    "delay_target": include_delayed_features},
@@ -313,6 +300,8 @@ def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_mult
 
     class Pipeline(pipeline_class):
         component_graph = components
+        def __init__(self, parameters):
+            return super().__init__(self.component_graph, None, parameters)
 
     pl = Pipeline({"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False},
                    components[-1]: {'n_jobs': 1}})

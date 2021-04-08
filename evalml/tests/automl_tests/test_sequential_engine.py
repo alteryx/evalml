@@ -82,7 +82,7 @@ def test_evaluate_batch(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_b
     X, y = X_y_binary
     mock_score.side_effect = [{'Log Loss Binary': 0.42}] * 3 + [{'Log Loss Binary': 0.5}] * 3
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
     pipelines = [dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}}),
                  dummy_binary_pipeline_class({'Mock Classifier': {'a': 4.2}})]
 
@@ -117,7 +117,7 @@ def test_evaluate_batch_should_continue(mock_fit, mock_score, dummy_binary_pipel
     X, y = X_y_binary
     mock_score.side_effect = [{'Log Loss Binary': 0.42}] * 3 + [{'Log Loss Binary': 0.5}] * 3
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
     pipelines = [dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}}),
                  dummy_binary_pipeline_class({'Mock Classifier': {'a': 4.2}})]
 
@@ -274,7 +274,7 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     engine = SequentialEngine(X_train=automl.X_train, y_train=automl.y_train, automl=automl)
 
@@ -286,7 +286,8 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
     pipelines = [make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)]
     ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
     ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)],
-                                             problem_type="binary")
+                                             problem_type="binary",
+                                             custom_name="Templated Pipeline")
     pipelines.append(ensemble)
 
     def score_batch_and_check():
@@ -312,7 +313,7 @@ def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_bi
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     engine = SequentialEngine(X_train=automl.X_train, y_train=automl.y_train, automl=automl)
 

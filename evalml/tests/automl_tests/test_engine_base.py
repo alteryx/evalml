@@ -16,7 +16,7 @@ def test_train_and_score_pipelines(mock_fit, mock_score, dummy_binary_pipeline_c
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 0.42}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_batches=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
     pipeline = dummy_binary_pipeline_class({})
     evaluation_result = EngineBase.train_and_score_pipeline(pipeline, automl, automl.X_train, automl.y_train)
     assert mock_fit.call_count == automl.data_splitter.get_n_splits()

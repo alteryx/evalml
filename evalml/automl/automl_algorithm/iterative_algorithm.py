@@ -62,9 +62,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
+
             # next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_seed=self.random_seed)
             #               for pipeline_class in self.allowed_pipelines]
-            next_batch = [pipeline.new(parameters=self._transform_parameters(pipeline, {}), random_seed=self.random_seed)
+            next_batch = [pipeline.new(parameters=self._transform_parameters(pipeline, self._pipeline_params), random_seed=self.random_seed)
                           for pipeline in self.allowed_pipelines]
 
         # One after training all pipelines one round
@@ -87,6 +88,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
+
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
                 next_batch.append(pipeline_class.new(parameters=pl_parameters, random_seed=self.random_seed))
@@ -153,4 +155,5 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
+
         return parameters

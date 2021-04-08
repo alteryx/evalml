@@ -52,11 +52,3 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
         return ClassificationPipeline._score(X, y, predictions, objective)
-
-
-class PipelineWithComponentGraph(BinaryClassificationPipeline):
-
-    component_graph = ["One Hot Encoder", "Random Forest Classifier"]
-
-    def __init__(self):
-        return super().__init__(self.component_graph, None, {})

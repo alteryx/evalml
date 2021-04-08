@@ -57,18 +57,37 @@ def dummy_binary_pipeline_classes():
         class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
+            def __init__(self, parameters):
+                return super().__init__(self.component_graph, None, parameters)
+            def new(self, parameters, random_seed):
+                return self.__class__(self.parameters)
 
+            def clone(self):
+                return self.__class__(self.parameters)
         class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
+            def __init__(self, parameters):
+                return super().__init__(self.component_graph, None, parameters)
 
+            def new(self, parameters, random_seed):
+                return self.__class__(self.parameters)
+
+            def clone(self):
+                return self.__class__(self.parameters)
         class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
+            def __init__(self, parameters):
+                return super().__init__(self.component_graph, None, parameters)
+            def new(self, parameters, random_seed):
+                return self.__class__(self.parameters)
 
-        return [MockBinaryClassificationPipeline1,
-                MockBinaryClassificationPipeline2,
-                MockBinaryClassificationPipeline3]
+            def clone(self):
+                return self.__class__(self.parameters)
+        return [MockBinaryClassificationPipeline1({}),
+                MockBinaryClassificationPipeline2({}),
+                MockBinaryClassificationPipeline3({})]
     return _method
 
 
@@ -344,6 +363,7 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
                 assert 1 <= p.parameters['Mock Classifier']['dummy_parameter'] <= 10
 
 
+# TODO
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,

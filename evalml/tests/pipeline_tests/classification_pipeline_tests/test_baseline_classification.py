@@ -2,9 +2,23 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.pipelines import BaselineBinaryPipeline, BaselineMulticlassPipeline
-from evalml.utils import get_random_state
+from evalml.pipelines import BaselineBinaryPipeline, BaselineMulticlassPipeline, ModeBaselineBinaryPipeline
 
+from evalml.utils import get_random_state
+ 
+def test_baseline_binary_init(X_y_binary):
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "random"
+        }
+    }
+    clf = BaselineBinaryPipeline(parameters=parameters)
+    assert clf.custom_hyperparameters == None
+    assert clf.name == "Baseline Classification Pipeline"
+
+    clf = ModeBaselineBinaryPipeline({})
+    assert clf.custom_hyperparameters == {"strategy": ["mode"]}
+    assert clf.name == "Mode Baseline Binary Classification Pipeline"
 
 def test_baseline_binary_random(X_y_binary):
     X, y = X_y_binary
