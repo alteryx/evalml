@@ -193,7 +193,7 @@ class AutoMLSearch:
 
         if is_time_series(self.problem_type):
             warnings.warn("Time series support in evalml is still in beta, which means we are still actively building "
-                          "its the core features. Please be mindful of that when running search().")
+                          "its core features. Please be mindful of that when running search().")
 
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback

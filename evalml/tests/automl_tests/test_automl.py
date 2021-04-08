@@ -2699,5 +2699,5 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
         warnings.simplefilter("always")
         AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"gap": 0, "max_delay": 2})
         assert len(warn) == 1
-        message = "Time series support in evalml is still in beta, which means we are still actively building its the core features"
+        message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
         assert str(warn[0].message).startswith(message)
