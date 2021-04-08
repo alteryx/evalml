@@ -639,7 +639,7 @@ def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class
 def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
 
-    allowed_pipelines = [nonlinear_multiclass_pipeline_class()]
+    allowed_pipelines = [nonlinear_multiclass_pipeline_class({})]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_iterations=5,
                           start_iteration_callback=start_iteration_callback,

@@ -33,7 +33,7 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        if "pipeline" not in parameters:
+        if parameters is None or "pipeline" not in parameters:
             raise ValueError("gap and max_delay parameters cannot be omitted from the parameters dict. "
                              "Please specify them as a dictionary with the key 'pipeline'.")
         pipeline_params = parameters["pipeline"]

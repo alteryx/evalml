@@ -16,7 +16,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
-    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 
         Required Class Variables:
@@ -29,7 +29,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        if "pipeline" not in parameters:
+        if parameters is None or "pipeline" not in parameters:
             raise ValueError("gap and max_delay parameters cannot be omitted from the parameters dict. "
                              "Please specify them as a dictionary with the key 'pipeline'.")
         pipeline_params = parameters["pipeline"]
@@ -37,7 +37,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         self.max_delay = pipeline_params['max_delay']
         self._component_graph = component_graph
         self.component_graph = component_graph
-
         super().__init__(component_graph, custom_name, parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)
 
     def fit(self, X, y):

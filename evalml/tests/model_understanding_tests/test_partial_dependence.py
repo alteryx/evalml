@@ -32,7 +32,7 @@ def test_pipeline():
         }
 
         def __init__(self, parameters):
-            super().__init__(parameters=parameters)
+            super().__init__(self.component_graph, parameters=parameters)
 
         @property
         def feature_importance(self):
@@ -124,6 +124,10 @@ def test_partial_dependence_baseline():
 
     class BaselineTestPipeline(BinaryClassificationPipeline):
         component_graph = ["Baseline Classifier"]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     pipeline = BaselineTestPipeline({})
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Partial dependence plots are not supported for Baseline pipelines"):
@@ -140,12 +144,19 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi, has_mi
 
             class CatBoostTestPipeline(BinaryClassificationPipeline):
                 component_graph = ["CatBoost Classifier"]
+
+                def __init__(self, parameters, random_seed=0):
+                    return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         else:
             X, y = X_y_multi
             y_small = ['a', 'b', 'c']
 
             class CatBoostTestPipeline(MulticlassClassificationPipeline):
                 component_graph = ["CatBoost Classifier"]
+
+                def __init__(self, parameters, random_seed=0):
+                    return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
@@ -171,16 +182,28 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
         class XGBoostPipeline(RegressionPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Regressor']
             model_family = ModelFamily.XGBOOST
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         X, y = X_y_regression
     elif problem_type == ProblemTypes.BINARY:
         class XGBoostPipeline(BinaryClassificationPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Classifier']
             model_family = ModelFamily.XGBOOST
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
         class XGBoostPipeline(MulticlassClassificationPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Classifier']
             model_family = ModelFamily.XGBOOST
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         X, y = X_y_multi
 
     X = pd.DataFrame(X)

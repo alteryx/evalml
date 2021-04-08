@@ -1,3 +1,4 @@
+
 import os
 from unittest.mock import patch
 
@@ -14,14 +15,8 @@ def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
-        }
-
         def __init__(self, parameters):
-            super().__init__(parameters=parameters)
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
 
         @property
         def feature_importance(self):

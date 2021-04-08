@@ -7,7 +7,7 @@ class BaselineMulticlassPipeline(MulticlassClassificationPipeline):
     component_graph = ["Baseline Classifier"]
 
     def __init__(self, parameters, random_seed=0):
-        return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
+        return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     def new(self, parameters, random_seed=0):
         return self.__class__(self.parameters, random_seed=random_seed)

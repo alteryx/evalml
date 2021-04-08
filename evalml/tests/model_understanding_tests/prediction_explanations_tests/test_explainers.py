@@ -548,6 +548,9 @@ def test_explain_predictions_time_series(ts_data):
         component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
         name = "time series pipeline"
 
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
+
     tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2},
                              "Random Forest Regressor": {"n_jobs": 1}})
 
@@ -577,6 +580,9 @@ def test_explain_predictions_best_worst_time_series(output_format, pipeline_clas
     class TSPipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator]
         name = "time series pipeline"
+
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
 
     tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
 
@@ -663,6 +669,9 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
         component_graph = ["Select Columns Transformer", "One Hot Encoder",
                            "DateTime Featurization Component", estimator]
 
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
+
     pipeline = LinearPipelineBinary({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency"]},
                                      estimator: {"n_jobs": 1}})
 
@@ -691,6 +700,9 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
                            "Text Featurization Component", "DateTime Featurization Component",
                            estimator]
 
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
+
     pipeline = LinearPipelineText({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency", 'datetime']},
                                    estimator: {"n_jobs": 1}})
 
@@ -717,6 +729,9 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
     class LinearPipelineEncodeDatesAsCategory(pipeline_class):
         component_graph = ["Select Columns Transformer", "DateTime Featurization Component",
                            "One Hot Encoder", estimator]
+
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
 
     pipeline = LinearPipelineEncodeDatesAsCategory({"Select Columns Transformer": {'columns': ['datetime', 'amount', 'provider', "currency"]},
                                                     'DateTime Featurization Component': {"encode_as_categories": True},
@@ -753,6 +768,9 @@ def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
             'Estimator': [estimator, 'PCA', 'DT', 'OHE'],
         }
 
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
+
     pipeline = PcaDagPipeline({'SelectNumeric': {'columns': ['card_id', 'store_id', 'amount', 'lat', 'lng']},
                                'SelectCategorical': {'columns': ['currency', 'provider']},
                                'SelectDate': {'columns': ['datetime']},
@@ -782,6 +800,9 @@ def test_categories_aggregated_but_not_those_that_are_dropped(pipeline_class, es
         component_graph = ["Select Columns Transformer", "One Hot Encoder",
                            "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
 
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
+
     pipeline = LinearPipelineDropDates({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
                                                                                    "datetime"]},
                                         "Drop Columns Transformer": {"columns": list(EXPECTED_DATETIME_FEATURES)},
@@ -809,6 +830,9 @@ def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, 
     class LinearPipelineDropDates(pipeline_class):
         component_graph = ["Select Columns Transformer", "One Hot Encoder",
                            "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
+
+        def __init__(self, parameters):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
 
     pipeline = LinearPipelineDropDates({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
                                                                                    "datetime"]},

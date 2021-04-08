@@ -42,7 +42,10 @@ def make_test_pipeline(estimator, base_class):
 
     class Pipeline(base_class):
         component_graph = [estimator]
-        name = estimator.name
+        custom_name = estimator.name
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     return Pipeline
 
@@ -67,13 +70,14 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
+    pipeline = pipeline({"pipeline": {"gap": 1, "max_delay": 1}})
     if "xgboost" in pipeline.name.lower():
         pytest.importorskip("xgboost", "Skipping test because xgboost is not installed.")
     if "catboost" in pipeline.name.lower():
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
     with pytest.raises(exception, match=match):
-        _ = _compute_shap_values(pipeline({"pipeline": {"gap": 1, "max_delay": 1}}), pd.DataFrame(np.random.random((2, 16))))
+        _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
 
 
 def test_create_dictionary_exception():

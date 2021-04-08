@@ -30,7 +30,7 @@ def test_iterative_algorithm_init():
 
 
 def test_iterative_algorithm_allowed_pipelines(logistic_regression_binary_pipeline_class):
-    allowed_pipelines = [logistic_regression_binary_pipeline_class]
+    allowed_pipelines = [logistic_regression_binary_pipeline_class({})]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
@@ -127,7 +127,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     assert len(next_batch) == len(dummy_binary_pipeline_classes)
-    assert [p.__class__ for p in next_batch] == dummy_binary_pipeline_classes
+    assert [p.__class__ for p in next_batch] == [p.__class__ for p in dummy_binary_pipeline_classes]
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
     assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
@@ -146,7 +146,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             next_batch = algo.next_batch()
             assert len(next_batch) == algo.pipelines_per_batch
             num_pipelines_classes = (len(dummy_binary_pipeline_classes) + 1) if ensembling_value else len(dummy_binary_pipeline_classes)
-            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
+            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes].__class__
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
             assert all([p.parameters['Mock Classifier']['n_jobs'] == -1 for p in next_batch])
             assert all((p.random_seed == algo.random_seed) for p in next_batch)
@@ -234,7 +234,7 @@ def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
 @pytest.mark.parametrize("ensembling_value", [True, False])
 def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_regression_binary_pipeline_class):
     # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
-    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=ensembling_value)
+    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class({})], ensembling=ensembling_value)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
@@ -242,7 +242,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     assert len(next_batch) == 1
-    assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
+    assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class.__class__] * len(next_batch)
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
     assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
@@ -259,7 +259,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         next_batch = algo.next_batch()
         assert len(next_batch) == algo.pipelines_per_batch
         assert all((p.random_seed == algo.random_seed) for p in next_batch)
-        assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
+        assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class.__class__] * len(next_batch)
         assert algo.pipeline_number == last_pipeline_number + len(next_batch)
         last_pipeline_number = algo.pipeline_number
         assert algo.batch_number == last_batch_number + 1
@@ -293,7 +293,7 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
-    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class, linear_regression_pipeline_class], ensembling=True, n_jobs=n_jobs)
+    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class({}), linear_regression_pipeline_class({})], ensembling=True, n_jobs=n_jobs)
     next_batch = algo.next_batch()
     seen_ensemble = False
     scores = range(0, len(next_batch))
@@ -382,7 +382,7 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
 
 
 def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline_classes, logistic_regression_binary_pipeline_class):
-    allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class]
+    allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class({})]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
 
     # initial batch contains one of each pipeline, with default parameters

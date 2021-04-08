@@ -1512,13 +1512,16 @@ def test_nonlinear_pipeline_equality(pipeline_class):
     }
 
     class MockPipeline(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = {
             'Imputer': ['Imputer'],
             'OHE_1': ['One Hot Encoder', 'Imputer'],
             'OHE_2': ['One Hot Encoder', 'Imputer'],
             'Estimator': [final_estimator, 'OHE_1', 'OHE_2']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def fit(self, X, y=None):
             return self
@@ -1644,13 +1647,16 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         final_estimator = 'Random Forest Regressor'
 
     class MockPipeline(pipeline_class):
-        name = "Mock Pipeline"
+        custom_name = "Mock Pipeline"
         component_graph = {
             'Imputer': ['Imputer'],
             'OHE_1': ['One Hot Encoder', 'Imputer'],
             'OHE_2': ['One Hot Encoder', 'Imputer'],
             'Estimator': [final_estimator, 'OHE_1', 'OHE_2']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters)
 
     pipeline = MockPipeline(parameters={})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"

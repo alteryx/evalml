@@ -174,6 +174,9 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
 class PipelineWithDimReduction(BinaryClassificationPipeline):
     component_graph = [PCA, 'Logistic Regression Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class EnsembleDag(BinaryClassificationPipeline):
     component_graph = {
@@ -188,18 +191,29 @@ class EnsembleDag(BinaryClassificationPipeline):
         'Ensembler': ['Logistic Regression Classifier', 'Estimator_1', 'Estimator_2']
     }
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class PipelineWithDFS(BinaryClassificationPipeline):
     component_graph = [DFSTransformer, 'Logistic Regression Classifier']
+
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
 class PipelineWithCustomComponent(BinaryClassificationPipeline):
     component_graph = [DoubleColumns, 'Logistic Regression Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class StackedEnsemblePipeline(BinaryClassificationPipeline):
     component_graph = ['Stacked Ensemble Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS,
                                                              PipelineWithCustomComponent,
