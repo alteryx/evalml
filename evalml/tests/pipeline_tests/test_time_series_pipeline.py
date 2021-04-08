@@ -26,6 +26,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
 
     class Pipeline(pipeline_class):
         component_graph = components + [estimator]
+
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
 
@@ -300,6 +301,7 @@ def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_mult
 
     class Pipeline(pipeline_class):
         component_graph = components
+
         def __init__(self, parameters):
             return super().__init__(self.component_graph, None, parameters)
 

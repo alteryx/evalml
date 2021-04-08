@@ -260,9 +260,10 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         estimator = MockEstimator
         component_graph = [MockEstimator]
+        custom_name = None
 
         def __init__(self, parameters):
-            return super().__init__(self.component_graph, None, parameters)
+            return super().__init__(self.component_graph, self.custom_name, parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters)
@@ -330,9 +331,10 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
 
     class MockTimeSeriesRegressionPipeline(TimeSeriesRegressionPipeline):
         component_graph = [MockTimeSeriesRegressor]
+        custom_name = None
 
         def __init__(self, parameters):
-            return super().__init__(self.component_graph, None, parameters)
+            return super().__init__(self.component_graph, self.custom_name, parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters, random_seed=random_seed)
@@ -367,8 +369,8 @@ def logistic_regression_multiclass_pipeline_class():
         """Logistic Regression Pipeline for binary classification."""
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, None, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters, random_seed=random_seed)
@@ -401,8 +403,8 @@ def linear_regression_pipeline_class():
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, None, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters)

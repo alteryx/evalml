@@ -25,6 +25,7 @@ class DoubleColumns(Transformer):
     that in the future.
     """
     name = "DoubleColumns"
+    hyperparameter_ranges = {}
 
     def __init__(self, drop_old_columns=True, random_seed=0):
         self._provenance = {}
@@ -160,7 +161,7 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
 
     mock_supports_fast_importance.return_value = True
     parameters['Random Forest Classifier'] = {'n_jobs': 1}
-    pipeline = pipeline_class(parameters=parameters)
+    pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
                                                    random_seed=random_seed)

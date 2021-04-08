@@ -57,16 +57,20 @@ def dummy_binary_pipeline_classes():
         class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
+
             def __init__(self, parameters):
                 return super().__init__(self.component_graph, None, parameters)
+
             def new(self, parameters, random_seed):
                 return self.__class__(self.parameters)
 
             def clone(self):
                 return self.__class__(self.parameters)
+
         class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
+
             def __init__(self, parameters):
                 return super().__init__(self.component_graph, None, parameters)
 
@@ -75,11 +79,14 @@ def dummy_binary_pipeline_classes():
 
             def clone(self):
                 return self.__class__(self.parameters)
+
         class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
+
             def __init__(self, parameters):
                 return super().__init__(self.component_graph, None, parameters)
+
             def new(self, parameters, random_seed):
                 return self.__class__(self.parameters)
 

@@ -30,4 +30,3 @@ class MeanBaselineRegressionPipeline(RegressionPipeline):
 
     def clone(self):
         return self.__class__(self.parameters)
-

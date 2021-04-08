@@ -1531,16 +1531,25 @@ def test_pipeline_equality_different_fitted_data(problem_type, X_y_binary, X_y_m
 def test_pipeline_str():
 
     class MockBinaryPipeline(BinaryClassificationPipeline):
-        name = "Mock Binary Pipeline"
+        custom_name = "Mock Binary Pipeline"
         component_graph = ['Imputer', 'Random Forest Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockMulticlassPipeline(MulticlassClassificationPipeline):
-        name = "Mock Multiclass Pipeline"
+        custom_name = "Mock Multiclass Pipeline"
         component_graph = ['Imputer', 'Random Forest Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     class MockRegressionPipeline(RegressionPipeline):
-        name = "Mock Regression Pipeline"
+        custom_name = "Mock Regression Pipeline"
         component_graph = ['Imputer', 'Random Forest Regressor']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     binary_pipeline = MockBinaryPipeline(parameters={})
     multiclass_pipeline = MockMulticlassPipeline(parameters={})

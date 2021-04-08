@@ -9,7 +9,7 @@ from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
-    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning classification pipeline made out of transformers and a classifier.
 
         Required Class Variables:

@@ -1249,15 +1249,25 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
     class DummyPipeline(pipeline_class):
         problem_type = problem_type_value
+        name = None
+
+        def __init__(self, parameters):
+            return super().__init__(parameters=parameters)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
     class Pipeline1(DummyPipeline):
-        name = "Pipeline1"
+        custom_name = "Pipeline1"
 
     class Pipeline2(DummyPipeline):
-        name = "Pipeline2"
+        custom_name = "Pipeline2"
 
     mock_score_1 = MagicMock(return_value={objective.name: pipeline_scores[0]})
     mock_score_2 = MagicMock(return_value={objective.name: pipeline_scores[1]})
@@ -1266,15 +1276,15 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
+                              allowed_pipelines=[Pipeline1({}), Pipeline2({})], objective=objective(0, 0, 0, 0),
                               additional_objectives=[], optimize_thresholds=False, n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
+                              allowed_pipelines=[Pipeline1({'pipeline': {'gap': 0, 'max_delay': 0}}), Pipeline2({'pipeline': {'gap': 0, 'max_delay': 0}})], objective=objective,
                               additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
+                              allowed_pipelines=[Pipeline1({}), Pipeline2({})], objective=objective,
                               additional_objectives=[], optimize_thresholds=False, n_jobs=1)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):

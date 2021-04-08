@@ -20,7 +20,7 @@ from evalml.utils import (
 class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     """Pipeline base class for time series classifcation problems."""
 
-    def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
         Required Class Variables:
