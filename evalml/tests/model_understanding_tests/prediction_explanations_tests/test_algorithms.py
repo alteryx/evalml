@@ -118,8 +118,8 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
     else:
         training_data, y = X_y_regression
 
-    pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-    pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
+    pipeline = make_pipeline(training_data, y, estimator, problem_type)
+    # pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class) #TODO
     shap_values = calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
