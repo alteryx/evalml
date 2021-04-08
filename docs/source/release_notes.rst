@@ -11,6 +11,8 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
+
 
 **v0.22.0 Apr. 06, 2021**
     * Enhancements
@@ -37,7 +39,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
+
 
 **v0.21.0 Mar. 24, 2021**
     * Enhancements
