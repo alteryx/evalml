@@ -9,6 +9,7 @@ Release Notes
     * Changes
         * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
     * Documentation Changes
+        * Fixed ``conf.py`` file :pr:`2112`
     * Testing Changes
 
 .. warning::
