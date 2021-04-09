@@ -50,10 +50,10 @@ class TestLRCPipeline(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
-        return self.__class__(self.parameters)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
 
 class TestSVMPipeline(BinaryClassificationPipeline):
@@ -63,10 +63,10 @@ class TestSVMPipeline(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
-        return self.__class__(self.parameters)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
 
 class TestBaselinePipeline(BinaryClassificationPipeline):
@@ -76,10 +76,10 @@ class TestBaselinePipeline(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
-        return self.__class__(self.parameters)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
 
 class TestPipelineWithFitError(BinaryClassificationPipeline):
@@ -90,10 +90,10 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
-        return self.__class__(self.parameters)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     @delayed(5)
     def fit(self, X, y):
@@ -128,10 +128,10 @@ class TestPipelineSlow(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
-        return self.__class__(self.parameters)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     @delayed(15)
     def fit(self, X, y):
@@ -149,10 +149,10 @@ class TestPipelineFast(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
-        return self.__class__(self.parameters)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y):
         self._is_fitted = True

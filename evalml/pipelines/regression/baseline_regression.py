@@ -10,10 +10,10 @@ class BaselineRegressionPipeline(RegressionPipeline):
         return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     def new(self, parameters, random_seed=0):
-        return self.__class__(self.parameters, random_seed=random_seed)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
 
 class MeanBaselineRegressionPipeline(RegressionPipeline):
@@ -26,7 +26,7 @@ class MeanBaselineRegressionPipeline(RegressionPipeline):
         return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
 
     def new(self, parameters, random_seed=0):
-        return self.__class__(self.parameters, random_seed=random_seed)
+        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
-        return self.__class__(self.parameters)
+        return self.__class__(self.parameters, random_seed=self.random_seed)

@@ -377,10 +377,10 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, X, y):
             """Mock fit, noop"""
@@ -1298,10 +1298,10 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
             return super().__init__(parameters=parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
@@ -1384,10 +1384,10 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
             return super().__init__(parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
@@ -1457,10 +1457,10 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
             return super().__init__(parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     f1 = get_objective("f1")()
 
     if np.isnan(fold_scores[0]):
@@ -1869,10 +1869,10 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
             return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
 
     class Pipeline2(BinaryClassificationPipeline):
         name = "Pipeline 2"
@@ -1882,10 +1882,10 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
             return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', n_jobs=3, max_batches=2,
                           allowed_pipelines=[Pipeline1({}), Pipeline2({}), dummy_binary_pipeline_class({})])
     automl.search()
@@ -1971,13 +1971,20 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
         num_pipelines_different_seed = 0
         num_pipelines_init = 0
 
-        def __init__(self, parameters, random_seed):
+        def __init__(self, parameters, random_seed=0):
             is_diff_random_seed = not (random_seed == 42)
             self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_seed
-            super().__init__(parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=[DummyPipeline],
+        def new(self, parameters, random_seed):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+    pipelines = [DummyPipeline({})]
+    DummyPipeline.num_pipelines_different_seed = 0
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=pipelines,
                           random_seed=42, max_iterations=10)
     automl.search()
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
@@ -2555,10 +2562,10 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
 
     class LogisticPipeline(BinaryClassificationPipeline):
         component_graph = ["Logistic Regression Classifier"]
@@ -2567,10 +2574,10 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
                  LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
 

@@ -271,14 +271,14 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, self.custom_name, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockBinaryClassificationPipeline
 
 
@@ -291,14 +291,14 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
         component_graph = [MockEstimator]
         custom_name = None
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, self.custom_name, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockMulticlassClassificationPipeline
 
 
@@ -328,14 +328,14 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
         component_graph = [MockRegressor]
         custom_name = "Mock Regression Pipeline"
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, self.custom_name, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockRegressionPipeline
 
 
@@ -362,14 +362,14 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
         component_graph = [MockTimeSeriesRegressor]
         custom_name = None
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, self.custom_name, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters, random_seed=random_seed)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockTimeSeriesRegressionPipeline
 
 
@@ -381,14 +381,14 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
-        def __init__(self, parameters):
-            return super().__init__(self.component_graph, None, parameters)
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters, random_seed=random_seed)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockBinaryClassificationPipeline
 
 
@@ -403,10 +403,10 @@ def logistic_regression_multiclass_pipeline_class():
             return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters, random_seed=random_seed)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return LogisticRegressionMulticlassPipeline
 
 
@@ -419,11 +419,11 @@ def logistic_regression_binary_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
-        def new(self, parameters, random_seed=0):
-            return self.__class__(self.parameters)
+        def new(self, parameters, random_seed):
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
 
     return LogisticRegressionBinaryPipeline
 
@@ -439,10 +439,10 @@ def linear_regression_pipeline_class():
             return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
-            return self.__class__(self.parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return LinearRegressionPipeline
 
 
@@ -480,7 +480,7 @@ def time_series_regression_pipeline_class():
             return self.__class__(parameters, random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSRegressionPipeline
 
 
@@ -497,7 +497,7 @@ def time_series_binary_classification_pipeline_class():
             return self.__class__(parameters, random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSBinaryPipeline
 
 
@@ -514,7 +514,7 @@ def time_series_multiclass_classification_pipeline_class():
             return self.__class__(parameters, random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSMultiPipeline
 
 
@@ -551,7 +551,7 @@ def nonlinear_binary_pipeline_class():
             return self.__class__(parameters, random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearBinaryPipeline
 
 
@@ -574,7 +574,7 @@ def nonlinear_multiclass_pipeline_class():
             return self.__class__(parameters, random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearMulticlassPipeline
 
 
@@ -596,7 +596,7 @@ def nonlinear_regression_pipeline_class():
             return self.__class__(parameters, random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearRegressionPipeline
 
 

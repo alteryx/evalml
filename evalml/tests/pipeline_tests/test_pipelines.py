@@ -264,6 +264,9 @@ def test_nonlinear_model_family():
                            'Logistic Regression': ['Logistic Regression Classifier', 'OneHot.x'],
                            'Random Forest': ['Random Forest Classifier', 'Logistic Regression', 'Elastic Net']}
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     class DummyTransformerEndPipeline(BinaryClassificationPipeline):
         component_graph = {'Imputer': ['Imputer'],
                            'OneHot': ['One Hot Encoder', 'Imputer.x'],
@@ -271,8 +274,8 @@ def test_nonlinear_model_family():
                            'Logistic Regression': ['Logistic Regression Classifier', 'OneHot.x'],
                            'Scaler': ['Standard Scaler', 'Random Forest', 'Logistic Regression']}
 
-    assert DummyNonlinearPipeline.model_family == ModelFamily.RANDOM_FOREST
-    assert DummyTransformerEndPipeline.model_family == ModelFamily.NONE
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     nlbp = DummyNonlinearPipeline({})
     nltp = DummyTransformerEndPipeline({})
@@ -405,16 +408,8 @@ def test_multi_format_creation(X_y_binary):
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = component_graph = ['Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            'Imputer': {
-                "categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["mean", "median", "most_frequent"]
-            },
-            'Logistic Regression Classifier': {
-                "penalty": ["l2"],
-                "C": Real(.01, 10)
-            }
-        }
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     parameters = {
         'Imputer': {
@@ -445,16 +440,8 @@ def test_multiple_feature_selectors(X_y_binary):
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            'Imputer': {
-                "categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["mean", "median", "most_frequent"]
-            },
-            'Logistic Regression Classifier': {
-                "penalty": ["l2"],
-                "C": Real(.01, 10)
-            }
-        }
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     clf = TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     correct_components = [Imputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
@@ -470,6 +457,9 @@ def test_multiple_feature_selectors(X_y_binary):
 def test_problem_types():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Random Forest Regressor']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
         TestPipeline(parameters={})
@@ -983,8 +973,11 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
     class MockPipelineNone(BinaryClassificationPipeline):
         component_graph = [MockEstimator]
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     assert MockPipelineNone.component_graph == [MockEstimator]
-    assert MockPipelineNone.hyperparameters == {'Mock Classifier': {}}
+    assert MockPipelineNone({}).hyperparameters == {'Mock Classifier': {}}
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
 
 
@@ -1062,8 +1055,9 @@ def test_drop_columns_in_pipeline():
     class PipelineWithDropCol(BinaryClassificationPipeline):
         component_graph = ['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier']
 
-        def __init__(self):
-            return super().__init__(self.component_graph, None, {})
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     parameters = {
         'Drop Columns Transformer': {
             'columns': ["column to drop"]
@@ -1192,16 +1186,28 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
         class XGBoostPipeline(RegressionPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Regressor']
             model_family = ModelFamily.XGBOOST
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         X, y = X_y_regression
     elif problem_type == ProblemTypes.BINARY:
         class XGBoostPipeline(BinaryClassificationPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Classifier']
             model_family = ModelFamily.XGBOOST
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
         class XGBoostPipeline(MulticlassClassificationPipeline):
             component_graph = ['Simple Imputer', 'XGBoost Classifier']
             model_family = ModelFamily.XGBOOST
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         X, y = X_y_multi
 
     X = pd.DataFrame(X)

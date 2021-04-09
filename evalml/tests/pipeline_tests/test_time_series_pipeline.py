@@ -252,10 +252,11 @@ def test_classification_pipeline_encodes_targets(mock_encode, mock_decode,
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
-            return self.__class__(parameters)
+            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
-            return self.__class__(self.parameters)
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
     pl = MyTsPipeline({"Delayed Feature Transformer": {"gap": 0, "max_delay": 1},
                        "pipeline": {"gap": 0, "max_delay": 1}})
 

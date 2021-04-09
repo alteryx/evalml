@@ -84,7 +84,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.name = custom_name
         if custom_name is None:
             self.name = self.summary()
-        self.component_graph = self._component_graph.component_dict
+        self.component_graph = component_graph
         self.model_family = self.get_model_family()
         self.hyperparameters = self.get_hyperparameters()
 
@@ -111,7 +111,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if isinstance(self.component_graph, list):
             return self.component_graph
         else:
-            return [component_info[0] for component_info in self.component_graph.values()]
+            return [component_info[0] for component_info in self._component_graph.component_dict.values()]
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
