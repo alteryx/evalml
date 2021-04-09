@@ -626,7 +626,7 @@ def _update_fig_with_two_way_partial_dependence(_go, fig, label_df, part_dep, fe
         fig.update_xaxes(title=f'{features[1]}',
                          range=_calculate_axis_range(np.array([x for x in part_dep.columns if x != 'class_label'])),
                          row=row, col=col)
-        fig.update_yaxes(range=_calculate_axis_range(part_dep.index))
+        fig.update_yaxes(range=_calculate_axis_range(part_dep.index), row=row, col=col)
     elif sum(is_categorical) == 1:
         kwargs = {"x": x}
         fig.update_xaxes(title=f'{features[1]}',
