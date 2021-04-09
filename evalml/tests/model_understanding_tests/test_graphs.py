@@ -64,7 +64,7 @@ def test_pipeline():
         }
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(parameters=parameters)
+            super().__init__(self.component_graph, parameters=parameters)
 
     return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 

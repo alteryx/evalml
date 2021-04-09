@@ -1215,7 +1215,7 @@ def test_pipelines_in_batch_return_none(mock_rankings, mock_full_rankings, mock_
                                       make_mock_rankings([0, 0, 0, 0, None]),  # second batch
                                       make_mock_rankings([0, 0, 0, 0, None, None, None])]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class], n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class({})], n_jobs=1)
     with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
         automl.search()
 
