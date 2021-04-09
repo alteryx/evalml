@@ -20,36 +20,12 @@ executors:
           OMP_NUM_THREADS: 8
 
 commands:
-  install_dependencies:
-    steps:
-      - run: |
-          virtualenv test_python -q
-          source test_python/bin/activate
-          make installdeps
   install_dependencies_test:
     steps:
       - run: |
             virtualenv test_python -q
             source test_python/bin/activate
             make installdeps-test
-  install_dependencies_docs:
-    steps:
-      - run: |
-            virtualenv test_python -q
-            source test_python/bin/activate
-            make installdeps-docs
-  install_dependencies_core:
-    steps:
-      - run: |
-          virtualenv test_python -q
-          source test_python/bin/activate
-          pip install --upgrade pip -q
-          pip install -e . --no-dependencies
-          pip install -r core-requirements.txt
-          pip install -r test-requirements.txt
-          # "!" negates return code. exit nonzero if any of these deps are found
-          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
-          exit $?
   build_pkg:
     steps:
       - run: |
