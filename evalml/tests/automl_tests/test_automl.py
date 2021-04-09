@@ -1772,7 +1772,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
 
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, custom_hyperparameters) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines, n_jobs=1)
 
     mock_add.side_effect = ValueError("Alternate error that can be thrown")
@@ -1802,12 +1802,12 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_errors(mock_
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', invalid_custom_hyperparameters) for estimator in estimators]
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, invalid_custom_hyperparameters) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     with pytest.raises(ValueError, match="Default parameters for components"):
         automl.search()
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_invalid) for estimator in estimators]
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, larger_invalid) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     with pytest.raises(ValueError, match="Default parameters for components"):
         automl.search()
@@ -1832,13 +1832,13 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
         }
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, custom_hyperparameters) for estimator in estimators]
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines)
     automl.search()
     assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["mean"]
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_custom) for estimator in estimators]
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, larger_custom) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     automl.search()
 

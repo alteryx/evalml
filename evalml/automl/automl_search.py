@@ -43,7 +43,11 @@ from evalml.pipelines import (
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_time_series
+)
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.logger import (
@@ -284,7 +288,10 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
+            if is_time_series(self.problem_type):
+                self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, pipeline_params, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
+            else:
+                self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, None, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
         check_all_pipeline_names_unique(self.allowed_pipelines)

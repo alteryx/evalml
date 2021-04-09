@@ -105,7 +105,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
+def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperparameters=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -137,17 +137,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    parameters = hyperparameters or {}
-
-    # class GeneratedPipeline(base_class):
-    #     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    #     component_graph = complete_component_graph
-    #     custom_hyperparameters = hyperparameters
-
-    #     def __init__(self, parameters, random_seed=0):
-    #         return super().__init__(self.component_graph, self.name, parameters, random_seed=random_seed)
-
-    # return GeneratedPipeline
+    if parameters is None:
+        parameters = {}
     # custom_hyperparameters mixed with parameters :grimace
     return base_class(complete_component_graph, name, parameters, custom_hyperparameters, 0)
 
