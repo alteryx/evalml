@@ -719,7 +719,7 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
-        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot'fo for.
+        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of strings, it must contain valid column int/names in X.
