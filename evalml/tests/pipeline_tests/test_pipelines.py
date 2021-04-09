@@ -386,20 +386,22 @@ def test_name():
     class TestNamePipeline(BinaryClassificationPipeline):
         component_graph = ['Logistic Regression Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     class TestDefinedNamePipeline(BinaryClassificationPipeline):
         custom_name = "Cool Logistic Regression"
         component_graph = ['Logistic Regression Classifier']
 
-    class testillformattednamepipeline(BinaryClassificationPipeline):
-        component_graph = ['Logistic Regression Classifier']
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
-    assert TestNamePipeline.name == "Test Name Pipeline"
-    assert TestNamePipeline.custom_name is None
-    assert TestDefinedNamePipeline.name == "Cool Logistic Regression"
+    assert TestNamePipeline({}).name == "Logistic Regression Classifier"
+    assert TestNamePipeline({}).custom_name is None
+
     assert TestDefinedNamePipeline.custom_name == "Cool Logistic Regression"
-    assert TestDefinedNamePipeline(parameters={}).name == "Cool Logistic Regression"
-    with pytest.raises(IllFormattedClassNameError):
-        testillformattednamepipeline.name == "Test Illformatted Name Pipeline"
+    assert TestDefinedNamePipeline({}).name == "Cool Logistic Regression"
+    assert TestDefinedNamePipeline({}).custom_name == "Cool Logistic Regression"
 
 
 def test_multi_format_creation(X_y_binary):
