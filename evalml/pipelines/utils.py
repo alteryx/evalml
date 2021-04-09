@@ -209,7 +209,7 @@ def generate_pipeline_code(element):
     code_strings = ['import json']
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
-    if isinstance(element.component_graph, dict):
+    if isinstance(element._component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
 
     component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element])

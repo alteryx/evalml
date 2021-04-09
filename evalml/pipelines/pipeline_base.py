@@ -76,7 +76,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
-        self._pipeline_params = parameters.get("pipeline", {})
+        self._pipeline_params = None
+        if parameters is not None:
+            self._pipeline_params = parameters.get("pipeline", {})
+        self.parameters = self.get_parameters()
         self.custom_name = custom_name
         self.name = custom_name
         if custom_name is None:
@@ -311,8 +314,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
-    @property
-    def parameters(self):
+    def get_parameters(self):
         """Returns parameter dictionary for this pipeline
 
         Returns:

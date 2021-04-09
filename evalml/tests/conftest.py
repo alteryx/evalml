@@ -42,31 +42,54 @@ def create_mock_pipeline(estimator, problem_type):
         class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
         return MockBinaryPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.MULTICLASS:
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockMulticlassPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.REGRESSION:
         class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesRegressionPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockTSRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesBinaryClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockTSRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesMulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockTSRegressionPipelineWithOnlyEstimator
 
 

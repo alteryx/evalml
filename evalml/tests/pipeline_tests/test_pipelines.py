@@ -1723,8 +1723,11 @@ def test_generate_code_pipeline_json_errors():
                              random_seed=random_seed)
 
     class MockBinaryPipelineTransformer(BinaryClassificationPipeline):
-        name = "Mock Binary Pipeline with Transformer"
+        custom_name = "Mock Binary Pipeline with Transformer"
         component_graph = ['Imputer', CustomEstimator]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     pipeline = MockBinaryPipelineTransformer({})
     generate_pipeline_code(pipeline)
@@ -1839,6 +1842,9 @@ def test_generate_code_pipeline_custom():
         name = "Mock Binary Pipeline with Transformer"
         component_graph = [CustomTransformer, 'Random Forest Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     class MockBinaryPipelineEstimator(BinaryClassificationPipeline):
         name = "Mock Binary Pipeline with Estimator"
         component_graph = ['Imputer', CustomEstimator]
@@ -1848,9 +1854,15 @@ def test_generate_code_pipeline_custom():
             }
         }
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     class MockAllCustom(BinaryClassificationPipeline):
         name = "Mock All Custom Pipeline"
         component_graph = [CustomTransformer, CustomEstimator]
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     mockBinaryTransformer = MockBinaryPipelineTransformer({})
     expected_code = 'import json\n' \
@@ -2063,6 +2075,9 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
     class BinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'Undersampler', 'Logistic Regression Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
@@ -2081,6 +2096,9 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
 def test_undersampler_component_in_pipeline_predict():
     class BinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'Undersampler', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)]})

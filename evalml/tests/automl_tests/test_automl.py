@@ -832,10 +832,10 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
-        name = "Cool Binary Classification Pipeline"
+        custom_name = "Cool Binary Classification Pipeline"
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class, CoolBinaryClassificationPipeline])
+                          allowed_pipelines=[dummy_binary_pipeline_class({}), CoolBinaryClassificationPipeline({})])
     automl.search()
     assert len(automl.rankings) == 1
     assert len(automl.full_rankings) == 1
@@ -1155,7 +1155,7 @@ def test_pipelines_in_batch_return_nan(mock_rankings, mock_full_rankings, mock_n
                                       make_mock_rankings([0, 0, 0, 0, np.nan]),  # second batch
                                       make_mock_rankings([0, 0, 0, 0, np.nan, np.nan, np.nan])]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class], n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class({})], n_jobs=1)
     with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
         automl.search()
 
@@ -1337,6 +1337,15 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         name = "Dummy 1"
         problem_type = problem_type_enum
 
+        def __init__(self, parameters):
+            return super().__init__(parameters)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
+
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
@@ -1362,10 +1371,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
-
+    parameters = {}
+    if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
+        parameters = {"pipeline": {"gap": 6, "max_delay": 3}}
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline],
+                          allowed_pipelines=[DummyPipeline(parameters)],
                           objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
                           additional_objectives=additional_objectives)
 
@@ -1399,6 +1410,14 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         name = "Dummy 1"
         problem_type = ProblemTypes.BINARY
 
+        def __init__(self, parameters):
+            return super().__init__(parameters)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
     f1 = get_objective("f1")()
 
     if np.isnan(fold_scores[0]):
@@ -1407,7 +1426,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         answer = f1.calculate_percent_difference(4, 1)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="log loss binary", additional_objectives=["f1"])
+                          allowed_pipelines=[DummyPipeline({})], objective="log loss binary", additional_objectives=["f1"])
 
     automl.search()
     assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
@@ -1540,7 +1559,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
 
     caplog.clear()
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL]) + 1
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class()], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class({})], ensembling=True)
     automl.search()
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
@@ -1793,6 +1812,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
 def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dummy_binary_pipeline_class,
                                                        X_y_binary):
     X, y = X_y_binary
+    # TODO
 
     class MockEstimatorWithNJobs(Estimator):
         name = "Mock Classifier with njobs"
@@ -1807,12 +1827,29 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         name = "Pipeline 1"
         component_graph = [MockEstimatorWithNJobs]
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
+
     class Pipeline2(BinaryClassificationPipeline):
         name = "Pipeline 2"
         component_graph = [MockEstimatorWithNJobs]
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+
+        def new(self, parameters, random_seed):
+            return self.__class__(self.parameters)
+
+        def clone(self):
+            return self.__class__(self.parameters)
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', n_jobs=3, max_batches=2,
-                          allowed_pipelines=[Pipeline1, Pipeline2, dummy_binary_pipeline_class])
+                          allowed_pipelines=[Pipeline1({}), Pipeline2({}), dummy_binary_pipeline_class({})])
     automl.search()
     for parameters in automl.full_rankings.parameters:
         if "Mock Classifier with njobs" in parameters:
