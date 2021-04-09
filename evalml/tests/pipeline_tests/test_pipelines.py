@@ -850,7 +850,6 @@ def test_hyperparameters():
         }
     }
 
-    assert MockPipeline.hyperparameters == hyperparameters
     assert MockPipeline(parameters={}).hyperparameters == hyperparameters
 
 
@@ -957,8 +956,6 @@ def test_nonlinear_hyperparameters_override():
             'normalize': [True, False]
         }
     }
-    # TODO: distinction between hyperparameters and custom
-    assert NonLinearRegressionPipelineOverRide.custom_hyperparameters == hyperparameters
     assert NonLinearRegressionPipelineOverRide(parameters={}).hyperparameters == hyperparameters
 
 
@@ -1787,9 +1784,15 @@ def test_generate_code_pipeline():
             }
         }
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
+
     class MockRegressionPipeline(RegressionPipeline):
         name = "Mock Regression Pipeline"
         component_graph = ['Imputer', 'Random Forest Regressor']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     mock_binary_pipeline = MockBinaryPipeline({})
     expected_code = 'import json\n' \

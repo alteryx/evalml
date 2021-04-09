@@ -79,7 +79,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._pipeline_params = None
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
-        self.parameters = self.get_parameters()
+        self.parameters = parameters or self.get_parameters()  # ????
         self.custom_name = custom_name
         self.name = custom_name
         if custom_name is None:
