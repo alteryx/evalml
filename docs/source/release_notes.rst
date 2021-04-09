@@ -2,6 +2,29 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
+        * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
+        * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
+    * Fixes
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
+    * Changes
+        * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
+    * Documentation Changes
+        * Fixed ``conf.py`` file :pr:`2112`
+        * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``balanced_ratio`` to ``sampling_ratio`` for the ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, ``BalancedClassficationSampler``, and Undersampler :pr:`2113`
+        * Deleted the "errors" key from automl results :pr:`1975`
+        * Deleted the ``raise_and_save_error_callback`` and the ``log_and_save_error_callback`` :pr:`1975`
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
+
+
+**v0.22.0 Apr. 06, 2021**
+    * Enhancements
         * Added a GitHub Action for ``linux_unit_tests``:pr:`2013`
         * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
         * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
@@ -17,8 +40,9 @@ Release Notes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`
     * Documentation Changes
-        * Catch and suppress warnings in documentation :pr:`1991`
+        * Catch and suppress warnings in documentation :pr:`1991` :pr:`2097`
         * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
+        * Fixed start code on README :pr:`2108`
     * Testing Changes
 
 
@@ -45,6 +69,7 @@ Release Notes
     * Testing Changes
         * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
         * Added tests to confirm support for Python 3.9 :pr:`1724`
+        * Added tests to support Dask AutoML/Engine :pr:`1990`
         * Changed ``build_conda_pkg`` job to use ``latest_release_changes`` branch in the feedstock. :pr:`1979`
 
 .. warning::
