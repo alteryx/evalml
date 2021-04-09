@@ -433,9 +433,10 @@ def linear_regression_pipeline_class():
     class LinearRegressionPipeline(RegressionPipeline):
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
+        custom_name = "Linear Regression Pipeline"
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(self.parameters)

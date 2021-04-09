@@ -46,18 +46,54 @@ def delayed(delay):
 class TestLRCPipeline(BinaryClassificationPipeline):
     component_graph = ["Logistic Regression Classifier"]
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+
+    def new(self, parameters, random_seed):
+        return self.__class__(self.parameters)
+
+    def clone(self):
+        return self.__class__(self.parameters)
+
 
 class TestSVMPipeline(BinaryClassificationPipeline):
     component_graph = ["SVM Classifier"]
+
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+
+    def new(self, parameters, random_seed):
+        return self.__class__(self.parameters)
+
+    def clone(self):
+        return self.__class__(self.parameters)
 
 
 class TestBaselinePipeline(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+
+    def new(self, parameters, random_seed):
+        return self.__class__(self.parameters)
+
+    def clone(self):
+        return self.__class__(self.parameters)
+
 
 class TestPipelineWithFitError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
+
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+
+    def new(self, parameters, random_seed):
+        return self.__class__(self.parameters)
+
+    def clone(self):
+        return self.__class__(self.parameters)
 
     @delayed(5)
     def fit(self, X, y):
@@ -67,6 +103,9 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
 class TestPipelineWithScoreError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
+
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
     def score(self, X, y, objectives):
         raise PipelineScoreError(exceptions={"AUC": (Exception(), []),
@@ -85,6 +124,15 @@ class TestPipelineSlow(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "SlowPipeline"
 
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+
+    def new(self, parameters, random_seed):
+        return self.__class__(self.parameters)
+
+    def clone(self):
+        return self.__class__(self.parameters)
+
     @delayed(15)
     def fit(self, X, y):
         super().fit(X, y)
@@ -96,6 +144,15 @@ class TestPipelineFast(BinaryClassificationPipeline):
     and complete fitting. """
     component_graph = ["Baseline Classifier"]
     custom_name = "FastPipeline"
+
+    def __init__(self, parameters, random_seed=0):
+        return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+
+    def new(self, parameters, random_seed):
+        return self.__class__(self.parameters)
+
+    def clone(self):
+        return self.__class__(self.parameters)
 
     def fit(self, X, y):
         self._is_fitted = True

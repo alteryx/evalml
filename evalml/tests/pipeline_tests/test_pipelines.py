@@ -479,6 +479,9 @@ def make_mock_regression_pipeline():
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = ['Random Forest Regressor']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+
     return MockRegressionPipeline({})
 
 
@@ -486,12 +489,18 @@ def make_mock_binary_pipeline():
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
         component_graph = ['Random Forest Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+
     return MockBinaryClassificationPipeline({})
 
 
 def make_mock_multiclass_pipeline():
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         component_graph = ['Random Forest Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
     return MockMulticlassClassificationPipeline({})
 
@@ -1208,6 +1217,10 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
 def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
     class FakePipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+
     with pytest.raises(MissingComponentError, match="was not found"):
         FakePipeline(parameters={})
 
@@ -1236,7 +1249,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
             'solver': 'lbfgs'
         }
     }
-    assert logistic_regression_binary_pipeline_class.default_parameters == expected_defaults
+    assert logistic_regression_binary_pipeline_class({}).default_parameters() == expected_defaults
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
