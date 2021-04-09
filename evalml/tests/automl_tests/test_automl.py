@@ -373,7 +373,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
     class MockFeatureSelectionPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
@@ -1294,7 +1294,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
         problem_type = problem_type_value
         name = None
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(parameters=parameters)
 
         def new(self, parameters, random_seed):
@@ -1380,7 +1380,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         name = "Dummy 1"
         problem_type = problem_type_enum
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(parameters)
 
         def new(self, parameters, random_seed):
@@ -1453,7 +1453,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         name = "Dummy 1"
         problem_type = ProblemTypes.BINARY
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(parameters)
 
         def new(self, parameters, random_seed):
@@ -2558,7 +2558,7 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
     class RfPipeline(BinaryClassificationPipeline):
         component_graph = ["Random Forest Classifier"]
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
@@ -2570,7 +2570,7 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
     class LogisticPipeline(BinaryClassificationPipeline):
         component_graph = ["Logistic Regression Classifier"]
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):

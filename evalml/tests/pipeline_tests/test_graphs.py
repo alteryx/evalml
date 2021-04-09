@@ -15,7 +15,7 @@ def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             super().__init__(component_graph=self.component_graph, parameters=parameters)
 
         @property

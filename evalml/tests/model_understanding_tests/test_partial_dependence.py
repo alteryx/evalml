@@ -31,7 +31,7 @@ def test_pipeline():
             "impute_strategy": ["mean", "median", "most_frequent"],
         }
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)
 
         @property

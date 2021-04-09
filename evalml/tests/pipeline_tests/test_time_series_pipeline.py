@@ -27,7 +27,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
     class Pipeline(pipeline_class):
         component_graph = components + [estimator]
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
     if "Delayed Feature Transformer" not in components:
@@ -75,7 +75,7 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
@@ -126,7 +126,7 @@ def test_predict_pad_nans(mock_decode_targets,
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
@@ -191,7 +191,7 @@ def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
     class Pipeline(pipeline_class):
         component_graph = ["Delayed Feature Transformer", estimator_name]
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
     pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
@@ -248,7 +248,7 @@ def test_classification_pipeline_encodes_targets(mock_encode, mock_decode,
     class MyTsPipeline(pipeline_class):
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
@@ -303,7 +303,7 @@ def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_mult
     class Pipeline(pipeline_class):
         component_graph = components
 
-        def __init__(self, parameters):
+        def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters)
 
     pl = Pipeline({"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False},

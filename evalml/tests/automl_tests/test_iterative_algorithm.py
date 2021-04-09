@@ -58,7 +58,7 @@ def dummy_binary_pipeline_classes():
             estimator = MockEstimator
             component_graph = [MockEstimator]
 
-            def __init__(self, parameters):
+            def __init__(self, parameters, random_seed=0):
                 return super().__init__(self.component_graph, None, parameters)
 
             def new(self, parameters, random_seed):
@@ -71,7 +71,7 @@ def dummy_binary_pipeline_classes():
             estimator = MockEstimator
             component_graph = [MockEstimator]
 
-            def __init__(self, parameters):
+            def __init__(self, parameters, random_seed=0):
                 return super().__init__(self.component_graph, None, parameters)
 
             def new(self, parameters, random_seed):
@@ -84,7 +84,7 @@ def dummy_binary_pipeline_classes():
             estimator = MockEstimator
             component_graph = [MockEstimator]
 
-            def __init__(self, parameters):
+            def __init__(self, parameters, random_seed=0):
                 return super().__init__(self.component_graph, None, parameters)
 
             def new(self, parameters, random_seed):
