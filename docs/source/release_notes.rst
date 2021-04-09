@@ -4,12 +4,14 @@ Release Notes
     * Enhancements
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
+        * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
     * Changes
         * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
+        * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
     * Testing Changes
 
 .. warning::
