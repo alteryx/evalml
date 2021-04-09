@@ -502,6 +502,7 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
 
 def _is_feature_categorical(feature, X):
+    """Determine whether the feature the user passed in to partial dependence is categorical."""
     if isinstance(feature, int):
         is_categorical = X[X.to_dataframe().columns[feature]].logical_type == ww.logical_types.Categorical
     else:
@@ -510,6 +511,14 @@ def _is_feature_categorical(feature, X):
 
 
 def _put_categorical_feature_first(features, first_feature_categorical):
+    """If the user is doing a two-way partial dependence plot and one of the features is categorical,
+    we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
+
+    This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
+    type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
+    which can accommodate both categorical and numeric data. If we put the numeric feature first, the grid will be of
+    type float64 and we can't coerce categoricals to float64 dtype.
+    """
     new_features = features if first_feature_categorical else (features[1], features[0])
     return new_features
 
@@ -618,16 +627,23 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
 
 def _update_fig_with_two_way_partial_dependence(_go, fig, label_df, part_dep, features, is_categorical,
                                                 label=None, row=None, col=None):
+    """Helper for formatting the two-way partial dependence plot."""
     y = label_df.index
     x = label_df.columns
     z = label_df.values
     if not any(is_categorical):
+        # No features are categorical. In this case, we pass both x and y data to the Contour plot so that
+        # plotly can figure out the axis formatting for us.
         kwargs = {"x": x, "y": y}
         fig.update_xaxes(title=f'{features[1]}',
                          range=_calculate_axis_range(np.array([x for x in part_dep.columns if x != 'class_label'])),
                          row=row, col=col)
         fig.update_yaxes(range=_calculate_axis_range(part_dep.index), row=row, col=col)
     elif sum(is_categorical) == 1:
+        # One feature is categorical. Since we put the categorical feature first, the numeric feature will be the x
+        # axis. So we pass the x to the Contour plot so that plotly can format it for us.
+        # Since the y axis is a categorical value, we will set the y tickmarks ourselves. Passing y to the contour plot
+        # in this case will "work" but the formatting will look bad.
         kwargs = {"x": x}
         fig.update_xaxes(title=f'{features[1]}',
                          range=_calculate_axis_range(np.array([x for x in part_dep.columns if x != 'class_label'])),
@@ -635,6 +651,7 @@ def _update_fig_with_two_way_partial_dependence(_go, fig, label_df, part_dep, fe
         fig.update_yaxes(tickmode='array', tickvals=list(range(label_df.shape[0])),
                          ticktext=list(label_df.index), row=row, col=col)
     else:
+        # Both features are categorical so we must format both axes ourselves.
         kwargs = {}
         fig.update_yaxes(tickmode='array', tickvals=list(range(label_df.shape[0])),
                          ticktext=list(label_df.index), row=row, col=col)
