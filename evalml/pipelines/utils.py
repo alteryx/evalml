@@ -134,13 +134,12 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
-    hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
     if parameters is None:
         parameters = {}
-    # custom_hyperparameters mixed with parameters :grimace
-    return base_class(complete_component_graph, name, parameters, custom_hyperparameters, 0)
+
+    return base_class(complete_component_graph, custom_name=name, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):

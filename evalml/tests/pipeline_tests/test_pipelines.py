@@ -11,7 +11,6 @@ from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
-    IllFormattedClassNameError,
     MissingComponentError,
     ObjectiveCreationError,
     ObjectiveNotFoundError,
@@ -762,7 +761,6 @@ def test_no_default_parameters():
             self.b = b
             self.c = c
             super().__init__()
-            
 
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent, 'Logistic Regression Classifier']

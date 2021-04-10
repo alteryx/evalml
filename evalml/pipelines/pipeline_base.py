@@ -1,7 +1,6 @@
 import copy
 import inspect
 import os
-import re
 import sys
 import traceback
 from abc import ABC, abstractmethod
@@ -20,17 +19,12 @@ from .components import (
 )
 from .components.utils import all_components, handle_component_class
 
-from evalml.exceptions import (
-    IllFormattedClassNameError,
-    ObjectiveCreationError,
-    PipelineScoreError
-)
+from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
-    classproperty,
     get_logger,
     import_or_raise,
     infer_feature_types,

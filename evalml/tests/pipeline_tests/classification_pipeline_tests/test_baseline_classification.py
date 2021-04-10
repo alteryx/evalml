@@ -17,7 +17,7 @@ def test_baseline_binary_init(X_y_binary):
         }
     }
     clf = BaselineBinaryPipeline(parameters=parameters)
-    assert clf.custom_hyperparameters == None
+    assert clf.custom_hyperparameters is None
     assert clf.name == "Baseline Classification Pipeline"
 
     clf = ModeBaselineBinaryPipeline({})

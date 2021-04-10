@@ -215,6 +215,7 @@ class StackedEnsemblePipeline(BinaryClassificationPipeline):
     def __init__(self, parameters, random_seed=0):
         return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
+
 pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS,
                                                              PipelineWithCustomComponent,
                                                              EnsembleDag, StackedEnsemblePipeline]

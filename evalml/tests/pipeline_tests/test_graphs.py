@@ -5,7 +5,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from skopt.space import Real
 
 from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
 
