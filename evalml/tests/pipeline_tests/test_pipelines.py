@@ -761,6 +761,8 @@ def test_no_default_parameters():
             self.a = a
             self.b = b
             self.c = c
+            super().__init__()
+            
 
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent, 'Logistic Regression Classifier']
