@@ -66,7 +66,7 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     text_columns = list(X.select('natural_language').columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
-    
+
     index_columns = list(X.select('index').columns)
     if len(index_columns) > 0:
         pp_components.append(DropColumns)

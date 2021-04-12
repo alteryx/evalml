@@ -2594,3 +2594,29 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline.name == original_pipeline.name
         assert fitted_pipeline._is_fitted
         assert fitted_pipeline != original_pipeline
+
+
+def test_automl_drop_index_columns(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X['index_col'] = pd.Series(range(len(X)))
+    X = ww.DataTable(X)
+    X = X.set_index('index_col')
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
+    for pipeline in automl.allowed_pipelines:
+        assert pipeline(parameters={}).get_component('Drop Columns Transformer')
+        assert 'Drop Columns Transformer' in pipeline.hyperparameters
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', pipeline_parameters={'Drop Columns Transformer': {'columns': 'test_column'}})
+    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col', 'test_column']
+    for pipeline in automl.allowed_pipelines:
+        assert pipeline(parameters={}).get_component('Drop Columns Transformer')
+        assert 'Drop Columns Transformer' in pipeline.hyperparameters
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', pipeline_parameters={'Drop Columns Transformer': {'columns': ['test_column', 'other_test_column']}})
+    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['test_column', 'other_test_column', 'index_col']
+    for pipeline in automl.allowed_pipelines:
+        assert pipeline(parameters={}).get_component('Drop Columns Transformer')
+        assert 'Drop Columns Transformer' in pipeline.hyperparameters
