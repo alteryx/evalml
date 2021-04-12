@@ -19,7 +19,8 @@ from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
     get_default_primary_search_objective,
-    make_data_splitter
+    make_data_splitter,
+    get_best_sampler_for_data
 )
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -88,6 +89,8 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 _sampler_method="auto",
+                 _sampler_balanced_ratio=0.25,
                  _ensembling_split_size=0.2,
                  _pipelines_per_batch=5,
                  engine=None):
@@ -167,6 +170,12 @@ class AutoMLSearch:
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
             pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+
+            _sampler_method (str): The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
+                Either 'auto', which will use our preferred sampler for the data, the name of the sampling component to use, or None. Defaults to 'auto'.
+
+            _sampler_balanced_ratio (float): The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value,
+                then we will not add a sampler since the data is then considered balanced. Defaults to 0.25.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -275,11 +284,15 @@ class AutoMLSearch:
         self.search_iteration_plot = None
         self._interrupted = False
 
+        self.sampler_method = _sampler_method
+        self.sampler_balanced_ratio = _sampler_balanced_ratio
+        self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
+
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")

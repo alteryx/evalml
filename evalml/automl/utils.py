@@ -117,3 +117,40 @@ def check_all_pipeline_names_unique(pipelines):
 AutoMLConfig = namedtuple("AutoMLConfig", ["ensembling_indices", "data_splitter", "problem_type",
                                            "objective", "additional_objectives", "optimize_thresholds",
                                            "error_callback", "random_seed"])
+
+
+def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
+    """Returns the name of the sampler component to use for AutoMLSearch
+
+    Arguments:
+        X (ww.DataTable): The input feature data
+        y (ww.DataColumn): The input target data
+        sampler_type (str): The sampler_type argument passed to AutoMLSearch
+        sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
+            or should balance the classes to.
+
+    Returns:
+        str: The string name of the sampling component to use
+    """
+    if sampler_type != 'auto':
+        return sampler_type
+    else:
+        # we check for the class balances
+        counts = y.to_series().value_counts()
+        minority_class = min(counts)
+        class_ratios = minority_class / counts
+        if all(class_ratios >= sampler_balanced_ratio):
+            # if all class ratios are larger than the ratio provided, we don't need to sample
+            return None
+        # otherwise, if we have a large number of values, we use the undersampler
+        elif len(y) > 50000:
+            return 'Undersampler'
+        else:
+            cat_cols = X.select('Categorical').columns
+            # Use different samplers depending on the number of categorical columns
+            if len(cat_cols) == X.shape[1]:
+                return 'SMOTEN Oversampler'
+            elif not len(cat_cols):
+                return 'SMOTE Oversampler'
+            else:
+                return 'SMOTENC Oversampler'

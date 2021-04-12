@@ -526,3 +526,28 @@ def test_make_component_list_from_actions():
                DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
     assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col']),
                                                           TargetImputer(impute_strategy="most_frequent")]
+
+
+@pytest.mark.parametrize("samplers", [None, "Undersampler", "SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"])
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass', 'regression'])
+def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X_y_regression):
+    if problem_type == 'binary':
+        X, y = X_y_binary
+    elif problem_type == 'multiclass':
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+    estimators = get_estimators(problem_type=problem_type)
+
+    for estimator in estimators:
+        pipeline = make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
+        # check that we do add the sampler properly
+        component_to_check = pipeline.component_graph
+        if samplers is not None and problem_type != 'regression':
+            # we add the sampler before the scaler if it exists
+            if component_to_check[-2].name == 'Standard Scaler':
+                assert component_to_check[-3].name == samplers
+            else:
+                assert component_to_check[-2].name == samplers
+        else:
+            assert not any('sampler' in comp.name for comp in component_to_check)
