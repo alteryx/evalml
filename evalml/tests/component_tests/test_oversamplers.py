@@ -7,27 +7,8 @@ from evalml.pipelines.components import (
     SMOTENSampler,
     SMOTESampler
 )
-from evalml.pipelines.components.utils import make_balancing_dictionary
 
 im = pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
-
-
-binary = pd.Series([0] * 800 + [1] * 200)
-multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
-
-
-@pytest.mark.parametrize("y,sampling_ratio,result",
-                         [(binary, 1, {0: 800, 1: 800}),
-                          (binary, 0.5, {0: 800, 1: 400}),
-                          (binary, 0.25, {0: 800, 1: 200}),
-                          (binary, 0.1, {0: 800, 1: 200}),
-                          (multiclass, 1, {0: 800, 1: 800, 2: 800}),
-                          (multiclass, 0.5, {0: 800, 1: 400, 2: 400}),
-                          (multiclass, 0.25, {0: 800, 1: 200, 2: 200}),
-                          (multiclass, 0.1, {0: 800, 1: 150, 2: 80})])
-def test_make_balancing_dictionary(y, sampling_ratio, result):
-    dic = make_balancing_dictionary(y, sampling_ratio)
-    assert dic == result
 
 
 @pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
