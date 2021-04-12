@@ -558,7 +558,7 @@ def _raise_value_error_if_mostly_one_value(df, percentile):
             values.append(str(normalized_counts.index[0]))
 
     if one_value:
-        raise ValueError(f"Features {', '.join(one_value)} are mostly one value, ({', '.join(values)}), "
+        raise ValueError(f"Features ({', '.join(one_value)}) are mostly one value, ({', '.join(values)}), "
                          f"and cannot be used to compute partial dependence. Try raising the upper percentage value.")
 
 
@@ -602,6 +602,9 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
         ValueError: if the user provides a tuple of not exactly two features.
         ValueError: if the provided pipeline isn't fitted.
         ValueError: if the provided pipeline is a Baseline pipeline.
+        ValueError: if any of the features passed in are completely NaN
+        ValueError: if any of the features are low-variance. Defined as having one value occurring more than the upper
+            percentile passed by the user. By default 95%.
     """
 
     X = infer_feature_types(X)

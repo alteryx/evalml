@@ -402,15 +402,15 @@ def test_partial_dependence_percentile_errors(logistic_regression_binary_pipelin
     y = pd.Series([i % 2 for i in range(1000)])
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="Features 'random_col' are mostly one value, \\(1\\), and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features="random_col", grid_resolution=20)
-    with pytest.raises(ValueError, match="Features 'random_col' are mostly one value, \\(1\\), and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.955), grid_resolution=20)
-    with pytest.raises(ValueError, match="Features 'random_col' are mostly one value, \\(1\\), and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=20)
-    with pytest.raises(ValueError, match="Features 'random_col' are mostly one value, \\(1\\), and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features=('A', "random_col"), percentiles=(0.01, 0.955), grid_resolution=20)
-    with pytest.raises(ValueError, match="Features 'random_col', 'random_col_2' are mostly one value, \\(1, 1\\), and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col', 'random_col_2'\\) are mostly one value, \\(1, 1\\), and cannot be"):
         partial_dependence(pipeline, X, features=("random_col", "random_col_2"),
                            percentiles=(0.01, 0.955), grid_resolution=20)
 
