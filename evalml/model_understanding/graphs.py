@@ -745,7 +745,7 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
                     trace = _go.Bar(x=x, y=y, name=label)
                 else:
                     trace = _go.Scatter(x=x, y=y, line=dict(width=3), name=label)
-                fig.add_trace(trace, row=(i + 2) // 2, col=(i % 2) + 1)
+                fig.add_trace(trace, row=row, col=col)
 
         fig.update_layout(layout)
 
