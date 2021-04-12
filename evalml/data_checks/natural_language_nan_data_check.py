@@ -28,16 +28,19 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np
-            >>> dates = np.arange(np.datetime64('2017-01-01'), np.datetime64('2017-01-08'))
-            >>> dates[0] = np.datetime64('NaT')
-            >>> ww_input = ww.DataTable(pd.DataFrame(dates, columns=['index']))
-            >>> dt_nan_check = NaturalLanguageNaNDataCheck()
-            >>> assert dt_nan_check.validate(ww_input) == {"warnings": [],
-            ...                                             "actions": [],
-            ...                                             "errors": [DataCheckError(message='Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.',
-            ...                                                                     data_check_name=NaturalLanguageNaNDataCheck.name,
-            ...                                                                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-            ...                                                                     details={"columns": 'index'}).to_dict()]}
+            >>> data = pd.DataFrame()
+            >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
+            >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
+            >>> data['C'] = np.random.randint(0, 3, size=len(data))
+            >>> nl_nan_check = NaturalLanguageNaNDataCheck()
+            >>> assert nl_nan_check.validate(data) == {
+            ...        "warnings": [],
+            ...        "actions": [],
+            ...        "errors": [DataCheckError(message='Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.',
+            ...                      data_check_name=NaturalLanguageNaNDataCheck.name,
+            ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+            ...                      details={"columns": 'A'}).to_dict()]
+            ...    }
         """
         results = {
             "warnings": [],
