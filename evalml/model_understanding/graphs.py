@@ -522,12 +522,13 @@ def _put_categorical_feature_first(features, first_feature_categorical):
     new_features = features if first_feature_categorical else (features[1], features[0])
     return new_features
 
+
 def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
     """Helper function to map the user-input features param to column names."""
     feature_list = []
     for name_or_index in names_or_col_indices:
         if isinstance(name_or_index, int):
-            feature_list.append(X.columns[name_or_index])
+            feature_list.append(X.to_dataframe().columns[name_or_index])
         else:
             feature_list.append(name_or_index)
     return feature_list
@@ -535,7 +536,6 @@ def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
 
 def _raise_value_error_if_any_features_all_nan(df):
     """Helper for partial dependence data validation."""
-
     nan_pct = df.isna().mean()
     all_nan = nan_pct[nan_pct == 1].index.tolist()
     all_nan = [f"'{name}'" for name in all_nan]
@@ -621,39 +621,30 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
-<<<<<<< HEAD
         is_categorical = [_is_feature_categorical(f, X) for f in features]
+        feature_names = _get_feature_names_from_str_or_col_index(X, features)
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
-=======
-        feature_names = _get_feature_names_from_str_or_col_index(X, features)
     else:
         feature_names = _get_feature_names_from_str_or_col_index(X, [features])
 
->>>>>>> c389f9865... Adding error if columns are all Nan.
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
 
-<<<<<<< HEAD
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-    feature_list = []
-    if isinstance(features, int):
-        feature_list = X.iloc[:, features]
-    elif isinstance(features, str):
-        feature_list = X[features]
-=======
     feature_list = X[feature_names]
->>>>>>> c389f9865... Adding error if columns are all Nan.
 
     _raise_value_error_if_any_features_all_nan(feature_list)
 
     if feature_list.isnull().sum().any():
-        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
+        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. "
+                      "Fill in these values to remove the NaN values.", NullsInColumnWarning)
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
+
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
 

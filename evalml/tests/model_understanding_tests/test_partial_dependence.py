@@ -513,6 +513,7 @@ def test_partial_dependence_multiclass_categorical(class_label,
         else:
             assert plot_data['name'] == class_label
 
+
 def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipeline_class):
     pl = logistic_regression_binary_pipeline_class({})
 
