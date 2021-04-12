@@ -132,7 +132,7 @@ class InvalidTargetDataCheck(DataCheck):
                 details = {"least_populated_class_labels": least_populated.index.tolist()}
                 results["errors"].append(DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
                                                         data_check_name=self.name,
-                                                        message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                                        message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
                                                         details=details).to_dict())
             if len(unique_values) <= 2:
                 details = {"num_classes": len(unique_values)}
