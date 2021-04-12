@@ -5,6 +5,7 @@ Release Notes
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
+        * Added samplers to AutoMLSearch, as well as arguments ``_sampler_method`` and ``sampler_balanced_ratio`` :pr:``
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
     * Changes

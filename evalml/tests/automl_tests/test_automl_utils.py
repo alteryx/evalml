@@ -7,10 +7,10 @@ from sklearn.model_selection import KFold
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
+    get_best_sampler_for_data,
     get_default_primary_search_objective,
     make_data_splitter,
-    tune_binary_threshold,
-    get_best_sampler_for_data
+    tune_binary_threshold
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (

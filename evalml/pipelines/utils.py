@@ -28,22 +28,22 @@ from evalml.pipelines.components import (  # noqa: F401
     Imputer,
     OneHotEncoder,
     RandomForestClassifier,
+    SMOTENCSampler,
+    SMOTENSampler,
+    SMOTESampler,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
-    Undersampler,
-    SMOTESampler,
-    SMOTENCSampler,
-    SMOTENSampler
+    Undersampler
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
-    is_time_series,
-    is_classification
+    is_classification,
+    is_time_series
 )
 from evalml.utils import get_logger, infer_feature_types
 

@@ -726,3 +726,68 @@ def test_tuning_threshold_objective(mock_predict, mock_fit, mock_score, mock_enc
         assert automl.best_pipeline.threshold is None
     else:
         assert automl.best_pipeline.threshold == 0.6
+
+
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("categorical_features", ['none', 'some', 'all'])
+@pytest.mark.parametrize("size", ['small', 'large'])
+@pytest.mark.parametrize("sampling_ratio", [0.8, 0.5, 0.25, 0.2, 0.1, 0.05])
+def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features, problem_type, mock_imbalanced_data_X_y):
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, size)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method='auto', _sampler_balanced_ratio=sampling_ratio)
+    pipelines = automl.allowed_pipelines
+    if sampling_ratio <= 0.2:
+        # we consider this balanced, so we expect no samplers
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        if size == 'large':
+            assert all(any("Undersampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        elif categorical_features == 'none':
+            assert all(any("SMOTE Oversampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        elif categorical_features == 'some':
+            assert all(any("SMOTENC Oversampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        elif categorical_features == 'all':
+            assert all(any("SMOTEN Oversampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+
+
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("sampler_method,categorical_features", [(None, 'none'), (None, 'some'), (None, 'all'),
+                                                                 ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all'),
+                                                                 ('SMOTE Oversampler', 'none'), ('SMOTENC Oversampler', 'some'), ('SMOTEN Oversampler', 'all')])
+def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y):
+    # 0.2 minority:majority class ratios
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method=sampler_method)
+    # since our default sampler_balanced_ratio for AutoMLSearch is 0.25, we should be adding the samplers when we can
+    pipelines = automl.allowed_pipelines
+    if sampler_method is None:
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+
+
+# @pytest.mark.parametrize("pipeline_parameters,expected_cat_feat", [({}, [1, 2]),
+#                                                                    ({"SMOTENC Oversampler": {}}, [1, 2]),
+#                                                                    ({"SMOTENC Oversampler": {"categorical_features": [1]}}, [1]),
+#                                                                    ({"SMOTENC Oversampler": {"categorical_features": [1, 2]}}, [1, 2])])
+# @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+# @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+# @patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.5})
+# @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+# def test_automl_smotenc_categorical(mock_multilclass_fit, mock_multiclass_score, mock_binary_fit, mock_binary_score,
+#                                     pipeline_parameters, expected_cat_feat):
+#     X = pd.DataFrame({"numeric": [i % 5 for i in range(100)],
+#                    "categorical": [i % 3 for i in range(1, 101)],
+#                    "categorical_2": [i % 2 for i in range(100)]})
+#     X_ww = ww.DataTable(X, logical_types={"categorical": "Categorical", "categorical_2": "Categorical"})
+#     y = pd.Series([0] * 90 + [1] * 10)
+#     automl = AutoMLSearch(X_train=X_ww, y_train=y, problem_type='binary', _sampler_method='auto', max_iterations=4)
+#     automl.search()
+#     for ids in automl.rankings['id']:
+#         pipeline = automl.get_pipeline(ids)
+#         seen_sampler = False
+#         for component in pipeline:
+#             if component.name == 'SMOTENC Oversampler':
+#                 seen_sampler = True
+#                 assert all(component.categorical_features == expected_cat_feat)
+#         assert seen_sampler

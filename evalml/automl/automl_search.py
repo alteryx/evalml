@@ -18,9 +18,9 @@ from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
+    get_best_sampler_for_data,
     get_default_primary_search_objective,
-    make_data_splitter,
-    get_best_sampler_for_data
+    make_data_splitter
 )
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -287,6 +287,16 @@ class AutoMLSearch:
         self.sampler_method = _sampler_method
         self.sampler_balanced_ratio = _sampler_balanced_ratio
         self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
+
+        # if we are using SMOTENC, we need to pass in the categorical features
+        if self._sampler_name == 'SMOTENC Oversampler':
+            categorical_features = [i for i, val in enumerate(self.X_train.types['Logical Type'].items()) if str(val[1]) == 'Categorical']
+            # if the sampler parameters aren't in the pipeline_parameters provided, we add it
+            if self._sampler_name not in self.pipeline_parameters.keys():
+                self.pipeline_parameters[self._sampler_name] = {"categorical_features": categorical_features}
+            elif (self._sampler_name in self.pipeline_parameters.keys() and 'categorical_features' not in self.pipeline_parameters[self._sampler_name]):
+                # otherwise, if the sampler parameters exist but no categorical_features are provided, we add it
+                self.pipeline_parameters[self._sampler_name]["categorical_features"] = categorical_features
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
