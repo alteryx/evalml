@@ -36,6 +36,26 @@ class ComponentGraph:
         self._i = 0
 
     @classmethod
+    def linearized_component_graph(cls, components):
+        """Return a list of (component name, component class) tuples from a pre-initialized component graph defined
+        as either a list or a dictionary. The component names are guaranteed to be unique."""
+        names = []
+        if isinstance(components, list):
+            seen = set()
+            for idx, component in enumerate(components):
+                component_class = handle_component_class(component)
+                component_name = component_class.name
+
+                if component_name in seen:
+                    component_name = f'{component_name}_{idx}'
+                seen.add(component_name)
+                names.append((component_name, component_class))
+        else:
+            for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        return names
+
+    @classmethod
     def from_list(cls, component_list, random_seed=0):
         """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
@@ -45,12 +65,7 @@ class ComponentGraph:
         """
         component_dict = {}
         previous_component = None
-        for idx, component in enumerate(component_list):
-            component_class = handle_component_class(component)
-            component_name = component_class.name
-
-            if component_name in component_dict.keys():
-                component_name = f'{component_name}_{idx}'
+        for component_name, component_class in cls.linearized_component_graph(component_list):
 
             component_dict[component_name] = [component_class]
             if previous_component is not None:

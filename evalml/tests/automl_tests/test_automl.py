@@ -2205,6 +2205,32 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
             assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)
 
 
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
+def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_score, mock_fit, X_y_binary):
+
+    X, y = X_y_binary
+
+    class PipelineDict(BinaryClassificationPipeline):
+        component_graph = {"Imputer": ["Imputer"],
+                           "Imputer_1": ["Imputer", "Imputer"],
+                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
+
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+                          pipeline_parameters={"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
+                                               "Imputer_1": {"numeric_impute_strategy": Categorical(["median"])}},
+                          max_batches=3)
+    automl.search()
+    for i, row in automl.full_rankings.iterrows():
+        if "Mode Baseline Binary" in row['pipeline_name']:
+            continue
+        assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "most_frequent"
+        assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] == "median"
+
+
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):

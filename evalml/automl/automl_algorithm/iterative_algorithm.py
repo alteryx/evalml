@@ -150,6 +150,5 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 for param_name, value in self._pipeline_params['pipeline'].items():
                     if param_name in init_params:
                         component_parameters[param_name] = value
-            breakpoint()
             parameters[name] = component_parameters
         return parameters

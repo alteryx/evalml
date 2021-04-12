@@ -137,6 +137,7 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
 
+    breakpoint()
     class GeneratedPipeline(base_class):
         custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
         component_graph = complete_component_graph

@@ -125,10 +125,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @classproperty
     def linearized_component_graph(cls):
         """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
-        if isinstance(cls.component_graph, list):
-            return [(handle_component_class(c).name, handle_component_class(c)) for c in cls.component_graph]
-        else:
-            return [(k, handle_component_class(v[0])) for k, v in cls.component_graph.items()]
+        return ComponentGraph.linearized_component_graph(cls.component_graph)
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -313,20 +310,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
         component_graph = copy.copy(cls.component_graph)
-        if isinstance(component_graph, list):
-            for component_class in component_graph:
-                component_class = handle_component_class(component_class)
-                component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-                if cls.custom_hyperparameters and component_class.name in cls.custom_hyperparameters:
-                    component_hyperparameters.update(cls.custom_hyperparameters.get(component_class.name, {}))
-                hyperparameter_ranges[component_class.name] = component_hyperparameters
-        else:
-            for component_name, component_info in component_graph.items():
-                component_class = handle_component_class(component_info[0])
-                component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-                if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
-                    component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
-                hyperparameter_ranges[component_name] = component_hyperparameters
+        for component_name, component_class in ComponentGraph.linearized_component_graph(component_graph):
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
+                component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
+            hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
     @property
