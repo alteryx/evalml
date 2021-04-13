@@ -31,7 +31,7 @@ class DataCheckMessageCode(Enum):
     TARGET_BINARY_INVALID_VALUES = "target_binary_invalid_values"
     """Message code for target data for a binary classification problem with numerical values not equal to {0, 1}."""
 
-    TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS = "target_multiclass_not_two_examples_per_class"
+    TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS = "target_multiclass_not_two_examples_per_class"
     """Message code for target data for a multi classification problem that does not have two examples per class."""
 
     TARGET_MULTICLASS_NOT_ENOUGH_CLASSES = "target_multiclass_not_enough_classes"

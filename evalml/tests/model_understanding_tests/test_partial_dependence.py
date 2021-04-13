@@ -262,7 +262,8 @@ def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, features=0, grid_resolution=20)
-
+    with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
+        partial_dependence(pipeline, X, features=('a', "b"), grid_resolution=20)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, features='a', grid_resolution=20)
 
@@ -418,16 +419,23 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
 
 def test_partial_dependence_percentile_errors(logistic_regression_binary_pipeline_class):
     # random_col will be 5% 0, 95% 1
-    X = pd.DataFrame({"A": [i % 3 for i in range(1000)], "B": [(j + 3) % 5 for j in range(1000)], "random_col": [0 if i < 50 else 1 for i in range(1000)]})
+    X = pd.DataFrame({"A": [i % 3 for i in range(1000)], "B": [(j + 3) % 5 for j in range(1000)],
+                      "random_col": [0 if i < 50 else 1 for i in range(1000)],
+                      "random_col_2": [0 if i < 40 else 1 for i in range(1000)]})
     y = pd.Series([i % 2 for i in range(1000)])
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
-    with pytest.raises(ValueError, match="Feature 'random_col' is mostly one value, 1, and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features="random_col", grid_resolution=20)
-    with pytest.raises(ValueError, match="Feature 'random_col' is mostly one value, 1, and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.955), grid_resolution=20)
-    with pytest.raises(ValueError, match="Feature 'random_col' is mostly one value, 1, and cannot be"):
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
         partial_dependence(pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=20)
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
+        partial_dependence(pipeline, X, features=('A', "random_col"), percentiles=(0.01, 0.955), grid_resolution=20)
+    with pytest.raises(ValueError, match="Features \\('random_col', 'random_col_2'\\) are mostly one value, \\(1, 1\\), and cannot be"):
+        partial_dependence(pipeline, X, features=("random_col", "random_col_2"),
+                           percentiles=(0.01, 0.955), grid_resolution=20)
 
     part_dep = partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.96), grid_resolution=20)
     assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
@@ -527,3 +535,26 @@ def test_partial_dependence_multiclass_categorical(class_label,
             assert plot_data['name'] == f'class_{i}'
         else:
             assert plot_data['name'] == class_label
+
+
+def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipeline_class):
+    pl = logistic_regression_binary_pipeline_class({})
+
+    X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": [7, 8, 9]})
+    y = pd.Series([0, 1, 0])
+    pl.fit(X, y)
+
+    pred_df = pd.DataFrame({"a": [None] * 5, "b": [1, 2, 3, 4, 4], "c": [None] * 5})
+    message = "The following features have all NaN values and so the partial dependence cannot be computed: {}"
+    with pytest.raises(ValueError, match=message.format("'a'")):
+        partial_dependence(pl, pred_df, features="a", grid_resolution=10)
+    with pytest.raises(ValueError, match=message.format("'a'")):
+        partial_dependence(pl, pred_df, features=0, grid_resolution=10)
+    with pytest.raises(ValueError, match=message.format("'a'")):
+        partial_dependence(pl, pred_df, features=("a", "b"), grid_resolution=10)
+    with pytest.raises(ValueError, match=message.format("'a', 'c'")):
+        partial_dependence(pl, pred_df, features=("a", "c"), grid_resolution=10)
+
+    pred_df = pred_df.rename(columns={"a": 0})
+    with pytest.raises(ValueError, match=message.format("'0'")):
+        partial_dependence(pl, pred_df, features=0, grid_resolution=10)
