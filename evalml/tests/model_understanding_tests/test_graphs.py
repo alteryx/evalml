@@ -887,50 +887,27 @@ def test_decision_tree_data_from_estimator(fitted_tree_estimators):
 
 
 def test_decision_tree_data_from_pipeline_not_fitted():
-    class MockPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Decision Tree Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    mock_pipeline = MockPipeline({})
+    mock_pipeline = MulticlassClassificationPipeline(component_graph=['Decision Tree Classifier'])
     with pytest.raises(NotFittedError, match="The DecisionTree estimator associated with this pipeline is not fitted yet. "
                                              "Call 'fit' with appropriate arguments before using this estimator."):
         decision_tree_data_from_pipeline(mock_pipeline)
 
 
 def test_decision_tree_data_from_pipeline_wrong_type():
-    class MockPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Logistic Regression Classifier']
-
-    mock_pipeline = MockPipeline({})
+    mock_pipeline = MulticlassClassificationPipeline(component_graph=['Logistic Regression Classifier'])
     with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
         decision_tree_data_from_pipeline(mock_pipeline)
 
 
 def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regression):
-    class MockPipeline(RegressionPipeline):
-        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    mock_pipeline = MockPipeline({})
-
+    mock_pipeline = RegressionPipeline(component_graph=['One Hot Encoder', 'Imputer', 'Decision Tree Regressor'])
     X, y = X_y_categorical_regression
     mock_pipeline.fit(X, y)
     assert len(mock_pipeline.input_feature_names[mock_pipeline.estimator.name]) == mock_pipeline.estimator._component_obj.n_features_
 
 
 def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
-    class MockPipeline(RegressionPipeline):
-        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    mock_pipeline = MockPipeline({})
-
+    mock_pipeline = RegressionPipeline(component_graph=['One Hot Encoder', 'Imputer', 'Decision Tree Regressor'])
     X, y = X_y_categorical_regression
     mock_pipeline.fit(X, y)
     formatted_ = decision_tree_data_from_pipeline(mock_pipeline)

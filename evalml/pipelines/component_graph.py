@@ -75,8 +75,10 @@ class ComponentGraph:
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
-            component_parameters = parameters.get(component_name, {})
-
+            if parameters is None:
+                component_parameters = {}
+            else:
+                component_parameters = parameters.get(component_name, {})
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
             except (ValueError, TypeError) as e:
