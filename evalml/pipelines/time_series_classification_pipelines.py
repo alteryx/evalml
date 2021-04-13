@@ -39,7 +39,11 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        super().__init__(component_graph, custom_name, parameters, custom_hyperparameters, random_seed=random_seed)
+        super().__init__(component_graph,
+                         custom_name=custom_name,
+                         parameters=parameters,
+                         custom_hyperparameters=custom_hyperparameters,
+                         random_seed=random_seed)
 
     @staticmethod
     def _convert_to_woodwork(X, y):

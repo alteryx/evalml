@@ -22,7 +22,11 @@ class ClassificationPipeline(PipelineBase):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self._encoder = LabelEncoder()
-        super().__init__(component_graph, custom_name, parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)
+        super().__init__(component_graph,
+                         custom_name=custom_name,
+                         parameters=parameters,
+                         custom_hyperparameters=custom_hyperparameters,
+                         random_seed=random_seed)
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted
