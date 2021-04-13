@@ -76,9 +76,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.parameters = self.get_parameters()
         self.custom_name = custom_name
         self.name = custom_name
+        self.component_graph = component_graph
         if custom_name is None:
             self.name = self.summary()
-        self.component_graph = component_graph
         self.model_family = self.get_model_family()
         self.hyperparameters = self.get_hyperparameters()
 
