@@ -264,7 +264,7 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:
-            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline
             continue
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration

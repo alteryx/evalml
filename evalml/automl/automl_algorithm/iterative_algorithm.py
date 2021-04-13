@@ -62,9 +62,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
-
-            # next_batch = [pipeline_class(parameters=self._transform_parameters(pipeline_class, {}), random_seed=self.random_seed)
-            #               for pipeline_class in self.allowed_pipelines]
             next_batch = [pipeline.new(parameters=self._transform_parameters(pipeline, self._pipeline_params), random_seed=self.random_seed)
                           for pipeline in self.allowed_pipelines]
 
@@ -74,7 +71,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
             for pipeline_dict in self._best_pipeline_info.values():
-                pipeline_class = pipeline_dict['pipeline_class']
+                pipeline_class = pipeline_dict['pipeline']
                 pipeline_params = pipeline_dict['parameters']
                 input_pipelines.append(pipeline_class.new(parameters=self._transform_parameters(pipeline_class, pipeline_params),
                                                           random_seed=self.random_seed))
@@ -88,7 +85,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
-
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
                 next_batch.append(pipeline_class.new(parameters=pl_parameters, random_seed=self.random_seed))
@@ -120,7 +116,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
         if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family != ModelFamily.ENSEMBLE:
             self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
-                                                                     'pipeline_class': pipeline,
+                                                                     'pipeline': pipeline,
                                                                      'parameters': pipeline.parameters,
                                                                      'id': trained_pipeline_results['id']}
                                              })
@@ -155,5 +151,4 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[component_class.name] = component_parameters
-
         return parameters

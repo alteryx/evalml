@@ -678,7 +678,7 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
         if result["id"] == 0:
-            assert result['pipeline_class'] == baseline
+            assert result['pipeline_class'] == baseline.__class__
             continue
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration
