@@ -291,7 +291,8 @@ class AutoMLSearch:
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
         else:
             for pipeline_class in self.allowed_pipelines:
-                pipeline_class.custom_hyperparameters = self.pipeline_parameters
+                if self.pipeline_parameters:
+                    pipeline_class.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")

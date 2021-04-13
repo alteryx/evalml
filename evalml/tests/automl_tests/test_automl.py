@@ -2230,6 +2230,61 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_scor
         assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "most_frequent"
         assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] == "median"
 
+    class PipelineDict(BinaryClassificationPipeline):
+        component_graph = {"One Hot Encoder": ["One Hot Encoder"],
+                           "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder"],
+                           "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1"]}
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+                          pipeline_parameters={"One Hot Encoder": {"top_n": Categorical([15])},
+                                               "One Hot Encoder_1": {"top_n": Categorical([25])}},
+                          max_batches=3)
+    automl.search()
+    for i, row in automl.full_rankings.iterrows():
+        if "Mode Baseline Binary" in row['pipeline_name']:
+            continue
+        assert row["parameters"]["One Hot Encoder"]["top_n"] == 15
+        assert row["parameters"]["One Hot Encoder_1"]["top_n"] == 25
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
+def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(mock_score, mock_fit, X_y_binary):
+
+    X, y = X_y_binary
+
+    class PipelineDict(BinaryClassificationPipeline):
+        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
+                                  "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
+        component_graph = {"Imputer": ["Imputer"],
+                           "Imputer_1": ["Imputer", "Imputer"],
+                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
+                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                                  "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
+        component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
+
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+                          max_batches=5)
+    automl.search()
+    for i, row in automl.full_rankings.iterrows():
+        if "Mode Baseline Binary" in row['pipeline_name']:
+            continue
+        if row["pipeline_name"] == "Pipeline Dict":
+            assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in {"most_frequent", "mean"}
+            assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] in {"median", "mean"}
+            assert row["parameters"]["Random Forest Classifier"]["n_estimators"] in {50, 100}
+        if row["pipeline_name"] == "Pipe Line Linear":
+            assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "mean"
+            assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] in {"most_frequent", "mean"}
+            assert row["parameters"]["Random Forest Classifier"]["n_estimators"] in {100, 125}
+
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')

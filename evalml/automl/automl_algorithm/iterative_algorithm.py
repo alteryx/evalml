@@ -7,7 +7,6 @@ from skopt.space import Categorical, Integer, Real
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 
