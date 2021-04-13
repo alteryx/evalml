@@ -340,16 +340,17 @@ def test_graph_two_way_partial_dependence(test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
+    fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=5)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius' vs. 'mean area'"
     assert len(fig_dict['data']) == 1
     assert fig_dict['data'][0]['name'] == "Partial Dependence"
 
-    part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
-    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data.index)
-    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data.columns)
+    part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=5)
+    part_dep_data.drop(columns=['class_label'], inplace=True)
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data.columns)
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data.index)
     assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data.values)
 
 
@@ -397,7 +398,7 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     assert [fig_dict["data"][i]['name'] for i in range(3)] == ["class_0", "class_1", "class_2"]
 
     # Check that all the subplots axes have the same range
-    for suplot_1_axis, suplot_2_axis in [('axis2', 'axis3'), ('axis2', 'axis4'), ('axis3', 'axis4')]:
+    for suplot_1_axis, suplot_2_axis in [('axis', 'axis2'), ('axis', 'axis3'), ('axis2', 'axis3')]:
         for axis_type in ['x', 'y']:
             assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
@@ -433,3 +434,96 @@ def test_partial_dependence_percentile_errors(logistic_regression_binary_pipelin
     assert len(part_dep["partial_dependence"]) == 2
     assert len(part_dep["feature_values"]) == 2
     assert not part_dep.isnull().any(axis=None)
+
+
+@pytest.mark.parametrize('problem_type', ['binary', 'regression'])
+def test_graph_partial_dependence_regression_and_binary_categorical(problem_type, linear_regression_pipeline_class,
+                                                                    X_y_regression, X_y_binary,
+                                                                    logistic_regression_binary_pipeline_class):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    if problem_type == 'binary':
+        X, y = X_y_binary
+        pipeline = logistic_regression_binary_pipeline_class({"Logistic Regression Classifier": {"n_jobs": 1}})
+    else:
+        X, y = X_y_regression
+        pipeline = linear_regression_pipeline_class({"Linear Regressor": {"n_jobs": 1}})
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    X['categorical_column'] = pd.Series([i % 3 for i in range(X.shape[0])]).astype('str')
+    X['categorical_column_2'] = pd.Series([i % 6 for i in range(X.shape[0])]).astype('str')
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='categorical_column', grid_resolution=5)
+    plot_data = fig.to_dict()['data'][0]
+    assert plot_data['type'] == 'bar'
+    assert plot_data['x'].tolist() == ['0', '1', '2']
+
+    fig = graph_partial_dependence(pipeline, X, features=('0', 'categorical_column'),
+                                   grid_resolution=5)
+    fig_dict = fig.to_dict()
+    plot_data = fig_dict['data'][0]
+    assert plot_data['type'] == 'contour'
+    assert fig_dict['layout']['yaxis']['ticktext'] == ['0', '1', '2']
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'categorical_column' vs. '0'"
+
+    fig = graph_partial_dependence(pipeline, X, features=('categorical_column_2', 'categorical_column'),
+                                   grid_resolution=5)
+    fig_dict = fig.to_dict()
+    plot_data = fig_dict['data'][0]
+    assert plot_data['type'] == 'contour'
+    assert fig_dict['layout']['xaxis']['ticktext'] == ['0', '1', '2']
+    assert fig_dict['layout']['yaxis']['ticktext'] == ['0', '1', '2', '3', '4', '5']
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'categorical_column_2' vs. 'categorical_column'"
+
+
+@pytest.mark.parametrize('class_label', [None, 'class_1'])
+def test_partial_dependence_multiclass_categorical(class_label,
+                                                   logistic_regression_multiclass_pipeline_class):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    X, y = load_wine()
+    X['categorical_column'] = ww.DataColumn(pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
+                                            logical_type="Categorical")
+    X['categorical_column_2'] = ww.DataColumn(pd.Series([i % 6 for i in range(X.shape[0])]).astype(str),
+                                              logical_type="Categorical")
+
+    pipeline = logistic_regression_multiclass_pipeline_class({"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='categorical_column', class_label=class_label,
+                                   grid_resolution=5)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'bar'
+        assert plot_data['x'].tolist() == ['0', '1', '2']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label
+
+    fig = graph_partial_dependence(pipeline, X, features=('alcohol', 'categorical_column'), class_label=class_label,
+                                   grid_resolution=5)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'contour'
+        assert fig.to_dict()['layout']['yaxis']['ticktext'] == ['0', '1', '2']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label
+
+    fig = graph_partial_dependence(pipeline, X, features=('categorical_column_2', 'categorical_column'),
+                                   class_label=class_label, grid_resolution=5)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'contour'
+        assert fig.to_dict()['layout']['xaxis']['ticktext'] == ['0', '1', '2']
+        assert fig.to_dict()['layout']['yaxis']['ticktext'] == ['0', '1', '2', '3', '4', '5']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label

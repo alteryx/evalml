@@ -2,6 +2,7 @@ import copy
 import sys
 import time
 import traceback
+import warnings
 from collections import defaultdict
 
 import cloudpickle
@@ -189,6 +190,10 @@ class AutoMLSearch:
             self.problem_type = handle_problem_types(problem_type)
         except ValueError:
             raise ValueError('choose one of (binary, multiclass, regression) as problem_type')
+
+        if is_time_series(self.problem_type):
+            warnings.warn("Time series support in evalml is still in beta, which means we are still actively building "
+                          "its core features. Please be mindful of that when running search().")
 
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback

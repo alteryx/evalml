@@ -1,4 +1,5 @@
 import os
+import warnings
 from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -2813,3 +2814,17 @@ def test_automl_supports_float_targets_for_classification(mock_train, mock_binar
     _, kwargs = mock_train.call_args
     mock_y = kwargs["y"]
     pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY,
+                                          ProblemTypes.TIME_SERIES_MULTICLASS])
+def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
+
+    X, y = X_y_binary
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"gap": 0, "max_delay": 2})
+        assert len(warn) == 1
+        message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
+        assert str(warn[0].message).startswith(message)
