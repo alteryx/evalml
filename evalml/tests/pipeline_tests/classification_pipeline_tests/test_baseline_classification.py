@@ -5,7 +5,8 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 from evalml.pipelines import (
     BaselineBinaryPipeline,
     BaselineMulticlassPipeline,
-    ModeBaselineBinaryPipeline
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline
 )
 from evalml.utils import get_random_state
 
@@ -18,7 +19,7 @@ def test_baseline_binary_init(X_y_binary):
     }
     clf = BaselineBinaryPipeline(parameters=parameters)
     assert clf.custom_hyperparameters is None
-    assert clf.name == "Baseline Classification Pipeline"
+    assert clf.name == "Baseline Binary Classification Pipeline"
 
     clf = ModeBaselineBinaryPipeline({})
     assert clf.custom_hyperparameters == {"strategy": ["mode"]}
@@ -91,6 +92,22 @@ def test_baseline_binary_mode():
     assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
+
+
+def test_baseline_multi_init():
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "random"
+        }
+    }
+    clf = BaselineMulticlassPipeline(parameters=parameters)
+    assert clf.custom_hyperparameters is None
+    assert clf.name == "Baseline Multiclass Classification Pipeline"
+
+    clf = ModeBaselineMulticlassPipeline({})
+    assert clf.custom_hyperparameters == {"strategy": ["mode"]}
+    assert clf.name == "Mode Baseline Multiclass Classification Pipeline"
+
 
 
 def test_baseline_multi_random(X_y_multi):
