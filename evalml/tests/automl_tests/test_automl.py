@@ -2277,7 +2277,7 @@ def test_automl_ensembling_best_pipeline(mock_fit, mock_score, mock_rankings, in
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_batches=ensemble_pipelines,
                           ensembling=True, _ensembling_split_size=ensemble_split_size)
     ensembling_num = (1 + len(automl.allowed_pipelines) + len(automl.allowed_pipelines) * automl._pipelines_per_batch + 1) + best_pipeline
-    mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "score": 0.1}, index=[0])
+    mock_rankings.return_value = pd.DataFrame({"id": ensembling_num, "pipeline_name": "stacked_ensembler", "mean_cv_score": 0.1}, index=[0])
     automl.search()
     # when best_pipeline == -1, model is ensembling,
     # otherwise, the model is a different model
