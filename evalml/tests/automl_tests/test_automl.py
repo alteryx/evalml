@@ -940,9 +940,9 @@ def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
-    assert "0                      1.000       66.0         34.0" in out
-    assert "1                      1.000       67.0         33.0" in out
-    assert "2                      1.000       67.0         33.0" in out
+    assert "0                      1.000         66           34" in out
+    assert "1                      1.000         67           33" in out
+    assert "2                      1.000         67           33" in out
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
