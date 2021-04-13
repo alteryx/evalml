@@ -697,7 +697,7 @@ class AutoMLSearch:
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline.name,
-            # "pipeline_class": pipeline,
+            "pipeline_class": pipeline.__class__,
             "pipeline_summary": pipeline.summary(),
             "parameters": pipeline.parameters,
             "score": cv_score,

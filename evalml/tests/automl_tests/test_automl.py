@@ -93,7 +93,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                                   'percent_better_than_baseline', 'validation_score'}
         assert results['id'] == pipeline_id
         assert isinstance(results['pipeline_name'], str)
-        assert isinstance(results['pipeline_class'], expected_pipeline_class)
+        assert issubclass(results['pipeline_class'], expected_pipeline_class)
         assert isinstance(results['pipeline_summary'], str)
         assert isinstance(results['parameters'], dict)
         assert isinstance(results['score'], float)
@@ -894,6 +894,8 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     automl.search()
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
     automl._results['pipeline_results'][0].pop('pipeline_class')
+    automl._pipelines_searched.pop(0)
+
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
