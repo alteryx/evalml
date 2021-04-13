@@ -216,7 +216,8 @@ class StackedEnsemblePipeline(BinaryClassificationPipeline):
         return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
-pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS,
+pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction,
+                                                             PipelineWithDFS,
                                                              PipelineWithCustomComponent,
                                                              EnsembleDag, StackedEnsemblePipeline]
 
