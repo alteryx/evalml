@@ -67,7 +67,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
         "warnings": [],
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                  message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
                                   details={"least_populated_class_labels": [0]}).to_dict()],
         "actions": []
     }
@@ -79,7 +79,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
         "warnings": [],
         "errors": [DataCheckError(message=expected_message,
                                   data_check_name=invalid_targets_data_check_name,
-                                  message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                  message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
                                   details={"least_populated_class_labels": [0, 1]}).to_dict()],
         "actions": []
     }
