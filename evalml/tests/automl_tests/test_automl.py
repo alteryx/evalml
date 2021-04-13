@@ -764,13 +764,12 @@ def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
 
-    test_pipeline = dummy_regression_pipeline_class(parameters={})
-    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[test_pipeline],
+    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[dummy_regression_pipeline_class],
                           problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     mock_score.return_value = {automl.objective.name: 0.1234}
 
-    automl.add_to_rankings(test_pipeline)
+    automl.add_to_rankings(dummy_regression_pipeline_class({}))
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings["mean_cv_score"].values
@@ -789,12 +788,11 @@ def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
 def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
 
-    test_pipeline = dummy_regression_pipeline_class(parameters={})
-    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[test_pipeline],
+    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[dummy_regression_pipeline_class],
                           problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 0.1234}
 
-    automl.add_to_rankings(test_pipeline)
+    automl.add_to_rankings(dummy_regression_pipeline_class({}))
     assert isinstance(automl.data_splitter, KFold)
     assert len(automl.rankings) == 1
     assert 0.1234 in automl.rankings["mean_cv_score"].values
@@ -2782,3 +2780,17 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
         assert len(warn) == 1
         message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
         assert str(warn[0].message).startswith(message)
+
+
+def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_binary_pipeline_class):
+
+    X, y = X_y_binary
+
+    with pytest.raises(ValueError, match="Parameter allowed_pipelines must be either None or a list!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=dummy_binary_pipeline_class)
+
+    with pytest.raises(ValueError, match="Every element of allowed_pipelines must be a subclass of PipelineBase!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class({})])
+
+    with pytest.raises(ValueError, match="Every element of allowed_pipelines must be a subclass of PipelineBase!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.name, dummy_binary_pipeline_class])
