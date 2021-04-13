@@ -251,6 +251,7 @@ class AutoMLSearch:
             'pipeline_results': {},
             'search_order': [],
         }
+        self._pipelines_searched = dict()
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
@@ -696,7 +697,7 @@ class AutoMLSearch:
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline.name,
-            "pipeline_class": pipeline,
+            # "pipeline_class": pipeline,
             "pipeline_summary": pipeline.summary(),
             "parameters": pipeline.parameters,
             "score": cv_score,
@@ -707,6 +708,7 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
+        self._pipelines_searched.update({pipeline_id: pipeline})
 
         if pipeline.model_family == ModelFamily.ENSEMBLE:
             input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
@@ -754,7 +756,7 @@ class AutoMLSearch:
         pipeline_results = self.results['pipeline_results'].get(pipeline_id)
         if pipeline_results is None:
             raise PipelineNotFoundError("Pipeline not found in automl results")
-        pipeline_class = pipeline_results.get('pipeline_class')
+        pipeline_class = self._pipelines_searched.get(pipeline_id)
         parameters = pipeline_results.get('parameters')
         if pipeline_class is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
