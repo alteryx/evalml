@@ -297,6 +297,12 @@ class AutoMLSearch:
         self.sampler_balanced_ratio = _sampler_balanced_ratio
         self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
 
+        if self.allowed_pipelines is None:
+            logger.info("Generating pipelines to search over...")
+            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
+            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=copy.copy(self.pipeline_parameters), sampler_name=self._sampler_name) for estimator in allowed_estimators]
+
         # if we are using SMOTENC, we need to pass in the categorical features
         if self._sampler_name == 'SMOTENC Oversampler':
             categorical_features = [i for i, val in enumerate(self.X_train.types['Logical Type'].items()) if str(val[1]) == 'Categorical']
@@ -306,12 +312,6 @@ class AutoMLSearch:
             elif (self._sampler_name in self.pipeline_parameters.keys() and 'categorical_features' not in self.pipeline_parameters[self._sampler_name]):
                 # otherwise, if the sampler parameters exist but no categorical_features are provided, we add it
                 self.pipeline_parameters[self._sampler_name]["categorical_features"] = categorical_features
-
-        if self.allowed_pipelines is None:
-            logger.info("Generating pipelines to search over...")
-            allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
-            logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")

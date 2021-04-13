@@ -83,6 +83,7 @@ class SMOTENCSampler(BaseSampler):
         """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         self.im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
+        self.categorical_features = categorical_features
         parameters = {"categorical_features": categorical_features,
                       "sampling_ratio": sampling_ratio,
                       "sampling_ratio_dict": sampling_ratio_dict,
