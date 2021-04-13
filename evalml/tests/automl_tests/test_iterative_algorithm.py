@@ -64,9 +64,6 @@ def dummy_binary_pipeline_classes():
             def new(self, parameters, random_seed):
                 return self.__class__(parameters, random_seed=random_seed)
 
-            def clone(self):
-                return self.__class__(self.parameters, random_seed=self.random_seed)
-
         class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
@@ -77,9 +74,6 @@ def dummy_binary_pipeline_classes():
             def new(self, parameters, random_seed):
                 return self.__class__(parameters, random_seed=random_seed)
 
-            def clone(self):
-                return self.__class__(self.parameters, random_seed=self.random_seed)
-
         class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
             estimator = MockEstimator
             component_graph = [MockEstimator]
@@ -89,9 +83,6 @@ def dummy_binary_pipeline_classes():
 
             def new(self, parameters, random_seed):
                 return self.__class__(parameters, random_seed=random_seed)
-
-            def clone(self):
-                return self.__class__(self.parameters, random_seed=self.random_seed)
 
         return [MockBinaryClassificationPipeline1({}),
                 MockBinaryClassificationPipeline2({}),

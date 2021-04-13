@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_series_equal
 
-from evalml.pipelines import BaselineRegressionPipeline, MeanBaselineRegressionPipeline
+from evalml.pipelines import (
+    BaselineRegressionPipeline,
+    MeanBaselineRegressionPipeline
+)
 
 
 def test_baseline_regression_init(X_y_binary):

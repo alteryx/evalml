@@ -18,7 +18,7 @@ from evalml.utils import (
 
 
 class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
-    """Pipeline base class for time series classifcation problems."""
+    """Pipeline base class for time series classification problems."""
 
     def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
@@ -39,8 +39,6 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        self._component_graph = component_graph
-        self.component_graph = component_graph
         super().__init__(component_graph, custom_name, parameters, custom_hyperparameters, random_seed=random_seed)
 
     @staticmethod

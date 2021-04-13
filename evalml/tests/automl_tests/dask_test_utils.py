@@ -49,9 +49,6 @@ class TestLRCPipeline(BinaryClassificationPipeline):
     def __init__(self, parameters, random_seed=0):
         return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
-    def new(self, parameters, random_seed):
-        return self.__class__(parameters, random_seed=random_seed)
-
     def clone(self):
         return self.__class__(self.parameters, random_seed=self.random_seed)
 
@@ -62,9 +59,6 @@ class TestSVMPipeline(BinaryClassificationPipeline):
     def __init__(self, parameters, random_seed=0):
         return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
-    def new(self, parameters, random_seed):
-        return self.__class__(parameters, random_seed=random_seed)
-
     def clone(self):
         return self.__class__(self.parameters, random_seed=self.random_seed)
 
@@ -74,9 +68,6 @@ class TestBaselinePipeline(BinaryClassificationPipeline):
 
     def __init__(self, parameters, random_seed=0):
         return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    def new(self, parameters, random_seed):
-        return self.__class__(parameters, random_seed=random_seed)
 
     def clone(self):
         return self.__class__(self.parameters, random_seed=self.random_seed)

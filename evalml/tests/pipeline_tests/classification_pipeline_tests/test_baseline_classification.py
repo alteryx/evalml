@@ -109,6 +109,31 @@ def test_baseline_multi_init():
     assert clf.name == "Mode Baseline Multiclass Classification Pipeline"
 
 
+def test_baseline_multi_new_clone():
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "random"
+        }
+    }
+    clf = BaselineMulticlassPipeline(parameters=parameters)
+    cloned_clf = clf.clone()
+    assert cloned_clf == clf
+    assert cloned_clf.name == "Baseline Multiclass Classification Pipeline"
+    assert cloned_clf.parameters == parameters
+
+    new_parameters = {
+        "Baseline Classifier": {
+            "strategy": "mode"
+        }
+    }
+    new_clf = clf.new(parameters=new_parameters)
+    assert new_clf.name == "Baseline Multiclass Classification Pipeline"
+    assert new_clf.parameters == new_parameters
+
+    clf = ModeBaselineMulticlassPipeline({})
+    assert clf.custom_hyperparameters == {"strategy": ["mode"]}
+    assert clf.name == "Mode Baseline Multiclass Classification Pipeline"
+
 
 def test_baseline_multi_random(X_y_multi):
     X, y = X_y_multi
