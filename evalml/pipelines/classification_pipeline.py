@@ -16,7 +16,7 @@ class ClassificationPipeline(PipelineBase):
             component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             custom_name (str): Custom name for the pipeline.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary {} implies using all default values for component parameters.
+                 An empty dictionary or None implies using all default values for component parameters.
             custom_hyperparameters (dict): Custom hyperparameter range for the pipeline.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """

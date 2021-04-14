@@ -115,6 +115,8 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
         y (pd.Series, ww.DataColumn): The target data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+            An empty dictionary or None implies using all default values for component parameters.
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
             with component name as key and dictionary of parameters as the value
 
@@ -136,9 +138,7 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
 
     base_class = _get_pipeline_base_class(problem_type)
     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    if parameters is None:
-        parameters = {}
-
+    parameters = parameters or {}
     return base_class(complete_component_graph, custom_name=name, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
 
 
