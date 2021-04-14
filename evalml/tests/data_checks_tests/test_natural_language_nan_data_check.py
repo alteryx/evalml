@@ -32,7 +32,8 @@ def test_nl_nan_data_check_error_no_nan():
 
 
 def test_nl_nan_data_check_error_other_cols_with_nan():
-    data = pd.DataFrame(np.random.randint(0, 10, size=(10, 4)))
+    data = pd.DataFrame(np.random.randint(0, 10, size=(2, 2)))
+    data['A'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
     data = data.replace(data.iloc[0][0], None)
     data = data.replace(data.iloc[1][1], None)
     nl_nan_check = NaturalLanguageNaNDataCheck()
@@ -47,6 +48,7 @@ def test_nl_nan_data_check_error_multiple_nl_no_nan():
     data = pd.DataFrame()
     data['A'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
     data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
+
     data['C'] = np.random.randint(0, 3, size=len(data))
 
     nl_nan_check = NaturalLanguageNaNDataCheck()
@@ -61,7 +63,8 @@ def test_nl_nan_data_check_error_multiple_nl_nan():
     data = pd.DataFrame()
     data['A'] = pd.Series([None, "string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"])
     data['B'] = pd.Series([None, "string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"])
-    data['C'] = np.random.randint(0, 5, size=len(data))
+    data['C'] = pd.Series(["", "string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"])
+    data['D'] = np.random.randint(0, 5, size=len(data))
 
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
@@ -92,7 +95,7 @@ def test_nl_nan_check_input_formats():
     nl_col = [None, "string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"]
 
     #  test Woodwork
-    ww_input = ww.DataTable(pd.DataFrame(nl_col, columns=['nl']))
+    ww_input = ww.DataTable(pd.DataFrame(nl_col, columns=['nl']), logical_types={'nl': 'NaturalLanguage'})
     assert nl_nan_check.validate(ww_input) == expected
 
     expected = {

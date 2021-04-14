@@ -1,8 +1,5 @@
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 error_contains_nan = "Input natural language column(s) ({}) contains NaN values. Please impute NaN values or drop these rows or columns."
 
@@ -32,6 +29,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
             >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
             >>> data['C'] = np.random.randint(0, 3, size=len(data))
+            >>> data = ww.DataTable(data, logical_types={'A': 'NaturalLanguage', 'B': 'NaturalLanguage'})
             >>> nl_nan_check = NaturalLanguageNaNDataCheck()
             >>> assert nl_nan_check.validate(data) == {
             ...        "warnings": [],
@@ -49,11 +47,10 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        nl_cols = _convert_woodwork_types_wrapper(X.select("natural_language").to_dataframe())
-        nan_columns = nl_cols.columns[nl_cols.isna().any()].tolist()
+        X_describe = X.describe_dict()
+        nan_columns = [str(col) for col in X_describe if X_describe[col]['nan_count'] > 0]
         if len(nan_columns) > 0:
-            nan_columns = [str(col) for col in nan_columns]
-            cols_str = ', '.join(nan_columns) if len(nan_columns) > 1 else nan_columns[0]
+            cols_str = ', '.join(nan_columns)
             results["errors"].append(DataCheckError(message=error_contains_nan.format(cols_str),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
