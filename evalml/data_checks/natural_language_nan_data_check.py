@@ -47,6 +47,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
+        X = X.select('natural_language')
         X_describe = X.describe_dict()
         nan_columns = [str(col) for col in X_describe if X_describe[col]['nan_count'] > 0]
         if len(nan_columns) > 0:
