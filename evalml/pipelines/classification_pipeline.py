@@ -9,7 +9,7 @@ from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
-    def __init__(self, parameters, random_state=None, random_seed=0):
+    def __init__(self, parameters, random_seed=0):
         """Machine learning classification pipeline made out of transformers and a classifier.
 
         Required Class Variables:
@@ -22,7 +22,7 @@ class ClassificationPipeline(PipelineBase):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self._encoder = LabelEncoder()
-        super().__init__(parameters, random_state=random_state, random_seed=random_seed)
+        super().__init__(parameters, random_seed=random_seed)
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted

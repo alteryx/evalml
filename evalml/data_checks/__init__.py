@@ -2,7 +2,7 @@ from .data_check import DataCheck
 from .data_check_message_code import DataCheckMessageCode
 from .data_check_action import DataCheckAction
 from .data_check_action_code import DataCheckActionCode
-from .data_checks import AutoMLDataChecks, DataChecks
+from .data_checks import DataChecks
 from .data_check_message import DataCheckMessage, DataCheckWarning, DataCheckError
 from .data_check_message_type import DataCheckMessageType
 from .default_data_checks import DefaultDataChecks
@@ -17,3 +17,5 @@ from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .multicollinearity_data_check import MulticollinearityDataCheck
 from .sparsity_data_check import SparsityDataCheck
 from .uniqueness_data_check import UniquenessDataCheck
+from .datetime_nan_data_check import DateTimeNaNDataCheck
+from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck

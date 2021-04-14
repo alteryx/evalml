@@ -2,16 +2,97 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
+        * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
+        * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
+        * Added ``NaturalLanguageNaNDataCheck`` data check :pr:`2122`
+        * Added ValueError to ``partial_dependence`` to prevent users from computing partial dependence on columns with all NaNs :pr:`2120`
     * Fixes
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
+        * Fixed bug where two-way partial dependence plots with categorical variables were not working correctly :pr:`2117`
+
     * Changes
+        * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
+        * Renamed ``TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS`` data check message code to ``TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS`` :pr:`2126`
+        * Modified one-way partial dependence plots of categorical features to display data with a bar plot :pr:`2117`
+    * Documentation Changes
+        * Fixed ``conf.py`` file :pr:`2112`
+        * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
+    * Testing Changes
+        * Fixed ``test_describe_pipeline`` for ``pandas`` ``v1.2.4`` :pr:`2129`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``balanced_ratio`` to ``sampling_ratio`` for the ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, ``BalancedClassficationSampler``, and Undersampler :pr:`2113`
+        * Deleted the "errors" key from automl results :pr:`1975`
+        * Deleted the ``raise_and_save_error_callback`` and the ``log_and_save_error_callback`` :pr:`1975`
+        * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
+
+
+**v0.22.0 Apr. 06, 2021**
+    * Enhancements
+        * Added a GitHub Action for ``linux_unit_tests``:pr:`2013`
+        * Added recommended actions for ``InvalidTargetDataCheck``, updated ``_make_component_list_from_actions`` to address new action, and added ``TargetImputer`` component :pr:`1989`
+        * Updated ``AutoMLSearch._check_for_high_variance`` to not emit ``RuntimeWarning`` :pr:`2024`
+        * Added exception when pipeline passed to ``explain_predictions`` is a ``Stacked Ensemble`` pipeline :pr:`2033`
+        * Added sensitivity at low alert rates as an objective :pr:`2001`
+        * Added ``Undersampler`` transformer component :pr:`2030`
+    * Fixes
+        * Updated Engine's ``train_batch`` to apply undersampling :pr:`2038`
+        * Fixed bug in where Time Series Classification pipelines were not encoding targets in ``predict`` and ``predict_proba`` :pr:`2040`
+        * Fixed data splitting errors if target is float for classification problems :pr:`2050`
+        * Pinned ``docutils`` to <0.17 to fix ReadtheDocs warning issues :pr:`2088`
+    * Changes
+        * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
+        * Renamed "details" to "metadata" for data check actions :pr:`2008`
+    * Documentation Changes
+        * Catch and suppress warnings in documentation :pr:`1991` :pr:`2097`
+        * Change spacing in ``start.ipynb`` to provide clarity for ``AutoMLSearch`` :pr:`2078`
+        * Fixed start code on README :pr:`2108`
+    * Testing Changes
+
+
+**v0.21.0 Mar. 24, 2021**
+    * Enhancements
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
+        * Added multiple oversampling and undersampling sampling methods as data splitters for imbalanced classification :pr:`1775`
+        * Added params to balanced classification data splitters for visibility :pr:`1966`
+        * Updated ``make_pipeline`` to not add ``Imputer`` if input data does not have numeric or categorical columns :pr:`1967`
+        * Updated ``ClassImbalanceDataCheck`` to better handle multiclass imbalances :pr:`1986`
+        * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
+        * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
+        * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
+        * Added a ``PolynomialDetrender`` component :pr:`1992`
+        * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
+    * Fixes
+        * Changed best pipeline to train on the entire dataset rather than just ensemble indices for ensemble problems :pr:`2037`
+        * Updated binary classification pipelines to use objective decision function during scoring of custom objectives :pr:`1934`
+    * Changes
+        * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch`` :pr:`1935`
+        * Deleted ``random_state`` argument :pr:`1985`
+        * Updated Woodwork version requirement to ``v0.0.11`` :pr:`1996`
     * Documentation Changes
     * Testing Changes
+        * Removed ``build_docs`` CI job in favor of RTD GH builder :pr:`1974`
+        * Added tests to confirm support for Python 3.9 :pr:`1724`
+        * Added tests to support Dask AutoML/Engine :pr:`1990`
+        * Changed ``build_conda_pkg`` job to use ``latest_release_changes`` branch in the feedstock. :pr:`1979`
+
+.. warning::
+
+    **Breaking Changes**
+        * Changed ``AutoMLSearch`` to default ``optimize_thresholds`` to True :pr:`1943`
+        * Removed ``data_checks`` parameter, ``data_check_results`` and data checks logic from ``AutoMLSearch``. To run the data checks which were previously run by default in ``AutoMLSearch``, please call ``DefaultDataChecks().validate(X_train, y_train)`` or take a look at our documentation for more examples. :pr:`1935`
+        * Deleted ``random_state`` argument :pr:`1985`
 
 **v0.20.0 Mar. 10, 2021**
     * Enhancements
         * Added a GitHub Action for Detecting dependency changes :pr:`1933`
         * Create a separate CV split to train stacked ensembler on for AutoMLSearch :pr:`1814`
         * Added a GitHub Action for Linux unit tests :pr:`1846`
+        * Added ``ARIMARegressor`` estimator :pr:`1894`
         * Added ``DataCheckAction`` class and ``DataCheckActionCode`` enum :pr:`1896`
         * Updated ``Woodwork`` requirement to ``v0.0.10`` :pr:`1900`
         * Added ``BalancedClassificationDataCVSplit`` and ``BalancedClassificationDataTVSplit`` to AutoMLSearch :pr:`1875`
@@ -22,6 +103,7 @@ Release Notes
         * Aggregating the shap values for predictions that we know the provenance of, e.g. OHE, text, and date-time. :pr:`1901`
         * Improved error message when custom objective is passed as a string in ``pipeline.score`` :pr:`1941`
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
+        * Added support for ``pandas`` version 1.2.0 :pr:`1708`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
         * Added ability to handle index columns in ``AutoMLSearch`` and ``DataChecks`` :pr:`2138`
     * Fixes
@@ -36,6 +118,7 @@ Release Notes
         * Updated ``ClassImbalanceDataCheck`` to look for severe class imbalance scenarios :pr:`1905`
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
+        * Removed warning in ``InvalidTargetDataCheck`` returned when numeric binary classification targets are not (0, 1) :pr:`1959`
     * Documentation Changes
         * Updated ``model_understanding.ipynb`` to demo the two-way partial dependence capability :pr:`1919`
     * Testing Changes
@@ -46,6 +129,7 @@ Release Notes
         * Deleted the ``explain_prediction`` function :pr:`1915`
         * Removed ``HighVarianceCVDataCheck`` and convered it to an ``AutoMLSearch`` method instead :pr:`1928`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase``. These need to be implemented in Engine subclasses :pr:`1913`
+
 
 **v0.19.0 Feb. 23, 2021**
     * Enhancements

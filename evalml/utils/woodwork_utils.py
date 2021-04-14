@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 
+from evalml.utils.gen_utils import is_all_numeric
+
 numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
 
 
@@ -67,15 +69,15 @@ def _convert_woodwork_types_wrapper(pd_data):
     return pd_data
 
 
-def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, ltypes_to_ignore=None):
+def _retain_custom_types_and_initalize_woodwork(old_woodwork_data, new_pandas_data, ltypes_to_ignore=None):
     """
-    Helper method which will take an old Woodwork DataTable and a new pandas DataFrame and return a
-    new DataTable that will try to retain as many logical types from the old DataTable that exist in the new
-    pandas DataFrame as possible.
+    Helper method which will take an old Woodwork data structure and a new pandas data structure and return a
+    new data structure that will try to retain as many logical types from the old data structure that exist in the new
+    pandas data structure as possible.
 
     Arguments:
-        old_datatable (ww.DataTable): Woodwork DataTable to use
-        new_dataframe (pd.DataFrame): Pandas data structure
+        old_woodwork_data (ww.DataTable): Woodwork data structure to use
+        new_pandas_data (pd.DataFrame): Pandas data structure
         ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataTable that have a logical type
         specified in this list will not have their logical types carried over to the new DataTable returned
 
@@ -83,18 +85,45 @@ def _retain_custom_types_and_initalize_woodwork(old_datatable, new_dataframe, lt
         A new DataTable where any of the columns that exist in the old input DataTable and the new DataFrame try to retain
         the original logical type, if possible and not specified to be ignored.
     """
+    if isinstance(old_woodwork_data, ww.DataColumn):
+        if str(new_pandas_data.dtype) != old_woodwork_data.logical_type.pandas_dtype:
+            try:
+                return ww.DataColumn(new_pandas_data, logical_type=old_woodwork_data.logical_type)
+            except (ValueError, TypeError):
+                pass
+        return ww.DataColumn(new_pandas_data)
+
     retained_logical_types = {}
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
-    col_intersection = set(old_datatable.columns).intersection(set(new_dataframe.columns))
-    logical_types = old_datatable.logical_types
+    col_intersection = set(old_woodwork_data.columns).intersection(set(new_pandas_data.columns))
+    logical_types = old_woodwork_data.logical_types
     for col in col_intersection:
         if logical_types[col] in ltypes_to_ignore:
             continue
-        if str(new_dataframe[col].dtype) != logical_types[col].pandas_dtype:
+        if str(new_pandas_data[col].dtype) != logical_types[col].pandas_dtype:
             try:
-                new_dataframe[col].astype(logical_types[col].pandas_dtype)
-                retained_logical_types[col] = old_datatable[col].logical_type
+                new_pandas_data[col].astype(logical_types[col].pandas_dtype)
+                retained_logical_types[col] = old_woodwork_data[col].logical_type
             except (ValueError, TypeError):
                 pass
-    return ww.DataTable(new_dataframe, logical_types=retained_logical_types)
+    return ww.DataTable(new_pandas_data, logical_types=retained_logical_types)
+
+
+def _convert_numeric_dataset_pandas(X, y):
+    """Convert numeric and non-null data to pandas datatype. Raises ValueError if there is null or non-numeric data.
+    Used with data sampler strategies.
+
+    Arguments:
+        X (pd.DataFrame, np.ndarray, ww.DataTable): Data to transform
+        y (pd.Series, np.ndarray, ww.DataColumn): Target data
+
+    Returns:
+        Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
+    X_ww = infer_feature_types(X)
+    if not is_all_numeric(X_ww):
+        raise ValueError('Values not all numeric or there are null values provided in the dataset')
+    y_ww = infer_feature_types(y)
+    X_ww = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+    y_ww = _convert_woodwork_types_wrapper(y_ww.to_series())
+    return X_ww, y_ww

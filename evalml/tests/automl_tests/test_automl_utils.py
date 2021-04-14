@@ -1,4 +1,3 @@
-import warnings
 from unittest.mock import patch
 
 import pandas as pd
@@ -30,8 +29,10 @@ def test_get_default_primary_search_objective():
     assert isinstance(get_default_primary_search_objective(ProblemTypes.MULTICLASS), LogLossMulticlass)
     assert isinstance(get_default_primary_search_objective("regression"), R2)
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
-    assert isinstance(get_default_primary_search_objective('time series binary'), LogLossBinary)
-    assert isinstance(get_default_primary_search_objective('time series multiclass'), LogLossMulticlass)
+    assert isinstance(get_default_primary_search_objective("time series binary"), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.TIME_SERIES_BINARY), LogLossBinary)
+    assert isinstance(get_default_primary_search_objective("time series multiclass"), LogLossMulticlass)
+    assert isinstance(get_default_primary_search_objective(ProblemTypes.TIME_SERIES_MULTICLASS), LogLossMulticlass)
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
 
@@ -57,7 +58,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         if problem_type == ProblemTypes.REGRESSION:
             assert isinstance(data_splitter, TrainingValidationSplit)
             assert data_splitter.stratify is None
-            assert data_splitter.random_state == 0
+            assert data_splitter.random_seed == 0
         else:
             assert isinstance(data_splitter, BalancedClassificationDataTVSplit)
             assert data_splitter.random_seed == 0
@@ -149,21 +150,12 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
             make_data_splitter(X, y, problem_type, n_splits=5, shuffle=False, random_seed=42)
 
 
-def test_make_data_splitter_raises_deprecated_random_state_warning(X_y_binary):
-    X, y = X_y_binary
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        splitter = make_data_splitter(X, y, "binary", n_splits=5, shuffle=True, random_state=15)
-        assert splitter.random_seed == 15
-        assert str(warn[0].message).startswith(
-            "Argument 'random_state' has been deprecated in favor of 'random_seed'")
-
-
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
+@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
 @patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold,
+def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold,
                                dummy_binary_pipeline_class, X_y_binary):
     mock_optimize_threshold.return_value = 0.42
     mock_score.return_value = {'F1': 1.0}

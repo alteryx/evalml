@@ -37,6 +37,11 @@ installdeps:
 	pip install --upgrade pip -q
 	pip install -e . -q
 
+.PHONY: installdeps-core
+installdeps-core:
+	pip install -e . -q
+	pip install -r core-requirements.txt -q
+
 .PHONY: installdeps-test
 installdeps-test:
 	pip install -e . -q

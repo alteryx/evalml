@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -157,16 +156,3 @@ def test_skopt_tuner_propose():
             'param c': 'option c'
         }
     }
-
-
-def test_skopt_tuner_raises_deprecated_random_state_warning():
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        pipeline_hyperparameter_ranges = {'Mock Classifier': {
-            'param a': Integer(0, 10),
-            'param b': Real(0, 10),
-            'param c': ['option a', 'option b', 'option c']
-        }}
-        SKOptTuner(pipeline_hyperparameter_ranges, random_state=15)
-        assert any(str(w.message).startswith(
-            "Argument 'random_state' has been deprecated in favor of 'random_seed'") for w in warn)

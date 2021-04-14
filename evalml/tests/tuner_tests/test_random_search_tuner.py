@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 import pytest
 
@@ -89,10 +87,3 @@ def test_random_search_tuner_invalid_space():
         RandomSearchTuner({'Mock Classifier': {'param a': (1, 0)}}, random_seed=random_seed)
     with pytest.raises(ValueError, match=bound_error_text):
         RandomSearchTuner({'Mock Classifier': {'param a': (0, 0)}}, random_seed=random_seed)
-
-
-def test_random_search_tuner_raises_deprecated_random_state_warning():
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        RandomSearchTuner({'Mock Classifier': {'param a': (0, 2)}}, random_state=random_seed)
-        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")

@@ -1,6 +1,8 @@
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning
 )
@@ -47,7 +49,8 @@ class IDColumnsDataCheck(DataCheck):
                                                                    "level": "warning",\
                                                                    "code": "HAS_ID_COLUMN",\
                                                                    "details": {"column": "df_id"}}],\
-                                                     "actions": []}
+                                                     "actions": [{"code": "DROP_COL",\
+                                                                 "metadata": {"column": "df_id"}}]}
         """
         results = {
             "warnings": [],
@@ -78,4 +81,7 @@ class IDColumnsDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                                                      details={"column": col_name}).to_dict()
                                     for col_name in id_cols_above_threshold])
+        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
+                                                   metadata={"column": col_name}).to_dict()
+                                   for col_name in id_cols_above_threshold])
         return results

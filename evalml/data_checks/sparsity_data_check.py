@@ -1,5 +1,7 @@
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning
 )
@@ -57,7 +59,8 @@ class SparsityDataCheck(DataCheck):
                                                             "level": "warning",\
                                                             "code": "TOO_SPARSE",\
                                                             "details": {"column": "sparse", 'sparsity_score': 0.0}}],\
-                                                       "actions": []}
+                                                       "actions": [{"code": "DROP_COL",\
+                                                                 "metadata": {"column": "sparse"}}]}
         """
         results = {
             "warnings": [],
@@ -76,6 +79,9 @@ class SparsityDataCheck(DataCheck):
                                                      message_code=DataCheckMessageCode.TOO_SPARSE,
                                                      details={"column": col_name, "sparsity_score": res.loc[col_name]}).to_dict()
                                     for col_name in too_sparse_cols])
+        results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
+                                                   metadata={"column": col_name}).to_dict()
+                                   for col_name in too_sparse_cols])
         return results
 
     @staticmethod

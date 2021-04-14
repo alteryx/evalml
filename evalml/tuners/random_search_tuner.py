@@ -1,20 +1,20 @@
 from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner
-from evalml.utils import deprecate_arg, get_random_state
+from evalml.utils import get_random_state
 
 
 class RandomSearchTuner(Tuner):
     """Random Search Optimizer.
 
     Example:
-        >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_state=42)
+        >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_seed=42)
         >>> proposal = tuner.propose()
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
     """
 
-    def __init__(self, pipeline_hyperparameter_ranges, random_state=None, random_seed=0, with_replacement=False, replacement_max_attempts=10):
+    def __init__(self, pipeline_hyperparameter_ranges, random_seed=0, with_replacement=False, replacement_max_attempts=10):
         """ Sets up check for duplication if needed.
 
         Arguments:
@@ -24,8 +24,8 @@ class RandomSearchTuner(Tuner):
             replacement_max_attempts (int): The maximum number of tries to get a unique
                 set of random parameters. Only used if tuner is initalized with
                 with_replacement=True
+            random_seed (int): Seed for random number generator. Defaults to 0.
         """
-        random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         self._space = Space(self._search_space_ranges)
         self._random_state = get_random_state(random_seed)
@@ -40,8 +40,8 @@ class RandomSearchTuner(Tuner):
         not dependent on scores of previous parameters.
 
         Arguments:
-            pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
-            score (float): the score obtained by evaluating the pipeline with the provided parameters
+            pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
+            score (float): The score obtained by evaluating the pipeline with the provided parameters
         """
         pass
 
@@ -55,7 +55,7 @@ class RandomSearchTuner(Tuner):
         generate a unique set of parameters after ``replacement_max_attempts`` tries, then ``NoParamsException`` is raised.
 
         Returns:
-            dict: proposed pipeline parameters
+            dict: Proposed pipeline parameters
         """
         if not len(self._search_space_ranges):
             return self._convert_to_pipeline_parameters({})

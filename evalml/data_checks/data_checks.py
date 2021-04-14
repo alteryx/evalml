@@ -97,14 +97,9 @@ class DataChecks:
             messages_new = data_check.validate(X, y)
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
-            messages["actions"].extend(messages_new["actions"])
 
+            new_actions = messages_new["actions"]
+            for new_action in new_actions:
+                if new_action not in messages["actions"]:
+                    messages["actions"].append(new_action)
         return messages
-
-
-class AutoMLDataChecks(DataChecks):
-
-    def __init__(self, data_check_instances):
-        if not all(isinstance(check, DataCheck) for check in data_check_instances):
-            raise ValueError("All elements of parameter data_checks must be an instance of DataCheck.")
-        self.data_checks = data_check_instances

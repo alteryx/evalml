@@ -233,13 +233,14 @@ def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pi
 
 
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
-    X = pd.DataFrame({'a': [2, None, 2, 2], 'b': [1, 2, 2, 1]})
-    y = pd.Series([0, 1, 0, 1])
+    X = pd.DataFrame({'a': [1, 2, None, 2, 2], 'b': [1, 1, 2, 2, 1]})
+    y = pd.Series([0, 1, 0, 1, 0])
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, features=0, grid_resolution=20)
-
+    with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
+        partial_dependence(pipeline, X, features=('a', "b"), grid_resolution=20)
     with pytest.warns(NullsInColumnWarning, match="There are null values in the features, which will cause NaN values in the partial dependence output"):
         partial_dependence(pipeline, X, features='a', grid_resolution=20)
 
@@ -272,9 +273,9 @@ def test_partial_dependence_more_categories_than_grid_resolution(logistic_regres
     num_cat_features = len(set(X["currency"].to_series()))
     assert num_cat_features == 164
 
-    part_dep_ans = {0.1424060057413758: 154, 0.006837318701999957: 1, 0.24445532203317386: 1, 0.15637574440029903: 1,
-                    0.11676042311300606: 1, 0.13434069071819482: 1, 0.1502609021969637: 1, 0.14486201259150977: 1,
-                    0.16687406140200164: 1, 0.06815227785761911: 1, 0.0791821060634158: 1}
+    part_dep_ans = {0.1432616813857269: 154, 0.1502346349971562: 1, 0.14487916687594762: 1,
+                    0.1573183451314127: 1, 0.11695462432136654: 1, 0.07950579532536253: 1, 0.006794444792966759: 1,
+                    0.17745270478939879: 1, 0.1666874487986626: 1, 0.13357573073236878: 1, 0.06778096366056789: 1}
     part_dep_ans_rounded = round_dict_keys(part_dep_ans)
 
     # Check the case where grid_resolution < number of categorical features
@@ -317,16 +318,17 @@ def test_graph_two_way_partial_dependence(test_pipeline):
     go = pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
+    fig = graph_partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=5)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'mean radius' vs. 'mean area'"
     assert len(fig_dict['data']) == 1
     assert fig_dict['data'][0]['name'] == "Partial Dependence"
 
-    part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=20)
-    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data.index)
-    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data.columns)
+    part_dep_data = partial_dependence(clf, X, features=('mean radius', 'mean area'), grid_resolution=5)
+    part_dep_data.drop(columns=['class_label'], inplace=True)
+    assert np.array_equal(fig_dict['data'][0]['x'], part_dep_data.columns)
+    assert np.array_equal(fig_dict['data'][0]['y'], part_dep_data.index)
     assert np.array_equal(fig_dict['data'][0]['z'], part_dep_data.values)
 
 
@@ -374,7 +376,7 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     assert [fig_dict["data"][i]['name'] for i in range(3)] == ["class_0", "class_1", "class_2"]
 
     # Check that all the subplots axes have the same range
-    for suplot_1_axis, suplot_2_axis in [('axis2', 'axis3'), ('axis2', 'axis4'), ('axis3', 'axis4')]:
+    for suplot_1_axis, suplot_2_axis in [('axis', 'axis2'), ('axis', 'axis3'), ('axis2', 'axis3')]:
         for axis_type in ['x', 'y']:
             assert fig_dict['layout'][axis_type + suplot_1_axis]['range'] == fig_dict['layout'][axis_type + suplot_2_axis]['range']
 
@@ -390,3 +392,146 @@ def test_graph_partial_dependence_multiclass(logistic_regression_multiclass_pipe
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
     with pytest.raises(ValueError, match=msg):
         graph_partial_dependence(pipeline, X, features='alcohol', class_label='wine')
+
+
+def test_partial_dependence_percentile_errors(logistic_regression_binary_pipeline_class):
+    # random_col will be 5% 0, 95% 1
+    X = pd.DataFrame({"A": [i % 3 for i in range(1000)], "B": [(j + 3) % 5 for j in range(1000)],
+                      "random_col": [0 if i < 50 else 1 for i in range(1000)],
+                      "random_col_2": [0 if i < 40 else 1 for i in range(1000)]})
+    y = pd.Series([i % 2 for i in range(1000)])
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline.fit(X, y)
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
+        partial_dependence(pipeline, X, features="random_col", grid_resolution=20)
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
+        partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.955), grid_resolution=20)
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
+        partial_dependence(pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=20)
+    with pytest.raises(ValueError, match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be"):
+        partial_dependence(pipeline, X, features=('A', "random_col"), percentiles=(0.01, 0.955), grid_resolution=20)
+    with pytest.raises(ValueError, match="Features \\('random_col', 'random_col_2'\\) are mostly one value, \\(1, 1\\), and cannot be"):
+        partial_dependence(pipeline, X, features=("random_col", "random_col_2"),
+                           percentiles=(0.01, 0.955), grid_resolution=20)
+
+    part_dep = partial_dependence(pipeline, X, features="random_col", percentiles=(0.01, 0.96), grid_resolution=20)
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+    assert len(part_dep["partial_dependence"]) == 2
+    assert len(part_dep["feature_values"]) == 2
+    assert not part_dep.isnull().any(axis=None)
+
+
+@pytest.mark.parametrize('problem_type', ['binary', 'regression'])
+def test_graph_partial_dependence_regression_and_binary_categorical(problem_type, linear_regression_pipeline_class,
+                                                                    X_y_regression, X_y_binary,
+                                                                    logistic_regression_binary_pipeline_class):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    if problem_type == 'binary':
+        X, y = X_y_binary
+        pipeline = logistic_regression_binary_pipeline_class({"Logistic Regression Classifier": {"n_jobs": 1}})
+    else:
+        X, y = X_y_regression
+        pipeline = linear_regression_pipeline_class({"Linear Regressor": {"n_jobs": 1}})
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    X['categorical_column'] = pd.Series([i % 3 for i in range(X.shape[0])]).astype('str')
+    X['categorical_column_2'] = pd.Series([i % 6 for i in range(X.shape[0])]).astype('str')
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='categorical_column', grid_resolution=5)
+    plot_data = fig.to_dict()['data'][0]
+    assert plot_data['type'] == 'bar'
+    assert plot_data['x'].tolist() == ['0', '1', '2']
+
+    fig = graph_partial_dependence(pipeline, X, features=('0', 'categorical_column'),
+                                   grid_resolution=5)
+    fig_dict = fig.to_dict()
+    plot_data = fig_dict['data'][0]
+    assert plot_data['type'] == 'contour'
+    assert fig_dict['layout']['yaxis']['ticktext'] == ['0', '1', '2']
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'categorical_column' vs. '0'"
+
+    fig = graph_partial_dependence(pipeline, X, features=('categorical_column_2', 'categorical_column'),
+                                   grid_resolution=5)
+    fig_dict = fig.to_dict()
+    plot_data = fig_dict['data'][0]
+    assert plot_data['type'] == 'contour'
+    assert fig_dict['layout']['xaxis']['ticktext'] == ['0', '1', '2']
+    assert fig_dict['layout']['yaxis']['ticktext'] == ['0', '1', '2', '3', '4', '5']
+    assert fig_dict['layout']['title']['text'] == "Partial Dependence of 'categorical_column_2' vs. 'categorical_column'"
+
+
+@pytest.mark.parametrize('class_label', [None, 'class_1'])
+def test_partial_dependence_multiclass_categorical(class_label,
+                                                   logistic_regression_multiclass_pipeline_class):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    X, y = load_wine()
+    X['categorical_column'] = ww.DataColumn(pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
+                                            logical_type="Categorical")
+    X['categorical_column_2'] = ww.DataColumn(pd.Series([i % 6 for i in range(X.shape[0])]).astype(str),
+                                              logical_type="Categorical")
+
+    pipeline = logistic_regression_multiclass_pipeline_class({"Logistic Regression Classifier": {"n_jobs": 1}})
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='categorical_column', class_label=class_label,
+                                   grid_resolution=5)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'bar'
+        assert plot_data['x'].tolist() == ['0', '1', '2']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label
+
+    fig = graph_partial_dependence(pipeline, X, features=('alcohol', 'categorical_column'), class_label=class_label,
+                                   grid_resolution=5)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'contour'
+        assert fig.to_dict()['layout']['yaxis']['ticktext'] == ['0', '1', '2']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label
+
+    fig = graph_partial_dependence(pipeline, X, features=('categorical_column_2', 'categorical_column'),
+                                   class_label=class_label, grid_resolution=5)
+
+    for i, plot_data in enumerate(fig.to_dict()['data']):
+        assert plot_data['type'] == 'contour'
+        assert fig.to_dict()['layout']['xaxis']['ticktext'] == ['0', '1', '2']
+        assert fig.to_dict()['layout']['yaxis']['ticktext'] == ['0', '1', '2', '3', '4', '5']
+        if class_label is None:
+            assert plot_data['name'] == f'class_{i}'
+        else:
+            assert plot_data['name'] == class_label
+
+
+def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipeline_class):
+    pl = logistic_regression_binary_pipeline_class({})
+
+    X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": [7, 8, 9]})
+    y = pd.Series([0, 1, 0])
+    pl.fit(X, y)
+
+    pred_df = pd.DataFrame({"a": [None] * 5, "b": [1, 2, 3, 4, 4], "c": [None] * 5})
+    message = "The following features have all NaN values and so the partial dependence cannot be computed: {}"
+    with pytest.raises(ValueError, match=message.format("'a'")):
+        partial_dependence(pl, pred_df, features="a", grid_resolution=10)
+    with pytest.raises(ValueError, match=message.format("'a'")):
+        partial_dependence(pl, pred_df, features=0, grid_resolution=10)
+    with pytest.raises(ValueError, match=message.format("'a'")):
+        partial_dependence(pl, pred_df, features=("a", "b"), grid_resolution=10)
+    with pytest.raises(ValueError, match=message.format("'a', 'c'")):
+        partial_dependence(pl, pred_df, features=("a", "c"), grid_resolution=10)
+
+    pred_df = pred_df.rename(columns={"a": 0})
+    with pytest.raises(ValueError, match=message.format("'0'")):
+        partial_dependence(pl, pred_df, features=0, grid_resolution=10)

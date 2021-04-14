@@ -4,6 +4,8 @@ import pytest
 import woodwork as ww
 
 from evalml.data_checks import (
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
     HighlyNullDataCheck
@@ -46,7 +48,8 @@ def test_highly_null_data_check_warnings():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict()]
     }
 
     some_null_check = HighlyNullDataCheck(pct_null_threshold=0.5)
@@ -60,7 +63,9 @@ def test_highly_null_data_check_warnings():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict()]
+
     }
 
     all_null_check = HighlyNullDataCheck(pct_null_threshold=1.0)
@@ -70,7 +75,7 @@ def test_highly_null_data_check_warnings():
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null"}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict()]
     }
 
 
@@ -80,57 +85,30 @@ def test_highly_null_data_check_input_formats():
     # test empty pd.DataFrame
     assert highly_null_check.validate(pd.DataFrame()) == {"warnings": [], "errors": [], "actions": []}
 
+    expected = {
+        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
+                                      data_check_name=highly_null_data_check_name,
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 0}).to_dict(),
+                     DataCheckWarning(message="Column '1' is 80.0% or more null",
+                                      data_check_name=highly_null_data_check_name,
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 1}).to_dict(),
+                     DataCheckWarning(message="Column '2' is 80.0% or more null",
+                                      data_check_name=highly_null_data_check_name,
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                      details={"column": 2}).to_dict()],
+        "errors": [],
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 0}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 1}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 2}).to_dict()]
+    }
     #  test Woodwork
     ww_input = ww.DataTable(pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]]))
-    assert highly_null_check.validate(ww_input) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 0}).to_dict(),
-                     DataCheckWarning(message="Column '1' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 1}).to_dict(),
-                     DataCheckWarning(message="Column '2' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 2}).to_dict()],
-        "errors": [],
-        "actions": []
-    }
+    assert highly_null_check.validate(ww_input) == expected
 
     #  test 2D list
-    assert highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]]) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 0}).to_dict(),
-                     DataCheckWarning(message="Column '1' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 1}).to_dict(),
-                     DataCheckWarning(message="Column '2' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 2}).to_dict()],
-        "errors": [],
-        "actions": []
-    }
+    assert highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]]) == expected
 
     # test np.array
-    assert highly_null_check.validate(np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])) == {
-        "warnings": [DataCheckWarning(message="Column '0' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 0}).to_dict(),
-                     DataCheckWarning(message="Column '1' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 1}).to_dict(),
-                     DataCheckWarning(message="Column '2' is 80.0% or more null",
-                                      data_check_name=highly_null_data_check_name,
-                                      message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                      details={"column": 2}).to_dict()],
-        "errors": [],
-        "actions": []
-    }
+    assert highly_null_check.validate(np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])) == expected

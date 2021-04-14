@@ -43,6 +43,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     PerColumnImputer,
+    PolynomialDetrender,
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
@@ -52,9 +53,11 @@ from evalml.pipelines.components import (
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
+    TargetImputer,
     TextFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
+    Undersampler,
     XGBoostClassifier,
     XGBoostRegressor
 )
@@ -154,10 +157,11 @@ def test_describe_component():
     pca = PCA()
     lda = LinearDiscriminantAnalysis()
     ft = DFSTransformer()
+    us = Undersampler()
     assert enc.describe(return_dict=True) == {'name': 'One Hot Encoder', 'parameters': {'top_n': 10,
                                                                                         'features_to_encode': None,
                                                                                         'categories': None,
-                                                                                        'drop': None,
+                                                                                        'drop': 'if_binary',
                                                                                         'handle_unknown': 'ignore',
                                                                                         'handle_missing': 'error'}}
     assert imputer.describe(return_dict=True) == {'name': 'Imputer', 'parameters': {'categorical_impute_strategy': "most_frequent",
@@ -179,7 +183,7 @@ def test_describe_component():
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
-
+    assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"sampling_ratio": 0.25, "min_samples": 100, "min_percentage": 0.1}}
     # testing estimators
     base_classifier = BaselineClassifier()
     base_regressor = BaselineRegressor()
@@ -490,7 +494,8 @@ def test_components_init_kwargs():
             component = component_class(test_arg="test")
             component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters['test_arg'] == "test"
-            assert component._component_obj.test_arg == "test"
+            if not isinstance(component, PolynomialDetrender):
+                assert component._component_obj.test_arg == "test"
             # Test equality of different components with same or different kwargs
             assert component == component_class(test_arg="test")
             assert component != component_with_different_kwargs
@@ -518,6 +523,9 @@ def test_transformer_transform_output_type(X_y_binary):
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
 
     for component_class in _all_transformers():
+        if component_class == PolynomialDetrender:
+            # Skipping because this test is handled in test_polynomial_detrender
+            continue
         print('Testing transformer {}'.format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:
             print('Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'
@@ -529,7 +537,11 @@ def test_transformer_transform_output_type(X_y_binary):
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
-            assert isinstance(transform_output, ww.DataTable)
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
+                assert isinstance(transform_output[0], ww.DataTable)
+                assert isinstance(transform_output[1], ww.DataColumn)
+            else:
+                assert isinstance(transform_output, ww.DataTable)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
@@ -543,12 +555,23 @@ def test_transformer_transform_output_type(X_y_binary):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
                 continue
+            elif isinstance(component, TargetImputer):
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
+                assert len(transform_output[1].shape) == 1
+            elif 'sampler' in component.name:
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
-            assert isinstance(transform_output, ww.DataTable)
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
+                assert isinstance(transform_output[0], ww.DataTable)
+                assert isinstance(transform_output[1], ww.DataColumn)
+            else:
+                assert isinstance(transform_output, ww.DataTable)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
@@ -558,6 +581,13 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
+            elif isinstance(component, TargetImputer):
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
+                assert len(transform_output[1].shape) == 1
+            elif 'sampler' in component.name:
+                assert transform_output[0].shape == X.shape
+                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
@@ -612,7 +642,7 @@ def test_estimator_check_for_fit(X_y_binary):
 
 
 def test_transformer_check_for_fit(X_y_binary):
-    class MockTransformerObj():
+    class MockTransformerObj:
         def __init__(self):
             pass
 
@@ -632,14 +662,21 @@ def test_transformer_check_for_fit(X_y_binary):
             transformer = MockTransformerObj()
             super().__init__(parameters=parameters, component_obj=transformer, random_seed=random_seed)
 
+        def inverse_transform(self, X, y=None):
+            return X, y
+
     X, y = X_y_binary
     trans = MockTransformer()
     with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
         trans.transform(X)
 
+    with pytest.raises(ComponentNotYetFittedError, match='You must fit'):
+        trans.inverse_transform(X, y)
+
     trans.fit(X, y)
     trans.transform(X)
     trans.fit_transform(X, y)
+    trans.inverse_transform(X, y)
 
 
 def test_transformer_check_for_fit_with_overrides(X_y_binary):
@@ -692,27 +729,30 @@ def test_all_transformers_check_fit(X_y_binary):
 
         component = component_class()
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
-            component.transform(X)
+            component.transform(X, y)
 
         component.fit(X, y)
-        component.transform(X)
+        component.transform(X, y)
 
         component = component_class()
         component.fit_transform(X, y)
-        component.transform(X)
+        component.transform(X, y)
 
 
-def test_all_estimators_check_fit(X_y_binary, test_estimator_needs_fitting_false, helper_functions):
-    X, y = X_y_binary
+def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions):
     estimators_to_check = [estimator for estimator in _all_estimators() if estimator not in [StackedEnsembleClassifier, StackedEnsembleRegressor, TimeSeriesBaselineEstimator]] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
         if not component_class.needs_fitting:
             continue
 
+        if ProblemTypes.TIME_SERIES_REGRESSION in component_class.supported_problem_types:
+            X, y = ts_data
+        else:
+            X, y = X_y_binary
+
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.predict(X)
-
         if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
             with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
                 component.predict_proba(X)
@@ -753,8 +793,7 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, tmpdir, helper_functions):
-    X, y = X_y_binary
+def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
         print('Testing serialization of component {}'.format(component_class.name))
@@ -765,6 +804,11 @@ def test_serialization(X_y_binary, tmpdir, helper_functions):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)], n_jobs=1)
             elif (component_class == StackedEnsembleRegressor):
                 component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)], n_jobs=1)
+        if isinstance(component, Estimator) and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types:
+            X, y = ts_data
+        else:
+            X, y = X_y_binary
+
         component.fit(X, y)
 
         for pickle_protocol in range(cloudpickle.DEFAULT_PROTOCOL + 1):
@@ -809,6 +853,8 @@ def test_estimators_accept_all_kwargs(estimator_class,
         params = estimator.parameters
     else:
         params = estimator._component_obj.get_params()
+        if "random_state" in params:
+            del params["random_state"]
     estimator_class(**params)
 
 
@@ -840,14 +886,13 @@ def test_component_equality():
         name = "Mock Component"
         model_family = ModelFamily.NONE
 
-        def __init__(self, param_1=0, param_2=0, random_seed=0, random_state=None, **kwargs):
+        def __init__(self, param_1=0, param_2=0, random_seed=0, **kwargs):
             parameters = {"param_1": param_1,
                           "param_2": param_2}
             parameters.update(kwargs)
             super().__init__(parameters=parameters,
                              component_obj=None,
-                             random_seed=random_seed,
-                             random_state=random_state)
+                             random_seed=random_seed)
 
         def fit(self, X, y=None):
             return self
@@ -861,8 +906,6 @@ def test_component_equality():
     # Test random_state and random_seed
     assert MockComponent(random_seed=10) == MockComponent(random_seed=10)
     assert MockComponent(random_seed=10) != MockComponent(random_seed=0)
-    assert MockComponent(random_state=10) == MockComponent(random_state=10)
-    assert MockComponent(random_state=10) != MockComponent(random_state=0)
 
     # Test parameters
     assert MockComponent(1, 2) == MockComponent(1, 2)
@@ -1016,19 +1059,6 @@ def test_generate_code_custom(test_classes):
     assert component_code == expected_code
 
 
-@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
-def test_components_raise_deprecated_random_state_warning(cls):
-    with warnings.catch_warnings(record=True) as warn:
-        warnings.simplefilter("always")
-        component = cls(random_state=31)
-        assert component.random_seed == 31
-        if component._component_obj is not None:
-            params = component._component_obj.get_params()
-            if "random_state" in params:
-                assert params['random_state'] == 31
-        assert str(warn[0].message).startswith("Argument 'random_state' has been deprecated in favor of 'random_seed'")
-
-
 @pytest.mark.parametrize("transformer_class", _all_transformers())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, transformer_class, X_y_binary):
@@ -1038,6 +1068,9 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
         check_names = False
         if use_custom_index:
             pytest.skip("The DFSTransformer changes the index so we skip it.")
+    if transformer_class == PolynomialDetrender:
+        pytest.skip("Skipping PolynomialDetrender because we test that it respects custom indices in "
+                    "test_polynomial_detrender.py")
 
     X, y = X_y_binary
 
@@ -1059,15 +1092,20 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    X_t = transformer.transform(X, y).to_dataframe()
+    if 'sampler' in transformer.name or transformer_class == TargetImputer:
+        X_t, y_t = transformer.transform(X, y)
+        X_t = X_t.to_dataframe()
+        pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
+    else:
+        X_t = transformer.transform(X, y).to_dataframe()
+        pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
-    pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class,
-                                               X_y_binary, X_y_regression,
+                                               X_y_binary, X_y_regression, ts_data,
                                                logistic_regression_binary_pipeline_class,
                                                linear_regression_pipeline_class,
                                                helper_functions):
@@ -1081,15 +1119,22 @@ def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class
 
     supported_problem_types = estimator_class.supported_problem_types
 
-    if ProblemTypes.REGRESSION in supported_problem_types or ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+    ts_problem = False
+    if ProblemTypes.REGRESSION in supported_problem_types:
         X, y = X_y_regression
+    elif ProblemTypes.TIME_SERIES_REGRESSION in supported_problem_types:
+        X, y = ts_data
+        ts_problem = True
     else:
         X, y = X_y_binary
 
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
-    if use_custom_index:
+    if use_custom_index and ts_problem:
+        X.index = pd.date_range("2020-10-01", "2020-10-31")
+        y.index = pd.date_range("2020-10-01", "2020-10-31")
+    elif use_custom_index and not ts_problem:
         gen = np.random.default_rng(seed=0)
         custom_index = gen.permutation(range(200, 200 + X.shape[0]))
         X.index = custom_index

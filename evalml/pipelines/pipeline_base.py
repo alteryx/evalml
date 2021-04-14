@@ -31,7 +31,6 @@ from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
     classproperty,
-    deprecate_arg,
     get_logger,
     import_or_raise,
     infer_feature_types,
@@ -61,7 +60,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_state=None, random_seed=0):
+    def __init__(self, parameters, random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
@@ -70,9 +69,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): Seed for the random number generator. Defaults to 0.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self.random_seed = deprecate_arg("random_state", "random_seed", random_state, random_seed)
+        self.random_seed = random_seed
         if isinstance(self.component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
         else:
@@ -283,6 +282,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             try:
                 if not objective.is_defined_for_problem_type(self.problem_type):
                     raise ValueError(f'Invalid objective {objective.name} specified for problem type {self.problem_type}')
+                y_pred = self._select_y_pred_for_score(X, y, y_pred, y_pred_proba, objective)
                 score = self._score(X, y, y_pred_proba if objective.score_needs_proba else y_pred, objective)
                 scored_successfully.update({objective.name: score})
             except Exception as e:
@@ -293,6 +293,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             raise PipelineScoreError(exceptions, scored_successfully)
         # No objectives failed, return the scores
         return scored_successfully
+
+    def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
+        return y_pred
 
     @classproperty
     def model_family(cls):
@@ -557,5 +560,4 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             bool: True if the pipeline threshold can be tuned.
 
         """
-        return objective.is_defined_for_problem_type(self.problem_type) and \
-            objective.can_optimize_threshold and is_binary(self.problem_type)
+        return is_binary(self.problem_type) and objective.is_defined_for_problem_type(self.problem_type) and objective.can_optimize_threshold

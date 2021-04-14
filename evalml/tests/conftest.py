@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -100,6 +101,11 @@ def has_minimal_dependencies(pytestconfig):
 
 
 @pytest.fixture
+def is_running_py_39_or_above():
+    return sys.version_info >= (3, 9)
+
+
+@pytest.fixture
 def assert_allowed_pipelines_equal_helper():
     def assert_allowed_pipelines_equal_helper(actual_allowed_pipelines, expected_allowed_pipelines):
         for actual, expected in zip(actual_allowed_pipelines, expected_allowed_pipelines):
@@ -120,6 +126,12 @@ def X_y_binary():
                                         n_informative=2, n_redundant=2, random_state=0)
 
     return X, y
+
+
+@pytest.fixture(scope="class")
+def X_y_binary_cls(request):
+    request.cls.X_y_binary = datasets.make_classification(n_samples=100, n_features=20,
+                                                          n_informative=2, n_redundant=2, random_state=0)
 
 
 @pytest.fixture
@@ -332,6 +344,27 @@ def linear_regression_pipeline_class():
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
     return LinearRegressionPipeline
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_binary_estimator(logistic_regression_binary_pipeline_class):
+    p1 = logistic_regression_binary_pipeline_class({})
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_multiclass_estimator(logistic_regression_multiclass_pipeline_class):
+    p1 = logistic_regression_multiclass_pipeline_class({})
+    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
+
+
+@pytest.fixture
+def dummy_stacked_ensemble_regressor_estimator(linear_regression_pipeline_class):
+    p1 = linear_regression_pipeline_class({})
+    ensemble_estimator = StackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
+    return ensemble_estimator
 
 
 @pytest.fixture

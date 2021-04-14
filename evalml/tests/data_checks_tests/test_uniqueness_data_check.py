@@ -3,6 +3,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
     UniquenessDataCheck
@@ -82,7 +84,7 @@ def test_uniqueness_data_check_warnings():
             details={"column": "regression_not_unique_enough",
                      'uniqueness_score': 0.0}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'regression_not_unique_enough'}).to_dict()]
     }
 
     data = pd.DataFrame({'multiclass_too_unique': ["Cats", "Are", "Absolutely", "The", "Best"] * 20,
@@ -96,5 +98,5 @@ def test_uniqueness_data_check_warnings():
             details={"column": "multiclass_too_unique",
                      'uniqueness_score': 0.7999999999999999}).to_dict()],
         "errors": [],
-        "actions": []
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'multiclass_too_unique'}).to_dict()]
     }
