@@ -362,7 +362,6 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
                 assert 1 <= p.parameters['Mock Classifier']['dummy_parameter'] <= 10
 
 
-# TODO
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,

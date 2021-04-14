@@ -596,31 +596,6 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
 
 
-def test_categorical_hyperparam(X_y_multi):
-    # TODO WHAT IS THIS TESTING??
-    X, y = X_y_multi
-
-    class CustomPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-        custom_hyperparameters = {
-            'Simple Imputer': {
-                'impute_strategy': Categorical(['mean', 'most_frequent'])
-            }
-        }
-
-        def __init__(self):
-            return super().__init__(self.component_graph, None, {})
-
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass", allowed_pipelines=[CustomPipeline()], n_jobs=1)
-    automl.search()
-
-
 def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
 

@@ -382,11 +382,17 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
 
 
 def test_name():
-    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier']).name == "Logistic Regression Classifier"
-    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier']).custom_name is None
+    pipeline = BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'])
+    assert pipeline.name == "Logistic Regression Classifier"
+    assert pipeline.custom_name is None
 
-    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'], custom_name="Cool Logistic Regression").name == "Cool Logistic Regression"
-    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'], custom_name="Cool Logistic Regression").custom_name == "Cool Logistic Regression"
+    pipeline_with_custom_name = BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'], custom_name="Cool Logistic Regression")
+    assert pipeline_with_custom_name.name == "Cool Logistic Regression"
+    assert pipeline_with_custom_name.custom_name == "Cool Logistic Regression"
+
+    pipeline_with_neat_name = BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'], custom_name="some_neat_name")
+    assert pipeline_with_neat_name.name == "some_neat_name"
+    assert pipeline_with_neat_name.custom_name == "some_neat_name"
 
 
 def test_multi_format_creation(X_y_binary):

@@ -42,26 +42,35 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     problem_type = None
 
-    def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph,
+                 custom_name=None,
+                 parameters=None,
+                 custom_hyperparameters=None,
+                 random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
-        Required Class Variables:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
-
         Arguments:
+            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+            custom_name (str): Custom name for the pipeline.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
+            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self.custom_hyperparameters = custom_hyperparameters or None
+        self.custom_hyperparameters = custom_hyperparameters
         self.random_seed = random_seed
+
+        self.component_graph = component_graph
+
         if isinstance(component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(component_graph, random_seed=self.random_seed)
         else:
             self._component_graph = ComponentGraph(component_dict=component_graph, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
+
         self.input_feature_names = {}
         self.input_target_name = None
+
         self.estimator = None
         if len(self._component_graph.compute_order) > 0:
             final_component = self._component_graph.get_last_component()
@@ -70,15 +79,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
+
         self._pipeline_params = None
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
+
         self.parameters = self.get_parameters()
+
         self.custom_name = custom_name
-        self.name = custom_name
-        self.component_graph = component_graph
-        if custom_name is None:
-            self.name = self.summary()
+        self.name = custom_name or self.summary()
+        # if custom_name is None:
+        #     self.name = self.summary()
+
         self.model_family = self.get_model_family()
         self.hyperparameters = self.get_hyperparameters()
 
