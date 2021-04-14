@@ -1,6 +1,7 @@
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseOverSampler
 )
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class SMOTESampler(BaseOverSampler):
@@ -9,57 +10,40 @@ class SMOTESampler(BaseOverSampler):
     hyperparameter_ranges = {}
 
     def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
-        """Initialize the SMOTE Oversampler component.
-
-        Arguments:
-            sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
-                of the minority to majority class after oversampling. If the targets are multiclass, will create a dictionary using this ratio. Defaults to 0.25.
-            sampling_ratio_dict (dict): Dictionary which has keys corresponding to each class, and the values are the number of samples we want to oversample to for each class key.
-                If this value is provided, it will be used. Otherwise, we opt to use sampling_ratio. Defaults to None.
-            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
-            n_jobs (int): The number of CPU cores to use. Defaults to -1.
-        """
-        parameters = {"sampling_ratio": sampling_ratio,
-                      "sampling_ratio_dict": sampling_ratio_dict,
-                      "k_neighbors": k_neighbors,
-                      "n_jobs": n_jobs}
-        parameters.update(kwargs)
         super().__init__("SMOTE",
-                         parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+                         sampling_ratio=sampling_ratio,
+                         sampling_ratio_dict=sampling_ratio_dict,
+                         k_neighbors=k_neighbors,
+                         n_jobs=n_jobs,
+                         random_seed=random_seed,
+                         **kwargs)
 
 
 class SMOTENCSampler(BaseOverSampler):
     """SMOTENC Oversampler component. Uses SMOTENC to generate synthetic samples. Works on a mix of nomerical and categorical columns.
-       This component is only run during training and not during predict."""
+       Input data must be Woodwork type, and this component is only run during training and not during predict."""
     name = "SMOTENC Oversampler"
     hyperparameter_ranges = {}
 
-    def __init__(self, categorical_features=[], sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
-        """Initialize the SMOTENC Oversampler component.
-
-        Arguments:
-            categorical_features (list): A list of indices of the categorical columns, or a list of booleans for each column,
-                where True represents a categorical column and False represents a numeric. There must exist a mix of both categorical and numeric columns.
-                Defaults to an empty list.
-            sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
-                of the minority to majority class after oversampling. If the targets are multiclass, will create a dictionary using this ratio. Defaults to 0.25.
-            sampling_ratio_dict (dict): Dictionary which has keys corresponding to each class, and the values are the number of samples we want to oversample to for each class key.
-                If this value is provided, it will be used. Otherwise, we opt to use sampling_ratio. Defaults to None.
-            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
-            n_jobs (int): The number of CPU cores to use. Defaults to -1.
-        """
-        parameters = {"categorical_features": categorical_features,
-                      "sampling_ratio": sampling_ratio,
-                      "sampling_ratio_dict": sampling_ratio_dict,
-                      "k_neighbors": k_neighbors,
-                      "n_jobs": n_jobs}
-        parameters.update(kwargs)
+    def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
+        self.categorical_features = None
         super().__init__("SMOTENC",
-                         parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+                         sampling_ratio=sampling_ratio,
+                         sampling_ratio_dict=sampling_ratio_dict,
+                         k_neighbors=k_neighbors,
+                         n_jobs=n_jobs,
+                         random_seed=random_seed,
+                         **kwargs)
+
+    def _get_categorical(self, X):
+        X = infer_feature_types(X)
+        self.categorical_features = [i for i, val in enumerate(X.types['Logical Type'].items()) if str(val[1]) == 'Categorical']
+        self._parameters['categorical_features'] = self.categorical_features
+
+    def fit(self, X, y):
+        # get categorical features first
+        self._get_categorical(X)
+        super().fit(X, y)
 
 
 class SMOTENSampler(BaseOverSampler):
@@ -69,22 +53,10 @@ class SMOTENSampler(BaseOverSampler):
     hyperparameter_ranges = {}
 
     def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
-        """Initialize the SMOTEN Oversampler component.
-
-        Arguments:
-            sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
-                of the minority to majority class after oversampling. If the targets are multiclass, will create a dictionary using this ratio. Defaults to 0.25.
-            sampling_ratio_dict (dict): Dictionary which has keys corresponding to each class, and the values are the number of samples we want to oversample to for each class key.
-                If this value is provided, it will be used. Otherwise, we opt to use sampling_ratio. Defaults to None.
-            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
-            n_jobs (int): The number of CPU cores to use. Defaults to -1.
-        """
-        parameters = {"sampling_ratio": sampling_ratio,
-                      "sampling_ratio_dict": sampling_ratio_dict,
-                      "k_neighbors": k_neighbors,
-                      "n_jobs": n_jobs}
-        parameters.update(kwargs)
         super().__init__("SMOTEN",
-                         parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+                         sampling_ratio=sampling_ratio,
+                         sampling_ratio_dict=sampling_ratio_dict,
+                         k_neighbors=k_neighbors,
+                         n_jobs=n_jobs,
+                         random_seed=random_seed,
+                         **kwargs)

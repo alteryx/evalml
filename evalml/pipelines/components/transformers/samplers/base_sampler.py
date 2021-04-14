@@ -63,9 +63,24 @@ class BaseSampler(Transformer):
 class BaseOverSampler(BaseSampler):
     """Base Oversampler component. Used as the base class of all imbalance-learn oversampler components"""
 
-    def __init__(self, sampler, parameters, component_obj, random_seed):
+    def __init__(self, sampler, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
+        """Initializes the oversampler component.
+
+        Arguments:
+            sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
+                of the minority to majority class after oversampling. If the targets are multiclass, will create a dictionary using this ratio. Defaults to 0.25.
+            sampling_ratio_dict (dict): Dictionary which has keys corresponding to each class, and the values are the number of samples we want to oversample to for each class key.
+                If this value is provided, it will be used. Otherwise, we opt to use sampling_ratio. Defaults to None.
+            k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
+            n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
+        parameters = {"sampling_ratio": sampling_ratio,
+                      "sampling_ratio_dict": sampling_ratio_dict,
+                      "k_neighbors": k_neighbors,
+                      "n_jobs": n_jobs}
+        parameters.update(kwargs)
         self.sampler = {"SMOTE": im.SMOTE,
                         "SMOTENC": im.SMOTENC,
                         "SMOTEN": im.SMOTEN}[sampler]
@@ -101,7 +116,7 @@ class BaseOverSampler(BaseSampler):
             # dictionary provided and takes priority
             sampler_params['sampling_strategy'] = self.parameters['sampling_ratio_dict']
         else:
-            # no dictionary provided. We pass the float if we have a binary situation
+            # no dictionary provided, so we will create one
             sampling_ratio = self.parameters['sampling_ratio']
             dic = make_balancing_dictionary(y_pd, sampling_ratio)
             sampler_params['sampling_strategy'] = dic
