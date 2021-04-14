@@ -43,36 +43,6 @@ def delayed(delay):
     return wrap
 
 
-class TestLRCPipeline(BinaryClassificationPipeline):
-    component_graph = ["Logistic Regression Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    def clone(self):
-        return self.__class__(self.parameters, random_seed=self.random_seed)
-
-
-class TestSVMPipeline(BinaryClassificationPipeline):
-    component_graph = ["SVM Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    def clone(self):
-        return self.__class__(self.parameters, random_seed=self.random_seed)
-
-
-class TestBaselinePipeline(BinaryClassificationPipeline):
-    component_graph = ["Baseline Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    def clone(self):
-        return self.__class__(self.parameters, random_seed=self.random_seed)
-
-
 class TestPipelineWithFitError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"

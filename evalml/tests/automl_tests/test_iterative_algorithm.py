@@ -54,39 +54,10 @@ def dummy_binary_pipeline_classes():
                                              'n_jobs': n_jobs},
                                  component_obj=None, random_seed=random_seed)
 
-        class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, None, parameters)
-
-            def new(self, parameters, random_seed):
-                return self.__class__(parameters, random_seed=random_seed)
-
-        class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, None, parameters)
-
-            def new(self, parameters, random_seed):
-                return self.__class__(parameters, random_seed=random_seed)
-
-        class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, None, parameters)
-
-            def new(self, parameters, random_seed):
-                return self.__class__(parameters, random_seed=random_seed)
-
-        return [MockBinaryClassificationPipeline1({}),
-                MockBinaryClassificationPipeline2({}),
-                MockBinaryClassificationPipeline3({})]
+        component_graph = [MockEstimator]
+        return [BinaryClassificationPipeline([MockEstimator]),
+                BinaryClassificationPipeline([MockEstimator]),
+                BinaryClassificationPipeline([MockEstimator])]
     return _method
 
 

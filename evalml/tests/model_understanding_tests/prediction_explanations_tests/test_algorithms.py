@@ -120,9 +120,11 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         is_binary = False
     else:
         training_data, y = X_y_regression
+    try:
+        pipeline = make_pipeline(training_data, y, estimator, problem_type, parameters={estimator.name: {'n_jobs': 1}})
+    except ValueError:
+        pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
-    pipeline = make_pipeline(training_data, y, estimator, problem_type)
-    # pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class) #TODO
     shap_values = calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
