@@ -20,7 +20,7 @@ jobs:
   build_conda_pkg:
     runs-on: ubuntu-latest
     needs: shellcheck
-#    if: github.ref == 'refs/head/main' 
+#    if: github.ref == 'refs/head/main'
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
@@ -37,11 +37,9 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps-test
-      - name: Clone Feedstock
+      - name: Clone Feedstock, Copy to Container, and Run Update
         run: |
           git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
-      - name: Config Feedstock
-        run: |
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
@@ -49,8 +47,6 @@ jobs:
           cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
           python .github/conda_config.py "$(python setup.py --version)"
           cd evalml-core-feedstock
-      - name: Copy Feedstock to Container
-        run: |
           echo "Pre docker login"
           echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
           echo "Post docker login"
@@ -66,7 +62,5 @@ jobs:
           export UPLOAD_PACKAGES=False
           export HOST_USER_ID=$(id -u)
           export FEEDSTOCK_NAME=evalml-core-feedstock
-      - name: Run Update
-        run: |
           echo "Running docker"
           docker run -t -e CONFIG -e HOST_USER_ID -e UPLOAD_PACKAGES -e GIT_BRANCH -e UPLOAD_ON_BRANCH -e CI -e FEEDSTOCK_NAME -e CPU_COUNT -e BINSTAR_TOKEN -e FEEDSTOCK_TOKEN -e STAGING_BINSTAR_TOKEN psalter/build:latest bash /home/conda/feedstock_root/.scripts/build_steps.sh
