@@ -213,7 +213,7 @@ def generate_pipeline_code(element):
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
     pipeline_string += "\n\tdef __init__(self, parameters, random_seed=0):"
-    pipeline_string += "\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)"
+    pipeline_string += "\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)\n"
     try:
         ret = json.dumps(element.parameters, indent='\t')
     except TypeError:
