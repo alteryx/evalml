@@ -9,7 +9,6 @@ import pytest
 import woodwork as ww
 from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
-from skopt.space import Real
 
 from evalml.model_understanding.graphs import (
     binary_objective_vs_threshold,
@@ -57,13 +56,7 @@ def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
-        }
-
-        def __init__(self, parameters, random_seed=0):
+        def __init__(self, parameters):
             super().__init__(self.component_graph, parameters=parameters)
 
     return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})

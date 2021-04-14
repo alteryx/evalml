@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from skopt.space import Real
 
 from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
@@ -23,12 +22,6 @@ from evalml.problem_types import ProblemTypes
 def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
-
-        hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
-        }
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)
@@ -120,14 +113,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
 def test_partial_dependence_baseline():
     X = pd.DataFrame([[1, 0], [0, 1]])
     y = pd.Series([0, 1])
-
-    class BaselineTestPipeline(BinaryClassificationPipeline):
-        component_graph = ["Baseline Classifier"]
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    pipeline = BaselineTestPipeline({})
+    pipeline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"], parameters={})
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Partial dependence plots are not supported for Baseline pipelines"):
         partial_dependence(pipeline, X, features=0, grid_resolution=20)

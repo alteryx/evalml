@@ -705,17 +705,11 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
     y = y.to_series()
 
-    class LinearPipelineEncodeDatesAsCategory(pipeline_class):
-        component_graph = ["Select Columns Transformer", "DateTime Featurization Component",
-                           "One Hot Encoder", estimator]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(component_graph=self.component_graph, parameters=parameters)
-
-    pipeline = LinearPipelineEncodeDatesAsCategory({"Select Columns Transformer": {'columns': ['datetime', 'amount', 'provider', "currency"]},
-                                                    'DateTime Featurization Component': {"encode_as_categories": True},
-                                                    estimator: {"n_jobs": 1}})
-
+    pipeline = pipeline_class(component_graph=["Select Columns Transformer", "DateTime Featurization Component",
+                                               "One Hot Encoder", estimator],
+                              parameters={"Select Columns Transformer": {'columns': ['datetime', 'amount', 'provider', "currency"]},
+                                          'DateTime Featurization Component': {"encode_as_categories": True},
+                                          estimator: {"n_jobs": 1}})
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 
     pipeline.fit(X, y)
