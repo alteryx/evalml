@@ -20,6 +20,7 @@ from evalml.tests.automl_tests.dask_test_utils import (
     TestSVMPipeline,
     automl_data
 )
+from evalml.pipelines import BinaryClassificationPipeline
 
 
 @pytest.mark.usefixtures("X_y_binary_cls")
@@ -41,7 +42,8 @@ class TestDaskEngine(unittest.TestCase):
         same results as simply running the train_pipeline function. """
         X, y = self.X_y_binary
         engine = DaskEngine(client=self.client)
-        pipeline = TestLRCPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})
+        pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
+        {"Logistic Regression Classifier": {"n_jobs": 1}})
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(X=X, y=y, automl_config=automl_data, pipeline=pipeline)
