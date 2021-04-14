@@ -382,36 +382,16 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
 
 
 def test_name():
-    class TestNamePipeline(BinaryClassificationPipeline):
-        component_graph = ['Logistic Regression Classifier']
+    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier']).name == "Logistic Regression Classifier"
+    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier']).custom_name is None
 
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    class TestDefinedNamePipeline(BinaryClassificationPipeline):
-        custom_name = "Cool Logistic Regression"
-        component_graph = ['Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    assert TestNamePipeline({}).name == "Logistic Regression Classifier"
-    assert TestNamePipeline({}).custom_name is None
-
-    assert TestDefinedNamePipeline.custom_name == "Cool Logistic Regression"
-    assert TestDefinedNamePipeline({}).name == "Cool Logistic Regression"
-    assert TestDefinedNamePipeline({}).custom_name == "Cool Logistic Regression"
+    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'], custom_name="Cool Logistic Regression").name == "Cool Logistic Regression"
+    assert BinaryClassificationPipeline(component_graph=['Logistic Regression Classifier'], custom_name="Cool Logistic Regression").custom_name == "Cool Logistic Regression"
 
 
 def test_multi_format_creation(X_y_binary):
     X, y = X_y_binary
-
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = component_graph = ['Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
+    component_graph = component_graph = ['Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
     parameters = {
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
@@ -424,7 +404,7 @@ def test_multi_format_creation(X_y_binary):
         }
     }
 
-    clf = TestPipeline(parameters=parameters)
+    clf = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
     correct_components = [Imputer, OneHotEncoder, StandardScaler, LogisticRegressionClassifier]
     for component, correct_components in zip(clf, correct_components):
         assert isinstance(component, correct_components)
@@ -437,14 +417,10 @@ def test_multi_format_creation(X_y_binary):
 
 def test_multiple_feature_selectors(X_y_binary):
     X, y = X_y_binary
+    component_graph = ['Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
 
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'RF Classifier Select From Model', StandardScaler, 'RF Classifier Select From Model', 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    clf = TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    clf = BinaryClassificationPipeline(component_graph=component_graph,
+                                       parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     correct_components = [Imputer, OneHotEncoder, RFClassifierSelectFromModel, StandardScaler, RFClassifierSelectFromModel, LogisticRegressionClassifier]
     for component, correct_components in zip(clf, correct_components):
         assert isinstance(component, correct_components)
@@ -456,44 +432,21 @@ def test_multiple_feature_selectors(X_y_binary):
 
 
 def test_problem_types():
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['Random Forest Regressor']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
     with pytest.raises(ValueError, match="not valid for this component graph. Valid problem types include *."):
-        TestPipeline(parameters={})
+        BinaryClassificationPipeline(component_graph=['Random Forest Regressor'],
+                                     parameters={})
 
 
 def make_mock_regression_pipeline():
-    class MockRegressionPipeline(RegressionPipeline):
-        component_graph = ['Random Forest Regressor']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    return MockRegressionPipeline({})
+    return RegressionPipeline(component_graph=['Random Forest Regressor'], parameters={})
 
 
 def make_mock_binary_pipeline():
-    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = ['Random Forest Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    return MockBinaryClassificationPipeline({})
+    return BinaryClassificationPipeline(component_graph=['Random Forest Classifier'], parameters={})
 
 
 def make_mock_multiclass_pipeline():
-    class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Random Forest Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
-    return MockMulticlassClassificationPipeline({})
+    return MulticlassClassificationPipeline(component_graph=['Random Forest Classifier'], parameters={})
 
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
@@ -775,12 +728,7 @@ def test_no_default_parameters():
 
 
 def test_init_components_invalid_parameters():
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters)
-
+    component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
     parameters = {
         'Logistic Regression Classifier': {
             "cool_parameter": "yes"
@@ -788,7 +736,7 @@ def test_init_components_invalid_parameters():
     }
 
     with pytest.raises(ValueError, match="Error received when instantiating component"):
-        TestPipeline(parameters=parameters)
+        BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
 
 
 def test_correct_parameters(logistic_regression_binary_pipeline_class):
@@ -833,13 +781,7 @@ def test_correct_nonlinear_parameters(nonlinear_binary_pipeline_class):
 
 
 def test_hyperparameters():
-    class MockPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'Random Forest Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters)
-
-    hyperparameters = {
+    expected_hyperparameters = {
         'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
             "numeric_impute_strategy": ["mean", "median", "most_frequent"]
@@ -849,12 +791,11 @@ def test_hyperparameters():
             "max_depth": Integer(1, 10)
         }
     }
-
-    assert MockPipeline(parameters={}).hyperparameters == hyperparameters
+    component_graph = ['Imputer', 'Random Forest Classifier']
+    assert BinaryClassificationPipeline(component_graph=component_graph, parameters={}).hyperparameters == expected_hyperparameters
 
 
 def test_nonlinear_hyperparameters(nonlinear_regression_pipeline_class):
-
     hyperparameters = {
         'Imputer': {
             "categorical_impute_strategy": ["most_frequent"],
@@ -875,8 +816,6 @@ def test_nonlinear_hyperparameters(nonlinear_regression_pipeline_class):
             'normalize': [True, False]
         }
     }
-
-    # assert nonlinear_regression_pipeline_class.hyperparameters == hyperparameters
     assert nonlinear_regression_pipeline_class(parameters={}).hyperparameters == hyperparameters
 
 
@@ -969,15 +908,9 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
         def __init__(self, random_seed=0):
             super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
-    class MockPipelineNone(BinaryClassificationPipeline):
-        component_graph = [MockEstimator]
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    assert MockPipelineNone.component_graph == [MockEstimator]
-    assert MockPipelineNone({}).hyperparameters == {'Mock Classifier': {}}
-    assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
+    pipeline = BinaryClassificationPipeline(component_graph=[MockEstimator])
+    assert pipeline.component_graph == [MockEstimator]
+    assert pipeline.hyperparameters == {'Mock Classifier': {}}
 
 
 @patch('evalml.pipelines.components.Estimator.predict')

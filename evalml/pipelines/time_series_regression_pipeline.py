@@ -35,7 +35,11 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
-        super().__init__(component_graph, custom_name, parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)
+        super().__init__(component_graph,
+                         custom_name=custom_name,
+                         parameters=parameters,
+                         custom_hyperparameters=custom_hyperparameters,
+                         random_seed=random_seed)
 
     def fit(self, X, y):
         """Fit a time series regression pipeline.
