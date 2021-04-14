@@ -553,13 +553,7 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     }
     graph = ['Simple Imputer', stacking_component_name]
 
-    class StackedPipeline(base_pipeline_class):
-        component_graph = graph
-        model_family = ModelFamily.ENSEMBLE
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-    pipeline = StackedPipeline(parameters=parameters)
+    pipeline = base_pipeline_class(component_graph=graph, parameters=parameters)
     pipeline.fit(X, y)
     comparison_pipeline.fit(X, y)
     assert not np.isnan(pipeline.predict(X).to_series()).values.any()
