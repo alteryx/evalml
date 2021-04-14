@@ -288,7 +288,7 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            index_columns = list(X_train.select('index').columns)
+            index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and 'Drop Columns Transformer' in self.pipeline_parameters:
                 columns = self.pipeline_parameters['Drop Columns Transformer']['columns']
                 if isinstance(columns, str):
