@@ -17,6 +17,7 @@ Release Notes
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
+        * Fixed documentation demos :pr:``
     * Testing Changes
         * Fixed ``test_describe_pipeline`` for ``pandas`` ``v1.2.4`` :pr:`2129`
 
