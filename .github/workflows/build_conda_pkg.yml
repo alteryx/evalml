@@ -50,7 +50,7 @@ jobs:
           python .github/conda_config.py "$(python setup.py --version)"
           cd evalml-core-feedstock
       - name: Copy Feedstock to Container
-        steps: |
+        run: |
           echo "Pre docker login"
           echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
           echo "Post docker login"
@@ -67,6 +67,6 @@ jobs:
           export HOST_USER_ID=$(id -u)
           export FEEDSTOCK_NAME=evalml-core-feedstock
       - name: Run Update
-        steps: |
+        run: |
           echo "Running docker"
           docker run -t -e CONFIG -e HOST_USER_ID -e UPLOAD_PACKAGES -e GIT_BRANCH -e UPLOAD_ON_BRANCH -e CI -e FEEDSTOCK_NAME -e CPU_COUNT -e BINSTAR_TOKEN -e FEEDSTOCK_TOKEN -e STAGING_BINSTAR_TOKEN psalter/build:latest bash /home/conda/feedstock_root/.scripts/build_steps.sh
