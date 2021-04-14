@@ -1,4 +1,5 @@
 import os
+import warnings
 from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -13,9 +14,7 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
-    log_and_save_error_callback,
     log_error_callback,
-    raise_and_save_error_callback,
     raise_error_callback,
     silent_error_callback
 )
@@ -28,10 +27,12 @@ from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
-    PipelineNotYetFittedError
+    PipelineNotYetFittedError,
+    PipelineScoreError
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
+    F1,
     BinaryClassificationObjective,
     CostBenefitMatrix,
     FraudCost,
@@ -48,13 +49,14 @@ from evalml.pipelines import (
     Estimator,
     MulticlassClassificationPipeline,
     PipelineBase,
-    RegressionPipeline
+    RegressionPipeline,
+    StackedEnsembleClassifier
 )
 from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators
 )
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import make_pipeline, make_pipeline_from_components
 from evalml.preprocessing import (
     BalancedClassificationDataCVSplit,
     BalancedClassificationDataTVSplit,
@@ -82,7 +84,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, optimize_thresholds=False, objective=objective, max_iterations=2, n_jobs=1)
     automl.search()
-    assert automl.results.keys() == {'pipeline_results', 'search_order', 'errors'}
+    assert automl.results.keys() == {'pipeline_results', 'search_order'}
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
@@ -290,7 +292,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': ('BalancedClassificationDataCVSplit(balanced_ratio=4,', 'n_splits=5, random_seed=0'),
+        'Data Splitting': ('BalancedClassificationDataCVSplit(', 'sampling_ratio=0.25,', 'n_splits=5, random_seed=0'),
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -928,9 +930,9 @@ def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary
     assert "* strategy : mode" in out
     assert "Total training time (including CV): " in out
     assert "Log Loss Binary # Training # Validation" in out
-    assert "0                      1.000       66.0         34.0" in out
-    assert "1                      1.000       67.0         33.0" in out
-    assert "2                      1.000       67.0         33.0" in out
+    assert "0                      1.000         66           34" in out
+    assert "1                      1.000         67           33" in out
+    assert "2                      1.000         67           33" in out
     assert "mean                   1.000          -            -" in out
     assert "std                    0.000          -            -" in out
     assert "coef of var            0.000          -            -" in out
@@ -1009,8 +1011,7 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
 
     assert automl.results == {'pipeline_results': {},
-                              'search_order': [],
-                              'errors': []}
+                              'search_order': []}
 
     mock_score.return_value = {'Log Loss Binary': 1.0}
     automl.search()
@@ -1070,11 +1071,11 @@ def test_targets_pandas_data_types_classification(data_type, automl_type, target
 class KeyboardInterruptOnKthPipeline:
     """Helps us time when the test will send a KeyboardInterrupt Exception to search."""
 
-    def __init__(self, k):
-        self.n_calls = 1
+    def __init__(self, k, starting_index):
+        self.n_calls = starting_index
         self.k = k
 
-    def __call__(self, pipeline_class, parameters, automl_obj):
+    def __call__(self):
         """Raises KeyboardInterrupt on the kth call.
 
         Arguments are ignored but included to meet the call back API.
@@ -1084,6 +1085,7 @@ class KeyboardInterruptOnKthPipeline:
             raise KeyboardInterrupt
         else:
             self.n_calls += 1
+            return True
 
 
 # These are used to mock return values to the builtin "input" function.
@@ -1095,8 +1097,30 @@ dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
 
 @pytest.mark.parametrize("when_to_interrupt,user_input,number_results",
                          [(1, interrupt, 0),
-                          (1, interrupt_after_bad_message, 0),
-                          (1, dont_interrupt, 5),
+                          (1, interrupt_after_bad_message, 0)])
+@patch("builtins.input")
+@patch('evalml.automl.engine.sequential_engine.SequentialComputation.get_result')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_catch_keyboard_interrupt_baseline(mock_fit, mock_score, mock_future_get_result, mock_input,
+                                           when_to_interrupt, user_input, number_results,
+                                           X_y_binary):
+    X, y = X_y_binary
+
+    mock_input.side_effect = user_input
+    mock_future_get_result.side_effect = KeyboardInterruptOnKthPipeline(k=when_to_interrupt, starting_index=1)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5,
+                          objective="f1")
+    automl.search()
+    assert len(automl._results['pipeline_results']) == number_results
+    if number_results == 0:
+        with pytest.raises(PipelineNotFoundError):
+            _ = automl.best_pipeline
+
+
+@pytest.mark.parametrize("when_to_interrupt,user_input,number_results",
+                         [(1, dont_interrupt, 5),
                           (1, dont_interrupt_after_bad_message, 5),
                           (2, interrupt, 1),
                           (2, interrupt_after_bad_message, 1),
@@ -1111,20 +1135,40 @@ dont_interrupt_after_bad_message = ["Yes", "yes.", "n"]
                           (5, dont_interrupt, 5),
                           (5, dont_interrupt_after_bad_message, 5)])
 @patch("builtins.input")
+@patch('evalml.automl.engine.sequential_engine.SequentialComputation.done')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_input,
+def test_catch_keyboard_interrupt(mock_fit, mock_score, mock_future_get_result, mock_input,
                                   when_to_interrupt, user_input, number_results,
                                   X_y_binary):
-    mock_input.side_effect = user_input
     X, y = X_y_binary
-    callback = KeyboardInterruptOnKthPipeline(k=when_to_interrupt)
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5, start_iteration_callback=callback, optimize_thresholds=False, objective="f1")
+
+    mock_input.side_effect = user_input
+    mock_future_get_result.side_effect = KeyboardInterruptOnKthPipeline(k=when_to_interrupt, starting_index=2)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5,
+                          objective="f1", optimize_thresholds=False)
     automl.search()
     assert len(automl._results['pipeline_results']) == number_results
-    if number_results == 0:
-        with pytest.raises(PipelineNotFoundError):
-            automl.best_pipeline
+
+
+@patch("builtins.input", return_value="Y")
+@patch('evalml.automl.engine.sequential_engine.SequentialComputation.done',
+       side_effect=KeyboardInterruptOnKthPipeline(k=4, starting_index=2))
+@patch('evalml.automl.engine.sequential_engine.SequentialComputation.cancel')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"F1": 1.0})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_jobs_cancelled_when_keyboard_interrupt(mock_fit, mock_score, mock_cancel, mock_done, mock_input, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=6,
+                          objective="f1", optimize_thresholds=False)
+    automl.search()
+    assert len(automl._results['pipeline_results']) == 3
+
+    # Since we trigger KeyBoardInterrupt the 4th time we call done, we've successfully evaluated the baseline plus 2
+    # pipelines in the first batch. Since there are len(automl.allowed_pipelines) pipelines in the first batch,
+    # we should cancel len(automl.allowed_pipelines) - 2 computations
+    assert mock_cancel.call_count == len(automl.allowed_pipelines) - 3 + 1
 
 
 def make_mock_rankings(scores):
@@ -1573,12 +1617,7 @@ def test_max_batches_output(mock_pipeline_fit, mock_score, max_batches, X_y_bina
     automl.search()
 
     output = caplog.text
-    for batch_number in range(1, max_batches + 1):
-        if batch_number == 1:
-            correct_output = len(automl.allowed_pipelines) + 1
-        else:
-            correct_output = automl._pipelines_per_batch
-        assert output.count(f"Batch {batch_number}: ") == correct_output
+    assert output.count("Batch Number") == max_batches
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
@@ -1888,8 +1927,7 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
 
 
-@pytest.mark.parametrize("callback", [log_error_callback, silent_error_callback, raise_error_callback,
-                                      raise_and_save_error_callback, log_and_save_error_callback])
+@pytest.mark.parametrize("callback", [log_error_callback, silent_error_callback, raise_error_callback])
 @pytest.mark.parametrize("error_type", ['fit', 'score', 'fit-single'])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -1908,14 +1946,14 @@ def test_automl_error_callback(mock_fit, mock_score, error_type, callback, X_y_b
         msg = 'all your model are belong to us'
         mock_fit.side_effect = [Exception(msg)] * 3 + [None] * 100
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", error_callback=callback, train_best_pipeline=False, n_jobs=1)
-    if callback in [log_error_callback, silent_error_callback, log_and_save_error_callback]:
+    if callback in [log_error_callback, silent_error_callback]:
         exception = AutoMLSearchException
         match = "All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"
     else:
         exception = Exception
         match = msg
 
-    if error_type == 'fit-single' and callback in [silent_error_callback, log_error_callback, log_and_save_error_callback]:
+    if error_type == 'fit-single' and callback in [silent_error_callback, log_error_callback]:
         automl.search()
     else:
         with pytest.raises(exception, match=match):
@@ -1923,25 +1961,12 @@ def test_automl_error_callback(mock_fit, mock_score, error_type, callback, X_y_b
 
     if callback == silent_error_callback:
         assert msg not in caplog.text
-    if callback == log_and_save_error_callback:
-        assert f"AutoML search encountered an exception: {msg}" in caplog.text
-        assert msg in caplog.text
     if callback == log_error_callback:
         assert f"Exception during automl search: {msg}" in caplog.text
         assert msg in caplog.text
-    if callback in [raise_error_callback, raise_and_save_error_callback]:
+    if callback in [raise_error_callback]:
         assert f"AutoML search raised a fatal exception: {msg}" in caplog.text
         assert msg in caplog.text
-
-    if callback == log_and_save_error_callback:
-        if error_type == 'fit-single':
-            assert len(automl._results['errors']) == 3
-        else:
-            # first automl batch, times 3 for 3-fold cross validation
-            assert len(automl._results['errors']) == (1 + len(get_estimators(problem_type='binary'))) * 3
-    elif callback in [log_error_callback, silent_error_callback, raise_and_save_error_callback, log_and_save_error_callback]:
-        for e in automl._results['errors']:
-            assert str(e) == msg
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -2337,27 +2362,24 @@ def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class)
     assert automl._check_for_high_variance(pipeline, cv_scores)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.automl.engine.EngineBase.train_and_score_pipeline')
-def test_automl_check_high_variance_logs_warning(mock_train, mock_fit_binary, mock_score_binary, X_y_binary, caplog):
+def test_automl_check_high_variance_logs_warning(mock_fit_binary, X_y_binary, caplog):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
-    mock_train.return_value = {'cv_scores': pd.Series([1, 1, 1]),
-                               'training_time': 0,
-                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
-    automl.search()
-    out = caplog.text
-    assert "High coefficient of variation" not in out
+
+    with patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 1}):
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+        automl.search()
+        out = caplog.text
+        assert "High coefficient of variation" not in out
 
     caplog.clear()
-    mock_train.return_value = {'cv_scores': pd.Series([0, 1, 2, 3]),
-                               'training_time': 0,
-                               'cv_data': [{'all_objective_scores': OrderedDict([('Log Loss Binary', 1.0), ('# Training', 66), ('# Validation', 34)])}]}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
-    automl.search()
-    out = caplog.text
-    assert "High coefficient of variation" in out
+
+    desired_score_values = [{"Log Loss Binary": i} for i in [1, 2, 10] * 2]
+    with patch('evalml.pipelines.BinaryClassificationPipeline.score', side_effect=desired_score_values):
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2)
+        automl.search()
+        out = caplog.text
+        assert "High coefficient of variation" in out
 
 
 def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
@@ -2447,6 +2469,181 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline != original_pipeline
 
 
+@pytest.mark.parametrize("pipeline_fit_side_effect",
+                         [[None] * 6, [None, Exception("foo"), None],
+                          [None, Exception("bar"), Exception("baz")],
+                          [Exception("Everything"), Exception("is"), Exception("broken")]])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
+                           dummy_binary_pipeline_class, stackable_classifiers, caplog):
+
+    exceptions_to_check = [str(e) for e in pipeline_fit_side_effect if isinstance(e, Exception)]
+
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
+                          train_best_pipeline=False, n_jobs=1)
+
+    def make_pipeline_name(index):
+        class DummyPipeline(dummy_binary_pipeline_class):
+            custom_name = f"Pipeline {index}"
+        return DummyPipeline({'Mock Classifier': {'a': index}})
+
+    pipelines = [make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)]
+    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
+    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)], problem_type="binary")
+    pipelines.append(ensemble)
+
+    def train_batch_and_check():
+        caplog.clear()
+        with patch('evalml.pipelines.BinaryClassificationPipeline.fit') as mock_fit:
+            mock_fit.side_effect = pipeline_fit_side_effect
+
+            trained_pipelines = automl.train_pipelines(pipelines)
+
+            assert len(trained_pipelines) == len(pipeline_fit_side_effect) - len(exceptions_to_check)
+            assert mock_fit.call_count == len(pipeline_fit_side_effect)
+            for exception in exceptions_to_check:
+                assert exception in caplog.text
+
+    # Test training before search is run
+    train_batch_and_check()
+
+    # Test training after search.
+    automl.search()
+
+    train_batch_and_check()
+
+
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
+def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
+    X, y = X_y_binary
+    X = ww.DataTable(X)
+    y = ww.DataColumn(y)
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
+                          train_best_pipeline=False, n_jobs=1)
+
+    train_indices = automl.data_splitter.transform_sample(X, y)
+    X_train = X.iloc[train_indices]
+    y_train = y.iloc[train_indices]
+
+    pipelines = [dummy_binary_pipeline_class({})]
+    mock_train.reset_mock()
+    automl.train_pipelines(pipelines)
+
+    args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
+    pd.testing.assert_frame_equal(X_train.to_dataframe(), kwargs['X'].to_dataframe())
+    pd.testing.assert_series_equal(y_train.to_series(), kwargs['y'].to_series())
+
+
+no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
+
+
+@pytest.mark.parametrize("pipeline_score_side_effect",
+                         [[no_exception_scores] * 6,
+                          [no_exception_scores,
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"F1": 0.2}),
+                           no_exception_scores],
+                          [no_exception_scores,
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"F1": 0.3}),
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "F1": (Exception(), [])},
+                                              scored_successfully={"Log Loss Binary": 0.2})],
+                          [PipelineScoreError(exceptions={"Log Loss Binary": (Exception(), []), "F1": (Exception(), [])},
+                                              scored_successfully={"AUC": 0.6}),
+                           PipelineScoreError(exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"F1": 0.2}),
+                           PipelineScoreError(exceptions={"Log Loss Binary": (Exception(), [])},
+                                              scored_successfully={"AUC": 0.2, "F1": 0.1})]])
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
+                           dummy_binary_pipeline_class, stackable_classifiers, caplog):
+
+    exceptions_to_check = []
+    expected_scores = {}
+    for i, e in enumerate(pipeline_score_side_effect):
+        # Ensemble pipeline has different name
+        pipeline_name = f"Pipeline {i}" if i < len(pipeline_score_side_effect) - 1 else "Templated Pipeline"
+        scores = no_exception_scores
+        if isinstance(e, PipelineScoreError):
+            scores = {"F1": np.nan, "AUC": np.nan, "Log Loss Binary": np.nan}
+            scores.update(e.scored_successfully)
+            exceptions_to_check.append(f"Score error for {pipeline_name}")
+
+        expected_scores[pipeline_name] = scores
+
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+
+    def make_pipeline_name(index):
+        class DummyPipeline(dummy_binary_pipeline_class):
+            custom_name = f"Pipeline {index}"
+        return DummyPipeline({'Mock Classifier': {'a': index}})
+
+    pipelines = [make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)]
+    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
+    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)],
+                                             problem_type="binary")
+    pipelines.append(ensemble)
+
+    def score_batch_and_check():
+        caplog.clear()
+        with patch('evalml.pipelines.BinaryClassificationPipeline.score') as mock_score:
+            mock_score.side_effect = pipeline_score_side_effect
+
+            scores = automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
+            assert scores == expected_scores
+            for exception in exceptions_to_check:
+                assert exception in caplog.text
+
+    # Test scoring before search
+    score_batch_and_check()
+
+    automl.search()
+
+    # Test scoring after search
+    score_batch_and_check()
+
+
+def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(X_y_binary, dummy_binary_pipeline_class):
+
+    class Pipeline1(dummy_binary_pipeline_class):
+        custom_name = "My Pipeline"
+
+    class Pipeline2(dummy_binary_pipeline_class):
+        custom_name = "My Pipeline"
+
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
+        automl.train_pipelines([Pipeline2({}), Pipeline1({})])
+
+    with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
+        automl.score_pipelines([Pipeline2({}), Pipeline1({})], None, None, None)
+
+
+def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_binary_pipeline_class, caplog):
+    X, y = X_y_binary
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
+                          allowed_pipelines=[dummy_binary_pipeline_class])
+
+    scored_pipelines = automl.score_pipelines([dummy_binary_pipeline_class({})], X, y,
+                                              objectives=["Log Loss Binary", F1()])
+    assert scored_pipelines == {"Mock Binary Classification Pipeline": {"Log Loss Binary": np.nan,
+                                                                        "F1": np.nan}}
+
+    assert "Score error for Mock Binary Classification Pipeline" in caplog.text
+    assert "This LabelEncoder instance is not fitted yet." in caplog.text
+
+
 def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
@@ -2464,7 +2661,7 @@ def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pi
 @patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.3})
 @patch('evalml.pipelines.ClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.3})
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
-@patch('evalml.automl.engine.EngineBase.train_pipeline')
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
 def test_automl_supports_float_targets_for_classification(mock_train, mock_binary_score, mock_multi_score, mock_regression_score,
                                                           automl_type, X_y_binary, X_y_multi, X_y_regression,
                                                           dummy_binary_pipeline_class,
@@ -2487,6 +2684,20 @@ def test_automl_supports_float_targets_for_classification(mock_train, mock_binar
     automl.search()
 
     # Assert that we train pipeline on the original target, not the encoded one used in EngineBase for data splitting
-    mock_train_args, _ = mock_train.call_args
-    mock_y = mock_train_args[2]  # args are pipeline, X, y, optimize_thresholds, objective
+    _, kwargs = mock_train.call_args
+    mock_y = kwargs["y"]
     pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY,
+                                          ProblemTypes.TIME_SERIES_MULTICLASS])
+def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
+
+    X, y = X_y_binary
+
+    with warnings.catch_warnings(record=True) as warn:
+        warnings.simplefilter("always")
+        AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"gap": 0, "max_delay": 2})
+        assert len(warn) == 1
+        message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
+        assert str(warn[0].message).startswith(message)

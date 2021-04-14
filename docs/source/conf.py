@@ -17,7 +17,7 @@ import os
 import sys
 import subprocess
 import shutil
-import glob
+from pathlib import Path
 from sphinx.ext.autodoc import (Documenter, MethodDocumenter)
 
 
@@ -263,7 +263,8 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 
 
 def setup(app):
-    os.makedirs("/home/docs/.ipython/profile_default/startup")
+    p = Path("/home/docs/.ipython/profile_default/startup")
+    p.mkdir(parents=True, exist_ok=True)
     shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
     app.add_javascript('https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js')
     app.add_stylesheet("style.css")

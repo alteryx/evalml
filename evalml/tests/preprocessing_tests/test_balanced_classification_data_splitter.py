@@ -16,11 +16,11 @@ from evalml.preprocessing.data_splitters import (
                           BalancedClassificationDataTVSplit])
 def test_data_splitter_params(splitter):
     bcs = splitter()
-    assert bcs.balanced_ratio == 4
+    assert bcs.sampling_ratio == 0.25
     assert bcs.min_samples == 100
 
-    bcs = splitter(balanced_ratio=3, min_samples=1, min_percentage=0.5)
-    assert bcs.balanced_ratio == 3
+    bcs = splitter(sampling_ratio=0.3, min_samples=1, min_percentage=0.5)
+    assert bcs.sampling_ratio == 0.3
     assert bcs.min_samples == 1
     assert bcs.min_percentage == 0.5
 
@@ -53,9 +53,9 @@ def test_data_splitter_no_error(splitter, value, X_y_binary):
 
 @pytest.mark.parametrize('balanced_splitter,data_splitter',
                          [
-                             (BalancedClassificationDataTVSplit(balanced_ratio=1, min_samples=50, test_size=0.2, shuffle=True, random_seed=0),
+                             (BalancedClassificationDataTVSplit(sampling_ratio=1, min_samples=50, test_size=0.2, shuffle=True, random_seed=0),
                               TrainingValidationSplit(test_size=0.2, shuffle=True, random_seed=0)),
-                             (BalancedClassificationDataCVSplit(balanced_ratio=1, min_samples=50, shuffle=True, n_splits=3, random_seed=0),
+                             (BalancedClassificationDataCVSplit(sampling_ratio=1, min_samples=50, shuffle=True, n_splits=3, random_seed=0),
                               StratifiedKFold(shuffle=True, n_splits=3, random_state=0))
                          ])
 @pytest.mark.parametrize('data_type', ['np', 'pd', 'ww'])
@@ -64,7 +64,7 @@ def test_data_splitters_data_type(data_type, balanced_splitter, data_splitter, m
     # make imbalanced
     X_extended = np.append(X, X, 0)
     y_extended = np.append(y, np.array([0] * len(y)), 0)
-    sample_method = BalancedClassificationSampler(balanced_ratio=1, min_samples=50, random_seed=0)
+    sample_method = BalancedClassificationSampler(sampling_ratio=1, min_samples=50, random_seed=0)
 
     initial_results = []
     for i, (train_indices, test_indices) in enumerate(data_splitter.split(X_extended, y_extended)):
@@ -87,9 +87,9 @@ def test_data_splitters_data_type(data_type, balanced_splitter, data_splitter, m
 
 @pytest.mark.parametrize('balanced_splitter,data_splitter',
                          [
-                             (BalancedClassificationDataTVSplit(balanced_ratio=1, min_samples=50, test_size=0.2, shuffle=True, random_seed=0),
+                             (BalancedClassificationDataTVSplit(sampling_ratio=1, min_samples=50, test_size=0.2, shuffle=True, random_seed=0),
                               TrainingValidationSplit(test_size=0.2, shuffle=True, random_seed=0)),
-                             (BalancedClassificationDataCVSplit(balanced_ratio=1, min_samples=50, shuffle=True, n_splits=3, random_seed=0),
+                             (BalancedClassificationDataCVSplit(sampling_ratio=1, min_samples=50, shuffle=True, n_splits=3, random_seed=0),
                               StratifiedKFold(shuffle=True, n_splits=3, random_state=0))
                          ])
 @pytest.mark.parametrize('dataset', ['binary', 'multiclass'])
@@ -102,7 +102,7 @@ def test_data_splitters_dataset(dataset, balanced_splitter, data_splitter, make_
     # make imbalanced
     X_extended = np.append(X, X, 0)
     y_extended = np.append(y, np.array([0] * len(y)), 0)
-    sample_method = BalancedClassificationSampler(balanced_ratio=1, min_samples=50, random_seed=0)
+    sample_method = BalancedClassificationSampler(sampling_ratio=1, min_samples=50, random_seed=0)
 
     initial_results = []
     for i, (train_indices, test_indices) in enumerate(data_splitter.split(X_extended, y_extended)):
