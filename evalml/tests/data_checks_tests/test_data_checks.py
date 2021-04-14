@@ -100,6 +100,10 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
                            data_check_name="NoVarianceDataCheck",
                            message_code=DataCheckMessageCode.NO_VARIANCE,
                            details={"column": "also_all_null"}).to_dict(),
+            DataCheckError(message='Input natural language column(s) (natural_language_nan) contains NaN values. Please impute NaN values or drop these rows or columns.',
+                           data_check_name="NaturalLanguageNaNDataCheck",
+                           message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+                           details={"columns": 'natural_language_nan'}).to_dict(),
             DataCheckError(message='Input datetime column(s) (nan_dt_col) contains NaN values. Please impute NaN values or drop these rows or columns.',
                            data_check_name="DateTimeNaNDataCheck",
                            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
@@ -120,6 +124,11 @@ def test_default_data_checks_classification(input_type):
                       'no_null': [1, 2, 3, 4, 5],
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100],
+                      'natural_language_nan': [None,
+                                               "string_that_is_long_enough_for_natural_language_1",
+                                               "string_that_is_long_enough_for_natural_language_2",
+                                               "string_that_is_long_enough_for_natural_language_3",
+                                               "string_that_is_long_enough_for_natural_language_4"],
                       'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
     X['nan_dt_col'][0] = None
 
@@ -179,6 +188,11 @@ def test_default_data_checks_regression(input_type):
                       'no_null': [1, 2, 3, 5, 5],
                       'id': [0, 1, 2, 3, 4],
                       'has_label_leakage': [100, 200, 100, 200, 100],
+                      'natural_language_nan': [None,
+                                               "string_that_is_long_enough_for_natural_language_1",
+                                               "string_that_is_long_enough_for_natural_language_2",
+                                               "string_that_is_long_enough_for_natural_language_3",
+                                               "string_that_is_long_enough_for_natural_language_4"],
                       'nan_dt_col': pd.Series(pd.date_range('20200101', periods=5))})
     X['nan_dt_col'][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
@@ -215,7 +229,7 @@ def test_default_data_checks_regression(input_type):
         "errors": messages[4:7] + [DataCheckError(message="Y has 1 unique value.",
                                                   data_check_name="NoVarianceDataCheck",
                                                   message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                  details={"column": "Y"}).to_dict()] + [messages[7]],
+                                                  details={"column": "Y"}).to_dict()] + messages[7:],
         "actions": expected_actions[:3] + expected_actions[4:]
     }
 
