@@ -150,7 +150,7 @@ def test_default_data_checks_classification(input_type):
                                 details={"target_values": [0.0, 2.0, 1.0]}).to_dict()]
     min_2_class_count = [DataCheckError(message="Target does not have at least two instances per class which is required for multiclass classification",
                                         data_check_name="InvalidTargetDataCheck",
-                                        message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS,
+                                        message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
                                         details={"least_populated_class_labels": [2.0, 1.0]}).to_dict()]
     high_class_to_sample_ratio = [DataCheckWarning(
         message="Target has a large number of unique values, could be regression type problem.",
