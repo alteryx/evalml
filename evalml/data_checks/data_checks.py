@@ -89,6 +89,7 @@ class DataChecks:
             "actions": []
         }
         X = infer_feature_types(X)
+        X = X.drop(list(X.select('index').columns))
         if y is not None:
             y = infer_feature_types(y)
 

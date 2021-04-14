@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -283,3 +285,23 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
     for check in default_data_check:
         if check.name == "InvalidTargetDataCheck":
             assert check.validate(X, y) == {"warnings": [], "errors": [data_check_error], "actions": []}
+
+
+def test_data_checks_drop_index(X_y_binary):
+    X, _ = X_y_binary
+    X = pd.DataFrame(X)
+    X['index_col'] = pd.Series(range(len(X)))
+    X = ww.DataTable(X)
+    X = X.set_index('index_col')
+
+    class MockDataCheck(DataCheck):
+        def validate(self, X, y):
+            return {"warnings": [], "errors": [], "actions": []}
+
+    MockDataCheck.validate = MagicMock()
+    checks = DataChecks([MockDataCheck, MockDataCheck, MockDataCheck])
+    checks.validate(X)
+
+    validate_args = MockDataCheck.validate.call_args_list
+    for arg in validate_args:
+        assert 'index_col' not in arg[0][0].columns
