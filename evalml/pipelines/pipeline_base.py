@@ -88,8 +88,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self.custom_name = custom_name
         self.name = custom_name or self.summary()
-        # if custom_name is None:
-        #     self.name = self.summary()
 
         self.model_family = self.get_model_family()
         self.hyperparameters = self.get_hyperparameters()

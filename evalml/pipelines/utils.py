@@ -171,18 +171,11 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
 
     if custom_name and not isinstance(custom_name, str):
         raise TypeError("Custom pipeline name must be a string")
-    pipeline_name = custom_name
     problem_type = handle_problem_types(problem_type)
-
-    class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
-        custom_name = pipeline_name
-        name = pipeline_name
-        component_graph = [c.__class__ for c in component_instances]
-
-        def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-    return TemplatedPipeline(None, None, {c.name: c.parameters for c in component_instances}, custom_hyperparameters=None, random_seed=random_seed)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    component_graph = [c.__class__ for c in component_instances]
+    parameters = {c.name: c.parameters for c in component_instances}
+    return pipeline_class(component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
 def generate_pipeline_code(element):

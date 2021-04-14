@@ -364,7 +364,7 @@ def test_automl_str_no_param_search(X_y_binary):
             assert value in str_rep
     assert "Search Results" not in str_rep
 
-# TODO
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
@@ -1295,7 +1295,6 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
     class DummyPipeline(pipeline_class):
         problem_type = problem_type_value
-        name = None
 
         def __init__(self, parameters, random_seed=0):
             return super().__init__(parameters=parameters)

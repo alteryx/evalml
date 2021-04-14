@@ -19,14 +19,14 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
     def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 
-        Required Class Variables:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
-
         Arguments:
+            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+            custom_name (str): Custom name for the pipeline.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters. Pipeline-level
                  parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
+            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if parameters is None or "pipeline" not in parameters:
