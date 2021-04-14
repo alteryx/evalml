@@ -68,9 +68,9 @@ class BaseOverSampler(BaseSampler):
 
         Arguments:
             sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
-                of the minority to majority class after oversampling. If the targets are multiclass, will create a dictionary using this ratio. Defaults to 0.25.
+                of the minority to majority class after oversampling. We will create the sampling_ratio_dict dictionary using this ratio. Defaults to 0.25.
             sampling_ratio_dict (dict): Dictionary which has keys corresponding to each class, and the values are the number of samples we want to oversample to for each class key.
-                If this value is provided, it will be used. Otherwise, we opt to use sampling_ratio. Defaults to None.
+                If this value is provided, it will be used. Otherwise, we opt to use sampling_ratio to create this dictionary. Defaults to None.
             k_neighbors (int): The number of nearest neighbors to used to construct synthetic samples. Defaults to 5.
             n_jobs (int): The number of CPU cores to use. Defaults to -1.
         """
