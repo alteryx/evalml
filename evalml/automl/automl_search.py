@@ -295,8 +295,7 @@ class AutoMLSearch:
                 index_columns.extend(drop_columns)
                 self.pipeline_parameters['Drop Columns Transformer']['columns'] = index_columns
             elif len(index_columns) > 0 and drop_columns is None:
-                self.pipeline_parameters['Drop Columns Transformer'] = {}
-                self.pipeline_parameters['Drop Columns Transformer']['columns'] = index_columns
+                self.pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
 
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
 
