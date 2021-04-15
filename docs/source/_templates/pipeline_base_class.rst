@@ -12,7 +12,6 @@
 
    {% for item in attributes %}
       ~{{ name }}.{{ item }}
-   {%- endif %}
    {%- endfor %}
    {% endblock %}
       
