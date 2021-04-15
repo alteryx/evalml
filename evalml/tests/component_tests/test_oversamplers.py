@@ -217,7 +217,7 @@ def test_samplers_perform_equally(problem_type, component_sampler, imblearn_samp
     np.testing.assert_equal(sorted(y_im), expected_y)
 
 
-def test_smotenc_no_categorical_features_passed(X_y_binary):
+def test_smotenc_categorical_features(X_y_binary):
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={0: 'Categorical', 1: 'Categorical'})
     snc = SMOTENCSampler()
