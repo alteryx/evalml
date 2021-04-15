@@ -87,3 +87,6 @@ class DataCheckMessageCode(Enum):
 
     DATETIME_HAS_NAN = "datetime_has_nan"
     """Message code for when input datetime columns contain NaN values."""
+
+    NATURAL_LANGUAGE_HAS_NAN = "natural_language_has_nan"
+    """Message code for when input natural language columns contain NaN values."""
