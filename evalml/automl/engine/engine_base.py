@@ -186,12 +186,12 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
         ordered_scores.update({"# Training": y_train.shape[0]})
         ordered_scores.update({"# Validation": y_valid.shape[0]})
 
-        evaluation_entry = {"all_objective_scores": ordered_scores, "score": score, 'binary_classification_threshold': None}
+        evaluation_entry = {"all_objective_scores": ordered_scores, "mean_cv_score": score, 'binary_classification_threshold': None}
         if is_binary(automl_config.problem_type) and cv_pipeline is not None and cv_pipeline.threshold is not None:
             evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
     training_time = time.time() - start
-    cv_scores = pd.Series([fold['score'] for fold in cv_data])
+    cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}")
     return {"scores": {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean},
