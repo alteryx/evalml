@@ -248,7 +248,7 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
 
     assert start_iteration_callback.call_count == 2
     assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class  # TODO: why has this not changed?
+    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})
