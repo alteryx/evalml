@@ -292,7 +292,6 @@ class AutoMLSearch:
             index_columns = list(self.X_train.select('index').columns)
             drop_columns = self.pipeline_parameters['Drop Columns Transformer']['columns'] if 'Drop Columns Transformer' in self.pipeline_parameters else None
             if len(index_columns) > 0 and drop_columns is not None:
-                drop_columns = [drop_columns] if isinstance(drop_columns, str) else drop_columns
                 index_columns.extend(drop_columns)
                 self.pipeline_parameters['Drop Columns Transformer']['columns'] = index_columns
             elif len(index_columns) > 0 and drop_columns is None:
