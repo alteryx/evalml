@@ -54,7 +54,6 @@ def dummy_binary_pipeline_classes():
                                              'n_jobs': n_jobs},
                                  component_obj=None, random_seed=random_seed)
 
-        component_graph = [MockEstimator]
         return [BinaryClassificationPipeline([MockEstimator]),
                 BinaryClassificationPipeline([MockEstimator]),
                 BinaryClassificationPipeline([MockEstimator])]

@@ -2447,81 +2447,20 @@ def test_automl_check_high_variance_logs_warning(mock_fit_binary, X_y_binary, ca
         assert "High coefficient of variation" in out
 
 
-def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
+def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
     X, y = X_y_binary
+    pipeline_1 = BinaryClassificationPipeline(component_graph=["Imputer", "Random Forest Classifier"], custom_name="Custom Pipeline")
+    pipeline_2 = BinaryClassificationPipeline(component_graph=["Imputer", "Logistic Regression Classifier"], custom_name="Custom Pipeline")
+    pipeline_3 = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"], custom_name="My Pipeline 3")
+    pipeline_4 = BinaryClassificationPipeline(component_graph=["Random Forest Classifier"], custom_name="My Pipeline 3")
 
-    class MyPipeline1(BinaryClassificationPipeline):
-        custom_name = "Custom Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-        def __init__(self):
-            return super().__init__(self.component_graph, self.custom_name, {})
-
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
-
-    class MyPipeline2(BinaryClassificationPipeline):
-        custom_name = "Custom Pipeline"
-        component_graph = ["Imputer", "Logistic Regression Classifier"]
-
-        def __init__(self):
-            return super().__init__(self.component_graph, self.custom_name, {})
-
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
-
-    class MyPipeline3(BinaryClassificationPipeline):
-        custom_name = "My Pipeline 3"
-        component_graph = ["Logistic Regression Classifier"]
-
-        def __init__(self):
-            return super().__init__(self.component_graph, self.custom_name, {})
-
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
-
-    class MyPipeline4(BinaryClassificationPipeline):
-        custom_name = "My Pipeline 3"
-        component_graph = ["Random Forest Classifier"]
-
-        def __init__(self):
-            return super().__init__(self.component_graph, self.custom_name, {})
-
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
-
-    class OtherPipeline(BinaryClassificationPipeline):
-        custom_name = "Other Pipeline"
-        component_graph = ["Extra Trees Classifier"]
-
-        def __init__(self):
-            return super().__init__(self.component_graph, self.custom_name, {})
-
-        def new(self, parameters, random_seed):
-            return self.__class__()
-
-        def clone(self):
-            return self.__class__()
     with pytest.raises(ValueError,
                        match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated."):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1(), MyPipeline2(), MyPipeline3()])
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_1, pipeline_2, pipeline_3])
 
     with pytest.raises(ValueError,
                        match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated."):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1(), MyPipeline2(),
-                                                                     MyPipeline3(), MyPipeline4(), OtherPipeline()])
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_1, pipeline_2, pipeline_3, pipeline_4])
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -2556,33 +2495,10 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    rf_pipeline = BinaryClassificationPipeline(["Random Forest Classifier"], parameters={"Random Forest Classifier": {"n_jobs": 1}})
+    lrc_pipeline = BinaryClassificationPipeline(["Logistic Regression Classifier"], parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
-    class RfPipeline(BinaryClassificationPipeline):
-        component_graph = ["Random Forest Classifier"]
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters)
-
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    class LogisticPipeline(BinaryClassificationPipeline):
-        component_graph = ["Logistic Regression Classifier"]
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters)
-
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-    pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
-                 LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
-
+    pipelines = [rf_pipeline, lrc_pipeline]
     fitted_pipelines = automl.train_pipelines(pipelines)
 
     assert all([isinstance(pl, PipelineBase) for pl in fitted_pipelines.values()])
