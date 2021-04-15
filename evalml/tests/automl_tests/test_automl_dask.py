@@ -44,7 +44,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
         seq_results = sequential_rankings.drop(columns=["id"])
 
         assert all(seq_results["pipeline_name"] == par_results["pipeline_name"])
-        assert np.allclose(np.array(seq_results["score"]), np.array(par_results["score"]))
+        assert np.allclose(np.array(seq_results["mean_cv_score"]), np.array(par_results["mean_cv_score"]))
         assert np.allclose(np.array(seq_results["validation_score"]), np.array(par_results["validation_score"]))
         assert np.allclose(np.array(seq_results["percent_better_than_baseline"]), np.array(par_results["percent_better_than_baseline"]))
 
