@@ -79,7 +79,7 @@ def test_confusion_matrix(data_type, make_data_type):
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method=None)
     conf_mat_expected = np.array([[2, 1, 0], [0, 1, 1], [1, 1, 2]])
     assert np.array_equal(conf_mat_expected, conf_mat.to_numpy())
-    assert not isinstance(conf_mat, pd.DataFrame)
+    assert isinstance(conf_mat, pd.DataFrame)
 
     conf_mat = confusion_matrix(y_true, y_predicted, normalize_method='all')
     conf_mat_expected = conf_mat_expected / 9.0
