@@ -545,7 +545,7 @@ class AutoMLSearch:
 
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings['id'].isin(new_pipeline_ids)
-            current_batch_pipeline_scores = full_rankings[current_batch_idx]['score']
+            current_batch_pipeline_scores = full_rankings[current_batch_idx]["mean_cv_score"]
             if len(current_batch_pipeline_scores) and current_batch_pipeline_scores.isna().all():
                 raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
 
@@ -560,7 +560,7 @@ class AutoMLSearch:
             best_pipeline = self.rankings.iloc[0]
             best_pipeline_name = best_pipeline["pipeline_name"]
             logger.info(f"Best pipeline: {best_pipeline_name}")
-            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['mean_cv_score']:3f}")
         self._searched = True
 
     def _find_best_pipeline(self):
@@ -613,10 +613,10 @@ class AutoMLSearch:
             return True
 
         first_id = self._results['search_order'][0]
-        best_score = self._results['pipeline_results'][first_id]['score']
+        best_score = self._results['pipeline_results'][first_id]["mean_cv_score"]
         num_without_improvement = 0
         for id in self._results['search_order'][1:]:
-            curr_score = self._results['pipeline_results'][id]['score']
+            curr_score = self._results['pipeline_results'][id]["mean_cv_score"]
             significant_change = abs((curr_score - best_score) / best_score) > self.tolerance
             score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
             if score_improved and significant_change:
@@ -707,7 +707,7 @@ class AutoMLSearch:
             "pipeline_class": type(pipeline),
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
-            "score": cv_score,
+            "mean_cv_score": cv_score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
@@ -860,14 +860,14 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
-        full_rankings_cols = ["id", "pipeline_name", "score", "validation_score",
+        full_rankings_cols = ["id", "pipeline_name", "mean_cv_score", "validation_score",
                               "percent_better_than_baseline", "high_variance_cv", "parameters"]
         if not self._results['pipeline_results']:
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results['pipeline_results'].values())
         rankings_df = rankings_df[full_rankings_cols]
-        rankings_df.sort_values("score", ascending=ascending, inplace=True)
+        rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 
