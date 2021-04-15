@@ -2034,6 +2034,7 @@ def test_undersampler_component_in_pipeline_predict():
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
     class BinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
 
@@ -2057,6 +2058,7 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
 @pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
 def test_oversampler_component_in_pipeline_predict(oversampler):
     pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
     class BinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
 
@@ -2078,6 +2080,7 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_params(mock_fit, oversampler, sampling_ratio_dict):
     pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
     class BinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
 
