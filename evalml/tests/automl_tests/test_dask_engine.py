@@ -142,12 +142,12 @@ class TestDaskEngine(unittest.TestCase):
 
         par_eval_results = eval_pipelines(pipelines, DaskEngine(client=self.client))
         par_dicts = [s.get("scores") for s in par_eval_results]
-        par_scores = [s["cv_data"][0]["score"] for s in par_dicts]
+        par_scores = [s["cv_data"][0]["mean_cv_score"] for s in par_dicts]
         par_pipelines = [s.get("pipeline") for s in par_eval_results]
 
         seq_eval_results = eval_pipelines(pipelines, SequentialEngine())
         seq_dicts = [s.get("scores") for s in seq_eval_results]
-        seq_scores = [s["cv_data"][0]["score"] for s in seq_dicts]
+        seq_scores = [s["cv_data"][0]["mean_cv_score"] for s in seq_dicts]
         seq_pipelines = [s.get("pipeline") for s in seq_eval_results]
 
         # Ensure all pipelines are fitted.

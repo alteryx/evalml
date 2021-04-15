@@ -165,7 +165,7 @@ def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective="precision", max_iterations=5, n_jobs=1)
     automl.search()
-    assert not automl.rankings['score'].isnull().all()
+    assert not automl.rankings["mean_cv_score"].isnull().all()
 
 
 def test_random_seed(X_y_binary):
