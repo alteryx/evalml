@@ -3,6 +3,7 @@ import inspect
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
+from sklearn.linear_model import RidgeCV
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
@@ -222,6 +223,8 @@ def scikit_learn_wrapped_estimator(evalml_obj):
             return WrappedSKClassifier(evalml_obj)
     else:
         # EvalML Estimator
+        if isinstance(evalml_obj, RidgeCV):
+            return evalml_obj
         if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
             return WrappedSKRegressor(evalml_obj)
         elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
