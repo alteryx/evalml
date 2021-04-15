@@ -365,7 +365,7 @@ def test_data_checks_drop_index(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            pass
 
     MockDataCheck.validate = MagicMock()
     checks = DataChecks([MockDataCheck, MockDataCheck, MockDataCheck])
