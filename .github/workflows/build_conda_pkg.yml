@@ -1,8 +1,6 @@
 name: Build Conda Package
 
 on:
-  pull_request:
-    types: [opened, synchronize]
   push:
     branches:
       - main
@@ -20,7 +18,6 @@ jobs:
   build_conda_pkg:
     runs-on: ubuntu-latest
     needs: shellcheck
-    if: github.ref == 'refs/head/main'
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
