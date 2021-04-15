@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -356,21 +356,17 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
     }
 
 
-def test_data_checks_drop_index(X_y_binary):
-    X, _ = X_y_binary
+@patch('evalml.data_checks.DataCheck.validate')
+def test_data_checks_drop_index(mock_validate, X_y_binary):
+    X, y = X_y_binary
     X = pd.DataFrame(X)
     X['index_col'] = pd.Series(range(len(X)))
     X = ww.DataTable(X)
     X = X.set_index('index_col')
 
-    class MockDataCheck(DataCheck):
-        def validate(self, X, y):
-            pass
+    checks = DefaultDataChecks(problem_type='binary', objective='f1')
+    checks.validate(X, y)
 
-    MockDataCheck.validate = MagicMock()
-    checks = DataChecks([MockDataCheck, MockDataCheck, MockDataCheck])
-    checks.validate(X)
-
-    validate_args = MockDataCheck.validate.call_args_list
+    validate_args = mock_validate.call_args_list
     for arg in validate_args:
         assert 'index_col' not in arg[0][0].columns
