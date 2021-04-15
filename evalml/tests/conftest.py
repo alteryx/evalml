@@ -59,37 +59,21 @@ def create_mock_pipeline(estimator, problem_type):
         class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
         return MockRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesRegressionPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
         return MockTSRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesBinaryClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
         return MockTSRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesMulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
-
-            def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
         return MockTSRegressionPipelineWithOnlyEstimator
 
 
@@ -365,11 +349,6 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
         def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockTimeSeriesRegressionPipeline
 
 
@@ -384,11 +363,6 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockBinaryClassificationPipeline
 
 
@@ -401,9 +375,6 @@ def logistic_regression_multiclass_pipeline_class():
 
         def __init__(self, parameters, random_seed=0):
             return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
             return self.__class__(self.parameters, random_seed=self.random_seed)
@@ -505,12 +476,7 @@ def time_series_multiclass_classification_pipeline_class():
 
 @pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
-    class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
-
-        def __init__(self, component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=0):
-            return super().__init__(self.component_graph, None, {})
-    pipeline = DTBinaryClassificationPipeline(None, None, {})
+    pipeline = BinaryClassificationPipeline(['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier'])
     X, y = X_y_categorical_classification
     pipeline.fit(X, y)
     return pipeline

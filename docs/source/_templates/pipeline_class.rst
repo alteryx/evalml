@@ -3,24 +3,7 @@
 .. currentmodule:: {{ module }}
 
 .. autoclass:: {{ objname }}
-   {% set class_attributes = ['name', 'custom_name', 'summary', 'component_graph', 'problem_type',
-                              'model_family', 'hyperparameters', 'custom_hyperparameters',
-                              'default_parameters'] %}
 
-
-   {% block attributes %}
-   .. Class attributes:
-
-   .. autoattribute:: name
-   .. autoattribute:: custom_name
-   .. autoattribute:: summary
-   .. autoattribute:: component_graph
-   .. autoattribute:: problem_type
-   .. autoattribute:: model_family
-   .. autoattribute:: hyperparameters
-   .. autoattribute:: custom_hyperparameters
-   .. autoattribute:: default_parameters
-   {% endblock %}
 
    {% block instance_attributes %}
    .. rubric:: Instance attributes
@@ -29,9 +12,7 @@
       :nosignatures:
 
    {% for item in attributes %}
-   {%- if item not in class_attributes %}
       ~{{ name }}.{{ item }}
-   {%- endif %}
    {%- endfor %}
    {% endblock %}
       

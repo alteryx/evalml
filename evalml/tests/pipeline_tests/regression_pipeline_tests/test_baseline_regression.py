@@ -23,6 +23,28 @@ def test_baseline_regression_init(X_y_binary):
     assert clf.name == "Mean Baseline Regression Pipeline"
 
 
+def test_baseline_regression_new_clone():
+    parameters = {
+        "Baseline Regressor": {
+            "strategy": "mean"
+        }
+    }
+    clf = BaselineRegressionPipeline(parameters=parameters)
+    cloned_clf = clf.clone()
+    assert cloned_clf == clf
+    assert cloned_clf.name == "Baseline Regression Pipeline"
+    assert cloned_clf.parameters == parameters
+
+    new_parameters = {
+        "Baseline Regressor": {
+            "strategy": "median"
+        }
+    }
+    new_clf = clf.new(parameters=new_parameters)
+    assert new_clf.name == "Baseline Regression Pipeline"
+    assert new_clf.parameters == new_parameters
+
+
 def test_baseline_mean(X_y_regression):
     X, y = X_y_regression
     mean = y.mean()

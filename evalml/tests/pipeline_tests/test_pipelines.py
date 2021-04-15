@@ -395,6 +395,15 @@ def test_name():
     assert pipeline_with_neat_name.custom_name == "some_neat_name"
 
 
+def test_custom_hyperparameters(X_y_binary):
+    X, y = X_y_binary
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": ["mean", "median", "most_frequent"]}}
+    pipeline = BinaryClassificationPipeline(['Imputer', 'Logistic Regression Classifier'],
+                                            custom_hyperparameters=custom_hyperparameters)
+    assert pipeline.custom_hyperparameters == custom_hyperparameters
+    assert pipeline.hyperparameters == custom_hyperparameters
+
+
 def test_multi_format_creation(X_y_binary):
     X, y = X_y_binary
     component_graph = component_graph = ['Imputer', 'One Hot Encoder', StandardScaler, 'Logistic Regression Classifier']
@@ -2049,16 +2058,10 @@ def test_binary_pipeline_string_target_thresholding(is_time_series, make_data_ty
 
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_undersampler_component_in_pipeline_fit(mock_fit):
-    class BinaryPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'Undersampler', 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
-    pipeline = BinaryPipeline({})
+    pipeline = BinaryClassificationPipeline(['Imputer', 'Undersampler', 'Logistic Regression Classifier'])
     pipeline.fit(X, y)
     # make sure we undersample to 500 values in the X and y
     assert len(mock_fit.call_args[0][0]) == 500
@@ -2071,18 +2074,20 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
 
 
 def test_undersampler_component_in_pipeline_predict():
-    class BinaryPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'Undersampler', 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
-    pipeline = BinaryPipeline({})
+    pipeline = BinaryClassificationPipeline(['Imputer', 'Undersampler', 'Logistic Regression Classifier'])
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
+
+
+def test_custom_hyperparameters(X_y_binary):
+    X, y = X_y_binary
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": ["mean", "median", "most_frequent"]}}
+    pipeline = BinaryClassificationPipeline(['Imputer', 'Logistic Regression Classifier'],
+                                            custom_hyperparameters=custom_hyperparameters)
+    assert pipeline.custom_hyperparameters == custom_hyperparameters

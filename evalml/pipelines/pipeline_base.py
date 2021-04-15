@@ -288,8 +288,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns model family of this pipeline template"""
         component_graph = copy.copy(self._component_graph)
         if isinstance(component_graph, list):
-            if len(component_graph) == 0:  # handle empty pipelines
-                return None
             return handle_component_class(component_graph[-1]).model_family
         else:
             order = ComponentGraph.generate_order(component_graph.component_dict)
@@ -302,20 +300,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
         component_graph = copy.copy(self._component_graph)
-        if isinstance(component_graph, list):
-            for component_class in component_graph:
-                component_class = handle_component_class(component_class)
-                component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-                if self.custom_hyperparameters and component_class.name in self.custom_hyperparameters:
-                    component_hyperparameters.update(self.custom_hyperparameters.get(component_class.name, {}))
-                hyperparameter_ranges[component_class.name] = component_hyperparameters
-        else:
-            for component_name, component_info in component_graph.component_dict.items():
-                component_class = handle_component_class(component_info[0])
-                component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-                if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
-                    component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
-                hyperparameter_ranges[component_name] = component_hyperparameters
+        for component_name, component_info in component_graph.component_dict.items():
+            component_class = handle_component_class(component_info[0])
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
+                component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
+            hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
     def get_parameters(self):
