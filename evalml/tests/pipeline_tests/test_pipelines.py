@@ -395,13 +395,26 @@ def test_name():
     assert pipeline_with_neat_name.custom_name == "some_neat_name"
 
 
-def test_custom_hyperparameters(X_y_binary):
-    X, y = X_y_binary
-    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": ["mean", "median", "most_frequent"]}}
+def test_custom_hyperparameters():
+    custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ["most_frequent", "median"]
+        }
+    }
     pipeline = BinaryClassificationPipeline(['Imputer', 'Logistic Regression Classifier'],
                                             custom_hyperparameters=custom_hyperparameters)
     assert pipeline.custom_hyperparameters == custom_hyperparameters
-    assert pipeline.hyperparameters == custom_hyperparameters
+    expected_hyperparameters = {
+        'Imputer': {
+            'categorical_impute_strategy': ['most_frequent'],
+            'numeric_impute_strategy': ['most_frequent', 'median']
+        },
+        'Logistic Regression Classifier': {
+            'penalty': ['l2'],
+            'C': Real(low=0.01, high=10, prior='uniform', transform='identity')
+        }
+    }
+    assert pipeline.hyperparameters == expected_hyperparameters
 
 
 def test_multi_format_creation(X_y_binary):
@@ -955,41 +968,11 @@ def test_score_auc(X_y_binary, logistic_regression_binary_pipeline_class):
 
 
 def test_pipeline_summary():
-    class DummyPipeline(PipelineBase):
-        problem_type = ProblemTypes.BINARY
-
-        def fit(self, X, y):
-            return self
-
-        def score(self, X, y, objectives):
-            pass
-
-        def __init__(self):
-            return super().__init__(self.component_graph, None, {})
-
-    class MockPipelineWithoutEstimator(DummyPipeline):
-        component_graph = ["Imputer", "One Hot Encoder"]
-
-    assert MockPipelineWithoutEstimator().summary() == "Pipeline w/ Imputer + One Hot Encoder"
-
-    class MockPipelineWithSingleComponent(DummyPipeline):
-        component_graph = ["Imputer"]
-    assert MockPipelineWithSingleComponent().summary() == "Pipeline w/ Imputer"
-
-    class MockPipelineWithOnlyAnEstimator(DummyPipeline):
-        component_graph = ["Random Forest Classifier"]
-
-    assert MockPipelineWithOnlyAnEstimator().summary() == "Random Forest Classifier"
-
-    class MockPipelineWithNoComponents(DummyPipeline):
-        component_graph = []
-
-    assert MockPipelineWithNoComponents().summary() == "Empty Pipeline"
-
-    class MockPipeline(DummyPipeline):
-        component_graph = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-
-    assert MockPipeline().summary() == "Random Forest Classifier w/ Imputer + One Hot Encoder"
+    assert BinaryClassificationPipeline(["Imputer", "One Hot Encoder"]).summary() == "Pipeline w/ Imputer + One Hot Encoder"
+    assert BinaryClassificationPipeline(["Imputer"]).summary() == "Pipeline w/ Imputer"
+    assert BinaryClassificationPipeline(["Random Forest Classifier"]).summary() == "Random Forest Classifier"
+    assert BinaryClassificationPipeline([]).summary() == "Empty Pipeline"
+    assert BinaryClassificationPipeline(["Imputer", "One Hot Encoder", "Random Forest Classifier"]).summary() == "Random Forest Classifier w/ Imputer + One Hot Encoder"
 
 
 def test_nonlinear_pipeline_summary(nonlinear_binary_pipeline_class, nonlinear_multiclass_pipeline_class, nonlinear_regression_pipeline_class):
@@ -2083,11 +2066,3 @@ def test_undersampler_component_in_pipeline_predict():
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
-
-
-def test_custom_hyperparameters(X_y_binary):
-    X, y = X_y_binary
-    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": ["mean", "median", "most_frequent"]}}
-    pipeline = BinaryClassificationPipeline(['Imputer', 'Logistic Regression Classifier'],
-                                            custom_hyperparameters=custom_hyperparameters)
-    assert pipeline.custom_hyperparameters == custom_hyperparameters
