@@ -114,9 +114,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
-        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
+        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get("mean_cv_score", np.inf)
         if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family != ModelFamily.ENSEMBLE:
-            self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
+            self._best_pipeline_info.update({pipeline.model_family: {"mean_cv_score": score_to_minimize,
                                                                      'pipeline_class': pipeline.__class__,
                                                                      'parameters': pipeline.parameters,
                                                                      'id': trained_pipeline_results['id']}
