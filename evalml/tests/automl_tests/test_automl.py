@@ -2723,7 +2723,7 @@ def test_automl_drop_index_columns(X_y_binary):
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', pipeline_parameters={'Drop Columns Transformer': {'columns': ['test_column', 'other_test_column']}})
-    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['test_column', 'other_test_column', 'index_col']
+    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col', 'test_column', 'other_test_column']
     for pipeline in automl.allowed_pipelines:
         assert pipeline(parameters={}).get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
