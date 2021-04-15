@@ -2073,24 +2073,3 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
-
-
-@pytest.mark.parametrize("sampling_ratio_dict", [{0: 300, 1: 900}, {}])
-@pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
-@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
-def test_oversampler_component_in_pipeline_params(mock_fit, oversampler, sampling_ratio_dict):
-    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
-
-    class BinaryPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
-
-    X = pd.DataFrame({"a": [i for i in range(1000)],
-                      "b": [i % 3 for i in range(1000)],
-                      "c": [i % 7 for i in range(1, 1001)]})
-    X = ww.DataTable(X, logical_types={"c": "Categorical"})
-    y = pd.Series(["a"] * 100 + ["b"] * 900)
-
-    pipeline = BinaryPipeline({oversampler: {"sampling_ratio_dict": sampling_ratio_dict}})
-    pipeline.fit(X, y)
-    value = 1125 if not len(sampling_ratio_dict) else sum(sampling_ratio_dict.values())
-    assert len(mock_fit.call_args[0][0]) == value
