@@ -244,6 +244,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         predictions_series.name = self.input_target_name
         return infer_feature_types(predictions_series)
 
+    def transform(self, X, objective=None):
+        """Returns the output from the final component.
+
+        Arguments:
+            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            objective (Object or string): The objective to use to transform
+
+        Returns:
+            (ww.DataFrame, ww.DataColumn): Predicted values.
+        """
+        X = infer_feature_types(X)
+        output = self._component_graph.transform(X)
+        return infer_feature_types(output)
+
     @abstractmethod
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives

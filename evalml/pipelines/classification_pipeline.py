@@ -101,6 +101,9 @@ class ClassificationPipeline(PipelineBase):
             ww.DataTable: Probability estimates
         """
         X = self.compute_estimator_features(X, y=None)
+        if self.estimator is None:
+            raise Exception('The component graph of this pipeline does not end with an estimator. ' +\
+                            'Cannot compute predicted probabilities.')
         proba = self.estimator.predict_proba(X).to_dataframe()
         proba.columns = self._encoder.classes_
         return infer_feature_types(proba)
