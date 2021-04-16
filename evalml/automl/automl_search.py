@@ -22,6 +22,7 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter
 )
+from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -60,6 +61,21 @@ from evalml.utils.logger import (
 )
 
 logger = get_logger(__file__)
+
+
+def search(X_train=None, y_train=None, problem_type=None, objective='auto'):
+    """Given data and configuration, run an automl search"""
+    X_train = infer_feature_types(X_train)
+    y_train = infer_feature_types(y_train)
+
+    data_checks = DefaultDataChecks()
+    data_check_results = data_checks.validate(X_train, y=y_train)
+    if len(data_check_results['errors']):
+        raise Exception('Errors')
+    automl = AutoMLSearch(X_train=X_train, y_train=y_train, problem_type=problem_type, objective=objective,
+                          max_batches=1)
+    automl.search()
+    return automl
 
 
 class AutoMLSearch:
