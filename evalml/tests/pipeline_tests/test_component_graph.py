@@ -90,6 +90,18 @@ def example_graph():
     return graph
 
 
+def test_init(example_graph):
+    comp_graph = ComponentGraph()
+    assert len(comp_graph.component_dict) == 0
+
+    graph = example_graph
+    comp_graph = ComponentGraph(graph)
+    assert len(comp_graph.component_dict) == 6
+
+    expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
+    assert comp_graph.compute_order == expected_order
+
+
 def test_init_str_components():
     graph = {'Imputer': ['Imputer'],
              'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
@@ -528,11 +540,8 @@ def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary)
     mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
 
     component_graph.fit(X, y)
-    X_out, y_out = component_graph.transform(X)
-    assert_frame_equal(pd.DataFrame(X), X_out.to_dataframe())
-    assert_series_equal(pd.Series(y, dtype='Int64'), y_out.to_series())
-    y_out = component_graph.predict(X)
-    assert_series_equal(pd.Series(y, dtype='Int64'), y_out.to_series())
+    output = component_graph.predict(X)
+    assert_frame_equal(pd.DataFrame(X), output.to_dataframe())
 
 
 def test_no_instantiate_before_fit(X_y_binary):
@@ -674,9 +683,9 @@ def test_iteration(example_graph):
 
 
 def test_custom_input_feature_types(example_graph):
-    X = pd.DataFrame({'column_1': ['a', 'b', 'b', 'c', 'c', 'c', 'd', 'd', 'd', 'd'],
-                      'column_2': [1, 2, 2, 3, 3, 3, 4, 4, 4, 4]})
-    y = pd.Series([1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     X = infer_feature_types(X, {"column_2": "categorical"})
 
     component_graph = ComponentGraph(example_graph)
@@ -689,8 +698,8 @@ def test_custom_input_feature_types(example_graph):
     assert input_feature_names['Imputer'] == ['column_1', 'column_2']
     assert input_feature_names['OneHot_RandomForest'] == ['column_1', 'column_2']
     assert input_feature_names['OneHot_ElasticNet'] == ['column_1', 'column_2']
-    assert input_feature_names['Random Forest'] == ['column_1_c', 'column_1_d', 'column_2_3', 'column_2_4']
-    assert input_feature_names['Elastic Net'] == ['column_1_b', 'column_1_c', 'column_1_d', 'column_2_2', 'column_2_3', 'column_2_4']
+    assert input_feature_names['Random Forest'] == ['column_1_a', 'column_1_b', 'column_2_4', 'column_2_5']
+    assert input_feature_names['Elastic Net'] == ['column_1_a', 'column_1_b', 'column_1_c', 'column_2_3', 'column_2_4', 'column_2_5']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
 
 
@@ -792,48 +801,3 @@ def test_component_graph_dataset_with_target_imputer():
     component_graph.fit(X, y)
     predictions = component_graph.predict(X)
     assert not pd.isnull(predictions.to_series()).any()
-
-
-@pytest.fixture()
-def label_encoder_data_str():
-    np.random.seed(13117)
-    # n_rows, n_cols
-    shape = (10, 3)
-    X = pd.DataFrame(np.random.randint(0, 10, shape))
-    # string target
-    repeat_factor = 2.0
-    y = pd.Series(np.arange(shape[0] / repeat_factor, dtype=int).repeat(repeat_factor))
-    alpha = "abcdefghijklmnopqrstuvwxyz"
-    y = y.apply(lambda x: alpha[x % len(alpha)])
-    return X, y
-
-
-@pytest.mark.parametrize("dtype", ['pd', 'ww'])
-def test_label_encoder_pass_state(dtype, label_encoder_data_str):
-    X, y = label_encoder_data_str
-    if dtype == 'ww':
-        y = ww.DataColumn(y, logical_type='NaturalLanguage')
-    cg = ComponentGraph(component_dict={
-        'label_encoder_0': ['Label Encoder'],
-        'rf': ['Random Forest Classifier', 'label_encoder_0.y'],
-        'label_decoder_0': ['Label Decoder', 'rf.y', 'label_encoder_0.state']
-    })
-    cg.instantiate({})
-    cg.fit(X, y)
-    predictions = cg.predict(X)
-    if dtype == 'ww':
-        pd.testing.assert_series_equal(predictions.to_series(), y.to_series())
-    else:
-        pd.testing.assert_series_equal(predictions.to_series(), y.astype('category'))
-
-
-def test_init(example_graph):
-    comp_graph = ComponentGraph()
-    assert len(comp_graph.component_dict) == 0
-
-    graph = example_graph
-    comp_graph = ComponentGraph(graph)
-    assert len(comp_graph.component_dict) == 6
-
-    expected_order = ['Imputer', 'OneHot_ElasticNet', 'Elastic Net', 'OneHot_RandomForest', 'Random Forest', 'Logistic Regression']
-    assert comp_graph.compute_order == expected_order

@@ -36,8 +36,6 @@ from evalml.pipelines.components import (
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     Imputer,
-    LabelDecoder,
-    LabelEncoder,
     LightGBMClassifier,
     LightGBMRegressor,
     LinearDiscriminantAnalysis,
@@ -524,9 +522,8 @@ def test_transformer_transform_output_type(X_y_binary):
                        (X_df_no_col_names, y_series_no_name, range_index),
                        (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns)]
 
-    components_which_transform_y = (TargetImputer, LabelEncoder, LabelDecoder)
     for component_class in _all_transformers():
-        if component_class in [PolynomialDetrender]:
+        if component_class == PolynomialDetrender:
             # Skipping because this test is handled in test_polynomial_detrender
             continue
         print('Testing transformer {}'.format(component_class.name))
@@ -537,14 +534,10 @@ def test_transformer_transform_output_type(X_y_binary):
                           y.name if isinstance(y, pd.Series) else None))
 
             component = component_class()
+
             component.fit(X, y=y)
-            kwargs = dict()
-            if isinstance(component, (LabelDecoder)):
-                label_encoder = LabelEncoder()
-                label_encoder.fit(X, y=y)
-                kwargs['dependent_components'] = [label_encoder]
-            transform_output = component.transform(X, y=y, **kwargs)
-            if isinstance(component, components_which_transform_y) or 'sampler' in component.name:
+            transform_output = component.transform(X, y=y)
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
                 assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
             else:
@@ -562,7 +555,7 @@ def test_transformer_transform_output_type(X_y_binary):
                 # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
                 # The dataframe shape and index are checked in test_delayed_features_transformer.py
                 continue
-            elif isinstance(component, components_which_transform_y):
+            elif isinstance(component, TargetImputer):
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
                 assert len(transform_output[1].shape) == 1
@@ -573,8 +566,8 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
 
-            transform_output = component.fit_transform(X, y=y, **kwargs)
-            if isinstance(component, components_which_transform_y) or 'sampler' in component.name:
+            transform_output = component.fit_transform(X, y=y)
+            if isinstance(component, TargetImputer) or 'sampler' in component.name:
                 assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
             else:
@@ -588,7 +581,7 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
-            elif isinstance(component, components_which_transform_y):
+            elif isinstance(component, TargetImputer):
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
                 assert len(transform_output[1].shape) == 1
@@ -738,17 +731,12 @@ def test_all_transformers_check_fit(X_y_binary):
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.transform(X, y)
 
-        kwargs = dict()
-        if isinstance(component, (LabelDecoder)):
-            label_encoder = LabelEncoder()
-            label_encoder.fit(X, y=y)
-            kwargs['dependent_components'] = [label_encoder]
         component.fit(X, y)
-        component.transform(X, y, **kwargs)
+        component.transform(X, y)
 
         component = component_class()
-        component.fit_transform(X, y, **kwargs)
-        component.transform(X, y, **kwargs)
+        component.fit_transform(X, y)
+        component.transform(X, y)
 
 
 def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions):
@@ -1098,24 +1086,18 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     X_original_index = X.index.copy()
     y_original_index = y.index.copy()
 
-    kwargs = dict()
-    if transformer_class == LabelDecoder:
-        label_encoder = LabelEncoder()
-        label_encoder.fit(X, y=y)
-        kwargs['dependent_components'] = [label_encoder]
-
     transformer = transformer_class()
 
     transformer.fit(X, y)
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if 'sampler' in transformer.name or transformer_class in [TargetImputer, LabelEncoder, LabelDecoder]:
-        X_t, y_t = transformer.transform(X, y, **kwargs)
+    if 'sampler' in transformer.name or transformer_class == TargetImputer:
+        X_t, y_t = transformer.transform(X, y)
         X_t = X_t.to_dataframe()
         pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
     else:
-        X_t = transformer.transform(X, y, **kwargs).to_dataframe()
+        X_t = transformer.transform(X, y).to_dataframe()
         pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
 
