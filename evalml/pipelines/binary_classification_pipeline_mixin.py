@@ -43,7 +43,7 @@ class BinaryClassificationPipelineMixin():
             objective (ObjectiveBase): The objective to threshold with. Must have a tunable threshold.
         """
         if self.can_tune_threshold_with_objective(objective):
-            targets = y.to_series()
+            targets = self._encode_targets(y.to_series())
             self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
         else:
             raise ValueError("Problem type must be binary and objective must be optimizable.")

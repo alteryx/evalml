@@ -25,7 +25,7 @@ import evalml
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
-from evalml.problem_types import ProblemTypes
+from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
     import_or_raise,
@@ -324,6 +324,9 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     """
 
     precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
+
+    if is_classification(pipeline.problem_type):
+        y = pipeline._encode_targets(y)
 
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
