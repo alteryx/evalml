@@ -45,7 +45,7 @@ jobs:
           python .github/conda_config.py "$(python setup.py --version)"
           cd evalml-core-feedstock
           echo "Pre docker login"
-          echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USER }} --password-stdin
+          echo "${secrets.DOCKERHUB_PASSWORD}" | docker login -u "${secrets.DOCKERHUB_USER}" --password-stdin
           echo "Post docker login"
           export DOCKER_CONTAINERID="$(docker run -td condaforge/linux-anvil-cos7-x86_64)"
           echo "Created container ${DOCKER_CONTAINERID}"
