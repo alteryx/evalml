@@ -762,8 +762,6 @@ def test_all_transformers_check_fit(X_y_binary):
         component = component_class()
         if "SMOTE" in component_class.name:
             component = component_class(sampling_ratio=1)
-        if component_class.name == "SMOTENC Oversampler":
-            component = component_class(sampling_ratio=1, categorical_features=[0])
         component.fit_transform(X, y)
         component.transform(X, y)
 
