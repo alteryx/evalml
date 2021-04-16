@@ -176,6 +176,9 @@ class ComponentGraph:
     def predict(self, X):
         """Make predictions using selected features.
 
+        If the final component is a transformer instead of an estimator, this method will raise an error.
+        Consider using transform(X) instead.
+
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
 
@@ -186,35 +189,33 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
+        output_name = f'{final_component}.y'
+        if not output_name in outputs:
+            raise Exception(f'Final component {final_component} has no target output')
         return infer_feature_types(outputs.get(f'{final_component}.y'))
 
     def transform(self, X, y=None):
-        """Output the features after applying a series of transformations.
+        """Returns the output from the final component in the pipeline.
+
+        If the final component is an estimator, this is the same as calling predict(X).
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataColumn: Predicted values.
+            (ww.DataTable, ww.DataColumn): The output of the final component.
         """
         if len(self.compute_order) == 0:
-            return infer_feature_types(X), None
+            return infer_feature_types(X)
         final_component = self.compute_order[-1]
-        output_name = None
-        if isinstance(self.component_instances[final_component], Estimator):
-            output_name = f"{final_component}.y"
-        elif isinstance(self.component_instances[final_component], Transformer):
+        if isinstance(self.component_instances[final_component], Transformer):
             output_name = f"{final_component}.x"
+        else:
+            output_name = f"{final_component}.y"
         outputs = self._compute_features(self.compute_order, X, y=y, fit=False)
-        X_out = infer_feature_types(outputs.get(output_name))
-        for component_name in self.compute_order[::-1]:
-            y_name = f'{component_name}.y'
-            if y_name in outputs:
-                y_out = outputs.get(y_name)
-                break
-        if y_out is not None:
-            y_out = infer_feature_types(y_out)
-        return X_out, y_out
+        if not output_name in outputs:
+            raise Exception(f'Final component {final_component} has no output {output_name}')
+        return infer_feature_types(outputs.get(output_name))
 
     def _component_output_type(self, component_name):
         if component_name.endswith('.x'):
