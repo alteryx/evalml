@@ -53,7 +53,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns list or dictionary of components representing pipeline graph structure
 
         Returns:
-            list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline
+            list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline.
         """
 
     custom_hyperparameters = None
@@ -64,7 +64,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Required Class Variables:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
+            component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+                Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+                component's index in the list. For example, the component graph
+                [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+                ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -309,8 +313,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def hyperparameters(cls):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
-        component_graph = copy.copy(cls.component_graph)
-        for component_name, component_class in ComponentGraph.linearized_component_graph(component_graph):
+        for component_name, component_class in cls.linearized_component_graph:
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
             if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
                 component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))

@@ -298,7 +298,11 @@ class AutoMLSearch:
         else:
             for pipeline_class in self.allowed_pipelines:
                 if self.pipeline_parameters:
-                    pipeline_class.custom_hyperparameters = self.pipeline_parameters
+                    if pipeline_class.custom_hyperparameters:
+                        for component_name, params in self.pipeline_parameters.items():
+                            pipeline_class.custom_hyperparameters[component_name] = params
+                    else:
+                        pipeline_class.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")

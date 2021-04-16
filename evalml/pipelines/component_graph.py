@@ -38,7 +38,16 @@ class ComponentGraph:
     @classmethod
     def linearized_component_graph(cls, components):
         """Return a list of (component name, component class) tuples from a pre-initialized component graph defined
-        as either a list or a dictionary. The component names are guaranteed to be unique."""
+        as either a list or a dictionary. The component names are guaranteed to be unique.
+
+        Args:
+            components (list(ComponentBase) or Dict[str, ComponentBase]): Components in the pipeline.
+
+        Returns:
+            list((component name, ComponentBase)) - tuples with the unique component name as the first element and the
+                component class as the second element. When the input is a list, the components will be returned in
+                the order they appear in the input.
+        """
         names = []
         if isinstance(components, list):
             seen = set()
