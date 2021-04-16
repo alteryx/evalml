@@ -34,7 +34,6 @@ class ComponentGraph:
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
-        self._state_parents = dict()
 
     @classmethod
     def from_list(cls, component_list, random_seed=0):
@@ -75,17 +74,8 @@ class ComponentGraph:
 
         self._is_instantiated = True
         component_instances = {}
-        state_parents = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-
-            component_state_parents = []
-            parent_names = self.get_parents(component_name)
-            for parent_name in parent_names:
-                if parent_name.endswith(".state"):
-                    component_state_parents.append(parent_name[:-6])
-            if len(component_state_parents):
-                state_parents[component_name] = component_state_parents
 
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
@@ -96,7 +86,6 @@ class ComponentGraph:
 
             component_instances[component_name] = new_component
         self.component_instances = component_instances
-        self._state_parents = state_parents
         return self
 
     def fit(self, X, y):
@@ -200,7 +189,7 @@ class ComponentGraph:
         return infer_feature_types(outputs.get(f'{final_component}.y'))
 
     def transform(self, X, y=None):
-        """Output the features after applying a series of transformations. Will error if an estimator is the final step.
+        """Output the features after applying a series of transformations.
 
         Arguments:
             X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
@@ -211,10 +200,13 @@ class ComponentGraph:
         if len(self.compute_order) == 0:
             return infer_feature_types(X), None
         final_component = self.compute_order[-1]
-        if not isinstance(self.component_instances[final_component], Transformer):
-            raise Exception('Final component must be a transformer in order to use ComponentGraph.transform')
+        output_name = None
+        if isinstance(self.component_instances[final_component], Estimator):
+            output_name = f"{final_component}.y"
+        elif isinstance(self.component_instances[final_component], Transformer):
+            output_name = f"{final_component}.x"
         outputs = self._compute_features(self.compute_order, X, y=y, fit=False)
-        X_out = infer_feature_types(outputs.get(f'{final_component}.x'))
+        X_out = infer_feature_types(outputs.get(output_name))
         for component_name in self.compute_order[::-1]:
             y_name = f'{component_name}.y'
             if y_name in outputs:
@@ -229,8 +221,6 @@ class ComponentGraph:
             return {'x'}
         if component_name.endswith('.y'):
             return {'y'}
-        if component_name.endswith('.state'):
-            return {'state'}
         component_instance = self.get_component(component_name)
         # if name is an estimator with no modifications, provide predictions as an input feature
         if isinstance(component_instance, Estimator):
@@ -260,17 +250,12 @@ class ComponentGraph:
                 raise ValueError('All components must be instantiated before fitting or predicting')
             input_x, input_y = self._compute_inputs(X, y, component_name, output_cache)
             self.input_feature_names.update({component_name: list(input_x.columns)})
-            kwargs = dict()
-            component_state_parents = self._state_parents.get(component_name, [])
-            component_refs = [self.get_component(name) for name in component_state_parents]
-            if len(component_refs):
-                kwargs["dependent_components"] = component_refs
             output_x, output_y = (None, None)
             if isinstance(component_instance, Transformer):
                 if fit:
-                    output = component_instance.fit_transform(input_x, input_y, **kwargs)
+                    output = component_instance.fit_transform(input_x, input_y)
                 else:
-                    output = component_instance.transform(input_x, input_y, **kwargs)
+                    output = component_instance.transform(input_x, input_y)
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
                 else:
@@ -447,23 +432,18 @@ class ComponentGraph:
                                         for key, val in component_class.parameters.items()])  # noqa: W605
                 label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
             graph.node(component_name, shape='record', label=label)
-        # TODO figure out how to display state edges. Would be nice to use dotted lines
         edges = self._get_edges(self.component_dict)
         graph.edges(edges)
         return graph
 
     @staticmethod
-    def _get_edges(component_dict, include_state_edges=False):
+    def _get_edges(component_dict):
         edges = []
         for component_name, component_info in component_dict.items():
             if len(component_info) > 1:
                 for parent in component_info[1:]:
                     if parent.endswith('.x') or parent.endswith('.y'):
                         parent = parent[:-2]
-                    if parent.endswith('.state'):
-                        if not include_state_edges:
-                            continue
-                        parent = parent[:-6]
                     edges.append((parent, component_name))
         return edges
 
