@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added Oversampler transformer component to EvalML :pr:`2079`
+        * Added a GitHub Action for building the conda package :pr:`1870`
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
         * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
