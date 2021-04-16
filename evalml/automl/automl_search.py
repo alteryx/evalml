@@ -69,8 +69,8 @@ def search(X_train=None, y_train=None, problem_type=None, objective='auto', **kw
     y_train = infer_feature_types(y_train)
 
     automl_config = kwargs
-    automl_config.update({'X_train': X_train, 'y_train': y_train, 'problem_type': problem_type, 'objective': objective,
-                          'max_batches': 1})
+    automl_config.update({'X_train': X_train, 'y_train': y_train, 'problem_type': problem_type,
+                          'objective': objective, 'max_batches': 1})
 
     data_checks = DefaultDataChecks()
     data_check_results = data_checks.validate(X_train, y=y_train)
