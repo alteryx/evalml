@@ -31,7 +31,7 @@ def _create_dictionary(shap_values, feature_names):
     return mapping
 
 
-def _compute_shap_values(pipeline, features, training_data=None):
+def _compute_shap_values(pipeline, features, training_data=None, return_type="dict"):
     """Computes SHAP values for each feature.
 
     Arguments:
@@ -92,6 +92,10 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if ws:
             logger.debug(f"_compute_shap_values KernelExplainer: {ws[0].message}")
 
+    # force plot
+    if return_type != "dict":
+        return shap_values, feature_names, explainer
+
     # classification problem
     if isinstance(shap_values, list):
         mappings = []
@@ -101,6 +105,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
     # regression problem
     elif isinstance(shap_values, np.ndarray):
         return _create_dictionary(shap_values, feature_names)
+
     else:
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 

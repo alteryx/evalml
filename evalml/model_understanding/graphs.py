@@ -1,5 +1,6 @@
 import copy
 import os
+import shap
 import warnings
 from collections import OrderedDict
 
@@ -24,6 +25,7 @@ from sklearn.utils.multiclass import unique_labels
 import evalml
 from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
+from evalml.model_understanding.prediction_explanations._algorithms import _compute_shap_values
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
@@ -1195,3 +1197,72 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
     fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)
 
     return fig
+
+
+# def force_plot(pipeline, points_to_explain, training_data, first_obs_to_explain = 0, last_obs_to_explain = None, matplotlib=False):
+#
+#
+#     shap_values, feature_names, explainer = _compute_shap_values(pipeline, pd.DataFrame(points_to_explain),
+#                                                                  training_data, return_type="not dict")
+#     shap_values = pd.DataFrame(shap_values)
+#     shap_values.columns = feature_names
+#
+#     if last_obs_to_explain is not None:
+#         matplotlib=False
+#         last_obs_to_explain == first_obs_to_explain+1
+#         shap_plot = shap.force_plot(explainer.expected_value,
+#                                     shap_values[first_obs_to_explain:last_obs_to_explain, :],
+#                                     training_data[first_obs_to_explain:last_obs_to_explain, :], matplotlib=matplotlib)
+#     else:
+#         shap_plot = shap.force_plot(explainer.expected_value,
+#                                     shap_values[first_obs_to_explain, :],
+#                                     training_data[first_obs_to_explain, :], matplotlib=matplotlib)
+#     return shap_plot
+
+
+def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
+    """ Function to generate a force plot for a pipeline.
+
+    Args:
+        pipeline (PipelineBase): the pipeline to generate the force plot for.
+        rows_to_explain (list(int)): a list of the indices of the training_data to explain
+        training_data (pandas.DataFrame): the data used to train the pipeline
+        matplotlib (bool): flag to display the force plot using matplotlib (outside of jupyter)
+
+    Returns:
+        shap.AdditiveForceVisualizer: object representing the force plot
+
+    """
+    def gen_force_plot(shap_values, training_data, expected_value, matplotlib):
+        # Ensure the training data sample shape matches the shap values shape.
+        training_data_sample = training_data.iloc[:shap_values.shape[0]]
+        assert training_data_sample.shape == shap_values.shape
+        shap_plot = shap.force_plot(expected_value,
+                                    shap_values,
+                                    training_data_sample, matplotlib=matplotlib)
+        return shap_plot
+
+    points_to_explain = training_data.iloc[rows_to_explain]
+
+    shap_values, feature_names, explainer = _compute_shap_values(pipeline,
+                                                                 points_to_explain,
+                                                                 training_data,
+                                                                 return_type="not dict")
+
+    shap_plots = []
+    # classification returns shap_values as a list with shap values for each class
+    if isinstance(shap_values, list):
+        for idx, s_v in enumerate(shap_values):
+            expected_values = explainer.expected_value
+            if pipeline.estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
+                expected_values = [0, expected_values]
+            shap_plots.append(gen_force_plot(shap_values=s_v, training_data=training_data,
+                                             expected_value=expected_values[idx], matplotlib=False))
+
+    # regression problems return shap values as a numpy array of values
+    else:
+        shap_plots.append(gen_force_plot(shap_values=shap_values, training_data=training_data,
+                                         expected_value=explainer.expected_value, matplotlib=matplotlib))
+
+    return shap_plots
+
