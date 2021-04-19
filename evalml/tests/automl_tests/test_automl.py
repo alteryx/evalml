@@ -2169,16 +2169,16 @@ def test_automl_pipeline_params(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
-              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
+              "Logistic Regression Classifier": {"C": 5.0, "penalty": 'l2'},
               "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", custom_hyperparameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
         if 'Imputer' in row['parameters']:
             assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
         if 'Logistic Regression Classifier' in row['parameters']:
-            assert row['parameters']['Logistic Regression Classifier']['C'] == 20
-            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'none'
+            assert row['parameters']['Logistic Regression Classifier']['C'] == 5.0
+            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'l2'
         if 'Elastic Net Classifier' in row['parameters']:
             assert row['parameters']['Elastic Net Classifier']['alpha'] == 0.75
             assert row['parameters']['Elastic Net Classifier']['l1_ratio'] == 0.2
