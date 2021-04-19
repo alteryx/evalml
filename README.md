@@ -2,7 +2,7 @@
 <img width=50% src="https://evalml-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="Featuretools" />
 </p>
 
-[![GitHub Actions](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml/badge.svg)](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml)
+[![GitHub Actions](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml)
 [![Codecov.io](https://codecov.io/gh/alteryx/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/alteryx/evalml)
 [![PyPI](https://badge.fury.io/py/evalml.svg?maxAge=2592000)](https://badge.fury.io/py/evalml)
 [![PyPI Stats](https://img.shields.io/pypi/dm/evalml.svg)](https://pypistats.org/packages/evalml)
