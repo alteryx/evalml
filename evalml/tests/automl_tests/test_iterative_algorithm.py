@@ -288,8 +288,8 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
                               random_seed=0,
-                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
-                                               'Mock Classifier': {'dummy_parameter': parameters}})
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}},
+                              custom_hyperparameters={'Mock Classifier': {'dummy_parameter': parameters}})
 
     next_batch = algo.next_batch()
     parameter = parameters
@@ -316,8 +316,8 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
 def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
-                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
-                                               'Mock Classifier': {'dummy_parameter': parameters}},
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}},
+                              custom_hyperparameters={'Mock Classifier': {'dummy_parameter': parameters}},
                               random_seed=0)
 
     next_batch = algo.next_batch()

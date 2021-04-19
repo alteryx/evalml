@@ -93,6 +93,7 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 custom_hyperparameters=None,
                  _ensembling_split_size=0.2,
                  _pipelines_per_batch=5,
                  engine=None):
@@ -172,6 +173,8 @@ class AutoMLSearch:
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
             pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+
+            custom_hyperparameters (dict): A dict of additional hyperparameters to tune over.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -281,6 +284,7 @@ class AutoMLSearch:
                                                    n_splits=3, shuffle=True, random_seed=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
+        self.custom_hyperparameters = custom_hyperparameters if custom_hyperparameters is not None else {}
         self.search_iteration_plot = None
         self._interrupted = False
 
@@ -296,8 +300,7 @@ class AutoMLSearch:
                 self.pipeline_parameters['Drop Columns Transformer']['columns'] = index_columns
             elif len(index_columns) > 0 and drop_columns is None:
                 self.pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
-
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.custom_hyperparameters) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -368,7 +371,8 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
-            pipeline_params=pipeline_params
+            pipeline_params=pipeline_params,
+            custom_hyperparameters=self.custom_hyperparameters
         )
 
     def _get_batch_number(self):

@@ -2165,13 +2165,13 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
+def test_automl_custom_hyperparameters_simple(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
               "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
               "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", custom_hyperparameters=params, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
         if 'Imputer' in row['parameters']:
@@ -2186,13 +2186,13 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
 
 @patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
-def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
+def test_automl_custom_hyperparameters_multiple(mock_score, mock_fit, X_y_regression):
     mock_score.return_value = {'R2': 1.0}
     X, y = X_y_regression
     params = {'Imputer': {'numeric_impute_strategy': Categorical(['median', 'most_frequent'])},
               'Decision Tree Regressor': {'max_depth': Categorical([17, 18, 19]), 'max_features': Categorical(['auto'])},
               'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": Categorical((0.01, 0.02, 0.03))}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', custom_hyperparameters=params, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
         if 'Imputer' in row['parameters']:
@@ -2207,12 +2207,12 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
+def test_automl_custom_hyperparameters_kwargs(mock_fit, mock_score, X_y_multi):
     mock_score.return_value = {'Log Loss Multiclass': 1.0}
     X, y = X_y_multi
     params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
               'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', custom_hyperparameters=params,
                           allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
@@ -2703,7 +2703,9 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
         assert str(warn[0].message).startswith(message)
 
 
-def test_automl_drop_index_columns(X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
+def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X['index_col'] = pd.Series(range(len(X)))
@@ -2711,10 +2713,12 @@ def test_automl_drop_index_columns(X_y_binary):
     X = X.set_index('index_col')
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    automl.search()
     assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
     for pipeline in automl.allowed_pipelines:
         assert pipeline(parameters={}).get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
+        assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', pipeline_parameters={'Drop Columns Transformer': {'columns': ['test_column', 'other_test_column']}})
     assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col', 'test_column', 'other_test_column']
