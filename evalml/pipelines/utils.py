@@ -26,6 +26,8 @@ from evalml.pipelines.components import (  # noqa: F401
     DropNullColumns,
     Estimator,
     Imputer,
+    LabelDecoder,
+    LabelEncoder,
     OneHotEncoder,
     RandomForestClassifier,
     StackedEnsembleClassifier,
@@ -38,55 +40,12 @@ from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_classification,
     is_time_series
 )
 from evalml.utils import get_logger, infer_feature_types
 
 logger = get_logger(__file__)
-
-
-def _get_preprocessing_components(X, y, problem_type, estimator_class):
-    """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
-
-    Arguments:
-        X (ww.DataTable): The input data of shape [n_samples, n_features]
-        y (ww.DataColumn): The target data of length [n_samples]
-        problem_type (ProblemTypes or str): Problem type
-        estimator_class (class): A class which subclasses Estimator estimator for pipeline
-
-    Returns:
-        list[Transformer]: A list of applicable preprocessing components to use with the estimator
-    """
-
-    X_pd = X.to_dataframe()
-    pp_components = []
-    all_null_cols = X_pd.columns[X_pd.isnull().all()]
-    if len(all_null_cols) > 0:
-        pp_components.append(DropNullColumns)
-    input_logical_types = set(X.logical_types.values())
-    types_imputer_handles = {logical_types.Boolean, logical_types.Categorical, logical_types.Double, logical_types.Integer}
-    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
-        pp_components.append(Imputer)
-
-    text_columns = list(X.select('natural_language').columns)
-    if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
-
-    datetime_cols = X.select(["Datetime"])
-    add_datetime_featurizer = len(datetime_cols.columns) > 0
-    if add_datetime_featurizer:
-        pp_components.append(DateTimeFeaturizer)
-
-    if is_time_series(problem_type):
-        pp_components.append(DelayedFeatureTransformer)
-
-    categorical_cols = X.select('category')
-    if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
-        pp_components.append(OneHotEncoder)
-
-    if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-        pp_components.append(StandardScaler)
-    return pp_components
 
 
 def _get_pipeline_base_class(problem_type):
@@ -124,22 +83,58 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
-
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
-    complete_component_graph = preprocessing_components + [estimator]
+
+    graph_dict = dict()
+    if is_classification(problem_type):
+        graph_dict['Label Encoder'] = [LabelEncoder]
+
+    X_pd = X.to_dataframe()
+    preprocessing_components = []
+    all_null_cols = X_pd.columns[X_pd.isnull().all()]
+    if len(all_null_cols) > 0:
+        preprocessing_components.append(DropNullColumns)
+    input_logical_types = set(X.logical_types.values())
+    types_imputer_handles = {logical_types.Boolean, logical_types.Categorical, logical_types.Double, logical_types.Integer}
+    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
+        preprocessing_components.append(Imputer)
+    text_columns = list(X.select('natural_language').columns)
+    if len(text_columns) > 0:
+        preprocessing_components.append(TextFeaturizer)
+    datetime_cols = X.select(["Datetime"])
+    add_datetime_featurizer = len(datetime_cols.columns) > 0
+    if add_datetime_featurizer:
+        preprocessing_components.append(DateTimeFeaturizer)
+    if is_time_series(problem_type):
+        preprocessing_components.append(DelayedFeatureTransformer)
+    categorical_cols = X.select('category')
+    if len(categorical_cols.columns) > 0 and estimator not in {CatBoostClassifier, CatBoostRegressor}:
+        preprocessing_components.append(OneHotEncoder)
+    if estimator.model_family == ModelFamily.LINEAR_MODEL:
+        preprocessing_components.append(StandardScaler)
+
+    for i, component in enumerate(preprocessing_components):
+        if i == 0:
+            inputs = []
+            if is_classification(problem_type):
+                inputs = ['Label Encoder.y']
+        else:
+            inputs = [preprocessing_components[i - 1] + '.x']
+        graph_dict[component.name] = [component] + inputs
+    graph_dict[estimator] = [estimator.name] + [component.name + '.x']
+    if is_classification(problem_type):
+        graph_dict['Label Decoder'] = [LabelDecoder, estimator.name + '.y', 'Label Encoder.state']
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
-
     hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
 
     class GeneratedPipeline(base_class):
         custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-        component_graph = complete_component_graph
+        component_graph = graph_dict
         custom_hyperparameters = hyperparameters
 
     return GeneratedPipeline
