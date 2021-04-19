@@ -1,4 +1,5 @@
 import copy
+import inspect
 import sys
 import time
 import traceback
@@ -37,6 +38,7 @@ from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
+    PipelineBase,
     TimeSeriesBaselineBinaryPipeline,
     TimeSeriesBaselineMulticlassPipeline,
     TimeSeriesBaselineRegressionPipeline
@@ -260,6 +262,10 @@ class AutoMLSearch:
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
 
+        if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
+            raise ValueError("Parameter allowed_pipelines must be either None or a list!")
+        if allowed_pipelines is not None and not all(inspect.isclass(p) and issubclass(p, PipelineBase) for p in allowed_pipelines):
+            raise ValueError("Every element of allowed_pipelines must be a subclass of PipelineBase!")
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -289,6 +295,14 @@ class AutoMLSearch:
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+        else:
+            for pipeline_class in self.allowed_pipelines:
+                if self.pipeline_parameters:
+                    if pipeline_class.custom_hyperparameters:
+                        for component_name, params in self.pipeline_parameters.items():
+                            pipeline_class.custom_hyperparameters[component_name] = params
+                    else:
+                        pipeline_class.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
