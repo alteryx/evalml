@@ -2,7 +2,6 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added a GitHub Action for building the conda package :pr:`1870`
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
         * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
@@ -20,8 +19,10 @@ Release Notes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
         * Fixed documentation demos :pr:`2139`
+        * Update test badge in README to use GitHub Actions :pr:`2150`
     * Testing Changes
         * Fixed ``test_describe_pipeline`` for ``pandas`` ``v1.2.4`` :pr:`2129`
+        * Added a GitHub Action for building the conda package :pr:`1870` :pr:`2148`
 
 
 .. warning::
