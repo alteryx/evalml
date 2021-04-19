@@ -14,8 +14,8 @@ class BaseMeta(ABCMeta):
     @classmethod
     def set_fit(cls, method):
         @wraps(method)
-        def _set_fit(self, X, y=None, **kwargs):
-            return_value = method(self, X, y, **kwargs)
+        def _set_fit(self, X, y=None):
+            return_value = method(self, X, y)
             self._is_fitted = True
             return return_value
         return _set_fit
