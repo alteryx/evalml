@@ -19,7 +19,7 @@ class DataCheckAction:
 
     def to_dict(self):
         action_dict = {
-            "code": self.action_code.name,
+            "code": self.action_code,
             "metadata": self.metadata
         }
         return action_dict
