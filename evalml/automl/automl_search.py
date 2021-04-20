@@ -305,13 +305,14 @@ class AutoMLSearch:
             else:
                 self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, None, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
         else:
-            for pipeline_class in self.allowed_pipelines:
+            for pipeline in self.allowed_pipelines:
+                # import pdb; pdb.set_trace()
                 if self.pipeline_parameters:
-                    if pipeline_class.custom_hyperparameters:
+                    if pipeline.custom_hyperparameters:
                         for component_name, params in self.pipeline_parameters.items():
-                            pipeline_class.custom_hyperparameters[component_name] = params
+                            pipeline.custom_hyperparameters[component_name] = params
                     else:
-                        pipeline_class.custom_hyperparameters = self.pipeline_parameters
+                        pipeline.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")

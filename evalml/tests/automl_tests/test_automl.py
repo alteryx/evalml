@@ -376,7 +376,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, None, parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -1296,7 +1296,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
         problem_type = problem_type_value
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(parameters=parameters)
+            super().__init__(parameters=parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -1382,7 +1382,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         problem_type = problem_type_enum
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(parameters)
+            super().__init__(parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -1455,7 +1455,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         problem_type = ProblemTypes.BINARY
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(parameters)
+            super().__init__(parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -1867,7 +1867,7 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         component_graph = [MockEstimatorWithNJobs]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -1880,7 +1880,7 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         component_graph = [MockEstimatorWithNJobs]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -2272,19 +2272,16 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
 def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_score, mock_fit, X_y_binary):
-
     X, y = X_y_binary
+    # Pass the input of the first imputer to the second imputer
+    component_graph_dict = {"Imputer": ["Imputer"],
+                            "Imputer_1": ["Imputer", "Imputer"],
+                            "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+    pipeline_dict = BinaryClassificationPipeline(component_graph_dict, custom_name="Pipeline from dict")
 
-    class PipelineDict(BinaryClassificationPipeline):
-        # Pass the input of the first imputer to the second imputer
-        component_graph = {"Imputer": ["Imputer"],
-                           "Imputer_1": ["Imputer", "Imputer"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
-
-    class PipeLineLinear(BinaryClassificationPipeline):
-        component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
-
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+    component_graph_linear = ["Imputer", "Imputer", "Random Forest Classifier"]
+    pipeline_linear = BinaryClassificationPipeline(component_graph_linear)
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_dict, pipeline_linear],
                           pipeline_parameters={"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
                                                "Imputer_1": {"numeric_impute_strategy": Categorical(["median"])}},
                           max_batches=3)
@@ -2295,15 +2292,15 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_scor
         assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "most_frequent"
         assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] == "median"
 
-    class PipelineDict(BinaryClassificationPipeline):
-        component_graph = {"One Hot Encoder": ["One Hot Encoder"],
-                           "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1"]}
+    component_graph_dict = {"One Hot Encoder": ["One Hot Encoder"],
+                            "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder"],
+                            "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1"]}
+    pipeline_dict = BinaryClassificationPipeline(component_graph_dict, custom_name="Pipeline from dict")
 
-    class PipeLineLinear(BinaryClassificationPipeline):
-        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+    component_graph_linear = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+    pipeline_linear = BinaryClassificationPipeline(component_graph_linear)
 
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_linear, pipeline_dict],
                           pipeline_parameters={"One Hot Encoder": {"top_n": Categorical([15])},
                                                "One Hot Encoder_1": {"top_n": Categorical([25])}},
                           max_batches=3)
@@ -2318,24 +2315,23 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_scor
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
 def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(mock_score, mock_fit, X_y_binary):
-
     X, y = X_y_binary
 
-    class PipelineDict(BinaryClassificationPipeline):
-        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
-                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
-                                  "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
-        component_graph = {"Imputer": ["Imputer"],
-                           "Imputer_1": ["Imputer", "Imputer"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                              "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
+                              "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
+    component_graph_dict = {"Imputer": ["Imputer"],
+                            "Imputer_1": ["Imputer", "Imputer"],
+                            "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+    pipeline_dict = BinaryClassificationPipeline(component_graph_dict, custom_name="Pipeline from dict", custom_hyperparameters=custom_hyperparameters)
 
-    class PipeLineLinear(BinaryClassificationPipeline):
-        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
-                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
-                                  "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
-        component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
+                              "Imputer_1": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                              "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
+    component_graph_linear = ["Imputer", "Imputer", "Random Forest Classifier"]
+    pipeline_linear = BinaryClassificationPipeline(component_graph_linear)
 
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_dict, pipeline_linear],
                           max_batches=5)
     automl.search()
     for i, row in automl.full_rankings.iterrows():
@@ -2354,27 +2350,25 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
 def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(mock_score, mock_fit, X_y_binary):
-
     X, y = X_y_binary
 
-    class PipeLineOne(BinaryClassificationPipeline):
-        # Pass the input of the first imputer to the second imputer
-        custom_hyperparameters = {"One Hot Encoder": {"top_n": Categorical([5, 10])}}
+    # Pass the input of the first imputer to the second imputer
+    custom_hyperparameters = {"One Hot Encoder": {"top_n": Categorical([5, 10])}}
 
-        component_graph = {"Imputer": ["Imputer"],
-                           "Imputer_1": ["Imputer", "Imputer"],
-                           "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"]}
+    component_graph = {"Imputer": ["Imputer"],
+                       "Imputer_1": ["Imputer", "Imputer"],
+                       "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
+                       "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"]}
+    pipeline_one = BinaryClassificationPipeline(component_graph, custom_name="Pipe Line One", custom_hyperparameters=custom_hyperparameters)
+    pipeline_two = BinaryClassificationPipeline(["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"],
+                                                custom_name="Pipe Line Two",
+                                                custom_hyperparameters={"One Hot Encoder": {"top_n": Categorical([12, 10])}})
 
-    class PipeLineTwo(BinaryClassificationPipeline):
-        custom_hyperparameters = {"One Hot Encoder": {"top_n": Categorical([12, 10])}}
-        component_graph = ["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"]
+    pipeline_three = BinaryClassificationPipeline(["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"],
+                                                  custom_name="Pipe Line Three",
+                                                  custom_hyperparameters={"Imputer": {"numeric_imputer_strategy": Categorical(["median"])}})
 
-    class PipeLineThree(BinaryClassificationPipeline):
-        custom_hyperparameters = {"Imputer": {"numeric_imputer_strategy": Categorical(["median"])}}
-        component_graph = ["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"]
-
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipeLineOne, PipeLineTwo, PipeLineThree],
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_one, pipeline_two, pipeline_three],
                           pipeline_parameters={"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])}},
                           max_batches=4)
     automl.search()
@@ -2875,8 +2869,8 @@ def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_
     with pytest.raises(ValueError, match="Parameter allowed_pipelines must be either None or a list!"):
         AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=dummy_binary_pipeline_class)
 
-    with pytest.raises(ValueError, match="Every element of allowed_pipelines must be a subclass of PipelineBase!"):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class({})])
+    with pytest.raises(ValueError, match="Every element of allowed_pipelines must an instance of PipelineBase!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class])
 
-    with pytest.raises(ValueError, match="Every element of allowed_pipelines must be a subclass of PipelineBase!"):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.name, dummy_binary_pipeline_class])
+    with pytest.raises(ValueError, match="Every element of allowed_pipelines must an instance of PipelineBase!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.custom_name, dummy_binary_pipeline_class])

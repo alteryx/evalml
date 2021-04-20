@@ -84,6 +84,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             idx = (self._batch_number - 1) % num_pipeline_classes
             pipeline_class = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
+                # import pdb; pdb.set_trace()
                 proposed_parameters = self._tuners[pipeline_class.name].propose()
                 pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
                 next_batch.append(pipeline_class.new(parameters=pl_parameters, random_seed=self.random_seed))

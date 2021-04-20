@@ -264,7 +264,7 @@ def test_nonlinear_model_family():
                            'Random Forest': ['Random Forest Classifier', 'Logistic Regression', 'Elastic Net']}
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class DummyTransformerEndPipeline(BinaryClassificationPipeline):
         component_graph = {'Imputer': ['Imputer'],
@@ -274,7 +274,7 @@ def test_nonlinear_model_family():
                            'Scaler': ['Standard Scaler', 'Random Forest', 'Logistic Regression']}
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     nlbp = DummyNonlinearPipeline({})
     nltp = DummyTransformerEndPipeline({})
@@ -747,7 +747,7 @@ def test_no_default_parameters():
         component_graph = [MockComponent, 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, None, parameters)
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={})
@@ -863,7 +863,7 @@ def test_hyperparameters_override():
         }
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters)
+            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters)
 
     hyperparameters = {
         'Imputer': {
@@ -901,7 +901,7 @@ def test_nonlinear_hyperparameters_override():
         }
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters)
+            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters)
 
     hyperparameters = {
         'Imputer': {
@@ -942,23 +942,19 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
 
 
 def test_hyperparameters_linear_pipeline_duplicate_components():
+    pipeline = BinaryClassificationPipeline(component_graph=["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"])
+    assert pipeline.hyperparameters == {'One Hot Encoder': {},
+                                        "One Hot Encoder_1": {},
+                                        'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
+                                                                     'max_depth': Integer(1, 10)}}
 
-    class PipeLineLinear(BinaryClassificationPipeline):
-        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+    pipeline = BinaryClassificationPipeline(component_graph=["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"],
+                                            custom_hyperparameters={"One Hot Encoder_1": {"top_n": Integer(10, 50)}})
 
-    assert PipeLineLinear.hyperparameters == {'One Hot Encoder': {},
-                                              "One Hot Encoder_1": {},
-                                              'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
-                                                                           'max_depth': Integer(1, 10)}}
-
-    class PipeLineLinear(BinaryClassificationPipeline):
-        custom_hyperparameters = {"One Hot Encoder_1": {"top_n": Integer(10, 50)}}
-        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
-
-    assert PipeLineLinear.hyperparameters == {'One Hot Encoder': {},
-                                              "One Hot Encoder_1": {"top_n": Integer(10, 50)},
-                                              'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
-                                                                           'max_depth': Integer(1, 10)}}
+    assert pipeline.hyperparameters == {'One Hot Encoder': {},
+                                        "One Hot Encoder_1": {"top_n": Integer(10, 50)},
+                                        'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
+                                                                     'max_depth': Integer(1, 10)}}
 
 
 @patch('evalml.pipelines.components.Estimator.predict')
@@ -1006,7 +1002,7 @@ def test_drop_columns_in_pipeline():
         component_graph = ['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     parameters = {
         'Drop Columns Transformer': {
@@ -1138,7 +1134,7 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
             model_family = ModelFamily.XGBOOST
 
             def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         X, y = X_y_regression
     elif problem_type == ProblemTypes.BINARY:
@@ -1147,7 +1143,7 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
             model_family = ModelFamily.XGBOOST
 
             def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -1156,7 +1152,7 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
             model_family = ModelFamily.XGBOOST
 
             def __init__(self, parameters, random_seed=0):
-                return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
         X, y = X_y_multi
 
@@ -1175,7 +1171,7 @@ def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_cla
         component_graph = ['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
 
     with pytest.raises(MissingComponentError, match="was not found"):
         FakePipeline(parameters={})
@@ -1363,14 +1359,14 @@ def test_pipeline_equality_different_attributes(pipeline_class):
         component_graph = ['Imputer', final_estimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockPipelineWithADifferentClassName(pipeline_class):
         custom_name = "Mock Pipeline"
         component_graph = ['Imputer', final_estimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     assert MockPipeline(parameters={}) != MockPipelineWithADifferentClassName(parameters={})
 
@@ -1387,7 +1383,7 @@ def test_pipeline_equality_subclasses(pipeline_class):
         component_graph = ['Imputer', final_estimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockPipelineSubclass(MockPipeline):
         pass
@@ -1421,7 +1417,7 @@ def test_pipeline_equality(mock_fit, pipeline_class):
         component_graph = ['Imputer', final_estimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     # Test self-equality
     mock_pipeline = MockPipeline(parameters={})
@@ -1490,7 +1486,7 @@ def test_nonlinear_pipeline_equality(pipeline_class):
         }
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
 
         def fit(self, X, y=None):
             return self
@@ -1552,21 +1548,21 @@ def test_pipeline_str():
         component_graph = ['Imputer', 'Random Forest Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockMulticlassPipeline(MulticlassClassificationPipeline):
         custom_name = "Mock Multiclass Pipeline"
         component_graph = ['Imputer', 'Random Forest Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockRegressionPipeline(RegressionPipeline):
         custom_name = "Mock Regression Pipeline"
         component_graph = ['Imputer', 'Random Forest Regressor']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     binary_pipeline = MockBinaryPipeline(parameters={})
     multiclass_pipeline = MockMulticlassPipeline(parameters={})
@@ -1589,7 +1585,7 @@ def test_pipeline_repr(pipeline_class):
         component_graph = ['Imputer', final_estimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters)
+            super().__init__(self.component_graph, self.custom_name, parameters)
 
     pipeline = MockPipeline(parameters={})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
@@ -1625,7 +1621,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         }
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters)
+            super().__init__(self.component_graph, self.custom_name, parameters)
 
     pipeline = MockPipeline(parameters={})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
@@ -1696,7 +1692,7 @@ def test_generate_code_pipeline_json_errors():
         component_graph = ['Imputer', CustomEstimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     pipeline = MockBinaryPipelineTransformer({})
     generate_pipeline_code(pipeline)
@@ -1736,14 +1732,14 @@ def test_generate_code_pipeline():
         }
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
+            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
 
     class MockRegressionPipeline(RegressionPipeline):
         name = "Mock Regression Pipeline"
         component_graph = ['Imputer', 'Random Forest Regressor']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     mock_binary_pipeline = MockBinaryPipeline({})
     expected_code = 'import json\n' \
@@ -1752,7 +1748,7 @@ def test_generate_code_pipeline():
                     '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\t\'Random Forest Classifier\'\n\t]' \
                     '\n\tcustom_hyperparameters = {\'Imputer\': {\'numeric_impute_strategy\': \'most_frequent\'}}\n' \
                     '\n\tdef __init__(self, parameters, random_seed=0):'\
-                    '\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
+                    '\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
                     '\n\nparameters = json.loads("""{\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "mean",\n\t\t"categorical_fill_value": null,\n\t\t"numeric_fill_value": null\n\t},' \
                     '\n\t"Random Forest Classifier": {\n\t\t"n_estimators": 100,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}""")\n' \
                     'pipeline = MockBinaryPipeline(parameters)'
@@ -1767,7 +1763,7 @@ def test_generate_code_pipeline():
                     '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\t\'Random Forest Regressor\'\n\t]\n\t' \
                     'name = \'Mock Regression Pipeline\'\n\n' \
                     '\tdef __init__(self, parameters, random_seed=0):'\
-                    '\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
+                    '\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
                     '\n\nparameters = json.loads("""{\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "mean",\n\t\t"categorical_fill_value": null,\n\t\t"numeric_fill_value": null\n\t},' \
                     '\n\t"Random Forest Regressor": {\n\t\t"n_estimators": 100,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}""")' \
                     '\npipeline = MockRegressionPipeline(parameters)'
@@ -1781,7 +1777,7 @@ def test_generate_code_pipeline():
                            '\n\tcomponent_graph = [\n\t\t\'Imputer\',\n\t\t\'Random Forest Regressor\'\n\t]' \
                            '\n\tname = \'Mock Regression Pipeline\'' \
                            '\n\n\tdef __init__(self, parameters, random_seed=0):'\
-                           '\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
+                           '\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
                            '\n\nparameters = json.loads("""{\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "most_frequent",\n\t\t"categorical_fill_value": null,\n\t\t"numeric_fill_value": null\n\t},' \
                            '\n\t"Random Forest Regressor": {\n\t\t"n_estimators": 50,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}""")' \
                            '\npipeline = MockRegressionPipeline(parameters)'
@@ -1825,7 +1821,7 @@ def test_generate_code_pipeline_custom():
         component_graph = [CustomTransformer, 'Random Forest Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockBinaryPipelineEstimator(BinaryClassificationPipeline):
         name = "Mock Binary Pipeline with Estimator"
@@ -1837,14 +1833,14 @@ def test_generate_code_pipeline_custom():
         }
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class MockAllCustom(BinaryClassificationPipeline):
         name = "Mock All Custom Pipeline"
         component_graph = [CustomTransformer, CustomEstimator]
 
         def __init__(self, parameters, random_seed=0):
-            return super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     mockBinaryTransformer = MockBinaryPipelineTransformer({})
     expected_code = 'import json\n' \
@@ -1853,7 +1849,7 @@ def test_generate_code_pipeline_custom():
                     '\n\tcomponent_graph = [\n\t\tCustomTransformer,\n\t\t\'Random Forest Classifier\'\n\t]' \
                     '\n\tname = \'Mock Binary Pipeline with Transformer\'' \
                     '\n\n\tdef __init__(self, parameters, random_seed=0):'\
-                    '\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
+                    '\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
                     '\n\nparameters = json.loads("""{\n\t"Random Forest Classifier": {\n\t\t"n_estimators": 100,\n\t\t"max_depth": 6,\n\t\t"n_jobs": -1\n\t}\n}""")' \
                     '\npipeline = MockBinaryPipelineTransformer(parameters)'
     pipeline = generate_pipeline_code(mockBinaryTransformer)
@@ -1867,7 +1863,7 @@ def test_generate_code_pipeline_custom():
                     '\n\tcustom_hyperparameters = {\'Imputer\': {\'numeric_impute_strategy\': \'most_frequent\'}}' \
                     '\n\tname = \'Mock Binary Pipeline with Estimator\'' \
                     '\n\n\tdef __init__(self, parameters, random_seed=0):'\
-                    '\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
+                    '\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
                     '\n\nparameters = json.loads("""{\n\t"Imputer": {\n\t\t"categorical_impute_strategy": "most_frequent",\n\t\t"numeric_impute_strategy": "mean",\n\t\t"categorical_fill_value": null,\n\t\t"numeric_fill_value": null\n\t},' \
                     '\n\t"My Custom Estimator": {\n\t\t"random_arg": false\n\t}\n}""")' \
                     '\npipeline = MockBinaryPipelineEstimator(parameters)'
@@ -1881,7 +1877,7 @@ def test_generate_code_pipeline_custom():
                     '\n\tcomponent_graph = [\n\t\tCustomTransformer,\n\t\tCustomEstimator\n\t]' \
                     '\n\tname = \'Mock All Custom Pipeline\'\n\n'\
                     '\tdef __init__(self, parameters, random_seed=0):'\
-                    '\n\t\treturn super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
+                    '\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)'\
                     '\n\nparameters = json.loads("""{\n\t"My Custom Estimator": {\n\t\t"random_arg": false\n\t}\n}""")' \
                     '\npipeline = MockAllCustom(parameters)'
     pipeline = generate_pipeline_code(mockAllCustom)

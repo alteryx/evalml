@@ -90,13 +90,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
 
-        # self.parameters = self.get_parameters()
-
         self.custom_name = custom_name
         self.name = custom_name or self.summary()
 
         self.model_family = self.get_model_family()
-        self.hyperparameters = self.get_hyperparameters()
+        # self.hyperparameters = self.get_hyperparameters()
 
     def summary(self):
         """Returns a short summary of the pipeline structure, describing the list of components used.
@@ -299,7 +297,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             final_component = order[-1]
             return handle_component_class(component_graph[final_component].__class__).model_family
 
-    def get_hyperparameters(self):
+    @property
+    def hyperparameters(self):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
         for component_name, component_class in self.linearized_component_graph():
@@ -309,20 +308,23 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
-    def get_parameters(self):
+    # def get_hyperparameters(self):
+    #     """Returns hyperparameter ranges from all components as a dictionary"""
+    #     hyperparameter_ranges = dict()
+    #     for component_name, component_class in self.linearized_component_graph():
+    #         component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+    #         if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
+    #             component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
+    #         hyperparameter_ranges[component_name] = component_hyperparameters
+    #     return hyperparameter_ranges
+
+    @property
+    def parameters(self):
         """Returns parameter dictionary for this pipeline
 
         Returns:
             dict: Dictionary of all component parameters
         """
-        components = [(component_name, component_class) for component_name, component_class in self._component_graph.component_instances.items()]
-        component_parameters = {c_name: copy.copy(c.parameters) for c_name, c in components if c.parameters}
-        if self._pipeline_params:
-            component_parameters['pipeline'] = self._pipeline_params
-        return component_parameters
-
-    @property
-    def parameters(self):
         components = [(component_name, component_class) for component_name, component_class in self._component_graph.component_instances.items()]
         component_parameters = {c_name: copy.copy(c.parameters) for c_name, c in components if c.parameters}
         if self._pipeline_params:
