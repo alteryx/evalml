@@ -16,7 +16,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import (
     is_classification,
     is_regression,
-    is_time_series
 )
 from evalml.problem_types.problem_types import ProblemTypes
 from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_algorithms import (
@@ -38,10 +37,8 @@ def test_plot(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 
     if problem_type == ProblemTypes.BINARY:
         training_data, y = X_y_binary
-        is_binary = True
     elif problem_type == ProblemTypes.MULTICLASS:
         training_data, y = X_y_multi
-        is_binary = False
     else:
         training_data, y = X_y_regression
 
