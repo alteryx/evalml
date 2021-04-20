@@ -2165,7 +2165,7 @@ def test_automl_validate_objective(non_core_objective, X_y_regression):
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_pipeline_params(mock_fit, mock_score, X_y_binary):
+def test_automl_custom_hyperparameters_simple(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
