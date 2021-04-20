@@ -160,7 +160,7 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
     pipeline = TestRegressionPipeline({})
     pipeline.fit(X, y)
 
-    results = force_plot(pipeline, rows_to_explain=[0], training_data=pd.DataFrame(X), matplotlib=False)
+    results = force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=pd.DataFrame(X), matplotlib=False)
 
     assert len(results) == 1  # Should have a single force plot.
     assert results[0]["class"] == "regression"
