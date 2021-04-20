@@ -58,8 +58,6 @@ def _compute_shap_values(pipeline, features, training_data=None):
 
     if estimator.model_family.is_tree_estimator():
         # Because of this issue: https://github.com/slundberg/shap/issues/1215
-        if estimator.model_family == ModelFamily.XGBOOST:
-            raise NotImplementedError("SHAP values cannot currently be computed for xgboost models.")
         if estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.MULTICLASS:
             # Will randomly segfault
             raise NotImplementedError("SHAP values cannot currently be computed for catboost models for multiclass problems.")
@@ -69,11 +67,11 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
         shap_values = explainer.shap_values(features, check_additivity=False)
-        # shap only outputs values for positive class for Catboost binary estimators.
+        # shap only outputs values for positive class for Catboost/Xgboost binary estimators.
         # this modifies the output to match the output format of other binary estimators.
         # Ok to fill values of negative class with zeros since the negative class will get dropped
         # in the UI anyways.
-        if estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
+        if estimator.model_family in {ModelFamily.CATBOOST, ModelFamily.XGBOOST} and pipeline.problem_type == ProblemTypes.BINARY:
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if training_data is None:

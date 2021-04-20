@@ -24,9 +24,7 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     CatBoostClassifier,
     LinearRegressor,
-    RandomForestClassifier,
-    XGBoostClassifier,
-    XGBoostRegressor
+    RandomForestClassifier
 )
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import make_pipeline
@@ -59,9 +57,6 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (ModeBaselineMulticlassPipeline, ValueError, baseline_message),
                                                       (TimeSeriesBaselineRegressionPipeline, ValueError, baseline_message),
                                                       (make_test_pipeline(CatBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, catboost_message),
-                                                      (make_test_pipeline(XGBoostClassifier, BinaryClassificationPipeline), NotImplementedError, xg_boost_message),
-                                                      (make_test_pipeline(XGBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, xg_boost_message),
-                                                      (make_test_pipeline(XGBoostRegressor, RegressionPipeline), NotImplementedError, xg_boost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
@@ -93,7 +88,7 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
 
 
-interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family not in {ModelFamily.XGBOOST, ModelFamily.BASELINE}]
+interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family not in {ModelFamily.BASELINE}]
 all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 all_n_points_to_explain = [1, 5]
 
