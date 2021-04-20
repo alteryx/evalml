@@ -70,24 +70,23 @@ class IterativeAlgorithm(AutoMLAlgorithm):
               (self._batch_number) % (len(self._first_batch_results) + 1) == 0):
             input_pipelines = []
             for pipeline_dict in self._best_pipeline_info.values():
-                pipeline_class = pipeline_dict['pipeline']
+                pipeline = pipeline_dict['pipeline']
                 pipeline_params = pipeline_dict['parameters']
-                input_pipelines.append(pipeline_class.new(parameters=self._transform_parameters(pipeline_class, pipeline_params),
-                                                          random_seed=self.random_seed))
+                input_pipelines.append(pipeline.new(parameters=self._transform_parameters(pipeline, pipeline_params),
+                                                    random_seed=self.random_seed))
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_seed=self.random_seed,
                                                        n_jobs=self.n_jobs)
 
             next_batch.append(ensemble)
         else:
-            num_pipeline_classes = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
-            idx = (self._batch_number - 1) % num_pipeline_classes
-            pipeline_class = self._first_batch_results[idx][1]
+            num_pipelines = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
+            idx = (self._batch_number - 1) % num_pipelines
+            pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
-                # import pdb; pdb.set_trace()
-                proposed_parameters = self._tuners[pipeline_class.name].propose()
-                pl_parameters = self._transform_parameters(pipeline_class, proposed_parameters)
-                next_batch.append(pipeline_class.new(parameters=pl_parameters, random_seed=self.random_seed))
+                proposed_parameters = self._tuners[pipeline.name].propose()
+                pl_parameters = self._transform_parameters(pipeline, proposed_parameters)
+                next_batch.append(pipeline.new(parameters=pl_parameters, random_seed=self.random_seed))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -121,12 +120,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                                                                      'id': trained_pipeline_results['id']}
                                              })
 
-    def _transform_parameters(self, pipeline_class, proposed_parameters):
+    def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
-        for name, component_class in pipeline_class.linearized_component_graph():
+        for name, component_class in pipeline.linearized_component_graph():
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
 

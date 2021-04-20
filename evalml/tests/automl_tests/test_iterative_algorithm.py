@@ -92,7 +92,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
     assert [p.__class__ for p in next_batch] == [p.__class__ for p in dummy_binary_pipeline_classes]
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert all([p.parameters == p.default_parameters() for p in next_batch])
+    assert all([p.parameters == p.default_parameters for p in next_batch])
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):

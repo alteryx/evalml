@@ -286,17 +286,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
         return y_pred
 
-    # def get_model_family(self):
-    #     """Returns model family of this pipeline template"""
-    #     component_graph = copy.copy(self._component_graph)
-    #     if isinstance(component_graph, list):
-    #         return handle_component_class(component_graph[-1]).model_family
-    #     else:
-    #         order = ComponentGraph.generate_order(component_graph.component_dict)
-    #         if len(order) == 0:
-    #             return None
-    #         final_component = order[-1]
-    #         return handle_component_class(component_graph[final_component].__class__).model_family
     @property
     def model_family(self):
         """Returns model family of this pipeline template"""
@@ -305,8 +294,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return handle_component_class(component_graph[-1]).model_family
         else:
             order = ComponentGraph.generate_order(component_graph.component_dict)
-            if len(order) == 0:
-                return None
             final_component = order[-1]
             return handle_component_class(component_graph[final_component].__class__).model_family
 
@@ -321,16 +308,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
-    # def get_hyperparameters(self):
-    #     """Returns hyperparameter ranges from all components as a dictionary"""
-    #     hyperparameter_ranges = dict()
-    #     for component_name, component_class in self.linearized_component_graph():
-    #         component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-    #         if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
-    #             component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
-    #         hyperparameter_ranges[component_name] = component_hyperparameters
-    #     return hyperparameter_ranges
-
     @property
     def parameters(self):
         """Returns parameter dictionary for this pipeline
@@ -344,6 +321,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_parameters['pipeline'] = self._pipeline_params
         return component_parameters
 
+    @property
     def default_parameters(self):
         """Returns the default parameter dictionary for this pipeline.
 
