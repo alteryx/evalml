@@ -20,6 +20,7 @@ from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_a
     interpretable_estimators
 )
 
+
 def test_exceptions():
     with pytest.raises(TypeError, match="rows_to_explain should be provided as a list of row index integers!"):
         force_plot(None, None, None)
@@ -139,7 +140,7 @@ def test_force_plot_multiclass(rows_to_explain, expected_plot_class, has_minimal
 def test_force_plot_regression(X_y_regression, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
-        
+
     X, y = X_y_regression
 
     class TestRegressionPipeline(RegressionPipeline):

@@ -1238,7 +1238,7 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
 
     if not isinstance(rows_to_explain, list):
         raise TypeError("rows_to_explain should be provided as a list of row index integers!")
-    if not all([isinstance(x,int) for x in rows_to_explain]):
+    if not all([isinstance(x, int) for x in rows_to_explain]):
         raise TypeError("rows_to_explain should only contain integers!")
 
     points_to_explain = training_data.iloc[rows_to_explain]
