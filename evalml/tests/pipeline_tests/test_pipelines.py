@@ -941,6 +941,26 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
     assert pipeline.hyperparameters == {'Mock Classifier': {}}
 
 
+def test_hyperparameters_linear_pipeline_duplicate_components():
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+
+    assert PipeLineLinear.hyperparameters == {'One Hot Encoder': {},
+                                              "One Hot Encoder_1": {},
+                                              'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
+                                                                           'max_depth': Integer(1, 10)}}
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        custom_hyperparameters = {"One Hot Encoder_1": {"top_n": Integer(10, 50)}}
+        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+
+    assert PipeLineLinear.hyperparameters == {'One Hot Encoder': {},
+                                              "One Hot Encoder_1": {"top_n": Integer(10, 50)},
+                                              'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
+                                                                           'max_depth': Integer(1, 10)}}
+
+
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary

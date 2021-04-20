@@ -41,6 +41,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """Base class for all pipelines."""
 
     problem_type = None
+    custom_hyperparameters = None
+    custom_name = None
 
     def __init__(self, component_graph,
                  custom_name=None,
@@ -50,7 +52,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Machine learning pipeline made out of transformers and a estimator.
 
         Arguments:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+            component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+                Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+                component's index in the list. For example, the component graph
+                [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+                ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
             custom_name (str): Custom name for the pipeline.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary {} implies using all default values for component parameters.
@@ -96,7 +102,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
+<<<<<< < HEAD
         component_graph = [handle_component_class(component_class) for component_class in copy.copy(self.linearized_component_graph())]
+== == == =
+        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(cls.linearized_component_graph)]
+>>>>>> > main
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -112,10 +122,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def linearized_component_graph(self):
         """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
+<<<<<<< HEAD
         if isinstance(self.component_graph, list):
             return self.component_graph
         else:
             return [component_info[0] for component_info in self._component_graph.component_dict.values()]
+=======
+        return ComponentGraph.linearized_component_graph(cls.component_graph)
+>>>>>>> main
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -299,12 +313,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def get_hyperparameters(self):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
+<<<<<<< HEAD
         component_graph = copy.copy(self._component_graph)
         for component_name, component_info in component_graph.component_dict.items():
             component_class = handle_component_class(component_info[0])
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
             if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
                 component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
+=======
+        for component_name, component_class in cls.linearized_component_graph:
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
+                component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
+>>>>>>> main
             hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
