@@ -1,16 +1,23 @@
 import pandas as pd
 import pytest
+import shap
 from itertools import product
 
 from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_algorithms import (
     interpretable_estimators,
     all_problems,
 )
-
+from evalml.demos import load_breast_cancer, load_wine
 from evalml.model_family.model_family import ModelFamily
 from evalml.model_understanding.graphs import force_plot
+from evalml.pipelines import BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types.problem_types import ProblemTypes
+from evalml.problem_types import (
+    is_classification,
+    is_regression,
+    is_time_series
+)
 
 
 @pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
@@ -40,17 +47,94 @@ def test_plot(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 
     pipeline.fit(training_data, y)
 
-    force_plot(pipeline, n_points_to_explain, training_data)
+    results = force_plot(pipeline, n_points_to_explain, training_data)
+
+    if len(n_points_to_explain) == 1:
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
+    else:
+        expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
+
+    if is_classification(pipeline.problem_type):
+        # Should have one result per class.
+        assert len(results) == len(set(y))
+
+        # Should have integer labeled classes.
+        classes = [r["class"] for r in results]
+        assert classes == [x for x in range(len(set(y)))]
+
+    elif is_regression(pipeline.problem_type):
+        # Should have one result per class.
+        assert len(results) == 1
+
+        # Should have integer labeled classes.
+        classes = [r["class"] for r in results]
+        assert classes == ["regression"]
+
+    # Should have a force plot in each dictionary.
+    force_plots = [r["force_plot"] for r in results]
+    assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-@pytest.mark.parametrize("rows_to_explain", ([0], [0, 1, 2, 3, 4]))
-def test_my_foce_plot(rows_to_explain, helper_functions):
-    import shap
-    from evalml.pipelines.components.estimators import LightGBMRegressor
-    training_data, y = shap.datasets.boston()
-    pipeline_class = make_pipeline(training_data, y, LightGBMRegressor, problem_type="regression")
-    pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
-    pipeline.fit(training_data, y)
-    shap.initjs()
+@pytest.mark.parametrize("rows_to_explain, expected_plot_class", (([0], shap.plots._force.AdditiveForceVisualizer),
+                                                                  ([0, 1, 2, 3, 4], shap.plots._force.AdditiveForceArrayVisualizer)))
+def test_force_plot_binary(rows_to_explain, expected_plot_class):
+    X, y = load_breast_cancer()
 
-    force_plot(pipeline, rows_to_explain, training_data, matplotlib=False)
+    class RFBinaryClassificationPipeline(BinaryClassificationPipeline):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+
+    pipeline = RFBinaryClassificationPipeline({})
+    pipeline.fit(X, y)
+
+    results = force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df, matplotlib=False)
+
+    # Should have one result per class.
+    assert len(results) == 2
+
+    # Should have integer labeled classes.
+    classes = [r["class"] for r in results]
+    assert classes == [0, 1]
+
+    # Should have a force plot in each dictionary.
+    force_plots = [r["force_plot"] for r in results]
+    assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
+
+@pytest.mark.parametrize("rows_to_explain, expected_plot_class", (([0], shap.plots._force.AdditiveForceVisualizer),
+                                                                    ([0,1,2,3,4], shap.plots._force.AdditiveForceArrayVisualizer)))
+def test_force_plot_multiclass(rows_to_explain, expected_plot_class):
+    X, y = load_wine()
+
+    class RFMultiClassificationPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Simple Imputer', 'Random Forest Classifier']
+
+    pipeline = RFMultiClassificationPipeline({})
+    pipeline.fit(X, y)
+
+    results = force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df, matplotlib=False)
+
+    # Should have one result per class.
+    assert len(results) == 3
+
+    # Should have integer labeled classes.
+    classes = [r["class"] for r in results]
+    assert classes == [0, 1, 2]
+
+    # Should have a force plot in each dictionary.
+    force_plots = [r["force_plot"] for r in results]
+    assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
+
+
+def test_force_plot_regression(X_y_regression):
+    X, y = X_y_regression
+
+    class TestRegressionPipeline(RegressionPipeline):
+        component_graph = ['Simple Imputer', 'LightGBM Regressor']
+
+    pipeline = TestRegressionPipeline({})
+    pipeline.fit(X, y)
+
+    results = force_plot(pipeline, rows_to_explain=[0], training_data=pd.DataFrame(X), matplotlib=False)
+
+    assert len(results) == 1  # Should have a single force plot.
+    assert results[0]["class"] == "regression"
+    assert isinstance(results[0]["force_plot"], shap.plots._force.AdditiveForceVisualizer)

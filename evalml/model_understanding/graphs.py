@@ -1242,6 +1242,9 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
                                     training_data_sample, matplotlib=matplotlib)
         return shap_plot
 
+    if not isinstance(rows_to_explain, list):
+        raise TypeError("rows_to_explain should be provided as a list of row index integers")
+
     points_to_explain = training_data.iloc[rows_to_explain]
 
     shap_values, feature_names, explainer = _compute_shap_values(pipeline,
@@ -1252,17 +1255,22 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
     shap_plots = []
     # classification returns shap_values as a list with shap values for each class
     if isinstance(shap_values, list):
-        for idx, s_v in enumerate(shap_values):
-            expected_values = explainer.expected_value
-            if pipeline.estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
-                expected_values = [0, expected_values]
-            shap_plots.append(gen_force_plot(shap_values=s_v, training_data=training_data,
-                                             expected_value=expected_values[idx], matplotlib=False))
+        expected_values = explainer.expected_value
+        if pipeline.estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
+            expected_values = [0, expected_values]
 
+        for idx, s_v in enumerate(shap_values):
+            result = {}
+            result["class"] = idx
+            result["force_plot"] = gen_force_plot(shap_values=s_v, training_data=training_data,
+                                                  expected_value=expected_values[idx], matplotlib=False)
+            shap_plots.append(result)
     # regression problems return shap values as a numpy array of values
     else:
-        shap_plots.append(gen_force_plot(shap_values=shap_values, training_data=training_data,
-                                         expected_value=explainer.expected_value, matplotlib=matplotlib))
-
+        result = {}
+        result["class"] = "regression"
+        result["force_plot"] = gen_force_plot(shap_values=shap_values, training_data=training_data,
+                                              expected_value=explainer.expected_value, matplotlib=matplotlib)
+        shap_plots.append(result)
     return shap_plots
 
