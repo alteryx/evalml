@@ -23,8 +23,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
                  ensembling=False,
-                 pipeline_params=None,
-                 custom_hyperparameters=None):
+                 pipeline_params=None):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -49,7 +48,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
-        self.custom_hyperparameters = custom_hyperparameters or {}
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -142,12 +140,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             # For first batch, pass the pipeline params to the components that need them
             if component_class.name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[component_class.name].items():
-                        component_parameters[param_name] = value
-            if component_class.name in self.custom_hyperparameters and self._batch_number == 0:
-                for param_name, value in self.custom_hyperparameters[component_class.name].items():
                     if isinstance(value, (Integer, Real)):
-                            # get a random value in the space
-                            component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
                     elif isinstance(value, Categorical):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
                     else:
