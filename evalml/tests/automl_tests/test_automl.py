@@ -2703,7 +2703,9 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
         assert str(warn[0].message).startswith(message)
 
 
-def test_automl_drop_index_columns(X_y_binary):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
+def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X['index_col'] = pd.Series(range(len(X)))
@@ -2711,13 +2713,17 @@ def test_automl_drop_index_columns(X_y_binary):
     X = X.set_index('index_col')
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    automl.search()
     assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
     for pipeline in automl.allowed_pipelines:
         assert pipeline(parameters={}).get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
+        assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', pipeline_parameters={'Drop Columns Transformer': {'columns': ['test_column', 'other_test_column']}})
+    automl.search()
     assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col', 'test_column', 'other_test_column']
     for pipeline in automl.allowed_pipelines:
         assert pipeline(parameters={}).get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
+        assert pipeline.hyperparameters['Drop Columns Transformer'] == {'columns': ['test_column', 'other_test_column']}
