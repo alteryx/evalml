@@ -687,6 +687,7 @@ class AutoMLSearch:
         cv_scores = evaluation_results['cv_scores']
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         cv_score = cv_scores.mean()
+        cv_sd = cv_scores.std()
 
         percent_better_than_baseline = {}
         mean_cv_all_objectives = self._get_mean_cv_scores_for_all_objectives(cv_data, self.objective_name_to_class)
@@ -701,7 +702,7 @@ class AutoMLSearch:
                                                                           self._baseline_cv_scores.get(obj_name, np.nan))
             percent_better_than_baseline[obj_name] = percent_better
 
-        high_variance_cv = self._check_for_high_variance(pipeline, cv_scores)
+        high_variance_cv = self._check_for_high_variance(pipeline, cv_score, cv_sd)
 
         pipeline_id = len(self._results['pipeline_results'])
         self._results['pipeline_results'][pipeline_id] = {
@@ -711,6 +712,7 @@ class AutoMLSearch:
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
             "mean_cv_score": cv_score,
+            "standard_deviation_cv_score": cv_sd,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
@@ -739,15 +741,13 @@ class AutoMLSearch:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
         return pipeline_id
 
-    def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.2):
+    def _check_for_high_variance(self, pipeline, cv_mean, cv_std, threshold=0.2):
         """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
         pipeline_name = pipeline.name
 
         high_variance_cv = False
-        cv_scores_std = cv_scores.std()
-        cv_scores_mean = cv_scores.mean()
-        if cv_scores_std != 0 and cv_scores_mean != 0:
-            high_variance_cv = bool(abs(cv_scores_std / cv_scores_mean) > threshold)
+        if cv_std != 0 and cv_mean != 0:
+            high_variance_cv = bool(abs(cv_std / cv_mean) > threshold)
         if high_variance_cv:
             logger.warning(f"\tHigh coefficient of variation (cv >= {threshold}) within cross validation scores.\n\t{pipeline_name} may not perform as estimated on unseen data.")
         return high_variance_cv
@@ -863,8 +863,8 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
-        full_rankings_cols = ["id", "pipeline_name", "mean_cv_score", "validation_score",
-                              "percent_better_than_baseline", "high_variance_cv", "parameters"]
+        full_rankings_cols = ["id", "pipeline_name", "mean_cv_score", "standard_deviation_cv_score",
+                              "validation_score", "percent_better_than_baseline", "high_variance_cv", "parameters"]
         if not self._results['pipeline_results']:
             return pd.DataFrame(columns=full_rankings_cols)
 
