@@ -60,6 +60,7 @@ Release Notes
         * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
         * Added ``NaturalLanguageNaNDataCheck`` data check :pr:`2122`
         * Added ValueError to ``partial_dependence`` to prevent users from computing partial dependence on columns with all NaNs :pr:`2120`
+        * Adds force plots :pr:`2157`
         * Added standard deviation of cv scores to rankings table :pr:`2154`
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
