@@ -7,9 +7,13 @@ Release Notes
         * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
         * Added ``NaturalLanguageNaNDataCheck`` data check :pr:`2122`
         * Added ValueError to ``partial_dependence`` to prevent users from computing partial dependence on columns with all NaNs :pr:`2120`
+        * Added standard deviation of cv scores to rankings table :pr:`2154`
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
         * Fixed bug where two-way partial dependence plots with categorical variables were not working correctly :pr:`2117`
+        * Fixed bug where ``hyperparameters`` were not displaying properly for pipelines with a list ``component_graph`` and duplicate components :pr:`2133`
+        * Fixed bug where ``pipeline_parameters`` argument in ``AutoMLSearch`` was not applied to pipelines passed in as ``allowed_pipelines`` :pr:`2133`
+        * Fixed bug where ``AutoMLSearch`` was not applying custom hyperparameters to pipelines with a list ``component_graph`` and duplicate components :pr:`2133`
     * Changes
         * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
         * Renamed ``TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS`` data check message code to ``TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS`` :pr:`2126`
@@ -18,6 +22,7 @@ Release Notes
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
+        * Fixed documentation demos :pr:`2139`
         * Update test badge in README to use GitHub Actions :pr:`2150`
     * Testing Changes
         * Fixed ``test_describe_pipeline`` for ``pandas`` ``v1.2.4`` :pr:`2129`
