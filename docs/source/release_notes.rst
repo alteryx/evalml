@@ -21,6 +21,7 @@ Release Notes
         * Added ``NaturalLanguageNaNDataCheck`` data check :pr:`2122`
         * Added ValueError to ``partial_dependence`` to prevent users from computing partial dependence on columns with all NaNs :pr:`2120`
         * Added standard deviation of cv scores to rankings table :pr:`2154`
+        * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
         * Fixed bug where two-way partial dependence plots with categorical variables were not working correctly :pr:`2117`
