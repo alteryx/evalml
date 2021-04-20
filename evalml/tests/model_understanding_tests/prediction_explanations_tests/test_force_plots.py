@@ -27,6 +27,7 @@ def test_exceptions():
     with pytest.raises(TypeError, match="rows_to_explain should only contain integers!"):
         force_plot(pipeline=None, rows_to_explain=["this", "party's", "over"], training_data=None)
 
+
 @pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
                          product(interpretable_estimators, all_problems, [[0], [0, 1, 2, 3, 4]]))
 def test_plot(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_multi, X_y_regression,
@@ -81,12 +82,14 @@ def test_plot(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-@pytest.mark.parametrize("rows_to_explain, expected_plot_class", (([0], shap.plots._force.AdditiveForceVisualizer),
-                                                                  ([0, 1, 2, 3, 4], shap.plots._force.AdditiveForceArrayVisualizer)))
-def test_force_plot_binary(rows_to_explain, expected_plot_class, has_minimal_dependencies):
+@pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
+def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
-
+    if len(rows_to_explain) == 1:
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
+    else:
+        expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
     X, y = load_breast_cancer()
 
     class RFBinaryClassificationPipeline(BinaryClassificationPipeline):
@@ -109,11 +112,14 @@ def test_force_plot_binary(rows_to_explain, expected_plot_class, has_minimal_dep
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-@pytest.mark.parametrize("rows_to_explain, expected_plot_class", (([0], shap.plots._force.AdditiveForceVisualizer),
-                                                                  ([0, 1, 2, 3, 4], shap.plots._force.AdditiveForceArrayVisualizer)))
+@pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
 def test_force_plot_multiclass(rows_to_explain, expected_plot_class, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
+    if len(rows_to_explain) == 1:
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
+    else:
+        expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
 
     X, y = load_wine()
 
@@ -137,9 +143,14 @@ def test_force_plot_multiclass(rows_to_explain, expected_plot_class, has_minimal
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-def test_force_plot_regression(X_y_regression, has_minimal_dependencies):
+@pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
+def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
+    if len(rows_to_explain) == 1:
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
+    else:
+        expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
 
     X, y = X_y_regression
 
