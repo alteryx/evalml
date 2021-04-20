@@ -91,11 +91,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self._pipeline_params = parameters.get("pipeline", {})
 
         self.custom_name = custom_name
-        self.name = custom_name or self.summary()
+        self.name = custom_name or self.summary
 
-        self.model_family = self.get_model_family()
+        # self.model_family = self.get_model_family()
         # self.hyperparameters = self.get_hyperparameters()
 
+    @property
     def summary(self):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
@@ -285,7 +286,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
         return y_pred
 
-    def get_model_family(self):
+    # def get_model_family(self):
+    #     """Returns model family of this pipeline template"""
+    #     component_graph = copy.copy(self._component_graph)
+    #     if isinstance(component_graph, list):
+    #         return handle_component_class(component_graph[-1]).model_family
+    #     else:
+    #         order = ComponentGraph.generate_order(component_graph.component_dict)
+    #         if len(order) == 0:
+    #             return None
+    #         final_component = order[-1]
+    #         return handle_component_class(component_graph[final_component].__class__).model_family
+    @property
+    def model_family(self):
         """Returns model family of this pipeline template"""
         component_graph = copy.copy(self._component_graph)
         if isinstance(component_graph, list):

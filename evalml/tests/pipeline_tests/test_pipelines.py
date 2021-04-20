@@ -984,17 +984,17 @@ def test_score_auc(X_y_binary, logistic_regression_binary_pipeline_class):
 
 
 def test_pipeline_summary():
-    assert BinaryClassificationPipeline(["Imputer", "One Hot Encoder"]).summary() == "Pipeline w/ Imputer + One Hot Encoder"
-    assert BinaryClassificationPipeline(["Imputer"]).summary() == "Pipeline w/ Imputer"
-    assert BinaryClassificationPipeline(["Random Forest Classifier"]).summary() == "Random Forest Classifier"
-    assert BinaryClassificationPipeline([]).summary() == "Empty Pipeline"
-    assert BinaryClassificationPipeline(["Imputer", "One Hot Encoder", "Random Forest Classifier"]).summary() == "Random Forest Classifier w/ Imputer + One Hot Encoder"
+    assert BinaryClassificationPipeline(["Imputer", "One Hot Encoder"]).summary == "Pipeline w/ Imputer + One Hot Encoder"
+    assert BinaryClassificationPipeline(["Imputer"]).summary == "Pipeline w/ Imputer"
+    assert BinaryClassificationPipeline(["Random Forest Classifier"]).summary == "Random Forest Classifier"
+    assert BinaryClassificationPipeline([]).summary == "Empty Pipeline"
+    assert BinaryClassificationPipeline(["Imputer", "One Hot Encoder", "Random Forest Classifier"]).summary == "Random Forest Classifier w/ Imputer + One Hot Encoder"
 
 
 def test_nonlinear_pipeline_summary(nonlinear_binary_pipeline_class, nonlinear_multiclass_pipeline_class, nonlinear_regression_pipeline_class):
-    assert nonlinear_binary_pipeline_class({}).summary() == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
-    assert nonlinear_multiclass_pipeline_class({}).summary() == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
-    assert nonlinear_regression_pipeline_class({}).summary() == "Linear Regressor w/ Imputer + One Hot Encoder + Random Forest Regressor + Elastic Net Regressor"
+    assert nonlinear_binary_pipeline_class({}).summary == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
+    assert nonlinear_multiclass_pipeline_class({}).summary == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
+    assert nonlinear_regression_pipeline_class({}).summary == "Linear Regressor w/ Imputer + One Hot Encoder + Random Forest Regressor + Elastic Net Regressor"
 
 
 def test_drop_columns_in_pipeline():

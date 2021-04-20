@@ -714,7 +714,7 @@ class AutoMLSearch:
             "id": pipeline_id,
             "pipeline_name": pipeline.name,
             "pipeline_class": pipeline.__class__,
-            "pipeline_summary": pipeline.summary(),
+            "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
             "mean_cv_score": cv_score,
             "standard_deviation_cv_score": cv_sd,
@@ -771,11 +771,11 @@ class AutoMLSearch:
         pipeline_results = self.results['pipeline_results'].get(pipeline_id)
         if pipeline_results is None:
             raise PipelineNotFoundError("Pipeline not found in automl results")
-        pipeline_class = self._pipelines_searched.get(pipeline_id)
+        pipeline = self._pipelines_searched.get(pipeline_id)
         parameters = pipeline_results.get('parameters')
-        if pipeline_class is None or parameters is None:
+        if pipeline is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class.new(parameters, random_seed=self.random_seed)
+        return pipeline.new(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline
