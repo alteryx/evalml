@@ -817,7 +817,7 @@ class AutoMLSearch:
 
         for c in all_objective_scores:
             if c in ["# Training", "# Validation"]:
-                all_objective_scores[c] = all_objective_scores[c].astype("object")
+                all_objective_scores[c] = all_objective_scores[c].map(lambda x: '{:2,.0f}'.format(x) if not pd.isna(x) else np.nan)
                 continue
 
             mean = all_objective_scores[c].mean(axis=0)
