@@ -1211,10 +1211,23 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
         matplotlib (bool): flag to display the force plot using matplotlib (outside of jupyter)
 
     Returns:
-        shap.AdditiveForceVisualizer: object representing the force plot
+        list(dict(shap.AdditiveForceVisualizer)): list of dictionaries where each dict
+            contains the class label and the force plot for classification problems or
+            a single dict with the force plot for a regression problem.
+            e.x. For single row binary force plots:
+                    {"class": 0, "force_plot": AdditiveForceVisualizerObject,
+                     "class": 1, "force_plot": AdditiveForceVisualizerObject}
+                 For multi row multi-class force plots:
+                    {"class": 0, "force_plot": AdditiveForceArrayVisualizerObject,
+                     "class": 1, "force_plot": AdditiveForceArrayVisualizerObject,
+                     "class": 2, "force_plot": AdditiveForceArrayVisualizerObject}
 
+    Raises:
+        TypeError: if rows_to_explain is not a list.
+        TypeError: if all values in rows_to_explain aren't integers.
     """
     def gen_force_plot(shap_values, training_data, expected_value, matplotlib):
+        """ Helper function to generate a single force plot. """
         # Ensure the training data sample shape matches the shap values shape.
         training_data_sample = training_data.iloc[:shap_values.shape[0]]
         assert training_data_sample.shape == shap_values.shape
@@ -1224,7 +1237,9 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
         return shap_plot
 
     if not isinstance(rows_to_explain, list):
-        raise TypeError("rows_to_explain should be provided as a list of row index integers")
+        raise TypeError("rows_to_explain should be provided as a list of row index integers!")
+    if not all([isinstance(x,int) for x in rows_to_explain]):
+        raise TypeError("rows_to_explain should only contain integers!")
 
     points_to_explain = training_data.iloc[rows_to_explain]
 
@@ -1237,6 +1252,7 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
     # classification returns shap_values as a list with shap values for each class
     if isinstance(shap_values, list):
         expected_values = explainer.expected_value
+        # Coerce expected values as catboost/binary doesn't return the same types as the other explainers
         if pipeline.estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
             expected_values = [0, expected_values]
 
