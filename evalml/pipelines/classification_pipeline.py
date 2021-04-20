@@ -10,16 +10,6 @@ class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
     def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
-        """Machine learning classification pipeline made out of transformers and a classifier.
-
-        Arguments:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list.
-            custom_name (str): Custom name for the pipeline.
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary or None implies using all default values for component parameters.
-            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         self._encoder = LabelEncoder()
         super().__init__(component_graph,
                          custom_name=custom_name,

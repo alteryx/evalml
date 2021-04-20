@@ -23,14 +23,18 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
     def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
-        Required Class Variables:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
-
         Arguments:
+            component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+                Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+                component's index in the list. For example, the component graph
+                [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+                ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+            custom_name (str): Custom name for the pipeline. Defaults to None.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary {} implies using all default values for component parameters. Pipeline-level
+                 An empty dictionary or None implies using all default values for component parameters. Pipeline-level
                  parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
+            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if parameters is None or "pipeline" not in parameters:

@@ -96,7 +96,7 @@ class ComponentGraph:
         if self._is_instantiated:
             raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
-        parameters = parameters or {}
+        parameters = parameters if parameters is not None else {}
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():

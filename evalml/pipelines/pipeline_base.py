@@ -57,10 +57,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component's index in the list. For example, the component graph
                 [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
                 ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
-            custom_name (str): Custom name for the pipeline.
+            custom_name (str): Custom name for the pipeline. Defaults to None.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary {} implies using all default values for component parameters.
-            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline.
+                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         self.custom_hyperparameters = custom_hyperparameters
@@ -102,11 +102,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Returns a short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-<<<<<< < HEAD
-        component_graph = [handle_component_class(component_class) for component_class in copy.copy(self.linearized_component_graph())]
-== == == =
-        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(cls.linearized_component_graph)]
->>>>>> > main
+        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(self.linearized_component_graph())]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -122,14 +118,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def linearized_component_graph(self):
         """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
-<<<<<<< HEAD
-        if isinstance(self.component_graph, list):
-            return self.component_graph
-        else:
-            return [component_info[0] for component_info in self._component_graph.component_dict.values()]
-=======
-        return ComponentGraph.linearized_component_graph(cls.component_graph)
->>>>>>> main
+        return ComponentGraph.linearized_component_graph(self.component_graph)
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -313,19 +302,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def get_hyperparameters(self):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
-<<<<<<< HEAD
-        component_graph = copy.copy(self._component_graph)
-        for component_name, component_info in component_graph.component_dict.items():
-            component_class = handle_component_class(component_info[0])
+        for component_name, component_class in self.linearized_component_graph():
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
             if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
                 component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
-=======
-        for component_name, component_class in cls.linearized_component_graph:
-            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-            if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
-                component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
->>>>>>> main
             hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 

@@ -138,7 +138,8 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
 
     base_class = _get_pipeline_base_class(problem_type)
     name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    parameters = parameters or {}
+    parameters = parameters if parameters is not None else {}
+
     return base_class(complete_component_graph, custom_name=name, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
 
 
