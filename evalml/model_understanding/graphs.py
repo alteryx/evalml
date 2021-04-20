@@ -1201,27 +1201,6 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
     return fig
 
 
-# def force_plot(pipeline, points_to_explain, training_data, first_obs_to_explain = 0, last_obs_to_explain = None, matplotlib=False):
-#
-#
-#     shap_values, feature_names, explainer = _compute_shap_values(pipeline, pd.DataFrame(points_to_explain),
-#                                                                  training_data, return_type="not dict")
-#     shap_values = pd.DataFrame(shap_values)
-#     shap_values.columns = feature_names
-#
-#     if last_obs_to_explain is not None:
-#         matplotlib=False
-#         last_obs_to_explain == first_obs_to_explain+1
-#         shap_plot = shap.force_plot(explainer.expected_value,
-#                                     shap_values[first_obs_to_explain:last_obs_to_explain, :],
-#                                     training_data[first_obs_to_explain:last_obs_to_explain, :], matplotlib=matplotlib)
-#     else:
-#         shap_plot = shap.force_plot(explainer.expected_value,
-#                                     shap_values[first_obs_to_explain, :],
-#                                     training_data[first_obs_to_explain, :], matplotlib=matplotlib)
-#     return shap_plot
-
-
 def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
     """ Function to generate a force plot for a pipeline.
 

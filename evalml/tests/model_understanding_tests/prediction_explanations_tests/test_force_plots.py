@@ -13,10 +13,7 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import (
-    is_classification,
-    is_regression,
-)
+from evalml.problem_types import is_classification, is_regression
 from evalml.problem_types.problem_types import ProblemTypes
 from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_algorithms import (
     all_problems,
