@@ -89,7 +89,7 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     return _compute_shap_values(pipeline, pd.DataFrame(points_to_explain), training_data)
 
 
-interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family not in {ModelFamily.BASELINE}]
+interpretable_estimators = [e for e in _all_estimators_used_in_search() if e.model_family != ModelFamily.BASELINE]
 all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 all_n_points_to_explain = [1, 5]
 
