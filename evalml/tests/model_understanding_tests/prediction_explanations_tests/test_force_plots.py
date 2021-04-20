@@ -164,4 +164,4 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
 
     assert len(results) == 1  # Should have a single force plot.
     assert results[0]["class"] == "regression"
-    assert isinstance(results[0]["force_plot"], shap.plots._force.AdditiveForceVisualizer)
+    assert isinstance(results[0]["force_plot"], expected_plot_class)
