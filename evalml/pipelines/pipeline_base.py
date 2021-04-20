@@ -90,7 +90,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
 
-        self.parameters = self.get_parameters()
+        # self.parameters = self.get_parameters()
 
         self.custom_name = custom_name
         self.name = custom_name or self.summary()
@@ -315,6 +315,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of all component parameters
         """
+        components = [(component_name, component_class) for component_name, component_class in self._component_graph.component_instances.items()]
+        component_parameters = {c_name: copy.copy(c.parameters) for c_name, c in components if c.parameters}
+        if self._pipeline_params:
+            component_parameters['pipeline'] = self._pipeline_params
+        return component_parameters
+
+    @property
+    def parameters(self):
         components = [(component_name, component_class) for component_name, component_class in self._component_graph.component_instances.items()]
         component_parameters = {c_name: copy.copy(c.parameters) for c_name, c in components if c.parameters}
         if self._pipeline_params:
