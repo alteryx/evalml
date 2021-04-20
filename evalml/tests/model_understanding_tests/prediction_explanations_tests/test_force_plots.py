@@ -1,22 +1,27 @@
+from itertools import product
+
 import pandas as pd
 import pytest
 import shap
-from itertools import product
 
-from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_algorithms import (
-    interpretable_estimators,
-    all_problems,
-)
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.model_family.model_family import ModelFamily
 from evalml.model_understanding.graphs import force_plot
-from evalml.pipelines import BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline
+)
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types.problem_types import ProblemTypes
 from evalml.problem_types import (
     is_classification,
     is_regression,
     is_time_series
+)
+from evalml.problem_types.problem_types import ProblemTypes
+from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_algorithms import (
+    all_problems,
+    interpretable_estimators
 )
 
 
@@ -99,8 +104,9 @@ def test_force_plot_binary(rows_to_explain, expected_plot_class):
     force_plots = [r["force_plot"] for r in results]
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
+
 @pytest.mark.parametrize("rows_to_explain, expected_plot_class", (([0], shap.plots._force.AdditiveForceVisualizer),
-                                                                    ([0,1,2,3,4], shap.plots._force.AdditiveForceArrayVisualizer)))
+                                                                  ([0, 1, 2, 3, 4], shap.plots._force.AdditiveForceArrayVisualizer)))
 def test_force_plot_multiclass(rows_to_explain, expected_plot_class):
     X, y = load_wine()
 

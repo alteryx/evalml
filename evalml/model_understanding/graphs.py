@@ -1,11 +1,11 @@
 import copy
 import os
-import shap
 import warnings
 from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
+import shap
 import woodwork as ww
 from joblib import Parallel, delayed
 from sklearn.exceptions import NotFittedError
@@ -25,7 +25,9 @@ from sklearn.utils.multiclass import unique_labels
 import evalml
 from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
-from evalml.model_understanding.prediction_explanations._algorithms import _compute_shap_values
+from evalml.model_understanding.prediction_explanations._algorithms import (
+    _compute_shap_values
+)
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
 from evalml.utils import (
@@ -1273,4 +1275,3 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
                                               expected_value=explainer.expected_value, matplotlib=matplotlib)
         shap_plots.append(result)
     return shap_plots
-
