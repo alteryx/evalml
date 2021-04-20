@@ -113,7 +113,7 @@ def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
 
 
 @pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
-def test_force_plot_multiclass(rows_to_explain, expected_plot_class, has_minimal_dependencies):
+def test_force_plot_multiclass(rows_to_explain, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
     if len(rows_to_explain) == 1:
