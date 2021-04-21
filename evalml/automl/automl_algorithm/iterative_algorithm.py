@@ -145,6 +145,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
                     else:
                         component_parameters[param_name] = value
+            if name in self._pipeline_params and name == 'Drop Columns Transformer' and self._batch_number > 0:
+                component_parameters['columns'] = self._pipeline_params[name]['columns']
             if 'pipeline' in self._pipeline_params:
                 for param_name, value in self._pipeline_params['pipeline'].items():
                     if param_name in init_params:

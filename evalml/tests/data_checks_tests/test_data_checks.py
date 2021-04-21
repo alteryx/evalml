@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -352,3 +354,25 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
         "errors": [],
         "actions": [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'col_to_drop'}).to_dict()]
     }
+
+
+def test_data_checks_drop_index(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X['index_col'] = pd.Series(range(len(X)))
+    X = ww.DataTable(X)
+    X = X.set_index('index_col')
+
+    class MockDataCheck(DataCheck):
+        def validate(self, X, y):
+            return {"warnings": [], "errors": [], "actions": []}
+
+    assert MockDataCheck().validate(X, y)
+
+    MockDataCheck.validate = MagicMock()
+    checks = DataChecks([MockDataCheck, MockDataCheck, MockDataCheck])
+    checks.validate(X, y)
+
+    validate_args = MockDataCheck.validate.call_args_list
+    for arg in validate_args:
+        assert 'index_col' not in arg[0][0].columns
