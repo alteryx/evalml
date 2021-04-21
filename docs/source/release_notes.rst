@@ -31,6 +31,7 @@ Release Notes
         * Renamed ``TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS`` data check message code to ``TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS`` :pr:`2126`
         * Modified one-way partial dependence plots of categorical features to display data with a bar plot :pr:`2117`
         * Renamed ``score`` column for ``automl.rankings`` as ``mean_cv_score`` :pr:`2135`
+        * Remove 'warning' from docs tool output :pr:`2031`
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
