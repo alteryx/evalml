@@ -23,7 +23,6 @@ from evalml.problem_types import ProblemTypes
 @pytest.mark.parametrize("components", [["One Hot Encoder"],
                                         ["Delayed Feature Transformer", "One Hot Encoder"]])
 def test_time_series_pipeline_init(pipeline_class, estimator, components):
-
     component_graph = components + [estimator]
     if "Delayed Feature Transformer" not in components:
         pl = pipeline_class(component_graph=component_graph,

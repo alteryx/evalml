@@ -125,7 +125,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
-        for name, component_class in pipeline.linearized_component_graph():
+        for name, component_class in pipeline.linearized_component_graph:
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
 

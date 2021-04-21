@@ -322,7 +322,6 @@ def test_parameters(logistic_regression_binary_pipeline_class):
 
 
 def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
-
     parameters = {
         'Imputer': {
             "categorical_impute_strategy": "most_frequent",
@@ -998,12 +997,6 @@ def test_nonlinear_pipeline_summary(nonlinear_binary_pipeline_class, nonlinear_m
 
 
 def test_drop_columns_in_pipeline():
-    class PipelineWithDropCol(BinaryClassificationPipeline):
-        component_graph = ['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
     parameters = {
         'Drop Columns Transformer': {
             'columns': ["column to drop"]
@@ -1018,7 +1011,8 @@ def test_drop_columns_in_pipeline():
             'n_jobs': 1
         }
     }
-    pipeline_with_drop_col = PipelineWithDropCol(parameters=parameters)
+    pipeline_with_drop_col = BinaryClassificationPipeline(component_graph=['Drop Columns Transformer', 'Imputer', 'Logistic Regression Classifier'],
+                                                          parameters=parameters)
     X = pd.DataFrame({"column to drop": [1, 0, 1, 3], "other col": [1, 2, 4, 1]})
     y = pd.Series([1, 0, 1, 0])
     pipeline_with_drop_col.fit(X, y)
@@ -1129,52 +1123,30 @@ def test_feature_importance_has_feature_names_xgboost(problem_type, has_minimal_
     if has_minimal_dependencies:
         pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
     if problem_type == ProblemTypes.REGRESSION:
-        class XGBoostPipeline(RegressionPipeline):
-            component_graph = ['Simple Imputer', 'XGBoost Regressor']
-            model_family = ModelFamily.XGBOOST
-
-            def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
+        pipeline = RegressionPipeline(component_graph=['Simple Imputer', 'XGBoost Regressor'],
+                                      parameters={'XGBoost Regressor': {'nthread': 1}})
         X, y = X_y_regression
     elif problem_type == ProblemTypes.BINARY:
-        class XGBoostPipeline(BinaryClassificationPipeline):
-            component_graph = ['Simple Imputer', 'XGBoost Classifier']
-            model_family = ModelFamily.XGBOOST
-
-            def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
+        pipeline = BinaryClassificationPipeline(component_graph=['Simple Imputer', 'XGBoost Classifier'],
+                                                parameters={'XGBoost Classifier': {'nthread': 1}})
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
-        class XGBoostPipeline(MulticlassClassificationPipeline):
-            component_graph = ['Simple Imputer', 'XGBoost Classifier']
-            model_family = ModelFamily.XGBOOST
-
-            def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
+        pipeline = MulticlassClassificationPipeline(component_graph=['Simple Imputer', 'XGBoost Classifier'],
+                                                    parameters={'XGBoost Classifier': {'nthread': 1}})
         X, y = X_y_multi
 
     X = pd.DataFrame(X)
     X = X.rename(columns={col_name: f'<[{col_name}]' for col_name in X.columns.values})
     col_names = X.columns.values
-    pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
     assert len(pipeline.feature_importance) == len(X.columns)
     assert not pipeline.feature_importance.isnull().all().all()
     assert sorted(pipeline.feature_importance["feature"]) == sorted(col_names)
 
 
-def test_component_not_found(X_y_binary, logistic_regression_binary_pipeline_class):
-    class FakePipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier']
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters, random_seed=random_seed)
-
+def test_component_not_found():
     with pytest.raises(MissingComponentError, match="was not found"):
-        FakePipeline(parameters={})
+        BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'This Component Does Not Exist', 'Standard Scaler', 'Logistic Regression Classifier'])
 
 
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):

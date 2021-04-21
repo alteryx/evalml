@@ -41,8 +41,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """Base class for all pipelines."""
 
     problem_type = None
-    custom_hyperparameters = None
-    custom_name = None
 
     def __init__(self, component_graph,
                  custom_name=None,
@@ -63,7 +61,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self.custom_hyperparameters = custom_hyperparameters
+        self._custom_hyperparameters = custom_hyperparameters
         self.random_seed = random_seed
 
         self.component_graph = component_graph
@@ -90,18 +88,29 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
 
-        self.custom_name = custom_name
-        self.name = custom_name or self.summary
+        self._custom_name = custom_name
 
-        # self.model_family = self.get_model_family()
-        # self.hyperparameters = self.get_hyperparameters()
+    @property
+    def custom_hyperparameters(self):
+        """Custom hyperparameters for the pipeline."""
+        return self._custom_hyperparameters
+
+    @property
+    def custom_name(self):
+        """Custom name of the pipeline."""
+        return self._custom_name
+
+    @property
+    def name(self):
+        """Name of the pipeline."""
+        return self.custom_name or self.summary
 
     @property
     def summary(self):
-        """Returns a short summary of the pipeline structure, describing the list of components used.
+        """A short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(self.linearized_component_graph())]
+        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(self.linearized_component_graph)]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -115,8 +124,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
+    @property
     def linearized_component_graph(self):
-        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
+        """A component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
         return ComponentGraph.linearized_component_graph(self.component_graph)
 
     def _validate_estimator_problem_type(self):
@@ -301,7 +311,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def hyperparameters(self):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
-        for component_name, component_class in self.linearized_component_graph():
+        for component_name, component_class in self.linearized_component_graph:
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
             if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
                 component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
@@ -310,7 +320,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def parameters(self):
-        """Returns parameter dictionary for this pipeline
+        """Parameter dictionary for this pipeline
 
         Returns:
             dict: Dictionary of all component parameters
@@ -323,7 +333,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def default_parameters(self):
-        """Returns the default parameter dictionary for this pipeline.
+        """The default parameter dictionary for this pipeline.
 
         Returns:
             dict: Dictionary of all component default parameters.
@@ -337,7 +347,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Return importance associated with each feature. Features dropped by the feature selection are excluded.
+        """Importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
             pd.DataFrame including feature names and their corresponding importance
@@ -476,6 +486,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.__class__(self.component_graph, self.name, self.parameters, self.custom_hyperparameters, self.random_seed)
 
     def new(self, parameters, random_seed):
+        """Constructs a new pipeline with the same components.
+
+        Returns:
+            A new instance of this pipeline with identical components.
+        """
         return self.__class__(self.component_graph, self.name, parameters, self.custom_hyperparameters, random_seed)
 
     def __eq__(self, other):
