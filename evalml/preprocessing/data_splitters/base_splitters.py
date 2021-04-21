@@ -3,10 +3,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.utils import _convert_numeric_dataset_pandas
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSamplingSplitter(BaseCrossValidator):
@@ -106,10 +103,8 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
         Returns:
             tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
         """
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
@@ -126,8 +121,7 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
             Returns:
                 list: List of indices to keep
         """
-        y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y = infer_feature_types(y)
         index_df = pd.Series(y.index)
         train_index_drop = self.sampler.fit_resample(X, y)
         # convert the indices of the y column into index indices of the original pre-split y
