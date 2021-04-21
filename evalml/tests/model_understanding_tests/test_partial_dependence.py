@@ -535,3 +535,41 @@ def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipel
     pred_df = pred_df.rename(columns={"a": 0})
     with pytest.raises(ValueError, match=message.format("'0'")):
         partial_dependence(pl, pred_df, features=0, grid_resolution=10)
+
+
+@pytest.mark.parametrize('problem_type', ['binary', 'multiclass', 'regression'])
+def test_partial_dependence_regression_and_binary_datetime(problem_type, linear_regression_pipeline_class,
+                                                           X_y_regression, X_y_binary, X_y_multi,
+                                                           logistic_regression_binary_pipeline_class):
+    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier']
+
+    class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier']
+
+    class LinearRegressionPipeline(RegressionPipeline):
+        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor']
+
+    if problem_type == 'binary':
+        X, y = X_y_binary
+        pipeline = LogisticRegressionBinaryPipeline({})
+    elif problem_type == 'multiclass':
+        X, y = X_y_multi
+        pipeline = LogisticRegressionMulticlassPipeline({})
+    else:
+        X, y = X_y_regression
+        pipeline = LinearRegressionPipeline({})
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    X['dt_column'] = pd.Series(pd.date_range('20200101', periods=X.shape[0]))
+
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, features='dt_column')
+    if problem_type == 'multiclass':
+        assert len(part_dep["partial_dependence"]) == 300  # 100 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 300
+    else:
+        assert len(part_dep["partial_dependence"]) == 100
+        assert len(part_dep["feature_values"]) == 100
+    assert not part_dep.isnull().any(axis=None)

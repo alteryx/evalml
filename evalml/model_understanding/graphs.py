@@ -608,12 +608,16 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     """
 
     X = infer_feature_types(X)
-    # Dynamically set the grid resolution to the maximum number of categories
-    # in the categorical variables if there are more categories than resolution cells
+    # Dynamically set the grid resolution to the maximum number of values
+    # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
     X_cats = X.select("categorical")
     if X_cats.shape[1] != 0:
         max_num_cats = max(X_cats.describe().loc["nunique"])
         grid_resolution = max([max_num_cats + 1, grid_resolution])
+    X_dt = X.select("datetime")
+    if X_dt.shape[1] != 0:
+        max_num_dt = max(X_dt.describe().loc["nunique"])
+        grid_resolution = max([max_num_dt + 1, grid_resolution])
 
     if isinstance(features, (list, tuple)):
         if len(features) != 2:
