@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
+        * Added Oversampler transformer component to EvalML :pr:`2079`
     * Fixes
     * Changes
     * Documentation Changes

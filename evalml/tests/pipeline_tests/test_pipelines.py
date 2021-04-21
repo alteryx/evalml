@@ -2066,3 +2066,48 @@ def test_xgboost_ohe(mock_fit):
             assert str(types) == 'Boolean'
         else:
             assert str(types) == 'Integer'
+
+
+@pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
+    class BinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
+
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 3 for i in range(1000)],
+                      "c": [i % 7 for i in range(1, 1001)]})
+    X = ww.DataTable(X, logical_types={"c": "Categorical"})
+    y = pd.Series([0] * 100 + [1] * 900)
+    pipeline = BinaryPipeline({})
+    pipeline.fit(X, y)
+    # make sure we oversample 0 to 225 values values in the X and y
+    assert len(mock_fit.call_args[0][0]) == 1125
+    assert all(mock_fit.call_args[0][1].to_series().value_counts().values == [900, 225])
+
+    # balance the data
+    y_balanced = pd.Series([0] * 400 + [1] * 600)
+    pipeline.fit(X, y_balanced)
+    assert len(mock_fit.call_args[0][0]) == 1000
+
+
+@pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+def test_oversampler_component_in_pipeline_predict(oversampler):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
+    class BinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
+
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 3 for i in range(1000)],
+                      "c": [i % 7 for i in range(1, 1001)]})
+    X = ww.DataTable(X, logical_types={"c": "Categorical"})
+    y = pd.Series([0] * 100 + [1] * 900)
+    pipeline = BinaryPipeline({})
+    pipeline.fit(X, y)
+    preds = pipeline.predict(X)
+    assert len(preds) == 1000
+    preds = pipeline.predict_proba(X)
+    assert len(preds) == 1000
