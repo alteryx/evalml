@@ -95,6 +95,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Custom hyperparameters for the pipeline."""
         return self._custom_hyperparameters
 
+    @custom_hyperparameters.setter
+    def custom_hyperparameters(self, value):
+        """Custom hyperparameters for the pipeline."""
+        self._custom_hyperparameters = value
+
     @property
     def custom_name(self):
         """Custom name of the pipeline."""

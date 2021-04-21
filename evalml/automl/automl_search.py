@@ -305,7 +305,6 @@ class AutoMLSearch:
                 self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, None, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
         else:
             for pipeline in self.allowed_pipelines:
-                # import pdb; pdb.set_trace()
                 if self.pipeline_parameters:
                     if pipeline.custom_hyperparameters:
                         for component_name, params in self.pipeline_parameters.items():
