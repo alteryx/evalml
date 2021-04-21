@@ -20,6 +20,20 @@ def _list_to_pandas(list):
     return _numpy_to_pandas(np.array(list))
 
 
+_nullable_types = {'Int64', 'Float64', 'boolean'}
+
+
+def _raise_value_error_if_nullable_types_detected(data):
+    types = {data.name: data.dtype} if isinstance(data, pd.Series) else data.dtypes
+    cols_with_nullable_types = {col: str(ptype) for col, ptype in dict(types).items() if str(ptype) in _nullable_types}
+    if cols_with_nullable_types:
+        raise ValueError("Evalml does not support the new pandas nullable types because "
+                         "our dependencies (sklearn, xgboost, lightgbm) do not support them yet."
+                         "If your data does not have missing values, please use the non-nullable types (bool, int64, float64). "
+                         "If your data does have missing values, use float64 for int and float columns and category for boolean columns. "
+                         f"These are the columns with nullable types: {list(cols_with_nullable_types.items())}")
+
+
 def infer_feature_types(data, feature_types=None):
     """Create a Woodwork structure from the given list, pandas, or numpy input, with specified types for columns.
         If a column's type is not specified, it will be inferred by Woodwork.
@@ -40,18 +54,18 @@ def infer_feature_types(data, feature_types=None):
 
     ww_data = data.copy()
 
+    _raise_value_error_if_nullable_types_detected(data)
+
     if isinstance(data, pd.Series):
-        if data.ww._schema is not None:
-            ww_data = ww.init_series(ww_data, logical_type=data.ww.logical_type)
+        if data.ww.schema is not None:
+            ww_data = ww.init_series(ww_data, logical_type=data.ww.logical_type,
+                                     semantic_tags=data.ww.semantic_tags,
+                                     description=data.ww.description)
         else:
             ww_data = ww.init_series(ww_data, logical_type=feature_types)
     else:
         if data.ww.schema is not None:
-            nullable_types = {ww.logical_types.BooleanNullable, ww.logical_types.IntegerNullable}
-            if set(data.ww.logical_types.values()).intersection(nullable_types):
-                raise ValueError()
-            ww_data.ww.init(logical_types=data.ww.logical_types,
-                            semantic_tags=data.ww.semantic_tags)
+            ww_data.ww.init(schema=data.ww.schema)
         else:
             ww_data.ww.init(logical_types=feature_types)
 

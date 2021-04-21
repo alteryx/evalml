@@ -112,5 +112,33 @@ def test_infer_feature_types_value_error():
                        "b": pd.Series([4, 5, 6]),
                        "c": pd.Series([True, False, True])})
     df.ww.init(logical_types={"a": "IntegerNullable", "c": "BooleanNullable"})
-    with pytest.raises(ValueError):
+    msg = "These are the columns with nullable types: \\[\\('a', 'Int64'\\), \\('c', 'boolean'\\)\\]"
+    with pytest.raises(ValueError, match=msg):
         infer_feature_types(df)
+
+    y = pd.Series([1, 2, 3], name='series')
+    y = ww.init_series(y, logical_type="IntegerNullable")
+
+    with pytest.raises(ValueError, match="These are the columns with nullable types: \\[\\('series', 'Int64'\\)]"):
+        infer_feature_types(y)
+
+    df = pd.DataFrame({"A": pd.Series([4, 5, 6], dtype='Float64'), "b": [1, 2, 3]})
+    with pytest.raises(ValueError, match="These are the columns with nullable types: \\[\\('A', 'Float64'\\)]"):
+        infer_feature_types(df)
+
+
+def test_infer_feature_types_preserves_semantic_tags():
+    df = pd.DataFrame({"a": pd.Series([1, 2, 3]),
+                       "b": pd.Series([4, 5, 6]),
+                       "c": pd.Series([True, False, True]),
+                       "my_index": [1, 2, 3],
+                       "time_index": ["2020-01-01", "2020-01-02", "2020-01-03"]})
+    df.ww.init(logical_types={"a": "Integer", "c": "Categorical", "b": "Double"},
+               semantic_tags={"a": "My Integer", "c": "My Categorical", "b": "My Double"},
+               index='my_index', time_index='time_index')
+    new_df = infer_feature_types(df)
+    assert new_df.ww.schema == df.ww.schema
+
+    series = pd.Series([1, 2, 3], name='target')
+    series.ww.init(logical_type="Integer", semantic_tags=["Cool Series"], description="Great data")
+    assert series.ww.schema == infer_feature_types(series).ww.schema
