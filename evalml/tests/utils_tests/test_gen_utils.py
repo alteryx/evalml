@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
@@ -263,11 +262,11 @@ def test_rename_column_names_to_numeric():
     X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
     pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]}))
 
-    X = ww.DataTable(pd.DataFrame({"<>": [1, 2], ">>": [2, 4]}), logical_types={"<>": "categorical", ">>": "categorical"})
+    X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
+    X.ww.init(logical_types={"<>": "categorical", ">>": "categorical"})
     X_renamed = _rename_column_names_to_numeric(X)
     X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
-    pd.testing.assert_frame_equal(X_renamed.to_dataframe(), X_expected)
-    assert X_renamed.logical_types == {0: ww.logical_types.Categorical, 1: ww.logical_types.Categorical}
+    pd.testing.assert_frame_equal(X_renamed, X_expected)
 
 
 @pytest.mark.parametrize("file_name,format,interactive",

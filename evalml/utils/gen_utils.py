@@ -6,7 +6,6 @@ from functools import reduce
 
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -211,20 +210,13 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
 
-    if isinstance(X, ww.DataTable):
-        X_t = X.to_dataframe()
-    else:
-        X_t = X.copy()
-
-    if flatten_tuples and (len(X_t.columns) > 0 and isinstance(X_t.columns, pd.MultiIndex)):
-        flat_col_names = list(map(str, X_t.columns))
-        X_t.columns = flat_col_names
+    if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
+        flat_col_names = list(map(str, X.columns))
+        X.columns = flat_col_names
         rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
     else:
         rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    X_renamed = X_t.rename(columns=rename_cols_dict)
-    if isinstance(X, ww.DataTable):
-        X_renamed = ww.DataTable(X_renamed)
+    X_renamed = X.rename(columns=rename_cols_dict)
     return X_renamed
 
 
@@ -265,16 +257,16 @@ def is_all_numeric(dt):
     """Checks if the given DataTable contains only numeric values
 
     Arguments:
-        dt (ww.DataTable): The DataTable to check data types of.
+        dt (pd.DataFrame): The DataTable to check data types of.
 
     Returns:
-        True if all the DataTable columns are numeric and are not missing any values, False otherwise.
+        True if all the columns are numeric and are not missing any values, False otherwise.
     """
-    for col_tags in dt.semantic_tags.values():
+    for col_tags in dt.ww.semantic_tags.values():
         if "numeric" not in col_tags:
             return False
 
-    if dt.to_dataframe().isnull().any().any():
+    if dt.isnull().any().any():
         return False
     return True
 

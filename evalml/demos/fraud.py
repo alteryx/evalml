@@ -1,5 +1,7 @@
 import os
 
+import woodwork as ww
+
 from evalml.preprocessing import load_data
 
 
@@ -23,8 +25,9 @@ def load_fraud(n_rows=None, verbose=True, return_pandas=False):
                      target="fraud",
                      n_rows=n_rows,
                      verbose=verbose)
-    X = X.set_types({"provider": "Categorical", "region": "Categorical"})
-
     if return_pandas:
-        return X.to_dataframe(), y.to_series()
+        return X, y
+
+    X.ww.init()
+    y = ww.init_series(y)
     return X, y
