@@ -294,7 +294,11 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=copy.copy(self.pipeline_parameters)) for estimator in allowed_estimators]
+            index_columns = list(self.X_train.select('index').columns)
+            drop_columns = self.pipeline_parameters['Drop Columns Transformer']['columns'] if 'Drop Columns Transformer' in self.pipeline_parameters else None
+            if len(index_columns) > 0 and drop_columns is None:
+                self.pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
         else:
             for pipeline_class in self.allowed_pipelines:
                 if self.pipeline_parameters:
@@ -359,6 +363,7 @@ class AutoMLSearch:
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
+
         if len(self.problem_configuration):
             pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
         else:
