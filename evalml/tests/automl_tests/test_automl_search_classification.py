@@ -168,7 +168,7 @@ def test_categorical_classification(X_y_categorical_classification):
     X, y = X_y_categorical_classification
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective="precision", max_iterations=5, n_jobs=1)
     automl.search()
-    assert not automl.rankings['score'].isnull().all()
+    assert not automl.rankings["mean_cv_score"].isnull().all()
 
 
 def test_random_seed(X_y_binary):
@@ -778,8 +778,8 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
 def test_automl_smotenc_categorical(mock_multilclass_fit, mock_multiclass_score, mock_binary_fit, mock_binary_score,
                                     pipeline_parameters, expected_cat_feat):
     X = pd.DataFrame({"numeric": [i % 5 for i in range(100)],
-                   "categorical": [i % 3 for i in range(1, 101)],
-                   "categorical_2": [i % 2 for i in range(100)]})
+                      "categorical": [i % 3 for i in range(1, 101)],
+                      "categorical_2": [i % 2 for i in range(100)]})
     X_ww = ww.DataTable(X, logical_types={"categorical": "Categorical", "categorical_2": "Categorical"})
     y = pd.Series([0] * 90 + [1] * 10)
     automl = AutoMLSearch(X_train=X_ww, y_train=y, problem_type='binary', _sampler_method='auto', max_iterations=4)

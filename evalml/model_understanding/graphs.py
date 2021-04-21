@@ -523,6 +523,45 @@ def _put_categorical_feature_first(features, first_feature_categorical):
     return new_features
 
 
+def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
+    """Helper function to map the user-input features param to column names."""
+    feature_list = []
+    for name_or_index in names_or_col_indices:
+        if isinstance(name_or_index, int):
+            feature_list.append(X.to_dataframe().columns[name_or_index])
+        else:
+            feature_list.append(name_or_index)
+    return feature_list
+
+
+def _raise_value_error_if_any_features_all_nan(df):
+    """Helper for partial dependence data validation."""
+    nan_pct = df.isna().mean()
+    all_nan = nan_pct[nan_pct == 1].index.tolist()
+    all_nan = [f"'{name}'" for name in all_nan]
+
+    if all_nan:
+        raise ValueError("The following features have all NaN values and so the "
+                         f"partial dependence cannot be computed: {', '.join(all_nan)}")
+
+
+def _raise_value_error_if_mostly_one_value(df, percentile):
+    """Helper for partial dependence data validation."""
+    one_value = []
+    values = []
+
+    for col in df.columns:
+        normalized_counts = df[col].value_counts(normalize=True) + 0.01
+        normalized_counts = normalized_counts[normalized_counts > percentile]
+        if not normalized_counts.empty:
+            one_value.append(f"'{col}'")
+            values.append(str(normalized_counts.index[0]))
+
+    if one_value:
+        raise ValueError(f"Features ({', '.join(one_value)}) are mostly one value, ({', '.join(values)}), "
+                         f"and cannot be used to compute partial dependence. Try raising the upper percentage value.")
+
+
 def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100):
     """Calculates one or two-way partial dependence.  If a single integer or
     string is given for features, one-way partial dependence is calculated. If
@@ -563,6 +602,9 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
         ValueError: if the user provides a tuple of not exactly two features.
         ValueError: if the provided pipeline isn't fitted.
         ValueError: if the provided pipeline is a Baseline pipeline.
+        ValueError: if any of the features passed in are completely NaN
+        ValueError: if any of the features are low-variance. Defined as having one value occurring more than the upper
+            percentile passed by the user. By default 95%.
     """
 
     X = infer_feature_types(X)
@@ -580,8 +622,12 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
         is_categorical = [_is_feature_categorical(f, X) for f in features]
+        feature_names = _get_feature_names_from_str_or_col_index(X, features)
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
+    else:
+        feature_names = _get_feature_names_from_str_or_col_index(X, [features])
+
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
@@ -589,19 +635,15 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
 
     X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-    feature_list = []
-    if isinstance(features, int):
-        feature_list = X.iloc[:, features]
-    elif isinstance(features, str):
-        feature_list = X[features]
+    feature_list = X[feature_names]
 
-    if len(feature_list) and feature_list.isnull().sum():
-        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
+    _raise_value_error_if_any_features_all_nan(feature_list)
 
-    if len(feature_list) and feature_list.value_counts(normalize=True).values[0] + 0.01 > percentiles[1]:
-        val = feature_list.value_counts(normalize=True).index[0]
-        feature_name = features if isinstance(features, str) else X.columns[features]
-        raise ValueError(f"Feature '{feature_name}' is mostly one value, {val}, and cannot be used to compute partial dependence. Try raising the upper percentage value.")
+    if feature_list.isnull().sum().any():
+        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. "
+                      "Fill in these values to remove the NaN values.", NullsInColumnWarning)
+
+    _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
 
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)

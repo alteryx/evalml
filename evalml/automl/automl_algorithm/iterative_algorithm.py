@@ -7,7 +7,6 @@ from skopt.space import Categorical, Integer, Real
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 
@@ -114,9 +113,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.batch_number == 1:
             self._first_batch_results.append((score_to_minimize, pipeline.__class__))
 
-        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get('score', np.inf)
+        current_best_score = self._best_pipeline_info.get(pipeline.model_family, {}).get("mean_cv_score", np.inf)
         if score_to_minimize is not None and score_to_minimize < current_best_score and pipeline.model_family != ModelFamily.ENSEMBLE:
-            self._best_pipeline_info.update({pipeline.model_family: {'score': score_to_minimize,
+            self._best_pipeline_info.update({pipeline.model_family: {"mean_cv_score": score_to_minimize,
                                                                      'pipeline_class': pipeline.__class__,
                                                                      'parameters': pipeline.parameters,
                                                                      'id': trained_pipeline_results['id']}
@@ -127,9 +126,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
-        component_graph = [handle_component_class(c) for c in pipeline_class.linearized_component_graph]
-        for component_class in component_graph:
-            component_parameters = proposed_parameters.get(component_class.name, {})
+        for name, component_class in pipeline_class.linearized_component_graph:
+            component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
 
             # Inspects each component and adds the following parameters when needed
@@ -138,8 +136,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
             # For first batch, pass the pipeline params to the components that need them
-            if component_class.name in self._pipeline_params and self._batch_number == 0:
-                for param_name, value in self._pipeline_params[component_class.name].items():
+            if name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
@@ -151,5 +149,5 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 for param_name, value in self._pipeline_params['pipeline'].items():
                     if param_name in init_params:
                         component_parameters[param_name] = value
-            parameters[component_class.name] = component_parameters
+            parameters[name] = component_parameters
         return parameters

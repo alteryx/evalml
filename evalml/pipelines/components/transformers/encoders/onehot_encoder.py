@@ -158,8 +158,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_t = pd.concat([X_t, X_cat], axis=1)
             X_t = X_t.drop(columns=self._features_to_drop)
             self._feature_names = X_t.columns
-
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_t_ww = _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_t_ww = X_t_ww.set_types({c: "Boolean" for c in X_cat.columns})
+        return X_t_ww
 
     def _handle_parameter_handle_missing(self, X):
         """Helper method to handle the `handle_missing` parameter."""

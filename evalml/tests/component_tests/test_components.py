@@ -189,11 +189,11 @@ def test_describe_component():
     assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"sampling_ratio": 0.25, "min_samples": 100, "min_percentage": 0.1}}
     try:
         smote = SMOTESampler()
-        assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_ratio': 0.25, 'sampling_ratio_dict': None, 'k_neighbors': 5, 'n_jobs': -1}}
+        assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
         smote = SMOTENCSampler()
-        assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'categorical_features': [], 'sampling_ratio': 0.25, 'sampling_ratio_dict': None, 'k_neighbors': 5, 'n_jobs': -1}}
+        assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
         smote = SMOTENSampler()
-        assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_ratio': 0.25, 'sampling_ratio_dict': None, 'k_neighbors': 5, 'n_jobs': -1}}
+        assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
     except ImportError:
         pass
     # testing estimators
@@ -550,7 +550,8 @@ def test_transformer_transform_output_type(X_y_binary):
             if "SMOTE" in component_class.name:
                 component = component_class(sampling_ratio=1)
             if component_class.name == "SMOTENC Oversampler":
-                component = component_class(sampling_ratio=1, categorical_features=[0])
+                # we cover this case in test_oversamplers
+                continue
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
@@ -749,7 +750,8 @@ def test_all_transformers_check_fit(X_y_binary):
         if "SMOTE" in component_class.name:
             component = component_class(sampling_ratio=1)
         if component_class.name == "SMOTENC Oversampler":
-            component = component_class(sampling_ratio=1, categorical_features=[0])
+            # handled in test_oversamplers
+            continue
 
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.transform(X, y)
@@ -760,8 +762,6 @@ def test_all_transformers_check_fit(X_y_binary):
         component = component_class()
         if "SMOTE" in component_class.name:
             component = component_class(sampling_ratio=1)
-        if component_class.name == "SMOTENC Oversampler":
-            component = component_class(sampling_ratio=1, categorical_features=[0])
         component.fit_transform(X, y)
         component.transform(X, y)
 
@@ -802,7 +802,8 @@ def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     for component_class in _all_transformers():
-        if not component_class.needs_fitting:
+        if not component_class.needs_fitting or "SMOTENC" in component_class.name:
+            # since SMOTENC determines categorical columns through the logical type, it can only accept ww data
             continue
 
         component = component_class()

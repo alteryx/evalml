@@ -1,4 +1,5 @@
 import copy
+import inspect
 import sys
 import time
 import traceback
@@ -38,6 +39,7 @@ from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
     ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
+    PipelineBase,
     TimeSeriesBaselineBinaryPipeline,
     TimeSeriesBaselineMulticlassPipeline,
     TimeSeriesBaselineRegressionPipeline
@@ -269,6 +271,10 @@ class AutoMLSearch:
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
 
+        if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
+            raise ValueError("Parameter allowed_pipelines must be either None or a list!")
+        if allowed_pipelines is not None and not all(inspect.isclass(p) and issubclass(p, PipelineBase) for p in allowed_pipelines):
+            raise ValueError("Every element of allowed_pipelines must be a subclass of PipelineBase!")
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -301,17 +307,15 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=copy.copy(self.pipeline_parameters), sampler_name=self._sampler_name) for estimator in allowed_estimators]
-
-        # if we are using SMOTENC, we need to pass in the categorical features
-        if self._sampler_name == 'SMOTENC Oversampler':
-            categorical_features = [i for i, val in enumerate(self.X_train.types['Logical Type'].items()) if str(val[1]) == 'Categorical']
-            # if the sampler parameters aren't in the pipeline_parameters provided, we add it
-            if self._sampler_name not in self.pipeline_parameters.keys():
-                self.pipeline_parameters[self._sampler_name] = {"categorical_features": categorical_features}
-            elif (self._sampler_name in self.pipeline_parameters.keys() and 'categorical_features' not in self.pipeline_parameters[self._sampler_name]):
-                # otherwise, if the sampler parameters exist but no categorical_features are provided, we add it
-                self.pipeline_parameters[self._sampler_name]["categorical_features"] = categorical_features
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=self.pipeline_parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
+        else:
+            for pipeline_class in self.allowed_pipelines:
+                if self.pipeline_parameters:
+                    if pipeline_class.custom_hyperparameters:
+                        for component_name, params in self.pipeline_parameters.items():
+                            pipeline_class.custom_hyperparameters[component_name] = params
+                    else:
+                        pipeline_class.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -557,7 +561,7 @@ class AutoMLSearch:
 
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings['id'].isin(new_pipeline_ids)
-            current_batch_pipeline_scores = full_rankings[current_batch_idx]['score']
+            current_batch_pipeline_scores = full_rankings[current_batch_idx]["mean_cv_score"]
             if len(current_batch_pipeline_scores) and current_batch_pipeline_scores.isna().all():
                 raise AutoMLSearchException(f"All pipelines in the current AutoML batch produced a score of np.nan on the primary objective {self.objective}.")
 
@@ -572,7 +576,7 @@ class AutoMLSearch:
             best_pipeline = self.rankings.iloc[0]
             best_pipeline_name = best_pipeline["pipeline_name"]
             logger.info(f"Best pipeline: {best_pipeline_name}")
-            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['score']:3f}")
+            logger.info(f"Best pipeline {self.objective.name}: {best_pipeline['mean_cv_score']:3f}")
         self._searched = True
 
     def _find_best_pipeline(self):
@@ -625,10 +629,10 @@ class AutoMLSearch:
             return True
 
         first_id = self._results['search_order'][0]
-        best_score = self._results['pipeline_results'][first_id]['score']
+        best_score = self._results['pipeline_results'][first_id]["mean_cv_score"]
         num_without_improvement = 0
         for id in self._results['search_order'][1:]:
-            curr_score = self._results['pipeline_results'][id]['score']
+            curr_score = self._results['pipeline_results'][id]["mean_cv_score"]
             significant_change = abs((curr_score - best_score) / best_score) > self.tolerance
             score_improved = curr_score > best_score if self.objective.greater_is_better else curr_score < best_score
             if score_improved and significant_change:
@@ -719,7 +723,7 @@ class AutoMLSearch:
             "pipeline_class": type(pipeline),
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
-            "score": cv_score,
+            "mean_cv_score": cv_score,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
             "cv_data": cv_data,
@@ -872,14 +876,14 @@ class AutoMLSearch:
         if self.objective.greater_is_better:
             ascending = False
 
-        full_rankings_cols = ["id", "pipeline_name", "score", "validation_score",
+        full_rankings_cols = ["id", "pipeline_name", "mean_cv_score", "validation_score",
                               "percent_better_than_baseline", "high_variance_cv", "parameters"]
         if not self._results['pipeline_results']:
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results['pipeline_results'].values())
         rankings_df = rankings_df[full_rankings_cols]
-        rankings_df.sort_values("score", ascending=ascending, inplace=True)
+        rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 

@@ -36,7 +36,7 @@ class SearchIterationPlot():
         if len(self.data.results['search_order']) > 0 and len(self.data.results['pipeline_results']) > 0:
             iter_idx = self.data.results['search_order']
             pipeline_res = self.data.results['pipeline_results']
-            iter_scores = [pipeline_res[i]['score'] for i in iter_idx]
+            iter_scores = [pipeline_res[i]["mean_cv_score"] for i in iter_idx]
 
             iter_score_pairs = zip(iter_idx, iter_scores)
             iter_score_pairs = sorted(iter_score_pairs, key=lambda value: value[0])

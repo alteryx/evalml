@@ -90,6 +90,9 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_n
     if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
+    if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+        pp_components.append(StandardScaler)
+
     if sampler_name is not None:
         sampler_components = {
             "Undersampler": Undersampler,
@@ -99,8 +102,6 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_n
         }
         pp_components.append(sampler_components[sampler_name])
 
-    if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-        pp_components.append(StandardScaler)
     return pp_components
 
 

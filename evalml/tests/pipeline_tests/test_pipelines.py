@@ -964,6 +964,26 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
     assert MockPipelineNone(parameters={}).hyperparameters == {'Mock Classifier': {}}
 
 
+def test_hyperparameters_linear_pipeline_duplicate_components():
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+
+    assert PipeLineLinear.hyperparameters == {'One Hot Encoder': {},
+                                              "One Hot Encoder_1": {},
+                                              'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
+                                                                           'max_depth': Integer(1, 10)}}
+
+    class PipeLineLinear(BinaryClassificationPipeline):
+        custom_hyperparameters = {"One Hot Encoder_1": {"top_n": Integer(10, 50)}}
+        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+
+    assert PipeLineLinear.hyperparameters == {'One Hot Encoder': {},
+                                              "One Hot Encoder_1": {"top_n": Integer(10, 50)},
+                                              'Random Forest Classifier': {'n_estimators': Integer(10, 1000),
+                                                                           'max_depth': Integer(1, 10)}}
+
+
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
@@ -2021,6 +2041,51 @@ def test_undersampler_component_in_pipeline_predict():
 
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)]})
+    y = pd.Series([0] * 100 + [1] * 900)
+    pipeline = BinaryPipeline({})
+    pipeline.fit(X, y)
+    preds = pipeline.predict(X)
+    assert len(preds) == 1000
+    preds = pipeline.predict_proba(X)
+    assert len(preds) == 1000
+
+
+@pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
+    class BinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
+
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 3 for i in range(1000)],
+                      "c": [i % 7 for i in range(1, 1001)]})
+    X = ww.DataTable(X, logical_types={"c": "Categorical"})
+    y = pd.Series([0] * 100 + [1] * 900)
+    pipeline = BinaryPipeline({})
+    pipeline.fit(X, y)
+    # make sure we oversample 0 to 225 values values in the X and y
+    assert len(mock_fit.call_args[0][0]) == 1125
+    assert all(mock_fit.call_args[0][1].to_series().value_counts().values == [900, 225])
+
+    # balance the data
+    y_balanced = pd.Series([0] * 400 + [1] * 600)
+    pipeline.fit(X, y_balanced)
+    assert len(mock_fit.call_args[0][0]) == 1000
+
+
+@pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+def test_oversampler_component_in_pipeline_predict(oversampler):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+
+    class BinaryPipeline(BinaryClassificationPipeline):
+        component_graph = ['Imputer', oversampler, 'Logistic Regression Classifier']
+
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 3 for i in range(1000)],
+                      "c": [i % 7 for i in range(1, 1001)]})
+    X = ww.DataTable(X, logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryPipeline({})
     pipeline.fit(X, y)
