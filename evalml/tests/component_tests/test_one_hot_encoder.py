@@ -554,7 +554,7 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
 
 def test_ohe_output_bools():
     X = ww.DataTable(pd.DataFrame({"bool": [bool(i % 2) for i in range(100)],
-                                   "categorical": ["dog"] * 20 + ["cat"]* 40 + ["fish"] * 40,
+                                   "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
                                    "integers": [i for i in range(100)]}))
     y = ww.DataColumn(pd.Series([i % 2 for i in range(100)]))
     ohe = OneHotEncoder()

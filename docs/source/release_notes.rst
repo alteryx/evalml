@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:``
+        * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
     * Fixes
     * Changes
     * Documentation Changes
