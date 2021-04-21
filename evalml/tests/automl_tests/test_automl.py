@@ -2833,13 +2833,19 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     X = ww.DataTable(X)
     X = X.set_index('index_col')
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
     automl.search()
     assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
     for pipeline in automl.allowed_pipelines:
         assert pipeline(parameters={}).get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
         assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
+
+    all_drop_column_params = []
+    for _, row in automl.full_rankings.iterrows():
+        if "Baseline" not in row.pipeline_name:
+            all_drop_column_params.append(row.parameters['Drop Columns Transformer']['columns'])
+    assert all(param == ['index_col'] for param in all_drop_column_params)
 
 
 def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_binary_pipeline_class):
