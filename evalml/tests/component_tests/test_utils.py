@@ -1,6 +1,7 @@
 import inspect
 
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.exceptions import MissingComponentError
@@ -10,17 +11,21 @@ from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
     handle_component_class,
+    make_balancing_dictionary,
     scikit_learn_wrapped_estimator
 )
 from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
+
+binary = pd.Series([0] * 800 + [1] * 200)
+multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
 def test_all_components(has_minimal_dependencies, is_running_py_39_or_above):
     if has_minimal_dependencies:
         assert len(all_components()) == 37
     else:
-        n_components = 45 if is_running_py_39_or_above else 46
+        n_components = 48 if is_running_py_39_or_above else 49
         assert len(all_components()) == n_components
 
 
@@ -76,3 +81,32 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression):
                 y_pred_proba = scikit_estimator.predict_proba(X)
                 assert y_pred_proba.shape == (len(y), num_classes)
                 assert not np.isnan(y_pred_proba).all().all()
+
+
+def test_make_balancing_dictionary_errors():
+    with pytest.raises(ValueError, match="Sampling ratio must be in range"):
+        make_balancing_dictionary(pd.Series([1]), 0)
+
+    with pytest.raises(ValueError, match="Sampling ratio must be in range"):
+        make_balancing_dictionary(pd.Series([1]), 1.1)
+
+    with pytest.raises(ValueError, match="Sampling ratio must be in range"):
+        make_balancing_dictionary(pd.Series([1]), -1)
+
+    with pytest.raises(ValueError, match="Target data must not be empty"):
+        make_balancing_dictionary(pd.Series([]), 0.5)
+
+
+@pytest.mark.parametrize("y,sampling_ratio,result",
+                         [(binary, 1, {0: 800, 1: 800}),
+                          (binary, 0.5, {0: 800, 1: 400}),
+                          (binary, 0.25, {0: 800, 1: 200}),
+                          (binary, 0.1, {0: 800, 1: 200}),
+                          (multiclass, 1, {0: 800, 1: 800, 2: 800}),
+                          (multiclass, 0.5, {0: 800, 1: 400, 2: 400}),
+                          (multiclass, 0.25, {0: 800, 1: 200, 2: 200}),
+                          (multiclass, 0.1, {0: 800, 1: 150, 2: 80}),
+                          (multiclass, 0.01, {0: 800, 1: 150, 2: 50})])
+def test_make_balancing_dictionary(y, sampling_ratio, result):
+    dic = make_balancing_dictionary(y, sampling_ratio)
+    assert dic == result

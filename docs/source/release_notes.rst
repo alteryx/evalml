@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added Oversampler transformer component to EvalML :pr:`2079`
     * Fixes
     * Changes
     * Documentation Changes
