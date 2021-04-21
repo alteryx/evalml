@@ -207,7 +207,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
-    assert all([p.parameters == p.default_parameters() for p in next_batch])
+    assert all([p.parameters == p.default_parameters for p in next_batch])
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -231,7 +231,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
-        assert any([p != logistic_regression_binary_pipeline_class({}).default_parameters() for p in all_parameters])
+        assert any([p != logistic_regression_binary_pipeline_class({}).default_parameters for p in all_parameters])
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
