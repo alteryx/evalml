@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added Oversampler transformer component to EvalML :pr:`2079`
+        * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
     * Fixes
     * Changes
     * Documentation Changes
