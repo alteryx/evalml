@@ -330,12 +330,11 @@ def test_iterative_algorithm_frozen_parameters():
     next_batch = algo.next_batch()
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
     assert all([p.parameters['Mock Classifier'] == {
-        "Mock Classifier": {
-            'dummy_int_parameter': 6,
-            'dummy_categorical_parameter': "random",
-            'dummy_real_parameter': 0.1,
-            "n_jobs": -1
-        }} for p in next_batch])
+        'dummy_int_parameter': 6,
+        'dummy_categorical_parameter': "random",
+        'dummy_real_parameter': 0.1,
+        "n_jobs": -1
+    } for p in next_batch])
 
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -345,12 +344,11 @@ def test_iterative_algorithm_frozen_parameters():
     for i in range(1, 5):
         next_batch = algo.next_batch()
         assert all([p.parameters['Mock Classifier'] == {
-            "Mock Classifier": {
-                'dummy_int_parameter': 6,
-                'dummy_categorical_parameter': "random",
-                'dummy_real_parameter': 0.1,
-                "n_jobs": -1
-            }} for p in next_batch])
+            'dummy_int_parameter': 6,
+            'dummy_categorical_parameter': "random",
+            'dummy_real_parameter': 0.1,
+            "n_jobs": -1
+        } for p in next_batch])
 
 
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):

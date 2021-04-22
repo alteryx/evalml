@@ -289,12 +289,12 @@ class AutoMLSearch:
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
         self._interrupted = False
-        self.frozen_pipeline_parameters = {}
+        self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
         if self.problem_configuration:
             parameters.update({'pipeline': self.problem_configuration})
-            self.frozen_pipeline_parameters.update({'pipeline': self.problem_configuration})
+            self._frozen_pipeline_parameters.update({'pipeline': self.problem_configuration})
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -303,8 +303,8 @@ class AutoMLSearch:
             drop_columns = self.pipeline_parameters['Drop Columns Transformer']['columns'] if 'Drop Columns Transformer' in self.pipeline_parameters else None
             index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
-                self.frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, self.frozen_pipeline_parameters, custom_hyperparameters=parameters) for estimator in allowed_estimators]
+                self._frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=self._frozen_pipeline_parameters, custom_hyperparameters=parameters) for estimator in allowed_estimators]
         else:
             for pipeline in self.allowed_pipelines:
                 if self.pipeline_parameters:
@@ -380,7 +380,7 @@ class AutoMLSearch:
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
             pipeline_params=parameters,
-            _frozen_pipeline_parameters=self.frozen_pipeline_parameters
+            _frozen_pipeline_parameters=self._frozen_pipeline_parameters
         )
 
     def _get_batch_number(self):
