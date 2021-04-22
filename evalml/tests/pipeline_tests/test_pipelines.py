@@ -721,7 +721,7 @@ def test_no_default_parameters():
         component_graph = [MockComponent, 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, parameters=parameters)
 
     with pytest.raises(ValueError, match="Error received when instantiating component *."):
         TestPipeline(parameters={})
@@ -1532,7 +1532,7 @@ def test_pipeline_repr(pipeline_class):
         component_graph = ['Imputer', final_estimator]
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
 
     pipeline = MockPipeline(parameters={})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
@@ -1568,7 +1568,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         }
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
 
     pipeline = MockPipeline(parameters={})
     expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"

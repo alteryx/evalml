@@ -5,6 +5,7 @@ Release Notes
         * Added Oversampler transformer component to EvalML :pr:`2079`
     * Fixes
     * Changes
+            * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
     * Documentation Changes
     * Testing Changes
 
@@ -12,6 +13,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
 
 **v0.23.0 Apr. 20, 2021**
     * Enhancements
@@ -31,7 +33,6 @@ Release Notes
         * Removed ``hyperparameter_ranges`` from Undersampler and renamed ``balanced_ratio`` to ``sampling_ratio`` for samplers :pr:`2113`
         * Renamed ``TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS`` data check message code to ``TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS`` :pr:`2126`
         * Modified one-way partial dependence plots of categorical features to display data with a bar plot :pr:`2117`
-        * Updated pipeline API to accept component graph and other class attributes as parameters :pr:`2091`
         * Renamed ``score`` column for ``automl.rankings`` as ``mean_cv_score`` :pr:`2135`
         * Remove 'warning' from docs tool output :pr:`2031`
     * Documentation Changes
