@@ -94,7 +94,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                                     details={}).to_dict())
             return results
-        if null_rows.any():
+        elif null_rows.any():
             num_null_rows = null_rows.sum()
             pct_null_rows = null_rows.mean() * 100
             results["errors"].append(DataCheckError(message="{} row(s) ({}%) of target values are null".format(num_null_rows, pct_null_rows),
