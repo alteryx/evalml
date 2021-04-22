@@ -564,3 +564,4 @@ def test_ohe_output_bools():
             assert str(types) == "Integer"
         else:
             assert str(types) == "Boolean"
+    assert len(output.columns) == 5
