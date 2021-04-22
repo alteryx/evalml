@@ -24,7 +24,7 @@ test:
 git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
 	--ignore evalml/tests/component_tests \
-	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests --ignore evalml/tests/data_checks_tests \
+	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests \
 	--ignore evalml/tests/model_understanding_tests --ignore evalml/tests/objective_tests \
 	-k "not test_save"
 
@@ -32,7 +32,7 @@ git-test:
 git-test-minimal-deps:
 	pytest evalml/ -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
 	--ignore evalml/tests/component_tests \
-	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests --ignore evalml/tests/data_checks_tests \
+	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests \
 	--ignore evalml/tests/model_understanding_tests --ignore evalml/tests/objective_tests \
 	-k "not test_save" --has-minimal-dependencies
 
@@ -40,7 +40,7 @@ git-test-minimal-deps:
 win-git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
 	--ignore evalml/tests/component_tests \
-	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests --ignore evalml/tests/data_checks_tests \
+	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests \
 	--ignore evalml/tests/model_understanding_tests --ignore evalml/tests/objective_tests \
 	-k "not test_save"
 

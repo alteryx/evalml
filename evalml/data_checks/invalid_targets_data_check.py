@@ -17,7 +17,6 @@ from evalml.problem_types import (
     is_regression
 )
 from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
     infer_feature_types,
     numeric_and_boolean_ww
 )
@@ -48,8 +47,8 @@ class InvalidTargetDataCheck(DataCheck):
         """Checks if the target data contains missing or invalid values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
-            y (ww.DataColumn, pd.Series, np.ndarray): Target data to check for invalid values.
+            X (pd.DataFrame, np.ndarray): Features. Ignored.
+            y (pd.Series, np.ndarray): Target data to check for invalid values.
 
         Returns:
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
@@ -81,22 +80,21 @@ class InvalidTargetDataCheck(DataCheck):
             return results
 
         y = infer_feature_types(y)
-        is_supported_type = y.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
+        is_supported_type = y.ww.logical_type in numeric_and_boolean_ww + [ww.logical_types.Categorical]
         if not is_supported_type:
             results["errors"].append(DataCheckError(message="Target is unsupported {} type. Valid Woodwork logical types include: {}"
-                                                    .format(y.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
+                                                    .format(y.ww.logical_type, ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww])),
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
-                                                    details={"unsupported_type": y.logical_type.type_string}).to_dict())
-        y_df = _convert_woodwork_types_wrapper(y.to_series())
-        null_rows = y_df.isnull()
+                                                    details={"unsupported_type": y.ww.logical_type.type_string}).to_dict())
+        null_rows = y.isnull()
         if null_rows.all():
             results["errors"].append(DataCheckError(message="Target is either empty or fully null.",
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                                                     details={}).to_dict())
             return results
-        elif null_rows.any():
+        if null_rows.any():
             num_null_rows = null_rows.sum()
             pct_null_rows = null_rows.mean() * 100
             results["errors"].append(DataCheckError(message="{} row(s) ({}%) of target values are null".format(num_null_rows, pct_null_rows),
@@ -107,7 +105,7 @@ class InvalidTargetDataCheck(DataCheck):
             results["actions"].append(DataCheckAction(DataCheckActionCode.IMPUTE_COL,
                                                       metadata={"column": None, "is_target": True, "impute_strategy": impute_strategy}).to_dict())
 
-        value_counts = y_df.value_counts()
+        value_counts = y.value_counts()
         unique_values = value_counts.index.tolist()
 
         if is_binary(self.problem_type) and len(value_counts) != 2:
@@ -120,7 +118,7 @@ class InvalidTargetDataCheck(DataCheck):
                                                     message_code=DataCheckMessageCode.TARGET_BINARY_NOT_TWO_UNIQUE_VALUES,
                                                     details=details).to_dict())
 
-        if self.problem_type == ProblemTypes.REGRESSION and "numeric" not in y.semantic_tags:
+        if self.problem_type == ProblemTypes.REGRESSION and "numeric" not in y.ww.semantic_tags:
             results["errors"].append(DataCheckError(message="Target data type should be numeric for regression type problems.",
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
@@ -151,9 +149,9 @@ class InvalidTargetDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.TARGET_MULTICLASS_HIGH_UNIQUE_CLASS,
                     details=details).to_dict())
 
-        any_neg = not (y_df > 0).all() if y.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
+        any_neg = not (y > 0).all() if y.ww.logical_type in [ww.logical_types.Integer, ww.logical_types.Double] else None
         if any_neg and self.objective.positive_only:
-            details = {"Count of offending values": sum(val <= 0 for val in y_df.values.flatten())}
+            details = {"Count of offending values": sum(val <= 0 for val in y.values.flatten())}
             results["errors"].append(DataCheckError(message=f"Target has non-positive values which is not supported for {self.objective.name}",
                                                     data_check_name=self.name,
                                                     message_code=DataCheckMessageCode.TARGET_INCOMPATIBLE_OBJECTIVE,
@@ -161,8 +159,8 @@ class InvalidTargetDataCheck(DataCheck):
 
         if X is not None:
             X = infer_feature_types(X)
-            X_index = list(X.to_dataframe().index)
-            y_index = list(y_df.index)
+            X_index = list(X.index)
+            y_index = list(y.index)
             X_length = len(X_index)
             y_length = len(y_index)
             if X_length != y_length:
