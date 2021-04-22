@@ -289,7 +289,6 @@ class AutoMLSearch:
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
         self._interrupted = False
-
         if len(self.problem_configuration):
             pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
         else:
@@ -299,10 +298,14 @@ class AutoMLSearch:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
+            drop_columns = self.pipeline_parameters['Drop Columns Transformer']['columns'] if 'Drop Columns Transformer' in self.pipeline_parameters else None
+            if len(index_columns) > 0 and drop_columns is None:
+                self.pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
             if is_time_series(self.problem_type):
                 self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, pipeline_params, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
             else:
                 self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, None, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
+            index_columns = list(self.X_train.select('index').columns)
         else:
             for pipeline in self.allowed_pipelines:
                 if self.pipeline_parameters:

@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added Oversampler transformer component to EvalML :pr:`2079`
     * Fixes
     * Changes
     * Documentation Changes
@@ -32,6 +33,7 @@ Release Notes
         * Modified one-way partial dependence plots of categorical features to display data with a bar plot :pr:`2117`
         * Updated pipeline API to accept component graph and other class attributes as parameters :pr:`2091`
         * Renamed ``score`` column for ``automl.rankings`` as ``mean_cv_score`` :pr:`2135`
+        * Remove 'warning' from docs tool output :pr:`2031`
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
@@ -126,6 +128,7 @@ Release Notes
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
         * Added support for ``pandas`` version 1.2.0 :pr:`1708`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
+        * Added ability to handle index columns in ``AutoMLSearch`` and ``DataChecks`` :pr:`2138`
     * Fixes
         * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`
