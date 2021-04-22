@@ -52,9 +52,9 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
-    ww_data = data.copy()
-
     _raise_value_error_if_nullable_types_detected(data)
+
+    ww_data = data.copy()
 
     if isinstance(data, pd.Series):
         if data.ww.schema is not None:

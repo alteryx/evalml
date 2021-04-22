@@ -142,3 +142,19 @@ def test_infer_feature_types_preserves_semantic_tags():
     series = pd.Series([1, 2, 3], name='target')
     series.ww.init(logical_type="Integer", semantic_tags=["Cool Series"], description="Great data")
     assert series.ww.schema == infer_feature_types(series).ww.schema
+
+
+def test_infer_feature_types_raises_invalid_schema_error():
+
+    df = pd.DataFrame(pd.Series([1, 2, None]))
+
+    # Raise error when user requests incompatible type
+    with pytest.raises(ww.exceptions.TypeConversionError):
+        infer_feature_types(df, feature_types={0: "Integer"})
+
+    # Raise error when user breaks the schema and then passes it to evalml
+    with pytest.raises(ValueError):
+        df.iloc[2, 0] = 3
+        df.ww.init(logical_types={0: "Integer"})
+        df.iloc[2, 0] = None
+        infer_feature_types(df, feature_types={0: "Integer"})
