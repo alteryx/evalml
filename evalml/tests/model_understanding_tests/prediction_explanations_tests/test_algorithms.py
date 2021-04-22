@@ -148,13 +148,8 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 @patch('evalml.model_understanding.prediction_explanations._algorithms.logger')
 @patch('shap.TreeExplainer')
 def test_compute_shap_values_catches_shap_tree_warnings(mock_tree_explainer, mock_debug, X_y_binary, caplog):
-
     X, y = X_y_binary
-
-    class Pipeline(BinaryClassificationPipeline):
-        component_graph = ["Random Forest Classifier"]
-
-    pipeline = Pipeline({})
+    pipeline = BinaryClassificationPipeline(["Random Forest Classifier"])
 
     def raise_warning_from_shap(estimator, feature_perturbation):
         warnings.warn("Shap raised a warning!")
