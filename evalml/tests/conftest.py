@@ -445,8 +445,13 @@ def time_series_regression_pipeline_class():
         component_graph = ['Delayed Feature Transformer', 'Random Forest Regressor']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
+        def new(self, parameters, random_seed):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSRegressionPipeline
 
 
@@ -457,8 +462,13 @@ def time_series_binary_classification_pipeline_class():
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
+        def new(self, parameters, random_seed):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSBinaryPipeline
 
 
@@ -469,7 +479,7 @@ def time_series_multiclass_classification_pipeline_class():
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
     return TSMultiPipeline
 
@@ -496,13 +506,8 @@ def nonlinear_binary_pipeline_class():
         }
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
 
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearBinaryPipeline
 
 
@@ -519,13 +524,8 @@ def nonlinear_multiclass_pipeline_class():
         }
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, parameters=parameters)
 
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearMulticlassPipeline
 
 
@@ -543,11 +543,6 @@ def nonlinear_regression_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, None, parameters)
 
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearRegressionPipeline
 
 
