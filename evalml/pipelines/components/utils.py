@@ -6,7 +6,9 @@ from sklearn.utils.validation import check_is_fitted
 
 from evalml.exceptions import MissingComponentError
 from evalml.model_family.utils import handle_model_family
-from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components.component_base import ComponentBase
+from evalml.pipelines.components.estimators.estimator import Estimator
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -258,3 +260,34 @@ def generate_component_code(element):
 
     code_strings.append(base_string)
     return "\n".join(code_strings)
+
+
+def make_balancing_dictionary(y, sampling_ratio):
+    """Makes dictionary for oversampler components. Find ratio of each class to the majority.
+    If the ratio is smaller than the sampling_ratio, we want to oversample,
+    otherwise, we don't want to sample at all, and we leave the data as is.
+
+    Arguments:
+        y (pd.Series): Target data
+        sampling_ratio (float): The balanced ratio we want the samples to meet
+
+    Returns:
+        Dictionary where keys are the classes, and the corresponding values are the counts of samples
+        for each class that will satisfy sampling_ratio.
+    """
+    if sampling_ratio <= 0 or sampling_ratio > 1:
+        raise ValueError("Sampling ratio must be in range (0, 1], received {}".format(sampling_ratio))
+    if len(y) == 0:
+        raise ValueError("Target data must not be empty")
+    value_counts = y.value_counts()
+    ratios = value_counts / value_counts.values[0]
+    class_dic = {}
+    sample_amount = int(value_counts.values[0] * sampling_ratio)
+    for index, value in ratios.items():
+        if value < sampling_ratio:
+            # we want to oversample this class
+            class_dic[index] = sample_amount
+        else:
+            # this class is already larger than the ratio, don't change
+            class_dic[index] = value_counts[index]
+    return class_dic

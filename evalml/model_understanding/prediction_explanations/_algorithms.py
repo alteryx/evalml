@@ -6,7 +6,7 @@ import shap
 from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
-from evalml.problem_types.problem_types import ProblemTypes
+from evalml.problem_types import is_binary, is_multiclass, is_regression
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -58,9 +58,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
 
     if estimator.model_family.is_tree_estimator():
         # Because of this issue: https://github.com/slundberg/shap/issues/1215
-        if estimator.model_family == ModelFamily.XGBOOST:
-            raise NotImplementedError("SHAP values cannot currently be computed for xgboost models.")
-        if estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.MULTICLASS:
+        if estimator.model_family == ModelFamily.CATBOOST and is_multiclass(pipeline.problem_type):
             # Will randomly segfault
             raise NotImplementedError("SHAP values cannot currently be computed for catboost models for multiclass problems.")
         # Use tree_path_dependent to avoid linear runtime with dataset size
@@ -69,11 +67,11 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
         shap_values = explainer.shap_values(features, check_additivity=False)
-        # shap only outputs values for positive class for Catboost binary estimators.
+        # shap only outputs values for positive class for Catboost/Xgboost binary estimators.
         # this modifies the output to match the output format of other binary estimators.
         # Ok to fill values of negative class with zeros since the negative class will get dropped
         # in the UI anyways.
-        if estimator.model_family == ModelFamily.CATBOOST and pipeline.problem_type == ProblemTypes.BINARY:
+        if estimator.model_family in {ModelFamily.CATBOOST, ModelFamily.XGBOOST} and is_binary(pipeline.problem_type):
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if training_data is None:
@@ -86,7 +84,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
         sampled_training_data_features = shap.sample(training_data, 100)
         sampled_training_data_features = check_array(sampled_training_data_features)
 
-        if pipeline.problem_type == ProblemTypes.REGRESSION:
+        if is_regression(pipeline.problem_type):
             link_function = "identity"
             decision_function = estimator._component_obj.predict
         else:
