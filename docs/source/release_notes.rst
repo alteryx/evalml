@@ -3,13 +3,25 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added Oversampler transformer component to EvalML :pr:`2079`
-        * Added a GitHub Action for building the conda package :pr:`1870`
+        * Added samplers to AutoMLSearch, as well as arguments ``_sampler_method`` and ``sampler_balanced_ratio`` :pr:`2128`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.23.0 Apr. 20, 2021**
+    * Enhancements
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
-        * Added samplers to AutoMLSearch, as well as arguments ``_sampler_method`` and ``sampler_balanced_ratio`` :pr:`2128`
         * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
         * Added ``NaturalLanguageNaNDataCheck`` data check :pr:`2122`
         * Added ValueError to ``partial_dependence`` to prevent users from computing partial dependence on columns with all NaNs :pr:`2120`
+        * Added standard deviation of cv scores to rankings table :pr:`2154`
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
         * Fixed bug where two-way partial dependence plots with categorical variables were not working correctly :pr:`2117`
@@ -21,9 +33,11 @@ Release Notes
         * Renamed ``TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS`` data check message code to ``TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS`` :pr:`2126`
         * Modified one-way partial dependence plots of categorical features to display data with a bar plot :pr:`2117`
         * Renamed ``score`` column for ``automl.rankings`` as ``mean_cv_score`` :pr:`2135`
+        * Remove 'warning' from docs tool output :pr:`2031`
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
+        * Fixed documentation demos :pr:`2139`
         * Update test badge in README to use GitHub Actions :pr:`2150`
     * Testing Changes
         * Fixed ``test_describe_pipeline`` for ``pandas`` ``v1.2.4`` :pr:`2129`
@@ -113,6 +127,7 @@ Release Notes
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
         * Added support for ``pandas`` version 1.2.0 :pr:`1708`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
+        * Added ability to handle index columns in ``AutoMLSearch`` and ``DataChecks`` :pr:`2138`
     * Fixes
         * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`

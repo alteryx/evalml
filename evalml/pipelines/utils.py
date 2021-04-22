@@ -78,6 +78,10 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_n
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
+    index_columns = list(X.select('index').columns)
+    if len(index_columns) > 0:
+        pp_components.append(DropColumns)
+
     datetime_cols = X.select(["Datetime"])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
     if add_datetime_featurizer:

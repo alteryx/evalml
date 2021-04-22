@@ -83,7 +83,8 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
     assert automl.results['search_order'] == [0, 1]
     assert len(automl.results['pipeline_results']) == 2
     for pipeline_id, results in automl.results['pipeline_results'].items():
-        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', "mean_cv_score", 'high_variance_cv', 'training_time',
+        assert results.keys() == {'id', 'pipeline_name', 'pipeline_class', 'pipeline_summary', 'parameters', "mean_cv_score",
+                                  "standard_deviation_cv_score", 'high_variance_cv', 'training_time',
                                   'cv_data', 'percent_better_than_baseline_all_objectives',
                                   'percent_better_than_baseline', 'validation_score'}
         assert results['id'] == pipeline_id
@@ -108,11 +109,11 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
     assert np.all(automl.rankings.dtypes == pd.Series(
-        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
-        index=['id', 'pipeline_name', "mean_cv_score", "validation_score", 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', "mean_cv_score", "standard_deviation_cv_score", "validation_score", 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
     assert np.all(automl.full_rankings.dtypes == pd.Series(
-        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
-        index=['id', 'pipeline_name', "mean_cv_score", "validation_score", 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
+        [np.dtype('int64'), np.dtype('O'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('float64'), np.dtype('bool'), np.dtype('O')],
+        index=['id', 'pipeline_name', "mean_cv_score", "standard_deviation_cv_score", "validation_score", 'percent_better_than_baseline', 'high_variance_cv', 'parameters']))
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
@@ -848,8 +849,8 @@ def test_no_search(X_y_binary):
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
 
-    df_columns = ["id", "pipeline_name", "mean_cv_score", "validation_score", "percent_better_than_baseline",
-                  "high_variance_cv", "parameters"]
+    df_columns = ["id", "pipeline_name", "mean_cv_score", "standard_deviation_cv_score",
+                  "validation_score", "percent_better_than_baseline", "high_variance_cv", "parameters"]
     assert (automl.rankings.columns == df_columns).all()
     assert (automl.full_rankings.columns == df_columns).all()
 
@@ -2447,19 +2448,19 @@ def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class)
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
     cv_scores = pd.Series([1, 1, 1])
     pipeline = dummy_binary_pipeline_class(parameters={})
-    assert not automl._check_for_high_variance(pipeline, cv_scores)
+    assert not automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
 
     cv_scores = pd.Series([0, 0, 0])
-    assert not automl._check_for_high_variance(pipeline, cv_scores)
+    assert not automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
 
     cv_scores = pd.Series([0, 1, np.nan, np.nan])
-    assert automl._check_for_high_variance(pipeline, cv_scores)
+    assert automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
 
     cv_scores = pd.Series([0, 1, 2, 3])
-    assert automl._check_for_high_variance(pipeline, cv_scores)
+    assert automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
 
     cv_scores = pd.Series([0, -1, -1, -1])
-    assert automl._check_for_high_variance(pipeline, cv_scores)
+    assert automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -2726,12 +2727,14 @@ def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pi
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
     with pytest.warns(None) as warnings:
-        automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0]))
+        automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_mean=np.array([0.0]),
+                                        cv_std=np.array([0.1]))
     assert len(warnings) == 0
 
     with pytest.warns(None) as warnings:
         # mean is 0 but std is not
-        automl._check_for_high_variance(dummy_binary_pipeline_class({}), cv_scores=np.array([0.0, 1.0, -1.0]))
+        automl._check_for_high_variance(dummy_binary_pipeline_class({}),
+                                        cv_mean=np.array([0.0, 1.0, -1.0]).mean(), cv_std=np.array([0.0, 1.0, -1.0]).std())
     assert len(warnings) == 0
 
 
@@ -2779,6 +2782,30 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
         assert len(warn) == 1
         message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
         assert str(warn[0].message).startswith(message)
+
+
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.3})
+@patch('evalml.automl.engine.sequential_engine.train_pipeline')
+def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X['index_col'] = pd.Series(range(len(X)))
+    X = ww.DataTable(X)
+    X = X.set_index('index_col')
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
+    automl.search()
+    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
+    for pipeline in automl.allowed_pipelines:
+        assert pipeline(parameters={}).get_component('Drop Columns Transformer')
+        assert 'Drop Columns Transformer' in pipeline.hyperparameters
+        assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
+
+    all_drop_column_params = []
+    for _, row in automl.full_rankings.iterrows():
+        if "Baseline" not in row.pipeline_name:
+            all_drop_column_params.append(row.parameters['Drop Columns Transformer']['columns'])
+    assert all(param == ['index_col'] for param in all_drop_column_params)
 
 
 def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_binary_pipeline_class):
