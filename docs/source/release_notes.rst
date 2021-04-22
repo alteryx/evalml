@@ -5,6 +5,7 @@ Release Notes
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
+        * Added partial dependence for datetime columns :pr:`2180`
     * Fixes
     * Changes
     * Documentation Changes
