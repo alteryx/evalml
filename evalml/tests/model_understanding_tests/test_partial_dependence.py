@@ -538,7 +538,11 @@ def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipel
 
 
 @pytest.mark.parametrize('problem_type', ['binary', 'multiclass', 'regression'])
+<<<<<<< HEAD
 def test_partial_dependence_datetime(problem_type,
+=======
+def test_partial_dependence_datetime(problem_type, linear_regression_pipeline_class,
+>>>>>>> c15f6decb6a2b371c924d78b39f1bb444dc926c7
                                      X_y_regression, X_y_binary, X_y_multi,
                                      logistic_regression_binary_pipeline_class):
     class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
