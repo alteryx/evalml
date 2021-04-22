@@ -20,7 +20,7 @@ from evalml.utils import (
 class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
     """Pipeline base class for time series classification problems."""
 
-    def __init__(self, component_graph, custom_name=None, parameters=None, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
         Arguments:
@@ -29,11 +29,11 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                 component's index in the list. For example, the component graph
                 [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
                 ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
-            custom_name (str): Custom name for the pipeline. Defaults to None.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary or None implies using all default values for component parameters. Pipeline-level
                  parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
                  Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
+            custom_name (str): Custom name for the pipeline. Defaults to None.
             custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """

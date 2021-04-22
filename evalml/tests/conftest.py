@@ -44,7 +44,7 @@ def create_mock_pipeline(estimator, problem_type):
             component_graph = [estimator]
 
             def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
         return MockBinaryPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.MULTICLASS:
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
@@ -52,7 +52,7 @@ def create_mock_pipeline(estimator, problem_type):
             component_graph = [estimator]
 
             def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
 
         return MockMulticlassPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.REGRESSION:
@@ -256,7 +256,7 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
         component_graph = [MockEstimator]
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -276,7 +276,7 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
         custom_name = None
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -313,7 +313,7 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
         custom_name = "Mock Regression Pipeline"
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -347,7 +347,7 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
         custom_name = None
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     return MockTimeSeriesRegressionPipeline
 
@@ -374,7 +374,7 @@ def logistic_regression_multiclass_pipeline_class():
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
 
         def clone(self):
             return self.__class__(self.parameters, random_seed=self.random_seed)
@@ -388,7 +388,7 @@ def logistic_regression_binary_pipeline_class():
         custom_name = "Logistic Regression Binary Pipeline"
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -407,7 +407,7 @@ def linear_regression_pipeline_class():
         custom_name = "Linear Regression Pipeline"
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)

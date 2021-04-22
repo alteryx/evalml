@@ -48,7 +48,7 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
     custom_name = "PipelineWithError"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
         return self.__class__(parameters, random_seed=random_seed)
@@ -66,7 +66,7 @@ class TestPipelineWithScoreError(BinaryClassificationPipeline):
     custom_name = "PipelineWithError"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     def score(self, X, y, objectives):
         raise PipelineScoreError(exceptions={"AUC": (Exception(), []),
@@ -86,7 +86,7 @@ class TestPipelineSlow(BinaryClassificationPipeline):
     custom_name = "SlowPipeline"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
         return self.__class__(parameters, random_seed=random_seed)
@@ -107,7 +107,7 @@ class TestPipelineFast(BinaryClassificationPipeline):
     custom_name = "FastPipeline"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, self.custom_name, parameters, random_seed=random_seed)
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     def new(self, parameters, random_seed):
         return self.__class__(parameters, random_seed=random_seed)

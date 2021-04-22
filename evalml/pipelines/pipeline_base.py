@@ -42,9 +42,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     problem_type = None
 
-    def __init__(self, component_graph,
-                 custom_name=None,
+    def __init__(self,
+                 component_graph,
                  parameters=None,
+                 custom_name=None,
                  custom_hyperparameters=None,
                  random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
@@ -55,9 +56,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component's index in the list. For example, the component graph
                 [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
                 ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
-            custom_name (str): Custom name for the pipeline. Defaults to None.
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+            custom_name (str): Custom name for the pipeline. Defaults to None.
             custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
@@ -488,7 +489,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(self.component_graph, self.name, self.parameters, self.custom_hyperparameters, self.random_seed)
+        return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed)
 
     def new(self, parameters, random_seed):
         """Constructs a new pipeline with the same components.
@@ -496,7 +497,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components.
         """
-        return self.__class__(self.component_graph, self.name, parameters, self.custom_hyperparameters, random_seed)
+        return self.__class__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

@@ -376,7 +376,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters)
+            super().__init__(self.component_graph, parameters=parameters)
 
         def new(self, parameters, random_seed):
             return self.__class__(parameters, random_seed=random_seed)
@@ -1851,7 +1851,6 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
 def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dummy_binary_pipeline_class,
                                                        X_y_binary):
     X, y = X_y_binary
-    # TODO
 
     class MockEstimatorWithNJobs(Estimator):
         name = "Mock Classifier with njobs"
@@ -1862,33 +1861,10 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         def __init__(self, n_jobs=-1, random_seed=0):
             super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_seed=random_seed)
 
-    class Pipeline1(BinaryClassificationPipeline):
-        name = "Pipeline 1"
-        component_graph = [MockEstimatorWithNJobs]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    class Pipeline2(BinaryClassificationPipeline):
-        name = "Pipeline 2"
-        component_graph = [MockEstimatorWithNJobs]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, self.name, parameters, custom_hyperparameters=None, random_seed=random_seed)
-
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', n_jobs=3, max_batches=2,
-                          allowed_pipelines=[Pipeline1({}), Pipeline2({}), dummy_binary_pipeline_class({})])
+                          allowed_pipelines=[BinaryClassificationPipeline([MockEstimatorWithNJobs], custom_name="Pipeline 1"),
+                                             BinaryClassificationPipeline([MockEstimatorWithNJobs], custom_name="Pipeline 2"),
+                                             dummy_binary_pipeline_class({})])
     automl.search()
     for parameters in automl.full_rankings.parameters:
         if "Mock Classifier with njobs" in parameters:
@@ -2873,9 +2849,8 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
     automl.search()
-    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
     for pipeline in automl.allowed_pipelines:
-        assert pipeline(parameters={}).get_component('Drop Columns Transformer')
+        assert pipeline.get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
         assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
 

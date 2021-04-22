@@ -125,7 +125,7 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
             with component name as key and dictionary of parameters as the value
 
     Returns:
-        class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
+        PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
 
     """
     X = infer_feature_types(X)
@@ -141,10 +141,7 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
     base_class = _get_pipeline_base_class(problem_type)
-    name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-    parameters = parameters if parameters is not None else {}
-
-    return base_class(complete_component_graph, custom_name=name, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
+    return base_class(complete_component_graph, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):
@@ -180,7 +177,11 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     pipeline_class = _get_pipeline_base_class(problem_type)
     component_graph = [c.__class__ for c in component_instances]
     parameters = {c.name: c.parameters for c in component_instances}
-    return pipeline_class(component_graph, custom_name, parameters, custom_hyperparameters=None, random_seed=random_seed)
+    return pipeline_class(component_graph,
+                          custom_name=custom_name,
+                          parameters=parameters,
+                          custom_hyperparameters=None,
+                          random_seed=random_seed)
 
 
 def generate_pipeline_code(element):
@@ -211,7 +212,7 @@ def generate_pipeline_code(element):
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
     pipeline_string += "\n\tdef __init__(self, parameters, random_seed=0):"
-    pipeline_string += "\n\t\tsuper().__init__(self.component_graph, self.name, parameters, custom_hyperparameters, random_seed=random_seed)\n"
+    pipeline_string += "\n\t\tsuper().__init__(self.component_graph, custom_name=self.custom_name, parameters=parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)\n"
     try:
         ret = json.dumps(element.parameters, indent='\t')
     except TypeError:
