@@ -7,7 +7,7 @@ def load_diabetes():
     """Load diabetes dataset. Regression problem
 
     Returns:
-        Union[(ww.DataTable, ww.DataColumn), (pd.Dataframe, pd.Series)]: X and y
+        (pd.Dataframe, pd.Series): X and y
     """
     data = load_diabetes_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)

@@ -253,20 +253,20 @@ def safe_repr(value):
     return repr(value)
 
 
-def is_all_numeric(dt):
-    """Checks if the given DataTable contains only numeric values
+def is_all_numeric(df):
+    """Checks if the given DataFrame contains only numeric values
 
     Arguments:
-        dt (pd.DataFrame): The DataTable to check data types of.
+        df (pd.DataFrame): The DataFrame to check data types of.
 
     Returns:
         True if all the columns are numeric and are not missing any values, False otherwise.
     """
-    for col_tags in dt.ww.semantic_tags.values():
+    for col_tags in df.ww.semantic_tags.values():
         if "numeric" not in col_tags:
             return False
 
-    if dt.isnull().any().any():
+    if df.isnull().any().any():
         return False
     return True
 

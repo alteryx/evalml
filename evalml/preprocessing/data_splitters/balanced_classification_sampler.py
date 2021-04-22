@@ -84,6 +84,6 @@ class BalancedClassificationSampler(SamplerBase):
                 indices = y.index[y == key].values
                 indices_to_remove = self.random_state.choice(indices, value, replace=False)
                 indices_to_drop.extend(indices_to_remove)
-        # indices of the y datacolumn
+        # indices of the y series
         original_indices = list(set(y.index.values).difference(set(indices_to_drop)))
         return original_indices

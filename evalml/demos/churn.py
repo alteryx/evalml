@@ -12,7 +12,7 @@ def load_churn(n_rows=None, verbose=True):
         verbose (bool): Whether to print information about features and labels
 
     Returns:
-        Union[(ww.DataTable, ww.DataColumn), (pd.Dataframe, pd.Series)]: X and y
+        (pd.Dataframe, pd.Series): X and y
     """
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")

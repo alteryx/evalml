@@ -7,7 +7,7 @@ def load_breast_cancer():
     """Load breast cancer dataset. Binary classification problem.
 
     Returns:
-        Union[(ww.DataTable, ww.DataColumn), (pd.Dataframe, pd.Series)]: X and y
+        (pd.Dataframe, pd.Series): X and y
     """
     data = load_breast_cancer_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)

@@ -42,8 +42,8 @@ class BaseSamplingSplitter(BaseCrossValidator):
         """Splits and returns the sampled training data using the data sampler provided.
 
         Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataFrame of points to split
+                y (pd.Series): DataSeries of points to split
 
         Returns:
             tuple((pd.DataFrame, pd.Series), (pd.DataFrame, pd.Series)): A tuple containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
@@ -65,8 +65,8 @@ class BaseSamplingSplitter(BaseCrossValidator):
         """Transforms the input data with the balancing strategy.
 
             Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataTable of points to split
+                y (pd.Series): DataColumn of points to split
 
             Returns:
                 tuple(pd.DataFrame, pd.Series): A tuple containing the resulting X and y post-transformation.
@@ -98,8 +98,8 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
     def split(self, X, y):
         """Splits and returns the indices of the training and testing using the data sampler provided.
         Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataFrame of points to split
+                y (pd.Series): Series of points to split
         Returns:
             tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
         """
@@ -116,8 +116,8 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
     def transform_sample(self, X, y):
         """Transforms the input data with the balancing strategy.
             Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataFrame of points to split
+                y (pd.Series): Series of points to split
             Returns:
                 list: List of indices to keep
         """

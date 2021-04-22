@@ -83,13 +83,13 @@ def _retain_custom_types_and_initalize_woodwork(old_logical_types, new_dataframe
     pandas data structure as possible.
 
     Arguments:
-        old_woodwork_data (ww.DataTable): Woodwork data structure to use
-        new_pandas_data (pd.DataFrame): Pandas data structure
-        ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataTable that have a logical type
-        specified in this list will not have their logical types carried over to the new DataTable returned
+        old_logical_types (Dict): Logical types to try to retain.
+        new_dataframe (pd.DataFrame): Pandas data structure
+        ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataFrame that have a logical type
+        specified in this list will not have their logical types carried over to the new DataFrame returned
 
     Returns:
-        A new DataTable where any of the columns that exist in the old input DataTable and the new DataFrame try to retain
+        A new DataFrame where any of the columns that exist in the old input DataFrame and the new DataFrame try to retain
         the original logical type, if possible and not specified to be ignored.
     """
     if isinstance(new_dataframe, pd.Series):
@@ -107,8 +107,8 @@ def _convert_numeric_dataset_pandas(X, y):
     Used with data sampler strategies.
 
     Arguments:
-        X (pd.DataFrame, np.ndarray, ww.DataTable): Data to transform
-        y (pd.Series, np.ndarray, ww.DataColumn): Target data
+        X (pd.DataFrame, np.ndarray): Data to transform
+        y (pd.Series, np.ndarray): Target data
 
     Returns:
         Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
