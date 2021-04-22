@@ -2053,6 +2053,7 @@ def test_undersampler_component_in_pipeline_predict():
 @patch("evalml.pipelines.components.XGBoostClassifier.fit")
 def test_xgboost_ohe(mock_fit):
     pytest.importorskip('xgboost', reason='Skipping test because xgboost not installed')
+
     class BinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'XGBoost Classifier']
 
