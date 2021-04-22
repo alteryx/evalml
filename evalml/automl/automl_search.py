@@ -291,11 +291,10 @@ class AutoMLSearch:
         self._interrupted = False
         self.frozen_pipeline_parameters = {}
 
-        if len(self.problem_configuration):
-            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
-            self.frozen_pipeline_parameters = {'pipeline': self.problem_configuration}
-        else:
-            pipeline_params = self.pipeline_parameters
+        parameters = copy.copy(self.pipeline_parameters)
+        if self.problem_configuration:
+            parameters.update({'pipeline': self.problem_configuration})
+            self.frozen_pipeline_parameters.update({'pipeline': self.problem_configuration})
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -305,7 +304,7 @@ class AutoMLSearch:
             index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
                 self.frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, self.frozen_pipeline_parameters, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, self.frozen_pipeline_parameters, custom_hyperparameters=parameters) for estimator in allowed_estimators]
         else:
             for pipeline in self.allowed_pipelines:
                 if self.pipeline_parameters:
@@ -380,7 +379,7 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
-            pipeline_params=pipeline_params,
+            pipeline_params=parameters,
             frozen_pipeline_parameters=self.frozen_pipeline_parameters
         )
 

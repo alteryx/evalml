@@ -918,6 +918,7 @@ def test_get_pipeline(mock_fit, mock_score, X_y_binary):
         pl = automl.get_pipeline(ranking.id)
         assert pl.parameters == ranking.parameters
         assert pl.name == ranking.pipeline_name
+        assert not pl._is_fitted
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})

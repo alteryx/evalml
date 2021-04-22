@@ -300,21 +300,42 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
                 assert p.parameters['Mock Classifier']['dummy_parameter'] == parameter
 
 
-@pytest.mark.parametrize("parameters", [Real(0, 1), Categorical(["random", "dummy", "test"]), Integer(1, 10)])
-def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipeline_classes):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
-    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
-                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
-                                               'Mock Classifier': {'dummy_parameter': parameters}},
-                              random_seed=0)
+def test_iterative_algorithm_frozen_parameters():
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.RANDOM_FOREST
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {'dummy_int_parameter': Integer(1, 10),
+                                 'dummy_categorical_parameter': Categorical(["random", "dummy", "test"]),
+                                 'dummy_real_parameter': Real(0, 1)}
+
+        def __init__(self, dummy_int_parameter=0, dummy_categorical_parameter='dummy', dummy_real_parameter=1.0, n_jobs=-1, random_seed=0, **kwargs):
+            super().__init__(parameters={'dummy_int_parameter': dummy_int_parameter,
+                                         'dummy_categorical_parameter': dummy_categorical_parameter,
+                                         'dummy_real_parameter': dummy_real_parameter,
+                                         **kwargs, 'n_jobs': n_jobs},
+                             component_obj=None, random_seed=random_seed)
+
+    pipeline = BinaryClassificationPipeline([MockEstimator])
+    algo = IterativeAlgorithm(allowed_pipelines=[pipeline, pipeline, pipeline],
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}},
+                              random_seed=0,
+                              _frozen_pipeline_parameters={
+                                  "Mock Classifier": {
+                                      'dummy_int_parameter': 6,
+                                      'dummy_categorical_parameter': "random",
+                                      'dummy_real_parameter': 0.1
+                                  }})
 
     next_batch = algo.next_batch()
-    if isinstance(parameters, (Real, Integer)):
-        parameter = parameters.rvs(random_state=0)[0]
-    else:
-        parameter = parameters.rvs(random_state=0)
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
-    assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": parameter, "n_jobs": -1} for p in next_batch])
+    assert all([p.parameters['Mock Classifier'] == {
+        "Mock Classifier": {
+            'dummy_int_parameter': 6,
+            'dummy_categorical_parameter': "random",
+            'dummy_real_parameter': 0.1,
+            "n_jobs": -1
+        }} for p in next_batch])
 
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -323,13 +344,13 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
     # make sure that future batches remain in the hyperparam range
     for i in range(1, 5):
         next_batch = algo.next_batch()
-        for p in next_batch:
-            if isinstance(parameters, Categorical):
-                assert p.parameters['Mock Classifier']['dummy_parameter'] in ["random", "dummy", "test"]
-            elif isinstance(parameters, Real):
-                assert 0 < p.parameters['Mock Classifier']['dummy_parameter'] <= 1
-            else:
-                assert 1 <= p.parameters['Mock Classifier']['dummy_parameter'] <= 10
+        assert all([p.parameters['Mock Classifier'] == {
+            "Mock Classifier": {
+                'dummy_int_parameter': 6,
+                'dummy_categorical_parameter': "random",
+                'dummy_real_parameter': 0.1,
+                "n_jobs": -1
+            }} for p in next_batch])
 
 
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):

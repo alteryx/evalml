@@ -447,11 +447,6 @@ def time_series_regression_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSRegressionPipeline
 
 
@@ -464,11 +459,6 @@ def time_series_binary_classification_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
     return TSBinaryPipeline
 
 
