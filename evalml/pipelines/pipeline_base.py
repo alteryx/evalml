@@ -492,7 +492,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed)
 
     def new(self, parameters, random_seed):
-        """Constructs a new pipeline with the same components.
+        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters. 
+            Not to be confused with python's __new__ method.
 
         Returns:
             A new instance of this pipeline with identical components.

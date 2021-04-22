@@ -305,11 +305,7 @@ class AutoMLSearch:
             index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
                 self.frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
-
-            if is_time_series(self.problem_type):
-                self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, self.frozen_pipeline_parameters, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
-            else:
-                self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, self.frozen_pipeline_parameters, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, self.frozen_pipeline_parameters, custom_hyperparameters=pipeline_params) for estimator in allowed_estimators]
         else:
             for pipeline in self.allowed_pipelines:
                 if self.pipeline_parameters:
@@ -732,7 +728,7 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
-        self._pipelines_searched.update({pipeline_id: pipeline})
+        self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
         if pipeline.model_family == ModelFamily.ENSEMBLE:
             input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]

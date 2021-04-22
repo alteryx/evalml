@@ -239,7 +239,7 @@ def test_nonlinear_model_family():
                            'Random Forest': ['Random Forest Classifier', 'Logistic Regression', 'Elastic Net']}
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     class DummyTransformerEndPipeline(BinaryClassificationPipeline):
         component_graph = {'Imputer': ['Imputer'],
@@ -249,7 +249,7 @@ def test_nonlinear_model_family():
                            'Scaler': ['Standard Scaler', 'Random Forest', 'Logistic Regression']}
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, None, parameters, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
     nlbp = DummyNonlinearPipeline({})
     nltp = DummyTransformerEndPipeline({})
