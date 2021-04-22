@@ -2050,26 +2050,6 @@ def test_undersampler_component_in_pipeline_predict():
     assert len(preds) == 1000
 
 
-@patch("evalml.pipelines.components.XGBoostClassifier.fit")
-def test_xgboost_ohe(mock_fit):
-    pytest.importorskip('xgboost', reason='Skipping test because xgboost not installed')
-
-    class BinaryPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'XGBoost Classifier']
-
-    X = pd.DataFrame({"category": ["dog"] * 100 + ["cat"] * 100 + ["fish"] * 200,
-                      "integers": [i % 5 for i in range(400)]})
-    y = pd.Series([i % 2 for i in range(400)])
-    pipeline = BinaryPipeline({})
-    pipeline.fit(X, y)
-    mock_X = mock_fit.call_args[0][0]
-    for name, types in mock_X.types['Logical Type'].items():
-        if 'category' in name:
-            assert str(types) == 'Boolean'
-        else:
-            assert str(types) == 'Integer'
-
-
 @pytest.mark.parametrize('oversampler', ['SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
