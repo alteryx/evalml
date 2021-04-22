@@ -510,6 +510,15 @@ def _is_feature_categorical(feature, X):
     return is_categorical
 
 
+def _is_feature_datetime(feature, X):
+    """Determine whether the feature the user passed in to partial dependence is datetime."""
+    if isinstance(feature, int):
+        is_datetime = X[X.to_dataframe().columns[feature]].logical_type == ww.logical_types.Datetime
+    else:
+        is_datetime = X[feature].logical_type == ww.logical_types.Datetime
+    return is_datetime
+
+
 def _put_categorical_feature_first(features, first_feature_categorical):
     """If the user is doing a two-way partial dependence plot and one of the features is categorical,
     we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
@@ -626,7 +635,10 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
         is_categorical = [_is_feature_categorical(f, X) for f in features]
+        is_datetime = [_is_feature_datetime(f, X) for f in features]
         feature_names = _get_feature_names_from_str_or_col_index(X, features)
+        if any(is_datetime):
+            raise ValueError('Two-way partial dependence is not supported for datetime columns.')
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
     else:
@@ -648,7 +660,6 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                       "Fill in these values to remove the NaN values.", NullsInColumnWarning)
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
-
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
     avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
 
