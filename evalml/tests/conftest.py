@@ -258,7 +258,7 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -278,7 +278,7 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -315,7 +315,7 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -390,7 +390,7 @@ def logistic_regression_binary_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -409,7 +409,7 @@ def linear_regression_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -498,7 +498,7 @@ def nonlinear_binary_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -521,7 +521,7 @@ def nonlinear_multiclass_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -543,7 +543,7 @@ def nonlinear_regression_pipeline_class():
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):

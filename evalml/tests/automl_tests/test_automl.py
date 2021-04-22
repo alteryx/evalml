@@ -378,7 +378,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -1299,7 +1299,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
         def __init__(self, parameters, random_seed=0):
             super().__init__(parameters=parameters)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -1385,7 +1385,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         def __init__(self, parameters, random_seed=0):
             super().__init__(parameters)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -1458,7 +1458,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         def __init__(self, parameters, random_seed=0):
             super().__init__(parameters)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):
@@ -1955,7 +1955,7 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
             self.__class__.num_pipelines_different_seed += is_diff_random_seed
             super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
-        def new(self, parameters, random_seed):
+        def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
 
         def clone(self):

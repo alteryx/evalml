@@ -490,10 +490,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed)
 
-    def new(self, parameters, random_seed):
+    def new(self, parameters, random_seed=0):
         """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters.
             Not to be confused with python's __new__ method.
 
+        Arguments:
+            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
         Returns:
             A new instance of this pipeline with identical components.
         """
