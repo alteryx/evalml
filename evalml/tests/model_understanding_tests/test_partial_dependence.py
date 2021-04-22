@@ -574,8 +574,19 @@ def test_partial_dependence_datetime(problem_type,
         assert len(part_dep["feature_values"]) == 100
     assert not part_dep.isnull().any(axis=None)
 
+    part_dep = partial_dependence(pipeline, X, features=20)
+    if problem_type == 'multiclass':
+        assert len(part_dep["partial_dependence"]) == 300  # 100 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 300
+    else:
+        assert len(part_dep["partial_dependence"]) == 100
+        assert len(part_dep["feature_values"]) == 100
+    assert not part_dep.isnull().any(axis=None)
+
     with pytest.raises(ValueError, match='Two-way partial dependence is not supported for datetime columns.'):
         part_dep = partial_dependence(pipeline, X, features=('0', 'dt_column'))
+    with pytest.raises(ValueError, match='Two-way partial dependence is not supported for datetime columns.'):
+        part_dep = partial_dependence(pipeline, X, features=(0, 20))
 
 
 @pytest.mark.parametrize('problem_type', ['binary', 'regression'])
