@@ -42,7 +42,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
-    return X, y
+    return infer_feature_types(X), infer_feature_types(y)
 
 
 def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_seed=0):

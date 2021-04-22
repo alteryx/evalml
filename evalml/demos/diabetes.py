@@ -3,7 +3,7 @@ import woodwork as ww
 from sklearn.datasets import load_diabetes as load_diabetes_sk
 
 
-def load_diabetes(return_pandas=False):
+def load_diabetes():
     """Load diabetes dataset. Regression problem
 
     Returns:
@@ -12,8 +12,6 @@ def load_diabetes(return_pandas=False):
     data = load_diabetes_sk()
     X = pd.DataFrame(data.data, columns=data.feature_names)
     y = pd.Series(data.target)
-    if return_pandas:
-        return X, y
 
     X.ww.init()
     y = ww.init_series(y)

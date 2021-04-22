@@ -1032,13 +1032,13 @@ def test_targets_pandas_data_types_classification(data_type, automl_type, target
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_breast_cancer(return_pandas=True)
+        X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
-        X, y = load_wine(return_pandas=True)
+        X, y = load_wine()
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in ['category', 'object']:

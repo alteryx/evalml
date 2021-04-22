@@ -8,11 +8,11 @@ from evalml.preprocessing import split_data
 
 @pytest.mark.parametrize("target_type", ["category", "string", "bool"])
 def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipeline_class):
-    X, y = load_wine(return_pandas=True)
+    X, y = load_wine()
     if target_type == "category":
         y = pd.Series(y).astype("category")
     if target_type == "bool":
-        X, y = load_breast_cancer(return_pandas=True)
+        X, y = load_breast_cancer()
         y = y.map({"malignant": False, "benign": True})
     mock_regression_pipeline = dummy_regression_pipeline_class(parameters={})
     with pytest.raises(ValueError, match="Regression pipeline can only handle numeric target data"):
