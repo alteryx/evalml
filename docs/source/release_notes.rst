@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added Oversampler transformer component to EvalML :pr:`2079`
+        * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
     * Fixes
     * Changes
             * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
