@@ -3,10 +3,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
 
 from evalml.utils import _convert_numeric_dataset_pandas
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSamplingSplitter(BaseCrossValidator):
@@ -45,8 +42,8 @@ class BaseSamplingSplitter(BaseCrossValidator):
         """Splits and returns the sampled training data using the data sampler provided.
 
         Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataFrame of points to split
+                y (pd.Series): DataSeries of points to split
 
         Returns:
             tuple((pd.DataFrame, pd.Series), (pd.DataFrame, pd.Series)): A tuple containing the resulting ((X_train, y_train), (X_test, y_test)) post-transformation.
@@ -68,8 +65,8 @@ class BaseSamplingSplitter(BaseCrossValidator):
         """Transforms the input data with the balancing strategy.
 
             Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataTable of points to split
+                y (pd.Series): DataColumn of points to split
 
             Returns:
                 tuple(pd.DataFrame, pd.Series): A tuple containing the resulting X and y post-transformation.
@@ -101,15 +98,13 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
     def split(self, X, y):
         """Splits and returns the indices of the training and testing using the data sampler provided.
         Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataFrame of points to split
+                y (pd.Series): Series of points to split
         Returns:
             tuple(train, test): A tuple containing the resulting train and test indices, post sampling.
         """
-        X_ww = infer_feature_types(X)
-        y_ww = infer_feature_types(y)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
         index_df = pd.Series(y.index)
         for train, test in self.splitter.split(X, y):
             X_train, y_train = X.iloc[train], y.iloc[train]
@@ -121,13 +116,12 @@ class BaseUnderSamplingSplitter(BaseCrossValidator):
     def transform_sample(self, X, y):
         """Transforms the input data with the balancing strategy.
             Arguments:
-                X (ww.DataTable): DataTable of points to split
-                y (ww.DataTable): DataColumn of points to split
+                X (pd.DataFrame): DataFrame of points to split
+                y (pd.Series): Series of points to split
             Returns:
                 list: List of indices to keep
         """
-        y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
+        y = infer_feature_types(y)
         index_df = pd.Series(y.index)
         train_index_drop = self.sampler.fit_resample(X, y)
         # convert the indices of the y column into index indices of the original pre-split y

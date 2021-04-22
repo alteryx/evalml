@@ -564,9 +564,9 @@ def make_data_type():
                 data = pd.DataFrame(data)
         if data_type == "ww":
             if len(data.shape) == 1:
-                data = ww.DataColumn(data)
+                data = ww.init_series(data)
             else:
-                data = ww.DataTable(data)
+                data.ww.init()
         return data
 
     return _make_data_type
@@ -574,4 +574,6 @@ def make_data_type():
 
 @pytest.fixture
 def fraud_100():
-    return load_fraud(n_rows=100)
+    X, y = load_fraud(n_rows=100)
+    X.ww.set_types(logical_types={'provider': 'Categorical', 'region': 'Categorical'})
+    return X, y
