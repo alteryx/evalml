@@ -53,7 +53,6 @@ Release Notes
         * Deleted the "errors" key from automl results :pr:`1975`
         * Deleted the ``raise_and_save_error_callback`` and the ``log_and_save_error_callback`` :pr:`1975`
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use minority:majority ratio instead of majority:minority :pr:`2077`
-        * Updated pipeline API to accept component graph and other class attributes as parameters :pr:`2091`
 
 
 **v0.22.0 Apr. 06, 2021**
