@@ -14,6 +14,8 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Upgraded minimum woodwork to version 0.2.0. Previous versions will not be supported :pr:`2181`
 
 **v0.23.0 Apr. 20, 2021**
     * Enhancements
