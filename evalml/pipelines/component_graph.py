@@ -229,7 +229,6 @@ class ComponentGraph:
                         parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, y)
-            # print(component_name, input_x.types)
             self.input_feature_names.update({component_name: list(input_x.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
