@@ -380,7 +380,7 @@ class AutoMLSearch:
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
             pipeline_params=parameters,
-            frozen_pipeline_parameters=self.frozen_pipeline_parameters
+            _frozen_pipeline_parameters=self.frozen_pipeline_parameters
         )
 
     def _get_batch_number(self):
