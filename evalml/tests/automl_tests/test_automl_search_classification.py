@@ -796,9 +796,9 @@ def test_oversampling_in_pipelines(multiclass_score, binary_score, mock_fit, pro
         if has_minimal_dependencies:
             sampler_methods = 'Undersampler'
         if sampler_methods == 'Undersampler':
-            expected_result = {335, 667}
+            expected_result = {"binary": [335], "multiclass": [667]}
         elif "Oversampler" in sampler_methods:
-            expected_result = {750, 779, 800}
+            expected_result = {"binary": [750], "multiclass": [779, 800]}
         assert all(any(sampler_methods in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
 
-    assert len(mock_fit.call_args[0][1]) in expected_result
+    assert len(mock_fit.call_args[0][1]) in expected_result[problem_type]
