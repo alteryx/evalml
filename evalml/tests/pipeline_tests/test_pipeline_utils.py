@@ -530,7 +530,7 @@ def test_make_component_list_from_actions():
 
 @pytest.mark.parametrize("samplers", [None, "Undersampler", "SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"])
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass', 'regression'])
-def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X_y_regression):
+def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X_y_regression, has_minimal_dependencies):
     if problem_type == 'binary':
         X, y = X_y_binary
     elif problem_type == 'multiclass':
@@ -541,6 +541,8 @@ def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X
 
     for estimator in estimators:
         pipeline = make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
+        if has_minimal_dependencies and samplers is not None:
+            samplers = 'Undersampler'
         # check that we do add the sampler properly
         component_to_check = pipeline.component_graph
         if samplers is not None and problem_type != 'regression':
