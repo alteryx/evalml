@@ -766,3 +766,38 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
         if has_minimal_dependencies:
             sampler_method = 'Undersampler'
         assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+
+
+@pytest.mark.parametrize("sampler_methods", [None, 'Undersampler', 'SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@patch("evalml.pipelines.components.estimators.Estimator.fit")
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.5})
+def test_oversampling_in_pipelines(multiclass_score, binary_score, mock_fit, problem_type, sampler_methods, has_minimal_dependencies):
+    X = pd.DataFrame({"a": [i for i in range(1000)],
+                      "b": [i % 4 for i in range(1000)],
+                      "c": [i % 7 for i in range(1, 1001)]})
+    if problem_type == 'binary':
+        y = pd.Series([0] * 900 + [1] * 100)
+    else:
+        y = pd.Series([0] * 800 + [2] * 100 + [1] * 100)
+    if sampler_methods == 'SMOTENC Oversampler':
+        X['b'] = X['b'].astype('category')
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method=sampler_methods, max_iterations=2)
+    automl.search()
+    pipelines = automl.allowed_pipelines
+
+    if sampler_methods is None:
+        expected_result = {667}
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        if has_minimal_dependencies:
+            sampler_methods = 'Undersampler'
+        if sampler_methods == 'Undersampler':
+            expected_result = {335, 667}
+        elif "Oversampler" in sampler_methods:
+            expected_result = {750, 779, 800}
+        assert all(any(sampler_methods in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+
+    assert len(mock_fit.call_args[0][1]) in expected_result
