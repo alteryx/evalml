@@ -1228,6 +1228,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, matplotlib=False)
     """
     return force_plot(pipeline, rows_to_explain, training_data, return_data=False, matplotlib=matplotlib)
 
+
 def force_plot(pipeline, rows_to_explain, training_data, return_data=True, matplotlib=False):
     """ Function to generate a force plot for a pipeline.
 
@@ -1289,7 +1290,7 @@ def force_plot(pipeline, rows_to_explain, training_data, return_data=True, matpl
             result = {}
             result["class"] = idx
             force_plot = gen_force_plot(shap_values=s_v, training_data=training_data,
-                                                  expected_value=expected_values[idx], matplotlib=False)
+                                        expected_value=expected_values[idx], matplotlib=False)
             if return_data:
                 result["data"] = force_plot.data
             else:

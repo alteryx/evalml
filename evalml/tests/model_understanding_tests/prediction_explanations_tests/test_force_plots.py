@@ -6,7 +6,7 @@ import shap
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.model_family.model_family import ModelFamily
-from evalml.model_understanding.graphs import graph_force_plot, force_plot
+from evalml.model_understanding.graphs import force_plot, graph_force_plot
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -31,7 +31,7 @@ def test_exceptions():
 @pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
                          product(interpretable_estimators, all_problems, [[0], [0, 1, 2, 3, 4]]))
 def test_graph_force_plot(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_multi, X_y_regression,
-              helper_functions, has_minimal_dependencies):
+                          helper_functions, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
     if problem_type not in estimator.supported_problem_types:
@@ -166,6 +166,7 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
     assert len(results) == 1
     assert results[0]["class"] == "regression"
     assert isinstance(results[0]["force_plot"], expected_plot_class)
+
 
 @pytest.mark.parametrize("rows_to_explain, return_data", product([[0], [0, 1, 2, 3, 4]], [True, False]))
 def test_force_plot(rows_to_explain, return_data, X_y_regression):
