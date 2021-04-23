@@ -8,7 +8,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
-        * Convert demo dataset from gzipped csv to gzipped tar of csv :pr:`2183`
+        * Rename dataset to clarify that its gzipped but not a tarball :pr:`2183`
     * Testing Changes
 
 
