@@ -6,7 +6,7 @@ import woodwork as ww
 from evalml.utils import _convert_numeric_dataset_pandas, infer_feature_types
 
 
-def test_infer_feature_types():
+def test_infer_feature_types_no_type_change():
     X_dt = pd.DataFrame([[1, 2], [3, 4]])
     X_dt.ww.init()
     pd.testing.assert_frame_equal(X_dt, infer_feature_types(X_dt))
