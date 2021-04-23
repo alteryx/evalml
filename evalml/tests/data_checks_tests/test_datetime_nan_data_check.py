@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckError,
@@ -97,7 +96,8 @@ def test_datetime_nan_check_input_formats():
     dates[0] = np.datetime64('NaT')
 
     #  test Woodwork
-    ww_input = ww.DataTable(pd.DataFrame(dates, columns=['index']))
+    ww_input = pd.DataFrame(dates, columns=['index'])
+    ww_input.ww.init()
     assert dt_nan_check.validate(ww_input) == expected
 
     expected = {
