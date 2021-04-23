@@ -801,3 +801,17 @@ def test_component_graph_dataset_with_target_imputer():
     component_graph.fit(X, y)
     predictions = component_graph.predict(X)
     assert not pd.isnull(predictions.to_series()).any()
+
+
+@patch('evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit')
+def test_component_graph_sampler_y_passes(mock_estimator_fit):
+    # makes sure the y value from oversampler gets passed to the estimator, even though StandardScaler has no y output
+    X = pd.DataFrame({"a": [i for i in range(100)],
+                      "b": [i % 3 for i in range(100)]})
+    y = pd.Series([0] * 90 + [1] * 10)
+    component_list = ['Imputer', 'SMOTE Oversampler', 'Standard Scaler', 'Logistic Regression Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    assert len(mock_estimator_fit.call_args[0][0]) == len(mock_estimator_fit.call_args[0][1])
+    assert len(mock_estimator_fit.call_args[0][0]) == int(1.25 * 90)

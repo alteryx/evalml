@@ -115,7 +115,7 @@ AutoMLConfig = namedtuple("AutoMLConfig", ["ensembling_indices", "data_splitter"
 
 
 def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
-    """Returns the name of the sampler component to use for AutoMLSearch
+    """Returns the name of the sampler component to use for AutoMLSearch.
 
     Arguments:
         X (ww.DataTable): The input feature data
@@ -134,8 +134,8 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
         counts = y.to_series().value_counts()
         minority_class = min(counts)
         class_ratios = minority_class / counts
+        # if all class ratios are larger than the ratio provided, we don't need to sample
         if all(class_ratios >= sampler_balanced_ratio):
-            # if all class ratios are larger than the ratio provided, we don't need to sample
             return None
         # otherwise, if we have a large number of values, we use the undersampler
         elif len(y) > 50000:
