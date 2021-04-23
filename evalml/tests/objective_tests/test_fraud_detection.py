@@ -121,7 +121,7 @@ def test_fraud_objective_score(X_y_binary):
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
 
-    out = pd.Series(fraud_cost.decision_function(y_predicted, 5, extra_columns))
+    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     pd.testing.assert_series_equal(out, y_true, check_dtype=False, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert (score == 0.0)
