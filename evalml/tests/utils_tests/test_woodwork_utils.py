@@ -18,9 +18,6 @@ def test_infer_feature_types():
                          1: pd.Series([3, 4], dtype="int64")})
     pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd))
 
-    X_pd = pd.Series([1, 2, 3, 4], dtype="int64")
-    pd.testing.assert_series_equal(X_pd, infer_feature_types(X_pd))
-
     X_list = [1, 2, 3, 4]
     X_expected = ww.init_series(pd.Series(X_list))
     pd.testing.assert_series_equal(X_expected, infer_feature_types(X_list))

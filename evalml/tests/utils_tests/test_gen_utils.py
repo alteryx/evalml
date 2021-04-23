@@ -262,7 +262,6 @@ def test_rename_column_names_to_numeric():
     X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
     pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]}))
 
-    X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
     X.ww.init(logical_types={"<>": "categorical", ">>": "categorical"})
     X_renamed = _rename_column_names_to_numeric(X)
     X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
