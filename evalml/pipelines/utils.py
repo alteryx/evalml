@@ -34,7 +34,11 @@ from evalml.pipelines.components import (  # noqa: F401
     TargetImputer,
     TextFeaturizer
 )
-from evalml.pipelines.components.utils import all_components, get_estimators
+from evalml.pipelines.components.utils import (
+    all_components,
+    get_estimators,
+    handle_component_class
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -173,8 +177,6 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
     for i, component in enumerate(component_instances):
         if not isinstance(component, ComponentBase):
             raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
-        if i == len(component_instances) - 1 and not isinstance(component, Estimator):
-            raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
 
     if custom_name and not isinstance(custom_name, str):
         raise TypeError("Custom pipeline name must be a string")
@@ -259,7 +261,7 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
                                              random_seed=random_seed)
 
 
-def _make_component_list_from_actions(actions):
+def make_pipeline_from_actions(actions, problem_type):
     """
     Creates a list of components from the input DataCheckAction list
 
@@ -270,11 +272,43 @@ def _make_component_list_from_actions(actions):
         List of components used to address the input actions
     """
     components = []
+    cols_to_drop = []
+    for drop_action in [action for action in actions if action.action_code == DataCheckActionCode.DROP_COL]:
+        drop_action_cols = drop_action.metadata.get("columns", [])
+        new_cols = [col for col in drop_action_cols if col not in cols_to_drop]
+        cols_to_drop.extend(new_cols)
+    if cols_to_drop:
+        components.append(DropColumns(columns=cols_to_drop))
     for action in actions:
-        if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append(DropColumns(columns=action.metadata["columns"]))
         if action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
             if metadata["is_target"]:
                 components.append(TargetImputer(impute_strategy=metadata["impute_strategy"]))
-    return components
+    return make_pipeline_from_components(components, problem_type)
+
+
+
+def combine_pipelines(pipelines, problem_type):
+    component_set = set()
+    component_list = []
+    component_name_to_parameters = []
+    idx = 0
+    problem_type = handle_problem_types(problem_type)
+
+    for pipeline in pipelines:
+        pipeline_problem_type = handle_problem_types(problem_type)
+        if pipeline_problem_type != problem_type:
+            raise ValueError(f"Pipelines must be for problem type: {problem_type}")
+        for component in pipeline.component_graph:
+            component_name_to_use = component.name
+            if component_name_to_use in component_set:
+                component_name_to_use = f'{component_name_to_use}_{idx}'
+            component_set.add(component_name_to_use)
+            component_list.append(component.name)
+            component_name_to_parameters.append((component_name_to_use, pipeline.parameters[component.name]))
+            idx += 1
+
+    class CombinedPipeline(_get_pipeline_base_class(problem_type)):
+        component_graph = component_list
+
+    return CombinedPipeline({c[0]: c[1] for c in component_name_to_parameters}, random_seed=0)
