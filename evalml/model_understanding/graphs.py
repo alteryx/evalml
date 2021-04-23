@@ -1201,7 +1201,7 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
     return fig
 
 
-def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
+def graph_force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
     """ Function to generate a force plot for a pipeline.
 
     Args:
@@ -1221,6 +1221,35 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
                     {"class": 0, "force_plot": AdditiveForceArrayVisualizerObject,
                      "class": 1, "force_plot": AdditiveForceArrayVisualizerObject,
                      "class": 2, "force_plot": AdditiveForceArrayVisualizerObject}
+
+    Raises:
+        TypeError: if rows_to_explain is not a list.
+        TypeError: if all values in rows_to_explain aren't integers.
+    """
+    return force_plot(pipeline, rows_to_explain, training_data, return_data=False, matplotlib=matplotlib)
+
+def force_plot(pipeline, rows_to_explain, training_data, return_data=True, matplotlib=False):
+    """ Function to generate a force plot for a pipeline.
+
+    Args:
+        pipeline (PipelineBase): the pipeline to generate the force plot for.
+        rows_to_explain (list(int)): a list of the indices of the training_data to explain
+        training_data (pandas.DataFrame): the data used to train the pipeline
+        return_data (bool): whether to return a dictionary of force plot data (True) or
+            the actual plots (False)
+        matplotlib (bool): flag to display the force plot using matplotlib (outside of jupyter)
+
+    Returns:
+        list(dict()): list of dictionaries where each dict
+            contains the data to generate the force plot for classification problems or
+            a single dict with the force plot for a regression problem.
+            e.x. For single row binary force plots with return_data == True:
+                    {"class": 0, "data": dict,
+                     "class": 1, "data": dict}
+                 For multi row multi-class force plots with return_data == True:
+                    {"class": 0, "data": dict,
+                     "class": 1, "data": dict,
+                     "class": 2, "data": dict}
 
     Raises:
         TypeError: if rows_to_explain is not a list.
@@ -1259,14 +1288,23 @@ def force_plot(pipeline, rows_to_explain, training_data, matplotlib=False):
         for idx, s_v in enumerate(shap_values):
             result = {}
             result["class"] = idx
-            result["force_plot"] = gen_force_plot(shap_values=s_v, training_data=training_data,
+            force_plot = gen_force_plot(shap_values=s_v, training_data=training_data,
                                                   expected_value=expected_values[idx], matplotlib=False)
+            if return_data:
+                result["data"] = force_plot.data
+            else:
+                result["force_plot"] = force_plot
             shap_plots.append(result)
     # regression problems return shap values as a numpy array of values
     else:
         result = {}
         result["class"] = "regression"
-        result["force_plot"] = gen_force_plot(shap_values=shap_values, training_data=training_data,
-                                              expected_value=explainer.expected_value, matplotlib=matplotlib)
+        force_plot = gen_force_plot(shap_values=shap_values, training_data=training_data,
+                                    expected_value=explainer.expected_value, matplotlib=matplotlib)
+        if return_data:
+            result["data"] = force_plot.data
+        else:
+            result["force_plot"] = force_plot
         shap_plots.append(result)
+
     return shap_plots
