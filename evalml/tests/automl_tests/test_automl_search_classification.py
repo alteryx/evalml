@@ -754,7 +754,7 @@ def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features,
 @pytest.mark.parametrize("sampler_method,categorical_features", [(None, 'none'), (None, 'some'), (None, 'all'),
                                                                  ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all'),
                                                                  ('SMOTE Oversampler', 'none'), ('SMOTENC Oversampler', 'some'), ('SMOTEN Oversampler', 'all')])
-def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies):
+def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies, caplog):
     # 0.2 minority:majority class ratios
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method=sampler_method)
@@ -765,6 +765,7 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
     else:
         if has_minimal_dependencies:
             sampler_method = 'Undersampler'
+            assert 'Could not import imblearn.over_sampling' in caplog.text
         assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
 
 
