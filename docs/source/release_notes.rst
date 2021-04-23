@@ -8,6 +8,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Rename dataset to clarify that its gzipped but not a tarball :pr:`2183`
     * Testing Changes
 
 
