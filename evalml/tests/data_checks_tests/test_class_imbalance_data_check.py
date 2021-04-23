@@ -111,7 +111,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
         y_long = y_long.to_numpy()
 
     elif input_type == "ww":
-        X = X.ww.init()
+        X.ww.init()
         y = ww.init_series(y)
         y_imbalanced_default_threshold = ww.init_series(y_imbalanced_default_threshold)
         y_imbalanced_set_threshold = ww.init_series(y_imbalanced_set_threshold)
