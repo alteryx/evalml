@@ -16,7 +16,7 @@ def load_fraud(n_rows=None, verbose=True, return_pandas=False):
     """
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
-    fraud_data_path = os.path.join(data_folder_path, "fraud_transactions.csv.tar.gz")
+    fraud_data_path = os.path.join(data_folder_path, "fraud_transactions.csv.gz")
 
     X, y = load_data(path=fraud_data_path,
                      index="id",
