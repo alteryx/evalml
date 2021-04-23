@@ -21,6 +21,7 @@ def test_cbm_init():
                           false_positive=-7, false_negative=None)
 
 
+@pytest.mark.objective_test_uses_automl
 @pytest.mark.parametrize("optimize_thresholds", [True, False])
 def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
     X, y = X_y_binary
@@ -32,8 +33,8 @@ def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
     pipeline = automl.best_pipeline
     pipeline.fit(X, y)
     predictions = pipeline.predict(X, cbm)
-    assert not np.isnan(predictions.to_series()).values.any()
-    assert not np.isnan(pipeline.predict_proba(X).to_dataframe()).values.any()
+    assert not np.isnan(predictions).values.any()
+    assert not np.isnan(pipeline.predict_proba(X)).values.any()
     assert not np.isnan(pipeline.score(X, y, [cbm])['Cost Benefit Matrix'])
 
 

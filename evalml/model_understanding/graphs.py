@@ -38,8 +38,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -47,8 +47,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """
     y_true = infer_feature_types(y_true)
     y_predicted = infer_feature_types(y_predicted)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
-    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series()).to_numpy()
+    y_true = y_true.to_numpy()
+    y_predicted = y_predicted.to_numpy()
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
@@ -61,14 +61,13 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (ww.DataTable, pd.DataFrame or np.ndarray): Confusion matrix to normalize.
+        conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
     conf_mat = infer_feature_types(conf_mat)
-    conf_mat = _convert_woodwork_types_wrapper(conf_mat.to_dataframe())
     col_names = conf_mat.columns
 
     conf_mat = conf_mat.to_numpy()
