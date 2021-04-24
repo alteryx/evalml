@@ -30,7 +30,7 @@ def test_iterative_algorithm_init():
 
 
 def test_iterative_algorithm_allowed_pipelines(logistic_regression_binary_pipeline_class):
-    allowed_pipelines = [logistic_regression_binary_pipeline_class]
+    allowed_pipelines = [logistic_regression_binary_pipeline_class({})]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
@@ -54,21 +54,9 @@ def dummy_binary_pipeline_classes():
                                              'n_jobs': n_jobs},
                                  component_obj=None, random_seed=random_seed)
 
-        class MockBinaryClassificationPipeline1(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-        class MockBinaryClassificationPipeline2(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-        class MockBinaryClassificationPipeline3(BinaryClassificationPipeline):
-            estimator = MockEstimator
-            component_graph = [MockEstimator]
-
-        return [MockBinaryClassificationPipeline1,
-                MockBinaryClassificationPipeline2,
-                MockBinaryClassificationPipeline3]
+        return [BinaryClassificationPipeline([MockEstimator]),
+                BinaryClassificationPipeline([MockEstimator]),
+                BinaryClassificationPipeline([MockEstimator])]
     return _method
 
 
@@ -101,10 +89,10 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     assert len(next_batch) == len(dummy_binary_pipeline_classes)
-    assert [p.__class__ for p in next_batch] == dummy_binary_pipeline_classes
+    assert [p.__class__ for p in next_batch] == [p.__class__ for p in dummy_binary_pipeline_classes]
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
+    assert all([p.parameters == p.default_parameters for p in next_batch])
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -120,7 +108,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             next_batch = algo.next_batch()
             assert len(next_batch) == algo.pipelines_per_batch
             num_pipelines_classes = (len(dummy_binary_pipeline_classes) + 1) if ensembling_value else len(dummy_binary_pipeline_classes)
-            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes]
+            cls = dummy_binary_pipeline_classes[(algo.batch_number - 2) % num_pipelines_classes].__class__
             assert [p.__class__ for p in next_batch] == [cls] * len(next_batch)
             assert all([p.parameters['Mock Classifier']['n_jobs'] == -1 for p in next_batch])
             assert all((p.random_seed == algo.random_seed) for p in next_batch)
@@ -133,7 +121,7 @@ def test_iterative_algorithm_results(mock_stack, ensembling_value, dummy_binary_
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
-        assert any([p != dummy_binary_pipeline_classes[0]({}).parameters for p in all_parameters])
+        assert any([p != dummy_binary_pipeline_classes[0].parameters for p in all_parameters])
 
         if ensembling_value:
             # check next batch is stacking ensemble batch
@@ -208,10 +196,10 @@ def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
 @pytest.mark.parametrize("ensembling_value", [True, False])
 def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_regression_binary_pipeline_class):
     # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
-    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=ensembling_value)
+    algo = IterativeAlgorithm(allowed_pipelines=[logistic_regression_binary_pipeline_class({})], ensembling=ensembling_value)
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.allowed_pipelines == [logistic_regression_binary_pipeline_class]
+    assert algo.allowed_pipelines == [logistic_regression_binary_pipeline_class({})]
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
@@ -219,7 +207,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
     assert [p.__class__ for p in next_batch] == [logistic_regression_binary_pipeline_class] * len(next_batch)
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
-    assert all([p.parameters == p.__class__.default_parameters for p in next_batch])
+    assert all([p.parameters == p.default_parameters for p in next_batch])
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -243,7 +231,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
-        assert any([p != logistic_regression_binary_pipeline_class.default_parameters for p in all_parameters])
+        assert any([p != logistic_regression_binary_pipeline_class({}).default_parameters for p in all_parameters])
 
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
@@ -267,7 +255,7 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
 
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
-    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class, linear_regression_pipeline_class], ensembling=True, n_jobs=n_jobs)
+    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class({}), linear_regression_pipeline_class({})], ensembling=True, n_jobs=n_jobs)
     next_batch = algo.next_batch()
     seen_ensemble = False
     scores = range(0, len(next_batch))
@@ -312,21 +300,41 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
                 assert p.parameters['Mock Classifier']['dummy_parameter'] == parameter
 
 
-@pytest.mark.parametrize("parameters", [Real(0, 1), Categorical(["random", "dummy", "test"]), Integer(1, 10)])
-def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipeline_classes):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
-    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
-                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10},
-                                               'Mock Classifier': {'dummy_parameter': parameters}},
-                              random_seed=0)
+def test_iterative_algorithm_frozen_parameters():
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.RANDOM_FOREST
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        hyperparameter_ranges = {'dummy_int_parameter': Integer(1, 10),
+                                 'dummy_categorical_parameter': Categorical(["random", "dummy", "test"]),
+                                 'dummy_real_parameter': Real(0, 1)}
+
+        def __init__(self, dummy_int_parameter=0, dummy_categorical_parameter='dummy', dummy_real_parameter=1.0, n_jobs=-1, random_seed=0, **kwargs):
+            super().__init__(parameters={'dummy_int_parameter': dummy_int_parameter,
+                                         'dummy_categorical_parameter': dummy_categorical_parameter,
+                                         'dummy_real_parameter': dummy_real_parameter,
+                                         **kwargs, 'n_jobs': n_jobs},
+                             component_obj=None, random_seed=random_seed)
+
+    pipeline = BinaryClassificationPipeline([MockEstimator])
+    algo = IterativeAlgorithm(allowed_pipelines=[pipeline, pipeline, pipeline],
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}},
+                              random_seed=0,
+                              _frozen_pipeline_parameters={
+                                  "Mock Classifier": {
+                                      'dummy_int_parameter': 6,
+                                      'dummy_categorical_parameter': "random",
+                                      'dummy_real_parameter': 0.1
+                                  }})
 
     next_batch = algo.next_batch()
-    if isinstance(parameters, (Real, Integer)):
-        parameter = parameters.rvs(random_state=0)[0]
-    else:
-        parameter = parameters.rvs(random_state=0)
     assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
-    assert all([p.parameters['Mock Classifier'] == {"dummy_parameter": parameter, "n_jobs": -1} for p in next_batch])
+    assert all([p.parameters['Mock Classifier'] == {
+        'dummy_int_parameter': 6,
+        'dummy_categorical_parameter': "random",
+        'dummy_real_parameter': 0.1,
+        "n_jobs": -1
+    } for p in next_batch])
 
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -335,13 +343,12 @@ def test_iterative_algorithm_pipeline_params_skopt(parameters, dummy_binary_pipe
     # make sure that future batches remain in the hyperparam range
     for i in range(1, 5):
         next_batch = algo.next_batch()
-        for p in next_batch:
-            if isinstance(parameters, Categorical):
-                assert p.parameters['Mock Classifier']['dummy_parameter'] in ["random", "dummy", "test"]
-            elif isinstance(parameters, Real):
-                assert 0 < p.parameters['Mock Classifier']['dummy_parameter'] <= 1
-            else:
-                assert 1 <= p.parameters['Mock Classifier']['dummy_parameter'] <= 10
+        assert all([p.parameters['Mock Classifier'] == {
+            'dummy_int_parameter': 6,
+            'dummy_categorical_parameter': "random",
+            'dummy_real_parameter': 0.1,
+            "n_jobs": -1
+        } for p in next_batch])
 
 
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
@@ -355,7 +362,7 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
 
 
 def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline_classes, logistic_regression_binary_pipeline_class):
-    allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class]
+    allowed_pipelines = [dummy_binary_pipeline_classes()[0], logistic_regression_binary_pipeline_class({})]
     algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
 
     # initial batch contains one of each pipeline, with default parameters

@@ -69,7 +69,6 @@ Exceptions
     MethodPropertyNotFoundError
     PipelineNotFoundError
     ObjectiveNotFoundError
-    IllFormattedClassNameError
     MissingComponentError
     ComponentNotYetFittedError
     PipelineNotYetFittedError

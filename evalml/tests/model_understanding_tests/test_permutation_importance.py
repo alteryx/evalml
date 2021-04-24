@@ -25,6 +25,7 @@ class DoubleColumns(Transformer):
     that in the future.
     """
     name = "DoubleColumns"
+    hyperparameter_ranges = {}
 
     def __init__(self, drop_old_columns=True, random_seed=0):
         self._provenance = {}
@@ -160,7 +161,7 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
 
     mock_supports_fast_importance.return_value = True
     parameters['Random Forest Classifier'] = {'n_jobs': 1}
-    pipeline = pipeline_class(parameters=parameters)
+    pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
                                                    random_seed=random_seed)
@@ -172,6 +173,9 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
 
 class PipelineWithDimReduction(BinaryClassificationPipeline):
     component_graph = [PCA, 'Logistic Regression Classifier']
+
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
 class EnsembleDag(BinaryClassificationPipeline):
@@ -187,20 +191,33 @@ class EnsembleDag(BinaryClassificationPipeline):
         'Ensembler': ['Logistic Regression Classifier', 'Estimator_1', 'Estimator_2']
     }
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class PipelineWithDFS(BinaryClassificationPipeline):
     component_graph = [DFSTransformer, 'Logistic Regression Classifier']
+
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
 class PipelineWithCustomComponent(BinaryClassificationPipeline):
     component_graph = [DoubleColumns, 'Logistic Regression Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class StackedEnsemblePipeline(BinaryClassificationPipeline):
     component_graph = ['Stacked Ensemble Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
-pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS,
+
+pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction,
+                                                             PipelineWithDFS,
                                                              PipelineWithCustomComponent,
                                                              EnsembleDag, StackedEnsemblePipeline]
 

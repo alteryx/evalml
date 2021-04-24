@@ -70,7 +70,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
         X, y = self.X_y_binary
         pipelines = [TestPipelineWithFitError({})]
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
-                              max_iterations=2, allowed_pipelines=[TestPipelineWithFitError])
+                              max_iterations=2, allowed_pipelines=pipelines)
         automl.train_pipelines(pipelines)
         assert "Train error for PipelineWithError: Yikes" in self._caplog.text
 
@@ -80,7 +80,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
         X, y = self.X_y_binary
         pipelines = [TestPipelineWithScoreError({})]
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
-                              max_iterations=2, allowed_pipelines=[TestPipelineWithScoreError])
+                              max_iterations=2, allowed_pipelines=pipelines)
         automl.score_pipelines(pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"])
         assert "Score error for PipelineWithError" in self._caplog.text
 
@@ -88,7 +88,7 @@ class TestAutoMLSearchDask(unittest.TestCase):
         """ Make sure the AutoMLSearch quits when error_callback is defined and does no further work. """
         self._caplog.clear()
         X, y = self.X_y_binary
-        pipelines = [TestPipelineFast, TestPipelineWithFitError, TestPipelineSlow]
+        pipelines = [TestPipelineFast({}), TestPipelineWithFitError({}), TestPipelineSlow({})]
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", engine=self.parallel_engine,
                               max_iterations=4, allowed_pipelines=pipelines, error_callback=raise_error_callback,
                               optimize_thresholds=False)
