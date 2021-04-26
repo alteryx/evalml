@@ -501,22 +501,13 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def _is_feature_categorical(feature, X):
-    """Determine whether the feature the user passed in to partial dependence is categorical."""
+def _is_feature_of_type(feature, X, ltype):
+    """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
     if isinstance(feature, int):
-        is_categorical = X[X.to_dataframe().columns[feature]].logical_type == ww.logical_types.Categorical
+        is_type = X[X.to_dataframe().columns[feature]].logical_type == ltype
     else:
-        is_categorical = X[feature].logical_type == ww.logical_types.Categorical
-    return is_categorical
-
-
-def _is_feature_datetime(feature, X):
-    """Determine whether the feature the user passed in to partial dependence is datetime."""
-    if isinstance(feature, int):
-        is_datetime = X[X.to_dataframe().columns[feature]].logical_type == ww.logical_types.Datetime
-    else:
-        is_datetime = X[feature].logical_type == ww.logical_types.Datetime
-    return is_datetime
+        is_type = X[feature].logical_type == ltype
+    return is_type
 
 
 def _put_categorical_feature_first(features, first_feature_categorical):
@@ -623,8 +614,10 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     if X_cats.shape[1] != 0:
         max_num_cats = max(X_cats.describe().loc["nunique"])
         grid_resolution = max([max_num_cats + 1, grid_resolution])
+
     X_dt = X.select("datetime")
-    if X_dt.shape[1] != 0:
+    is_datetime = _is_feature_of_type(features, X, ww.logical_types.Datetime) if not isinstance(features, (list, tuple)) else False
+    if X_dt.shape[1] != 0 and is_datetime:
         max_num_dt = max(X_dt.describe().loc["nunique"])
         grid_resolution = max([max_num_dt + 1, grid_resolution])
 
@@ -634,8 +627,8 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
-        is_categorical = [_is_feature_categorical(f, X) for f in features]
-        is_datetime = [_is_feature_datetime(f, X) for f in features]
+        is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
+        is_datetime = [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
         feature_names = _get_feature_names_from_str_or_col_index(X, features)
         if any(is_datetime):
             raise ValueError('Two-way partial dependence is not supported for datetime columns.')
@@ -747,12 +740,12 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
     X = infer_feature_types(X)
     if isinstance(features, (list, tuple)):
         mode = "two-way"
-        is_categorical = [_is_feature_categorical(f, X) for f in features]
+        is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
     elif isinstance(features, (int, str)):
         mode = "one-way"
-        is_categorical = _is_feature_categorical(features, X)
+        is_categorical = _is_feature_of_type(features, X, ww.logical_types.Categorical)
 
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
