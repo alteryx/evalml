@@ -240,7 +240,7 @@ def test_precision_recall_curve_1d_y_pred_proba(make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
 
-    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba)
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba, 1)
 
     precision = precision_recall_curve_data.get('precision')
     recall = precision_recall_curve_data.get('recall')
