@@ -7,7 +7,7 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
     * Fixes
-        * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`21801
+        * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
             * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
     * Documentation Changes
