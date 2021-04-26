@@ -37,7 +37,7 @@ class BaseSampler(Transformer):
         if y is None:
             raise ValueError("y cannot be none")
         y = infer_feature_types(y)
-        return X, y, X, y
+        return X, y
 
     def transform(self, X, y=None):
         """No transformation needs to be done here.
@@ -103,7 +103,7 @@ class BaseOverSampler(BaseSampler):
             y (ww.DataColumn): Target features
             sampler_class (imblearn.BaseSampler): The sampler we want to initialize
         """
-        _, _, _, y_pd = self._prepare_data(X, y)
+        _, y_pd = self._prepare_data(X, y)
         sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k != 'sampling_ratio'}
         # create the sampling dictionary
         sampling_ratio = self.parameters['sampling_ratio']
@@ -123,6 +123,6 @@ class BaseOverSampler(BaseSampler):
             ww.DataTable, ww.DataColumn: Sampled X and y data
         """
         self.fit(X, y)
-        _, _, X_pd, y_pd = self._prepare_data(X, y)
+        X_pd, y_pd = self._prepare_data(X, y)
         X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
         return infer_feature_types(X_new), infer_feature_types(y_new)
