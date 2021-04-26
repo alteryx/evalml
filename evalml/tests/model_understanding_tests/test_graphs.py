@@ -279,8 +279,8 @@ def test_precision_recall_curve_pos_label_idx_error(make_data_type):
                                 [0.65, 0.35],
                                 [0.2, 0.8]])
     with pytest.raises(NoPositiveLabelException,
-                       match="Predicted probabilities of shape \(4, 2\) don't contain a column at index 9001"):
-        precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba, pos_label_idx=9001)
+                       match="Predicted probabilities of shape \\(4, 2\\) don't contain a column at index 9001"):
+        precision_recall_curve(y_true, y_predict_proba, pos_label_idx=9001)
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
