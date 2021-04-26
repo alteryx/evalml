@@ -10,7 +10,6 @@ from woodwork.logical_types import (
     Integer,
     NaturalLanguage
 )
-from woodwork.table_accessor import _get_invalid_schema_message
 
 from evalml.pipelines.components import PerColumnImputer
 
@@ -194,15 +193,16 @@ def test_transform_drop_all_nan_columns_empty():
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
     y = pd.Series([1, 2, 1])
-    if has_nan:
-        X_df.iloc[len(X_df) - 1, 0] = np.nan
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
+        # Column with Nans to boolean used to fail. Now it doesn't
+        if has_nan and logical_type == Boolean:
+            continue
         try:
             X = X_df.copy()
+            if has_nan:
+                X.iloc[len(X_df) - 1, 0] = np.nan
             X.ww.init(logical_types={0: logical_type})
-            if _get_invalid_schema_message(X, X.ww.schema):
-                continue
         except ww.exceptions.TypeConversionError:
             continue
 
