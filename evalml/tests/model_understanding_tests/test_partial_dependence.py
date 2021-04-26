@@ -520,9 +520,7 @@ def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipel
 
 
 @pytest.mark.parametrize('problem_type', ['binary', 'multiclass', 'regression'])
-def test_partial_dependence_datetime(problem_type,
-                                     X_y_regression, X_y_binary, X_y_multi,
-                                     logistic_regression_binary_pipeline_class):
+def test_partial_dependence_datetime(problem_type, X_y_regression, X_y_binary, X_y_multi):
     if problem_type == 'binary':
         X, y = X_y_binary
         pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
@@ -563,9 +561,7 @@ def test_partial_dependence_datetime(problem_type,
 
 
 @pytest.mark.parametrize('problem_type', ['binary', 'regression'])
-def test_graph_partial_dependence_regression_and_binary_datetime(problem_type,
-                                                                 X_y_regression, X_y_binary,
-                                                                 logistic_regression_binary_pipeline_class):
+def test_graph_partial_dependence_regression_and_binary_datetime(problem_type, X_y_regression, X_y_binary):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     if problem_type == 'binary':
@@ -578,6 +574,24 @@ def test_graph_partial_dependence_regression_and_binary_datetime(problem_type,
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
     X['dt_column'] = pd.to_datetime(pd.Series(pd.date_range('20200101', periods=X.shape[0])), errors='coerce')
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='dt_column', grid_resolution=5)
+    plot_data = fig.to_dict()['data'][0]
+    assert plot_data['type'] == 'scatter'
+    assert plot_data['x'].tolist() == list(pd.date_range('20200101', periods=X.shape[0]))
+
+
+def test_graph_partial_dependence_regression_date_order(X_y_binary):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    dt_series = pd.Series(pd.date_range('20200101', periods=X.shape[0])).sample(frac=1).reset_index(drop=True)
+    X['dt_column'] = pd.to_datetime(dt_series, errors='coerce')
 
     pipeline.fit(X, y)
 
