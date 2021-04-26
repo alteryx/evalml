@@ -169,7 +169,9 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
 
 
 @pytest.mark.parametrize("rows_to_explain, return_data", product([[0], [0, 1, 2, 3, 4]], [True, False]))
-def test_force_plot(rows_to_explain, return_data, X_y_regression):
+def test_force_plot(rows_to_explain, return_data, X_y_regression, has_minimal_dependencies):
+    if has_minimal_dependencies:
+        pytest.skip("Skipping because plotly not installed for minimal dependencies")
     if len(rows_to_explain) == 1:
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
     else:
