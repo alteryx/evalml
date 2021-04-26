@@ -11,6 +11,7 @@ Release Notes
     * Documentation Changes
         * Rename dataset to clarify that its gzipped but not a tarball :pr:`2183`
     * Testing Changes
+        * Use machineFL user token for dependency update bot, and add more reviewers :pr:`2189`
 
 
 .. warning::
