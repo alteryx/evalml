@@ -34,14 +34,16 @@ from evalml.problem_types.problem_types import ProblemTypes
 
 def make_test_pipeline(estimator, base_class):
     """Make an estimator-only pipeline.
-
     This is helps test the exceptions raised in _compute_shap_values without having to use make_pipeline
     (which needs training data to be passed in).
     """
 
     class Pipeline(base_class):
         component_graph = [estimator]
-        name = estimator.name
+        custom_name = estimator.name
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
 
     return Pipeline
 
@@ -62,14 +64,15 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
 def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
-
-    if "xgboost" in pipeline.name.lower():
+    if "xgboost" in pipeline.custom_name.lower():
         pytest.importorskip("xgboost", "Skipping test because xgboost is not installed.")
-    if "catboost" in pipeline.name.lower():
+    if "catboost" in pipeline.custom_name.lower():
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
+    pipeline = pipeline({"pipeline": {"gap": 1, "max_delay": 1}})
+
     with pytest.raises(exception, match=match):
-        _ = _compute_shap_values(pipeline({"pipeline": {"gap": 1, "max_delay": 1}}), pd.DataFrame(np.random.random((2, 16))))
+        _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
 
 
 def test_create_dictionary_exception():
@@ -113,9 +116,11 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         is_binary = False
     else:
         training_data, y = X_y_regression
+    try:
+        pipeline = make_pipeline(training_data, y, estimator, problem_type, parameters={estimator.name: {'n_jobs': 1}})
+    except ValueError:
+        pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
-    pipeline_class = make_pipeline(training_data, y, estimator, problem_type)
-    pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
     shap_values = calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
@@ -143,13 +148,8 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 @patch('evalml.model_understanding.prediction_explanations._algorithms.logger')
 @patch('shap.TreeExplainer')
 def test_compute_shap_values_catches_shap_tree_warnings(mock_tree_explainer, mock_debug, X_y_binary, caplog):
-
     X, y = X_y_binary
-
-    class Pipeline(BinaryClassificationPipeline):
-        component_graph = ["Random Forest Classifier"]
-
-    pipeline = Pipeline({})
+    pipeline = BinaryClassificationPipeline(["Random Forest Classifier"])
 
     def raise_warning_from_shap(estimator, feature_perturbation):
         warnings.warn("Shap raised a warning!")

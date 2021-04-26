@@ -23,26 +23,24 @@ from evalml.problem_types import ProblemTypes
 @pytest.mark.parametrize("components", [["One Hot Encoder"],
                                         ["Delayed Feature Transformer", "One Hot Encoder"]])
 def test_time_series_pipeline_init(pipeline_class, estimator, components):
-
-    class Pipeline(pipeline_class):
-        component_graph = components + [estimator]
-
+    component_graph = components + [estimator]
     if "Delayed Feature Transformer" not in components:
-        pl = Pipeline({'pipeline': {"gap": 3, "max_delay": 5}})
+        pl = pipeline_class(component_graph=component_graph,
+                            parameters={'pipeline': {"gap": 3, "max_delay": 5}})
         assert "Delayed Feature Transformer" not in pl.parameters
         assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5}
     else:
         parameters = {"Delayed Feature Transformer": {"gap": 3, "max_delay": 5},
                       "pipeline": {"gap": 3, "max_delay": 5}}
-        pl = Pipeline(parameters)
+        pl = pipeline_class(component_graph=component_graph, parameters=parameters)
         assert pl.parameters['Delayed Feature Transformer'] == {"gap": 3, "max_delay": 5,
                                                                 "delay_features": True, "delay_target": True}
         assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5}
 
-    assert Pipeline(parameters=pl.parameters) == pl
+    assert pipeline_class(component_graph=component_graph, parameters=pl.parameters) == pl
 
     with pytest.raises(ValueError, match="gap and max_delay parameters cannot be omitted from the parameters dict"):
-        Pipeline({})
+        pipeline_class(component_graph, {})
 
 
 @pytest.mark.parametrize("only_use_y", [True, False])
@@ -69,13 +67,11 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
         train_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
         expected_target = np.arange(1 + gap, 32)
 
-    class Pipeline(pipeline_class):
-        component_graph = ["Delayed Feature Transformer", estimator_name]
-
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
-                                                   "delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features},
-                   "pipeline": {"gap": gap, "max_delay": max_delay}})
+    pl = pipeline_class(component_graph=["Delayed Feature Transformer", estimator_name],
+                        parameters={"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                                                                    "delay_features": include_delayed_features,
+                                                                    "delay_target": include_delayed_features},
+                                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     if only_use_y:
         pl.fit(None, y)
@@ -117,13 +113,11 @@ def test_predict_pad_nans(mock_decode_targets,
 
     X, y = ts_data
 
-    class Pipeline(pipeline_class):
-        component_graph = ["Delayed Feature Transformer", estimator_name]
-
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
-                                                   "delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features},
-                   "pipeline": {"gap": gap, "max_delay": max_delay}})
+    pl = pipeline_class(component_graph=["Delayed Feature Transformer", estimator_name],
+                        parameters={"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                                                                    "delay_features": include_delayed_features,
+                                                                    "delay_target": include_delayed_features},
+                                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     def mock_predict(df, y=None):
         return ww.DataColumn(pd.Series(range(200, 200 + df.shape[0])))
@@ -179,13 +173,11 @@ def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
         expected_target = np.arange(1 + gap, 32)
         target_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
 
-    class Pipeline(pipeline_class):
-        component_graph = ["Delayed Feature Transformer", estimator_name]
-
-    pl = Pipeline({"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
-                                                   "delay_features": include_delayed_features,
-                                                   "delay_target": include_delayed_features},
-                   "pipeline": {"gap": gap, "max_delay": max_delay}})
+    pl = pipeline_class(component_graph=["Delayed Feature Transformer", estimator_name],
+                        parameters={"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                                                                    "delay_features": include_delayed_features,
+                                                                    "delay_target": include_delayed_features},
+                                    "pipeline": {"gap": gap, "max_delay": max_delay}})
 
     def mock_predict(X, y=None):
         return ww.DataColumn(pd.Series(range(200, 200 + X.shape[0])))
@@ -233,11 +225,9 @@ def test_classification_pipeline_encodes_targets(mock_encode, mock_decode,
     mock_encode.return_value = y_series
     mock_decode.return_value = y_encoded
 
-    class MyTsPipeline(pipeline_class):
-        component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
-
-    pl = MyTsPipeline({"Delayed Feature Transformer": {"gap": 0, "max_delay": 1},
-                       "pipeline": {"gap": 0, "max_delay": 1}})
+    pl = pipeline_class(component_graph=['Delayed Feature Transformer', 'Logistic Regression Classifier'],
+                        parameters={"Delayed Feature Transformer": {"gap": 0, "max_delay": 1},
+                                    "pipeline": {"gap": 0, "max_delay": 1}})
 
     # Check fit encodes target
     pl.fit(X, y_encoded)
@@ -279,11 +269,9 @@ def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_mult
     else:
         components = preprocessing + ["Logistic Regression Classifier"]
 
-    class Pipeline(pipeline_class):
-        component_graph = components
-
-    pl = Pipeline({"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False},
-                   components[-1]: {'n_jobs': 1}})
+    pl = pipeline_class(component_graph=components,
+                        parameters={"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False},
+                                    components[-1]: {'n_jobs': 1}})
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
         y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")

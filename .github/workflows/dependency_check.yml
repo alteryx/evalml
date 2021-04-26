@@ -20,7 +20,7 @@ jobs:
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.MACHINEFL_DEPENDENCY_CHECKER_TOKEN }}
           commit-message: Update latest dependencies
           title: Automated Latest Dependency Updates
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
@@ -29,4 +29,4 @@ jobs:
           branch: dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: angela97lin, dsherry, jeremyliweishih
+          reviewers: angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh

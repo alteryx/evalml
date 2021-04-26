@@ -544,16 +544,13 @@ def test_explain_predictions_best_worst_custom_metric(mock_make_table, output_fo
 def test_explain_predictions_time_series(ts_data):
     X, y = ts_data
 
-    class TSPipeline(TimeSeriesRegressionPipeline):
-        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
-        name = "time series pipeline"
+    ts_pipeline = TimeSeriesRegressionPipeline(component_graph=["Delayed Feature Transformer", "Random Forest Regressor"],
+                                               parameters={"pipeline": {"gap": 1, "max_delay": 2},
+                                                           "Random Forest Regressor": {"n_jobs": 1}})
 
-    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2},
-                             "Random Forest Regressor": {"n_jobs": 1}})
+    ts_pipeline.fit(X, y)
 
-    tspipeline.fit(X, y)
-
-    exp = explain_predictions(pipeline=tspipeline, input_features=X, y=y,
+    exp = explain_predictions(pipeline=ts_pipeline, input_features=X, y=y,
                               indices_to_explain=[5, 11], output_format="dict")
 
     # Check that the computed features to be explained aren't NaN.
@@ -561,7 +558,7 @@ def test_explain_predictions_time_series(ts_data):
         assert not np.isnan(np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])).any()
 
     with pytest.raises(ValueError, match="Requested index"):
-        explain_predictions(pipeline=tspipeline, input_features=X, y=y,
+        explain_predictions(pipeline=ts_pipeline, input_features=X, y=y,
                             indices_to_explain=[1, 11], output_format="text")
 
 
@@ -574,15 +571,12 @@ def test_explain_predictions_best_worst_time_series(output_format, pipeline_clas
     if is_binary(pipeline_class.problem_type):
         y = y % 2
 
-    class TSPipeline(pipeline_class):
-        component_graph = ["Delayed Feature Transformer", estimator]
-        name = "time series pipeline"
+    ts_pipeline = pipeline_class(component_graph=["Delayed Feature Transformer", estimator],
+                                 parameters={"pipeline": {"gap": 1, "max_delay": 2}})
 
-    tspipeline = TSPipeline({"pipeline": {"gap": 1, "max_delay": 2}})
+    ts_pipeline.fit(X, y)
 
-    tspipeline.fit(X, y)
-
-    exp = explain_predictions_best_worst(pipeline=tspipeline, input_features=X, y_true=y,
+    exp = explain_predictions_best_worst(pipeline=ts_pipeline, input_features=X, y_true=y,
                                          output_format=output_format)
 
     if output_format == "dict":
@@ -655,16 +649,12 @@ pipeline_test_cases = [(BinaryClassificationPipeline, "Random Forest Classifier"
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_100):
-
     X, y = fraud_100
     y = y.to_series()
 
-    class LinearPipelineBinary(pipeline_class):
-        component_graph = ["Select Columns Transformer", "One Hot Encoder",
-                           "DateTime Featurization Component", estimator]
-
-    pipeline = LinearPipelineBinary({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency"]},
-                                     estimator: {"n_jobs": 1}})
+    pipeline = pipeline_class(component_graph=["Select Columns Transformer", "One Hot Encoder", "DateTime Featurization Component", estimator],
+                              parameters={"Select Columns Transformer": {'columns': ['amount', 'provider', "currency"]},
+                                          estimator: {"n_jobs": 1}})
 
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 
@@ -681,18 +671,14 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
-
     X, y = fraud_100
     y = y.to_series()
     X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
+    component_graph = ["Select Columns Transformer", "One Hot Encoder", "Text Featurization Component", "DateTime Featurization Component", estimator]
 
-    class LinearPipelineText(pipeline_class):
-        component_graph = ["Select Columns Transformer", "One Hot Encoder",
-                           "Text Featurization Component", "DateTime Featurization Component",
-                           estimator]
-
-    pipeline = LinearPipelineText({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency", 'datetime']},
-                                   estimator: {"n_jobs": 1}})
+    pipeline = pipeline_class(component_graph,
+                              parameters={"Select Columns Transformer": {'columns': ['amount', 'provider', "currency", 'datetime']},
+                                          estimator: {"n_jobs": 1}})
 
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 
@@ -710,18 +696,14 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
-
     X, y = fraud_100
     y = y.to_series()
 
-    class LinearPipelineEncodeDatesAsCategory(pipeline_class):
-        component_graph = ["Select Columns Transformer", "DateTime Featurization Component",
-                           "One Hot Encoder", estimator]
-
-    pipeline = LinearPipelineEncodeDatesAsCategory({"Select Columns Transformer": {'columns': ['datetime', 'amount', 'provider', "currency"]},
-                                                    'DateTime Featurization Component': {"encode_as_categories": True},
-                                                    estimator: {"n_jobs": 1}})
-
+    pipeline = pipeline_class(component_graph=["Select Columns Transformer", "DateTime Featurization Component",
+                                               "One Hot Encoder", estimator],
+                              parameters={"Select Columns Transformer": {'columns': ['datetime', 'amount', 'provider', "currency"]},
+                                          'DateTime Featurization Component': {"encode_as_categories": True},
+                                          estimator: {"n_jobs": 1}})
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 
     pipeline.fit(X, y)
@@ -738,26 +720,25 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
-
     X, y = fraud_100
     y = y.to_series()
 
-    class PcaDagPipeline(pipeline_class):
-        component_graph = {
-            'SelectNumeric': ["Select Columns Transformer"],
-            'SelectCategorical': ["Select Columns Transformer"],
-            'SelectDate': ["Select Columns Transformer"],
-            'OHE': ['One Hot Encoder', 'SelectCategorical'],
-            'DT': ['DateTime Featurization Component', "SelectDate"],
-            'PCA': ['PCA Transformer', 'SelectNumeric'],
-            'Estimator': [estimator, 'PCA', 'DT', 'OHE'],
-        }
-
-    pipeline = PcaDagPipeline({'SelectNumeric': {'columns': ['card_id', 'store_id', 'amount', 'lat', 'lng']},
-                               'SelectCategorical': {'columns': ['currency', 'provider']},
-                               'SelectDate': {'columns': ['datetime']},
-                               'PCA': {"n_components": 2},
-                               'Estimator': {"n_jobs": 1}})
+    component_graph = {
+        'SelectNumeric': ["Select Columns Transformer"],
+        'SelectCategorical': ["Select Columns Transformer"],
+        'SelectDate': ["Select Columns Transformer"],
+        'OHE': ['One Hot Encoder', 'SelectCategorical'],
+        'DT': ['DateTime Featurization Component', "SelectDate"],
+        'PCA': ['PCA Transformer', 'SelectNumeric'],
+        'Estimator': [estimator, 'PCA', 'DT', 'OHE'],
+    }
+    parameters = {'SelectNumeric': {'columns': ['card_id', 'store_id', 'amount', 'lat', 'lng']},
+                  'SelectCategorical': {'columns': ['currency', 'provider']},
+                  'SelectDate': {'columns': ['datetime']},
+                  'PCA': {"n_components": 2},
+                  'Estimator': {"n_jobs": 1}}
+    pipeline = pipeline_class(component_graph=component_graph,
+                              parameters=parameters)
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 
     pipeline.fit(X, y)
@@ -774,18 +755,16 @@ def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_but_not_those_that_are_dropped(pipeline_class, estimator, fraud_100):
-
     X, y = fraud_100
     y = y.to_series()
 
-    class LinearPipelineDropDates(pipeline_class):
-        component_graph = ["Select Columns Transformer", "One Hot Encoder",
-                           "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
-
-    pipeline = LinearPipelineDropDates({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
+    component_graph = ["Select Columns Transformer", "One Hot Encoder",
+                       "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
+    parameters = {"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
                                                                                    "datetime"]},
-                                        "Drop Columns Transformer": {"columns": list(EXPECTED_DATETIME_FEATURES)},
-                                        estimator: {"n_jobs": 1}})
+                  "Drop Columns Transformer": {"columns": list(EXPECTED_DATETIME_FEATURES)},
+                  estimator: {"n_jobs": 1}}
+    pipeline = pipeline_class(component_graph=component_graph, parameters=parameters)
 
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 
@@ -802,18 +781,15 @@ def test_categories_aggregated_but_not_those_that_are_dropped(pipeline_class, es
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_when_some_are_dropped(pipeline_class, estimator, fraud_100):
-
     X, y = fraud_100
     y = y.to_series()
 
-    class LinearPipelineDropDates(pipeline_class):
-        component_graph = ["Select Columns Transformer", "One Hot Encoder",
-                           "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
-
-    pipeline = LinearPipelineDropDates({"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
+    component_graph = ["Select Columns Transformer", "One Hot Encoder", "DateTime Featurization Component", 'Drop Columns Transformer', estimator]
+    parameters = {"Select Columns Transformer": {'columns': ['amount', 'provider', "currency",
                                                                                    "datetime"]},
-                                        "Drop Columns Transformer": {"columns": ["datetime_month", "datetime_hour"]},
-                                        estimator: {"n_jobs": 1}})
+                  "Drop Columns Transformer": {"columns": ["datetime_month", "datetime_hour"]},
+                  estimator: {"n_jobs": 1}}
+    pipeline = pipeline_class(component_graph=component_graph, parameters=parameters)
 
     y = transform_y_for_problem_type(pipeline.problem_type, y)
 

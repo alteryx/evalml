@@ -9,20 +9,13 @@ from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
-    def __init__(self, parameters, random_seed=0):
-        """Machine learning classification pipeline made out of transformers and a classifier.
-
-        Required Class Variables:
-            component_graph (list): List of components in order. Accepts strings or ComponentBase subclasses in the list
-
-        Arguments:
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary {} implies using all default values for component parameters.
-            random_state (int): Deprecated - use random_seed instead.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
+    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0):
         self._encoder = LabelEncoder()
-        super().__init__(parameters, random_seed=random_seed)
+        super().__init__(component_graph,
+                         custom_name=custom_name,
+                         parameters=parameters,
+                         custom_hyperparameters=custom_hyperparameters,
+                         random_seed=random_seed)
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted

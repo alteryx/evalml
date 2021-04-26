@@ -4,7 +4,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from skopt.space import Real
 
 from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
 
@@ -14,14 +13,8 @@ def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
-        }
-
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(component_graph=self.component_graph, parameters=parameters)
 
         @property
         def feature_importance(self):
