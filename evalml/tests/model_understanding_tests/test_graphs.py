@@ -214,10 +214,16 @@ def test_precision_recall_curve_return_type():
     assert isinstance(precision_recall_curve_data['auc_score'], float)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'li', 'ww'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'pd2d', 'li', 'ww'])
 def test_precision_recall_curve(data_type, make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    if data_type == 'pd2d':
+        data_type = 'pd'
+        y_predict_proba = np.array([[0.1, 0.9],
+                                    [0.4, 0.6],
+                                    [0.35, 0.65],
+                                    [0.8, 0.2]])
     y_true = make_data_type(data_type, y_true)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
 
