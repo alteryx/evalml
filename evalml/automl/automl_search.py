@@ -1,5 +1,4 @@
 import copy
-import inspect
 import sys
 import time
 import traceback
@@ -253,6 +252,7 @@ class AutoMLSearch:
             'pipeline_results': {},
             'search_order': [],
         }
+        self._pipelines_searched = dict()
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
@@ -264,8 +264,8 @@ class AutoMLSearch:
 
         if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
             raise ValueError("Parameter allowed_pipelines must be either None or a list!")
-        if allowed_pipelines is not None and not all(inspect.isclass(p) and issubclass(p, PipelineBase) for p in allowed_pipelines):
-            raise ValueError("Every element of allowed_pipelines must be a subclass of PipelineBase!")
+        if allowed_pipelines is not None and not all(isinstance(p, PipelineBase) for p in allowed_pipelines):
+            raise ValueError("Every element of allowed_pipelines must an instance of PipelineBase!")
         self.allowed_pipelines = allowed_pipelines
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -289,24 +289,30 @@ class AutoMLSearch:
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
         self.search_iteration_plot = None
         self._interrupted = False
+        self._frozen_pipeline_parameters = {}
+
+        parameters = copy.copy(self.pipeline_parameters)
+        if self.problem_configuration:
+            parameters.update({'pipeline': self.problem_configuration})
+            self._frozen_pipeline_parameters.update({'pipeline': self.problem_configuration})
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, custom_hyperparameters=copy.copy(self.pipeline_parameters)) for estimator in allowed_estimators]
-            index_columns = list(self.X_train.select('index').columns)
             drop_columns = self.pipeline_parameters['Drop Columns Transformer']['columns'] if 'Drop Columns Transformer' in self.pipeline_parameters else None
+            index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
-                self.pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
+                self._frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=self._frozen_pipeline_parameters, custom_hyperparameters=parameters) for estimator in allowed_estimators]
         else:
-            for pipeline_class in self.allowed_pipelines:
+            for pipeline in self.allowed_pipelines:
                 if self.pipeline_parameters:
-                    if pipeline_class.custom_hyperparameters:
+                    if pipeline.custom_hyperparameters:
                         for component_name, params in self.pipeline_parameters.items():
-                            pipeline_class.custom_hyperparameters[component_name] = params
+                            pipeline.custom_hyperparameters[component_name] = params
                     else:
-                        pipeline_class.custom_hyperparameters = self.pipeline_parameters
+                        pipeline.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -364,11 +370,6 @@ class AutoMLSearch:
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        if len(self.problem_configuration):
-            pipeline_params = {**{'pipeline': self.problem_configuration}, **self.pipeline_parameters}
-        else:
-            pipeline_params = self.pipeline_parameters
-
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
@@ -378,7 +379,8 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
-            pipeline_params=pipeline_params
+            pipeline_params=parameters,
+            _frozen_pipeline_parameters=self._frozen_pipeline_parameters
         )
 
     def _get_batch_number(self):
@@ -713,7 +715,7 @@ class AutoMLSearch:
         self._results['pipeline_results'][pipeline_id] = {
             "id": pipeline_id,
             "pipeline_name": pipeline.name,
-            "pipeline_class": type(pipeline),
+            "pipeline_class": pipeline.__class__,
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
             "mean_cv_score": cv_score,
@@ -725,6 +727,7 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[self.objective.name],
             "validation_score": cv_scores[0]
         }
+        self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
         if pipeline.model_family == ModelFamily.ENSEMBLE:
             input_pipeline_ids = [self._automl_algorithm._best_pipeline_info[model_family]["id"] for model_family in self._automl_algorithm._best_pipeline_info]
@@ -770,11 +773,11 @@ class AutoMLSearch:
         pipeline_results = self.results['pipeline_results'].get(pipeline_id)
         if pipeline_results is None:
             raise PipelineNotFoundError("Pipeline not found in automl results")
-        pipeline_class = pipeline_results.get('pipeline_class')
+        pipeline = self._pipelines_searched.get(pipeline_id)
         parameters = pipeline_results.get('parameters')
-        if pipeline_class is None or parameters is None:
+        if pipeline is None or parameters is None:
             raise PipelineNotFoundError("Pipeline class or parameters not found in automl results")
-        return pipeline_class(parameters, random_seed=self.random_seed)
+        return pipeline.new(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline

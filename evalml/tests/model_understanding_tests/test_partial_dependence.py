@@ -2,11 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from skopt.space import Real
 
 from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
-from evalml.model_family import ModelFamily
 from evalml.model_understanding import (
     graph_partial_dependence,
     partial_dependence
@@ -25,14 +23,8 @@ def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
-        }
-
-        def __init__(self, parameters):
-            super().__init__(parameters=parameters)
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters)
 
         @property
         def feature_importance(self):
@@ -121,10 +113,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
 def test_partial_dependence_baseline():
     X = pd.DataFrame([[1, 0], [0, 1]])
     y = pd.Series([0, 1])
-
-    class BaselineTestPipeline(BinaryClassificationPipeline):
-        component_graph = ["Baseline Classifier"]
-    pipeline = BaselineTestPipeline({})
+    pipeline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"], parameters={})
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Partial dependence plots are not supported for Baseline pipelines"):
         partial_dependence(pipeline, X, features=0, grid_resolution=20)
@@ -137,17 +126,14 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi, has_mi
         if problem_type == ProblemTypes.BINARY:
             X, y = X_y_binary
             y_small = ['a', 'b', 'a']
-
-            class CatBoostTestPipeline(BinaryClassificationPipeline):
-                component_graph = ["CatBoost Classifier"]
+            pipeline_class = BinaryClassificationPipeline
         else:
             X, y = X_y_multi
             y_small = ['a', 'b', 'c']
+            pipeline_class = MulticlassClassificationPipeline
 
-            class CatBoostTestPipeline(MulticlassClassificationPipeline):
-                component_graph = ["CatBoost Classifier"]
-
-        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
+        pipeline = pipeline_class(component_graph=["CatBoost Classifier"],
+                                  parameters={"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y)
         part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
         check_partial_dependence_dataframe(pipeline, part_dep)
@@ -155,7 +141,8 @@ def test_partial_dependence_catboost(problem_type, X_y_binary, X_y_multi, has_mi
 
         # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
         X = pd.DataFrame({'numeric': [1, 2, 3], 'also numeric': [2, 3, 4], 'string': ['a', 'b', 'c'], 'also string': ['c', 'b', 'a']})
-        pipeline = CatBoostTestPipeline({"CatBoost Classifier": {'thread_count': 1}})
+        pipeline = pipeline_class(component_graph=["CatBoost Classifier"],
+                                  parameters={"CatBoost Classifier": {'thread_count': 1}})
         pipeline.fit(X, y_small)
         part_dep = partial_dependence(pipeline, X, features='string')
         check_partial_dependence_dataframe(pipeline, part_dep, grid_size=3)
@@ -168,24 +155,20 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
     if has_minimal_dependencies:
         pytest.skip("Skipping because XGBoost not installed for minimal dependencies")
     if problem_type == ProblemTypes.REGRESSION:
-        class XGBoostPipeline(RegressionPipeline):
-            component_graph = ['Simple Imputer', 'XGBoost Regressor']
-            model_family = ModelFamily.XGBOOST
+        pipeline = RegressionPipeline(component_graph=['Simple Imputer', 'XGBoost Regressor'],
+                                      parameters={'XGBoost Classifier': {'nthread': 1}})
         X, y = X_y_regression
     elif problem_type == ProblemTypes.BINARY:
-        class XGBoostPipeline(BinaryClassificationPipeline):
-            component_graph = ['Simple Imputer', 'XGBoost Classifier']
-            model_family = ModelFamily.XGBOOST
+        pipeline = BinaryClassificationPipeline(component_graph=['Simple Imputer', 'XGBoost Classifier'],
+                                                parameters={'XGBoost Classifier': {'nthread': 1}})
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
-        class XGBoostPipeline(MulticlassClassificationPipeline):
-            component_graph = ['Simple Imputer', 'XGBoost Classifier']
-            model_family = ModelFamily.XGBOOST
+        pipeline = MulticlassClassificationPipeline(component_graph=['Simple Imputer', 'XGBoost Classifier'],
+                                                    parameters={'XGBoost Classifier': {'nthread': 1}})
         X, y = X_y_multi
 
     X = pd.DataFrame(X)
     X = X.rename(columns={0: '<[0]'})
-    pipeline = XGBoostPipeline({'XGBoost Classifier': {'nthread': 1}})
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features="<[0]", grid_resolution=20)
     check_partial_dependence_dataframe(pipeline, part_dep)
@@ -198,8 +181,7 @@ def test_partial_dependence_xgboost_feature_names(problem_type, has_minimal_depe
 
 def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
     X, y = load_wine()
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
 
     num_classes = y.to_series().nunique()

@@ -375,12 +375,22 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
     class MockFeatureSelectionPipeline(BinaryClassificationPipeline):
         component_graph = ['RF Classifier Select From Model', 'Logistic Regression Classifier']
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
         def fit(self, X, y):
             """Mock fit, noop"""
 
-    allowed_pipelines = [MockFeatureSelectionPipeline]
+    allowed_pipelines = [MockFeatureSelectionPipeline({})]
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2, start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
+                          start_iteration_callback=start_iteration_callback, allowed_pipelines=allowed_pipelines)
     automl.search()
 
     assert start_iteration_callback.call_count == 2
@@ -424,7 +434,7 @@ def test_automl_allowed_pipelines_algorithm(mock_algo_init, dummy_binary_pipelin
     mock_algo_init.side_effect = Exception('mock algo init')
     X, y = X_y_binary
 
-    allowed_pipelines = [dummy_binary_pipeline_class]
+    allowed_pipelines = [dummy_binary_pipeline_class({})]
     with pytest.raises(Exception, match='mock algo init'):
         AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=allowed_pipelines, max_iterations=10)
     assert mock_algo_init.call_count == 1
@@ -632,7 +642,7 @@ def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_cla
     AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
 
     with pytest.raises(ValueError, match="is not compatible with problem_type"):
-        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class])
+        AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_binary_pipeline_class({})])
 
 
 def test_main_objective_problem_type_mismatch(X_y_binary):
@@ -711,7 +721,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
     automl.search()
     assert len(automl.rankings) == 1
     assert len(automl.full_rankings) == 1
@@ -745,7 +755,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     mock_score.return_value = {'Log Loss Binary': 0.5234}
     test_pipeline = dummy_binary_pipeline_class(parameters={})
@@ -765,7 +775,7 @@ def test_add_to_rankings_regression_large(mock_score, dummy_regression_pipeline_
     X = pd.DataFrame({'col_0': [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
 
-    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[dummy_regression_pipeline_class],
+    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[dummy_regression_pipeline_class({})],
                           problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     mock_score.return_value = {automl.objective.name: 0.1234}
@@ -789,7 +799,7 @@ def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
 def test_add_to_rankings_regression(mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
 
-    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[dummy_regression_pipeline_class],
+    automl = AutoMLSearch(X_train=X, y_train=y, allowed_pipelines=[dummy_regression_pipeline_class({})],
                           problem_type='regression', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 0.1234}
 
@@ -805,7 +815,7 @@ def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_c
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 0.1234}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class({})])
     automl.search()
     best_pipeline = automl.best_pipeline
     test_pipeline = dummy_binary_pipeline_class(parameters={})
@@ -823,10 +833,10 @@ def test_add_to_rankings_trained(mock_fit, mock_score, dummy_binary_pipeline_cla
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
     class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
-        name = "Cool Binary Classification Pipeline"
+        custom_name = "Cool Binary Classification Pipeline"
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class, CoolBinaryClassificationPipeline])
+                          allowed_pipelines=[dummy_binary_pipeline_class({}), CoolBinaryClassificationPipeline({})])
     automl.search()
     assert len(automl.rankings) == 1
     assert len(automl.full_rankings) == 1
@@ -883,6 +893,8 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     automl.search()
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
     automl._results['pipeline_results'][0].pop('pipeline_class')
+    automl._pipelines_searched.pop(0)
+
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
@@ -906,6 +918,7 @@ def test_get_pipeline(mock_fit, mock_score, X_y_binary):
         pl = automl.get_pipeline(ranking.id)
         assert pl.parameters == ranking.parameters
         assert pl.name == ranking.pipeline_name
+        assert not pl._is_fitted
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1.0})
@@ -1188,7 +1201,7 @@ def test_pipelines_in_batch_return_nan(mock_rankings, mock_full_rankings, mock_n
                                       make_mock_rankings([0, 0, 0, 0, np.nan]),  # second batch
                                       make_mock_rankings([0, 0, 0, 0, np.nan, np.nan, np.nan])]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class], n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class({})], n_jobs=1)
     with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
         automl.search()
 
@@ -1205,7 +1218,7 @@ def test_pipelines_in_batch_return_none(mock_rankings, mock_full_rankings, mock_
                                       make_mock_rankings([0, 0, 0, 0, None]),  # second batch
                                       make_mock_rankings([0, 0, 0, 0, None, None, None])]  # third batch, should raise error
     mock_next_batch.side_effect = [[dummy_binary_pipeline_class(parameters={}), dummy_binary_pipeline_class(parameters={})] for i in range(3)]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class], n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=3, allowed_pipelines=[dummy_binary_pipeline_class({})], n_jobs=1)
     with pytest.raises(AutoMLSearchException, match="All pipelines in the current AutoML batch produced a score of np.nan on the primary objective"):
         automl.search()
 
@@ -1283,14 +1296,23 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
     class DummyPipeline(pipeline_class):
         problem_type = problem_type_value
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
     class Pipeline1(DummyPipeline):
-        name = "Pipeline1"
+        custom_name = "Pipeline1"
 
     class Pipeline2(DummyPipeline):
-        name = "Pipeline2"
+        custom_name = "Pipeline2"
 
     mock_score_1 = MagicMock(return_value={objective.name: pipeline_scores[0]})
     mock_score_2 = MagicMock(return_value={objective.name: pipeline_scores[1]})
@@ -1299,15 +1321,15 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective(0, 0, 0, 0),
+                              allowed_pipelines=[Pipeline1({}), Pipeline2({})], objective=objective(0, 0, 0, 0),
                               additional_objectives=[], optimize_thresholds=False, n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
+                              allowed_pipelines=[Pipeline1({'pipeline': {'gap': 0, 'max_delay': 0}}), Pipeline2({'pipeline': {'gap': 0, 'max_delay': 0}})], objective=objective,
                               additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1, Pipeline2], objective=objective,
+                              allowed_pipelines=[Pipeline1({}), Pipeline2({})], objective=objective,
                               additional_objectives=[], optimize_thresholds=False, n_jobs=1)
 
     with patch(baseline_pipeline_class + ".score", return_value={objective.name: baseline_score}):
@@ -1360,6 +1382,15 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
         name = "Dummy 1"
         problem_type = problem_type_enum
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
@@ -1385,10 +1416,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
     mock_score_1 = MagicMock(return_value=mock_scores)
     DummyPipeline.score = mock_score_1
-
+    parameters = {}
+    if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
+        parameters = {"pipeline": {"gap": 6, "max_delay": 3}}
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
-                          allowed_pipelines=[DummyPipeline],
+                          allowed_pipelines=[DummyPipeline(parameters)],
                           objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
                           additional_objectives=additional_objectives)
 
@@ -1422,6 +1455,14 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         name = "Dummy 1"
         problem_type = ProblemTypes.BINARY
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     f1 = get_objective("f1")()
 
     if np.isnan(fold_scores[0]):
@@ -1430,7 +1471,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
         answer = f1.calculate_percent_difference(4, 1)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=2,
-                          allowed_pipelines=[DummyPipeline], objective="log loss binary", additional_objectives=["f1"])
+                          allowed_pipelines=[DummyPipeline({})], objective="log loss binary", additional_objectives=["f1"])
 
     automl.search()
     assert len(automl.results['pipeline_results']) == 2, "This tests assumes only one non-baseline pipeline was run!"
@@ -1563,7 +1604,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
 
     caplog.clear()
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL]) + 1
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class({})], ensembling=True)
     automl.search()
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
@@ -1733,7 +1774,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
 
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, custom_hyperparameters) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines, n_jobs=1)
 
     mock_add.side_effect = ValueError("Alternate error that can be thrown")
@@ -1763,12 +1804,12 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_errors(mock_
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', invalid_custom_hyperparameters) for estimator in estimators]
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, invalid_custom_hyperparameters) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     with pytest.raises(ValueError, match="Default parameters for components"):
         automl.search()
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_invalid) for estimator in estimators]
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, larger_invalid) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     with pytest.raises(ValueError, match="Default parameters for components"):
         automl.search()
@@ -1793,13 +1834,13 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline(mock_fit, mo
         }
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass', custom_hyperparameters) for estimator in estimators]
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, custom_hyperparameters) for estimator in estimators]
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines)
     automl.search()
     assert automl.best_pipeline.hyperparameters['Imputer']['numeric_impute_strategy'] == ["mean"]
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', larger_custom) for estimator in estimators]
+    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, larger_custom) for estimator in estimators]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines)
     automl.search()
 
@@ -1821,16 +1862,10 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         def __init__(self, n_jobs=-1, random_seed=0):
             super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_seed=random_seed)
 
-    class Pipeline1(BinaryClassificationPipeline):
-        name = "Pipeline 1"
-        component_graph = [MockEstimatorWithNJobs]
-
-    class Pipeline2(BinaryClassificationPipeline):
-        name = "Pipeline 2"
-        component_graph = [MockEstimatorWithNJobs]
-
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', n_jobs=3, max_batches=2,
-                          allowed_pipelines=[Pipeline1, Pipeline2, dummy_binary_pipeline_class])
+                          allowed_pipelines=[BinaryClassificationPipeline([MockEstimatorWithNJobs], custom_name="Pipeline 1"),
+                                             BinaryClassificationPipeline([MockEstimatorWithNJobs], custom_name="Pipeline 2"),
+                                             dummy_binary_pipeline_class({})])
     automl.search()
     for parameters in automl.full_rankings.parameters:
         if "Mock Classifier with njobs" in parameters:
@@ -1914,13 +1949,20 @@ def test_automl_respects_random_seed(mock_fit, mock_score, X_y_binary, dummy_cla
         num_pipelines_different_seed = 0
         num_pipelines_init = 0
 
-        def __init__(self, parameters, random_seed):
+        def __init__(self, parameters, random_seed=0):
             is_diff_random_seed = not (random_seed == 42)
             self.__class__.num_pipelines_init += 1
             self.__class__.num_pipelines_different_seed += is_diff_random_seed
-            super().__init__(parameters, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=[DummyPipeline],
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+    pipelines = [DummyPipeline({})]
+    DummyPipeline.num_pipelines_different_seed = 0
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", allowed_pipelines=pipelines,
                           random_seed=42, max_iterations=10)
     automl.search()
     assert DummyPipeline.num_pipelines_different_seed == 0 and DummyPipeline.num_pipelines_init
@@ -2207,19 +2249,16 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
 def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_score, mock_fit, X_y_binary):
-
     X, y = X_y_binary
+    # Pass the input of the first imputer to the second imputer
+    component_graph_dict = {"Imputer": ["Imputer"],
+                            "Imputer_1": ["Imputer", "Imputer"],
+                            "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+    pipeline_dict = BinaryClassificationPipeline(component_graph_dict, custom_name="Pipeline from dict")
 
-    class PipelineDict(BinaryClassificationPipeline):
-        # Pass the input of the first imputer to the second imputer
-        component_graph = {"Imputer": ["Imputer"],
-                           "Imputer_1": ["Imputer", "Imputer"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
-
-    class PipeLineLinear(BinaryClassificationPipeline):
-        component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
-
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+    component_graph_linear = ["Imputer", "Imputer", "Random Forest Classifier"]
+    pipeline_linear = BinaryClassificationPipeline(component_graph_linear)
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_dict, pipeline_linear],
                           pipeline_parameters={"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])},
                                                "Imputer_1": {"numeric_impute_strategy": Categorical(["median"])}},
                           max_batches=3)
@@ -2230,15 +2269,15 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_scor
         assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "most_frequent"
         assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] == "median"
 
-    class PipelineDict(BinaryClassificationPipeline):
-        component_graph = {"One Hot Encoder": ["One Hot Encoder"],
-                           "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1"]}
+    component_graph_dict = {"One Hot Encoder": ["One Hot Encoder"],
+                            "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder"],
+                            "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1"]}
+    pipeline_dict = BinaryClassificationPipeline(component_graph_dict, custom_name="Pipeline from dict")
 
-    class PipeLineLinear(BinaryClassificationPipeline):
-        component_graph = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+    component_graph_linear = ["One Hot Encoder", "One Hot Encoder", "Random Forest Classifier"]
+    pipeline_linear = BinaryClassificationPipeline(component_graph_linear)
 
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_linear, pipeline_dict],
                           pipeline_parameters={"One Hot Encoder": {"top_n": Categorical([15])},
                                                "One Hot Encoder_1": {"top_n": Categorical([25])}},
                           max_batches=3)
@@ -2253,24 +2292,23 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(mock_scor
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
 def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(mock_score, mock_fit, X_y_binary):
-
     X, y = X_y_binary
 
-    class PipelineDict(BinaryClassificationPipeline):
-        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
-                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
-                                  "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
-        component_graph = {"Imputer": ["Imputer"],
-                           "Imputer_1": ["Imputer", "Imputer"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                              "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
+                              "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
+    component_graph_dict = {"Imputer": ["Imputer"],
+                            "Imputer_1": ["Imputer", "Imputer"],
+                            "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+    pipeline_dict = BinaryClassificationPipeline(component_graph_dict, custom_name="Pipeline from dict", custom_hyperparameters=custom_hyperparameters)
 
-    class PipeLineLinear(BinaryClassificationPipeline):
-        custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
-                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
-                                  "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
-        component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
+                              "Imputer_1": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                              "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
+    component_graph_linear = ["Imputer", "Imputer", "Random Forest Classifier"]
+    pipeline_linear = BinaryClassificationPipeline(component_graph_linear)
 
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipelineDict, PipeLineLinear],
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_dict, pipeline_linear],
                           max_batches=5)
     automl.search()
     for i, row in automl.full_rankings.iterrows():
@@ -2289,27 +2327,25 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.02})
 def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(mock_score, mock_fit, X_y_binary):
-
     X, y = X_y_binary
 
-    class PipeLineOne(BinaryClassificationPipeline):
-        # Pass the input of the first imputer to the second imputer
-        custom_hyperparameters = {"One Hot Encoder": {"top_n": Categorical([5, 10])}}
+    # Pass the input of the first imputer to the second imputer
+    custom_hyperparameters = {"One Hot Encoder": {"top_n": Categorical([5, 10])}}
 
-        component_graph = {"Imputer": ["Imputer"],
-                           "Imputer_1": ["Imputer", "Imputer"],
-                           "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
-                           "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"]}
+    component_graph = {"Imputer": ["Imputer"],
+                       "Imputer_1": ["Imputer", "Imputer"],
+                       "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
+                       "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"]}
+    pipeline_one = BinaryClassificationPipeline(component_graph, custom_name="Pipe Line One", custom_hyperparameters=custom_hyperparameters)
+    pipeline_two = BinaryClassificationPipeline(["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"],
+                                                custom_name="Pipe Line Two",
+                                                custom_hyperparameters={"One Hot Encoder": {"top_n": Categorical([12, 10])}})
 
-    class PipeLineTwo(BinaryClassificationPipeline):
-        custom_hyperparameters = {"One Hot Encoder": {"top_n": Categorical([12, 10])}}
-        component_graph = ["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"]
+    pipeline_three = BinaryClassificationPipeline(["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"],
+                                                  custom_name="Pipe Line Three",
+                                                  custom_hyperparameters={"Imputer": {"numeric_imputer_strategy": Categorical(["median"])}})
 
-    class PipeLineThree(BinaryClassificationPipeline):
-        custom_hyperparameters = {"Imputer": {"numeric_imputer_strategy": Categorical(["median"])}}
-        component_graph = ["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"]
-
-    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[PipeLineOne, PipeLineTwo, PipeLineThree],
+    automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_one, pipeline_two, pipeline_three],
                           pipeline_parameters={"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent"])}},
                           max_batches=4)
     automl.search()
@@ -2501,37 +2537,20 @@ def test_automl_check_high_variance_logs_warning(mock_fit_binary, X_y_binary, ca
         assert "High coefficient of variation" in out
 
 
-def test_automl_raises_error_with_duplicate_pipeline_names(dummy_binary_pipeline_class, X_y_binary):
+def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
     X, y = X_y_binary
-
-    class MyPipeline1(BinaryClassificationPipeline):
-        custom_name = "Custom Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-    class MyPipeline2(BinaryClassificationPipeline):
-        custom_name = "Custom Pipeline"
-        component_graph = ["Imputer", "Logistic Regression Classifier"]
-
-    class MyPipeline3(BinaryClassificationPipeline):
-        custom_name = "My Pipeline 3"
-        component_graph = ["Logistic Regression Classifier"]
-
-    class MyPipeline4(BinaryClassificationPipeline):
-        custom_name = "My Pipeline 3"
-        component_graph = ["Random Forest Classifier"]
-
-    class OtherPipeline(BinaryClassificationPipeline):
-        custom_name = "Other Pipeline"
-        component_graph = ["Extra Trees Classifier"]
+    pipeline_1 = BinaryClassificationPipeline(component_graph=["Imputer", "Random Forest Classifier"], custom_name="Custom Pipeline")
+    pipeline_2 = BinaryClassificationPipeline(component_graph=["Imputer", "Logistic Regression Classifier"], custom_name="Custom Pipeline")
+    pipeline_3 = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"], custom_name="My Pipeline 3")
+    pipeline_4 = BinaryClassificationPipeline(component_graph=["Random Forest Classifier"], custom_name="My Pipeline 3")
 
     with pytest.raises(ValueError,
                        match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated."):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2, MyPipeline3])
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_1, pipeline_2, pipeline_3])
 
     with pytest.raises(ValueError,
                        match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated."):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[MyPipeline1, MyPipeline2,
-                                                                     MyPipeline3, MyPipeline4, OtherPipeline])
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_1, pipeline_2, pipeline_3, pipeline_4])
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
@@ -2566,16 +2585,10 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    rf_pipeline = BinaryClassificationPipeline(["Random Forest Classifier"], parameters={"Random Forest Classifier": {"n_jobs": 1}})
+    lrc_pipeline = BinaryClassificationPipeline(["Logistic Regression Classifier"], parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
-    class RfPipeline(BinaryClassificationPipeline):
-        component_graph = ["Random Forest Classifier"]
-
-    class LogisticPipeline(BinaryClassificationPipeline):
-        component_graph = ["Logistic Regression Classifier"]
-
-    pipelines = [RfPipeline({"Random Forest Classifier": {"n_jobs": 1}}),
-                 LogisticPipeline({"Logistic Regression Classifier": {"n_jobs": 1}})]
-
+    pipelines = [rf_pipeline, lrc_pipeline]
     fitted_pipelines = automl.train_pipelines(pipelines)
 
     assert all([isinstance(pl, PipelineBase) for pl in fitted_pipelines.values()])
@@ -2586,6 +2599,7 @@ def test_train_batch_returns_trained_pipelines(X_y_binary):
         assert fitted_pipeline.name == original_pipeline.name
         assert fitted_pipeline._is_fitted
         assert fitted_pipeline != original_pipeline
+        assert fitted_pipeline.parameters == original_pipeline.parameters
 
 
 @pytest.mark.parametrize("pipeline_fit_side_effect",
@@ -2696,7 +2710,7 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     def make_pipeline_name(index):
         class DummyPipeline(dummy_binary_pipeline_class):
@@ -2706,6 +2720,7 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
     pipelines = [make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)]
     ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
     ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)],
+                                             custom_name="Templated Pipeline",
                                              problem_type="binary")
     pipelines.append(ensemble)
 
@@ -2739,7 +2754,7 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(X_
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
         automl.train_pipelines([Pipeline2({}), Pipeline1({})])
@@ -2752,7 +2767,7 @@ def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_bi
     X, y = X_y_binary
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1,
-                          allowed_pipelines=[dummy_binary_pipeline_class])
+                          allowed_pipelines=[dummy_binary_pipeline_class({})])
 
     scored_pipelines = automl.score_pipelines([dummy_binary_pipeline_class({})], X, y,
                                               objectives=["Log Loss Binary", F1()])
@@ -2835,9 +2850,8 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
     automl.search()
-    assert automl.pipeline_parameters['Drop Columns Transformer']['columns'] == ['index_col']
     for pipeline in automl.allowed_pipelines:
-        assert pipeline(parameters={}).get_component('Drop Columns Transformer')
+        assert pipeline.get_component('Drop Columns Transformer')
         assert 'Drop Columns Transformer' in pipeline.hyperparameters
         assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
 
@@ -2855,8 +2869,8 @@ def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_
     with pytest.raises(ValueError, match="Parameter allowed_pipelines must be either None or a list!"):
         AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=dummy_binary_pipeline_class)
 
-    with pytest.raises(ValueError, match="Every element of allowed_pipelines must be a subclass of PipelineBase!"):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class({})])
+    with pytest.raises(ValueError, match="Every element of allowed_pipelines must an instance of PipelineBase!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class])
 
-    with pytest.raises(ValueError, match="Every element of allowed_pipelines must be a subclass of PipelineBase!"):
-        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.name, dummy_binary_pipeline_class])
+    with pytest.raises(ValueError, match="Every element of allowed_pipelines must an instance of PipelineBase!"):
+        AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.custom_name, dummy_binary_pipeline_class])
