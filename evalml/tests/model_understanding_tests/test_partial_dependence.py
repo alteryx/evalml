@@ -601,8 +601,8 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     assert plot_data['x'].tolist() == list(pd.date_range('20200101', periods=X.shape[0]))
 
 
-def test_partial_depedence_respect_grid_resolution(X_y_binary):
-    X, y = X_y_binary
+def test_partial_dependence_respect_grid_resolution():
+    X, y = load_fraud(1000)
 
     pl = BinaryClassificationPipeline(component_graph=["DateTime Featurization Component", "One Hot Encoder", "Random Forest Classifier"])
     pl.fit(X, y)
