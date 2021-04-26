@@ -523,24 +523,15 @@ def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipel
 def test_partial_dependence_datetime(problem_type,
                                      X_y_regression, X_y_binary, X_y_multi,
                                      logistic_regression_binary_pipeline_class):
-    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier']
-
-    class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier']
-
-    class LinearRegressionPipeline(RegressionPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor']
-
     if problem_type == 'binary':
         X, y = X_y_binary
-        pipeline = LogisticRegressionBinaryPipeline({})
+        pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
     elif problem_type == 'multiclass':
         X, y = X_y_multi
-        pipeline = LogisticRegressionMulticlassPipeline({})
+        pipeline = MulticlassClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
     else:
         X, y = X_y_regression
-        pipeline = LinearRegressionPipeline({})
+        pipeline = RegressionPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor'])
 
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
@@ -577,18 +568,12 @@ def test_graph_partial_dependence_regression_and_binary_datetime(problem_type,
                                                                  logistic_regression_binary_pipeline_class):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
-    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier']
-
-    class LinearRegressionPipeline(RegressionPipeline):
-        component_graph = ['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor']
-
     if problem_type == 'binary':
         X, y = X_y_binary
-        pipeline = LogisticRegressionBinaryPipeline({})
+        pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
     else:
         X, y = X_y_regression
-        pipeline = LinearRegressionPipeline({})
+        pipeline = RegressionPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor'])
 
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
