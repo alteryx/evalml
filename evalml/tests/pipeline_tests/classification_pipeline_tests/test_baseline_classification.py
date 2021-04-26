@@ -1,9 +1,31 @@
 import numpy as np
 import pandas as pd
+import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.pipelines import BaselineBinaryPipeline, BaselineMulticlassPipeline
+from evalml.pipelines import (
+    BaselineBinaryPipeline,
+    BaselineMulticlassPipeline,
+    ModeBaselineBinaryPipeline,
+    ModeBaselineMulticlassPipeline
+)
+from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state
+
+
+def test_baseline_binary_init(X_y_binary):
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "random"
+        }
+    }
+    clf = BaselineBinaryPipeline(parameters=parameters)
+    assert clf.custom_hyperparameters is None
+    assert clf.name == "Baseline Binary Classification Pipeline"
+
+    clf = ModeBaselineBinaryPipeline({})
+    assert clf.custom_hyperparameters == {"strategy": ["mode"]}
+    assert clf.name == "Mode Baseline Binary Classification Pipeline"
 
 
 def test_baseline_binary_random(X_y_binary):
@@ -72,6 +94,50 @@ def test_baseline_binary_mode():
     assert_frame_equal(expected_predictions_proba, predicted_proba.to_dataframe())
 
     np.testing.assert_allclose(clf.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
+
+
+def test_baseline_multi_init():
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "random"
+        }
+    }
+    clf = BaselineMulticlassPipeline(parameters=parameters)
+    assert clf.custom_hyperparameters is None
+    assert clf.name == "Baseline Multiclass Classification Pipeline"
+
+    clf = ModeBaselineMulticlassPipeline({})
+    assert clf.custom_hyperparameters == {"strategy": ["mode"]}
+    assert clf.name == "Mode Baseline Multiclass Classification Pipeline"
+
+
+@pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_baseline_classification_new_clone(problem_type):
+    if problem_type == ProblemTypes.BINARY:
+        expected_name = "Baseline Binary Classification Pipeline"
+        pipeline_class = BaselineBinaryPipeline
+    else:
+        expected_name = "Baseline Multiclass Classification Pipeline"
+        pipeline_class = BaselineMulticlassPipeline
+    parameters = {
+        "Baseline Classifier": {
+            "strategy": "random"
+        }
+    }
+    clf = pipeline_class(parameters=parameters)
+    cloned_clf = clf.clone()
+    assert cloned_clf == clf
+    assert cloned_clf.name == expected_name
+    assert cloned_clf.parameters == parameters
+
+    new_parameters = {
+        "Baseline Classifier": {
+            "strategy": "mode"
+        }
+    }
+    new_clf = clf.new(parameters=new_parameters)
+    assert new_clf.name == expected_name
+    assert new_clf.parameters == new_parameters
 
 
 def test_baseline_multi_random(X_y_multi):

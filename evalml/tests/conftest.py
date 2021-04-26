@@ -42,11 +42,18 @@ def create_mock_pipeline(estimator, problem_type):
         class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
         return MockBinaryPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.MULTICLASS:
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockMulticlassPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.REGRESSION:
         class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
@@ -110,8 +117,8 @@ def assert_allowed_pipelines_equal_helper():
     def assert_allowed_pipelines_equal_helper(actual_allowed_pipelines, expected_allowed_pipelines):
         for actual, expected in zip(actual_allowed_pipelines, expected_allowed_pipelines):
             for pipeline_subclass in [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline]:
-                if issubclass(expected, pipeline_subclass):
-                    assert issubclass(expected, pipeline_subclass)
+                if isinstance(expected, pipeline_subclass):
+                    assert isinstance(expected, pipeline_subclass)
                     break
             assert actual.parameters == expected.parameters
             assert actual.name == expected.name
@@ -244,9 +251,18 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        custom_name = "Mock Binary Classification Pipeline"
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockBinaryClassificationPipeline
 
 
@@ -257,7 +273,16 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         estimator = MockEstimator
         component_graph = [MockEstimator]
+        custom_name = None
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockMulticlassClassificationPipeline
 
 
@@ -285,6 +310,16 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
 
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor]
+        custom_name = "Mock Regression Pipeline"
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockRegressionPipeline
 
 
@@ -309,6 +344,11 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
 
     class MockTimeSeriesRegressionPipeline(TimeSeriesRegressionPipeline):
         component_graph = [MockTimeSeriesRegressor]
+        custom_name = None
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
     return MockTimeSeriesRegressionPipeline
 
 
@@ -320,6 +360,9 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return MockBinaryClassificationPipeline
 
 
@@ -327,7 +370,14 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
 def logistic_regression_multiclass_pipeline_class():
     class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
         """Logistic Regression Pipeline for binary classification."""
+        custom_name = "Logistic Regression Multiclass Pipeline"
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return LogisticRegressionMulticlassPipeline
 
 
@@ -335,6 +385,17 @@ def logistic_regression_multiclass_pipeline_class():
 def logistic_regression_binary_pipeline_class():
     class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+        custom_name = "Logistic Regression Binary Pipeline"
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
     return LogisticRegressionBinaryPipeline
 
 
@@ -343,6 +404,16 @@ def linear_regression_pipeline_class():
     class LinearRegressionPipeline(RegressionPipeline):
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
+        custom_name = "Linear Regression Pipeline"
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return LinearRegressionPipeline
 
 
@@ -372,6 +443,10 @@ def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
         component_graph = ['Delayed Feature Transformer', 'Random Forest Regressor']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return TSRegressionPipeline
 
 
@@ -380,6 +455,10 @@ def time_series_binary_classification_pipeline_class():
     class TSBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
         """Logistic Regression Pipeline for time series binary classification problems."""
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return TSBinaryPipeline
 
 
@@ -388,14 +467,16 @@ def time_series_multiclass_classification_pipeline_class():
     class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
         """Logistic Regression Pipeline for time series multiclass classification problems."""
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return TSMultiPipeline
 
 
 @pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
-    class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
-    pipeline = DTBinaryClassificationPipeline({})
+    pipeline = BinaryClassificationPipeline(['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier'])
     X, y = X_y_categorical_classification
     pipeline.fit(X, y)
     return pipeline
@@ -404,6 +485,7 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 @pytest.fixture
 def nonlinear_binary_pipeline_class():
     class NonLinearBinaryPipeline(BinaryClassificationPipeline):
+        custom_name = "Non Linear Binary Pipeline"
         component_graph = {
             'Imputer': ['Imputer'],
             'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
@@ -412,6 +494,15 @@ def nonlinear_binary_pipeline_class():
             'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
             'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearBinaryPipeline
 
 
@@ -426,6 +517,15 @@ def nonlinear_multiclass_pipeline_class():
             'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
             'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearMulticlassPipeline
 
 
@@ -439,6 +539,15 @@ def nonlinear_regression_pipeline_class():
             'Elastic Net': ['Elastic Net Regressor', 'OneHot.x'],
             'Linear Regressor': ['Linear Regressor', 'Random Forest', 'Elastic Net']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearRegressionPipeline
 
 

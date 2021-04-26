@@ -91,16 +91,16 @@ class ComponentGraph:
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} implies using all default values for component parameters.
+                               An empty dictionary {} or None implies using all default values for component parameters.
         """
         if self._is_instantiated:
             raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
+        parameters = parameters or {}
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
             except (ValueError, TypeError) as e:

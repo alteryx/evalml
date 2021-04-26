@@ -2,7 +2,7 @@ catboost==0.25.1
 click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.4
-dask==2021.4.0
+dask==2021.4.1
 featuretools==0.23.3
 graphviz==0.16
 imbalanced-learn==0.8.0
@@ -20,7 +20,7 @@ pyzmq==21.0.2
 requirements-parser==0.2.0
 scikit-learn==0.24.1
 scikit-optimize==0.8.1
-scipy==1.6.2
+scipy==1.6.3
 seaborn==0.11.1
 shap==0.39.0
 sktime==0.6.0
