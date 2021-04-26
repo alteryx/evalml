@@ -65,7 +65,7 @@ class DropColumns(ColumnSelector):
     needs_fitting = False
 
     def _modify_columns(self, cols, X, y=None):
-        return X.drop(columns=cols)
+        return X.ww.drop(cols)
 
     def transform(self, X, y=None):
         """Transforms data X by dropping columns.
@@ -87,7 +87,7 @@ class SelectColumns(ColumnSelector):
     needs_fitting = False
 
     def _modify_columns(self, cols, X, y=None):
-        return X[cols]
+        return X.ww[cols]
 
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.

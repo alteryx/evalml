@@ -3,13 +3,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import (
-    Boolean,
-    Categorical,
-    Double,
-    Integer,
-    NaturalLanguage
-)
+from woodwork.logical_types import Boolean, Integer, Categorical, Double
 
 from evalml.pipelines.components import PerColumnImputer
 
@@ -54,7 +48,7 @@ def test_all_strategies():
 
     transformer = PerColumnImputer(impute_strategies=strategies)
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
 
 
 def test_fit_transform():
@@ -79,7 +73,7 @@ def test_fit_transform():
     transformer = PerColumnImputer(impute_strategies=strategies)
     X_fit_transform = transformer.fit_transform(X)
 
-    assert_frame_equal(X_t.to_dataframe(), X_fit_transform.to_dataframe())
+    assert_frame_equal(X_t, X_fit_transform)
 
 
 def test_non_numeric_errors(non_numeric_df):
@@ -118,7 +112,7 @@ def test_non_numeric_valid(non_numeric_df):
                                "D": pd.Series(["a", "b", "a", "a"], dtype="category")})
 
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
 
     # constant with all strings
     strategies = {'D': {"impute_strategy": "constant", "fill_value": 100}}
@@ -134,7 +128,7 @@ def test_non_numeric_valid(non_numeric_df):
                                "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
                                "D": pd.Series(["a", "b", "a", 100], dtype="category")})
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
 
 
 def test_fit_transform_drop_all_nan_columns():
@@ -147,7 +141,7 @@ def test_fit_transform_drop_all_nan_columns():
     transformer = PerColumnImputer(impute_strategies=strategies)
     X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected_arr, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
     assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                                         "some_nan": [np.nan, 1, 0],
                                         "another_col": [0, 1, 2]}))
@@ -165,7 +159,7 @@ def test_transform_drop_all_nan_columns():
     X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
     X_t = transformer.transform(X)
 
-    assert_frame_equal(X_expected_arr, X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
     assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
                                         "some_nan": [np.nan, 1, 0],
                                         "another_col": [0, 1, 2]}))
@@ -175,35 +169,44 @@ def test_transform_drop_all_nan_columns_empty():
     X = pd.DataFrame([[np.nan, np.nan, np.nan]])
     strategies = {'0': {"impute_strategy": "most_frequent"}, }
     transformer = PerColumnImputer(impute_strategies=strategies)
-    assert transformer.fit_transform(X).to_dataframe().empty
+    assert transformer.fit_transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
     strategies = {'0': {"impute_strategy": "most_frequent"}}
     transformer = PerColumnImputer(impute_strategies=strategies)
     transformer.fit(X)
-    assert transformer.transform(X).to_dataframe().empty
+    assert transformer.transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
 
-@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="int64")),
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
+                         ])
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
     y = pd.Series([1, 2, 1])
     if has_nan:
         X_df.iloc[len(X_df) - 1, 0] = np.nan
-    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
+    override_types = [Integer, Double, Categorical, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df.copy()
+            X.ww.init(logical_types={0: logical_type})
+            from woodwork.table_accessor import _get_invalid_schema_message
+            if _get_invalid_schema_message(X, X.ww.schema):
+                continue
+        except ww.exceptions.TypeConversionError:
             continue
 
         imputer = PerColumnImputer()
         imputer.fit(X, y)
-        transformed = imputer.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {0: logical_type}
+        try:
+            transformed = imputer.transform(X, y)
+        except Exception as e:
+            breakpoint()
+            raise e
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {0: logical_type}

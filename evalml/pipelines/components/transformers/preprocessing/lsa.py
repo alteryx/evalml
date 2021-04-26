@@ -6,11 +6,7 @@ from sklearn.pipeline import make_pipeline
 from evalml.pipelines.components.transformers.preprocessing import (
     TextTransformer
 )
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
-)
+from evalml.utils import infer_feature_types
 
 
 class LSA(TextTransformer):
@@ -32,9 +28,9 @@ class LSA(TextTransformer):
     def fit(self, X, y=None):
         X = infer_feature_types(X)
         self._text_columns = self._get_text_columns(X)
+
         if len(self._text_columns) == 0:
             return self
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         corpus = X[self._text_columns].values.flatten()
         # we assume non-str values will have been filtered out prior to calling LSA.fit. this is a safeguard.
         corpus = corpus.astype(str)
@@ -56,18 +52,16 @@ class LSA(TextTransformer):
         if len(self._text_columns) == 0:
             return X_ww
 
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_t = X.copy()
         provenance = {}
         for col in self._text_columns:
-            transformed = self._lsa_pipeline.transform(X[col])
-            X_t['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X.index)
-            X_t['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X.index)
+            transformed = self._lsa_pipeline.transform(X_ww[col])
+            X_ww.ww['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X_ww.index)
+            X_ww.ww['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X_ww.index)
             provenance[col] = ['LSA({})[0]'.format(col), 'LSA({})[1]'.format(col)]
         self._provenance = provenance
 
-        X_t = X_t.drop(columns=self._text_columns)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_t = X_ww.ww.drop(columns=self._text_columns)
+        return X_t
 
     def _get_feature_provenance(self):
         return self._provenance

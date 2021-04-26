@@ -10,11 +10,7 @@ from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    get_importable_subclasses,
-    get_logger
-)
+from evalml.utils import get_importable_subclasses, get_logger
 
 logger = get_logger(__file__)
 
@@ -158,7 +154,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """
         check_is_fitted(self, 'is_fitted_')
 
-        return _convert_woodwork_types_wrapper(self.pipeline.predict(X).to_series()).to_numpy()
+        return self.pipeline.predict(X).to_numpy()
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -169,7 +165,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             np.ndarray: Probability estimates
         """
-        return _convert_woodwork_types_wrapper(self.pipeline.predict_proba(X).to_dataframe()).to_numpy()
+        return self.pipeline.predict_proba(X).to_numpy()
 
 
 class WrappedSKRegressor(BaseEstimator, RegressorMixin):
@@ -210,7 +206,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         Returns:
             np.ndarray: Predicted values
         """
-        return self.pipeline.predict(X).to_series().to_numpy()
+        return self.pipeline.predict(X).to_numpy()
 
 
 def scikit_learn_wrapped_estimator(evalml_obj):

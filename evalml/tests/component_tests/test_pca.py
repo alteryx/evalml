@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Double, Integer
+from woodwork.logical_types import Integer, Double
 
 from evalml.pipelines.components import PCA
 
@@ -24,7 +24,7 @@ def test_pca_numeric(data_type, make_data_type):
                                  [-0.112877, -0.755922]],
                                 columns=[f"component_{i}" for i in range(2)])
     X_t = pca.fit_transform(X)
-    assert_frame_equal(expected_X_t, X_t.to_dataframe())
+    assert_frame_equal(expected_X_t, X_t)
 
 
 def test_pca_array():
@@ -42,7 +42,7 @@ def test_pca_array():
                                 columns=[f"component_{i}" for i in range(2)])
     pca.fit(X)
     X_t = pca.transform(X)
-    assert_frame_equal(expected_X_t, X_t.to_dataframe())
+    assert_frame_equal(expected_X_t, X_t)
 
 
 def test_pca_invalid():
@@ -89,7 +89,7 @@ def test_variance():
                                  [6.828241, -3.867796, 2.597358, -1.740404]],
                                 columns=[f"component_{i}" for i in range(4)])
     X_t_90 = pca.fit_transform(X)
-    assert_frame_equal(expected_X_t, X_t_90.to_dataframe())
+    assert_frame_equal(expected_X_t, X_t_90)
 
     pca = PCA(variance=0.75)
     X_t_75 = pca.fit_transform(X)
@@ -126,9 +126,9 @@ def test_pca_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double]
     for logical_type in override_types:
-        X = ww.DataTable(X_df, logical_types={0: logical_type})
+        X_df.ww.init(logical_types={0: logical_type})
         pca = PCA(n_components=1)
-        pca.fit(X)
-        transformed = pca.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {'component_0': ww.logical_types.Double}
+        pca.fit(X_df)
+        transformed = pca.transform(X_df, y)
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {'component_0': ww.logical_types.Double}

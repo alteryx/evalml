@@ -3,7 +3,6 @@ from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -47,7 +46,6 @@ class SimpleImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         # Convert all bool dtypes to category for fitting
         if (X.dtypes == bool).all():
@@ -68,22 +66,20 @@ class SimpleImputer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (X.dtypes == bool).all():
-            return infer_feature_types(X)
+        if (X_ww.dtypes == bool).all():
+            return X_ww
 
-        X_null_dropped = X.copy()
-        X_null_dropped.drop(self._all_null_cols, axis=1, errors='ignore', inplace=True)
-        X_t = self._component_obj.transform(X)
-        if X_null_dropped.empty:
-            X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-            return infer_feature_types(X_t)
+        X_null_dropped = X_ww.ww.drop(self._all_null_cols)
+        X_t = self._component_obj.transform(X_ww)
 
+        # Need this for test_simple_imputer_multitype_with_one_bool
         X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        X_t.index = X_null_dropped.index
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        if not X_null_dropped.empty:
+            X_t.index = X_null_dropped.index
+
+        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

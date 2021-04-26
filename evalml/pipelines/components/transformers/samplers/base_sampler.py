@@ -4,7 +4,6 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.utils import make_balancing_dictionary
 from evalml.utils import import_or_raise
 from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
     infer_feature_types
 )
 
@@ -40,9 +39,7 @@ class BaseSampler(Transformer):
         if y is None:
             raise ValueError("y cannot be none")
         y = infer_feature_types(y)
-        X_pd = _convert_woodwork_types_wrapper(X.to_dataframe())
-        y_pd = _convert_woodwork_types_wrapper(y.to_series())
-        return X, y, X_pd, y_pd
+        return X, y, X, y
 
     def transform(self, X, y=None):
         """No transformation needs to be done here.

@@ -3,7 +3,7 @@ from abc import abstractmethod
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class Estimator(ComponentBase):
@@ -35,10 +35,8 @@ class Estimator(ComponentBase):
         """Function to convert the input and target data to Pandas data structures."""
         if X is not None:
             X = infer_feature_types(X)
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
         return X, y
 
     def fit(self, X, y=None):
@@ -58,7 +56,6 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
@@ -75,7 +72,6 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")

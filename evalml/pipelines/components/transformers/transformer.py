@@ -4,7 +4,6 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -36,16 +35,14 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
         try:
             X_t = self._component_obj.transform(X, y)
         except AttributeError:
             raise MethodPropertyNotFoundError("Transformer requires a transform method or a component_obj that implements transform")
-        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df)
+        X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
+        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t_df)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -58,13 +55,11 @@ class Transformer(ComponentBase):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X_pd = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         if y is not None:
             y_ww = infer_feature_types(y)
-            y_pd = _convert_woodwork_types_wrapper(y_ww.to_series())
         try:
-            X_t = self._component_obj.fit_transform(X_pd, y_pd)
-            return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+            X_t = self._component_obj.fit_transform(X_ww, y_ww)
+            return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t)
         except AttributeError:
             try:
                 return self.fit(X, y).transform(X, y)

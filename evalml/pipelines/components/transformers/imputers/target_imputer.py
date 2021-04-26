@@ -8,7 +8,6 @@ from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -69,8 +68,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         """
         if y is None:
             return self
-        y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series()).to_frame()
+        y = infer_feature_types(y).to_frame()
 
         # Convert all bool dtypes to category for fitting
         if (y.dtypes == bool).all():
@@ -95,18 +93,17 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         if y is None:
             return X, None
         y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        y_df = y.to_frame()
+        y_df = y_ww.ww.to_frame()
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (y_df.dtypes == bool).all():
-            return X, _retain_custom_types_and_initalize_woodwork(y_ww, y)
+            return X, _retain_custom_types_and_initalize_woodwork(y_ww.ww.logical_type, y)
 
         transformed = self._component_obj.transform(y_df)
         if transformed.shape[1] == 0:
             raise RuntimeError("Transformed data is empty")
-        y_t = pd.Series(transformed[:, 0], index=y.index)
-        return X, _retain_custom_types_and_initalize_woodwork(y_ww, y_t)
+        y_t = pd.Series(transformed[:, 0], index=y_ww.index)
+        return X, _retain_custom_types_and_initalize_woodwork(y_ww.ww.logical_type, y_t)
 
     def fit_transform(self, X, y):
         """Fits on and transforms the input target data.

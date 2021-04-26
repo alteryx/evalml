@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
@@ -66,7 +65,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_regression, lin
 
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 def test_stacked_ensemble_n_jobs_negative_one(X_y_regression, linear_regression_pipeline_class):
@@ -83,7 +82,7 @@ def test_stacked_ensemble_n_jobs_negative_one(X_y_regression, linear_regression_
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor._stacking_estimator_class')
@@ -109,7 +108,7 @@ def test_stacked_ensemble_multilevel(linear_regression_pipeline_class):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 def test_stacked_problem_types():
@@ -125,15 +124,15 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, ww.DataColumn)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert isinstance(y_pred, pd.Series)
+    assert not np.isnan(y_pred).all()
 
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, final_estimator=RandomForestRegressor(), n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, ww.DataColumn)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert isinstance(y_pred, pd.Series)
+    assert not np.isnan(y_pred).all()
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')

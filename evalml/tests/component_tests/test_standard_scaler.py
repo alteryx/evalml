@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import Boolean, Categorical, Double, Integer
+from woodwork.logical_types import Boolean, Integer, Categorical, Double
 
 from evalml.pipelines.components import StandardScaler
 
@@ -14,12 +14,12 @@ def test_standard_scaler_woodwork_custom_overrides_returned_by_components(X_df):
     override_types = [Integer, Double, Categorical, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X_df.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
 
         std_scaler = StandardScaler()
-        std_scaler.fit(X, y)
-        transformed = std_scaler.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {0: Double}
+        std_scaler.fit(X_df, y)
+        transformed = std_scaler.transform(X_df, y)
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {0: Double}

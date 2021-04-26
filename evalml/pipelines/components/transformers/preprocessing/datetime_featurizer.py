@@ -1,9 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
-)
+from evalml.utils import infer_feature_types
 
 
 def _extract_year(col, encode_as_categories=False):
@@ -77,7 +73,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = X.select("datetime").columns
+        self._date_time_col_names = X.ww.select("datetime").columns.tolist()
         return self
 
     def transform(self, X, y=None):
@@ -91,19 +87,19 @@ class DateTimeFeaturizer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
-            return infer_feature_types(X_t)
+            return X_ww
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
-                features, categories = self._function_mappings[feature](X_t[col_name], self.encode_as_categories)
-                X_t[name] = features
+                features, categories = self._function_mappings[feature](X_ww[col_name], self.encode_as_categories)
+                features.name = None
+                X_ww.ww[name] = features
                 if categories:
                     self._categories[name] = categories
-        X_t = X_t.drop(self._date_time_col_names, axis=1)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_t = X_ww.ww.drop(self._date_time_col_names)
+        return X_t
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.

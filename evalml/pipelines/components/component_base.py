@@ -6,7 +6,6 @@ import cloudpickle
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     classproperty,
     get_logger,
     infer_feature_types,
@@ -86,10 +85,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             self
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
         try:
             self._component_obj.fit(X, y)
             return self

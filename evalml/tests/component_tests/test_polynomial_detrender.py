@@ -66,17 +66,18 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
         X = X_input.values
         y = y_input.values
     elif input_type == 'ww':
-        X = ww.DataTable(X_input)
-        y = ww.DataColumn(y_input)
+        X = X_input.copy()
+        X.ww.init()
+        y = ww.init_series(y_input.copy())
 
     output_X, output_y = PolynomialDetrender(degree=degree).fit_transform(X, y)
-    pd.testing.assert_series_equal(expected_answer, output_y.to_series())
+    pd.testing.assert_series_equal(expected_answer, output_y)
 
     # Verify the X is not changed
     if input_type == "np":
         np.testing.assert_equal(X, output_X)
     elif input_type == "ww":
-        pd.testing.assert_frame_equal(X.to_dataframe(), output_X.to_dataframe())
+        pd.testing.assert_frame_equal(X, output_X)
     else:
         pd.testing.assert_frame_equal(X, output_X)
 
@@ -92,7 +93,7 @@ def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
     detrender = PolynomialDetrender(degree=degree)
     output_X, output_y = detrender.fit_transform(X, y)
     output_inverse_X, output_inverse_y = detrender.inverse_transform(output_X, output_y)
-    pd.testing.assert_series_equal(y, output_inverse_y.to_series(), check_dtype=False)
+    pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
     pd.testing.assert_frame_equal(X, output_inverse_X)
 
 

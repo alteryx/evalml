@@ -2,17 +2,12 @@ import string
 
 import featuretools as ft
 import nlp_primitives
-import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
     TextTransformer
 )
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
-)
+from evalml.utils import infer_feature_types
 
 
 class TextFeaturizer(TextTransformer):
@@ -78,7 +73,6 @@ class TextFeaturizer(TextTransformer):
 
         self._lsa.fit(X)
 
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         es = self._make_entity_set(X, self._text_columns)
         self._features = ft.dfs(entityset=es,
                                 target_entity='X',
@@ -112,16 +106,19 @@ class TextFeaturizer(TextTransformer):
         X_ww = infer_feature_types(X)
         if self._features is None or len(self._features) == 0:
             return X_ww
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        es = self._make_entity_set(X, self._text_columns)
+        es = self._make_entity_set(X_ww, self._text_columns)
         X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 
-        X_lsa = self._lsa.transform(X[self._text_columns]).to_dataframe()
-        X_nlp_primitives.set_index(X.index, inplace=True)
-        X_t = pd.concat([X.drop(self._text_columns, axis=1), X_nlp_primitives, X_lsa], axis=1)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_lsa = self._lsa.transform(X_ww[self._text_columns])
+        X_nlp_primitives.set_index(X_ww.index, inplace=True)
+        X_ww = X_ww.ww.drop(self._text_columns)
+        for col in X_nlp_primitives:
+            X_ww.ww[col] = X_nlp_primitives[col]
+        for col in X_lsa:
+            X_ww.ww[col] = X_lsa[col]
+        return X_ww
 
     def _get_feature_provenance(self):
         if not self._text_columns:

@@ -3,7 +3,6 @@ from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer
 )
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -55,7 +54,6 @@ class PerColumnImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self.imputers = dict()
         for column in X.columns:
             strategy_dict = self.impute_strategies.get(column, dict())
@@ -79,14 +77,12 @@ class PerColumnImputer(Transformer):
             ww.DataTable: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_t = X.copy()
         cols_to_drop = []
         for column, imputer in self.imputers.items():
-            transformed = imputer.transform(X[[column]]).to_dataframe()
+            transformed = imputer.transform(X_ww[[column]])
             if transformed.empty:
                 cols_to_drop.append(column)
             else:
-                X_t[column] = transformed[column]
-        X_t = X_t.drop(cols_to_drop, axis=1)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+                X_ww.ww[column] = transformed[column]
+        X_t = X_ww.ww.drop(cols_to_drop)
+        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t)
