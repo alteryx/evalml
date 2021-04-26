@@ -611,13 +611,14 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     # Dynamically set the grid resolution to the maximum number of values
     # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
     X_cats = X.select("categorical")
-    if X_cats.shape[1] != 0:
+    is_categorical = [_is_feature_of_type(features, X, ww.logical_types.Categorical)] if not isinstance(features, (list, tuple)) else [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
+    if X_cats.shape[1] != 0 and any(is_categorical):
         max_num_cats = max(X_cats.describe().loc["nunique"])
         grid_resolution = max([max_num_cats + 1, grid_resolution])
 
     X_dt = X.select("datetime")
-    is_datetime = _is_feature_of_type(features, X, ww.logical_types.Datetime) if not isinstance(features, (list, tuple)) else False
-    if X_dt.shape[1] != 0 and is_datetime:
+    is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)] if not isinstance(features, (list, tuple)) else [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
+    if X_dt.shape[1] != 0 and any(is_datetime):
         max_num_dt = max(X_dt.describe().loc["nunique"])
         grid_resolution = max([max_num_dt + 1, grid_resolution])
 
@@ -627,8 +628,7 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
-        is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
-        is_datetime = [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
+
         feature_names = _get_feature_names_from_str_or_col_index(X, features)
         if any(is_datetime):
             raise ValueError('Two-way partial dependence is not supported for datetime columns.')
