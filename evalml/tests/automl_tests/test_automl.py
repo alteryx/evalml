@@ -2629,28 +2629,6 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
     train_batch_and_check()
 
 
-@patch('evalml.automl.engine.sequential_engine.train_pipeline')
-def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
-    X, y = X_y_binary
-    X = ww.DataTable(X)
-    y = ww.DataColumn(y)
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
-                          train_best_pipeline=False, n_jobs=1)
-
-    train_indices = automl.data_splitter.transform_sample(X, y)
-    X_train = X.iloc[train_indices]
-    y_train = y.iloc[train_indices]
-
-    pipelines = [dummy_binary_pipeline_class({})]
-    mock_train.reset_mock()
-    automl.train_pipelines(pipelines)
-
-    args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
-    pd.testing.assert_frame_equal(X_train.to_dataframe(), kwargs['X'].to_dataframe())
-    pd.testing.assert_series_equal(y_train.to_series(), kwargs['y'].to_series())
-
-
 no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
 
 

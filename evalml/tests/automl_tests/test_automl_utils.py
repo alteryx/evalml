@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
@@ -13,8 +13,6 @@ from evalml.automl.utils import (
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
-    BalancedClassificationDataCVSplit,
-    BalancedClassificationDataTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -55,13 +53,9 @@ def test_make_data_splitter_default(problem_type, large_data):
 
     data_splitter = make_data_splitter(X, y, problem_type, problem_configuration=problem_configuration)
     if large_data and problem_type in [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        if problem_type == ProblemTypes.REGRESSION:
-            assert isinstance(data_splitter, TrainingValidationSplit)
-            assert data_splitter.stratify is None
-            assert data_splitter.random_seed == 0
-        else:
-            assert isinstance(data_splitter, BalancedClassificationDataTVSplit)
-            assert data_splitter.random_seed == 0
+        assert isinstance(data_splitter, TrainingValidationSplit)
+        assert data_splitter.stratify is None
+        assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
         return
@@ -73,10 +67,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        assert isinstance(data_splitter, BalancedClassificationDataCVSplit)
+        assert isinstance(data_splitter, StratifiedKFold)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
-        assert data_splitter.random_seed == 0
+        assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                         ProblemTypes.TIME_SERIES_BINARY,
@@ -88,8 +82,8 @@ def test_make_data_splitter_default(problem_type, large_data):
 
 
 @pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
-                                                                  (ProblemTypes.BINARY, BalancedClassificationDataCVSplit),
-                                                                  (ProblemTypes.MULTICLASS, BalancedClassificationDataCVSplit)])
+                                                                  (ProblemTypes.BINARY, StratifiedKFold),
+                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
 def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
@@ -101,10 +95,7 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
-    if str(problem_type) == 'regression':
-        assert data_splitter.random_state == random_seed
-    else:
-        assert data_splitter.random_seed == random_seed
+    assert data_splitter.random_state == random_seed
 
 
 def test_make_data_splitter_parameters_time_series():
