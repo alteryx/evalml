@@ -3,7 +3,14 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Boolean, Integer, Categorical, Double
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
+from woodwork.table_accessor import _get_invalid_schema_message
 
 from evalml.pipelines.components import PerColumnImputer
 
@@ -183,19 +190,17 @@ def test_transform_drop_all_nan_columns_empty():
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
                                   pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))
-                         ])
+                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
 @pytest.mark.parametrize("has_nan", [True, False])
 def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan):
     y = pd.Series([1, 2, 1])
     if has_nan:
         X_df.iloc[len(X_df) - 1, 0] = np.nan
-    override_types = [Integer, Double, Categorical, Boolean]
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-            from woodwork.table_accessor import _get_invalid_schema_message
             if _get_invalid_schema_message(X, X.ww.schema):
                 continue
         except ww.exceptions.TypeConversionError:
@@ -203,10 +208,6 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(X_d
 
         imputer = PerColumnImputer()
         imputer.fit(X, y)
-        try:
-            transformed = imputer.transform(X, y)
-        except Exception as e:
-            breakpoint()
-            raise e
+        transformed = imputer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         assert transformed.ww.logical_types == {0: logical_type}

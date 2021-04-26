@@ -3,7 +3,14 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 from woodwork.exceptions import TypeConversionError
-from woodwork.logical_types import Boolean, Integer, NaturalLanguage, Categorical, Datetime, Double
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
@@ -541,11 +548,10 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
             assert transformed.ww.logical_types == {0: logical_type}
 
 
-
 def test_ohe_output_bools():
     X = pd.DataFrame({"bool": [bool(i % 2) for i in range(100)],
-                                   "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
-                                   "integers": [i for i in range(100)]})
+                      "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
+                      "integers": [i for i in range(100)]})
     X.ww.init()
     y = pd.Series([i % 2 for i in range(100)])
     y.ww.init()

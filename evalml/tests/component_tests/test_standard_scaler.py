@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import Boolean, Integer, Categorical, Double
+from woodwork.logical_types import Boolean, Categorical, Double, Integer
 
 from evalml.pipelines.components import StandardScaler
 

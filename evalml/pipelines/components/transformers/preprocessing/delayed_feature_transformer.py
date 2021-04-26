@@ -4,9 +4,7 @@ from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
-    infer_feature_types
-)
+from evalml.utils import infer_feature_types
 
 
 class DelayedFeatureTransformer(Transformer):

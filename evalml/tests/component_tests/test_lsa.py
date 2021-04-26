@@ -3,7 +3,13 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Boolean, Integer, NaturalLanguage, Categorical, Double
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import LSA
 from evalml.utils import infer_feature_types

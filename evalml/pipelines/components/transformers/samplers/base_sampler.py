@@ -3,9 +3,7 @@ import copy
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.utils import make_balancing_dictionary
 from evalml.utils import import_or_raise
-from evalml.utils.woodwork_utils import (
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSampler(Transformer):

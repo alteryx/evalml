@@ -3,7 +3,13 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Integer, Categorical, Datetime, Double, NaturalLanguage
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Integer,
+    NaturalLanguage
+)
 
 from evalml.pipelines.components import DateTimeFeaturizer
 

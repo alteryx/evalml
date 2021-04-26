@@ -3,7 +3,14 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from woodwork.logical_types import Boolean, Integer, Categorical, Double
+from woodwork.logical_types import (
+    Boolean,
+    Categorical,
+    Double,
+    Integer,
+    NaturalLanguage
+)
+from woodwork.table_accessor import _get_invalid_schema_message
 
 from evalml.pipelines.components import SimpleImputer
 
@@ -279,6 +286,19 @@ def test_simple_imputer_with_none():
     assert_frame_equal(expected, transformed, check_dtype=False)
 
 
+def test_simple_imputer_supports_natural_language():
+    X = pd.DataFrame({"cat with None": ["a", "b", "a", None],
+                      "natural language col": ["free-form text", "will", "be imputed", None]})
+    y = pd.Series([0, 0, 1, 0, 1])
+    X.ww.init(logical_types={"natural language col": "NaturalLanguage"})
+    imputer = SimpleImputer(impute_strategy="constant", fill_value="placeholder")
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    expected = pd.DataFrame({"cat with None": pd.Series(["a", "b", "a", "placeholder"], dtype='category'),
+                             "natural language col": pd.Series(["free-form text", "will", "be imputed", "placeholder"], dtype='string')})
+    assert_frame_equal(expected, transformed, check_dtype=False)
+
+
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
@@ -290,19 +310,18 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(X_df, h
     y = pd.Series([1, 2, 1])
     if has_nan:
         X_df.iloc[len(X_df) - 1, 0] = np.nan
-    override_types = [Integer, Double, Categorical, Boolean]
+    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-            from woodwork.table_accessor import _get_invalid_schema_message
             if _get_invalid_schema_message(X, X.ww.schema):
                 continue
         except ww.exceptions.TypeConversionError:
             continue
 
         impute_strategy_to_use = impute_strategy
-        if logical_type == Categorical:
+        if logical_type in [NaturalLanguage, Categorical]:
             impute_strategy_to_use = "most_frequent"
 
         imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
