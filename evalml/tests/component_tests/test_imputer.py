@@ -385,6 +385,9 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan,
         X_df.iloc[len(X_df) - 1, 0] = np.nan
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
+        # Converting a column with NaNs to Boolean will impute NaNs.
+        if has_nan and logical_type == Boolean:
+            continue
         try:
             X = X_df
             X.ww.init(logical_types={0: logical_type})
@@ -397,7 +400,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan,
         assert isinstance(transformed, pd.DataFrame)
         if numeric_impute_strategy == "most_frequent":
             assert transformed.ww.logical_types == {0: logical_type}
-        elif logical_type in [Categorical, NaturalLanguage, Boolean] or not has_nan:
+        elif logical_type in [Categorical, NaturalLanguage] or not has_nan:
             assert transformed.ww.logical_types == {0: logical_type}
         else:
             assert transformed.ww.logical_types == {0: Double}

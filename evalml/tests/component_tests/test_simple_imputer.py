@@ -312,6 +312,9 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(X_df, h
         X_df.iloc[len(X_df) - 1, 0] = np.nan
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
+        # Converting a column with NaNs to Boolean will impute NaNs.
+        if has_nan and logical_type == Boolean:
+            continue
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
@@ -328,8 +331,7 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(X_df, h
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        # Issue is that converting a nullable type to bool imputes all the categories
-        if impute_strategy_to_use == "most_frequent" or not has_nan or logical_type == Boolean:
+        if impute_strategy_to_use == "most_frequent" or not has_nan:
             assert transformed.ww.logical_types == {0: logical_type}
         else:
             assert transformed.ww.logical_types == {0: Double}

@@ -440,11 +440,16 @@ def test_component_parameters_getter(test_classes):
 def test_component_parameters_init(logistic_regression_binary_pipeline_class,
                                    linear_regression_pipeline_class):
     for component_class in all_components():
+        if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
+            continue
         print('Testing component {}'.format(component_class.name))
         try:
             component = component_class()
         except EnsembleMissingPipelinesError:
-            continue
+            if component_class == StackedEnsembleClassifier:
+                component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
+            elif component_class == StackedEnsembleRegressor:
+                component = component_class(input_pipelines=[linear_regression_pipeline_class(parameters={})])
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -875,7 +880,7 @@ def test_estimators_accept_all_kwargs(estimator_class,
                                       logistic_regression_binary_pipeline_class,
                                       linear_regression_pipeline_class):
     if estimator_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
+        pytest.skip("Skipping stacked ensemble tests because pipelines  yet.")
     try:
         estimator = estimator_class()
     except EnsembleMissingPipelinesError:
