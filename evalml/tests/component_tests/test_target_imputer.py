@@ -176,13 +176,16 @@ def test_target_imputer_woodwork_custom_overrides_returned_by_components(y_pd, h
         y_to_use[len(y_pd) - 1] = np.nan
     override_types = [Integer, Double, Categorical, Boolean]
     for logical_type in override_types:
+        # Converting a column with NaNs to Boolean will impute NaNs.
+        if has_nan and logical_type == Boolean:
+            continue
         try:
             y = ww.init_series(y_to_use.copy(), logical_type=logical_type)
         except (ww.exceptions.TypeConversionError, ValueError):
             continue
 
         impute_strategy_to_use = impute_strategy
-        if logical_type in [Categorical, NaturalLanguage, Boolean]:
+        if logical_type in [Categorical, NaturalLanguage]:
             impute_strategy_to_use = "most_frequent"
 
         imputer = TargetImputer(impute_strategy=impute_strategy_to_use)
