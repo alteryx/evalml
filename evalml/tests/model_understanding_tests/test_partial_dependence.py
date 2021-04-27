@@ -606,6 +606,11 @@ def test_partial_dependence_respect_grid_resolution():
 
     pl = BinaryClassificationPipeline(component_graph=["DateTime Featurization Component", "One Hot Encoder", "Random Forest Classifier"])
     pl.fit(X, y)
-    dep = partial_dependence(pl, X, features=0, grid_resolution=20)
+    dep = partial_dependence(pl, X, features="amount", grid_resolution=20)
 
     assert dep.shape[0] == 20
+    assert dep.shape[0] != max(X.select('categorical').describe().loc["nunique"]) + 1
+
+    dep = partial_dependence(pl, X, features="provider", grid_resolution=20)
+    assert dep.shape[0] == X['provider'].to_series().nunique()
+    assert dep.shape[0] != max(X.select('categorical').describe().loc["nunique"]) + 1
