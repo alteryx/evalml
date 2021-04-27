@@ -232,7 +232,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         """
 
-    @profile
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 

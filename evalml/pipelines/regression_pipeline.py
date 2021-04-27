@@ -8,7 +8,6 @@ class RegressionPipeline(PipelineBase):
     """Pipeline subclass for all regression pipelines."""
     problem_type = ProblemTypes.REGRESSION
 
-    @profile
     def fit(self, X, y):
         """Build a regression model.
 
