@@ -607,20 +607,15 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
             percentile passed by the user. By default 95%.
     """
 
-    X = infer_feature_types(X)
     # Dynamically set the grid resolution to the maximum number of values
     # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
-    X_cats = X.select("categorical")
-    is_categorical = [_is_feature_of_type(features, X, ww.logical_types.Categorical)] if not isinstance(features, (list, tuple)) else [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
-    if X_cats.shape[1] != 0 and any(is_categorical):
-        max_num_cats = max(X_cats.describe().loc["nunique"])
-        grid_resolution = max([max_num_cats + 1, grid_resolution])
-
-    X_dt = X.select("datetime")
-    is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)] if not isinstance(features, (list, tuple)) else [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
-    if X_dt.shape[1] != 0 and any(is_datetime):
-        max_num_dt = max(X_dt.describe().loc["nunique"])
-        grid_resolution = max([max_num_dt + 1, grid_resolution])
+    X = infer_feature_types(X)
+    if isinstance(features, (list, tuple)):
+        is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
+        is_datetime = [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
+    else:
+        is_categorical = [_is_feature_of_type(features, X, ww.logical_types.Categorical)]
+        is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
 
     if isinstance(features, (list, tuple)):
         if len(features) != 2:
@@ -628,7 +623,21 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
+        X_features = X.iloc[:, list(features)] if isinstance(features[0], int) else X[list(features)]
+    else:
+        X_features = ww.DataTable(X.to_dataframe().iloc[:, features].to_frame()) if isinstance(features, int) else ww.DataTable(X.to_dataframe()[features].to_frame())
 
+    X_cats = X_features.select("categorical")
+    if any(is_categorical):
+        max_num_cats = max(X_cats.describe().loc["nunique"])
+        grid_resolution = max([max_num_cats + 1, grid_resolution])
+
+    X_dt = X_features.select("datetime")
+    if any(is_datetime):
+        max_num_dt = max(X_dt.describe().loc["nunique"])
+        grid_resolution = max([max_num_dt + 1, grid_resolution])
+
+    if isinstance(features, (list, tuple)):
         feature_names = _get_feature_names_from_str_or_col_index(X, features)
         if any(is_datetime):
             raise ValueError('Two-way partial dependence is not supported for datetime columns.')
