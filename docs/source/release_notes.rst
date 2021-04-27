@@ -7,8 +7,8 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
     * Fixes
     * Changes
-            * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
-            * Removed all old datasplitters from EvalML :pr:`2193`
+        * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
     * Documentation Changes
         * Rename dataset to clarify that its gzipped but not a tarball :pr:`2183`
     * Testing Changes
@@ -19,6 +19,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
 
 **v0.23.0 Apr. 20, 2021**
     * Enhancements
