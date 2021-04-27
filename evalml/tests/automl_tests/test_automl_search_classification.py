@@ -721,7 +721,7 @@ def test_tuning_threshold_objective(mock_predict, mock_fit, mock_score, mock_enc
 @pytest.mark.parametrize("sampling_ratio", [0.8, 0.5, 0.25, 0.2, 0.1, 0.05])
 def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies):
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, size)
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method='auto', _sampler_balanced_ratio=sampling_ratio)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='auto', sampler_balanced_ratio=sampling_ratio)
     pipelines = automl.allowed_pipelines
     if sampling_ratio <= 0.2:
         # we consider this balanced, so we expect no samplers
@@ -744,7 +744,7 @@ def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features,
 def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies, caplog):
     # 0.2 minority:majority class ratios
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method=sampler_method)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_method)
     # since our default sampler_balanced_ratio for AutoMLSearch is 0.25, we should be adding the samplers when we can
     pipelines = automl.allowed_pipelines
     if sampler_method is None:
@@ -772,7 +772,7 @@ def test_oversampling_in_pipelines(multiclass_score, binary_score, mock_fit, pro
     if sampler_methods == 'SMOTENC Oversampler':
         X['b'] = X['b'].astype('category')
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, _sampler_method=sampler_methods, max_iterations=2)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_methods, max_iterations=2)
     automl.search()
     pipelines = automl.allowed_pipelines
 
