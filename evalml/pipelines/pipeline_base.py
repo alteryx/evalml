@@ -264,7 +264,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def _score(X, y, predictions, objective):
         return objective.score(y, predictions, X)
 
-    @profile
     def _score_all_objectives(self, X, y, y_pred, y_pred_proba, objectives):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
