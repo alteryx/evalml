@@ -22,7 +22,7 @@ from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
-from evalml.exceptions import NullsInColumnWarning
+from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
@@ -137,13 +137,14 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     return fig
 
 
-def precision_recall_curve(y_true, y_pred_proba):
+def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
     """
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
         y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
         y_pred_proba (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        pos_label_idx (int): the column index corresponding to the positive class. If predicted probabilities are two-dimensional, this will be used to access the probabilities for the positive class.
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
@@ -156,7 +157,15 @@ def precision_recall_curve(y_true, y_pred_proba):
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
+    if isinstance(y_pred_proba, ww.DataTable):
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe())
+        y_pred_proba_shape = y_pred_proba.shape
+        try:
+            y_pred_proba = y_pred_proba.iloc[:, pos_label_idx]
+        except IndexError:
+            raise NoPositiveLabelException(f"Predicted probabilities of shape {y_pred_proba_shape} don't contain a column at index {pos_label_idx}")
+    else:
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
