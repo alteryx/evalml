@@ -285,7 +285,7 @@ def test_simple_imputer_with_none():
     assert_frame_equal(expected, transformed, check_dtype=False)
 
 
-def test_simple_imputer_supports_natural_language():
+def test_simple_imputer_supports_natural_language_constant():
     X = pd.DataFrame({"cat with None": ["a", "b", "a", None],
                       "natural language col": ["free-form text", "will", "be imputed", None]})
     y = pd.Series([0, 0, 1, 0, 1])

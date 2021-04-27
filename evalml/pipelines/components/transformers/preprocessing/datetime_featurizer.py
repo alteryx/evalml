@@ -94,7 +94,6 @@ class DateTimeFeaturizer(Transformer):
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
                 features, categories = self._function_mappings[feature](X_ww[col_name], self.encode_as_categories)
-                features.name = None
                 X_ww.ww[name] = features
                 if categories:
                     self._categories[name] = categories

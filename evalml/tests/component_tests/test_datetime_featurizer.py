@@ -162,7 +162,7 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(wi
         X_df['datetime col'] = pd.to_datetime(['20200101', '20200519', '20190607'], format='%Y%m%d')
     for logical_type in override_types:
         try:
-            X = X_df
+            X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
         except (ww.exceptions.TypeConversionError, TypeError):
             continue

@@ -26,7 +26,7 @@ def imputer_test_data():
         "int with nan": [np.nan, 1, 0, 0, 1],
         "float with nan": [0.0, 1.0, np.nan, -1.0, 0.],
         "object with nan": ["b", "b", np.nan, "c", np.nan],
-        "bool col with nan": pd.Series([True, np.nan, False, np.nan, True]),
+        "bool col with nan": pd.Series([True, np.nan, False, np.nan, True], dtype='category'),
         "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan],
         "all nan cat": pd.Series([np.nan, np.nan, np.nan, np.nan, np.nan], dtype='category')
     })

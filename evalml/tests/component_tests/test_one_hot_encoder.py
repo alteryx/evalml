@@ -535,7 +535,7 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
     for logical_type in override_types:
         try:
-            X = X_df
+            X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
         except TypeConversionError:
             continue

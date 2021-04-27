@@ -93,7 +93,7 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
     override_types = [Integer, Double, Boolean]
     for logical_type in override_types:
         try:
-            X = X_df
+            X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
         except ww.exceptions.TypeConversionError:
             continue
