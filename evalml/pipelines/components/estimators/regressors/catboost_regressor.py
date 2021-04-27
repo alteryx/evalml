@@ -48,7 +48,7 @@ class CatBoostRegressor(Estimator):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select('category').columns)
+        cat_cols = [name for name, schema in X.ww.columns.items() if str(schema.logical_type) == "Categorical"]
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)

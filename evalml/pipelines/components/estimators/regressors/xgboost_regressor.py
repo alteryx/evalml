@@ -42,7 +42,6 @@ class XGBoostRegressor(Estimator):
                          random_seed=random_seed)
 
     def fit(self, X, y=None):
-        X, y = super()._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         self._component_obj.fit(X, y)
@@ -50,7 +49,7 @@ class XGBoostRegressor(Estimator):
 
     def predict(self, X):
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
-        return super().predict(X)
+        return self._component_obj.predict(X)
 
     @property
     def feature_importance(self):

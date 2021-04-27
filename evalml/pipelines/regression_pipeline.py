@@ -8,6 +8,7 @@ class RegressionPipeline(PipelineBase):
     """Pipeline subclass for all regression pipelines."""
     problem_type = ProblemTypes.REGRESSION
 
+    @profile
     def fit(self, X, y):
         """Build a regression model.
 
@@ -18,7 +19,6 @@ class RegressionPipeline(PipelineBase):
         Returns:
             self
         """
-        X = infer_feature_types(X)
         y = infer_feature_types(y)
         if "numeric" not in y.ww.semantic_tags:
             raise ValueError(f"Regression pipeline can only handle numeric target data")

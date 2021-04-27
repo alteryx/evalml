@@ -99,4 +99,4 @@ class LightGBMRegressor(Estimator):
 
     def predict(self, X):
         X_encoded = self._encode_categories(X)
-        return super().predict(X_encoded)
+        return self._component_obj.predict(X_encoded)
