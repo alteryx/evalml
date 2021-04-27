@@ -72,7 +72,7 @@ class LightGBMRegressor(Estimator):
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
         X = infer_feature_types(X)
-        cat_cols = map(str, list(X.ww.select('category').columns))
+        cat_cols = map(str, [name for name, schema in X.ww.columns.items() if str(schema.logical_type) == "Categorical"])
         if fit:
             self.input_feature_names = list(X.columns)
         X_encoded = _rename_column_names_to_numeric(X)

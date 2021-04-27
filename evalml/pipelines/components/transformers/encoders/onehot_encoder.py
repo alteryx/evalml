@@ -77,7 +77,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _get_cat_cols(X):
         """Get names of categorical columns in the input Woodwork DataTable."""
-        return list(X.ww.select(include=['category']).columns)
+        return [name for name, schema in X.ww.columns.items() if str(schema.logical_type) == "Categorical"]
 
     def fit(self, X, y=None):
         top_n = self.parameters['top_n']

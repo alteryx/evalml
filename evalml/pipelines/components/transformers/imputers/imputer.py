@@ -65,8 +65,8 @@ class Imputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select(['category', 'boolean']).columns)
-        numeric_cols = list(X.ww.select(['numeric']).columns)
+        cat_cols = [name for name, schema in X.ww.columns.items() if str(schema.logical_type) in {"Categorical", "Boolean"}]
+        numeric_cols = [name for name, schema in X.ww.columns.items() if 'numeric' in str(schema.semantic_tags)]
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         X_null_dropped = X.ww.drop(self._all_null_cols)

@@ -73,7 +73,7 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = X.ww.select("datetime").columns.tolist()
+        self._date_time_col_names = [name for name, schema in X.ww.columns.items() if str(schema.logical_type) == "Datetime"]
         return self
 
     def transform(self, X, y=None):
