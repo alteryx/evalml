@@ -112,6 +112,7 @@ def test_predict_ts_with_not_X_index(ts_data):
     m_clf = ARIMARegressor(p=1, d=0, q=0)
     clf_ = m_clf.fit(X=X, y=y)
     with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X."):
+        X = X.reset_index(drop=True)
         clf_.predict(X)
 
 

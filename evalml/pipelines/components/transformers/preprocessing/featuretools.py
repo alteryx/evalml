@@ -49,9 +49,9 @@ class DFSTransformer(Transformer):
         Returns:
             self
         """
-        X = infer_feature_types(X)
-        X.columns = X.columns.astype(str)
-        es = self._make_entity_set(X)
+        X_ww = infer_feature_types(X)
+        X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
+        es = self._make_entity_set(X_ww)
         self.features = dfs(entityset=es,
                             target_entity='X',
                             features_only=True)

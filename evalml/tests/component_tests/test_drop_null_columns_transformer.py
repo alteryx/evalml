@@ -51,9 +51,11 @@ def test_drop_null_transformer_transform_custom_pct_null_threshold():
     X_t = drop_null_transformer.transform(X)
     assert_frame_equal(X_expected, X_t)
     # check that X is untouched
-    assert X.equals(pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
-                                  'all_null': [None, None, None, None, None],
-                                  'no_null': [1, 2, 3, 4, 5]}))
+    answer = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
+                           'all_null': pd.Series([None, None, None, None, None]),
+                           'no_null': [1, 2, 3, 4, 5]})
+    answer.ww.init()
+    pd.testing.assert_frame_equal(X, answer, check_dtype=False)
 
 
 def test_drop_null_transformer_transform_boundary_pct_null_threshold():
@@ -70,9 +72,11 @@ def test_drop_null_transformer_transform_boundary_pct_null_threshold():
     X_t = drop_null_transformer.transform(X)
     assert_frame_equal(X_t, X.drop(["all_null"], axis=1))
     # check that X is untouched
-    assert X.equals(pd.DataFrame({'all_null': [None, None, None, None, None],
-                                  'lots_of_null': [None, None, None, None, 5],
-                                  'some_null': [None, 0, 3, 4, 5]}))
+    answer = pd.DataFrame({'all_null': pd.Series([None, None, None, None, None]),
+                           'lots_of_null': [None, None, None, None, 5],
+                           'some_null': [None, 0, 3, 4, 5]})
+    answer.ww.init()
+    pd.testing.assert_frame_equal(X, answer)
 
 
 def test_drop_null_transformer_fit_transform():
@@ -92,9 +96,11 @@ def test_drop_null_transformer_fit_transform():
     X_t = drop_null_transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
     # check that X is untouched
-    assert X.equals(pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
-                                  'all_null': [None, None, None, None, None],
-                                  'no_null': [1, 2, 3, 4, 5]}))
+    answer = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],
+                           'all_null': [None, None, None, None, None],
+                           'no_null': [1, 2, 3, 4, 5]})
+    answer.ww.init()
+    pd.testing.assert_frame_equal(X, answer)
 
     drop_null_transformer = DropNullColumns(pct_null_threshold=0.0)
     X = pd.DataFrame({'lots_of_null': [None, None, None, None, 5],

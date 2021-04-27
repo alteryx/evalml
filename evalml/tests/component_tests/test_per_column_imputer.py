@@ -101,7 +101,7 @@ def test_non_numeric_errors(non_numeric_df):
 
 
 def test_non_numeric_valid(non_numeric_df):
-    X = non_numeric_df
+    X = non_numeric_df.copy()
 
     # most frequent with all strings
     strategies = {'C': {"impute_strategy": "most_frequent"}}
@@ -128,6 +128,7 @@ def test_non_numeric_valid(non_numeric_df):
                                "B": pd.Series(["a", "b", "a", "a"], dtype="category"),
                                "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
                                "D": pd.Series(["a", "b", "a", 100], dtype="category")})
+    X = non_numeric_df.copy()
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
 
@@ -144,7 +145,7 @@ def test_fit_transform_drop_all_nan_columns():
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
     assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
-                                        "some_nan": [np.nan, 1, 0],
+                                        "some_nan": pd.Series([0, 1, 0], dtype='float64'),
                                         "another_col": [0, 1, 2]}))
 
 
@@ -162,7 +163,7 @@ def test_transform_drop_all_nan_columns():
 
     assert_frame_equal(X_expected_arr, X_t, check_dtype=False)
     assert_frame_equal(X, pd.DataFrame({"all_nan": [np.nan, np.nan, np.nan],
-                                        "some_nan": [np.nan, 1, 0],
+                                        "some_nan": pd.Series([0, 1, 0], dtype='float64'),
                                         "another_col": [0, 1, 2]}))
 
 
