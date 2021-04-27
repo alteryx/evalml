@@ -9,7 +9,8 @@ Release Notes
     * Changes
             * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
     * Documentation Changes
-        * Rename dataset to clarify that its gzipped but not a tarball :pr:`2183`
+        * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
+        * Updated documentation to use pipeline instances instead of pipeline subclasses :pr:`2158`
     * Testing Changes
         * Use machineFL user token for dependency update bot, and add more reviewers :pr:`2189`
 
