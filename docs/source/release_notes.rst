@@ -6,7 +6,9 @@ Release Notes
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Added samplers to AutoMLSearch, as well as arguments ``_sampler_method`` and ``sampler_balanced_ratio`` :pr:`2128`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
+        * Added partial dependence for datetime columns :pr:`2180`
     * Fixes
+        * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
             * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
     * Documentation Changes
