@@ -8,6 +8,7 @@ Release Notes
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
+        * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
