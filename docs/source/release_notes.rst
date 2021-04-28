@@ -6,6 +6,7 @@ Release Notes
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
+        * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
@@ -13,6 +14,8 @@ Release Notes
         * Removed all old datasplitters from EvalML :pr:`2193`
     * Documentation Changes
         * Rename dataset to clarify that its gzipped but not a tarball :pr:`2183`
+        * Updated contributing guide with a note about GitHub Actions permissions :pr:`2090`
+        * Updated automl and model understanding user guides :pr:`2090`
     * Testing Changes
         * Use machineFL user token for dependency update bot, and add more reviewers :pr:`2189`
 

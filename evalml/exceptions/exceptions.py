@@ -73,3 +73,7 @@ class NullsInColumnWarning(UserWarning):
 
 class ObjectiveCreationError(Exception):
     """Exception when get_objective tries to instantiate an objective and required args are not provided."""
+
+
+class NoPositiveLabelException(Exception):
+    """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values"""
