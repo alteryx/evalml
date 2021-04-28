@@ -16,7 +16,6 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
-    ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     PipelineBase,
     TimeSeriesBaselineBinaryPipeline,
@@ -590,7 +589,10 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                                                            parameters={},
+                                                                                            custom_name="Mode Baseline Binary Classification Pipeline",
+                                                                                            custom_hyperparameters={"strategy": ["mode"]})
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
 
 
@@ -605,7 +607,10 @@ def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                                                            parameters={},
+                                                                                            custom_name="Mode Baseline Binary Classification Pipeline",
+                                                                                            custom_hyperparameters={"strategy": ["mode"]})
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_binary_pipeline_class
 
 

@@ -35,7 +35,6 @@ from evalml.objectives import (
 )
 from evalml.pipelines import (
     MeanBaselineRegressionPipeline,
-    ModeBaselineBinaryPipeline,
     ModeBaselineMulticlassPipeline,
     PipelineBase,
     TimeSeriesBaselineBinaryPipeline,
@@ -654,7 +653,10 @@ class AutoMLSearch:
         This is the first pipeline fit during search.
         """
         if self.problem_type == ProblemTypes.BINARY:
-            baseline = ModeBaselineBinaryPipeline(parameters={})
+            baseline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                    parameters={},
+                                                    custom_name="Mode Baseline Binary Classification Pipeline",
+                                                    custom_hyperparameters={"strategy": ["mode"]})
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = ModeBaselineMulticlassPipeline(parameters={})
         elif self.problem_type == ProblemTypes.REGRESSION:
