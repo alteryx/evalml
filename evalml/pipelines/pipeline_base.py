@@ -379,7 +379,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             raise RuntimeError(
-                "To graph entity sets, a graphviz backend is required.\n" +
+                "To graph pipelines, a graphviz backend is required.\n" +
                 "Install the backend using one of the following commands:\n" +
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +

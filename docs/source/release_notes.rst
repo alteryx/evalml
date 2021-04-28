@@ -6,13 +6,16 @@ Release Notes
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
+        * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
-            * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
+        * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
     * Documentation Changes
         * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
         * Updated documentation to use pipeline instances instead of pipeline subclasses :pr:`2195`
+        * Updated contributing guide with a note about GitHub Actions permissions :pr:`2090`
+        * Updated automl and model understanding user guides :pr:`2090`
     * Testing Changes
         * Use machineFL user token for dependency update bot, and add more reviewers :pr:`2189`
 

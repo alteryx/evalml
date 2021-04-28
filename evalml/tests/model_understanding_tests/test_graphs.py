@@ -10,6 +10,7 @@ import woodwork as ww
 from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
 
+from evalml.exceptions import NoPositiveLabelException
 from evalml.model_understanding.graphs import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
@@ -214,10 +215,16 @@ def test_precision_recall_curve_return_type():
     assert isinstance(precision_recall_curve_data['auc_score'], float)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'pd2d', 'li', 'ww'])
 def test_precision_recall_curve(data_type, make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    if data_type == 'pd2d':
+        data_type = 'pd'
+        y_predict_proba = np.array([[0.9, 0.1],
+                                    [0.6, 0.4],
+                                    [0.65, 0.35],
+                                    [0.2, 0.8]])
     y_true = make_data_type(data_type, y_true)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
 
@@ -234,6 +241,46 @@ def test_precision_recall_curve(data_type, make_data_type):
     np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
     np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+
+def test_precision_recall_curve_pos_label_idx():
+    y_true = pd.Series(np.array([0, 0, 1, 1]))
+    y_predict_proba = pd.DataFrame(np.array([[0.9, 0.1],
+                                             [0.6, 0.4],
+                                             [0.65, 0.35],
+                                             [0.2, 0.8]]))
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba, pos_label_idx=1)
+
+    precision = precision_recall_curve_data.get('precision')
+    recall = precision_recall_curve_data.get('recall')
+    thresholds = precision_recall_curve_data.get('thresholds')
+
+    precision_expected = np.array([0.66666667, 0.5, 1, 1])
+    recall_expected = np.array([1, 0.5, 0.5, 0])
+    thresholds_expected = np.array([0.35, 0.4, 0.8])
+    np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
+    np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
+    np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+    y_predict_proba = pd.DataFrame(np.array([[0.1, 0.9],
+                                             [0.4, 0.6],
+                                             [0.35, 0.65],
+                                             [0.8, 0.2]]))
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba, pos_label_idx=0)
+    np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
+    np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
+    np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+
+def test_precision_recall_curve_pos_label_idx_error(make_data_type):
+    y_true = np.array([0, 0, 1, 1])
+    y_predict_proba = np.array([[0.9, 0.1],
+                                [0.6, 0.4],
+                                [0.65, 0.35],
+                                [0.2, 0.8]])
+    with pytest.raises(NoPositiveLabelException,
+                       match="Predicted probabilities of shape \\(4, 2\\) don't contain a column at index 9001"):
+        precision_recall_curve(y_true, y_predict_proba, pos_label_idx=9001)
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
