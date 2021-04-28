@@ -880,7 +880,7 @@ def test_estimators_accept_all_kwargs(estimator_class,
                                       logistic_regression_binary_pipeline_class,
                                       linear_regression_pipeline_class):
     if estimator_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines  yet.")
+        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
     try:
         estimator = estimator_class()
     except EnsembleMissingPipelinesError:

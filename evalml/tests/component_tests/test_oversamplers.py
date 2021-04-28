@@ -58,12 +58,6 @@ def test_no_oversample(data_type, sampler, make_data_type, X_y_binary):
     else:
         new_X, new_y = oversampler.fit_transform(X, y)
 
-    if data_type == "ww":
-        X = X.values
-        y = y.values
-    elif data_type == "pd":
-        X = X.values
-        y = y.values
 
     np.testing.assert_equal(X, new_X.values)
     np.testing.assert_equal(y, new_y.values)
@@ -99,13 +93,6 @@ def test_oversample_imbalanced_binary(data_type, sampler, make_data_type):
 
     transform_X, transform_y = oversampler.transform(X, y)
 
-    if data_type == "ww":
-        X = X.values
-        y = y.values
-    elif data_type == "pd":
-        X = X.values
-        y = y.values
-
     np.testing.assert_equal(X, transform_X.values)
     np.testing.assert_equal(y, transform_y.values)
 
@@ -139,13 +126,6 @@ def test_oversample_imbalanced_multiclass(data_type, sampler, sampling_ratio, ma
     np.testing.assert_equal(value_counts.values, np.array(num_samples))
 
     transform_X, transform_y = oversampler.transform(X2, y)
-
-    if data_type == "ww":
-        X = X.values
-        y = y.values
-    elif data_type == "pd":
-        X = X.values
-        y = y.values
 
     np.testing.assert_equal(X, transform_X.values)
     np.testing.assert_equal(y, transform_y.values)

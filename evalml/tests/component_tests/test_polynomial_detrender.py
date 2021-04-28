@@ -76,8 +76,6 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
     # Verify the X is not changed
     if input_type == "np":
         np.testing.assert_equal(X, output_X)
-    elif input_type == "ww":
-        pd.testing.assert_frame_equal(X, output_X)
     else:
         pd.testing.assert_frame_equal(X, output_X)
 

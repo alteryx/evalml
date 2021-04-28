@@ -383,7 +383,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(X_df, has_nan,
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
-        # Column with Nans to boolean used to fail. Now it doesn't
+        # Column with Nans to boolean used to fail. Now it doesn't but it should.
         if has_nan and logical_type == Boolean:
             continue
         try:
