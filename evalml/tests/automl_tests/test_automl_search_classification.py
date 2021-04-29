@@ -19,7 +19,7 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
-    TimeSeriesBinaryPipeline,
+    TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
@@ -633,7 +633,7 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
                                                     problem_type, X_y_binary, X_y_multi):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
-        baseline = TimeSeriesBinaryPipeline(component_graph=["Time Series Baseline Estimator"],
+        baseline = TimeSeriesBinaryClassificationPipeline(component_graph=["Time Series Baseline Estimator"],
                                             parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_binary_score.return_value = {"Log Loss Binary": 0.2}
         problem_type = 'time series binary'
