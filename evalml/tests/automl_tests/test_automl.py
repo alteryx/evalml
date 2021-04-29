@@ -12,6 +12,7 @@ import woodwork as ww
 from sklearn.model_selection import KFold
 from skopt.space import Categorical, Integer, Real
 
+import evalml
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
     log_error_callback,
@@ -318,7 +319,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
     assert "Search Results" not in str_rep
 
     mock_score.return_value = {automl.objective.name: 1.0}
-    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame([[1.0, 0.0], [0.0, 1.0]]))
+    mock_predict_proba.return_value = pd.DataFrame([[1.0, 0.0], [0.0, 1.0]])
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -1045,18 +1046,18 @@ def test_targets_pandas_data_types_classification(data_type, automl_type, target
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_breast_cancer()
+        X, y = load_breast_cancer(return_pandas=True)
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
-        X, y = load_wine()
+        X, y = load_wine(return_pandas=True)
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in ['category', 'object']:
         if target_type == "category":
-            y = pd.Categorical(y)
+            y = pd.Series(pd.Categorical(y))
     elif "int" in target_type.lower():
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
@@ -2045,28 +2046,28 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
     X['cat col'] = pd.Series(new_col)
     X['num col'] = pd.Series(new_col)
     X['text col'] = pd.Series([f"{num}" for num in range(len(new_col))])
-    X = ww.DataTable(X, semantic_tags={'cat col': 'category', 'num col': 'numeric'},
-                     logical_types={'cat col': 'Categorical', 'num col': 'Integer', 'text col': 'NaturalLanguage'})
+    X.ww.init(semantic_tags={'cat col': 'category', 'num col': 'numeric'},
+              logical_types={'cat col': 'Categorical', 'num col': 'Integer', 'text col': 'NaturalLanguage'})
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_batches=5)
     automl.search()
     for arg in mock_fit.call_args[0]:
-        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
-        if isinstance(arg, ww.DataTable):
-            assert arg.semantic_tags['cat col'] == {'category'}
-            assert arg.logical_types['cat col'] == ww.logical_types.Categorical
-            assert arg.semantic_tags['num col'] == {'numeric'}
-            assert arg.logical_types['num col'] == ww.logical_types.Integer
-            assert arg.semantic_tags['text col'] == set()
-            assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+        assert isinstance(arg, (pd.DataFrame, pd.Series))
+        if isinstance(arg, pd.DataFrame):
+            assert arg.ww.semantic_tags['cat col'] == {'category'}
+            assert arg.ww.logical_types['cat col'] == ww.logical_types.Categorical
+            assert arg.ww.semantic_tags['num col'] == {'numeric'}
+            assert arg.ww.logical_types['num col'] == evalml.Integer
+            assert arg.ww.semantic_tags['text col'] == set()
+            assert arg.ww.logical_types['text col'] == evalml.String
     for arg in mock_score.call_args[0]:
-        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
-        if isinstance(arg, ww.DataTable):
-            assert arg.semantic_tags['cat col'] == {'category'}
-            assert arg.logical_types['cat col'] == ww.logical_types.Categorical
-            assert arg.semantic_tags['num col'] == {'numeric'}
-            assert arg.logical_types['num col'] == ww.logical_types.Integer
-            assert arg.semantic_tags['text col'] == set()
-            assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+        assert isinstance(arg, (pd.DataFrame, pd.Series))
+        if isinstance(arg, pd.DataFrame):
+            assert arg.ww.semantic_tags['cat col'] == {'category'}
+            assert arg.ww.logical_types['cat col'] == ww.logical_types.Categorical
+            assert arg.ww.semantic_tags['num col'] == {'numeric'}
+            assert arg.ww.logical_types['num col'] == evalml.Integer
+            assert arg.ww.semantic_tags['text col'] == set()
+            assert arg.ww.logical_types['text col'] == evalml.String
 
 
 def test_automl_validates_problem_configuration(X_y_binary):
@@ -2403,8 +2404,9 @@ def test_automl_ensembling_training(mock_fit, mock_score, ensemble_split_size, e
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=ensembling,
                           train_best_pipeline=False, _ensembling_split_size=ensemble_split_size)
     automl.search()
-    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=ensemble_split_size, random_seed=0)
-    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
+    training_indices, ensembling_indices, _, _ = split_data(pd.DataFrame(np.arange(X.shape[0])), y, problem_type='binary',
+                                                            test_size=ensemble_split_size, random_seed=0)
+    training_indices, ensembling_indices = training_indices[0].tolist(), ensembling_indices[0].tolist()
     if ensembling:
         assert automl.ensembling
         # check that the X_train data is all used for the length
@@ -2470,8 +2472,8 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X['text column'] = ["Here is a text column that we want to treat as categorical if possible, but we want it to have some unique {} value".format(i % 10) for i in range(len(X))]
-    X = ww.DataTable(X, logical_types={1: "categorical", "text column": "categorical"})
-    y = ww.DataColumn(pd.Series(y))
+    X.ww.init(logical_types={1: "categorical", "text column": "categorical"})
+    y = ww.init_series(pd.Series(y))
     ensemble_pipelines = len(get_estimators("binary")) + 2
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', random_seed=0, n_jobs=1, max_batches=ensemble_pipelines, ensembling=True,
                           train_best_pipeline=True)
@@ -2480,8 +2482,8 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     # ensure we use the full X data for training the best pipeline, which isn't ensembling pipeline
     assert len(X) == len(mock_fit.call_args_list[-1][0][0])
     # check that the logical types were preserved
-    assert str(mock_fit.call_args_list[-1][0][0].logical_types[1]) == 'Categorical'
-    assert str(mock_fit.call_args_list[-1][0][0].logical_types['text column']) == 'Categorical'
+    assert str(mock_fit.call_args_list[-1][0][0].ww.logical_types[1]) == 'Categorical'
+    assert str(mock_fit.call_args_list[-1][0][0].ww.logical_types['text column']) == 'Categorical'
 
 
 @patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform_sample', return_value=[0, 1, 2])
@@ -2651,8 +2653,8 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
 @patch('evalml.automl.engine.sequential_engine.train_pipeline')
 def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
-    X = ww.DataTable(X)
-    y = ww.DataColumn(y)
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
                           train_best_pipeline=False, n_jobs=1)
@@ -2666,8 +2668,8 @@ def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_bi
     automl.train_pipelines(pipelines)
 
     args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
-    pd.testing.assert_frame_equal(X_train.to_dataframe(), kwargs['X'].to_dataframe())
-    pd.testing.assert_series_equal(y_train.to_series(), kwargs['y'].to_series())
+    pd.testing.assert_frame_equal(X_train, kwargs['X'])
+    pd.testing.assert_series_equal(y_train, kwargs['y'])
 
 
 no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
@@ -2822,7 +2824,7 @@ def test_automl_supports_float_targets_for_classification(mock_train, mock_binar
     # Assert that we train pipeline on the original target, not the encoded one used in EngineBase for data splitting
     _, kwargs = mock_train.call_args
     mock_y = kwargs["y"]
-    pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
+    pd.testing.assert_series_equal(mock_y, y, check_dtype=False)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY,
@@ -2845,8 +2847,7 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X['index_col'] = pd.Series(range(len(X)))
-    X = ww.DataTable(X)
-    X = X.set_index('index_col')
+    X.ww.init(index='index_col')
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
     automl.search()

@@ -27,7 +27,9 @@ automl_data = AutoMLConfig(ensembling_indices=ensembling_indices,
                            additional_objectives=additional_objectives,
                            optimize_thresholds=optimize_thresholds,
                            error_callback=error_callback,
-                           random_seed=random_seed)
+                           random_seed=random_seed,
+                           X_schema=None,
+                           y_schema=None)
 
 
 def delayed(delay):

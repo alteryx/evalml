@@ -12,7 +12,6 @@ from evalml.exceptions import PipelineScoreError
 from evalml.model_family import ModelFamily
 from evalml.preprocessing import split_data
 from evalml.problem_types import is_binary, is_classification, is_multiclass
-from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper
 
 
 class EngineComputation(ABC):
@@ -131,17 +130,16 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     """
     start = time.time()
     cv_data = []
+    X_data_types = full_X_train.ww.logical_types
     logger.info("\tStarting cross validation")
-    X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
-    y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
-    y_pd_encoded = y_pd
+    y_pd_encoded = full_y_train
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
         y_mapping = {original_target: encoded_target for (encoded_target, original_target) in
-                     enumerate(y_pd.value_counts().index)}
-        y_pd_encoded = y_pd.map(y_mapping)
+                     enumerate(full_y_train.value_counts().index)}
+        y_pd_encoded = full_y_train.map(y_mapping)
     cv_pipeline = pipeline
-    for i, (train, valid) in enumerate(automl_config.data_splitter.split(X_pd, y_pd_encoded)):
+    for i, (train, valid) in enumerate(automl_config.data_splitter.split(full_X_train, y_pd_encoded)):
         if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
             logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
@@ -149,9 +147,11 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
         y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
+        X_train.ww.init(logical_types=X_data_types)
+        X_valid.ww.init(logical_types=X_data_types)
         if is_binary(automl_config.problem_type) or is_multiclass(automl_config.problem_type):
-            diff_train = set(np.setdiff1d(full_y_train.to_series(), y_train.to_series()))
-            diff_valid = set(np.setdiff1d(full_y_train.to_series(), y_valid.to_series()))
+            diff_train = set(np.setdiff1d(full_y_train, y_train))
+            diff_valid = set(np.setdiff1d(full_y_train, y_valid))
             diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
             diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
             if diff_string:
@@ -215,13 +215,15 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     logger.info(f"{pipeline.name}:")
 
     X_train, y_train = X, y
+    X_train.ww.init(schema=automl_config.X_schema)
+    y_train.ww.init(schema=automl_config.y_schema)
 
     if pipeline.model_family == ModelFamily.ENSEMBLE:
-        X_train, y_train = X.iloc[automl_config.ensembling_indices], y.iloc[automl_config.ensembling_indices]
+        X_train, y_train = X.ww.iloc[automl_config.ensembling_indices], y.ww.iloc[automl_config.ensembling_indices]
     elif automl_config.ensembling_indices is not None:
         training_indices = [i for i in range(len(X)) if i not in automl_config.ensembling_indices]
-        X_train = X.iloc[training_indices]
-        y_train = y.iloc[training_indices]
+        X_train = X.ww.iloc[training_indices]
+        y_train = y.ww.iloc[training_indices]
 
     return train_and_score_pipeline(pipeline, automl_config=automl_config, full_X_train=X_train, full_y_train=y_train,
                                     logger=logger)
