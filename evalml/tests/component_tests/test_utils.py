@@ -25,7 +25,7 @@ def test_all_components(has_minimal_dependencies, is_running_py_39_or_above):
     if has_minimal_dependencies:
         assert len(all_components()) == 37
     else:
-        n_components = 48 if is_running_py_39_or_above else 49
+        n_components = 47 if is_running_py_39_or_above else 49
         assert len(all_components()) == n_components
 
 

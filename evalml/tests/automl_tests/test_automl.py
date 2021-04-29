@@ -1320,8 +1320,8 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
                               additional_objectives=[], optimize_thresholds=False, n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1({'pipeline': {'gap': 0, 'max_delay': 0}}), Pipeline2({'pipeline': {'gap': 0, 'max_delay': 0}})], objective=objective,
-                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
+                              allowed_pipelines=[Pipeline1({'pipeline': {'date_index': None, 'gap': 0, 'max_delay': 0}}), Pipeline2({'pipeline': {'date_index': None, 'gap': 0, 'max_delay': 0}})], objective=objective,
+                              additional_objectives=[], problem_configuration={'date_index': None, 'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1({}), Pipeline2({})], objective=objective,
@@ -1413,11 +1413,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
     DummyPipeline.score = mock_score_1
     parameters = {}
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
-        parameters = {"pipeline": {"gap": 6, "max_delay": 3}}
+        parameters = {"pipeline": {'date_index': None, "gap": 6, "max_delay": 3}}
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
                           allowed_pipelines=[DummyPipeline(parameters)],
-                          objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
+                          objective="auto", problem_configuration={'date_index': None, 'gap': 1, 'max_delay': 1},
                           additional_objectives=additional_objectives)
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
@@ -2069,15 +2069,17 @@ def test_automl_validates_problem_configuration(X_y_binary):
     assert AutoMLSearch(X_train=X, y_train=y, problem_type="binary").problem_configuration == {}
     assert AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass").problem_configuration == {}
     assert AutoMLSearch(X_train=X, y_train=y, problem_type="regression").problem_configuration == {}
-    msg = "user_parameters must be a dict containing values for at least the gap and max_delay parameters"
+    msg = "user_parameters must be a dict containing values for at least the date_index, gap, and max_delay parameters"
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression")
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration={"gap": 3})
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration={"max_delay": 2, "gap": 3})
 
     problem_config = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression",
-                                  problem_configuration={"max_delay": 2, "gap": 3}).problem_configuration
-    assert problem_config == {"max_delay": 2, "gap": 3}
+                                  problem_configuration={"date_index": "Date", "max_delay": 2, "gap": 3}).problem_configuration
+    assert problem_config == {"date_index": "Date", "max_delay": 2, "gap": 3}
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
@@ -2159,12 +2161,12 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_scor
 
     X, y = X_y_regression
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression",
-                          problem_configuration={"gap": 6, "max_delay": 3}, max_iterations=1)
+                          problem_configuration={"date_index": None, "gap": 6, "max_delay": 3}, max_iterations=1)
     automl.search()
 
     # Best pipeline is baseline pipeline because we only run one iteration
-    assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
-                                               "Time Series Baseline Estimator": {"gap": 6, "max_delay": 3}}
+    assert automl.best_pipeline.parameters == {"pipeline": {"date_index": None, "gap": 6, "max_delay": 3},
+                                               "Time Series Baseline Estimator": {"date_index": None, "gap": 6, "max_delay": 3}}
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
@@ -2180,7 +2182,7 @@ def test_automl_does_not_include_positive_only_objectives_by_default(problem_typ
             only_positive.append(objective_class)
 
     search = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
-                          problem_configuration={'gap': 0, 'max_delay': 0})
+                          problem_configuration={"date_index": None, 'gap': 0, 'max_delay': 0})
     assert search.objective not in only_positive
     assert all([obj not in only_positive for obj in search.additional_objectives])
 
@@ -2793,7 +2795,7 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
 
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
-        AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"gap": 0, "max_delay": 2})
+        AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"date_index": None, "gap": 0, "max_delay": 2})
         assert len(warn) == 1
         message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
         assert str(warn[0].message).startswith(message)
