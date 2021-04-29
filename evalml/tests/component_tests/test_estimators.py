@@ -28,8 +28,6 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             continue
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
-            if estimator_class.name == 'ARIMA Regressor':
-                continue
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             if is_binary(problem_type):
                 X, y = X_y_binary

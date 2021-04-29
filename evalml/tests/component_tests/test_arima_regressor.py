@@ -143,24 +143,6 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
 
 
-def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
-    X, y = ts_data_seasonal
-    assert isinstance(X.index, pd.DatetimeIndex)
-    assert isinstance(y.index, pd.DatetimeIndex)
-
-    fh_ = forecasting.ForecastingHorizon(y[250:].index, is_relative=False)
-
-    a_clf = sktime_arima.AutoARIMA()
-    clf = a_clf.fit(X=X[:250], y=y[:250])
-    y_pred_sk = clf.predict(fh=fh_, X=X[250:])
-
-    m_clf = ARIMARegressor(d=None)
-    m_clf.fit(X=X[:250], y=y[:250])
-    y_pred = m_clf.predict(X=X[250:])
-
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
-
-
 @patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
 @patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
 def test_fit_predict_ts_with_X_and_y_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
@@ -236,7 +218,6 @@ def test_fit_predict_ts_with_y_not_X_index(mock_get_dates, mock_format_dates, ts
     y_pred = clf_.predict(X=X, y=y)
 
     assert (y_pred_sk == y_pred.to_series()).all()
-
 
 
 def test_predict_ts_without_X_error(ts_data):
