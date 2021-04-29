@@ -10,7 +10,7 @@ from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
     PipelineBase,
     RegressionPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -263,8 +263,9 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results['pipeline_results'].values():
+        assert result['pipeline_class'] == TimeSeriesRegressionPipeline
+
         if result["id"] == 0:
-            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline
             continue
 
         assert result['parameters']['Delayed Feature Transformer'] == configuration

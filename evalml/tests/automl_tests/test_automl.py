@@ -1352,7 +1352,7 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.RegressionPipeline.fit")
-@patch("evalml.pipelines.TimeSeriesBaselineRegressionPipeline.fit")
+@patch("evalml.pipelines.TimeSeriesRegressionPipeline.fit")
 def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_series_baseline_regression_fit,
                                                                   mock_regression_fit,
                                                                   mock_multiclass_fit,

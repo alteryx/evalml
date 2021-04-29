@@ -17,14 +17,15 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
     BaselineClassifier,
     BaselineRegressor,
     CatBoostClassifier,
     LinearRegressor,
-    RandomForestClassifier
+    RandomForestClassifier,
+    TimeSeriesBaselineEstimator
 )
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import make_pipeline
@@ -57,7 +58,7 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 @pytest.mark.parametrize("pipeline,exception,match", [(make_test_pipeline(BaselineRegressor, RegressionPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline), ValueError, baseline_message),
-                                                      (TimeSeriesBaselineRegressionPipeline, ValueError, baseline_message),
+                                                      (make_test_pipeline(TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(CatBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, catboost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])

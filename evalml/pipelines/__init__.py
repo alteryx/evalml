@@ -47,4 +47,3 @@ from .time_series_classification_pipelines import (
     TimeSeriesMulticlassClassificationPipeline
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
-from .time_series_baselines import TimeSeriesBaselineRegressionPipeline, TimeSeriesBaselineBinaryPipeline, TimeSeriesBaselineMulticlassPipeline

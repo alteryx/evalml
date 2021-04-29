@@ -19,8 +19,8 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
-    TimeSeriesBaselineBinaryPipeline,
-    TimeSeriesBaselineMulticlassPipeline
+    TimeSeriesBinaryPipeline,
+    TimeSeriesMulticlassPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -633,12 +633,14 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
                                                     problem_type, X_y_binary, X_y_multi):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
-        baseline = TimeSeriesBaselineBinaryPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesBinaryPipeline(component_graph=["Time Series Baseline Estimator"],
+                                            parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_binary_score.return_value = {"Log Loss Binary": 0.2}
         problem_type = 'time series binary'
     else:
         X, y = X_y_multi
-        baseline = TimeSeriesBaselineMulticlassPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesMulticlassPipeline(component_graph=["Time Series Baseline Estimator"],
+                                                parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
         problem_type = 'time series multiclass'
 

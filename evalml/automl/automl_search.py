@@ -38,9 +38,9 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline,
-    TimeSeriesBaselineBinaryPipeline,
-    TimeSeriesBaselineMulticlassPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -663,12 +663,14 @@ class AutoMLSearch:
                                           custom_name="Mean Baseline Regression Pipeline",
                                           custom_hyperparameters={"strategy": ["mean"]})
         else:
-            pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
-                              ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,
-                              ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
+            pipeline_class, pipeline_name = {ProblemTypes.TIME_SERIES_REGRESSION: (TimeSeriesRegressionPipeline, "Time Series Baseline Regression Pipeline"),
+                                             ProblemTypes.TIME_SERIES_MULTICLASS: (TimeSeriesMulticlassClassificationPipeline, "Time Series Baseline Multiclass Pipeline"),
+                                             ProblemTypes.TIME_SERIES_BINARY: (TimeSeriesBinaryClassificationPipeline, "Time Series Baseline Binary Pipeline")}[self.problem_type]
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+            baseline = pipeline_class(component_graph=["Time Series Baseline Estimator"],
+                                      custom_name=pipeline_name,
+                                      parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         return baseline
 
