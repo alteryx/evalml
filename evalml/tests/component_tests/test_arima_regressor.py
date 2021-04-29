@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -129,6 +131,26 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     fh_ = forecasting.ForecastingHorizon(y[250:].index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
+    clf = a_clf.fit(y=y[:250])
+    y_pred_sk = clf.predict(fh=fh_)
+
+    X = X.drop(["features"], axis=1)
+
+    m_clf = ARIMARegressor(d=None)
+    m_clf.fit(X=X[:250], y=y[:250])
+    y_pred = m_clf.predict(X=X[250:])
+
+    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+
+
+def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
+    X, y = ts_data_seasonal
+    assert isinstance(X.index, pd.DatetimeIndex)
+    assert isinstance(y.index, pd.DatetimeIndex)
+
+    fh_ = forecasting.ForecastingHorizon(y[250:].index, is_relative=False)
+
+    a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(X=X[:250], y=y[:250])
     y_pred_sk = clf.predict(fh=fh_, X=X[250:])
 
@@ -139,10 +161,15 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
 
 
-def test_fit_predict_ts_with_X_and_y_index(ts_data_seasonal):
+@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
+@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
+def test_fit_predict_ts_with_X_and_y_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
     X, y = ts_data_seasonal
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
+
+    mock_get_dates.return_value = (X.index, X)
+    mock_format_dates.return_value = (X, y)
 
     fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
@@ -152,15 +179,21 @@ def test_fit_predict_ts_with_X_and_y_index(ts_data_seasonal):
 
     m_clf = ARIMARegressor(d=None)
     m_clf.fit(X=X, y=y)
+    mock_format_dates.return_value = (X, y, fh_)
     y_pred = m_clf.predict(X=X)
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk == y_pred.to_series()).all()
 
 
-def test_fit_predict_ts_with_X_not_y_index(ts_data_seasonal):
+@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
+@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
+def test_fit_predict_ts_with_X_not_y_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
     X, y = ts_data_seasonal
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
+
+    mock_get_dates.return_value = (X.index, X)
+    mock_format_dates.return_value = (X, y)
 
     fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
@@ -173,13 +206,19 @@ def test_fit_predict_ts_with_X_not_y_index(ts_data_seasonal):
 
     m_clf = ARIMARegressor(d=None)
     clf_ = m_clf.fit(X=X, y=y)
+    mock_format_dates.return_value = (X, y, fh_)
     y_pred = clf_.predict(X=X)
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk == y_pred.to_series()).all()
 
 
-def test_fit_predict_ts_with_y_not_X_index(ts_data_seasonal):
+@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
+@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
+def test_fit_predict_ts_with_y_not_X_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
     X, y = ts_data_seasonal
+
+    mock_get_dates.return_value = (y.index, X)
+    mock_format_dates.return_value = (X, y)
 
     fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
@@ -193,9 +232,11 @@ def test_fit_predict_ts_with_y_not_X_index(ts_data_seasonal):
 
     m_clf = ARIMARegressor(d=None)
     clf_ = m_clf.fit(X=X_no_ind, y=y)
+    mock_format_dates.return_value = (X, y, fh_)
     y_pred = clf_.predict(X=X, y=y)
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk == y_pred.to_series()).all()
+
 
 
 def test_predict_ts_without_X_error(ts_data):
