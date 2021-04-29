@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
@@ -63,13 +62,6 @@ class TimeSeriesSplit(BaseCrossValidator):
             split_kwargs = dict(X=y, groups=groups)
             max_index = y.shape[0]
         else:
-            if self.date_index:
-                X[self.date_index] = pd.to_datetime(X[self.date_index])
-                X = X.sort_values(by=self.date_index)
-                if not self._check_if_empty(y):
-                    y = y.reindex(index=X.index)
-                    y = y.reset_index(drop=True)
-                X = X.reset_index(drop=True)
             split_kwargs = dict(X=X, y=y, groups=groups)
             max_index = X.shape[0]
 

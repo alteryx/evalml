@@ -105,12 +105,10 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
             assert isinstance(pipeline, pipeline_class)
             assert pipeline.custom_hyperparameters is None
             delayed_features = []
-            if is_time_series(problem_type):
+            if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
                 delayed_features = [DelayedFeatureTransformer]
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
             else:
                 estimator_components = [estimator_class]
             assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
@@ -151,7 +149,10 @@ def test_make_pipeline(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
-            assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + estimator_components
+            else:
+                assert pipeline.component_graph == [DropNullColumns, Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -189,7 +190,10 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
-            assert pipeline.component_graph == [Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [Imputer] + estimator_components
+            else:
+                assert pipeline.component_graph == [Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -227,7 +231,10 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
-            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + estimator_components
+            else:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -262,7 +269,10 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
-            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + estimator_components
+            else:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -300,7 +310,10 @@ def test_make_pipeline_text_columns(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
-            assert pipeline.component_graph == [Imputer, TextFeaturizer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer] + estimator_components
+            else:
+                assert pipeline.component_graph == [Imputer, TextFeaturizer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -334,7 +347,10 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
             standard_scaler = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 standard_scaler = [StandardScaler]
-            assert pipeline.component_graph == [TextFeaturizer] + delayed_features + standard_scaler + [estimator_class]
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [TextFeaturizer] + standard_scaler + [estimator_class]
+            else:
+                assert pipeline.component_graph == [TextFeaturizer] + delayed_features + standard_scaler + [estimator_class]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -368,7 +384,10 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
             standard_scaler = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 standard_scaler = [StandardScaler]
-            assert pipeline.component_graph == [DateTimeFeaturizer] + delayed_features + standard_scaler + [estimator_class]
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == standard_scaler + [estimator_class]
+            else:
+                assert pipeline.component_graph == [DateTimeFeaturizer] + delayed_features + standard_scaler + [estimator_class]
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
@@ -397,7 +416,10 @@ def test_make_pipeline_numpy_input(problem_type):
                 estimator_components = [StandardScaler, estimator_class]
             else:
                 estimator_components = [estimator_class]
-            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + estimator_components
+            else:
+                assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -434,7 +456,10 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
                 estimator_components = [estimator_class]
             else:
                 estimator_components = [estimator_class]
-            assert pipeline.component_graph == [Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
+            if estimator_class.model_family == ModelFamily.ARIMA:
+                assert pipeline.component_graph == [Imputer] + estimator_components
+            else:
+                assert pipeline.component_graph == [Imputer, DateTimeFeaturizer] + delayed_features + estimator_components
 
 
 def test_make_pipeline_problem_type_mismatch():
