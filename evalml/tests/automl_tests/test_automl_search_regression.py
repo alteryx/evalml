@@ -272,14 +272,6 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
             assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline
             assert dt == dt_
             continue
-        if 'ARIMA Regressor' in result["parameters"]:
-            dt_ = result['parameters']['ARIMA Regressor'].pop('date_index')
-            assert 'DateTime Featurization Component' not in result['parameters'].keys()
-            assert 'Delayed Feature Transformer' not in result['parameters'].keys()
-        else:
-            dt_ = result['parameters']['Delayed Feature Transformer'].pop('date_index')
-        assert dt == dt_
         for param_key, param_val in configuration.items():
-            if 'ARIMA Regressor' not in result["parameters"]:
-                assert result['parameters']['Delayed Feature Transformer'][param_key] == configuration[param_key]
+            assert result['parameters']['Delayed Feature Transformer'][param_key] == configuration[param_key]
             assert result['parameters']['pipeline'][param_key] == configuration[param_key]
