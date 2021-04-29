@@ -440,8 +440,6 @@ def test_component_parameters_getter(test_classes):
 def test_component_parameters_init(logistic_regression_binary_pipeline_class,
                                    linear_regression_pipeline_class):
     for component_class in all_components():
-        if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-            continue
         print('Testing component {}'.format(component_class.name))
         try:
             component = component_class()

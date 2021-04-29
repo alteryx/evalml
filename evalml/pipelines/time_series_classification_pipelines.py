@@ -60,8 +60,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         """Fit a time series classification pipeline.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target training targets of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target training targets of length [n_samples]
 
         Returns:
             self
@@ -109,12 +109,12 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, None): The target training targets of length [n_samples]
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray, None): The target training targets of length [n_samples]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            ww.DataColumn: Predicted values.
+            pd.Series: Predicted values.
         """
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
@@ -130,10 +130,10 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         """Make probability estimates for labels.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataTable: Probability estimates
+            pd.DataFrame: Probability estimates
         """
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
@@ -148,8 +148,8 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         """Evaluate model performance on current and additional objectives.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): True labels of length [n_samples]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series): True labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:

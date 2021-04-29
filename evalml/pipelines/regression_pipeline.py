@@ -12,8 +12,8 @@ class RegressionPipeline(PipelineBase):
         """Build a regression model.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target training data of length [n_samples]
 
         Returns:
             self
@@ -30,8 +30,8 @@ class RegressionPipeline(PipelineBase):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, or np.ndarray): True values of length [n_samples]
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series, or np.ndarray): True values of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:

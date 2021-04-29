@@ -22,8 +22,8 @@ class ClassificationPipeline(PipelineBase):
             by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target training labels of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target training labels of length [n_samples]
 
         Returns:
             self
@@ -61,11 +61,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            ww.DataColumn: Estimated labels
+            pd.Series: Estimated labels
         """
         return self._component_graph.predict(X)
 
@@ -73,11 +73,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            ww.DataColumn: Estimated labels
+            pd.Series: Estimated labels
         """
         predictions = self._predict(X, objective=objective)
         predictions = pd.Series(self._decode_targets(predictions), name=self.input_target_name)
@@ -87,10 +87,10 @@ class ClassificationPipeline(PipelineBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataTable: Probability estimates
+            pd.DataFrame: Probability estimates
         """
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X)
@@ -101,8 +101,8 @@ class ClassificationPipeline(PipelineBase):
         """Evaluate model performance on objectives
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, or np.ndarray): True labels of length [n_samples]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series, or np.ndarray): True labels of length [n_samples]
             objectives (list): List of objectives to score
 
         Returns:

@@ -111,8 +111,8 @@ class ComponentGraph:
         """Fit each component in the graph
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
         self._compute_features(self.compute_order, X, y, fit=True)
@@ -123,11 +123,11 @@ class ComponentGraph:
         """Fit all components save the final one, usually an estimator
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
 
         Returns:
-            ww.DataTable: Transformed values.
+            pd.DataFrame: Transformed values.
         """
         return self._fit_transform_features_helper(True, X, y)
 
@@ -136,11 +136,11 @@ class ComponentGraph:
         to get all the information that should be fed to the final component
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            ww.DataTable: Transformed values.
+            pd.DataFrame: Transformed values.
         """
         return self._fit_transform_features_helper(False, X, y)
 
@@ -149,11 +149,11 @@ class ComponentGraph:
 
         Arguments:
             needs_fitting (boolean): Determines if components should be fit.
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            ww.DataTable: Transformed values.
+            pd.DataFrame: Transformed values.
         """
         if len(self.compute_order) <= 1:
             return infer_feature_types(X)
@@ -175,10 +175,10 @@ class ComponentGraph:
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataColumn: Predicted values.
+            pd.Series: Predicted values.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
@@ -191,8 +191,8 @@ class ComponentGraph:
 
         Arguments:
             component_list (list): The list of component names to compute.
-            X (ww.DataTable, d.DataFrame): Input data to the pipeline to transform.
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series): The target training data of length [n_samples]
             fit (bool): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
@@ -300,11 +300,11 @@ class ComponentGraph:
         Arguments:
             x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
             y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
-            X (ww.DataTable, pd.DataFrame): The original X input, to be used if there is no parent X input
-            y (ww.DataColumn, pd.Series): The original y input, to be used if there is no parent y input
+            X (pd.DataFrame): The original X input, to be used if there is no parent X input
+            y (pd.Series): The original y input, to be used if there is no parent y input
 
         Returns:
-            ww.DataTable, ww.DataColumn: The X and y transformed values to evaluate a component with
+            pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
         """
         if len(x_inputs) == 0:
             return_x = X
