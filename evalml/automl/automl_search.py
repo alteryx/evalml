@@ -34,6 +34,7 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
+    BinaryClassificationPipeline,
     MeanBaselineRegressionPipeline,
     ModeBaselineMulticlassPipeline,
     PipelineBase,
@@ -647,11 +648,8 @@ class AutoMLSearch:
             if pipeline.problem_type != self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
-    def _add_baseline_pipelines(self):
-        """Fits a baseline pipeline to the data.
-
-        This is the first pipeline fit during search.
-        """
+    def _get_baseline_pipeline(self):
+        """Creates a baseline pipeline instance."""
         if self.problem_type == ProblemTypes.BINARY:
             baseline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
                                                     parameters={},
@@ -669,6 +667,14 @@ class AutoMLSearch:
             max_delay = self.problem_configuration['max_delay']
             baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
                                                   "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
+        return baseline
+
+    def _add_baseline_pipelines(self):
+        """Fits a baseline pipeline to the data.
+
+        This is the first pipeline fit during search.
+        """
+        baseline = self._get_baseline_pipeline()
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
         computation = self._engine.submit_evaluation_job(self.automl_config, baseline, self.X_train, self.y_train)

@@ -1287,10 +1287,10 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
                       ProblemTypes.REGRESSION: dummy_regression_pipeline_class,
                       ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regression_pipeline_class}[problem_type_value]
-    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
-                               ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
-                               ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesBaselineRegressionPipeline"
+    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+                               ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
+                               ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline"
                                }[problem_type_value]
 
     class DummyPipeline(pipeline_class):
@@ -1349,14 +1349,12 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
 @pytest.mark.parametrize("custom_additional_objective", [True, False])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression", "time series regression"])
-@patch("evalml.pipelines.ModeBaselineBinaryPipeline.fit")
 @patch("evalml.pipelines.ModeBaselineMulticlassPipeline.fit")
 @patch("evalml.pipelines.MeanBaselineRegressionPipeline.fit")
 @patch("evalml.pipelines.TimeSeriesBaselineRegressionPipeline.fit")
 def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_series_baseline_regression_fit,
                                                                   mock_baseline_regression_fit,
                                                                   mock_baseline_multiclass_fit,
-                                                                  mock_baseline_binary_fit,
                                                                   problem_type,
                                                                   custom_additional_objective,
                                                                   dummy_binary_pipeline_class,
@@ -1372,11 +1370,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
                       "multiclass": dummy_multiclass_pipeline_class,
                       "regression": dummy_regression_pipeline_class,
                       "time series regression": dummy_time_series_regression_pipeline_class}[problem_type]
-    baseline_pipeline_class = {"binary": "evalml.pipelines.ModeBaselineBinaryPipeline",
-                               "multiclass": "evalml.pipelines.ModeBaselineMulticlassPipeline",
-                               "regression": "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               "time series regression": "evalml.pipelines.TimeSeriesBaselineRegressionPipeline"
-                               }[problem_type]
+    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+                               ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
+                               ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline"
+                               }[problem_type_enum]
 
     class DummyPipeline(pipeline_class):
         name = "Dummy 1"
@@ -1437,19 +1435,15 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
 
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
-@patch("evalml.pipelines.ModeBaselineBinaryPipeline.score", return_value={'Log Loss Binary': 1, 'F1': 1})
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1, 'F1': 1})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_percent_better_than_baseline_scores_different_folds(mock_fit,
                                                              mock_score,
-                                                             mock_baseline_score,
                                                              fold_scores,
                                                              dummy_binary_pipeline_class,
                                                              X_y_binary):
     # Test that percent-better-than-baseline is correctly computed when scores differ across folds
     X, y = X_y_binary
-
-    mock_score.side_effect = [{"Log Loss Binary": 1, "F1": val} for val in fold_scores]
 
     class DummyPipeline(dummy_binary_pipeline_class):
         name = "Dummy 1"
@@ -1463,6 +1457,8 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
 
         def clone(self):
             return self.__class__(self.parameters, random_seed=self.random_seed)
+    mock_score = MagicMock(side_effect=[{"Log Loss Binary": 1, "F1": val} for val in fold_scores])
+    DummyPipeline.score = mock_score
     f1 = get_objective("f1")()
 
     if np.isnan(fold_scores[0]):
