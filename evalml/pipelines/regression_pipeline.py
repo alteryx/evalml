@@ -1,7 +1,7 @@
 
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class RegressionPipeline(PipelineBase):
@@ -20,9 +20,8 @@ class RegressionPipeline(PipelineBase):
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        if "numeric" not in y.semantic_tags:
+        if "numeric" not in y.ww.semantic_tags:
             raise ValueError(f"Regression pipeline can only handle numeric target data")
-        y = _convert_woodwork_types_wrapper(y.to_series())
 
         self._fit(X, y)
         return self
@@ -39,5 +38,5 @@ class RegressionPipeline(PipelineBase):
             dict: Ordered dictionary of objective scores
         """
         objectives = self.create_objectives(objectives)
-        y_predicted = _convert_woodwork_types_wrapper(self.predict(X).to_series())
+        y_predicted = self.predict(X)
         return self._score_all_objectives(X, y, y_predicted, y_pred_proba=None, objectives=objectives)

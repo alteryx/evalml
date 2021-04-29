@@ -58,25 +58,26 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
         list[Transformer]: A list of applicable preprocessing components to use with the estimator
     """
 
-    X_pd = X.to_dataframe()
     pp_components = []
-    all_null_cols = X_pd.columns[X_pd.isnull().all()]
+    all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
-    input_logical_types = set(X.logical_types.values())
-    types_imputer_handles = {logical_types.Boolean, logical_types.Categorical, logical_types.Double, logical_types.Integer}
+    input_logical_types = set(X.ww.logical_types.values())
+    types_imputer_handles = {logical_types.Boolean, logical_types.Categorical,
+                             logical_types.Double, logical_types.Integer}
     if len(input_logical_types.intersection(types_imputer_handles)) > 0:
         pp_components.append(Imputer)
 
-    text_columns = list(X.select('natural_language').columns)
+    text_columns = list(X.ww.select('NaturalLanguage').columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
-    index_columns = list(X.select('index').columns)
+    index_columns = list(X.ww.select('index').columns)
     if len(index_columns) > 0:
         pp_components.append(DropColumns)
 
-    datetime_cols = X.select(["Datetime"])
+    datetime_cols = X.ww.select(["Datetime"])
+
     add_datetime_featurizer = len(datetime_cols.columns) > 0
     if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
@@ -84,7 +85,7 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     if is_time_series(problem_type):
         pp_components.append(DelayedFeatureTransformer)
 
-    categorical_cols = X.select('category')
+    categorical_cols = X.ww.select('category')
     if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 

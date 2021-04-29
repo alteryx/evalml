@@ -289,7 +289,7 @@ def pad_with_nans(pd_data, num_to_pad):
     padded = pd.concat([padding, pd_data], ignore_index=True)
     # By default, pd.concat will convert all types to object if there are mixed numerics and objects
     # The call to convert_dtypes ensures numerics stay numerics in the new dataframe.
-    return padded.convert_dtypes(infer_objects=True, convert_string=False,
+    return padded.convert_dtypes(infer_objects=True, convert_string=False, convert_floating=False,
                                  convert_integer=False, convert_boolean=False)
 
 

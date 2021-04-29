@@ -879,8 +879,6 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 def test_estimators_accept_all_kwargs(estimator_class,
                                       logistic_regression_binary_pipeline_class,
                                       linear_regression_pipeline_class):
-    if estimator_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
     try:
         estimator = estimator_class()
     except EnsembleMissingPipelinesError:
@@ -962,8 +960,6 @@ def test_component_equality():
 def test_component_equality_all_components(component_class,
                                            logistic_regression_binary_pipeline_class,
                                            linear_regression_pipeline_class):
-    if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
     if component_class == StackedEnsembleClassifier:
         component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
     elif component_class == StackedEnsembleRegressor:
@@ -1151,8 +1147,6 @@ def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class
                                                logistic_regression_binary_pipeline_class,
                                                linear_regression_pipeline_class,
                                                helper_functions):
-    if estimator_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
 
     if estimator_class == StackedEnsembleRegressor:
         input_pipelines = [helper_functions.safe_init_pipeline_with_njobs_1(linear_regression_pipeline_class)]

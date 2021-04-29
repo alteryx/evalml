@@ -90,7 +90,7 @@ def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
     X, y = load_diabetes()
     regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
     regression_pipeline.fit(X, y)
-    assert not pd.isnull(regression_pipeline.predict(X).to_series()).any()
+    assert not pd.isnull(regression_pipeline.predict(X)).any()
 
 
 def test_custom_indices():
@@ -100,4 +100,4 @@ def test_custom_indices():
 
     pipeline = RegressionPipeline(component_graph=['Imputer', 'One Hot Encoder', 'Linear Regressor'], parameters={})
     pipeline.fit(x2, y2)
-    assert not pd.isnull(pipeline.predict(X).to_series()).any()
+    assert not pd.isnull(pipeline.predict(X)).any()
