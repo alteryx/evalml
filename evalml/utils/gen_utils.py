@@ -210,13 +210,14 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
 
+    X_renamed = X.copy()
     if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
-        flat_col_names = list(map(str, X.columns))
-        X.columns = flat_col_names
+        flat_col_names = list(map(str, X_renamed.columns))
+        X_renamed.columns = flat_col_names
         rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
     else:
         rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    X_renamed = X.rename(columns=rename_cols_dict)
+    X_renamed.rename(columns=rename_cols_dict, inplace=True)
     return X_renamed
 
 

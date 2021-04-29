@@ -2,14 +2,13 @@ from featuretools import EntitySet, calculate_feature_matrix, dfs
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
 
 
 class DFSTransformer(Transformer):
-    """Featuretools DFS component that generates features for ww.DataTables and pd.DataFrames"""
+    """Featuretools DFS component that generates features for pd.DataFrames"""
     name = "DFS Transformer"
     hyperparameter_ranges = {}
 
@@ -44,16 +43,15 @@ class DFSTransformer(Transformer):
         """Fits the DFSTransformer Transformer component.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            X (pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
-        X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-        X.columns = X.columns.astype(str)
-        es = self._make_entity_set(X)
+        X_ww = infer_feature_types(X)
+        X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
+        es = self._make_entity_set(X_ww)
         self.features = dfs(entityset=es,
                             target_entity='X',
                             features_only=True)
@@ -63,15 +61,14 @@ class DFSTransformer(Transformer):
         """Computes the feature matrix for the input X using featuretools' dfs algorithm.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Feature matrix
+            pd.DataFrame: Feature matrix
         """
         X_ww = infer_feature_types(X)
-        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_t.columns = X_t.columns.astype(str)
-        es = self._make_entity_set(X_t)
+        X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
+        es = self._make_entity_set(X_ww)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, feature_matrix)
+        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, feature_matrix)

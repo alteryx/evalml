@@ -27,7 +27,7 @@ def test_featurizer_only_text(text_df):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_featurizer_with_nontext(text_df):
@@ -50,7 +50,7 @@ def test_featurizer_with_nontext(text_df):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 11
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_featurizer_no_text():
@@ -78,7 +78,7 @@ def test_some_missing_col_names(text_df, caplog):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_empty_text_column():
@@ -117,7 +117,7 @@ def test_no_null_output():
     tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
-    assert not X_t.to_dataframe().isnull().any().any()
+    assert not X_t.isnull().any().any()
 
 
 def test_index_col_names():
@@ -140,7 +140,7 @@ def test_index_col_names():
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_float_col_names():
@@ -167,7 +167,7 @@ def test_float_col_names():
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_output_null():
@@ -182,7 +182,7 @@ def test_output_null():
     tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
-    assert not X_t.to_dataframe().isnull().any().any()
+    assert not X_t.isnull().any().any()
 
 
 def test_diversity_primitive_output():
@@ -195,7 +195,7 @@ def test_diversity_primitive_output():
 
     expected_features = pd.Series([1.0, 0.5, 0.75], name='DIVERSITY_SCORE(diverse)')
     X_t = tf.transform(X)
-    features = X_t['DIVERSITY_SCORE(diverse)'].to_series()
+    features = X_t['DIVERSITY_SCORE(diverse)']
     assert_series_equal(expected_features, features)
 
 
@@ -213,7 +213,7 @@ def test_lsa_primitive_output():
     X_t = tf.transform(X)
     cols = [col for col in X_t.columns if 'LSA' in col]
     features = X_t[cols]
-    assert_frame_equal(expected_features, features.to_dataframe(), atol=1e-3)
+    assert_frame_equal(expected_features, features, atol=1e-3)
 
 
 def test_mean_characters_primitive_output():
@@ -227,7 +227,7 @@ def test_mean_characters_primitive_output():
     expected_features = pd.Series([4.11764705882352, 3.45, 3.72727272727], name='MEAN_CHARACTERS_PER_WORD(mean_characters)')
     X_t = tf.transform(X)
     features = X_t['MEAN_CHARACTERS_PER_WORD(mean_characters)']
-    assert_series_equal(expected_features, features.to_series())
+    assert_series_equal(expected_features, features)
 
 
 def test_polarity_primitive_output():
@@ -241,7 +241,7 @@ def test_polarity_primitive_output():
     expected_features = pd.Series([0.0, -0.214, 0.602], name='POLARITY_SCORE(polarity)')
     X_t = tf.transform(X)
     features = X_t['POLARITY_SCORE(polarity)']
-    assert_series_equal(expected_features, features.to_series())
+    assert_series_equal(expected_features, features)
 
 
 def test_featurizer_with_custom_indices(text_df):
@@ -250,7 +250,7 @@ def test_featurizer_with_custom_indices(text_df):
     tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
     tf.fit(X)
     X_t = tf.transform(X)
-    assert not X_t.to_dataframe().isnull().any().any()
+    assert not X_t.isnull().any().any()
 
 
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 10], dtype="Int64")),
@@ -267,15 +267,16 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
 
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df.copy()
+            X.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
 
         tf.fit(X)
         transformed = tf.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double,
-                                             'LSA(text col)[1]': Double,
-                                             'DIVERSITY_SCORE(text col)': Double,
-                                             'MEAN_CHARACTERS_PER_WORD(text col)': Double,
-                                             'POLARITY_SCORE(text col)': Double}
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {0: logical_type, 'LSA(text col)[0]': Double,
+                                                'LSA(text col)[1]': Double,
+                                                'DIVERSITY_SCORE(text col)': Double,
+                                                'MEAN_CHARACTERS_PER_WORD(text col)': Double,
+                                                'POLARITY_SCORE(text col)': Double}

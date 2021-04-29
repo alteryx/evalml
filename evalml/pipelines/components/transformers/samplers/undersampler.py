@@ -41,14 +41,14 @@ class Undersampler(BaseSampler):
         """Fit and transform the data using the undersampler. Used during training of the pipeline
 
         Arguments:
-            X (ww.DataFrame): Training features
-            y (ww.DataColumn): Target features
+            X (pd.DataFrame): Training features
+            y (pd.Series): Target features
 
          Returns:
-            ww.DataTable, ww.DataColumn: Undersampled X and y data
+            pd.DataFrame, pd.Series: Undersampled X and y data
         """
-        X, y, X_pd, y_pd = self._prepare_data(X, y)
-        index_df = pd.Series(y_pd.index)
-        indices = self._component_obj.fit_resample(X_pd, y_pd)
+        X_ww, y_ww = self._prepare_data(X, y)
+        index_df = pd.Series(y_ww.index)
+        indices = self._component_obj.fit_resample(X_ww, y_ww)
         train_indices = index_df[index_df.isin(indices)].index.values.tolist()
-        return X.iloc[train_indices], y.iloc[train_indices]
+        return X_ww.iloc[train_indices], y_ww.iloc[train_indices]

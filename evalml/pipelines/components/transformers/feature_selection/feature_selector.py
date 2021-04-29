@@ -3,7 +3,6 @@ import pandas as pd
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -25,26 +24,25 @@ class FeatureSelector(Transformer):
         """Transforms input data by selecting features. If the component_obj does not have a transform method, will raise an MethodPropertyNotFoundError exception.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Target data. Ignored.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Target data. Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        self.input_feature_names = list(X.columns.values)
+        self.input_feature_names = list(X_ww.columns.values)
 
         try:
             X_t = self._component_obj.transform(X)
         except AttributeError:
             raise MethodPropertyNotFoundError("Feature selector requires a transform method or a component_obj that implements transform")
 
-        X_dtypes = X.dtypes.to_dict()
+        X_dtypes = X_ww.dtypes.to_dict()
         selected_col_names = self.get_names()
         col_types = {key: X_dtypes[key] for key in selected_col_names}
-        features = pd.DataFrame(X_t, columns=selected_col_names, index=X.index).astype(col_types)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, features)
+        features = pd.DataFrame(X_t, columns=selected_col_names, index=X_ww.index).astype(col_types)
+        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, features)
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)

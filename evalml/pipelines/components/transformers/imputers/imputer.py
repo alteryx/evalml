@@ -1,7 +1,6 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -59,21 +58,18 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+            X (pd.DataFrame, np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.select(['category', 'boolean']).columns)
-        numeric_cols = list(X.select('numeric').columns)
-
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        cat_cols = list(X.ww.select(['category', 'boolean']).columns)
+        numeric_cols = list(X.ww.select(['numeric']).columns)
 
         self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
-        X_copy = X.copy()
-        X_null_dropped = X_copy.drop(self._all_null_cols, axis=1, errors='ignore')
+        X_null_dropped = X.ww.drop(self._all_null_cols)
 
         X_numerics = X_null_dropped[[col for col in numeric_cols if col not in self._all_null_cols]]
         if len(X_numerics.columns) > 0:
@@ -91,26 +87,25 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
-        X_null_dropped = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
-        X_null_dropped.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
+        X_null_dropped = X_ww.ww.drop(self._all_null_cols)
         if X_null_dropped.empty:
-            return _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
+            return X_null_dropped
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
-            X_numeric = X_null_dropped[self._numeric_cols]
-            imputed = self._numeric_imputer.transform(X_numeric).to_dataframe()
+            X_numeric = X_null_dropped.ww[self._numeric_cols.tolist()]
+            imputed = self._numeric_imputer.transform(X_numeric)
             X_null_dropped[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
-            X_categorical = X_null_dropped[self._categorical_cols]
-            imputed = self._categorical_imputer.transform(X_categorical).to_dataframe()
+            X_categorical = X_null_dropped.ww[self._categorical_cols.tolist()]
+            imputed = self._categorical_imputer.transform(X_categorical)
             X_null_dropped[X_categorical.columns] = imputed
-        X_null_dropped = _retain_custom_types_and_initalize_woodwork(X_ww, X_null_dropped)
+        X_null_dropped = _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_null_dropped)
         return X_null_dropped
