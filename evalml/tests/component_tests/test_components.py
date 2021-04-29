@@ -831,8 +831,6 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
-        if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-            continue
         print('Testing serialization of component {}'.format(component_class.name))
         try:
             component = helper_functions.safe_init_component_with_njobs_1(component_class)
