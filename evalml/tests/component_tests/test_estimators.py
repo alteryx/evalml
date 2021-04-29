@@ -22,10 +22,14 @@ from evalml.problem_types import (
 from evalml.utils import get_random_state
 
 
-def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
+def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, ts_data, helper_functions):
     for estimator_class in _all_estimators_used_in_search():
+        if estimator_class.__name__ == 'ARIMARegressor':
+            continue
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
+            if estimator_class.name == 'ARIMA Regressor':
+                continue
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             if is_binary(problem_type):
                 X, y = X_y_binary
@@ -98,23 +102,36 @@ def test_all_estimators_check_fit_input_type_regression(data_type, X_y_regressio
         component.predict(X)
 
 
-def test_estimator_predict_output_type(X_y_binary, helper_functions):
+def test_estimator_predict_output_type(X_y_binary, ts_data, helper_functions):
     X_np, y_np = X_y_binary
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
+
     y_list = list(y_np)
     X_df_no_col_names = pd.DataFrame(X_np)
     range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
     X_df_with_col_names = pd.DataFrame(X_np, columns=['x' + str(i) for i in range(X_np.shape[1])])
     y_series_no_name = pd.Series(y_np)
     y_series_with_name = pd.Series(y_np, name='target')
-    datatype_combos = [(X_np, y_np, range_index, np.unique(y_np)),
-                       (X_np, y_list, range_index, np.unique(y_np)),
-                       (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
-                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
+    X_df_no_col_names_ts = pd.DataFrame(data=X_df_no_col_names.values, columns=X_df_no_col_names.columns,
+                                        index=pd.date_range(start='1/1/2018', periods=X_df_no_col_names.shape[0]))
+    X_df_with_col_names_ts = pd.DataFrame(data=X_df_with_col_names.values,
+                                          columns=['x' + str(i) for i in range(X_np.shape[1])],
+                                          index=pd.date_range(start='1/1/2018', periods=X_df_with_col_names.shape[0]))
+
+    datatype_combos = [(X_np, y_np, range_index, np.unique(y_np), False),
+                       (X_np, y_list, range_index, np.unique(y_np), False),
+                       (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique(), False),
+                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique(), False),
+                       (X_df_no_col_names_ts, y_series_no_name, range_index, y_series_no_name.unique(), True),
+                       (X_df_with_col_names_ts, y_series_with_name, X_df_with_col_names_ts.columns, y_series_with_name.unique(), True)]
 
     for component_class in _all_estimators_used_in_search():
-        for X, y, X_cols_expected, y_cols_expected in datatype_combos:
+        for X, y, X_cols_expected, y_cols_expected, time_series in datatype_combos:
+            if component_class.name == 'ARIMA Regressor' and not time_series:
+                continue
+            elif component_class.name != 'ARIMA Regressor' and time_series:
+                continue
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
@@ -124,11 +141,15 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
             predict_output = component.predict(X)
             assert isinstance(predict_output, ww.DataColumn)
             assert len(predict_output) == len(y)
-            assert predict_output.name is None
+            if component_class.name == 'ARIMA Regressor':
+                assert predict_output.name == 'predicted_mean'
+            else:
+                assert predict_output.name is None
 
             if not ((ProblemTypes.BINARY in component_class.supported_problem_types) or
                     (ProblemTypes.MULTICLASS in component_class.supported_problem_types)):
                 continue
+
             print('Checking output of predict_proba for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),

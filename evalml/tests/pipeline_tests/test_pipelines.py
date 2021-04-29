@@ -65,11 +65,12 @@ def test_allowed_model_families(has_minimal_dependencies):
     assert set(allowed_model_families(ProblemTypes.REGRESSION)) == expected_model_families_regression
 
 
-def test_all_estimators(has_minimal_dependencies):
+def test_all_estimators(has_minimal_dependencies, is_running_py_39_or_above):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 10
     else:
-        assert len(_all_estimators_used_in_search()) == 16
+        n_estimators = 16 if is_running_py_39_or_above else 17
+        assert len(_all_estimators_used_in_search()) == n_estimators
 
 
 def test_required_fields():
@@ -1606,15 +1607,15 @@ def test_predict_has_input_target_name(problem_type, X_y_binary, X_y_multi, X_y_
 
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         X, y = ts_data
-        clf = time_series_regression_pipeline_class(parameters={"pipeline": {"gap": 0, "max_delay": 0}})
+        clf = time_series_regression_pipeline_class(parameters={"pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
         clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                           "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = X_y_multi
         clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                               "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     y = pd.Series(y, name="test target name")
     clf.fit(X, y)
     if is_time_series(problem_type):
@@ -1750,7 +1751,7 @@ def test_binary_pipeline_string_target_thresholding(is_time_series, make_data_ty
     pipeline_class = time_series_binary_classification_pipeline_class if is_time_series else logistic_regression_binary_pipeline_class
 
     pipeline = pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                          "pipeline": {"gap": 0, "max_delay": 1}})
+                                          "pipeline": {"gap": 0, "max_delay": 1, "date_index": None}})
     pipeline.fit(X, y)
     assert pipeline.threshold is None
     pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
