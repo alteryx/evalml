@@ -68,6 +68,8 @@ Note that if you're on Mac, there are a few extra steps you'll want to keep trac
 
 * Please create your pull request initially as [a "Draft" PR](https://docs.github.com/en/free-pro-team@latest/github/collaborating-with-issues-and-pull-requests/about-pull-requests#draft-pull-requests). This signals the team to ignore it and to allow you to develop. When the checkin tests are passing and you're ready to get your pull request reviewed and merged, please convert it to a normal PR for review.
 
+* We use GitHub Actions to run our PR checkin tests. On creation of the PR and for every change you make to your PR, you'll need a maintainer to click "Approve and run" on your PR. This is a change [GitHub made in April 2021](https://github.blog/2021-04-22-github-actions-update-helping-maintainers-combat-bad-actors/).
+
 * We ask that all contributors sign our contributor license agreement (CLA) the first time they contribute to evalml. The CLA assistant will place a message on your PR; follow the instructions there to sign the CLA.
 
 Add a description of your PR to the subsection that most closely matches your contribution:
