@@ -20,7 +20,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     PipelineBase,
     TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassPipeline
+    TimeSeriesMulticlassClassificationPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -639,7 +639,7 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
         problem_type = 'time series binary'
     else:
         X, y = X_y_multi
-        baseline = TimeSeriesMulticlassPipeline(component_graph=["Time Series Baseline Estimator"],
+        baseline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Time Series Baseline Estimator"],
                                                 parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
         problem_type = 'time series multiclass'
