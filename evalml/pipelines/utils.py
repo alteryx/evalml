@@ -276,7 +276,3 @@ def _make_component_list_from_actions(actions):
             if metadata["is_target"]:
                 components.append(TargetImputer(impute_strategy=metadata["impute_strategy"]))
     return components
-
-
-def make_baseline_pipeline():
-    pass

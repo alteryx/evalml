@@ -2861,7 +2861,6 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
 
 
 def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_binary_pipeline_class):
-
     X, y = X_y_binary
 
     with pytest.raises(ValueError, match="Parameter allowed_pipelines must be either None or a list!"):

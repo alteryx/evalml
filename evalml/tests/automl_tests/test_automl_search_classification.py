@@ -634,13 +634,13 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
         baseline = TimeSeriesBinaryClassificationPipeline(component_graph=["Time Series Baseline Estimator"],
-                                            parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+                                                          parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_binary_score.return_value = {"Log Loss Binary": 0.2}
         problem_type = 'time series binary'
     else:
         X, y = X_y_multi
         baseline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Time Series Baseline Estimator"],
-                                                parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+                                                              parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
         problem_type = 'time series multiclass'
 
