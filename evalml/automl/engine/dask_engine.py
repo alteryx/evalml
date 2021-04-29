@@ -103,7 +103,6 @@ class DaskEngine(EngineBase):
                 occurring in the dask cluster
         """
         # Get the schema before we lose it
-        X, y = infer_feature_types(X), infer_feature_types(y)
         X_schema = X.ww.schema
         y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)
@@ -129,7 +128,6 @@ class DaskEngine(EngineBase):
                 occurring in the dask cluster
         """
         # Get the schema before we lose it
-        X, y = infer_feature_types(X), infer_feature_types(y)
         X_schema = X.ww.schema
         y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)

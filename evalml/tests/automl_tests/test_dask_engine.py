@@ -88,9 +88,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that evaluating a single pipeline using the parallel engine produces the
         same results as simply running the evaluate_pipeline function. """
         X, y = self.X_y_binary
-        X = pd.DataFrame(X)
         X.ww.init()
-        y = pd.Series(y)
         y.ww.init()
 
         pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
@@ -130,9 +128,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that evaluating multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
-        X = pd.DataFrame(X)
         X.ww.init()
-        y = pd.Series(y)
         y.ww.init()
 
         pipelines = [BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
@@ -174,9 +170,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that scoring a single pipeline using the parallel engine produces the
         same results as simply running the score_pipeline function. """
         X, y = self.X_y_binary
-        X = pd.DataFrame(X)
         X.ww.init()
-        y = pd.Series(y)
         y.ww.init()
 
         pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
@@ -202,9 +196,7 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that scoring multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
-        X = pd.DataFrame(X)
         X.ww.init()
-        y = pd.Series(y)
         y.ww.init()
 
         pipelines = [BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],

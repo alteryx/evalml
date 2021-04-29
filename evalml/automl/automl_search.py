@@ -587,9 +587,8 @@ class AutoMLSearch:
                 y_train = self.y_train
                 if hasattr(self.data_splitter, "transform_sample"):
                     train_indices = self.data_splitter.transform_sample(X_train, y_train)
-                    X_train = X_train.iloc[train_indices]
-                    y_train = y_train.iloc[train_indices]
-                X_train.ww.init(logical_types=self.X_train.ww.logical_types)
+                    X_train = X_train.ww.iloc[train_indices]
+                    y_train = y_train.ww.iloc[train_indices]
                 best_pipeline = self._engine.submit_training_job(self.automl_config, best_pipeline,
                                                                  X_train, y_train).get_result()
 
@@ -981,6 +980,7 @@ class AutoMLSearch:
             Note that the any pipelines that error out during scoring will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
+        X_holdout, y_holdout = infer_feature_types(X_holdout), infer_feature_types(y_holdout)
         check_all_pipeline_names_unique(pipelines)
         scores = {}
         objectives = [get_objective(o, return_instance=True) for o in objectives]

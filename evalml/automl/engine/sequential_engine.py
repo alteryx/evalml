@@ -6,7 +6,7 @@ from evalml.automl.engine.engine_base import (
     score_pipeline
 )
 from evalml.objectives.utils import get_objective
-from evalml.utils import infer_feature_types
+
 
 class SequentialComputation(EngineComputation):
     """A Future-like api for jobs created by the SequentialEngine.
@@ -51,7 +51,6 @@ class SequentialEngine(EngineBase):
                                      logger=logger)
 
     def submit_training_job(self, automl_config, pipeline, X, y):
-        X, y = infer_feature_types(X), infer_feature_types(y)
         return SequentialComputation(work=train_pipeline,
                                      pipeline=pipeline, X=X,
                                      y=y,
@@ -61,7 +60,6 @@ class SequentialEngine(EngineBase):
                                      y_schema=y.ww.schema)
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
-        X, y = infer_feature_types(X), infer_feature_types(y)
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         computation = SequentialComputation(work=score_pipeline,
                                             pipeline=pipeline,

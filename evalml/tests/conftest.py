@@ -137,8 +137,9 @@ def X_y_binary():
 
 @pytest.fixture(scope="class")
 def X_y_binary_cls(request):
-    request.cls.X_y_binary = datasets.make_classification(n_samples=100, n_features=20,
-                                                          n_informative=2, n_redundant=2, random_state=0)
+    X, y = datasets.make_classification(n_samples=100, n_features=20,
+                                        n_informative=2, n_redundant=2, random_state=0)
+    request.cls.X_y_binary = pd.DataFrame(X), pd.Series(y)
 
 
 @pytest.fixture

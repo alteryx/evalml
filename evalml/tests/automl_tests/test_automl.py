@@ -2762,7 +2762,7 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(X_
         automl.train_pipelines([Pipeline2({}), Pipeline1({})])
 
     with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
-        automl.score_pipelines([Pipeline2({}), Pipeline1({})], None, None, None)
+        automl.score_pipelines([Pipeline2({}), Pipeline1({})], X, y, None)
 
 
 def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_binary_pipeline_class, caplog):

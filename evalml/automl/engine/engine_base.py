@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
@@ -107,6 +108,10 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective, X_schema=None
     """
     X_threshold_tuning = None
     y_threshold_tuning = None
+    if X_schema:
+        X.ww.init(schema=X_schema)
+    if y_schema:
+        y.ww.init(schema=y_schema)
     if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
         X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
                                                                   test_size=0.2, random_seed=pipeline.random_seed)
@@ -137,7 +142,7 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     if is_classification(automl_config.problem_type):
         y_mapping = {original_target: encoded_target for (encoded_target, original_target) in
                      enumerate(full_y_train.value_counts().index)}
-        full_y_train = full_y_train.ww.map(y_mapping)
+        full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
     for i, (train, valid) in enumerate(automl_config.data_splitter.split(full_X_train, full_y_train)):
         if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
@@ -147,8 +152,6 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
         y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        #X_train.ww.init(logical_types=X_data_types)
-        #X_valid.ww.init(logical_types=X_data_types)
         if is_binary(automl_config.problem_type) or is_multiclass(automl_config.problem_type):
             diff_train = set(np.setdiff1d(full_y_train, y_train))
             diff_valid = set(np.setdiff1d(full_y_train, y_valid))
@@ -242,6 +245,8 @@ def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
     Returns:
        dict containing pipeline scores.
     """
-    X.ww.init(schema=X_schema)
-    y.ww.init(schema=y_schema)
+    if X_schema:
+        X.ww.init(schema=X_schema)
+    if y_schema:
+        y.ww.init(schema=y_schema)
     return pipeline.score(X, y, objectives)
