@@ -8,6 +8,7 @@ from evalml.automl.engine.engine_base import (
     score_pipeline,
     train_pipeline
 )
+from evalml.utils import infer_feature_types
 
 
 class DaskComputation(EngineComputation):
@@ -101,12 +102,18 @@ class DaskEngine(EngineBase):
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
+        # Get the schema before we lose it
+        X, y = infer_feature_types(X), infer_feature_types(y)
+        X_schema = X.ww.schema
+        y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(train_pipeline,
                                          pipeline=pipeline, X=X,
                                          y=y,
                                          optimize_thresholds=automl_config.optimize_thresholds,
-                                         objective=automl_config.objective)
+                                         objective=automl_config.objective,
+                                         X_schema=X_schema,
+                                         y_schema=y_schema)
         return DaskComputation(dask_future)
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives) -> EngineComputation:
@@ -121,9 +128,14 @@ class DaskEngine(EngineBase):
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
+        # Get the schema before we lose it
+        X, y = infer_feature_types(X), infer_feature_types(y)
+        X_schema = X.ww.schema
+        y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(score_pipeline, pipeline=pipeline,
-                                         X=X, y=y, objectives=objectives)
+                                         X=X, y=y, objectives=objectives,
+                                         X_schema=X_schema, y_schema=y_schema)
         computation = DaskComputation(dask_future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation

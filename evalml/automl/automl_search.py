@@ -945,8 +945,8 @@ class AutoMLSearch:
         # Apply sampling
         if hasattr(self.data_splitter, "transform_sample"):
             train_indices = self.data_splitter.transform_sample(X_train, y_train)
-            X_train = X_train.iloc[train_indices]
-            y_train = y_train.iloc[train_indices]
+            X_train = X_train.ww.iloc[train_indices]
+            y_train = y_train.ww.iloc[train_indices]
 
         for pipeline in pipelines:
             computations.append(self._engine.submit_training_job(self.automl_config, pipeline, X_train, y_train))

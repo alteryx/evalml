@@ -90,7 +90,7 @@ class EngineBase(ABC):
         """Submit job for pipeline scoring."""
 
 
-def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
+def train_pipeline(pipeline, X, y, optimize_thresholds, objective, X_schema=None, y_schema=None):
     """Train a pipeline and tune the threshold if necessary.
 
     Arguments:
@@ -99,6 +99,8 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
         y (ww.DataColumn, pd.Series): Target to train on.
         optimize_thresholds (bool): Whether to tune the threshold (if pipeline supports it).
         objective (ObjectiveBase): Objective used in threshold tuning.
+        X_schema (ww.TableSchema): Woodwork schema.
+        y_schema (ww.ColumnSchema): Woodwork schema.
 
     Returns:
         pipeline (PipelineBase): trained pipeline.
@@ -130,25 +132,23 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     """
     start = time.time()
     cv_data = []
-    X_data_types = full_X_train.ww.logical_types
     logger.info("\tStarting cross validation")
-    y_pd_encoded = full_y_train
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
         y_mapping = {original_target: encoded_target for (encoded_target, original_target) in
                      enumerate(full_y_train.value_counts().index)}
-        y_pd_encoded = full_y_train.map(y_mapping)
+        full_y_train = full_y_train.ww.map(y_mapping)
     cv_pipeline = pipeline
-    for i, (train, valid) in enumerate(automl_config.data_splitter.split(full_X_train, y_pd_encoded)):
+    for i, (train, valid) in enumerate(automl_config.data_splitter.split(full_X_train, full_y_train)):
         if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
             logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
             break
         logger.debug(f"\t\tTraining and scoring on fold {i}")
-        X_train, X_valid = full_X_train.iloc[train], full_X_train.iloc[valid]
-        y_train, y_valid = full_y_train.iloc[train], full_y_train.iloc[valid]
-        X_train.ww.init(logical_types=X_data_types)
-        X_valid.ww.init(logical_types=X_data_types)
+        X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
+        y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
+        #X_train.ww.init(logical_types=X_data_types)
+        #X_valid.ww.init(logical_types=X_data_types)
         if is_binary(automl_config.problem_type) or is_multiclass(automl_config.problem_type):
             diff_train = set(np.setdiff1d(full_y_train, y_train))
             diff_valid = set(np.setdiff1d(full_y_train, y_valid))
@@ -229,15 +229,19 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
                                     logger=logger)
 
 
-def score_pipeline(pipeline, X, y, objectives):
+def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
     """Wrapper around pipeline.score method to make it easy to score pipelines with dask.
 
         Arguments:
         pipeline (PipelineBase): The pipeline to score.
         X (ww.DataTable): Features to score on.
         y (ww.DataColumn): Target used to calcualte scores.
+        X_schema (ww.TableSchema): Schema for features.
+        y_schema (ww.ColumnSchema): Schema for columns.
 
     Returns:
        dict containing pipeline scores.
     """
+    X.ww.init(schema=X_schema)
+    y.ww.init(schema=y_schema)
     return pipeline.score(X, y, objectives)

@@ -1040,19 +1040,19 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object'])
 def test_targets_pandas_data_types_classification(data_type, automl_type, target_type, make_data_type):
     if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_breast_cancer(return_pandas=True)
+        X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
-        X, y = load_wine(return_pandas=True)
+        X, y = load_wine()
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in ['category', 'object']:
@@ -2056,18 +2056,18 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
             assert arg.ww.semantic_tags['cat col'] == {'category'}
             assert arg.ww.logical_types['cat col'] == ww.logical_types.Categorical
             assert arg.ww.semantic_tags['num col'] == {'numeric'}
-            assert arg.ww.logical_types['num col'] == evalml.Integer
+            assert arg.ww.logical_types['num col'] == ww.logical_types.Integer
             assert arg.ww.semantic_tags['text col'] == set()
-            assert arg.ww.logical_types['text col'] == evalml.String
+            assert arg.ww.logical_types['text col'] == ww.logical_types.NaturalLanguage
     for arg in mock_score.call_args[0]:
         assert isinstance(arg, (pd.DataFrame, pd.Series))
         if isinstance(arg, pd.DataFrame):
             assert arg.ww.semantic_tags['cat col'] == {'category'}
             assert arg.ww.logical_types['cat col'] == ww.logical_types.Categorical
             assert arg.ww.semantic_tags['num col'] == {'numeric'}
-            assert arg.ww.logical_types['num col'] == evalml.Integer
+            assert arg.ww.logical_types['num col'] == ww.logical_types.Integer
             assert arg.ww.semantic_tags['text col'] == set()
-            assert arg.ww.logical_types['text col'] == evalml.String
+            assert arg.ww.logical_types['text col'] == ww.logical_types.NaturalLanguage
 
 
 def test_automl_validates_problem_configuration(X_y_binary):
