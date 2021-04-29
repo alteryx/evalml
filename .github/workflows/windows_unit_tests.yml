@@ -58,11 +58,6 @@ jobs:
           conda config --add channels conda-forge
           conda activate curr_py
           conda install numba -q -y
-      - name: Install sktime
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate curr_py
-          pip install sktime
       - name: Install EvalML with test requirements
         shell: pwsh
         run: |
