@@ -68,8 +68,8 @@ def test_make_pipeline_custom_hyperparameters(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters, custom_hyperparameters)
             assert pipeline.custom_hyperparameters == custom_hyperparameters
@@ -98,8 +98,8 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -136,8 +136,8 @@ def test_make_pipeline(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -174,8 +174,8 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -212,8 +212,8 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -247,8 +247,8 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -285,8 +285,8 @@ def test_make_pipeline_text_columns(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -322,8 +322,8 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -356,8 +356,8 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -385,8 +385,8 @@ def test_make_pipeline_numpy_input(problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -419,8 +419,8 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "soem dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)

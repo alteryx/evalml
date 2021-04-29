@@ -16,10 +16,11 @@ class DelayedFeatureTransformer(Transformer):
     hyperparameter_ranges = {}
     needs_fitting = False
 
-    def __init__(self, max_delay=2, delay_features=True, delay_target=True, gap=1, random_seed=0, **kwargs):
+    def __init__(self, date_index=None, max_delay=2, delay_features=True, delay_target=True, gap=1, random_seed=0, **kwargs):
         """Creates a DelayedFeatureTransformer.
 
         Arguments:
+            date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
             max_delay (int): Maximum number of time units to delay each feature.
             delay_features (bool): Whether to delay the input features.
             delay_target (bool): Whether to delay the target.
@@ -29,6 +30,7 @@ class DelayedFeatureTransformer(Transformer):
                 at 1.
             random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
         """
+        self.date_index = date_index
         self.max_delay = max_delay
         self.delay_features = delay_features
         self.delay_target = delay_target
@@ -36,7 +38,7 @@ class DelayedFeatureTransformer(Transformer):
         # If 0, start at 1
         self.start_delay_for_target = int(gap == 0)
 
-        parameters = {"max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
+        parameters = {"date_index": date_index, "max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
                       "gap": gap}
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
