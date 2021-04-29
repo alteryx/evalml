@@ -63,7 +63,12 @@ from evalml.preprocessing import (
     TrainingValidationSplit,
     split_data
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_classification,
+    is_time_series
+)
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
@@ -2871,3 +2876,62 @@ def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_
 
     with pytest.raises(ValueError, match="Every element of allowed_pipelines must an instance of PipelineBase!"):
         AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.custom_name, dummy_binary_pipeline_class])
+
+
+@pytest.mark.parametrize("problem_type", [problem_type for problem_type in ProblemTypes.all_problem_types if not is_time_series(problem_type)])
+def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
+    X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
+    y = pd.Series([10, 11, 10, 10])
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([10, 11, 12, 11])
+    automl = AutoMLSearch(X, y, problem_type=problem_type)
+    baseline = automl._get_baseline_pipeline()
+    baseline.fit(X, y)
+
+    if problem_type == ProblemTypes.BINARY:
+        expected_predictions = pd.Series(np.array([10] * len(X)), dtype="Int64")
+        expected_predictions_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
+    if problem_type == ProblemTypes.MULTICLASS:
+        expected_predictions = pd.Series(np.array([11] * len(X)), dtype="Int64")
+        expected_predictions_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
+    if problem_type == ProblemTypes.REGRESSION:
+        mean = y.mean()
+        expected_predictions = pd.Series([mean] * len(X))
+
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X).to_series())
+    if is_classification(problem_type):
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X).to_dataframe())
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
+
+
+@pytest.mark.parametrize('gap', [0, 1])
+@pytest.mark.parametrize("problem_type", [problem_type for problem_type in ProblemTypes.all_problem_types if is_time_series(problem_type)])
+def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type, gap):
+    X = pd.DataFrame({"a": [4, 5, 6, 7, 8]})
+    y = pd.Series([0, 1, 1, 0, 1])
+    expected_predictions_proba = pd.DataFrame({0: pd.Series([1, 0, 0, 1, 0], dtype="float64"),
+                                               1: pd.Series([0, 1, 1, 0, 1], dtype="float64")})
+    if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        y = pd.Series([0, 1, 2, 2, 1])
+        expected_predictions_proba = pd.DataFrame({0: pd.Series([1, 0, 0, 0, 0], dtype="float64"),
+                                                   1: pd.Series([0, 1, 0, 0, 1], dtype="float64"),
+                                                   2: pd.Series([0, 0, 1, 1, 0], dtype="float64")})
+    if gap == 0:
+        # Shift to pad the first row with Nans
+        expected_predictions_proba = expected_predictions_proba.shift(1)
+
+    automl = AutoMLSearch(X, y,
+                          problem_type=problem_type,
+                          problem_configuration={"gap": gap, "max_delay": 1})
+    baseline = automl._get_baseline_pipeline()
+    baseline.fit(X, y)
+
+    expected_predictions = y.shift(1) if gap == 0 else y
+    expected_predictions = expected_predictions.reset_index(drop=True)
+    if not expected_predictions.isnull().values.any():
+        expected_predictions = expected_predictions.astype("Int64")
+
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y).to_series())
+    if is_classification(problem_type):
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y).to_dataframe())
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
