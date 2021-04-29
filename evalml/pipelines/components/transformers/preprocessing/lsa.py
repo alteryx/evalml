@@ -41,11 +41,11 @@ class LSA(TextTransformer):
         """Transforms data X by applying the LSA pipeline.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): The data to transform.
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): The data to transform.
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X. The original column is removed and replaced with two columns of the
+            pd.DataFrame: Transformed X. The original column is removed and replaced with two columns of the
                           format `LSA(original_column_name)[feature_number]`, where `feature_number` is 0 or 1.
         """
         X_ww = infer_feature_types(X)

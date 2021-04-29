@@ -58,7 +58,6 @@ def test_no_oversample(data_type, sampler, make_data_type, X_y_binary):
     else:
         new_X, new_y = oversampler.fit_transform(X, y)
 
-
     np.testing.assert_equal(X, new_X.values)
     np.testing.assert_equal(y, new_y.values)
 

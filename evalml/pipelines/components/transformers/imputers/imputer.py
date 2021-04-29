@@ -58,8 +58,8 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+            X (pd.DataFrame, np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -87,11 +87,11 @@ class Imputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
         X_null_dropped = X_ww.ww.drop(self._all_null_cols)

@@ -293,7 +293,7 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
     override_types = [Integer, Double, Categorical, Datetime, Boolean]
     for logical_type in override_types:
         try:
-            X = X_df
+            X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
         except ww.exceptions.TypeConversionError:
             continue

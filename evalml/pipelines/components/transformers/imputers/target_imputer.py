@@ -60,8 +60,8 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples].
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
+            y (pd.Series, optional): The target training data of length [n_samples].
 
         Returns:
             self
@@ -81,11 +81,11 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         """Transforms input target data by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Features. Ignored.
-            y (ww.DataColumn, pd.Series): Target data to impute.
+            X (pd.DataFrame): Features. Ignored.
+            y (pd.Series): Target data to impute.
 
         Returns:
-            (ww.DataTable, ww.DataColumn): The original X, transformed y
+            (pd.DataFrame, pd.Series): The original X, transformed y
         """
 
         if X is not None:
@@ -109,10 +109,10 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         """Fits on and transforms the input target data.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Features. Ignored.
-            y (ww.DataColumn, pd.Series): Target data to impute.
+            X (pd.DataFrame): Features. Ignored.
+            y (pd.Series): Target data to impute.
 
         Returns:
-            (ww.DataTable, ww.DataColumn): The original X, transformed y
+            (pd.DataFrame, pd.Series): The original X, transformed y
         """
         return self.fit(X, y).transform(X, y)

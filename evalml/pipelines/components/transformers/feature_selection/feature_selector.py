@@ -24,11 +24,11 @@ class FeatureSelector(Transformer):
         """Transforms input data by selecting features. If the component_obj does not have a transform method, will raise an MethodPropertyNotFoundError exception.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Target data. Ignored.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Target data. Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
         self.input_feature_names = list(X_ww.columns.values)

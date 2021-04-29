@@ -40,8 +40,8 @@ class ColumnSelector(Transformer):
         """Fits the transformer by checking if column names are present in the dataset.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to check.
-            y (ww.DataColumn, pd.Series, optional): Targets.
+            X (pd.DataFrame): Data to check.
+            y (pd.Series, optional): Targets.
 
         Returns:
             self
@@ -71,11 +71,11 @@ class DropColumns(ColumnSelector):
         """Transforms data X by dropping columns.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Targets.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
 
         Returns:
-            ww.DataTable: Transformed X.
+            pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)
 
@@ -93,10 +93,10 @@ class SelectColumns(ColumnSelector):
         """Transforms data X by selecting columns.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Targets.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
 
         Returns:
-            ww.DataTable: Transformed X.
+            pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)

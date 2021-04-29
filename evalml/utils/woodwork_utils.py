@@ -54,22 +54,16 @@ def infer_feature_types(data, feature_types=None):
 
     _raise_value_error_if_nullable_types_detected(data)
 
-    ww_data = data.copy()
+    if data.ww.schema is not None:
+        data.ww.init(schema=data.ww.schema)
+        return data
 
     if isinstance(data, pd.Series):
-        if data.ww.schema is not None:
-            ww_data = ww.init_series(ww_data, logical_type=data.ww.logical_type,
-                                     semantic_tags=data.ww.semantic_tags,
-                                     description=data.ww.description)
-        else:
-            ww_data = ww.init_series(ww_data, logical_type=feature_types)
+        return ww.init_series(data, logical_type=feature_types)
     else:
-        if data.ww.schema is not None:
-            ww_data.ww.init(schema=data.ww.schema)
-        else:
-            ww_data.ww.init(logical_types=feature_types)
-
-    return ww_data
+        ww_data = data.copy()
+        ww_data.ww.init(logical_types=feature_types)
+        return ww_data
 
 
 def _convert_woodwork_types_wrapper():

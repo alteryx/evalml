@@ -60,8 +60,8 @@ class TextFeaturizer(TextTransformer):
         """Fits component to data
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -97,11 +97,11 @@ class TextFeaturizer(TextTransformer):
         """Transforms data X by creating new features using existing text columns
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): The data to transform.
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): The data to transform.
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
         if self._features is None or len(self._features) == 0:

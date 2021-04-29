@@ -47,8 +47,8 @@ class PerColumnImputer(Transformer):
         """Fits imputers on input data
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.
+            y (pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
             self
@@ -70,14 +70,14 @@ class PerColumnImputer(Transformer):
         """Transforms input data by imputing missing values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]. Ignored.
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
+            y (pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
-        original_logical_types = {col: value for col, value in X_ww.ww.logical_types.items()}
+        original_logical_types = X_ww.ww.schema.logical_types
 
         cols_to_drop = []
         for column, imputer in self.imputers.items():

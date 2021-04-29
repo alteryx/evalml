@@ -28,11 +28,11 @@ class Transformer(ComponentBase):
         """Transforms data X.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Target data.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Target data.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
         if y is not None:
@@ -48,11 +48,11 @@ class Transformer(ComponentBase):
         """Fits on X and transforms X
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to fit and transform
-            y (ww.DataColumn, pd.Series): Target data
+            X (pd.DataFrame): Data to fit and transform
+            y (pd.Series): Target data
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
         if y is not None:

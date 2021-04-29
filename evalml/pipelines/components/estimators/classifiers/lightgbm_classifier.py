@@ -75,7 +75,7 @@ class LightGBMClassifier(Estimator):
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
         X = infer_feature_types(X)
-        cat_cols = map(str, list(X.ww.select('category').columns))
+        cat_cols = X.ww.select('category').columns
         if fit:
             self.input_feature_names = list(X.columns)
         X_encoded = _rename_column_names_to_numeric(X)
@@ -102,7 +102,7 @@ class LightGBMClassifier(Estimator):
         return y_encoded
 
     def fit(self, X, y=None):
-        X_encoded = infer_feature_types(X)
+        X = infer_feature_types(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
         self._component_obj.fit(X_encoded, y_encoded)

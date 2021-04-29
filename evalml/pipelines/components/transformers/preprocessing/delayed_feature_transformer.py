@@ -42,8 +42,8 @@ class DelayedFeatureTransformer(Transformer):
         """Fits the DelayFeatureTransformer.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
@@ -76,11 +76,11 @@ class DelayedFeatureTransformer(Transformer):
         If y is not None, it will also compute the delayed values for the target variable.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
-            y (ww.DataColumn, pd.Series, or None): Target.
+            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (pd.Series, or None): Target.
 
         Returns:
-            ww.DataTable: Transformed X.
+            pd.DataFrame: Transformed X.
         """
         if X is None:
             X = pd.DataFrame()

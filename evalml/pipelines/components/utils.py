@@ -147,7 +147,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Features
+            X (pd.DataFrame): Features
 
         Returns:
             np.ndarray: Predicted values
@@ -160,7 +160,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Make probability estimates for labels.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Features
+            X (pd.DataFrame): Features
 
         Returns:
             np.ndarray: Probability estimates
@@ -188,8 +188,8 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Fits component to data
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -201,7 +201,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Features
+            X (pd.DataFrame): Features
 
         Returns:
             np.ndarray: Predicted values

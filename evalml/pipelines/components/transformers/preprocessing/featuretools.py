@@ -8,7 +8,7 @@ from evalml.utils import (
 
 
 class DFSTransformer(Transformer):
-    """Featuretools DFS component that generates features for ww.DataTables and pd.DataFrames"""
+    """Featuretools DFS component that generates features for pd.DataFrames"""
     name = "DFS Transformer"
     hyperparameter_ranges = {}
 
@@ -43,15 +43,15 @@ class DFSTransformer(Transformer):
         """Fits the DFSTransformer Transformer component.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            X (pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
         Returns:
             self
         """
-        X = infer_feature_types(X)
-        X.columns = X.columns.astype(str)
-        es = self._make_entity_set(X)
+        X_ww = infer_feature_types(X)
+        X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
+        es = self._make_entity_set(X_ww)
         self.features = dfs(entityset=es,
                             target_entity='X',
                             features_only=True)
@@ -61,11 +61,11 @@ class DFSTransformer(Transformer):
         """Computes the feature matrix for the input X using featuretools' dfs algorithm.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Feature matrix
+            pd.DataFrame: Feature matrix
         """
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})

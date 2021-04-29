@@ -49,10 +49,10 @@ class Estimator(ComponentBase):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame, np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataColumn: Predicted values
+            pd.Series: Predicted values
         """
         try:
             X = infer_feature_types(X)
@@ -65,10 +65,10 @@ class Estimator(ComponentBase):
         """Make probability estimates for labels.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Features
+            X (pd.DataFrame, or np.ndarray): Features
 
         Returns:
-            ww.DataTable: Probability estimates
+            pd.Series: Probability estimates
         """
         try:
             X = infer_feature_types(X)

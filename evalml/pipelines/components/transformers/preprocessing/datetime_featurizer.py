@@ -80,11 +80,11 @@ class DateTimeFeaturizer(Transformer):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
         features_to_extract = self.parameters["features_to_extract"]

@@ -40,8 +40,8 @@ class SimpleImputer(Transformer):
             treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, optional): the target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): the target training data of length [n_samples]
 
         Returns:
             self
@@ -49,7 +49,10 @@ class SimpleImputer(Transformer):
         X = infer_feature_types(X)
 
         # Not using select because we just need column names, not a new dataframe
-        X.ww.set_types({col: "Categorical" for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage})
+        natural_language_columns = [col for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage]
+        if natural_language_columns:
+            X = X.ww.copy()
+            X.ww.set_types({col: "Categorical" for col in natural_language_columns})
 
         # Convert all bool dtypes to category for fitting
         if (X.dtypes == bool).all():
@@ -63,14 +66,14 @@ class SimpleImputer(Transformer):
         """Transforms input by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
-        original_logical_types = {col: value for col, value in X_ww.ww.logical_types.items()}
+        original_logical_types = X_ww.ww.schema.logical_types
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X_ww.dtypes == bool).all():
@@ -93,10 +96,10 @@ class SimpleImputer(Transformer):
         """Fits on X and transforms X
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to fit and transform
-            y (ww.DataColumn, pd.Series, optional): Target data.
+            X (pd.DataFrame): Data to fit and transform
+            y (pd.Series, optional): Target data.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         return self.fit(X, y).transform(X, y)

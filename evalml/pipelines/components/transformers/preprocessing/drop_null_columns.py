@@ -41,11 +41,11 @@ class DropNullColumns(Transformer):
         """Transforms data X by dropping columns that exceed the threshold of null values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_t = infer_feature_types(X)
         if len(self._cols_to_drop) == 0:
