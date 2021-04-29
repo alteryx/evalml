@@ -35,7 +35,6 @@ from evalml.objectives import (
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    MeanBaselineRegressionPipeline,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline,
@@ -660,7 +659,9 @@ class AutoMLSearch:
                                                         custom_name="Mode Baseline Multiclass Classification Pipeline",
                                                         custom_hyperparameters={"strategy": ["mode"]})
         elif self.problem_type == ProblemTypes.REGRESSION:
-            baseline = MeanBaselineRegressionPipeline(parameters={})
+            baseline = RegressionPipeline(component_graph=["Baseline Regressor"],
+                                          custom_name="Mean Baseline Regression Pipeline",
+                                          custom_hyperparameters={"strategy": ["mean"]})
         else:
             pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
                               ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,

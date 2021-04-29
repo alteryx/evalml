@@ -15,13 +15,13 @@ from evalml.model_understanding.prediction_explanations._algorithms import (
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    MeanBaselineRegressionPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
     TimeSeriesBaselineRegressionPipeline
 )
 from evalml.pipelines.components import (
     BaselineClassifier,
+    BaselineRegressor,
     CatBoostClassifier,
     LinearRegressor,
     RandomForestClassifier
@@ -54,7 +54,7 @@ datatype_message = "^Unknown shap_values datatype"
 data_message = "You must pass in a value for parameter 'training_data' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
 
-@pytest.mark.parametrize("pipeline,exception,match", [(MeanBaselineRegressionPipeline, ValueError, baseline_message),
+@pytest.mark.parametrize("pipeline,exception,match", [(make_test_pipeline(BaselineRegressor, RegressionPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline), ValueError, baseline_message),
                                                       (TimeSeriesBaselineRegressionPipeline, ValueError, baseline_message),

@@ -619,9 +619,7 @@ def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_m
                           allowed_pipelines=allowed_pipelines, n_jobs=1)
     automl.search()
 
-    assert start_iteration_callback.call_args_list[0][0][0] == MulticlassClassificationPipeline(component_graph=["Baseline Classifier"],
-                                                                                                custom_name="Mode Baseline Multiclass Classification Pipeline",
-                                                                                                custom_hyperparameters={"strategy": ["mode"]})
+    assert start_iteration_callback.call_args_list[0][0][0] == MulticlassClassificationPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
     assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class
 
