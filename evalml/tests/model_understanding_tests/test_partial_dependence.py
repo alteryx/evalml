@@ -517,3 +517,100 @@ def test_partial_dependence_all_nan_value_error(logistic_regression_binary_pipel
     pred_df = pred_df.rename(columns={"a": 0})
     with pytest.raises(ValueError, match=message.format("'0'")):
         partial_dependence(pl, pred_df, features=0, grid_resolution=10)
+
+
+@pytest.mark.parametrize('problem_type', ['binary', 'multiclass', 'regression'])
+def test_partial_dependence_datetime(problem_type, X_y_regression, X_y_binary, X_y_multi):
+    if problem_type == 'binary':
+        X, y = X_y_binary
+        pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
+    elif problem_type == 'multiclass':
+        X, y = X_y_multi
+        pipeline = MulticlassClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
+    else:
+        X, y = X_y_regression
+        pipeline = RegressionPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor'])
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    X['dt_column'] = pd.Series(pd.date_range('20200101', periods=X.shape[0]))
+
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, features='dt_column')
+    if problem_type == 'multiclass':
+        assert len(part_dep["partial_dependence"]) == 300  # 100 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 300
+    else:
+        assert len(part_dep["partial_dependence"]) == 100
+        assert len(part_dep["feature_values"]) == 100
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features=20)
+    if problem_type == 'multiclass':
+        assert len(part_dep["partial_dependence"]) == 300  # 100 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 300
+    else:
+        assert len(part_dep["partial_dependence"]) == 100
+        assert len(part_dep["feature_values"]) == 100
+    assert not part_dep.isnull().any(axis=None)
+
+    with pytest.raises(ValueError, match='Two-way partial dependence is not supported for datetime columns.'):
+        part_dep = partial_dependence(pipeline, X, features=('0', 'dt_column'))
+    with pytest.raises(ValueError, match='Two-way partial dependence is not supported for datetime columns.'):
+        part_dep = partial_dependence(pipeline, X, features=(0, 20))
+
+
+@pytest.mark.parametrize('problem_type', ['binary', 'regression'])
+def test_graph_partial_dependence_regression_and_binary_datetime(problem_type, X_y_regression, X_y_binary):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    if problem_type == 'binary':
+        X, y = X_y_binary
+        pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
+    else:
+        X, y = X_y_regression
+        pipeline = RegressionPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Linear Regressor'])
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    X['dt_column'] = pd.to_datetime(pd.Series(pd.date_range('20200101', periods=X.shape[0])), errors='coerce')
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='dt_column', grid_resolution=5)
+    plot_data = fig.to_dict()['data'][0]
+    assert plot_data['type'] == 'scatter'
+    assert plot_data['x'].tolist() == list(pd.date_range('20200101', periods=X.shape[0]))
+
+
+def test_graph_partial_dependence_regression_date_order(X_y_binary):
+    pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
+
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'One Hot Encoder', 'DateTime Featurization Component', 'Standard Scaler', 'Logistic Regression Classifier'])
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+    dt_series = pd.Series(pd.date_range('20200101', periods=X.shape[0])).sample(frac=1).reset_index(drop=True)
+    X['dt_column'] = pd.to_datetime(dt_series, errors='coerce')
+
+    pipeline.fit(X, y)
+
+    fig = graph_partial_dependence(pipeline, X, features='dt_column', grid_resolution=5)
+    plot_data = fig.to_dict()['data'][0]
+    assert plot_data['type'] == 'scatter'
+    assert plot_data['x'].tolist() == list(pd.date_range('20200101', periods=X.shape[0]))
+
+
+def test_partial_dependence_respect_grid_resolution():
+    X, y = load_fraud(1000)
+
+    pl = BinaryClassificationPipeline(component_graph=["DateTime Featurization Component", "One Hot Encoder", "Random Forest Classifier"])
+    pl.fit(X, y)
+    dep = partial_dependence(pl, X, features="amount", grid_resolution=20)
+
+    assert dep.shape[0] == 20
+    assert dep.shape[0] != max(X.select('categorical').describe().loc["nunique"]) + 1
+
+    dep = partial_dependence(pl, X, features="provider", grid_resolution=20)
+    assert dep.shape[0] == X['provider'].to_series().nunique()
+    assert dep.shape[0] != max(X.select('categorical').describe().loc["nunique"]) + 1
