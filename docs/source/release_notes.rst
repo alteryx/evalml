@@ -9,6 +9,7 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
+        * Added oversamplers to AutoMLSearch :pr:`2213`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
