@@ -21,8 +21,8 @@ from evalml.pipelines.time_series_baselines import (
 def test_time_series_baseline(mock_decode, mock_encode, pipeline_class, gap, X_none, ts_data):
     X, y = ts_data
 
-    clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1},
-                                     "Time Series Baseline Estimator": {'gap': gap, 'max_delay': 1}})
+    clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1, "date_index": None},
+                                     "Time Series Baseline Estimator": {'gap': gap, 'max_delay': 1, 'date_index': None}})
     expected_y = y.shift(1) if gap == 0 else y
     expected_y = expected_y.reset_index(drop=True)
     if not expected_y.isnull().values.any():
@@ -50,8 +50,8 @@ def test_time_series_baseline_predict_proba(pipeline_class, gap, X_none):
         # Shift to pad the first row with Nans
         expected_proba = expected_proba.shift(1)
 
-    clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1},
-                                     "Time Series Baseline Estimator": {'gap': gap, 'max_delay': 1}})
+    clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": 1, "date_index": None},
+                                     "Time Series Baseline Estimator": {'gap': gap, 'max_delay': 1, 'date_index': None}})
     if X_none:
         X = None
     clf.fit(X, y)
@@ -74,8 +74,8 @@ def test_time_series_baseline_score_offset(mock_encode, mock_binary_classificati
     expected_target = pd.Series(np.arange(1 + gap, 32), index=pd.date_range(f"2020-10-01", f"2020-10-{31-gap}"))
     if gap == 0:
         expected_target = expected_target[1:]
-    clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
-                                     "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
+    clf = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay, "date_index": None},
+                                     "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay, 'date_index': None}})
     mock_score = None
     if pipeline_class == TimeSeriesBaselineRegressionPipeline:
         mock_score = mock_regression_score

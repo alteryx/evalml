@@ -30,17 +30,16 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
                 [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
                 ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary or None implies using all default values for component parameters. Pipeline-level
-                 parameters such as gap and max_delay must be specified with the "pipeline" key. For example:
-                 Pipeline(parameters={"pipeline": {"max_delay": 4, "gap": 2}}).
-            custom_name (str): Custom name for the pipeline. Defaults to None.
-            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
+                 An empty dictionary {} implies using all default values for component parameters. Pipeline-level
+                 parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+                 Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        if parameters is None or "pipeline" not in parameters:
-            raise ValueError("gap and max_delay parameters cannot be omitted from the parameters dict. "
+        if "pipeline" not in parameters:
+            raise ValueError("date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
                              "Please specify them as a dictionary with the key 'pipeline'.")
         pipeline_params = parameters["pipeline"]
+        self.date_index = pipeline_params['date_index']
         self.gap = pipeline_params['gap']
         self.max_delay = pipeline_params['max_delay']
         super().__init__(component_graph,
