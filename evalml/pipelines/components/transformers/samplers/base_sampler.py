@@ -97,17 +97,6 @@ class BaseOverSampler(BaseSampler):
             self
         """
         super().fit(X, y)
-        self._initialize_oversampler(X, y, self.sampler)
-
-    def _initialize_oversampler(self, X, y, sampler_class):
-        """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
-        Otherwise, we use will create the sampler_ratio_dict dictionary.
-
-        Arguments:
-            X (ww.DataFrame): Training features
-            y (ww.DataColumn): Target features
-            sampler_class (imblearn.BaseSampler): The sampler we want to initialize
-        """
         _, _, _, y_pd = self._prepare_data(X, y)
         sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k != 'sampling_ratio'}
         # create the sampling dictionary
