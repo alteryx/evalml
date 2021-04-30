@@ -18,10 +18,6 @@ def test_has_minimal_deps(has_minimal_dependencies, is_running_py_39_or_above):
             with pytest.raises(ModuleNotFoundError):
                 import_module(module)
             continue
-        if module == 'pmdarima' and is_running_py_39_or_above:
-            with pytest.raises(ModuleNotFoundError):
-                import_module(module)
-            continue
 
         try:
             import_module(module)
