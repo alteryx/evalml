@@ -168,7 +168,7 @@ class AutoMLSearch:
                 max_iterations have precedence over stopping the search.
 
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-                in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+                in time series problems, values should be passed in for the gap and max_delay variables.
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -443,9 +443,9 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
-            required_parameters = {'date_index', 'gap', 'max_delay'}
+            required_parameters = {'gap', 'max_delay'}
             if not problem_configuration or not all(p in problem_configuration for p in required_parameters):
-                raise ValueError("user_parameters must be a dict containing values for at least the date_index, gap, and max_delay "
+                raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
 
@@ -663,11 +663,10 @@ class AutoMLSearch:
             pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
                               ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,
                               ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
-            date_index = self.problem_configuration['date_index']
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
-            baseline = pipeline_class(parameters={"pipeline": {"date_index": date_index, "gap": gap, "max_delay": max_delay},
-                                                  "Time Series Baseline Estimator": {"date_index": date_index, "gap": gap, "max_delay": max_delay}})
+            baseline = pipeline_class(parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+                                                  "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
         computation = self._engine.submit_evaluation_job(self.automl_config, baseline, self.X_train, self.y_train)
