@@ -729,13 +729,20 @@ def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features,
         # we consider this balanced, so we expect no samplers
         assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
     else:
-
-        assert all(any("Undersampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        if size == 'large' or has_minimal_dependencies:
+            assert all(any("Undersampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        elif categorical_features == 'none':
+            assert all(any("SMOTE Oversampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        elif categorical_features == 'some':
+            assert all(any("SMOTENC Oversampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        elif categorical_features == 'all':
+            assert all(any("SMOTEN Oversampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
 
 
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
 @pytest.mark.parametrize("sampler_method,categorical_features", [(None, 'none'), (None, 'some'), (None, 'all'),
-                                                                 ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all')])
+                                                                 ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all'),
+                                                                 ('SMOTE Oversampler', 'none'), ('SMOTENC Oversampler', 'some'), ('SMOTEN Oversampler', 'all')])
 def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies, caplog):
     # 0.2 minority:majority class ratios
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')
@@ -745,10 +752,13 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
     if sampler_method is None:
         assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
     else:
+        if has_minimal_dependencies:
+            sampler_method = 'Undersampler'
+            assert 'Could not import imblearn.over_sampling' in caplog.text
         assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
 
 
-@pytest.mark.parametrize("sampler_methods", [None, 'Undersampler'])
+@pytest.mark.parametrize("sampler_methods", [None, 'Undersampler', 'SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
 @patch("evalml.pipelines.components.estimators.Estimator.fit")
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
@@ -761,6 +771,8 @@ def test_oversampling_in_pipelines(multiclass_score, binary_score, mock_fit, pro
         y = pd.Series([0] * 900 + [1] * 100)
     else:
         y = pd.Series([0] * 800 + [2] * 100 + [1] * 100)
+    if sampler_methods == 'SMOTENC Oversampler':
+        X['b'] = X['b'].astype('category')
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_methods, max_iterations=2)
     automl.search()
@@ -770,6 +782,11 @@ def test_oversampling_in_pipelines(multiclass_score, binary_score, mock_fit, pro
         assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
         assert len(mock_fit.call_args[0][1]) == 667
     else:
-        expected_result = {"binary": 335, "multiclass": 667}
+        if has_minimal_dependencies:
+            sampler_methods = 'Undersampler'
+        if sampler_methods == 'Undersampler':
+            expected_result = {"binary": [335], "multiclass": [667]}
+        elif "Oversampler" in sampler_methods:
+            expected_result = {"binary": [750], "multiclass": [779, 800]}
         assert all(any(sampler_methods in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
-        assert len(mock_fit.call_args[0][1]) == expected_result[problem_type]
+        assert len(mock_fit.call_args[0][1]) in expected_result[problem_type]
