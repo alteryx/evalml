@@ -24,10 +24,10 @@ class StandardScaler(Transformer):
                          random_seed=random_seed)
 
     def transform(self, X, y=None):
-        X_ww = infer_feature_types(X)
-        X_t = self._component_obj.transform(X)
-        X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
-        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t_df, ltypes_to_ignore=[Integer, Categorical, Boolean])
+        X = infer_feature_types(X)
+        original_ltypes = X.ww.schema.logical_types
+        X_t_df = pd.DataFrame(self._component_obj.transform(X), columns=X.columns, index=X.index)
+        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X_t_df, ltypes_to_ignore=[Integer, Categorical, Boolean])
 
     def fit_transform(self, X, y=None):
         return self.fit(X, y).transform(X, y)
