@@ -44,8 +44,8 @@ installdeps-core:
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -e .
-	pip install -r test-requirements.txt
+	pip install -e . -q
+	pip install -r test-requirements.txt -q
 
 .PHONY: installdeps-dev
 installdeps-dev:
