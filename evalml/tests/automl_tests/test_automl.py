@@ -10,7 +10,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from joblib import hash as joblib_hash
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
