@@ -1,5 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import infer_feature_types
+from evalml.utils import infer_feature_types, _retain_custom_types_and_initalize_woodwork
 
 
 def _extract_year(col, encode_as_categories=False):
@@ -86,19 +86,19 @@ class DateTimeFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_ww = infer_feature_types(X)
+        X = infer_feature_types(X)
+        original_ltypes = X.ww.schema.logical_types
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
-            return X_ww
+            return X
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
-                features, categories = self._function_mappings[feature](X_ww[col_name], self.encode_as_categories)
-                X_ww.ww[name] = features
+                features, categories = self._function_mappings[feature](X[col_name], self.encode_as_categories)
+                X[name] = features
                 if categories:
                     self._categories[name] = categories
-        X_t = X_ww.ww.drop(self._date_time_col_names)
-        return X_t
+        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X.drop(columns=self._date_time_col_names))
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.
