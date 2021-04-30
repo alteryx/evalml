@@ -4,7 +4,12 @@ import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
-from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components import (
+    BaseSampler,
+    ComponentBase,
+    Estimator,
+    Transformer
+)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
     _convert_woodwork_types_wrapper,
@@ -232,7 +237,10 @@ class ComponentGraph:
             self.input_feature_names.update({component_name: list(input_x.columns)})
 
             if isinstance(component_instance, Transformer):
-                if fit:
+                if isinstance(component_instance, BaseSampler) and not fit:
+                    # samplers are training-only components. don't apply them during non-fit evaluation.
+                    output = input_x, input_y
+                elif fit:
                     output = component_instance.fit_transform(input_x, input_y)
                 else:
                     output = component_instance.transform(input_x, input_y)
