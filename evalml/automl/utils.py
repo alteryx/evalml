@@ -137,7 +137,7 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     if all(class_ratios >= sampler_balanced_ratio):
         return None
     # otherwise, if we have a large number of values, we use the undersampler
-    elif len(y) > 50000:
+    elif len(y) > 20000:
         return 'Undersampler'
     else:
         cat_cols = X.select('Categorical').columns
