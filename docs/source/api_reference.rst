@@ -84,7 +84,7 @@ Exceptions
 AutoML
 ======
 
-AutoML Search Classes
+AutoML Search Interface
 ~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
@@ -100,6 +100,7 @@ AutoML Utils
     :toctree: generated
     :nosignatures:
 
+    search
     get_default_primary_search_objective
     make_data_splitter
 
