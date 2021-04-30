@@ -131,10 +131,8 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     fh_ = forecasting.ForecastingHorizon(y[250:].index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
-    clf = a_clf.fit(y=y[:250])
-    y_pred_sk = clf.predict(fh=fh_)
-
-    X = X.drop(["features"], axis=1)
+    clf = a_clf.fit(X=X[:250], y=y[:250])
+    y_pred_sk = clf.predict(fh=fh_, X=X[250:])
 
     m_clf = ARIMARegressor(d=None)
     m_clf.fit(X=X[:250], y=y[:250])
