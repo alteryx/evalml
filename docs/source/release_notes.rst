@@ -10,6 +10,7 @@ Release Notes
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
+        * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
     * Documentation Changes
         * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
