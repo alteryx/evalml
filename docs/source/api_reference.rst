@@ -85,7 +85,7 @@ AutoML
 ======
 
 AutoML Search Interface
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class_with_properties.rst
