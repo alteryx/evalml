@@ -136,15 +136,5 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     # if all class ratios are larger than the ratio provided, we don't need to sample
     if all(class_ratios >= sampler_balanced_ratio):
         return None
-    # otherwise, if we have a large number of values, we use the undersampler
-    elif len(y) > 20000:
-        return 'Undersampler'
-    else:
-        cat_cols = X.select('Categorical').columns
-        # Use different samplers depending on the number of categorical columns
-        if len(cat_cols) == X.shape[1]:
-            return 'SMOTEN Oversampler'
-        elif not len(cat_cols):
-            return 'SMOTE Oversampler'
-        else:
-            return 'SMOTENC Oversampler'
+    # we default to using the Undersampler
+    return 'Undersampler'

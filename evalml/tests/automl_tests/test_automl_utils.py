@@ -184,18 +184,10 @@ def test_get_best_sampler_for_data_auto(sampler_balanced_ratio, problem_type, ca
         # the imbalanced data we get has a class ratio of 0.2 minority:majority
         assert name_output is None
     else:
-        if size == 'large':
-            assert name_output == 'Undersampler'
-        else:
-            if categorical_columns == 'none':
-                assert name_output == 'SMOTE Oversampler'
-            elif categorical_columns == 'some':
-                assert name_output == 'SMOTENC Oversampler'
-            else:
-                assert name_output == 'SMOTEN Oversampler'
+        assert name_output == 'Undersampler'
 
 
-@pytest.mark.parametrize("name", [None, 'Undersampler', 'SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+@pytest.mark.parametrize("name", [None, 'Undersampler'])
 def test_get_best_sampler_for_data_named(name, mock_imbalanced_data_X_y):
     X, y = mock_imbalanced_data_X_y("binary", "all", "large")
     name_output = get_best_sampler_for_data(X, y, name, 0.25)
