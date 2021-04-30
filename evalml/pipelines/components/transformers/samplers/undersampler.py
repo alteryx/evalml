@@ -1,10 +1,10 @@
+import numpy as np
 import pandas as pd
 
-from evalml.pipelines.components.transformers import (
-    BaseSampler
-)
-from evalml.preprocessing.data_splitters.balanced_classification_sampler import (
-    BalancedClassificationSampler
+from evalml.pipelines.components.transformers import BaseSampler
+from evalml.utils.woodwork_utils import (
+    _convert_woodwork_types_wrapper,
+    infer_feature_types
 )
 
 
