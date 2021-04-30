@@ -103,7 +103,7 @@ class BaseOverSampler(BaseSampler):
         sampling_ratio = self.parameters['sampling_ratio']
         dic = make_balancing_dictionary(y_pd, sampling_ratio)
         sampler_params['sampling_strategy'] = dic
-        sampler = sampler_class(**sampler_params, random_state=self.random_seed)
+        sampler = self.sampler(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
 
     def fit_transform(self, X, y):
