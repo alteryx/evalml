@@ -318,7 +318,7 @@ def test_iterative_algorithm_frozen_parameters():
 
     pipeline = BinaryClassificationPipeline([MockEstimator])
     algo = IterativeAlgorithm(allowed_pipelines=[pipeline, pipeline, pipeline],
-                              pipeline_params={'pipeline': {'date_index': "Date", "gap": 2, "max_delay": 10}},
+                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}},
                               random_seed=0,
                               _frozen_pipeline_parameters={
                                   "Mock Classifier": {
@@ -328,7 +328,7 @@ def test_iterative_algorithm_frozen_parameters():
                                   }})
 
     next_batch = algo.next_batch()
-    assert all([p.parameters['pipeline'] == {'date_index': "Date", "gap": 2, "max_delay": 10} for p in next_batch])
+    assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
     assert all([p.parameters['Mock Classifier'] == {
         'dummy_int_parameter': 6,
         'dummy_categorical_parameter': "random",
