@@ -48,7 +48,7 @@ class Undersampler(BaseSampler):
         """Since our undersampler doesn't need to be fit, we do nothing here.
 
         Arguments:
-            X (ww.DataFrame): Training features. Ignored for this component.
+            X (ww.DataFrame): Training features. Ignored.
             y (ww.DataColumn): Target.
 
         Returns:
