@@ -51,9 +51,9 @@ from evalml.pipelines.components import (
     RFRegressorSelectFromModel,
     SelectColumns,
     SimpleImputer,
-    SMOTENCSampler,
-    SMOTENSampler,
-    SMOTESampler,
+    SMOTENCOversampler,
+    SMOTENOversampler,
+    SMOTEOversampler,
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
@@ -190,11 +190,11 @@ def test_describe_component():
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
     assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"sampling_ratio": 0.25, "min_samples": 100, "min_percentage": 0.1}}
     try:
-        smote = SMOTESampler()
+        smote = SMOTEOversampler()
         assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
-        smote = SMOTENCSampler()
+        smote = SMOTENCOversampler()
         assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
-        smote = SMOTENSampler()
+        smote = SMOTENOversampler()
         assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
     except ImportError:
         pass
