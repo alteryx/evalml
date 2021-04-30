@@ -49,9 +49,9 @@ from .transformers import (
     Undersampler,
     TargetImputer,
     PolynomialDetrender,
-    SMOTESampler,
-    SMOTENCSampler,
-    SMOTENSampler
+    SMOTEOversampler,
+    SMOTENCOversampler,
+    SMOTENOversampler
 )
 from .ensemble import (
     StackedEnsembleClassifier,
