@@ -1,12 +1,10 @@
 from collections import namedtuple
 
 import pandas as pd
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
-    BalancedClassificationDataCVSplit,
-    BalancedClassificationDataTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -65,14 +63,11 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
                                max_delay=problem_configuration.get('max_delay'))
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-        if problem_type == ProblemTypes.REGRESSION:
-            return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle)
-        elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            return BalancedClassificationDataTVSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle, random_seed=random_seed)
+        return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle)
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return BalancedClassificationDataCVSplit(n_splits=n_splits, random_seed=random_seed, shuffle=shuffle)
+        return StratifiedKFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
 
 
 def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):

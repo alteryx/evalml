@@ -12,6 +12,7 @@ Release Notes
     * Changes
         * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
     * Documentation Changes
         * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
         * Updated documentation to use pipeline instances instead of pipeline subclasses :pr:`2195`
@@ -25,6 +26,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
 
 **v0.23.0 Apr. 20, 2021**
     * Enhancements
@@ -78,6 +80,7 @@ Release Notes
         * Fixed bug in where Time Series Classification pipelines were not encoding targets in ``predict`` and ``predict_proba`` :pr:`2040`
         * Fixed data splitting errors if target is float for classification problems :pr:`2050`
         * Pinned ``docutils`` to <0.17 to fix ReadtheDocs warning issues :pr:`2088`
+        * Ensure pipelines receive an identical set of CV or TV splits :pr:`2034`
     * Changes
         * Removed lists as acceptable hyperparameter ranges in ``AutoMLSearch`` :pr:`2028`
         * Renamed "details" to "metadata" for data check actions :pr:`2008`

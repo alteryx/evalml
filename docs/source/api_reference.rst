@@ -35,26 +35,6 @@ Utilities to preprocess data before using evalml.
     number_of_features
     split_data
 
-Data Splitter Classes
-~~~~~~~~~~~~~~~~~~~~~~
-Data splitter classes for imbalanced classification datasets.
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    BalancedClassificationDataTVSplit
-    BalancedClassificationDataCVSplit
-    KMeansSMOTECVSplit
-    KMeansSMOTETVSplit
-    SMOTETomekCVSplit
-    SMOTETomekTVSplit
-    RandomUnderSamplerCVSplit
-    RandomUnderSamplerTVSplit
-    SMOTENCCVSplit
-    SMOTENCTVSplit
-
 
 .. currentmodule:: evalml.exceptions
 
@@ -248,9 +228,9 @@ Transformers are components that take in data as input and output transformed da
     DFSTransformer
     PolynomialDetrender
     Undersampler
-    SMOTESampler
-    SMOTENCSampler
-    SMOTENSampler
+    SMOTEOversampler
+    SMOTENCOversampler
+    SMOTENOversampler
 
 Estimators
 ~~~~~~~~~~
