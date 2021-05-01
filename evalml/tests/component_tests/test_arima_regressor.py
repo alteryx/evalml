@@ -89,7 +89,7 @@ def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
-    m_clf = ARIMARegressor(d=None)
+    m_clf = sktime_arima.AutoARIMA()
     m_clf.fit(X=X[:250], y=y[:250])
     y_pred = m_clf.predict(X=X[250:])
 
