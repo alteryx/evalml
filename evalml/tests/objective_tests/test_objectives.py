@@ -89,7 +89,7 @@ def test_can_get_only_core_and_all_objective_names():
 
 def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
-    assert len(get_core_objectives(ProblemTypes.BINARY)) == 7
+    assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
     assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
 

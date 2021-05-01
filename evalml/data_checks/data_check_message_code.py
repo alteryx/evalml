@@ -16,6 +16,9 @@ class DataCheckMessageCode(Enum):
     TARGET_IS_NONE = "target_is_none"
     """Message code for when target is None."""
 
+    TARGET_IS_EMPTY_OR_FULLY_NULL = "target_is_empty_or_fully_null"
+    """Message code for target data that is empty or has all null values."""
+
     TARGET_HAS_NULL = "target_has_null"
     """Message code for target data that has null values."""
 
@@ -28,7 +31,7 @@ class DataCheckMessageCode(Enum):
     TARGET_BINARY_INVALID_VALUES = "target_binary_invalid_values"
     """Message code for target data for a binary classification problem with numerical values not equal to {0, 1}."""
 
-    TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS = "target_multiclass_not_two_examples_per_class"
+    TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS = "target_multiclass_not_two_examples_per_class"
     """Message code for target data for a multi classification problem that does not have two examples per class."""
 
     TARGET_MULTICLASS_NOT_ENOUGH_CLASSES = "target_multiclass_not_enough_classes"
@@ -81,3 +84,9 @@ class DataCheckMessageCode(Enum):
 
     MISMATCHED_LENGTHS = "mismatched_lengths"
     """Message code for when input target and features have different lengths."""
+
+    DATETIME_HAS_NAN = "datetime_has_nan"
+    """Message code for when input datetime columns contain NaN values."""
+
+    NATURAL_LANGUAGE_HAS_NAN = "natural_language_has_nan"
+    """Message code for when input natural language columns contain NaN values."""

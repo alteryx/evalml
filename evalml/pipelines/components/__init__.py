@@ -23,6 +23,7 @@ from .estimators import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
+    ARIMARegressor,
     GAMClassifier,
     GAMRegressor
 )
@@ -46,7 +47,13 @@ from .transformers import (
     LinearDiscriminantAnalysis,
     LSA,
     PCA,
-    DFSTransformer
+    DFSTransformer,
+    Undersampler,
+    TargetImputer,
+    PolynomialDetrender,
+    SMOTESampler,
+    SMOTENCSampler,
+    SMOTENSampler
 )
 from .ensemble import (
     StackedEnsembleClassifier,

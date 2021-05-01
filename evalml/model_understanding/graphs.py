@@ -22,7 +22,7 @@ from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
-from evalml.exceptions import NullsInColumnWarning
+from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
@@ -137,13 +137,14 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     return fig
 
 
-def precision_recall_curve(y_true, y_pred_proba):
+def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
     """
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
         y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
         y_pred_proba (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        pos_label_idx (int): the column index corresponding to the positive class. If predicted probabilities are two-dimensional, this will be used to access the probabilities for the positive class.
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
@@ -156,7 +157,15 @@ def precision_recall_curve(y_true, y_pred_proba):
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
     y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
+    if isinstance(y_pred_proba, ww.DataTable):
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe())
+        y_pred_proba_shape = y_pred_proba.shape
+        try:
+            y_pred_proba = y_pred_proba.iloc[:, pos_label_idx]
+        except IndexError:
+            raise NoPositiveLabelException(f"Predicted probabilities of shape {y_pred_proba_shape} don't contain a column at index {pos_label_idx}")
+    else:
+        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
@@ -501,7 +510,68 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     return _go.Figure(layout=layout, data=data)
 
 
-def partial_dependence(pipeline, X, features, grid_resolution=100):
+def _is_feature_of_type(feature, X, ltype):
+    """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
+    if isinstance(feature, int):
+        is_type = X[X.to_dataframe().columns[feature]].logical_type == ltype
+    else:
+        is_type = X[feature].logical_type == ltype
+    return is_type
+
+
+def _put_categorical_feature_first(features, first_feature_categorical):
+    """If the user is doing a two-way partial dependence plot and one of the features is categorical,
+    we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
+
+    This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
+    type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
+    which can accommodate both categorical and numeric data. If we put the numeric feature first, the grid will be of
+    type float64 and we can't coerce categoricals to float64 dtype.
+    """
+    new_features = features if first_feature_categorical else (features[1], features[0])
+    return new_features
+
+
+def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
+    """Helper function to map the user-input features param to column names."""
+    feature_list = []
+    for name_or_index in names_or_col_indices:
+        if isinstance(name_or_index, int):
+            feature_list.append(X.to_dataframe().columns[name_or_index])
+        else:
+            feature_list.append(name_or_index)
+    return feature_list
+
+
+def _raise_value_error_if_any_features_all_nan(df):
+    """Helper for partial dependence data validation."""
+    nan_pct = df.isna().mean()
+    all_nan = nan_pct[nan_pct == 1].index.tolist()
+    all_nan = [f"'{name}'" for name in all_nan]
+
+    if all_nan:
+        raise ValueError("The following features have all NaN values and so the "
+                         f"partial dependence cannot be computed: {', '.join(all_nan)}")
+
+
+def _raise_value_error_if_mostly_one_value(df, percentile):
+    """Helper for partial dependence data validation."""
+    one_value = []
+    values = []
+
+    for col in df.columns:
+        normalized_counts = df[col].value_counts(normalize=True) + 0.01
+        normalized_counts = normalized_counts[normalized_counts > percentile]
+        if not normalized_counts.empty:
+            one_value.append(f"'{col}'")
+            values.append(str(normalized_counts.index[0]))
+
+    if one_value:
+        raise ValueError(f"Features ({', '.join(one_value)}) are mostly one value, ({', '.join(values)}), "
+                         f"and cannot be used to compute partial dependence. Try raising the upper percentage value.")
+
+
+def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100):
     """Calculates one or two-way partial dependence.  If a single integer or
     string is given for features, one-way partial dependence is calculated. If
     a tuple of two integers or strings is given, two-way partial dependence
@@ -516,9 +586,11 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
             If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        percentiles (tuple[float]): The lower and upper percentile used to create the extreme values for the grid.
+            Must be in [0, 1]. Defaults to (0.05, 0.95).
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
-            set to the max number of categories + 1.
+            set to the max number of categories + 1. Defaults to 100.
 
     Returns:
         pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
@@ -539,16 +611,20 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
         ValueError: if the user provides a tuple of not exactly two features.
         ValueError: if the provided pipeline isn't fitted.
         ValueError: if the provided pipeline is a Baseline pipeline.
+        ValueError: if any of the features passed in are completely NaN
+        ValueError: if any of the features are low-variance. Defined as having one value occurring more than the upper
+            percentile passed by the user. By default 95%.
     """
 
+    # Dynamically set the grid resolution to the maximum number of values
+    # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
     X = infer_feature_types(X)
-    # Dynamically set the grid resolution to the maximum number of categories
-    # in the categorical variables if there are more categories than resolution cells
-    X_cats = X.select("categorical")
-    if X_cats.shape[1] != 0:
-        max_num_cats = max(X_cats.describe().loc["nunique"])
-        grid_resolution = max([max_num_cats + 1, grid_resolution])
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
+    if isinstance(features, (list, tuple)):
+        is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
+        is_datetime = [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
+    else:
+        is_categorical = [_is_feature_of_type(features, X, ww.logical_types.Categorical)]
+        is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
 
     if isinstance(features, (list, tuple)):
         if len(features) != 2:
@@ -556,16 +632,47 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
+        X_features = X.iloc[:, list(features)] if isinstance(features[0], int) else X[list(features)]
+    else:
+        X_features = ww.DataTable(X.to_dataframe().iloc[:, features].to_frame()) if isinstance(features, int) else ww.DataTable(X.to_dataframe()[features].to_frame())
+
+    X_cats = X_features.select("categorical")
+    if any(is_categorical):
+        max_num_cats = max(X_cats.describe().loc["nunique"])
+        grid_resolution = max([max_num_cats + 1, grid_resolution])
+
+    X_dt = X_features.select("datetime")
+    if any(is_datetime):
+        max_num_dt = max(X_dt.describe().loc["nunique"])
+        grid_resolution = max([max_num_dt + 1, grid_resolution])
+
+    if isinstance(features, (list, tuple)):
+        feature_names = _get_feature_names_from_str_or_col_index(X, features)
+        if any(is_datetime):
+            raise ValueError('Two-way partial dependence is not supported for datetime columns.')
+        if any(is_categorical):
+            features = _put_categorical_feature_first(features, is_categorical[0])
+    else:
+        feature_names = _get_feature_names_from_str_or_col_index(X, [features])
+
     if not pipeline._is_fitted:
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
 
-    if ((isinstance(features, int) and X.iloc[:, features].isnull().sum()) or (isinstance(features, str) and X[features].isnull().sum())):
-        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. Fill in these values to remove the NaN values.", NullsInColumnWarning)
+    X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
+    feature_list = X[feature_names]
+
+    _raise_value_error_if_any_features_all_nan(feature_list)
+
+    if feature_list.isnull().sum().any():
+        warnings.warn("There are null values in the features, which will cause NaN values in the partial dependence output. "
+                      "Fill in these values to remove the NaN values.", NullsInColumnWarning)
+
+    _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, grid_resolution=grid_resolution)
+    avg_pred, values = sk_partial_dependence(wrapped, X=X, features=features, percentiles=percentiles, grid_resolution=grid_resolution)
 
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
@@ -584,6 +691,41 @@ def partial_dependence(pipeline, X, features, grid_resolution=100):
     if classes is not None:
         data['class_label'] = np.repeat(classes, len(values[0]))
     return data
+
+
+def _update_fig_with_two_way_partial_dependence(_go, fig, label_df, part_dep, features, is_categorical,
+                                                label=None, row=None, col=None):
+    """Helper for formatting the two-way partial dependence plot."""
+    y = label_df.index
+    x = label_df.columns
+    z = label_df.values
+    if not any(is_categorical):
+        # No features are categorical. In this case, we pass both x and y data to the Contour plot so that
+        # plotly can figure out the axis formatting for us.
+        kwargs = {"x": x, "y": y}
+        fig.update_xaxes(title=f'{features[1]}',
+                         range=_calculate_axis_range(np.array([x for x in part_dep.columns if x != 'class_label'])),
+                         row=row, col=col)
+        fig.update_yaxes(range=_calculate_axis_range(part_dep.index), row=row, col=col)
+    elif sum(is_categorical) == 1:
+        # One feature is categorical. Since we put the categorical feature first, the numeric feature will be the x
+        # axis. So we pass the x to the Contour plot so that plotly can format it for us.
+        # Since the y axis is a categorical value, we will set the y tickmarks ourselves. Passing y to the contour plot
+        # in this case will "work" but the formatting will look bad.
+        kwargs = {"x": x}
+        fig.update_xaxes(title=f'{features[1]}',
+                         range=_calculate_axis_range(np.array([x for x in part_dep.columns if x != 'class_label'])),
+                         row=row, col=col)
+        fig.update_yaxes(tickmode='array', tickvals=list(range(label_df.shape[0])),
+                         ticktext=list(label_df.index), row=row, col=col)
+    else:
+        # Both features are categorical so we must format both axes ourselves.
+        kwargs = {}
+        fig.update_yaxes(tickmode='array', tickvals=list(range(label_df.shape[0])),
+                         ticktext=list(label_df.index), row=row, col=col)
+        fig.update_xaxes(tickmode='array', tickvals=list(range(label_df.shape[1])),
+                         ticktext=list(label_df.columns), row=row, col=col)
+    fig.add_trace(_go.Contour(z=z, name=label, coloraxis="coloraxis", **kwargs), row=row, col=col)
 
 
 def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resolution=100):
@@ -613,10 +755,16 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
     Raises:
         ValueError: if a graph is requested for a class name that isn't present in the pipeline
     """
+    X = infer_feature_types(X)
     if isinstance(features, (list, tuple)):
         mode = "two-way"
+        is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
+        if any(is_categorical):
+            features = _put_categorical_feature_first(features, is_categorical[0])
     elif isinstance(features, (int, str)):
         mode = "one-way"
+        is_categorical = _is_feature_of_type(features, X, ww.logical_types.Categorical)
+
     _go = import_or_raise("plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects")
     if jupyter_check():
         import_or_raise("ipywidgets", warning=True)
@@ -630,8 +778,8 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
     if mode == "two-way":
         title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
         layout = _go.Layout(title={'text': title},
-                            xaxis={'title': f'{features[0]}'},
-                            yaxis={'title': f'{features[1]}'},
+                            xaxis={'title': f'{features[1]}'},
+                            yaxis={'title': f'{features[0]}'},
                             showlegend=False)
     elif mode == "one-way":
         feature_name = str(features)
@@ -652,44 +800,50 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
             label_df = part_dep.loc[part_dep.class_label == label]
-            if mode == "two-way":
-                x = label_df.index
-                y = np.array([col for col in label_df.columns if isinstance(col, (int, float))])
-                z = label_df.values
-                fig.add_trace(_go.Contour(x=x, y=y, z=z, name=label, coloraxis="coloraxis"),
-                              row=(i + 2) // 2, col=(i % 2) + 1)
+            row = (i + 2) // 2
+            col = (i % 2) + 1
+            label_df.drop(columns=['class_label'], inplace=True)
+            if mode == 'two-way':
+                _update_fig_with_two_way_partial_dependence(_go, fig, label_df, part_dep, features, is_categorical,
+                                                            label, row, col)
             elif mode == "one-way":
                 x = label_df['feature_values']
                 y = label_df['partial_dependence']
-                fig.add_trace(_go.Scatter(x=x, y=y, line=dict(width=3), name=label),
-                              row=(i + 2) // 2, col=(i % 2) + 1)
+                if is_categorical:
+                    trace = _go.Bar(x=x, y=y, name=label)
+                else:
+                    trace = _go.Scatter(x=x, y=y, line=dict(width=3), name=label)
+                fig.add_trace(trace, row=row, col=col)
+
         fig.update_layout(layout)
 
         if mode == "two-way":
-            title = f'{features[0]}'
-            xrange = _calculate_axis_range(part_dep.index)
-            yrange = _calculate_axis_range(np.array([x for x in part_dep.columns if isinstance(x, (int, float))]))
             fig.update_layout(coloraxis=dict(colorscale='Bluered_r'), showlegend=False)
         elif mode == "one-way":
             title = f'{feature_name}'
-            xrange = _calculate_axis_range(part_dep['feature_values'])
+            xrange = _calculate_axis_range(part_dep['feature_values']) if not is_categorical else None
             yrange = _calculate_axis_range(part_dep['partial_dependence'])
-        fig.update_xaxes(title=title, range=xrange)
-        fig.update_yaxes(range=yrange)
+            fig.update_xaxes(title=title, range=xrange)
+            fig.update_yaxes(range=yrange)
+        return fig
     else:
+        if "class_label" in part_dep.columns:
+            part_dep.drop(columns=['class_label'], inplace=True)
         if mode == "two-way":
-            trace = _go.Contour(x=part_dep.index,
-                                y=part_dep.columns,
-                                z=part_dep.values,
-                                name="Partial Dependence")
+            fig = _go.Figure(layout=layout)
+            _update_fig_with_two_way_partial_dependence(_go, fig, part_dep, part_dep, features, is_categorical,
+                                                        label="Partial Dependence", row=None, col=None)
+            return fig
         elif mode == "one-way":
-            trace = _go.Scatter(x=part_dep['feature_values'],
-                                y=part_dep['partial_dependence'],
-                                name='Partial Dependence',
-                                line=dict(width=3))
-        fig = _go.Figure(layout=layout, data=[trace])
-
-    return fig
+            if is_categorical:
+                trace = _go.Bar(x=part_dep['feature_values'], y=part_dep['partial_dependence'],
+                                name="Partial Dependence")
+            else:
+                trace = _go.Scatter(x=part_dep['feature_values'],
+                                    y=part_dep['partial_dependence'],
+                                    name='Partial Dependence',
+                                    line=dict(width=3))
+            return _go.Figure(layout=layout, data=[trace])
 
 
 def _calculate_axis_range(arr):

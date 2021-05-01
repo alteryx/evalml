@@ -32,6 +32,7 @@ from .components import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
+    ARIMARegressor,
     GAMClassifier,
     GAMRegressor
 )

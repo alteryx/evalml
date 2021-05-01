@@ -36,6 +36,35 @@ class ComponentGraph:
         self._i = 0
 
     @classmethod
+    def linearized_component_graph(cls, components):
+        """Return a list of (component name, component class) tuples from a pre-initialized component graph defined
+        as either a list or a dictionary. The component names are guaranteed to be unique.
+
+        Args:
+            components (list(ComponentBase) or Dict[str, ComponentBase]): Components in the pipeline.
+
+        Returns:
+            list((component name, ComponentBase)) - tuples with the unique component name as the first element and the
+                component class as the second element. When the input is a list, the components will be returned in
+                the order they appear in the input.
+        """
+        names = []
+        if isinstance(components, list):
+            seen = set()
+            for idx, component in enumerate(components):
+                component_class = handle_component_class(component)
+                component_name = component_class.name
+
+                if component_name in seen:
+                    component_name = f'{component_name}_{idx}'
+                seen.add(component_name)
+                names.append((component_name, component_class))
+        else:
+            for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        return names
+
+    @classmethod
     def from_list(cls, component_list, random_seed=0):
         """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
@@ -45,16 +74,14 @@ class ComponentGraph:
         """
         component_dict = {}
         previous_component = None
-        for idx, component in enumerate(component_list):
-            component_class = handle_component_class(component)
-            component_name = component_class.name
-
-            if component_name in component_dict.keys():
-                component_name = f'{component_name}_{idx}'
+        for component_name, component_class in cls.linearized_component_graph(component_list):
 
             component_dict[component_name] = [component_class]
             if previous_component is not None:
-                component_dict[component_name].append(f"{previous_component}.x")
+                if "sampler" in previous_component:
+                    component_dict[component_name].extend([f"{previous_component}.x", f"{previous_component}.y"])
+                else:
+                    component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
         return cls(component_dict, random_seed=random_seed)
 
@@ -64,16 +91,16 @@ class ComponentGraph:
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} implies using all default values for component parameters.
+                               An empty dictionary {} or None implies using all default values for component parameters.
         """
         if self._is_instantiated:
             raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
+        parameters = parameters or {}
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
             except (ValueError, TypeError) as e:
@@ -144,7 +171,8 @@ class ComponentGraph:
                 parent_output = parent_output.to_series()
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = infer_feature_types(parent_output)
-            final_component_inputs.append(parent_output)
+            if parent_output is not None:
+                final_component_inputs.append(parent_output)
         concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
         if needs_fitting:
             self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})

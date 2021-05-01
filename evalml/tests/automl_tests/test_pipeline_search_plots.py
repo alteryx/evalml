@@ -20,19 +20,19 @@ def test_search_iteration_plot_class():
             self.results = {
                 'pipeline_results': {
                     2: {
-                        'score': 0.50
+                        "mean_cv_score": 0.50
                     },
                     0: {
-                        'score': 0.60
+                        "mean_cv_score": 0.60
                     },
                     1: {
-                        'score': 0.75
+                        "mean_cv_score": 0.75
                     },
                 },
                 'search_order': [1, 2, 0]
             }
             self.rankings = pd.DataFrame({
-                'score': [0.75, 0.60, 0.50]
+                "mean_cv_score": [0.75, 0.60, 0.50]
             })
 
     mock_data = MockResults()

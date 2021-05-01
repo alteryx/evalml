@@ -69,7 +69,6 @@ Exceptions
     MethodPropertyNotFoundError
     PipelineNotFoundError
     ObjectiveNotFoundError
-    IllFormattedClassNameError
     MissingComponentError
     ComponentNotYetFittedError
     PipelineNotYetFittedError
@@ -128,8 +127,6 @@ AutoML Callbacks
     silent_error_callback
     log_error_callback
     raise_error_callback
-    log_and_save_error_callback
-    raise_and_save_error_callback
 
 
 .. currentmodule:: evalml.pipelines
@@ -249,6 +246,11 @@ Transformers are components that take in data as input and output transformed da
     TextFeaturizer
     DelayedFeatureTransformer
     DFSTransformer
+    PolynomialDetrender
+    Undersampler
+    SMOTESampler
+    SMOTENCSampler
+    SMOTENSampler
 
 Estimators
 ~~~~~~~~~~
@@ -287,6 +289,7 @@ Regressors are components that output a predicted target value.
     :template: estimator_class.rst
     :nosignatures:
 
+    ARIMARegressor
     CatBoostRegressor
     ElasticNetRegressor
     LinearRegressor
@@ -529,7 +532,8 @@ Data Check Classes
     NoVarianceDataCheck
     ClassImbalanceDataCheck
     MulticollinearityDataCheck
-
+    DateTimeNaNDataCheck
+    NaturalLanguageNaNDataCheck
 
 .. autosummary::
     :toctree: generated

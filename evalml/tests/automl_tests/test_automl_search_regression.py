@@ -59,7 +59,7 @@ def test_categorical_regression(X_y_categorical_regression):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', objective="R2", max_iterations=5, random_seed=0,
                           n_jobs=1)
     automl.search()
-    assert not automl.rankings['score'].isnull().all()
+    assert not automl.rankings["mean_cv_score"].isnull().all()
 
 
 def test_callback(X_y_regression):
@@ -82,7 +82,7 @@ def test_callback(X_y_regression):
                           add_result_callback=add_result_callback, n_jobs=1)
     automl.search()
 
-    assert counts["start_iteration_callback"] == max_iterations
+    assert counts["start_iteration_callback"] == len(get_estimators("regression")) + 1
     assert counts["add_result_callback"] == max_iterations
 
 
@@ -153,9 +153,10 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(X_y_regression):
 @patch('evalml.pipelines.RegressionPipeline.fit')
 def test_automl_allowed_pipelines_specified_allowed_pipelines(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=None)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression',
+                          allowed_pipelines=[dummy_regression_pipeline_class({})], allowed_model_families=None)
     mock_score.return_value = {automl.objective.name: 1.0}
-    expected_pipelines = [dummy_regression_pipeline_class]
+    expected_pipelines = [dummy_regression_pipeline_class({})]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
     assert automl.allowed_model_families == [ModelFamily.NONE]
@@ -209,9 +210,9 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified(mock_fit, mock
 @patch('evalml.pipelines.RegressionPipeline.fit')
 def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression, assert_allowed_pipelines_equal_helper):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', allowed_pipelines=[dummy_regression_pipeline_class({})], allowed_model_families=[ModelFamily.RANDOM_FOREST])
     mock_score.return_value = {automl.objective.name: 1.0}
-    expected_pipelines = [dummy_regression_pipeline_class]
+    expected_pipelines = [dummy_regression_pipeline_class({})]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([p.model_family for p in expected_pipelines])
     automl.search()
@@ -225,7 +226,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
     X, y = X_y_regression
     mock_score.return_value = {'R2': 1.0}
 
-    allowed_pipelines = [dummy_regression_pipeline_class]
+    allowed_pipelines = [dummy_regression_pipeline_class({})]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
@@ -239,7 +240,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
 def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
 
-    allowed_pipelines = [nonlinear_regression_pipeline_class]
+    allowed_pipelines = [nonlinear_regression_pipeline_class({})]
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines, n_jobs=1)

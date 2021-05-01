@@ -3,7 +3,6 @@ from .exceptions import (
     MethodPropertyNotFoundError,
     PipelineNotFoundError,
     ObjectiveNotFoundError,
-    IllFormattedClassNameError,
     MissingComponentError,
     ComponentNotYetFittedError,
     PipelineNotYetFittedError,
@@ -12,5 +11,6 @@ from .exceptions import (
     DataCheckInitError,
     EnsembleMissingPipelinesError,
     NullsInColumnWarning,
-    ObjectiveCreationError
+    ObjectiveCreationError,
+    NoPositiveLabelException
 )

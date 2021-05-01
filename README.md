@@ -2,10 +2,10 @@
 <img width=50% src="https://evalml-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="Featuretools" />
 </p>
 
-[![CircleCI](https://circleci.com/gh/alteryx/evalml/tree/main.svg?style=svg&circle-token=9e0ce5e5f2db05f96fe92238fcde6d13963188b6)](https://circleci.com/gh/alteryx/evalml/tree/main)
-[![codecov](https://codecov.io/gh/alteryx/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/alteryx/evalml)
-[![PyPI version](https://badge.fury.io/py/evalml.svg?maxAge=2592000)](https://badge.fury.io/py/evalml)
-[![PyPI - Downloads](https://img.shields.io/pypi/dm/evalml.svg)](https://pypistats.org/packages/evalml)
+[![GitHub Actions](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml?query=branch%3Amain)
+[![Codecov.io](https://codecov.io/gh/alteryx/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/alteryx/evalml)
+[![PyPI](https://badge.fury.io/py/evalml.svg?maxAge=2592000)](https://badge.fury.io/py/evalml)
+[![PyPI Stats](https://img.shields.io/pypi/dm/evalml.svg)](https://pypistats.org/packages/evalml)
 
 EvalML is an AutoML library which builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.
 
@@ -28,7 +28,7 @@ pip install evalml
 ```python
 import evalml
 X, y = evalml.demos.load_breast_cancer()
-X_train, X_test, y_train, y_test = evalml.preprocessing.split_data(X, y)
+X_train, X_test, y_train, y_test = evalml.preprocessing.split_data(X, y, problem_type='binary')
 ```
 
 #### Run AutoML
@@ -46,7 +46,6 @@ automl.rankings
 #### Get best pipeline and predict on new data
 ```python
 pipeline = automl.best_pipeline
-pipeline.fit(X_train, y_train)
 pipeline.predict(X_test)
 ```
 

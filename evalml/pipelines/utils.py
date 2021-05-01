@@ -31,6 +31,7 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
+    TargetImputer,
     TextFeaturizer
 )
 from evalml.pipelines.components.utils import all_components, get_estimators
@@ -71,6 +72,10 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
+    index_columns = list(X.select('index').columns)
+    if len(index_columns) > 0:
+        pp_components.append(DropColumns)
+
     datetime_cols = X.select(["Datetime"])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
     if add_datetime_featurizer:
@@ -104,7 +109,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
+def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperparameters=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -114,11 +119,13 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
         y (pd.Series, ww.DataColumn): The target data of length [n_samples]
         estimator (Estimator): Estimator for pipeline
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+            An empty dictionary or None implies using all default values for component parameters.
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
             with component name as key and dictionary of parameters as the value
 
     Returns:
-        class: PipelineBase subclass with dynamically generated preprocessing components and specified estimator
+        PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
 
     """
     X = infer_feature_types(X)
@@ -133,15 +140,8 @@ def make_pipeline(X, y, estimator, problem_type, custom_hyperparameters=None):
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
         raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
 
-    hyperparameters = custom_hyperparameters
     base_class = _get_pipeline_base_class(problem_type)
-
-    class GeneratedPipeline(base_class):
-        custom_name = f"{estimator.name} w/ {' + '.join([component.name for component in preprocessing_components])}"
-        component_graph = complete_component_graph
-        custom_hyperparameters = hyperparameters
-
-    return GeneratedPipeline
+    return base_class(complete_component_graph, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
 
 
 def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):
@@ -173,13 +173,15 @@ def make_pipeline_from_components(component_instances, problem_type, custom_name
 
     if custom_name and not isinstance(custom_name, str):
         raise TypeError("Custom pipeline name must be a string")
-    pipeline_name = custom_name
     problem_type = handle_problem_types(problem_type)
-
-    class TemplatedPipeline(_get_pipeline_base_class(problem_type)):
-        custom_name = pipeline_name
-        component_graph = [c.__class__ for c in component_instances]
-    return TemplatedPipeline({c.name: c.parameters for c in component_instances}, random_seed=random_seed)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    component_graph = [c.__class__ for c in component_instances]
+    parameters = {c.name: c.parameters for c in component_instances}
+    return pipeline_class(component_graph,
+                          custom_name=custom_name,
+                          parameters=parameters,
+                          custom_hyperparameters=None,
+                          random_seed=random_seed)
 
 
 def generate_pipeline_code(element):
@@ -209,7 +211,8 @@ def generate_pipeline_code(element):
         pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
 
     pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
-
+    pipeline_string += "\n\tdef __init__(self, parameters, random_seed=0):"
+    pipeline_string += "\n\t\tsuper().__init__(self.component_graph, custom_name=self.custom_name, parameters=parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)\n"
     try:
         ret = json.dumps(element.parameters, indent='\t')
     except TypeError:
@@ -267,5 +270,9 @@ def _make_component_list_from_actions(actions):
     components = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append(DropColumns(columns=action.details["columns"]))
+            components.append(DropColumns(columns=action.metadata["columns"]))
+        if action.action_code == DataCheckActionCode.IMPUTE_COL:
+            metadata = action.metadata
+            if metadata["is_target"]:
+                components.append(TargetImputer(impute_strategy=metadata["impute_strategy"]))
     return components

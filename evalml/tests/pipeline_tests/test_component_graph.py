@@ -21,7 +21,9 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestClassifier,
     StandardScaler,
-    Transformer
+    TargetImputer,
+    Transformer,
+    Undersampler
 )
 from evalml.utils import infer_feature_types
 
@@ -736,3 +738,66 @@ def test_component_graph_dataset_with_different_types():
     assert input_feature_names['Elastic Net'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
                                                   'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
+
+
+def test_component_graph_sampler():
+    graph = {'Imputer': [Imputer],
+             'OneHot': [OneHotEncoder, 'Imputer.x'],
+             'Undersampler': [Undersampler, 'OneHot.x'],
+             'Random Forest': [RandomForestClassifier, 'Undersampler.x', 'Undersampler.y'],
+             'Elastic Net': [ElasticNetClassifier, 'Undersampler.x', 'Undersampler.y'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net']}
+
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    assert component_graph.get_parents('Imputer') == []
+    assert component_graph.get_parents('OneHot') == ['Imputer.x']
+    assert component_graph.get_parents('Undersampler') == ['OneHot.x']
+    assert component_graph.get_parents('Random Forest') == ['Undersampler.x', 'Undersampler.y']
+    assert component_graph.get_parents('Elastic Net') == ['Undersampler.x', 'Undersampler.y']
+    assert component_graph.get_parents('Logistic Regression') == ['Random Forest', 'Elastic Net']
+
+
+def test_component_graph_sampler_list():
+    component_list = ['Imputer', 'One Hot Encoder', 'Undersampler', 'Random Forest Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+
+    assert len(component_graph.component_dict) == 4
+    assert component_graph.get_component('Imputer') == Imputer
+    assert component_graph.get_component('One Hot Encoder') == OneHotEncoder
+    assert component_graph.get_component('Undersampler') == Undersampler
+    assert component_graph.get_component('Random Forest Classifier') == RandomForestClassifier
+
+    assert component_graph.compute_order == component_list
+    assert component_graph.component_dict == {
+        'Imputer': [Imputer],
+        'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
+        'Undersampler': [Undersampler, 'One Hot Encoder.x'],
+        'Random Forest Classifier': [RandomForestClassifier, 'Undersampler.x', 'Undersampler.y']
+    }
+    assert component_graph.get_parents('Imputer') == []
+    assert component_graph.get_parents('One Hot Encoder') == ['Imputer.x']
+    assert component_graph.get_parents('Undersampler') == ['One Hot Encoder.x']
+    assert component_graph.get_parents('Random Forest Classifier') == ['Undersampler.x', 'Undersampler.y']
+
+
+def test_component_graph_dataset_with_target_imputer():
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, np.nan])
+    graph = {'Target Imputer': [TargetImputer],
+             'OneHot': [OneHotEncoder, 'Target Imputer.x', 'Target Imputer.y'],
+             'Random Forest': [RandomForestClassifier, 'OneHot.x', 'Target Imputer.y'],
+             'Elastic Net': [ElasticNetClassifier, 'OneHot.x', 'Target Imputer.y'],
+             'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net', 'Target Imputer.y']}
+
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    assert component_graph.get_parents('Target Imputer') == []
+    assert component_graph.get_parents('OneHot') == ['Target Imputer.x', 'Target Imputer.y']
+    assert component_graph.get_parents('Random Forest') == ['OneHot.x', 'Target Imputer.y']
+    assert component_graph.get_parents('Elastic Net') == ['OneHot.x', 'Target Imputer.y']
+
+    component_graph.fit(X, y)
+    predictions = component_graph.predict(X)
+    assert not pd.isnull(predictions.to_series()).any()
