@@ -34,8 +34,7 @@ from evalml.pipelines.utils import (
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
-    make_pipeline,
-    make_pipeline_from_components
+    make_pipeline
 )
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -446,78 +445,6 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pipeline_class):
-    with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
-        make_pipeline_from_components([Imputer()], problem_type='binary')
-
-    with pytest.raises(KeyError, match="Problem type 'invalid_type' does not exist"):
-        make_pipeline_from_components([RandomForestClassifier()], problem_type='invalid_type')
-
-    with pytest.raises(TypeError, match="Custom pipeline name must be a string"):
-        make_pipeline_from_components([RandomForestClassifier()], problem_type='binary', custom_name=True)
-
-    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
-        make_pipeline_from_components([RandomForestClassifier], problem_type='binary')
-
-    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
-        make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
-
-    imp = Imputer(numeric_impute_strategy='median', random_seed=5)
-    est = RandomForestClassifier(random_seed=7)
-    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
-                                             random_seed=15)
-    assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
-    assert [(c.random_seed == 15) for c in pipeline]
-    assert pipeline.problem_type == ProblemTypes.BINARY
-    assert pipeline.custom_name == 'My Pipeline'
-    expected_parameters = {
-        'Imputer': {
-            'categorical_impute_strategy': 'most_frequent',
-            'numeric_impute_strategy': 'median',
-            'categorical_fill_value': None,
-            'numeric_fill_value': None},
-        'Random Forest Classifier': {
-            'n_estimators': 100,
-            'max_depth': 6,
-            'n_jobs': -1}
-    }
-    assert pipeline.parameters == expected_parameters
-    assert pipeline.random_seed == 15
-
-    class DummyEstimator(Estimator):
-        name = "Dummy!"
-        model_family = "foo"
-        supported_problem_types = [ProblemTypes.BINARY]
-        parameters = {'bar': 'baz'}
-        hyperparameter_ranges = None
-    random_seed = 42
-    pipeline = make_pipeline_from_components([DummyEstimator(random_seed=3)],
-                                             ProblemTypes.BINARY,
-                                             random_seed=random_seed)
-    components_list = [c for c in pipeline]
-    assert len(components_list) == 1
-    assert isinstance(components_list[0], DummyEstimator)
-    assert components_list[0].random_seed == random_seed
-    expected_parameters = {'Dummy!': {'bar': 'baz'}}
-    assert pipeline.parameters == expected_parameters
-    assert pipeline.random_seed == random_seed
-
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_seed=42)
-    component_instances = [c for c in pipeline]
-    new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
-    pipeline.fit(X, y)
-    predictions = pipeline.predict(X)
-    new_pipeline.fit(X, y)
-    new_predictions = new_pipeline.predict(X)
-    assert np.array_equal(predictions, new_predictions)
-    assert np.array_equal(pipeline.feature_importance, new_pipeline.feature_importance)
-    assert pipeline.parameters == new_pipeline.parameters
-    for component, new_component in zip(pipeline._component_graph, new_pipeline._component_graph):
-        assert isinstance(new_component, type(component))
-
-
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_regression,
                                        stackable_classifiers,
@@ -529,21 +456,21 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         X, y = X_y_binary
         base_pipeline_class = BinaryClassificationPipeline
         stacking_component_name = StackedEnsembleClassifier.name
-        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
+        input_pipelines = [base_pipeline_class([classifier]) for classifier in stackable_classifiers]
         comparison_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         objective = 'Log Loss Binary'
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         base_pipeline_class = MulticlassClassificationPipeline
         stacking_component_name = StackedEnsembleClassifier.name
-        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
+        input_pipelines = [base_pipeline_class([classifier]) for classifier in stackable_classifiers]
         comparison_pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         objective = 'Log Loss Multiclass'
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         base_pipeline_class = RegressionPipeline
         stacking_component_name = StackedEnsembleRegressor.name
-        input_pipelines = [make_pipeline_from_components([regressor], problem_type) for regressor in stackable_regressors]
+        input_pipelines = [base_pipeline_class([regressor]) for regressor in stackable_regressors]
         comparison_pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
         objective = 'R2'
     parameters = {
