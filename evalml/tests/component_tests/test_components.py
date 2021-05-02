@@ -20,7 +20,6 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     LSA,
     PCA,
-    ARIMARegressor,
     BaselineClassifier,
     BaselineRegressor,
     CatBoostClassifier,
@@ -181,8 +180,7 @@ def test_describe_component():
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
     assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
                                                    'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
-                                                                  'encode_as_categories': False,
-                                                                  'date_index': None}}
+                                                                  'encode_as_categories': False}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
@@ -618,7 +616,7 @@ def test_default_parameters(cls):
     assert cls.default_parameters == cls().parameters, f"{cls.__name__}'s default parameters don't match __init__."
 
 
-@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier, ARIMARegressor]])
+@pytest.mark.parametrize("cls", [cls for cls in all_components() if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]])
 def test_default_parameters_raise_no_warnings(cls):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")

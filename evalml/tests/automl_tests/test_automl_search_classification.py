@@ -633,18 +633,16 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
                                                     problem_type, X_y_binary, X_y_multi):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
-        baseline = TimeSeriesBaselineBinaryPipeline(parameters={'Time Series Baseline Estimator': {"date_index": None, 'gap': 0, 'max_delay': 0},
-                                                                'pipeline': {"date_index": None, 'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesBaselineBinaryPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_binary_score.return_value = {"Log Loss Binary": 0.2}
         problem_type = 'time series binary'
     else:
         X, y = X_y_multi
-        baseline = TimeSeriesBaselineMulticlassPipeline(parameters={'Time Series Baseline Estimator': {"date_index": None, 'gap': 0, 'max_delay': 0},
-                                                                    'pipeline': {"date_index": None, 'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesBaselineMulticlassPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
         mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
         problem_type = 'time series multiclass'
 
-    configuration = {"date_index": None, "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
                           problem_configuration=configuration,
@@ -674,7 +672,7 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
     mock_binary_score.return_value = {objective: 0.4}
     problem_type = 'time series binary'
 
-    configuration = {"date_index": None, "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     mock_optimize_threshold.return_value = 0.62
     mock_split_data.return_value = split_data(X, y, problem_type, test_size=0.2, random_seed=0)
