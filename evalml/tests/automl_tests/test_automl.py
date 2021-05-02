@@ -1464,6 +1464,7 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
 
         def clone(self):
             return self.__class__(self.parameters, random_seed=self.random_seed)
+
     mock_score = MagicMock(side_effect=[{"Log Loss Binary": 1, "F1": val} for val in fold_scores])
     DummyPipeline.score = mock_score
     f1 = get_objective("f1")()
