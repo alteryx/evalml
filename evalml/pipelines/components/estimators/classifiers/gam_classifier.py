@@ -3,12 +3,7 @@ from skopt.space import Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    SEED_BOUNDS,
-    get_logger,
-    get_random_seed,
-    import_or_raise
-)
+from evalml.utils import get_logger, import_or_raise
 from evalml.utils.gen_utils import make_h2o_ready
 
 logger = get_logger(__file__)
@@ -22,14 +17,10 @@ class GAMClassifier(Estimator):
         "alpha": Real(0.000001, 1),
         "lambda": Real(0.000001, 1)
     }
-    model_family = ModelFamily.LINEAR_MODEL
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
+    model_family = ModelFamily.GAM
+    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
-    SEED_MIN = 0
-    SEED_MAX = SEED_BOUNDS.max_bound
-
-    def __init__(self, family='AUTO', solver="AUTO", stopping_metric="logloss", keep_cross_validation_models=False, random_state=0, **kwargs):
-        random_seed = get_random_seed(random_state, self.SEED_MIN, self.SEED_MAX)
+    def __init__(self, family='AUTO', solver="AUTO", stopping_metric="logloss", keep_cross_validation_models=False, random_seed=0, **kwargs):
 
         self._parameters = {"family": family,
                             "solver": solver,
@@ -52,43 +43,22 @@ class GAMClassifier(Estimator):
         X_cols = [str(col_) for col_ in list(X.columns)]
         new_params = {'gam_columns': X_cols,
                       "lambda_search": True}
-        if y.nunique() == 3:
+        if y.nunique() >= 3:
             new_params.update({"family": "multinomial",
                                "link": "Family_Default"})
-        elif y.nunique() > 3:
-            new_params.update({"family": "ordinal",
-                               "solver": "GRADIENT_DESCENT_LH",
-                               "link": "Family_Default",
-                               "lambda_search": False})
         else:
             new_params.update({"family": "binomial",
                                "link": "Logit"})
         return new_params
 
-    def _retry_fit(self, X, y, training_frame, error=None):
-        error = str(error)
-        array_exception = "ArrayIndexOutOfBoundsException"
-        if error.find(array_exception) != -1:
-            index_start = error.find(array_exception) + 38
-            index_end = error.find(" out")
-            new_col = int(error[index_start:index_end]) if index_end != 1 else None
-            logger.info(f"Encountered ArrayIndexOutOfBoundsException, limiting number of gam_columns to {new_col}")
-        else:
-            raise error
-        self._parameters['gam_columns'] = self._parameters['gam_columns'][:new_col]
+    def fit(self, X, y=None, retrying=False):
+        if y is None:
+            raise ValueError('GAM Classifer requires y as input.')
+        X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMClassifier.supported_problem_types)
+        new_params = self._update_params(X, y)
+        self._parameters.update(new_params)
         self.h2o_model = self.h2o_model_init(**self._parameters)
         self.h2o_model.train(x=list(X.columns), y=y.name, training_frame=training_frame)
-
-    def fit(self, X, y=None, retrying=False):
-        if not retrying:
-            X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMClassifier.supported_problem_types)
-            new_params = self._update_params(X, y)
-            self._parameters.update(new_params)
-        self.h2o_model = self.h2o_model_init(**self._parameters)
-        try:
-            self.h2o_model.train(x=list(X.columns), y=y.name, training_frame=training_frame)
-        except OSError as e:
-            self._retry_fit(X, y, training_frame, e)
         return self.h2o_model
 
     def predict(self, X):

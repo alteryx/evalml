@@ -15,7 +15,7 @@ from evalml.exceptions import (
     MissingComponentError
 )
 from evalml.utils import get_logger
-from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper, infer_feature_types
+
 logger = get_logger(__file__)
 
 
@@ -473,6 +473,7 @@ def make_h2o_ready(X, y=None, supported_problem_types=["binary"]):
         If y was not passed, returns X with categorical variables ordinally encoded.
         If y was passed, returns a training frame of type h2o.H2OFrame alongside the transformed X and y.
     """
+    from evalml.utils.woodwork_utils import _convert_woodwork_types_wrapper, infer_feature_types
     h2o_error_msg = "H2O is not installed. please install using `pip install h2o`."
     h2o = import_or_raise("h2o", error_msg=h2o_error_msg)
     supported_problem_types = [str(type_) if not isinstance(type_, str) else type_ for type_ in supported_problem_types]

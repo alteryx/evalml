@@ -156,6 +156,13 @@ def X_y_multi():
 
 
 @pytest.fixture
+def X_y_multi_more_classes():
+    X, y = datasets.make_classification(n_samples=100, n_features=20, n_classes=4,
+                                        n_informative=3, n_redundant=2, random_state=0)
+    return X, y
+
+
+@pytest.fixture
 def X_y_categorical_regression():
     data_path = os.path.join(os.path.dirname(__file__), "data/tips.csv")
     flights = pd.read_csv(data_path)
@@ -639,7 +646,10 @@ def helper_functions():
         @staticmethod
         def safe_init_component_with_njobs_1(component_class):
             try:
-                component = component_class(n_jobs=1)
+                if component_class.model_family == ModelFamily.GAM:
+                    component = component_class()
+                else:
+                    component = component_class(n_jobs=1)
             except TypeError:
                 component = component_class()
             return component
@@ -649,7 +659,10 @@ def helper_functions():
             try:
                 estimator = pipeline_class.component_graph[-1]
                 estimator_name = estimator if isinstance(estimator, str) else estimator.name
-                pl = pipeline_class({estimator_name: {'n_jobs': 1}})
+                if estimator.model_family == ModelFamily.GAM:
+                    pl = pipeline_class({estimator_name: {}})
+                else:
+                    pl = pipeline_class({estimator_name: {'n_jobs': 1}})
             except ValueError:
                 pl = pipeline_class({})
             return pl

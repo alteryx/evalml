@@ -790,7 +790,8 @@ def test_all_estimators_check_fit(X_y_binary, ts_data, test_estimator_needs_fitt
         component.fit(X, y)
 
         if ProblemTypes.BINARY in component.supported_problem_types or ProblemTypes.MULTICLASS in component.supported_problem_types:
-            component.predict_proba(X)
+            if component.model_family != ModelFamily.GAM:
+                component.predict_proba(X)
 
         component.predict(X)
         component.feature_importance
@@ -824,6 +825,8 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
+        if component_class.model_family == ModelFamily.GAM:  # h2o models exist in an h2o cluster
+            continue
         print('Testing serialization of component {}'.format(component_class.name))
         try:
             component = helper_functions.safe_init_component_with_njobs_1(component_class)

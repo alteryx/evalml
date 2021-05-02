@@ -5,7 +5,7 @@ colorama==0.4.4
 dask==2021.4.1
 featuretools==0.24.0
 graphviz==0.16
-h2o==3.32.0.3
+h2o==3.32.1.2
 imbalanced-learn==0.8.0
 ipywidgets==7.6.3
 kaleido==0.2.1
