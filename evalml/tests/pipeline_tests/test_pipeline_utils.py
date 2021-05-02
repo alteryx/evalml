@@ -21,7 +21,6 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    RandomForestClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,

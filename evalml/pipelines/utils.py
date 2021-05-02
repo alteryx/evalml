@@ -211,17 +211,15 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
     parameters = {}
     if is_classification(problem_type):
         parameters = {"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": n_jobs}}
-        custom_name = "Stacked Ensemble Classification Pipeline"
         estimator = StackedEnsembleClassifier
     else:
         parameters = {"Stacked Ensemble Regressor": {"input_pipelines": input_pipelines, "n_jobs": n_jobs}}
-        custom_name = "Stacked Ensemble Regression Pipeline"
         estimator = StackedEnsembleRegressor
 
     pipeline_class, pipeline_name = {
         ProblemTypes.BINARY: (BinaryClassificationPipeline, "Stacked Ensemble Classification Pipeline"),
-    ProblemTypes.MULTICLASS: (MulticlassClassificationPipeline, "Stacked Ensemble Classification Pipeline"),
-    ProblemTypes.REGRESSION: (RegressionPipeline, "Stacked Ensemble Regression Pipeline")}[problem_type]
+        ProblemTypes.MULTICLASS: (MulticlassClassificationPipeline, "Stacked Ensemble Classification Pipeline"),
+        ProblemTypes.REGRESSION: (RegressionPipeline, "Stacked Ensemble Regression Pipeline")}[problem_type]
 
     return pipeline_class([estimator], parameters=parameters,
                           custom_name=pipeline_name,

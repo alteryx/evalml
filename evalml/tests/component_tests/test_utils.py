@@ -9,10 +9,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline,
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline
+    RegressionPipeline
 )
 from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
