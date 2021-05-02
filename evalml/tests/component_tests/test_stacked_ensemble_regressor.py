@@ -119,8 +119,7 @@ def test_stacked_problem_types():
 
 def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    input_pipelines = [RegressionPipeline([regressor.__class__])
-                       for regressor in stackable_regressors]
+    input_pipelines = [RegressionPipeline([regressor]) for regressor in stackable_regressors]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
@@ -139,8 +138,7 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')
 def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    input_pipelines = [RegressionPipeline([regressor.__class__])
-                       for regressor in stackable_regressors]
+    input_pipelines = [RegressionPipeline([regressor]) for regressor in stackable_regressors]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, n_jobs=1)
     clf.fit(X, y)
     mock_fit.assert_called()
