@@ -2925,7 +2925,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
 
     automl = AutoMLSearch(X, y,
                           problem_type=problem_type,
-                          problem_configuration={"gap": gap, "max_delay": 1})
+                          problem_configuration={"date_index": None, "gap": gap, "max_delay": 1})
     baseline = automl._get_baseline_pipeline()
     baseline.fit(X, y)
 
