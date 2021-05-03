@@ -264,8 +264,6 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
                           max_batches=2)
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
-
-    dt = configuration.pop('date_index')
     for result in automl.results['pipeline_results'].values():
         assert result['pipeline_class'] == TimeSeriesRegressionPipeline
 
