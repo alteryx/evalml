@@ -31,7 +31,6 @@ class GAMClassifier(Estimator):
 
         h2o_error_msg = "H2O is not installed. please install using `pip install h2o`."
         self.h2o = import_or_raise("h2o", error_msg=h2o_error_msg)
-        self.h2o.init()
 
         self.h2o_model_init = self.h2o.estimators.gam.H2OGeneralizedAdditiveEstimator
 
@@ -52,6 +51,7 @@ class GAMClassifier(Estimator):
         return new_params
 
     def fit(self, X, y=None):
+        self.h2o.init()
         if y is None:
             raise ValueError('GAM Classifer requires y as input.')
         X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMClassifier.supported_problem_types)
