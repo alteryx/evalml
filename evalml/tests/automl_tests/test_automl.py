@@ -277,7 +277,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'data_splitter': StratifiedKFold(5),
+        'data_splitter': StratifiedKFold(n_splits=5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
