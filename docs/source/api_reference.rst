@@ -64,8 +64,8 @@ Exceptions
 AutoML
 ======
 
-AutoML Search Classes
-~~~~~~~~~~~~~~~~~~~~~
+AutoML Search Interface
+~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class_with_properties.rst
@@ -80,6 +80,7 @@ AutoML Utils
     :toctree: generated
     :nosignatures:
 
+    search
     get_default_primary_search_objective
     make_data_splitter
 
@@ -141,7 +142,6 @@ Pipeline Utils
     :nosignatures:
 
     make_pipeline
-    make_pipeline_from_components
     generate_pipeline_code
 
 
