@@ -127,8 +127,6 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     Returns:
         str: The string name of the sampling component to use
     """
-    if sampler_type != 'auto':
-        return sampler_type
     # we check for the class balances
     counts = y.to_series().value_counts()
     minority_class = min(counts)

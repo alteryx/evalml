@@ -185,10 +185,3 @@ def test_get_best_sampler_for_data_auto(sampler_balanced_ratio, problem_type, ca
         assert name_output is None
     else:
         assert name_output == 'Undersampler'
-
-
-@pytest.mark.parametrize("name", [None, 'Undersampler'])
-def test_get_best_sampler_for_data_named(name, mock_imbalanced_data_X_y):
-    X, y = mock_imbalanced_data_X_y("binary", "all", "large")
-    name_output = get_best_sampler_for_data(X, y, name, 0.25)
-    assert name_output == name

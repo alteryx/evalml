@@ -49,6 +49,7 @@ from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_classification,
     is_time_series
 )
 from evalml.tuners import SKOptTuner
@@ -307,7 +308,9 @@ class AutoMLSearch:
 
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
-        self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
+        self._sampler_name = self.sampler_method
+        if is_classification(self.problem_type) and self.sampler_method == 'auto':
+            self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")

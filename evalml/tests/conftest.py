@@ -699,7 +699,8 @@ def fraud_100():
 def mock_imbalanced_data_X_y():
     """Helper function to return an imbalanced binary or multiclass dataset"""
     def _imbalanced_data_X_y(problem_type, categorical_columns, size):
-        """Take in args to determine the generated dataset to output. For our targets, we maintain a 1:5, or 0.2, class ratio of minority:majority.
+        """"Generates a dummy classification dataset with particular amounts of class imbalance and categorical input columns.
+        For our targets, we maintain a 1:5, or 0.2, class ratio of minority : majority.
         We only generate minimum amount for X to set the logical_types, so the length of X and y will be different.
 
         Arguments:

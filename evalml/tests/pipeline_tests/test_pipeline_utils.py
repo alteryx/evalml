@@ -591,19 +591,22 @@ def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X
     estimators = get_estimators(problem_type=problem_type)
 
     for estimator in estimators:
-        pipeline = make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
-        if has_minimal_dependencies and samplers is not None:
-            samplers = 'Undersampler'
-        # check that we do add the sampler properly
-        component_to_check = pipeline.component_graph
-        if samplers is not None and problem_type != 'regression':
-            # we add the sampler before the scaler if it exists
-            if component_to_check[-2].name == 'Standard Scaler':
-                assert component_to_check[-3].name == samplers
-            else:
-                assert component_to_check[-2].name == samplers
+        if problem_type == 'regression' and samplers is not None:
+            with pytest.raises(ValueError, match='Sampling is unsupported for'):
+                make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
         else:
-            assert not any('sampler' in comp.name for comp in component_to_check)
+            pipeline = make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
+            if has_minimal_dependencies and samplers is not None:
+                samplers = 'Undersampler'
+            # check that we do add the sampler properly
+            if samplers is not None and problem_type != 'regression':
+                # we add the sampler before the scaler if it exists
+                if pipeline.component_graph[-2].name == 'Standard Scaler':
+                    assert pipeline.component_graph[-3].name == samplers
+                else:
+                    assert pipeline.component_graph[-2].name == samplers
+            else:
+                assert not any('sampler' in comp.name for comp in pipeline.component_graph)
 
 
 def test_get_estimators(has_minimal_dependencies):
