@@ -56,7 +56,7 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators
 )
-from evalml.pipelines.utils import make_pipeline, make_pipeline_from_components
+from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TrainingValidationSplit, split_data
 from evalml.problem_types import (
     ProblemTypes,
