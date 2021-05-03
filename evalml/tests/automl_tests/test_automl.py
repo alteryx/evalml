@@ -58,7 +58,12 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import make_pipeline, make_pipeline_from_components
 from evalml.preprocessing import TrainingValidationSplit, split_data
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_classification,
+    is_time_series
+)
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
