@@ -659,7 +659,7 @@ def helper_functions():
             try:
                 estimator = pipeline_class.component_graph[-1]
                 estimator_name = estimator if isinstance(estimator, str) else estimator.name
-                if estimator.model_family == ModelFamily.GAM:
+                if estimator_name == "GAM Classifier" or estimator_name == "GAM Regressor":
                     pl = pipeline_class({estimator_name: {}})
                 else:
                     pl = pipeline_class({estimator_name: {'n_jobs': 1}})

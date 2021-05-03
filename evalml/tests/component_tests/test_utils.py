@@ -23,7 +23,7 @@ multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 def test_all_components(has_minimal_dependencies, is_running_py_39_or_above):
     if has_minimal_dependencies:
-        assert len(all_components()) == 39
+        assert len(all_components()) == 37
     else:
         n_components = 50 if is_running_py_39_or_above else 51
         assert len(all_components()) == n_components
