@@ -149,6 +149,15 @@ def test_datetime_featurizer_numpy_array_input():
                                                         '0_day_of_week': {'Saturday': 6, 'Tuesday': 2}}
 
 
+def test_datetime_featurizer_does_not_modify_input_data():
+    datetime_transformer = DateTimeFeaturizer(features_to_extract=["month", "year"])
+    rng = pd.date_range('2020-02-24', periods=20, freq='D')
+    X = pd.DataFrame({"date col": rng, "numerical": [0] * len(rng)})
+    expected = X.copy()
+    _ = datetime_transformer.fit_transform(X)
+    pd.testing.assert_frame_equal(X, expected)
+
+
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
                                   pd.DataFrame(pd.Series([1, 2, 3])),
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
