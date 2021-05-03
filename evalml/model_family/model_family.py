@@ -34,6 +34,9 @@ class ModelFamily(Enum):
     DECISION_TREE = 'decision_tree'
     """Decision Tree model family."""
 
+    ARIMA = 'ARIMA'
+    """ARIMA model family."""
+
     BASELINE = 'baseline'
     """Baseline model family."""
 
@@ -52,6 +55,7 @@ class ModelFamily(Enum):
                              ModelFamily.DECISION_TREE.name: "Decision Tree",
                              ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.ENSEMBLE.name: "Ensemble",
+                             ModelFamily.ARIMA.name: "ARIMA",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
 
