@@ -161,7 +161,6 @@ Pipeline Utils
     :nosignatures:
 
     make_pipeline
-    make_pipeline_from_components
     generate_pipeline_code
 
 
