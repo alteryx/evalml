@@ -89,9 +89,11 @@ def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
+    fh_ = forecasting.ForecastingHorizon(y[250:].index, is_relative=False)
+
     m_clf = sktime_arima.AutoARIMA()
     m_clf.fit(X=X[:250], y=y[:250])
-    y_pred = m_clf.predict(X=X[250:])
+    y_pred = m_clf.predict(X=X[250:], fh=fh_)
 
     X['Sample'] = pd.date_range(start='1/1/2016', periods=500)
 
@@ -100,7 +102,7 @@ def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
     y_pred_dt = dt_clf.predict(X=X[250:])
 
     assert isinstance(y_pred_dt, woodwork.DataColumn)
-    pd.testing.assert_series_equal(y_pred.to_series(), y_pred_dt.to_series())
+    assert (y_pred.to_period('D') == y_pred_dt.to_series()).all()
 
 
 def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal):
@@ -110,8 +112,8 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal):
 
     fh_ = forecasting.ForecastingHorizon(y[250:].index, is_relative=False)
 
-    a_clf = sktime_arima.AutoARIMA()
-    clf = a_clf.fit(y=y[:250])
+    m_clf = sktime_arima.AutoARIMA()
+    clf = m_clf.fit(y=y[:250])
     y_pred_sk = clf.predict(fh=fh_)
 
     X = X.drop(["features"], axis=1)
