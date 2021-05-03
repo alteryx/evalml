@@ -455,21 +455,21 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         X, y = X_y_binary
         base_pipeline_class = BinaryClassificationPipeline
         stacking_component_name = StackedEnsembleClassifier.name
-        input_pipelines = [base_pipeline_class([classifier]) for classifier in stackable_classifiers]
+        input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers]
         comparison_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         objective = 'Log Loss Binary'
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         base_pipeline_class = MulticlassClassificationPipeline
         stacking_component_name = StackedEnsembleClassifier.name
-        input_pipelines = [base_pipeline_class([classifier]) for classifier in stackable_classifiers]
+        input_pipelines = [MulticlassClassificationPipeline([classifier]) for classifier in stackable_classifiers]
         comparison_pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         objective = 'Log Loss Multiclass'
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         base_pipeline_class = RegressionPipeline
         stacking_component_name = StackedEnsembleRegressor.name
-        input_pipelines = [base_pipeline_class([regressor]) for regressor in stackable_regressors]
+        input_pipelines = [RegressionPipeline([regressor]) for regressor in stackable_regressors]
         comparison_pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
         objective = 'R2'
     parameters = {
