@@ -200,15 +200,6 @@ def ts_data():
 
 
 @pytest.fixture
-def ts_data_seasonal():
-    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
-    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
-    y.index = pd.date_range(start='1/1/2018', periods=500)
-    X.index = pd.date_range(start='1/1/2018', periods=500)
-    return X, y
-
-
-@pytest.fixture
 def dummy_pipeline_hyperparameters():
     return {'Mock Classifier': {
         'param a': Integer(0, 10),
@@ -699,7 +690,8 @@ def fraud_100():
 def mock_imbalanced_data_X_y():
     """Helper function to return an imbalanced binary or multiclass dataset"""
     def _imbalanced_data_X_y(problem_type, categorical_columns, size):
-        """Take in args to determine the generated dataset to output. For our targets, we maintain a 1:5, or 0.2, class ratio of minority:majority.
+        """"Generates a dummy classification dataset with particular amounts of class imbalance and categorical input columns.
+        For our targets, we maintain a 1:5, or 0.2, class ratio of minority : majority.
         We only generate minimum amount for X to set the logical_types, so the length of X and y will be different.
 
         Arguments:

@@ -84,25 +84,25 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_n
 
     datetime_cols = X.select(["Datetime"])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
-    if add_datetime_featurizer and estimator_class.model_family != ModelFamily.ARIMA:
+    if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
-    if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
+    if is_time_series(problem_type):
         pp_components.append(DelayedFeatureTransformer)
 
     categorical_cols = X.select('category')
     if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
+    sampler_components = {
+        "Undersampler": Undersampler,
+        "SMOTE Oversampler": SMOTESampler,
+        "SMOTENC Oversampler": SMOTENCSampler,
+        "SMOTEN Oversampler": SMOTENSampler
+    }
     if sampler_name is not None:
         try:
             import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
-            sampler_components = {
-                "Undersampler": Undersampler,
-                "SMOTE Oversampler": SMOTESampler,
-                "SMOTENC Oversampler": SMOTENCSampler,
-                "SMOTEN Oversampler": SMOTENSampler
-            }
             pp_components.append(sampler_components[sampler_name])
         except ImportError:
             logger.debug(f'Could not import imblearn.over_sampling, so defaulting to use Undersampler')
@@ -157,8 +157,8 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    if not is_classification(problem_type):
-        sampler_name = None
+    if not is_classification(problem_type) and sampler_name is not None:
+        raise ValueError(f"Sampling is unsupported for problem_type {str(problem_type)}")
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator, sampler_name)
     complete_component_graph = preprocessing_components + [estimator]
 
