@@ -599,7 +599,7 @@ def stackable_classifiers(helper_functions):
                                              ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_classifiers.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
+            stackable_classifiers.append(estimator_class)
     return stackable_classifiers
 
 
@@ -611,7 +611,7 @@ def stackable_regressors(helper_functions):
         if (set(supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_regressors.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
+            stackable_regressors.append(estimator_class)
     return stackable_regressors
 
 
