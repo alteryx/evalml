@@ -31,8 +31,7 @@ from .components import (
     DFSTransformer,
     KNeighborsClassifier,
     SVMClassifier,
-    SVMRegressor,
-    ARIMARegressor
+    SVMRegressor
 )
 
 from .component_graph import ComponentGraph

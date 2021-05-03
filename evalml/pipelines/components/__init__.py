@@ -22,8 +22,7 @@ from .estimators import (
     TimeSeriesBaselineEstimator,
     KNeighborsClassifier,
     SVMClassifier,
-    SVMRegressor,
-    ARIMARegressor
+    SVMRegressor
 )
 from .transformers import (
     Transformer,

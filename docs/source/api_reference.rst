@@ -264,7 +264,6 @@ Regressors are components that output a predicted target value.
     :template: estimator_class.rst
     :nosignatures:
 
-    ARIMARegressor
     CatBoostRegressor
     ElasticNetRegressor
     LinearRegressor
