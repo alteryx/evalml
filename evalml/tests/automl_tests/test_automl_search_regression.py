@@ -8,9 +8,9 @@ from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import (
-    MeanBaselineRegressionPipeline,
     PipelineBase,
-    TimeSeriesBaselineRegressionPipeline
+    RegressionPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -233,7 +233,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == RegressionPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_regression_pipeline_class
 
 
@@ -247,7 +247,7 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == MeanBaselineRegressionPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == RegressionPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class
 
 
@@ -255,23 +255,18 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
 def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regression):
     X, y = X_y_regression
-    X = pd.DataFrame(X, columns=[f"Column_{str(i)}" for i in range(20)])
-    X["Date"] = pd.date_range(start='1/1/2018', periods=X.shape[0])
 
-    configuration = {"date_index": "Date", "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration,
                           max_batches=2)
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
-
-    dt = configuration.pop('date_index')
     for result in automl.results['pipeline_results'].values():
+        assert result['pipeline_class'] == TimeSeriesRegressionPipeline
+
         if result["id"] == 0:
-            dt_ = result['parameters']['Time Series Baseline Estimator'].pop('date_index')
-            assert result['pipeline_class'] == TimeSeriesBaselineRegressionPipeline
-            assert dt == dt_
             continue
-        for param_key, param_val in configuration.items():
-            assert result['parameters']['Delayed Feature Transformer'][param_key] == configuration[param_key]
-            assert result['parameters']['pipeline'][param_key] == configuration[param_key]
+
+        assert result['parameters']['Delayed Feature Transformer'] == configuration
+        assert result['parameters']['pipeline'] == configuration
