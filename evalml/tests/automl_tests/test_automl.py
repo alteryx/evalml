@@ -56,7 +56,7 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators
 )
-from evalml.pipelines.utils import make_pipeline, make_pipeline_from_components
+from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import (
     BalancedClassificationDataCVSplit,
     BalancedClassificationDataTVSplit,
@@ -2627,8 +2627,9 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
         return DummyPipeline({'Mock Classifier': {'a': index}})
 
     pipelines = [make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)]
-    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
-    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)], problem_type="binary")
+    input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers[:2]]
+    ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
+                                            parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}})
     pipelines.append(ensemble)
 
     def train_batch_and_check():
@@ -2722,10 +2723,10 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
         return DummyPipeline({'Mock Classifier': {'a': index}})
 
     pipelines = [make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)]
-    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
-    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)],
-                                             custom_name="Templated Pipeline",
-                                             problem_type="binary")
+    input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers[:2]]
+    ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
+                                            parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}},
+                                            custom_name="Templated Pipeline")
     pipelines.append(ensemble)
 
     def score_batch_and_check():
