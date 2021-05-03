@@ -153,11 +153,7 @@ def _get_subclasses(base_class):
 
 
 _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineEstimator',
-                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
-                       'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
-                       'TimeSeriesBaselineRegressionPipeline', 'TimeSeriesBaselineBinaryPipeline',
-                       'TimeSeriesBaselineMulticlassPipeline', 'KNeighborsClassifier',
+                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor', 'KNeighborsClassifier',
                        'SVMClassifier', 'SVMRegressor', 'ARIMARegressor'}
 
 
