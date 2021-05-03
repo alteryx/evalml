@@ -30,7 +30,7 @@ git-test-minimal-deps:
 
 .PHONY: win-git-test
 win-git-test:
-	pytest evalml/ -n 3 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 5 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: installdeps
 installdeps:
