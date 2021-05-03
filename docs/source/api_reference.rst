@@ -131,30 +131,6 @@ Pipeline Base Classes
     TimeSeriesMulticlassClassificationPipeline
     TimeSeriesRegressionPipeline
 
-Classification Pipelines
-~~~~~~~~~~~~~~~~~~~~~~~~
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
-    BaselineBinaryPipeline
-    BaselineMulticlassPipeline
-    ModeBaselineBinaryPipeline
-    ModeBaselineMulticlassPipeline
-
-Regression Pipelines
-~~~~~~~~~~~~~~~~~~~~
-
-.. autosummary::
-    :toctree: generated
-    :template: pipeline_class.rst
-    :nosignatures:
-
-    BaselineRegressionPipeline
-    MeanBaselineRegressionPipeline
-    TimeSeriesBaselineRegressionPipeline
-
 
 .. currentmodule:: evalml.pipelines.utils
 

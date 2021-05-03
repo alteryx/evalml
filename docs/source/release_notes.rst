@@ -2,15 +2,17 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added `date_index` as a required parameter for TimeSeries problems :pr:`2155`
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
+        * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
+        * Deleted baseline pipeline classes :pr:`2202`
+        * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
         * Removed all old datasplitters from EvalML :pr:`2193`
     * Documentation Changes
@@ -25,6 +27,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * All baseline pipeline classes (``BaselineBinaryPipeline``, ``BaselineMulticlassPipeline``, ``BaselineRegressionPipeline``, etc.) have been deleted :pr:`2202`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
         * Removed all old datasplitters from EvalML :pr:`2193`
 
