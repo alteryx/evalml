@@ -35,13 +35,13 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
-    MeanBaselineRegressionPipeline,
-    ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
     PipelineBase,
-    TimeSeriesBaselineBinaryPipeline,
-    TimeSeriesBaselineMulticlassPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    RegressionPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -172,7 +172,7 @@ class AutoMLSearch:
                 max_iterations have precedence over stopping the search.
 
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-                in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+                in time series problems, values should be passed in for the gap and max_delay variables.
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -459,9 +459,9 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
-            required_parameters = {'date_index', 'gap', 'max_delay'}
+            required_parameters = {'gap', 'max_delay'}
             if not problem_configuration or not all(p in problem_configuration for p in required_parameters):
-                raise ValueError("user_parameters must be a dict containing values for at least the date_index, gap, and max_delay "
+                raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
 
@@ -664,26 +664,38 @@ class AutoMLSearch:
             if pipeline.problem_type != self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
+    def _get_baseline_pipeline(self):
+        """Creates a baseline pipeline instance."""
+        if self.problem_type == ProblemTypes.BINARY:
+            baseline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                    custom_name="Mode Baseline Binary Classification Pipeline",
+                                                    custom_hyperparameters={"strategy": ["mode"]})
+        elif self.problem_type == ProblemTypes.MULTICLASS:
+            baseline = MulticlassClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                        custom_name="Mode Baseline Multiclass Classification Pipeline",
+                                                        custom_hyperparameters={"strategy": ["mode"]})
+        elif self.problem_type == ProblemTypes.REGRESSION:
+            baseline = RegressionPipeline(component_graph=["Baseline Regressor"],
+                                          custom_name="Mean Baseline Regression Pipeline",
+                                          custom_hyperparameters={"strategy": ["mean"]})
+        else:
+            pipeline_class, pipeline_name = {ProblemTypes.TIME_SERIES_REGRESSION: (TimeSeriesRegressionPipeline, "Time Series Baseline Regression Pipeline"),
+                                             ProblemTypes.TIME_SERIES_MULTICLASS: (TimeSeriesMulticlassClassificationPipeline, "Time Series Baseline Multiclass Pipeline"),
+                                             ProblemTypes.TIME_SERIES_BINARY: (TimeSeriesBinaryClassificationPipeline, "Time Series Baseline Binary Pipeline")}[self.problem_type]
+            gap = self.problem_configuration['gap']
+            max_delay = self.problem_configuration['max_delay']
+            baseline = pipeline_class(component_graph=["Time Series Baseline Estimator"],
+                                      custom_name=pipeline_name,
+                                      parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
+                                                  "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
+        return baseline
+
     def _add_baseline_pipelines(self):
         """Fits a baseline pipeline to the data.
 
         This is the first pipeline fit during search.
         """
-        if self.problem_type == ProblemTypes.BINARY:
-            baseline = ModeBaselineBinaryPipeline(parameters={})
-        elif self.problem_type == ProblemTypes.MULTICLASS:
-            baseline = ModeBaselineMulticlassPipeline(parameters={})
-        elif self.problem_type == ProblemTypes.REGRESSION:
-            baseline = MeanBaselineRegressionPipeline(parameters={})
-        else:
-            pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
-                              ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,
-                              ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
-            date_index = self.problem_configuration['date_index']
-            gap = self.problem_configuration['gap']
-            max_delay = self.problem_configuration['max_delay']
-            baseline = pipeline_class(parameters={"pipeline": {"date_index": date_index, "gap": gap, "max_delay": max_delay},
-                                                  "Time Series Baseline Estimator": {"date_index": date_index, "gap": gap, "max_delay": max_delay}})
+        baseline = self._get_baseline_pipeline()
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
         computation = self._engine.submit_evaluation_job(self.automl_config, baseline, self.X_train, self.y_train)

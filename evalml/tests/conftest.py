@@ -200,15 +200,6 @@ def ts_data():
 
 
 @pytest.fixture
-def ts_data_seasonal():
-    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
-    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
-    y.index = pd.date_range(start='1/1/2018', periods=500)
-    X.index = pd.date_range(start='1/1/2018', periods=500)
-    return X, y
-
-
-@pytest.fixture
 def dummy_pipeline_hyperparameters():
     return {'Mock Classifier': {
         'param a': Integer(0, 10),
