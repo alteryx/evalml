@@ -87,7 +87,7 @@ def search(X_train=None, y_train=None, problem_type=None, objective='auto', **kw
     Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
-        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, the automl
+        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
     """
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
