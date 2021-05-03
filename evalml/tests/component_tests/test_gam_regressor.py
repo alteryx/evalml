@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
+import pytest
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily
@@ -20,6 +21,40 @@ def test_gam_regressor_init():
 
 def test_problem_types():
     assert set(GAMRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
+
+
+def test_h2o_init():
+    clf = GAMRegressor()
+    assert clf.h2o_model_init.__name__ == 'H2OGeneralizedAdditiveEstimator'
+    assert clf.h2o.__name__ == 'h2o'
+
+
+def test_h2o_parameters():
+    clf = GAMRegressor()
+    assert clf.parameters == {'family': 'AUTO',
+                              'solver': 'AUTO',
+                              'stopping_metric': 'deviance',
+                              'keep_cross_validation_models': False,
+                              'seed': 0}
+
+
+def test_fit_predict_returns(X_y_binary):
+    X, y = X_y_binary
+
+    clf = GAMRegressor()
+    fit_return = clf.fit(X, y)
+    predictions = clf.predict(X)
+
+    assert isinstance(fit_return, h2o.estimators.gam.H2OGeneralizedAdditiveEstimator)
+    assert isinstance(predictions, pd.Series)
+
+
+def test_no_y(X_y_binary):
+    X, y = X_y_binary
+
+    clf = GAMRegressor()
+    with pytest.raises(ValueError, match="GAM Regressor requires y as input."):
+        clf.fit(X)
 
 
 def test_fit_predict_regression(X_y_regression):
@@ -41,12 +76,16 @@ def test_fit_predict_regression(X_y_regression):
 
 
 def test_family_link_solver_param_updates(X_y_regression):
-    X, y = X_y_regression
     clf = GAMRegressor()
+
+    X, y = X_y_regression
+    X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMRegressor.supported_problem_types)
+
     clf.fit(X, y)
-    assert clf.parameters['family'] == "Gaussian"
-    assert clf.parameters['link'] == "Identity"
-    assert clf.parameters['lambda_search']
+    assert clf._update_params(X, y) == {'gam_columns': [str(col_) for col_ in list(X.columns)],
+                                        "lambda_search": True,
+                                        "family": "Gaussian",
+                                        "link": "Identity"}
 
 
 def test_feature_importance(X_y_regression):

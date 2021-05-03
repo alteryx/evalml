@@ -51,7 +51,7 @@ class GAMClassifier(Estimator):
                                "link": "Logit"})
         return new_params
 
-    def fit(self, X, y=None, retrying=False):
+    def fit(self, X, y=None):
         if y is None:
             raise ValueError('GAM Classifer requires y as input.')
         X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMClassifier.supported_problem_types)

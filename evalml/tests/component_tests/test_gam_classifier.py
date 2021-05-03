@@ -23,6 +23,40 @@ def test_problem_types():
     assert set(GAMClassifier.supported_problem_types) == {ProblemTypes.MULTICLASS, ProblemTypes.BINARY}
 
 
+def test_h2o_init():
+    clf = GAMClassifier()
+    assert clf.h2o_model_init.__name__ == 'H2OGeneralizedAdditiveEstimator'
+    assert clf.h2o.__name__ == 'h2o'
+
+
+def test_h2o_parameters():
+    clf = GAMClassifier()
+    assert clf.parameters == {'family': 'AUTO',
+                              'solver': 'AUTO',
+                              'stopping_metric': 'logloss',
+                              'keep_cross_validation_models': False,
+                              'seed': 0}
+
+
+def test_fit_predict_returns(X_y_binary):
+    X, y = X_y_binary
+
+    clf = GAMClassifier()
+    fit_return = clf.fit(X, y)
+    predictions = clf.predict(X)
+
+    assert isinstance(fit_return, h2o.estimators.gam.H2OGeneralizedAdditiveEstimator)
+    assert isinstance(predictions, pd.Series)
+
+
+def test_no_y(X_y_binary):
+    X, y = X_y_binary
+
+    clf = GAMClassifier()
+    with pytest.raises(ValueError, match="GAM Classifer requires y as input."):
+        clf.fit(X)
+
+
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
@@ -73,15 +107,19 @@ def test_family_link_solver_param_updates(dataset_type, X_y_binary, X_y_multi, X
     else:
         X, y = X_y_multi_more_classes
 
+    X, y, training_frame = make_h2o_ready(X, y, supported_problem_types=GAMClassifier.supported_problem_types)
+
     clf.fit(X, y)
     if dataset_type == 'binary':
-        assert clf.parameters['family'] == "binomial"
-        assert clf.parameters['link'] == "Logit"
-        assert clf.parameters['lambda_search']
+        assert clf._update_params(X, y) == {'gam_columns': [str(col_) for col_ in list(X.columns)],
+                                            "lambda_search": True,
+                                            "family": "binomial",
+                                            "link": "Logit"}
     else:
-        assert clf.parameters['family'] == "multinomial"
-        assert clf.parameters['link'] == "Family_Default"
-        assert clf.parameters['lambda_search']
+        assert clf._update_params(X, y) == {'gam_columns': [str(col_) for col_ in list(X.columns)],
+                                            "lambda_search": True,
+                                            "family": "multinomial",
+                                            "link": "Family_Default"}
 
 
 def test_feature_importance(X_y_binary):
