@@ -313,6 +313,7 @@ class AutoMLSearch:
             self._sampler_name = self.sampler_method
             if self.sampler_method == 'auto':
                 self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
+            self._frozen_pipeline_parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")

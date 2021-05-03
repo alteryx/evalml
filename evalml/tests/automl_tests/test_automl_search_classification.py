@@ -729,8 +729,10 @@ def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features,
         # we consider this balanced, so we expect no samplers
         assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
     else:
-
         assert all(any("Undersampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        for comp in pipelines[0]._component_graph:
+            if 'sampler' in comp.name:
+                assert comp.parameters['sampling_ratio'] == sampling_ratio
 
 
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
