@@ -23,7 +23,7 @@ class ARIMARegressor(Estimator):
     model_family = ModelFamily.ARIMA
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, date_column=None, trend='n', p=1, d=0, q=0,
+    def __init__(self, date_index=None, trend='n', p=1, d=0, q=0,
                  random_seed=0, **kwargs):
         """
         Arguments:
@@ -40,7 +40,7 @@ class ARIMARegressor(Estimator):
                       'trend': trend}
 
         parameters.update(kwargs)
-        self.date_column = date_column
+        self.date_index = date_index
 
         p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
 
@@ -67,8 +67,8 @@ class ARIMARegressor(Estimator):
                 date_col = y.index
         if X is not None:
             X_index_type = infer_feature_types(pd.Series(X.index)).logical_type.type_string
-            if self.parameters['date_index'] in X.columns:
-                date_col = X.pop(self.parameters['date_index'])
+            if self.date_index in X.columns:
+                date_col = X.pop(self.date_index)
             elif X_index_type == 'datetime':
                 date_col = X.index
         if date_col is None:
@@ -92,7 +92,7 @@ class ARIMARegressor(Estimator):
         arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
 
         X, y = self._manage_woodwork(X, y)
-        dates = self._get_dates(X, y)
+        dates, X = self._get_dates(X, y)
         X, y = self._match_indices(X, y, dates)
         new_params = {}
         for key, val in self.parameters.items():
@@ -108,7 +108,7 @@ class ARIMARegressor(Estimator):
 
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
-        dates = self._get_dates(X, y)
+        dates, X = self._get_dates(X, y)
         X, y = self._match_indices(X, y, dates)
         start = dates.min()
         end = dates.max()
