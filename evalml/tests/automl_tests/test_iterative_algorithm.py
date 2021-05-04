@@ -394,11 +394,16 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_min
     next_batch = algo.next_batch()
     estimators_in_first_batch = [p.estimator.name for p in next_batch]
 
-    final_estimators = []
-    if has_minimal_dependencies:
+    if problem_type == ProblemTypes.REGRESSION:
         final_estimators = ['XGBoost Regressor',
                             'LightGBM Regressor',
                             'CatBoost Regressor']
+    else:
+        final_estimators = ['XGBoost Classifier',
+                            'LightGBM Classifier',
+                            'CatBoost Classifier']
+    if has_minimal_dependencies:
+        final_estimators = []
     if problem_type == ProblemTypes.REGRESSION:
         assert estimators_in_first_batch == ['Linear Regressor',
                                              'Elastic Net Regressor',
