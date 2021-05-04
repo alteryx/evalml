@@ -545,7 +545,7 @@ def test_explain_predictions_time_series(ts_data):
     X, y = ts_data
 
     ts_pipeline = TimeSeriesRegressionPipeline(component_graph=["Delayed Feature Transformer", "Random Forest Regressor"],
-                                               parameters={"pipeline": {"gap": 1, "max_delay": 2},
+                                               parameters={"pipeline": {"date_index": None, "gap": 1, "max_delay": 2},
                                                            "Random Forest Regressor": {"n_jobs": 1}})
 
     ts_pipeline.fit(X, y)
@@ -572,7 +572,7 @@ def test_explain_predictions_best_worst_time_series(output_format, pipeline_clas
         y = y % 2
 
     ts_pipeline = pipeline_class(component_graph=["Delayed Feature Transformer", estimator],
-                                 parameters={"pipeline": {"gap": 1, "max_delay": 2}})
+                                 parameters={"pipeline": {"date_index": None, "gap": 1, "max_delay": 2}})
 
     ts_pipeline.fit(X, y)
 

@@ -49,7 +49,7 @@ def test_make_data_splitter_default(problem_type, large_data):
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                         ProblemTypes.TIME_SERIES_BINARY,
                         ProblemTypes.TIME_SERIES_MULTICLASS]:
-        problem_configuration = {'gap': 1, 'max_delay': 7}
+        problem_configuration = {'gap': 1, 'max_delay': 7, 'date_index': None}
 
     data_splitter = make_data_splitter(X, y, problem_type, problem_configuration=problem_configuration)
     if large_data and problem_type in [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
@@ -79,6 +79,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
+        assert data_splitter.date_index is None
 
 
 @pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
@@ -105,11 +106,12 @@ def test_make_data_splitter_parameters_time_series():
     y = X.pop('target')
 
     for problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
-        data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
+        data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7, 'date_index': None}, n_splits=5, shuffle=False)
         assert isinstance(data_splitter, TimeSeriesSplit)
         assert data_splitter.n_splits == 5
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
+        assert data_splitter.date_index is None
 
 
 def test_make_data_splitter_error():
