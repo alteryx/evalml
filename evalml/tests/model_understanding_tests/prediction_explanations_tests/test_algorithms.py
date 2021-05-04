@@ -69,7 +69,7 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
     if "catboost" in pipeline.custom_name.lower():
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
-    pipeline = pipeline({"pipeline": {"gap": 1, "max_delay": 1}})
+    pipeline = pipeline({"pipeline": {"date_index": None, "gap": 1, "max_delay": 1}})
 
     with pytest.raises(exception, match=match):
         _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))

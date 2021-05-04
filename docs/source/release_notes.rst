@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``GAM Classifier`` and ``GAM Regressor`` to estimators :pr:`1674`
+        * Added `date_index` as a required parameter for TimeSeries problems :pr:`2217`
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
@@ -10,6 +11,7 @@ Release Notes
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
+        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
     * Changes
