@@ -15,6 +15,8 @@ from evalml.pipelines import (
     StackedEnsembleRegressor
 )
 from evalml.pipelines.components import Estimator
+from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -318,7 +320,7 @@ def test_iterative_algorithm_frozen_parameters():
 
     pipeline = BinaryClassificationPipeline([MockEstimator])
     algo = IterativeAlgorithm(allowed_pipelines=[pipeline, pipeline, pipeline],
-                              pipeline_params={'pipeline': {"gap": 2, "max_delay": 10}},
+                              pipeline_params={'pipeline': {'date_index': "Date", "gap": 2, "max_delay": 10}},
                               random_seed=0,
                               _frozen_pipeline_parameters={
                                   "Mock Classifier": {
@@ -328,7 +330,7 @@ def test_iterative_algorithm_frozen_parameters():
                                   }})
 
     next_batch = algo.next_batch()
-    assert all([p.parameters['pipeline'] == {"gap": 2, "max_delay": 10} for p in next_batch])
+    assert all([p.parameters['pipeline'] == {'date_index': "Date", "gap": 2, "max_delay": 10} for p in next_batch])
     assert all([p.parameters['Mock Classifier'] == {
         'dummy_int_parameter': 6,
         'dummy_categorical_parameter': "random",
@@ -370,8 +372,8 @@ def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline
     scores = np.arange(0, len(next_batch))
     for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
         algo.add_result(score, pipeline, {"id": algo.pipeline_number + pipeline_num})
-    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 2
-    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 3
+    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 3
+    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 2
 
     for i in range(1, 3):
         next_batch = algo.next_batch()
@@ -379,3 +381,72 @@ def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline
         for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number + pipeline_num})
             assert algo._best_pipeline_info[pipeline.model_family]['id'] == algo.pipeline_number + pipeline_num
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_minimal_dependencies):
+    X, y = X_y_binary
+    estimators = get_estimators(problem_type, None)
+    pipelines = [make_pipeline(X, y, e, problem_type) for e in estimators]
+    algo = IterativeAlgorithm(allowed_pipelines=pipelines)
+
+    # initial batch contains one of each pipeline, with default parameters
+    next_batch = algo.next_batch()
+    estimators_in_first_batch = [p.estimator.name for p in next_batch]
+
+    if problem_type == ProblemTypes.REGRESSION:
+        final_estimators = ['XGBoost Regressor',
+                            'LightGBM Regressor',
+                            'CatBoost Regressor']
+    else:
+        final_estimators = ['XGBoost Classifier',
+                            'LightGBM Classifier',
+                            'CatBoost Classifier']
+    if has_minimal_dependencies:
+        final_estimators = []
+    if problem_type == ProblemTypes.REGRESSION:
+        assert estimators_in_first_batch == ['Linear Regressor',
+                                             'Elastic Net Regressor',
+                                             'Decision Tree Regressor',
+                                             'Extra Trees Regressor',
+                                             'Random Forest Regressor'] + final_estimators
+    if problem_type == ProblemTypes.BINARY:
+        assert estimators_in_first_batch == ['Elastic Net Classifier',
+                                             'Logistic Regression Classifier',
+                                             'Decision Tree Classifier',
+                                             'Extra Trees Classifier',
+                                             'Random Forest Classifier'] + final_estimators
+    if problem_type == ProblemTypes.MULTICLASS:
+        assert estimators_in_first_batch == ['Elastic Net Classifier',
+                                             'Logistic Regression Classifier',
+                                             'Decision Tree Classifier',
+                                             'Extra Trees Classifier',
+                                             'Random Forest Classifier'] + final_estimators
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_iterative_algorithm_sampling_params(problem_type, mock_imbalanced_data_X_y):
+    X, y = mock_imbalanced_data_X_y(problem_type, "some", 'small')
+    estimators = get_estimators(problem_type, None)
+    pipelines = [make_pipeline(X, y, e, problem_type, sampler_name='Undersampler') for e in estimators]
+    algo = IterativeAlgorithm(allowed_pipelines=pipelines,
+                              random_seed=0,
+                              _frozen_pipeline_parameters={"Undersampler": {"sampling_ratio": 0.5}})
+
+    next_batch = algo.next_batch()
+    for p in next_batch:
+        for component in p._component_graph:
+            if "sampler" in component.name:
+                assert component.parameters["sampling_ratio"] == 0.5
+
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    # # make sure that future batches remain in the hyperparam range
+    for i in range(1, 5):
+        next_batch = algo.next_batch()
+        for p in next_batch:
+            for component in p._component_graph:
+                if "sampler" in component.name:
+                    assert component.parameters["sampling_ratio"] == 0.5

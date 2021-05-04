@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
@@ -16,19 +17,15 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
-    ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
     PipelineBase,
-    TimeSeriesBaselineBinaryPipeline,
-    TimeSeriesBaselineMulticlassPipeline
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import (
-    BalancedClassificationDataCVSplit,
-    TimeSeriesSplit,
-    split_data
-)
+from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
 
 
@@ -73,7 +70,7 @@ def test_get_pipeline_none(X_y_binary):
 def test_data_splitter(X_y_binary):
     X, y = X_y_binary
     cv_folds = 5
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=BalancedClassificationDataCVSplit(n_splits=cv_folds), max_iterations=1,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', data_splitter=StratifiedKFold(n_splits=cv_folds), max_iterations=1,
                           n_jobs=1)
     automl.search()
 
@@ -590,7 +587,7 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipe
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
 
 
@@ -605,7 +602,7 @@ def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineBinaryPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_binary_pipeline_class
 
 
@@ -619,7 +616,7 @@ def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_m
                           allowed_pipelines=allowed_pipelines, n_jobs=1)
     automl.search()
 
-    assert start_iteration_callback.call_args_list[0][0][0] == ModeBaselineMulticlassPipeline
+    assert start_iteration_callback.call_args_list[0][0][0] == MulticlassClassificationPipeline
     assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
     assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class
 
@@ -633,16 +630,20 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
                                                     problem_type, X_y_binary, X_y_multi):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
-        baseline = TimeSeriesBaselineBinaryPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesBinaryClassificationPipeline(component_graph=["Time Series Baseline Estimator"],
+                                                          parameters={'Time Series Baseline Estimator': {"date_index": None, 'gap': 0, 'max_delay': 0},
+                                                                      'pipeline': {"date_index": None, 'gap': 0, 'max_delay': 0}})
         mock_binary_score.return_value = {"Log Loss Binary": 0.2}
         problem_type = 'time series binary'
     else:
         X, y = X_y_multi
-        baseline = TimeSeriesBaselineMulticlassPipeline(parameters={'Time Series Baseline Estimator': {'gap': 0, 'max_delay': 0}, 'pipeline': {'gap': 0, 'max_delay': 0}})
+        baseline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Time Series Baseline Estimator"],
+                                                              parameters={'Time Series Baseline Estimator': {"date_index": None, 'gap': 0, 'max_delay': 0},
+                                                                          'pipeline': {"date_index": None, 'gap': 0, 'max_delay': 0}})
         mock_multiclass_score.return_value = {"Log Loss Multiclass": 0.25}
         problem_type = 'time series multiclass'
 
-    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    configuration = {"date_index": None, "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
                           problem_configuration=configuration,
@@ -672,7 +673,7 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
     mock_binary_score.return_value = {objective: 0.4}
     problem_type = 'time series binary'
 
-    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    configuration = {"date_index": None, "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     mock_optimize_threshold.return_value = 0.62
     mock_split_data.return_value = split_data(X, y, problem_type, test_size=0.2, random_seed=0)
@@ -713,3 +714,36 @@ def test_tuning_threshold_objective(mock_predict, mock_fit, mock_score, mock_enc
         assert automl.best_pipeline.threshold is None
     else:
         assert automl.best_pipeline.threshold == 0.6
+
+
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("categorical_features", ['none', 'some', 'all'])
+@pytest.mark.parametrize("size", ['small', 'large'])
+@pytest.mark.parametrize("sampling_ratio", [0.8, 0.5, 0.25, 0.2, 0.1, 0.05])
+def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, size)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='auto', sampler_balanced_ratio=sampling_ratio)
+    pipelines = automl.allowed_pipelines
+    if sampling_ratio <= 0.2:
+        # we consider this balanced, so we expect no samplers
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        assert all(any("Undersampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        for comp in pipelines[0]._component_graph:
+            if 'sampler' in comp.name:
+                assert comp.parameters['sampling_ratio'] == sampling_ratio
+
+
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("sampler_method,categorical_features", [(None, 'none'), (None, 'some'), (None, 'all'),
+                                                                 ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all')])
+def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies, caplog):
+    # 0.2 minority:majority class ratios
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_method)
+    # since our default sampler_balanced_ratio for AutoMLSearch is 0.25, we should be adding the samplers when we can
+    pipelines = automl.allowed_pipelines
+    if sampler_method is None:
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)

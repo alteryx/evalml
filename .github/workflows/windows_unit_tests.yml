@@ -66,6 +66,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .
           python -m pip install -r test-requirements.txt
+          pip freeze
       - name: Run unit tests
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1

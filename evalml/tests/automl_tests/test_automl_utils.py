@@ -2,19 +2,18 @@ from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
+    get_best_sampler_for_data,
     get_default_primary_search_objective,
     make_data_splitter,
     tune_binary_threshold
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
 from evalml.preprocessing.data_splitters import (
-    BalancedClassificationDataCVSplit,
-    BalancedClassificationDataTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -51,17 +50,13 @@ def test_make_data_splitter_default(problem_type, large_data):
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                         ProblemTypes.TIME_SERIES_BINARY,
                         ProblemTypes.TIME_SERIES_MULTICLASS]:
-        problem_configuration = {'gap': 1, 'max_delay': 7}
+        problem_configuration = {'gap': 1, 'max_delay': 7, 'date_index': None}
 
     data_splitter = make_data_splitter(X, y, problem_type, problem_configuration=problem_configuration)
     if large_data and problem_type in [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        if problem_type == ProblemTypes.REGRESSION:
-            assert isinstance(data_splitter, TrainingValidationSplit)
-            assert data_splitter.stratify is None
-            assert data_splitter.random_seed == 0
-        else:
-            assert isinstance(data_splitter, BalancedClassificationDataTVSplit)
-            assert data_splitter.random_seed == 0
+        assert isinstance(data_splitter, TrainingValidationSplit)
+        assert data_splitter.stratify is None
+        assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
         return
@@ -73,10 +68,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        assert isinstance(data_splitter, BalancedClassificationDataCVSplit)
+        assert isinstance(data_splitter, StratifiedKFold)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
-        assert data_splitter.random_seed == 0
+        assert data_splitter.random_state == 0
 
     if problem_type in [ProblemTypes.TIME_SERIES_REGRESSION,
                         ProblemTypes.TIME_SERIES_BINARY,
@@ -85,11 +80,12 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
+        assert data_splitter.date_index is None
 
 
 @pytest.mark.parametrize("problem_type, expected_data_splitter", [(ProblemTypes.REGRESSION, KFold),
-                                                                  (ProblemTypes.BINARY, BalancedClassificationDataCVSplit),
-                                                                  (ProblemTypes.MULTICLASS, BalancedClassificationDataCVSplit)])
+                                                                  (ProblemTypes.BINARY, StratifiedKFold),
+                                                                  (ProblemTypes.MULTICLASS, StratifiedKFold)])
 def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     n = 10
     X = pd.DataFrame({'col_0': list(range(n)),
@@ -101,10 +97,7 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
-    if str(problem_type) == 'regression':
-        assert data_splitter.random_state == random_seed
-    else:
-        assert data_splitter.random_seed == random_seed
+    assert data_splitter.random_state == random_seed
 
 
 def test_make_data_splitter_parameters_time_series():
@@ -114,11 +107,12 @@ def test_make_data_splitter_parameters_time_series():
     y = X.pop('target')
 
     for problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
-        data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7}, n_splits=5, shuffle=False)
+        data_splitter = make_data_splitter(X, y, problem_type, problem_configuration={'gap': 1, 'max_delay': 7, 'date_index': None}, n_splits=5, shuffle=False)
         assert isinstance(data_splitter, TimeSeriesSplit)
         assert data_splitter.n_splits == 5
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
+        assert data_splitter.date_index is None
 
 
 def test_make_data_splitter_error():
@@ -174,3 +168,17 @@ def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_en
     pipeline = dummy_binary_pipeline_class({})
     tune_binary_threshold(pipeline, F1(), 'multiclass', X, y)
     assert pipeline.threshold is None
+
+
+@pytest.mark.parametrize("size", ['large', 'small'])
+@pytest.mark.parametrize("categorical_columns", ['none', 'all', 'some'])
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("sampler_balanced_ratio", [1, 0.5, 0.25, 0.2, 0.1, 0.05])
+def test_get_best_sampler_for_data_auto(sampler_balanced_ratio, problem_type, categorical_columns, size, mock_imbalanced_data_X_y):
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_columns, size)
+    name_output = get_best_sampler_for_data(X, y, "auto", sampler_balanced_ratio)
+    if sampler_balanced_ratio <= 0.2:
+        # the imbalanced data we get has a class ratio of 0.2 minority:majority
+        assert name_output is None
+    else:
+        assert name_output == 'Undersampler'

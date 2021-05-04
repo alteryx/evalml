@@ -5,7 +5,7 @@ from skopt.space import Integer
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class ARIMARegressor(Estimator):
@@ -13,7 +13,6 @@ class ARIMARegressor(Estimator):
     Autoregressive Integrated Moving Average Model.
     The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order.
     More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html
-
     """
     name = "ARIMA Regressor"
     hyperparameter_ranges = {
@@ -24,7 +23,7 @@ class ARIMARegressor(Estimator):
     model_family = ModelFamily.ARIMA
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, date_column=None, trend='n', p=1, d=0, q=0,
+    def __init__(self, date_index=None, trend='n', p=1, d=0, q=0,
                  random_seed=0, **kwargs):
         """
         Arguments:
@@ -41,7 +40,7 @@ class ARIMARegressor(Estimator):
                       'trend': trend}
 
         parameters.update(kwargs)
-        self.date_column = date_column
+        self.date_index = date_index
 
         p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
 
@@ -60,40 +59,23 @@ class ARIMARegressor(Estimator):
                          component_obj=None,
                          random_seed=random_seed)
 
-    def _get_dates_fit(self, X, y):
+    def _get_dates(self, X, y):
         date_col = None
-
-        if isinstance(y.index, pd.DatetimeIndex):
-            date_col = y.index
-        if X is not None:
-            if self.date_column in X.columns:
-                date_col = X.pop(self.date_column)
-            elif isinstance(X.index, pd.DatetimeIndex):
-                date_col = X.index
-
-        if date_col is None:
-            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
-                  "If not it will look for the datetime column in the index of X or y."
-            raise ValueError(msg)
-        return date_col
-
-    def _get_dates_predict(self, X, y):
-        date_col = None
-
         if y is not None:
-            if isinstance(y.index, pd.DatetimeIndex):
+            y_index_type = infer_feature_types(pd.Series(y.index)).logical_type.type_string
+            if y_index_type == 'datetime':
                 date_col = y.index
         if X is not None:
-            if self.date_column in X.columns:
-                date_col = X.pop(self.date_column)
-            elif isinstance(X.index, pd.DatetimeIndex):
+            X_index_type = infer_feature_types(pd.Series(X.index)).logical_type.type_string
+            if self.date_index in X.columns:
+                date_col = X.pop(self.date_index)
+            elif X_index_type == 'datetime':
                 date_col = X.index
-
         if date_col is None:
-            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_column' parameter. " \
+            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_index' parameter. " \
                   "If not it will look for the datetime column in the index of X or y."
             raise ValueError(msg)
-        return date_col
+        return date_col, X
 
     def _match_indices(self, X, y, date_col):
         if X is not None:
@@ -110,7 +92,7 @@ class ARIMARegressor(Estimator):
         arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
 
         X, y = self._manage_woodwork(X, y)
-        dates = self._get_dates_fit(X, y)
+        dates, X = self._get_dates(X, y)
         X, y = self._match_indices(X, y, dates)
         new_params = {}
         for key, val in self.parameters.items():
@@ -126,7 +108,7 @@ class ARIMARegressor(Estimator):
 
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
-        dates = self._get_dates_predict(X, y)
+        dates, X = self._get_dates(X, y)
         X, y = self._match_indices(X, y, dates)
         start = dates.min()
         end = dates.max()

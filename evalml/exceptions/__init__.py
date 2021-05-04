@@ -11,5 +11,6 @@ from .exceptions import (
     DataCheckInitError,
     EnsembleMissingPipelinesError,
     NullsInColumnWarning,
-    ObjectiveCreationError
+    ObjectiveCreationError,
+    NoPositiveLabelException
 )

@@ -9,6 +9,16 @@ from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 from evalml.model_family import ModelFamily
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
+_ESTIMATOR_FAMILY_ORDER = [
+    ModelFamily.LINEAR_MODEL,
+    ModelFamily.DECISION_TREE,
+    ModelFamily.EXTRA_TREES,
+    ModelFamily.RANDOM_FOREST,
+    ModelFamily.XGBOOST,
+    ModelFamily.LIGHTGBM,
+    ModelFamily.CATBOOST
+]
+
 
 class IterativeAlgorithm(AutoMLAlgorithm):
     """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
@@ -23,7 +33,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  number_features=None,  # TODO remove
                  ensembling=False,
                  pipeline_params=None,
-                 _frozen_pipeline_parameters=None):
+                 _frozen_pipeline_parameters=None,
+                 _estimator_family_order=None):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
         Arguments:
@@ -37,7 +48,22 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
             _frozen_pipeline_parameters (dict or None): Pipeline-level parameters are frozen and used in the proposed pipelines.
+            _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to _ESTIMATOR_FAMILY_ORDER.
         """
+        self._estimator_family_order = _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
+        indices = []
+        pipelines_to_sort = []
+        pipelines_end = []
+        for pipeline in allowed_pipelines or []:
+            if pipeline.model_family in self._estimator_family_order:
+                indices.append(self._estimator_family_order.index(pipeline.model_family))
+                pipelines_to_sort.append(pipeline)
+            else:
+                pipelines_end.append(pipeline)
+        pipelines_start = [pipeline for _, pipeline in (sorted(zip(indices, pipelines_to_sort),
+                                                               key=lambda pair: pair[0]) or [])]
+        allowed_pipelines = pipelines_start + pipelines_end
+
         super().__init__(allowed_pipelines=allowed_pipelines,
                          max_iterations=max_iterations,
                          tuner_class=tuner_class,
