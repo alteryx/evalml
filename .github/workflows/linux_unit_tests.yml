@@ -61,6 +61,7 @@ jobs:
           source test_python/bin/activate
           make installdeps
           make installdeps-test
+          pip freeze
       - name: Erase Coverage
         run: |
           source test_python/bin/activate

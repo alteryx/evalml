@@ -697,9 +697,9 @@ def mock_imbalanced_data_X_y():
         Arguments:
             problem_type (str): Either 'binary' or 'multiclass'
             categorical_columns (str): Determines how many categorical cols to use. Either 'all', 'some', or 'none'.
-            size (str): Either 'large' or 'small'. 'large' returns a dataset of size 420,000, while 'small' returns a size of 4200
+            size (str): Either 'large' or 'small'. 'large' returns a dataset of size 21,000, while 'small' returns a size of 4200
         """
-        multiplier = 100 if size == 'large' else 1
+        multiplier = 5 if size == 'large' else 1
         col_names = [f"col_{i}" for i in range(100)]
         # generate X to be all int values
         X_dict = {col_name: [i % (j + 1) for i in range(1, 100)] for j, col_name in enumerate(col_names)}

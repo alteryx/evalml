@@ -49,7 +49,7 @@ class DateTimeFeaturizer(Transformer):
                           "day_of_week": _extract_day_of_week,
                           "hour": _extract_hour}
 
-    def __init__(self, features_to_extract=None, encode_as_categories=False, random_seed=0, **kwargs):
+    def __init__(self, features_to_extract=None, encode_as_categories=False, date_index=None, random_seed=0, **kwargs):
         """Extracts features from DateTime columns
 
         Arguments:
@@ -57,6 +57,7 @@ class DateTimeFeaturizer(Transformer):
             encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
                 This allows OneHotEncoders to encode these features.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+            date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
@@ -65,9 +66,9 @@ class DateTimeFeaturizer(Transformer):
             raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
 
         parameters = {"features_to_extract": features_to_extract,
-                      "encode_as_categories": encode_as_categories}
+                      "encode_as_categories": encode_as_categories,
+                      "date_index": date_index}
         parameters.update(kwargs)
-
         self._date_time_col_names = None
         self._categories = {}
         self.encode_as_categories = encode_as_categories
