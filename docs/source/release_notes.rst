@@ -14,6 +14,7 @@ Release Notes
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
+        * Enable prediction explanations for catboost for multiclass problems :pr:`2224`
     * Changes
         * Deleted baseline pipeline classes :pr:`2202`
         * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`
