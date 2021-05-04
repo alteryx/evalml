@@ -801,3 +801,38 @@ def test_component_graph_dataset_with_target_imputer():
     component_graph.fit(X, y)
     predictions = component_graph.predict(X)
     assert not pd.isnull(predictions.to_series()).any()
+
+
+@patch('evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit')
+def test_component_graph_sampler_y_passes(mock_estimator_fit):
+    pytest.importorskip("imblearn.over_sampling", reason="Cannot import imblearn, skipping tests")
+    # makes sure the y value from oversampler gets passed to the estimator, even though StandardScaler has no y output
+    X = pd.DataFrame({"a": [i for i in range(100)],
+                      "b": [i % 3 for i in range(100)]})
+    y = pd.Series([0] * 90 + [1] * 10)
+    component_list = ['Imputer', 'SMOTE Oversampler', 'Standard Scaler', 'Logistic Regression Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    assert len(mock_estimator_fit.call_args[0][0]) == len(mock_estimator_fit.call_args[0][1])
+    assert len(mock_estimator_fit.call_args[0][0]) == int(1.25 * 90)
+
+
+@patch('evalml.pipelines.components.estimators.RandomForestClassifier.fit')
+@patch('evalml.pipelines.components.estimators.DecisionTreeClassifier.fit')
+def test_component_graph_sampler_same_given_components(mock_dt_fit, mock_rf_fit):
+    pytest.importorskip("imblearn.over_sampling", reason="Cannot import imblearn, skipping tests")
+    X = pd.DataFrame({"a": [i for i in range(100)],
+                      "b": [i % 3 for i in range(100)]})
+    y = pd.Series([0] * 90 + [1] * 10)
+    component_list = ['Imputer', 'SMOTE Oversampler', 'Random Forest Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    component_list2 = ['Imputer', 'SMOTE Oversampler', 'Decision Tree Classifier']
+    component_graph2 = ComponentGraph.from_list(component_list2)
+    component_graph2.instantiate({})
+    component_graph2.fit(X, y)
+    assert mock_dt_fit.call_args[0][0] == mock_rf_fit.call_args[0][0]
+    assert mock_dt_fit.call_args[0][1] == mock_rf_fit.call_args[0][1]

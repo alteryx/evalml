@@ -717,3 +717,36 @@ def test_tuning_threshold_objective(mock_predict, mock_fit, mock_score, mock_enc
         assert automl.best_pipeline.threshold is None
     else:
         assert automl.best_pipeline.threshold == 0.6
+
+
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("categorical_features", ['none', 'some', 'all'])
+@pytest.mark.parametrize("size", ['small', 'large'])
+@pytest.mark.parametrize("sampling_ratio", [0.8, 0.5, 0.25, 0.2, 0.1, 0.05])
+def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, size)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='auto', sampler_balanced_ratio=sampling_ratio)
+    pipelines = automl.allowed_pipelines
+    if sampling_ratio <= 0.2:
+        # we consider this balanced, so we expect no samplers
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        assert all(any("Undersampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+        for comp in pipelines[0]._component_graph:
+            if 'sampler' in comp.name:
+                assert comp.parameters['sampling_ratio'] == sampling_ratio
+
+
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("sampler_method,categorical_features", [(None, 'none'), (None, 'some'), (None, 'all'),
+                                                                 ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all')])
+def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies, caplog):
+    # 0.2 minority:majority class ratios
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_method)
+    # since our default sampler_balanced_ratio for AutoMLSearch is 0.25, we should be adding the samplers when we can
+    pipelines = automl.allowed_pipelines
+    if sampler_method is None:
+        assert not any(any("sampler" in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+    else:
+        assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)

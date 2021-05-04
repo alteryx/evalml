@@ -19,6 +19,7 @@ from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
+    get_best_sampler_for_data,
     get_default_primary_search_objective,
     make_data_splitter
 )
@@ -49,6 +50,7 @@ from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_classification,
     is_time_series
 )
 from evalml.tuners import SKOptTuner
@@ -142,6 +144,8 @@ class AutoMLSearch:
                  problem_configuration=None,
                  train_best_pipeline=True,
                  pipeline_parameters=None,
+                 sampler_method="auto",
+                 sampler_balanced_ratio=0.25,
                  _ensembling_split_size=0.2,
                  _pipelines_per_batch=5,
                  engine=None):
@@ -221,6 +225,12 @@ class AutoMLSearch:
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
             pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+
+            sampler_method (str): The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
+                Either 'auto', which will use our preferred sampler for the data, the name of the sampling component to use, or None. Defaults to 'auto'.
+
+            sampler_balanced_ratio (float): The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value,
+                then we will not add a sampler since the data is then considered balanced. Defaults to 0.25.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -344,6 +354,15 @@ class AutoMLSearch:
             parameters.update({'pipeline': self.problem_configuration})
             self._frozen_pipeline_parameters.update({'pipeline': self.problem_configuration})
 
+        self.sampler_method = sampler_method
+        self.sampler_balanced_ratio = sampler_balanced_ratio
+        self._sampler_name = None
+        if is_classification(self.problem_type):
+            self._sampler_name = self.sampler_method
+            if self.sampler_method == 'auto':
+                self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
+            self._frozen_pipeline_parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
+
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
@@ -352,7 +371,7 @@ class AutoMLSearch:
             index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
                 self._frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=self._frozen_pipeline_parameters, custom_hyperparameters=parameters) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=self._frozen_pipeline_parameters, custom_hyperparameters=parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
         else:
             for pipeline in self.allowed_pipelines:
                 if self.pipeline_parameters:
