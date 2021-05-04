@@ -55,6 +55,8 @@ def infer_feature_types(data, feature_types=None):
     _raise_value_error_if_nullable_types_detected(data)
 
     if data.ww.schema is not None:
+        if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(data, data.ww.schema):
+            raise ValueError(ww.get_invalid_schema_message(data, data.ww.schema))
         data.ww.init(schema=data.ww.schema)
         return data
 
