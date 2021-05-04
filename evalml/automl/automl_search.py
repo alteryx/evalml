@@ -22,6 +22,7 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter
 )
+from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -34,13 +35,13 @@ from evalml.objectives import (
     get_objective
 )
 from evalml.pipelines import (
-    MeanBaselineRegressionPipeline,
-    ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
     PipelineBase,
-    TimeSeriesBaselineBinaryPipeline,
-    TimeSeriesBaselineMulticlassPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    RegressionPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
@@ -60,6 +61,53 @@ from evalml.utils.logger import (
 )
 
 logger = get_logger(__file__)
+
+
+def search(X_train=None, y_train=None, problem_type=None, objective='auto', **kwargs):
+    """Given data and configuration, run an automl search.
+
+    This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
+
+    This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
+
+    Arguments:
+        X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
+
+        y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
+
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+        objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
+            When set to 'auto', chooses:
+
+            - LogLossBinary for binary classification problems,
+            - LogLossMulticlass for multiclass classification problems, and
+            - R2 for regression problems.
+
+    Other keyword arguments which are provided will be passed to AutoMLSearch.
+
+    Returns:
+        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+    """
+    X_train = infer_feature_types(X_train)
+    y_train = infer_feature_types(y_train)
+    problem_type = handle_problem_types(problem_type)
+    if objective == 'auto':
+        objective = get_default_primary_search_objective(problem_type)
+    objective = get_objective(objective, return_instance=False)
+
+    automl_config = kwargs
+    automl_config.update({'X_train': X_train, 'y_train': y_train, 'problem_type': problem_type,
+                          'objective': objective, 'max_batches': 1})
+
+    data_checks = DefaultDataChecks(problem_type=problem_type, objective=objective)
+    data_check_results = data_checks.validate(X_train, y=y_train)
+    if len(data_check_results.get('errors', [])):
+        return None, data_check_results
+
+    automl = AutoMLSearch(**automl_config)
+    automl.search()
+    return automl, data_check_results
 
 
 class AutoMLSearch:
@@ -648,26 +696,39 @@ class AutoMLSearch:
             if pipeline.problem_type != self.problem_type:
                 raise ValueError("Given pipeline {} is not compatible with problem_type {}.".format(pipeline.name, self.problem_type.value))
 
+    def _get_baseline_pipeline(self):
+        """Creates a baseline pipeline instance."""
+        if self.problem_type == ProblemTypes.BINARY:
+            baseline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                    custom_name="Mode Baseline Binary Classification Pipeline",
+                                                    custom_hyperparameters={"strategy": ["mode"]})
+        elif self.problem_type == ProblemTypes.MULTICLASS:
+            baseline = MulticlassClassificationPipeline(component_graph=["Baseline Classifier"],
+                                                        custom_name="Mode Baseline Multiclass Classification Pipeline",
+                                                        custom_hyperparameters={"strategy": ["mode"]})
+        elif self.problem_type == ProblemTypes.REGRESSION:
+            baseline = RegressionPipeline(component_graph=["Baseline Regressor"],
+                                          custom_name="Mean Baseline Regression Pipeline",
+                                          custom_hyperparameters={"strategy": ["mean"]})
+        else:
+            pipeline_class, pipeline_name = {ProblemTypes.TIME_SERIES_REGRESSION: (TimeSeriesRegressionPipeline, "Time Series Baseline Regression Pipeline"),
+                                             ProblemTypes.TIME_SERIES_MULTICLASS: (TimeSeriesMulticlassClassificationPipeline, "Time Series Baseline Multiclass Pipeline"),
+                                             ProblemTypes.TIME_SERIES_BINARY: (TimeSeriesBinaryClassificationPipeline, "Time Series Baseline Binary Pipeline")}[self.problem_type]
+            date_index = self.problem_configuration['date_index']
+            gap = self.problem_configuration['gap']
+            max_delay = self.problem_configuration['max_delay']
+            baseline = pipeline_class(component_graph=["Time Series Baseline Estimator"],
+                                      custom_name=pipeline_name,
+                                      parameters={"pipeline": {"date_index": date_index, "gap": gap, "max_delay": max_delay},
+                                                  "Time Series Baseline Estimator": {"date_index": date_index, "gap": gap, "max_delay": max_delay}})
+        return baseline
+
     def _add_baseline_pipelines(self):
         """Fits a baseline pipeline to the data.
 
         This is the first pipeline fit during search.
         """
-        if self.problem_type == ProblemTypes.BINARY:
-            baseline = ModeBaselineBinaryPipeline(parameters={})
-        elif self.problem_type == ProblemTypes.MULTICLASS:
-            baseline = ModeBaselineMulticlassPipeline(parameters={})
-        elif self.problem_type == ProblemTypes.REGRESSION:
-            baseline = MeanBaselineRegressionPipeline(parameters={})
-        else:
-            pipeline_class = {ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesBaselineRegressionPipeline,
-                              ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesBaselineMulticlassPipeline,
-                              ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBaselineBinaryPipeline}[self.problem_type]
-            date_index = self.problem_configuration['date_index']
-            gap = self.problem_configuration['gap']
-            max_delay = self.problem_configuration['max_delay']
-            baseline = pipeline_class(parameters={"pipeline": {"date_index": date_index, "gap": gap, "max_delay": max_delay},
-                                                  "Time Series Baseline Estimator": {"date_index": date_index, "gap": gap, "max_delay": max_delay}})
+        baseline = self._get_baseline_pipeline()
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
         computation = self._engine.submit_evaluation_job(self.automl_config, baseline, self.X_train, self.y_train)

@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -66,36 +65,3 @@ def test_time_series_split(max_delay, gap, date_index, X_none, y_none):
             y_train, y_test = y.iloc[train], y.iloc[test]
             pd.testing.assert_index_equal(y_train.index, answer[i][0])
             pd.testing.assert_index_equal(y_test.index, answer[i][1])
-
-
-@pytest.mark.parametrize("max_delay,gap,date_index", [(0, 0, "Date"), (1, 0, "Date"), (0, 1, "Date")])
-def test_time_series_split_unordered_date_index_with_X_and_y(max_delay, gap, date_index):
-    # Incorrectly ordered datetime values
-    X = pd.DataFrame(data={"Date": ['1/1/2018', '1/3/2018', '1/2/2018', '1/6/2018', '1/4/2018', '1/5/2018'],
-                           "Feature": ["First", "Third", "Second", "Sixth", "Fourth", "Fifth"]})
-    y = pd.Series([1, 2, 3, 4, 5, 6])
-
-    y_dt = [1, 3, 2, 5, 6, 4]
-
-    X["Date"] = pd.to_datetime(X["Date"])
-    X = X.sort_values(by="Date")
-    y = y.reindex(index=X.index)
-    X = X.reset_index(drop=True)
-    y = y.reset_index(drop=True)
-
-    answer = [(pd.date_range("2018-01-01", f"2018-01-{3 + gap}"), pd.date_range(f"2018-01-{4 - max_delay}", f"2018-01-{4 + gap}")),
-              (pd.date_range("2018-01-01", f"2018-01-{4 + gap}"), pd.date_range(f"2018-01-{5 - max_delay}", f"2018-01-{5 + gap}")),
-              (pd.date_range("2018-01-01", f"2018-01-{5 + gap}"), pd.date_range(f"2018-01-{6 - max_delay}", "2018-01-06"))]
-    answer_y = [(y_dt[0:3 + gap], y_dt[3 - max_delay:4 + gap]),
-                (y_dt[0:4 + gap], y_dt[4 - max_delay:5 + gap]),
-                (y_dt[0:5 + gap], y_dt[5 - max_delay:6 + gap])]
-
-    ts_split = TimeSeriesSplit(gap=gap, max_delay=max_delay, date_index=date_index)
-    for i, (train, test) in enumerate(ts_split.split(X, y)):
-        X_train, X_test = X.iloc[train], X.iloc[test]
-        y_train, y_test = y.iloc[train], y.iloc[test]
-
-        np.array_equal(X_train[date_index].values, answer[i][0].values)
-        np.array_equal(X_test[date_index].values, answer[i][1].values)
-        np.array_equal(y_train[X_train.index].values, answer_y[i][0])
-        np.array_equal(y_test[X_test.index].values, answer_y[i][1])
