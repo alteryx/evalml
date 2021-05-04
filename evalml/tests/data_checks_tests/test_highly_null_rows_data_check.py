@@ -14,7 +14,7 @@ from evalml.data_checks import (
 
 def test_highly_null_data_check_init():
     highly_null_check = HighlyNullRowsDataCheck()
-    assert highly_null_check.pct_null_threshold == 0.95
+    assert highly_null_check.pct_null_threshold == 0.5
 
     highly_null_check = HighlyNullRowsDataCheck(pct_null_threshold=0.0)
     assert highly_null_check.pct_null_threshold == 0

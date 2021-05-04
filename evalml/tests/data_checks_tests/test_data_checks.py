@@ -176,14 +176,14 @@ def test_default_data_checks_classification(input_type):
     # multiclass
     data_checks = DefaultDataChecks("multiclass", get_default_primary_search_objective("multiclass"))
     assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:4] + high_class_to_sample_ratio,
-                                                     "errors": [messages[4]] + min_2_class_count + messages[4:] + imbalance,
+                                                     "errors": [messages[4]] + min_2_class_count + messages[5:] + imbalance,
                                                      "actions": expected_actions}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                          "objective": get_default_primary_search_objective("multiclass")}})
     assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:4] + high_class_to_sample_ratio,
-                                                     "errors": [messages[4]] + min_2_class_count + messages[4:],
+                                                     "errors": [messages[4]] + min_2_class_count + messages[5:],
                                                      "actions": expected_actions}
 
 
