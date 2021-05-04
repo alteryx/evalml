@@ -22,7 +22,6 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     BaselineClassifier,
     BaselineRegressor,
-    CatBoostClassifier,
     LinearRegressor,
     RandomForestClassifier,
     TimeSeriesBaselineEstimator

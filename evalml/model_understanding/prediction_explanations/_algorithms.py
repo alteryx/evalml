@@ -6,7 +6,7 @@ import shap
 from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
-from evalml.problem_types import is_binary, is_multiclass, is_regression
+from evalml.problem_types import is_binary, is_regression
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
