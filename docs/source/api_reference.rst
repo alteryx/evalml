@@ -233,6 +233,7 @@ Classifiers are components that output a predicted class label.
     DecisionTreeClassifier
     KNeighborsClassifier
     SVMClassifier
+    GAMClassifier
 
 Regressors
 -----------
@@ -255,6 +256,7 @@ Regressors are components that output a predicted target value.
     TimeSeriesBaselineEstimator
     StackedEnsembleRegressor
     DecisionTreeRegressor
+    GAMRegressor
     LightGBMRegressor
     SVMRegressor
 

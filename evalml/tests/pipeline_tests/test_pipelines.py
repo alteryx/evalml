@@ -1195,6 +1195,8 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         pipeline.fit(X, y)
         predictions = pipeline.predict(X, objective).to_series()
         assert set(predictions.unique()).issubset(unique_vals)
+        if pipeline_class.component_graph[-1].model_family == ModelFamily.GAM:
+            continue
         predict_proba = pipeline.predict_proba(X)
         assert set(predict_proba.columns) == set(unique_vals)
 

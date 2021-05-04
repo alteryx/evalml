@@ -23,7 +23,9 @@ from .estimators import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
-    ARIMARegressor
+    ARIMARegressor,
+    GAMClassifier,
+    GAMRegressor
 )
 from .transformers import (
     Transformer,

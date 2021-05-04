@@ -32,7 +32,9 @@ from .components import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
-    ARIMARegressor
+    ARIMARegressor,
+    GAMClassifier,
+    GAMRegressor
 )
 
 from .component_graph import ComponentGraph

@@ -37,6 +37,9 @@ class ModelFamily(Enum):
     ARIMA = 'ARIMA'
     """ARIMA model family."""
 
+    GAM = "GAM"
+    """GAM model family"""
+
     BASELINE = 'baseline'
     """Baseline model family."""
 
@@ -56,6 +59,7 @@ class ModelFamily(Enum):
                              ModelFamily.BASELINE.name: "Baseline",
                              ModelFamily.ENSEMBLE.name: "Ensemble",
                              ModelFamily.ARIMA.name: "ARIMA",
+                             ModelFamily.GAM.name: "GAM",
                              ModelFamily.NONE.name: "None"}
         return model_family_dict[self.name]
 

@@ -29,7 +29,7 @@ def test_all_components(has_minimal_dependencies, is_running_py_39_or_above):
     if has_minimal_dependencies:
         assert len(all_components()) == 37
     else:
-        n_components = 48 if is_running_py_39_or_above else 49
+        n_components = 50 if is_running_py_39_or_above else 51
         assert len(all_components()) == n_components
 
 
@@ -61,6 +61,8 @@ def test_scikit_learn_wrapper_invalid_problem_type():
 
 def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression, ts_data):
     for estimator in [estimator for estimator in _all_estimators() if estimator.model_family != ModelFamily.ENSEMBLE]:
+        if estimator.model_family == ModelFamily.GAM:
+            continue
         for problem_type in estimator.supported_problem_types:
             if problem_type == ProblemTypes.BINARY:
                 X, y = X_y_binary

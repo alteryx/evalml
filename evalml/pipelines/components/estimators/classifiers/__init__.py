@@ -9,3 +9,4 @@ from .lightgbm_classifier import LightGBMClassifier
 from .decision_tree_classifier import DecisionTreeClassifier
 from .kneighbors_classifier import KNeighborsClassifier
 from .svm_classifier import SVMClassifier
+from .gam_classifier import GAMClassifier

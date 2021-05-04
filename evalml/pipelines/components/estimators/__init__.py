@@ -9,7 +9,8 @@ from .classifiers import (LogisticRegressionClassifier,
                           BaselineClassifier,
                           DecisionTreeClassifier,
                           KNeighborsClassifier,
-                          SVMClassifier)
+                          SVMClassifier,
+                          GAMClassifier)
 from .regressors import (LinearRegressor,
                          LightGBMRegressor,
                          RandomForestRegressor,
@@ -21,4 +22,5 @@ from .regressors import (LinearRegressor,
                          TimeSeriesBaselineEstimator,
                          DecisionTreeRegressor,
                          SVMRegressor,
-                         ARIMARegressor)
+                         ARIMARegressor,
+                         GAMRegressor)
