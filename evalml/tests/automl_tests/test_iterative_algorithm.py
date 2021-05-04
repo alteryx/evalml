@@ -393,7 +393,7 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     estimators_in_first_batch = [p.estimator.name for p in next_batch]
-    if problem_type == 'regression':
+    if problem_type == ProblemTypes.REGRESSION:
         assert estimators_in_first_batch == ['Linear Regressor',
                                              'Elastic Net Regressor',
                                              'Decision Tree Regressor',
@@ -402,7 +402,7 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
                                              'XGBoost Regressor',
                                              'LightGBM Regressor',
                                              'CatBoost Regressor']
-    if problem_type == 'binary':
+    if problem_type == ProblemTypes.BINARY:
         assert estimators_in_first_batch == ['Elastic Net Classifier',
                                              'Logistic Regression Classifier',
                                              'Decision Tree Classifier',
@@ -411,7 +411,7 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
                                              'XGBoost Classifier',
                                              'LightGBM Classifier',
                                              'CatBoost Classifier']
-    if problem_type == 'multiclass':
+    if problem_type == ProblemTypes.MULTICLASS:
         assert estimators_in_first_batch == ['Elastic Net Classifier',
                                              'Logistic Regression Classifier',
                                              'Decision Tree Classifier',
