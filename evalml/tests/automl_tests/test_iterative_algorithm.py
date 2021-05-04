@@ -410,17 +410,15 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_min
                                              'Decision Tree Regressor',
                                              'Extra Trees Regressor',
                                              'Random Forest Regressor'] + final_estimators
-    elif problem_type == ProblemTypes.BINARY:
+    if problem_type == ProblemTypes.BINARY:
         assert estimators_in_first_batch == ['Elastic Net Classifier',
                                              'Logistic Regression Classifier',
                                              'Decision Tree Classifier',
                                              'Extra Trees Classifier',
                                              'Random Forest Classifier'] + final_estimators
-    elif problem_type == ProblemTypes.MULTICLASS:
+    if problem_type == ProblemTypes.MULTICLASS:
         assert estimators_in_first_batch == ['Elastic Net Classifier',
                                              'Logistic Regression Classifier',
                                              'Decision Tree Classifier',
                                              'Extra Trees Classifier',
                                              'Random Forest Classifier'] + final_estimators
-    else:
-        assert False, "Invalid problem type in test"
