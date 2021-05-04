@@ -308,7 +308,6 @@ def _get_rows_without_nans(*data):
             return ~pd_data.isna().any(axis=1).values
         else:
             return pd_data
-
     mask = reduce(lambda a, b: np.logical_and(_not_nan(a), _not_nan(b)), data)
     return mask
 

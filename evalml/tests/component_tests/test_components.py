@@ -179,7 +179,8 @@ def test_describe_component():
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
     assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
                                                    'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
-                                                                  'encode_as_categories': False}}
+                                                                  'encode_as_categories': False,
+                                                                  'date_index': None}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}

@@ -686,3 +686,37 @@ def fraud_100():
     X, y = load_fraud(n_rows=100)
     X.ww.set_types(logical_types={'provider': 'Categorical', 'region': 'Categorical'})
     return X, y
+
+
+@pytest.fixture
+def mock_imbalanced_data_X_y():
+    """Helper function to return an imbalanced binary or multiclass dataset"""
+    def _imbalanced_data_X_y(problem_type, categorical_columns, size):
+        """"Generates a dummy classification dataset with particular amounts of class imbalance and categorical input columns.
+        For our targets, we maintain a 1:5, or 0.2, class ratio of minority : majority.
+        We only generate minimum amount for X to set the logical_types, so the length of X and y will be different.
+
+        Arguments:
+            problem_type (str): Either 'binary' or 'multiclass'
+            categorical_columns (str): Determines how many categorical cols to use. Either 'all', 'some', or 'none'.
+            size (str): Either 'large' or 'small'. 'large' returns a dataset of size 21,000, while 'small' returns a size of 4200
+        """
+        multiplier = 5 if size == 'large' else 1
+        col_names = [f"col_{i}" for i in range(100)]
+        # generate X to be all int values
+        X_dict = {col_name: [i % (j + 1) for i in range(1, 100)] for j, col_name in enumerate(col_names)}
+        X = pd.DataFrame(X_dict)
+        if categorical_columns == 'all':
+            X.ww.init(logical_types={col_name: "Categorical" for col_name in col_names})
+        elif categorical_columns == 'some':
+            X.ww.init(logical_types={col_name: "Categorical" for col_name in col_names[: len(col_names) // 2]})
+        else:
+            X.ww.init()
+        if problem_type == 'binary':
+            targets = [0] * 3500 + [1] * 700
+        else:
+            targets = [0] * 3000 + [1] * 600 + [2] * 600
+        targets *= multiplier
+        y = ww.init_series(pd.Series(targets))
+        return X, y
+    return _imbalanced_data_X_y
