@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
@@ -634,6 +635,52 @@ def test_data_splitter_shuffle():
         np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['cv_data'][fold]["mean_cv_score"], 0.0, decimal=4)
     np.testing.assert_almost_equal(automl.results['pipeline_results'][0]["mean_cv_score"], 0.0, decimal=4)
     np.testing.assert_almost_equal(automl.results['pipeline_results'][0]['validation_score'], 0.0, decimal=4)
+
+
+@pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
+@patch('evalml.pipelines.RegressionPipeline.score')
+@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_data_splitter_gives_pipelines_same_data(mock_fit_binary, mock_score_binary,
+                                                 mock_fit_multi, mock_score_multi,
+                                                 mock_fit_regression, mock_score_regression,
+                                                 automl_type, caplog,
+                                                 X_y_binary, X_y_multi, X_y_regression):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        mock_score_binary.return_value = {'Log Loss Binary': 1.0}
+        mock_fit = mock_fit_binary
+        mock_score = mock_score_binary
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        mock_score_multi.return_value = {'Log Loss Multiclass': 1.0}
+        mock_fit = mock_fit_multi
+        mock_score = mock_score_multi
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        mock_score_regression.return_value = {'R2': 1.0}
+        mock_fit = mock_fit_regression
+        mock_score = mock_score_regression
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=automl_type, max_batches=1, n_jobs=1)
+    automl.search()
+    n_pipelines_evaluated = len(automl.results['pipeline_results'])
+    assert n_pipelines_evaluated > 1
+    # current automl algo trains each pipeline using 3-fold CV for "small" datasets (i.e. test data above)
+    # therefore, each pipeline should recieve an identical set of three training-validation splits
+    # we'll check the first couple to validate that the data splitter is being used correctly
+    for fold_num in range(3):
+        pipeline0_training_X, pipeline0_training_y = mock_fit.call_args_list[fold_num][0]
+        pipeline1_training_X, pipeline1_training_y = mock_fit.call_args_list[3 + fold_num][0]
+        pipeline0_validation_X, pipeline0_validation_y = mock_score.call_args_list[fold_num][0]
+        pipeline1_validation_X, pipeline1_validation_y = mock_score.call_args_list[3 + fold_num][0]
+        assert joblib_hash(pipeline0_training_X.to_dataframe()) == joblib_hash(pipeline1_training_X.to_dataframe())
+        assert joblib_hash(pipeline0_training_y.to_series()) == joblib_hash(pipeline1_training_y.to_series())
+        assert joblib_hash(pipeline0_validation_X.to_dataframe()) == joblib_hash(pipeline1_validation_X.to_dataframe())
+        assert joblib_hash(pipeline0_validation_y.to_series()) == joblib_hash(pipeline1_validation_y.to_series())
 
 
 def test_allowed_pipelines_with_incorrect_problem_type(dummy_binary_pipeline_class, X_y_binary):
