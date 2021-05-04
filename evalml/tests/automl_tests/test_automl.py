@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
@@ -57,12 +57,7 @@ from evalml.pipelines.components.utils import (
     get_estimators
 )
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import (
-    BalancedClassificationDataCVSplit,
-    BalancedClassificationDataTVSplit,
-    TrainingValidationSplit,
-    split_data
-)
+from evalml.preprocessing import TrainingValidationSplit, split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -282,7 +277,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'data_splitter': BalancedClassificationDataCVSplit(n_splits=5),
+        'data_splitter': StratifiedKFold(n_splits=5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
@@ -298,7 +293,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': ('BalancedClassificationDataCVSplit(', 'sampling_ratio=0.25,', 'n_splits=5, random_seed=0'),
+        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -346,7 +341,7 @@ def test_automl_str_no_param_search(X_y_binary):
         'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
-        'Data Splitting': 'BalancedClassificationDataCVSplit(n_splits=3, random_state=0, shuffle=True)',
+        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
             'AUC',
@@ -525,7 +520,7 @@ def test_large_dataset_binary(mock_score):
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -542,7 +537,7 @@ def test_large_dataset_multiclass(mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -585,7 +580,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
@@ -596,7 +591,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
@@ -609,7 +604,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
@@ -768,7 +763,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     automl.add_to_rankings(test_pipeline)
     best_pipeline = automl.best_pipeline
     assert best_pipeline is not None
-    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
     assert len(automl.rankings) == 1
     assert 0.5234 in automl.rankings["mean_cv_score"].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
@@ -1094,7 +1089,6 @@ class KeyboardInterruptOnKthPipeline:
 
     def __call__(self):
         """Raises KeyboardInterrupt on the kth call.
-
         Arguments are ignored but included to meet the call back API.
         """
         if self.n_calls == self.k:
@@ -2490,19 +2484,6 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     assert str(mock_fit.call_args_list[-1][0][0].logical_types['text column']) == 'Categorical'
 
 
-@patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform_sample', return_value=[0, 1, 2])
-@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={'Log Loss Multiclass': 0.2})
-@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_best_pipeline_data_splitter_transform(mock_fit, mock_score, mock_transform, X_y_multi):
-    X, y = X_y_multi
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass')
-    automl.search()
-    assert mock_transform.is_called()
-    # since we have the transformer return 3 indices only, we want to make sure the last training sample, after transform, has 3 values only
-    assert len(mock_fit.call_args_list[-1][0][0]) == 3
-    assert len(mock_fit.call_args_list[-1][0][1]) == 3
-
-
 def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
@@ -2653,28 +2634,6 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
     automl.search()
 
     train_batch_and_check()
-
-
-@patch('evalml.automl.engine.sequential_engine.train_pipeline')
-def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
-    X, y = X_y_binary
-    X = ww.DataTable(X)
-    y = ww.DataColumn(y)
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
-                          train_best_pipeline=False, n_jobs=1)
-
-    train_indices = automl.data_splitter.transform_sample(X, y)
-    X_train = X.iloc[train_indices]
-    y_train = y.iloc[train_indices]
-
-    pipelines = [dummy_binary_pipeline_class({})]
-    mock_train.reset_mock()
-    automl.train_pipelines(pipelines)
-
-    args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
-    pd.testing.assert_frame_equal(X_train.to_dataframe(), kwargs['X'].to_dataframe())
-    pd.testing.assert_series_equal(y_train.to_series(), kwargs['y'].to_series())
 
 
 no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
