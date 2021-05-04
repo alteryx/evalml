@@ -38,6 +38,7 @@ from evalml.pipelines.components.utils import all_components, get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_classification,
     is_time_series
 )
 from evalml.utils import get_logger, infer_feature_types
@@ -78,10 +79,10 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
 
     datetime_cols = X.select(["Datetime"])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
-    if add_datetime_featurizer and estimator_class.model_family != ModelFamily.ARIMA:
+    if add_datetime_featurizer:
         pp_components.append(DateTimeFeaturizer)
 
-    if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
+    if is_time_series(problem_type):
         pp_components.append(DelayedFeatureTransformer)
 
     categorical_cols = X.select('category')
@@ -142,46 +143,6 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
 
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(complete_component_graph, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
-
-
-def make_pipeline_from_components(component_instances, problem_type, custom_name=None, random_seed=0):
-    """Given a list of component instances and the problem type, an pipeline instance is generated with the component instances.
-    The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type. The pipeline will be
-    untrained, even if the input components are already trained. A custom name for the pipeline can optionally be specified;
-    otherwise the default pipeline name will be 'Templated Pipeline'.
-
-   Arguments:
-        component_instances (list): a list of all of the components to include in the pipeline
-        problem_type (str or ProblemTypes): problem type for the pipeline to generate
-        custom_name (string): a name for the new pipeline
-        random_seed (int): Random seed used to intialize the pipeline.
-
-    Returns:
-        Pipeline instance with component instances and specified estimator created from given random state.
-
-    Example:
-        >>> components = [Imputer(), StandardScaler(), RandomForestClassifier()]
-        >>> pipeline = make_pipeline_from_components(components, problem_type="binary")
-        >>> pipeline.describe()
-
-    """
-    for i, component in enumerate(component_instances):
-        if not isinstance(component, ComponentBase):
-            raise TypeError("Every element of `component_instances` must be an instance of ComponentBase")
-        if i == len(component_instances) - 1 and not isinstance(component, Estimator):
-            raise ValueError("Pipeline needs to have an estimator at the last position of the component list")
-
-    if custom_name and not isinstance(custom_name, str):
-        raise TypeError("Custom pipeline name must be a string")
-    problem_type = handle_problem_types(problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-    component_graph = [c.__class__ for c in component_instances]
-    parameters = {c.name: c.parameters for c in component_instances}
-    return pipeline_class(component_graph,
-                          custom_name=custom_name,
-                          parameters=parameters,
-                          custom_hyperparameters=None,
-                          random_seed=random_seed)
 
 
 def generate_pipeline_code(element):
@@ -247,14 +208,22 @@ def _make_stacked_ensemble_pipeline(input_pipelines, problem_type, n_jobs=-1, ra
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
-    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=n_jobs)], problem_type,
-                                             custom_name="Stacked Ensemble Classification Pipeline",
-                                             random_seed=random_seed)
+    parameters = {}
+    if is_classification(problem_type):
+        parameters = {"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": n_jobs}}
+        estimator = StackedEnsembleClassifier
     else:
-        return make_pipeline_from_components([StackedEnsembleRegressor(input_pipelines, n_jobs=n_jobs)], problem_type,
-                                             custom_name="Stacked Ensemble Regression Pipeline",
-                                             random_seed=random_seed)
+        parameters = {"Stacked Ensemble Regressor": {"input_pipelines": input_pipelines, "n_jobs": n_jobs}}
+        estimator = StackedEnsembleRegressor
+
+    pipeline_class, pipeline_name = {
+        ProblemTypes.BINARY: (BinaryClassificationPipeline, "Stacked Ensemble Classification Pipeline"),
+        ProblemTypes.MULTICLASS: (MulticlassClassificationPipeline, "Stacked Ensemble Classification Pipeline"),
+        ProblemTypes.REGRESSION: (RegressionPipeline, "Stacked Ensemble Regression Pipeline")}[problem_type]
+
+    return pipeline_class([estimator], parameters=parameters,
+                          custom_name=pipeline_name,
+                          random_seed=random_seed)
 
 
 def _make_component_list_from_actions(actions):

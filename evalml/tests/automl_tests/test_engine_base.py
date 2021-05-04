@@ -8,8 +8,10 @@ from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import evaluate_pipeline, train_pipeline
 from evalml.automl.engine.engine_base import JobLogger
 from evalml.objectives import F1, LogLossBinary
-from evalml.pipelines import StackedEnsembleClassifier
-from evalml.pipelines.utils import make_pipeline_from_components
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    StackedEnsembleClassifier
+)
 from evalml.preprocessing import split_data
 from evalml.utils import get_logger
 
@@ -104,13 +106,11 @@ def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dumm
     # check the fit length is correct, taking into account the data splits
     assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(training_indices))
 
-    input_pipelines = [make_pipeline_from_components([classifier], problem_type='binary')
-                       for classifier in stackable_classifiers]
+    input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers]
+    ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
+                                            parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}})
 
-    pipeline2 = make_pipeline_from_components([StackedEnsembleClassifier(input_pipelines, n_jobs=1)],
-                                              problem_type='binary',
-                                              custom_name="Stacked Ensemble Classification Pipeline")
-    _ = evaluate_pipeline(pipeline2, automl, X, y, logger=MagicMock())
+    _ = evaluate_pipeline(ensemble, automl, X, y, logger=MagicMock())
     assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(ensembling_indices))
 
 

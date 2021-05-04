@@ -162,7 +162,9 @@ class ComponentGraph:
             ww.DataTable: Transformed values.
         """
         if len(self.compute_order) <= 1:
-            return infer_feature_types(X)
+            X = infer_feature_types(X)
+            self.input_feature_names.update({self.compute_order[0]: list(X.columns)})
+            return X
         component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):

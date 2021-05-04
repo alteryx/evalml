@@ -7,13 +7,13 @@ import woodwork as ww
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
 from evalml.pipelines.components import (
     BaselineRegressor,
     RandomForestClassifier,
-    RandomForestRegressor
+    RandomForestRegressor,
+    StackedEnsembleRegressor
 )
-from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
-from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -37,12 +37,12 @@ def test_stacked_ensemble_init_with_invalid_estimators_parameter():
 
 def test_stacked_ensemble_nonstackable_model_families():
     with pytest.raises(ValueError, match="Pipelines with any of the following model families cannot be used as base pipelines"):
-        StackedEnsembleRegressor(input_pipelines=[make_pipeline_from_components([BaselineRegressor()], ProblemTypes.REGRESSION)])
+        StackedEnsembleRegressor(input_pipelines=[RegressionPipeline([BaselineRegressor])])
 
 
 def test_stacked_different_input_pipelines_regression():
-    input_pipelines = [make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION),
-                       make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)]
+    input_pipelines = [RegressionPipeline([RandomForestRegressor]),
+                       BinaryClassificationPipeline([RandomForestClassifier])]
     with pytest.raises(ValueError, match="All pipelines must have the same problem type."):
         StackedEnsembleRegressor(input_pipelines=input_pipelines)
 
@@ -119,8 +119,7 @@ def test_stacked_problem_types():
 
 def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    input_pipelines = [make_pipeline_from_components([regressor], ProblemTypes.REGRESSION)
-                       for regressor in stackable_regressors]
+    input_pipelines = [RegressionPipeline([regressor]) for regressor in stackable_regressors]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
@@ -139,8 +138,7 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleRegressor.fit')
 def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regressors):
     X, y = X_y_regression
-    input_pipelines = [make_pipeline_from_components([regressor], ProblemTypes.REGRESSION)
-                       for regressor in stackable_regressors]
+    input_pipelines = [RegressionPipeline([regressor]) for regressor in stackable_regressors]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines, n_jobs=1)
     clf.fit(X, y)
     mock_fit.assert_called()

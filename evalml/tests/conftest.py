@@ -200,15 +200,6 @@ def ts_data():
 
 
 @pytest.fixture
-def ts_data_seasonal():
-    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
-    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
-    y.index = pd.date_range(start='1/1/2018', periods=500)
-    X.index = pd.date_range(start='1/1/2018', periods=500)
-    return X, y
-
-
-@pytest.fixture
 def dummy_pipeline_hyperparameters():
     return {'Mock Classifier': {
         'param a': Integer(0, 10),
@@ -601,7 +592,7 @@ def stackable_classifiers(helper_functions):
                                              ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_classifiers.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
+            stackable_classifiers.append(estimator_class)
     return stackable_classifiers
 
 
@@ -613,7 +604,7 @@ def stackable_regressors(helper_functions):
         if (set(supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_regressors.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
+            stackable_regressors.append(estimator_class)
     return stackable_regressors
 
 
