@@ -11,7 +11,7 @@ from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 class HighlyNullRowsDataCheck(DataCheck):
     """Checks if there are any highly-null rows in the input."""
 
-    def __init__(self, pct_null_threshold=0.95):
+    def __init__(self, pct_null_threshold=0.5):
         """Checks if there are any highly-null rows in the input.
 
         Arguments:

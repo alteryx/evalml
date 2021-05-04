@@ -82,6 +82,10 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
                              data_check_name="HighlyNullDataCheck",
                              message_code=DataCheckMessageCode.HIGHLY_NULL,
                              details={"column": "also_all_null", "pct_null_rows": 1.0}).to_dict(),
+            DataCheckWarning(message="Row '0' is 50.0% or more null",
+                             data_check_name="HighlyNullRowsDataCheck",
+                             message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
+                             details={"row": 0, "pct_null_cols": 0.625}).to_dict(),
             DataCheckWarning(message="Column 'id' is 100.0% or more likely to be an ID column",
                              data_check_name="IDColumnsDataCheck",
                              message_code=DataCheckMessageCode.HAS_ID_COLUMN,
@@ -113,6 +117,7 @@ messages = [DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
 
 expected_actions = [DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_ROW, metadata={"row": 0}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'id'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'most_frequent'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'lots_of_null'}).to_dict()]
@@ -147,12 +152,12 @@ def test_default_data_checks_classification(input_type):
                                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                                 details={"target_values": [0.0, 1.0]}).to_dict()]
 
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:] + imbalance, "actions": expected_actions}
+    assert data_checks.validate(X, y) == {"warnings": messages[:4], "errors": messages[4:] + imbalance, "actions": expected_actions}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "binary",
                                                          "objective": get_default_primary_search_objective("binary")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3], "errors": messages[3:], "actions": expected_actions}
+    assert data_checks.validate(X, y) == {"warnings": messages[:4], "errors": messages[4:], "actions": expected_actions}
 
     # multiclass
     imbalance = [DataCheckError(message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]",
@@ -170,15 +175,15 @@ def test_default_data_checks_classification(input_type):
         details={'class_to_value_ratio': 0.6}).to_dict()]
     # multiclass
     data_checks = DefaultDataChecks("multiclass", get_default_primary_search_objective("multiclass"))
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio,
-                                                     "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance,
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:4] + high_class_to_sample_ratio,
+                                                     "errors": [messages[4]] + min_2_class_count + messages[4:] + imbalance,
                                                      "actions": expected_actions}
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "multiclass",
                                                          "objective": get_default_primary_search_objective("multiclass")}})
-    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:3] + high_class_to_sample_ratio,
-                                                     "errors": [messages[3]] + min_2_class_count + messages[4:],
+    assert data_checks.validate(X, y_multiclass) == {"warnings": messages[:4] + high_class_to_sample_ratio,
+                                                     "errors": [messages[4]] + min_2_class_count + messages[4:],
                                                      "actions": expected_actions}
 
 
@@ -220,26 +225,26 @@ def test_default_data_checks_regression(input_type):
 
     impute_action = DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, 'impute_strategy': 'mean'}).to_dict()
     nan_dt_action = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'nan_dt_col'}).to_dict()
-    expected_actions_with_drop_and_impute = expected_actions[:3] + [nan_dt_action, impute_action] + expected_actions[4:]
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
-                                          "errors": messages[3:],
+    expected_actions_with_drop_and_impute = expected_actions[:4] + [nan_dt_action, impute_action] + expected_actions[5:]
+    assert data_checks.validate(X, y) == {"warnings": messages[:4] + id_leakage_warning + nan_dt_leakage_warning,
+                                          "errors": messages[4:],
                                           "actions": expected_actions_with_drop_and_impute}
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
-        "warnings": messages[:3] + null_leakage,
-        "errors": messages[4:7] + [DataCheckError(message="Y has 1 unique value.",
+        "warnings": messages[:4] + null_leakage,
+        "errors": messages[5:8] + [DataCheckError(message="Y has 1 unique value.",
                                                   data_check_name="NoVarianceDataCheck",
                                                   message_code=DataCheckMessageCode.NO_VARIANCE,
-                                                  details={"column": "Y"}).to_dict()] + messages[7:],
-        "actions": expected_actions[:3] + expected_actions[4:]
+                                                  details={"column": "Y"}).to_dict()] + messages[8:],
+        "actions": expected_actions[:4] + expected_actions[5:]
     }
 
     data_checks = DataChecks(DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES,
                              {"InvalidTargetDataCheck": {"problem_type": "regression",
                                                          "objective": get_default_primary_search_objective("regression")}})
-    assert data_checks.validate(X, y) == {"warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
-                                          "errors": messages[3:],
+    assert data_checks.validate(X, y) == {"warnings": messages[:4] + id_leakage_warning + nan_dt_leakage_warning,
+                                          "errors": messages[4:],
                                           "actions": expected_actions_with_drop_and_impute}
 
 
