@@ -35,26 +35,6 @@ Utilities to preprocess data before using evalml.
     number_of_features
     split_data
 
-Data Splitter Classes
-~~~~~~~~~~~~~~~~~~~~~~
-Data splitter classes for imbalanced classification datasets.
-
-.. autosummary::
-    :toctree: generated
-    :template: class.rst
-    :nosignatures:
-
-    BalancedClassificationDataTVSplit
-    BalancedClassificationDataCVSplit
-    KMeansSMOTECVSplit
-    KMeansSMOTETVSplit
-    SMOTETomekCVSplit
-    SMOTETomekTVSplit
-    RandomUnderSamplerCVSplit
-    RandomUnderSamplerTVSplit
-    SMOTENCCVSplit
-    SMOTENCTVSplit
-
 
 .. currentmodule:: evalml.exceptions
 
@@ -84,8 +64,8 @@ Exceptions
 AutoML
 ======
 
-AutoML Search Classes
-~~~~~~~~~~~~~~~~~~~~~
+AutoML Search Interface
+~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
     :toctree: generated
     :template: class_with_properties.rst
@@ -100,6 +80,7 @@ AutoML Utils
     :toctree: generated
     :nosignatures:
 
+    search
     get_default_primary_search_objective
     make_data_splitter
 
@@ -161,7 +142,6 @@ Pipeline Utils
     :nosignatures:
 
     make_pipeline
-    make_pipeline_from_components
     generate_pipeline_code
 
 

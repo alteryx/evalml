@@ -21,10 +21,10 @@ def delayed_features_data():
 
 
 def test_delayed_features_transformer_init():
-    delayed_features = DelayedFeatureTransformer(max_delay=4, delay_features=True, delay_target=False,
+    delayed_features = DelayedFeatureTransformer(max_delay=4, delay_features=True, delay_target=False, date_index="Date",
                                                  random_seed=1)
     assert delayed_features.parameters == {"max_delay": 4, "delay_features": True, "delay_target": False,
-                                           "gap": 1}
+                                           "gap": 1, "date_index": "Date"}
 
 
 def encode_y_as_string(y):

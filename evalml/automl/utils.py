@@ -1,12 +1,10 @@
 from collections import namedtuple
 
 import pandas as pd
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.preprocessing.data_splitters import (
-    BalancedClassificationDataCVSplit,
-    BalancedClassificationDataTVSplit,
     TimeSeriesSplit,
     TrainingValidationSplit
 )
@@ -49,7 +47,7 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         y (ww.DataColumn, pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the gap and max_delay variables. Defaults to None.
+            in time series problems, values should be passed in for the date_index, gap, and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -63,16 +61,13 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
         if not problem_configuration:
             raise ValueError("problem_configuration is required for time series problem types")
         return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                               max_delay=problem_configuration.get('max_delay'))
+                               max_delay=problem_configuration.get('max_delay'), date_index=problem_configuration.get('date_index'))
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-        if problem_type == ProblemTypes.REGRESSION:
-            return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle)
-        elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-            return BalancedClassificationDataTVSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle, random_seed=random_seed)
+        return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle)
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return BalancedClassificationDataCVSplit(n_splits=n_splits, random_seed=random_seed, shuffle=shuffle)
+        return StratifiedKFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
 
 
 def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):
@@ -117,3 +112,27 @@ def check_all_pipeline_names_unique(pipelines):
 AutoMLConfig = namedtuple("AutoMLConfig", ["ensembling_indices", "data_splitter", "problem_type",
                                            "objective", "additional_objectives", "optimize_thresholds",
                                            "error_callback", "random_seed"])
+
+
+def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
+    """Returns the name of the sampler component to use for AutoMLSearch.
+
+    Arguments:
+        X (ww.DataTable): The input feature data
+        y (ww.DataColumn): The input target data
+        sampler_type (str): The sampler_type argument passed to AutoMLSearch
+        sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
+            or should balance the classes to.
+
+    Returns:
+        str: The string name of the sampling component to use
+    """
+    # we check for the class balances
+    counts = y.to_series().value_counts()
+    minority_class = min(counts)
+    class_ratios = minority_class / counts
+    # if all class ratios are larger than the ratio provided, we don't need to sample
+    if all(class_ratios >= sampler_balanced_ratio):
+        return None
+    # we default to using the Undersampler
+    return 'Undersampler'
