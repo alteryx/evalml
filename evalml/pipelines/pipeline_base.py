@@ -534,7 +534,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return f'pipeline = {(type(self).__name__)}(component_graph={component_graph_str}, {parameters_str}, {custom_hyperparmeter_str} {custom_name_repr} {random_seed_str})'
         return f'pipeline = {(type(self).__name__)}(component_graph={component_graph_str})'
 
-
     def __iter__(self):
         return self
 
