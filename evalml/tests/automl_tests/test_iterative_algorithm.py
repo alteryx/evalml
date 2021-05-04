@@ -370,8 +370,8 @@ def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline
     scores = np.arange(0, len(next_batch))
     for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
         algo.add_result(score, pipeline, {"id": algo.pipeline_number + pipeline_num})
-    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 2
-    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 3
+    assert algo._best_pipeline_info[ModelFamily.RANDOM_FOREST]['id'] == 3
+    assert algo._best_pipeline_info[ModelFamily.LINEAR_MODEL]['id'] == 2
 
     for i in range(1, 3):
         next_batch = algo.next_batch()

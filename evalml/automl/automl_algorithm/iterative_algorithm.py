@@ -54,13 +54,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         indices = []
         pipelines_to_sort = []
         pipelines_end = []
-        for pipeline in allowed_pipelines:
+        for pipeline in allowed_pipelines or []:
             if pipeline.model_family in self._estimator_family_order:
                 indices.append(self._estimator_family_order.index(pipeline.model_family))
                 pipelines_to_sort.append(pipeline)
             else:
                 pipelines_end.append(pipeline)
-        pipelines_start = [pipeline for _, pipeline in sorted(zip(indices, pipelines_to_sort), key=lambda pair: pair[0])]
+        pipelines_start = [pipeline for _, pipeline in (sorted(zip(indices, pipelines_to_sort),
+                                                               key=lambda pair: pair[0]) or [])]
         allowed_pipelines = pipelines_start + pipelines_end
 
         super().__init__(allowed_pipelines=allowed_pipelines,
