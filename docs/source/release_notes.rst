@@ -19,6 +19,7 @@ Release Notes
         * Deleted baseline pipeline classes :pr:`2202`
         * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
         * Deleted ``make_pipeline_from_components`` :pr:`2218`
     * Documentation Changes
         * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
@@ -34,6 +35,7 @@ Release Notes
     **Breaking Changes**
         * All baseline pipeline classes (``BaselineBinaryPipeline``, ``BaselineMulticlassPipeline``, ``BaselineRegressionPipeline``, etc.) have been deleted :pr:`2202`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
         * Deleted utility method ``make_pipeline_from_components`` :pr:`2218`
 
 
