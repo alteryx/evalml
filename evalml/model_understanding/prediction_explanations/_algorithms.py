@@ -57,10 +57,6 @@ def _compute_shap_values(pipeline, features, training_data=None):
         features = check_array(features.values)
 
     if estimator.model_family.is_tree_estimator():
-        # Because of this issue: https://github.com/slundberg/shap/issues/1215
-        if estimator.model_family == ModelFamily.CATBOOST and is_multiclass(pipeline.problem_type):
-            # Will randomly segfault
-            raise NotImplementedError("SHAP values cannot currently be computed for catboost models for multiclass problems.")
         # Use tree_path_dependent to avoid linear runtime with dataset size
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.TreeExplainer(estimator._component_obj, feature_perturbation="tree_path_dependent")
