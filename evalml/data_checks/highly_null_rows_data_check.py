@@ -35,19 +35,21 @@ class HighlyNullRowsDataCheck(DataCheck):
 
         Example:
             >>> import pandas as pd
-            >>> df = pd.DataFrame({
-            ...    'lots_of_null': [None, None, None, None, 5],
-            ...    'no_null': [1, 2, 3, 4, 5]
-            ... })
-            >>> null_check = HighlyNullRowsDataCheck(pct_null_threshold=0.8)
-            >>> assert null_check.validate(df) == {"errors": [],\
-                                                   "warnings": [{"message": "Row 'lots_of_null' is 80.0% or more null",\
-                                                                 "data_check_name": "HighlyNullRowsDataCheck",\
-                                                                 "level": "warning",\
-                                                                 "code": "HIGHLY_NULL",\
-                                                                 "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],\
-                                                    "actions": [{"code": "DROP_COL",\
-                                                                 "metadata": {"column": "lots_of_null"}}]}
+            >>> data = pd.DataFrame({'a': [None, None, 10],
+            ...             'b': [None, "text", "text_1"]})
+            >>> null_check = HighlyNullRowsDataCheck(pct_null_threshold=0.5)
+            >>> assert null_check.validate(data) == {
+            ...                'warnings': [DataCheckWarning(message="Row '0' is 50.0% or more null",
+            ...                                            data_check_name=HighlyNullRowsDataCheck.name,
+            ...                                            message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
+            ...                                            details={'row': 0, 'pct_null_cols': 1.0}).to_dict(),
+            ...                            DataCheckWarning(message="Row '1' is 50.0% or more null",
+            ...                                            data_check_name=HighlyNullRowsDataCheck.name,
+            ...                                            message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
+            ...                                            details={'row': 1, 'pct_null_cols': 0.5}).to_dict()],
+            ...                'errors': [],
+            ...                'actions': [DataCheckAction(DataCheckActionCode.DROP_ROW, metadata={"row": 0}).to_dict(),
+            ...                            DataCheckAction(DataCheckActionCode.DROP_ROW, metadata={"row": 1}).to_dict()]}
         """
         results = {
             "warnings": [],
