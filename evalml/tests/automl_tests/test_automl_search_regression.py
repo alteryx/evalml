@@ -272,3 +272,10 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
         for param_key, param_val in configuration.items():
             assert result['parameters']['Delayed Feature Transformer'][param_key] == configuration[param_key]
             assert result['parameters']['pipeline'][param_key] == configuration[param_key]
+
+
+def test_automl_regression_no_sampler(X_y_regression):
+    X, y = X_y_regression
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
+    for pipeline in automl.allowed_pipelines:
+        assert not any("sampler" in c.name for c in pipeline.component_graph)

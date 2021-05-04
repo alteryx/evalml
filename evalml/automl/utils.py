@@ -112,3 +112,27 @@ def check_all_pipeline_names_unique(pipelines):
 AutoMLConfig = namedtuple("AutoMLConfig", ["ensembling_indices", "data_splitter", "problem_type",
                                            "objective", "additional_objectives", "optimize_thresholds",
                                            "error_callback", "random_seed"])
+
+
+def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
+    """Returns the name of the sampler component to use for AutoMLSearch.
+
+    Arguments:
+        X (ww.DataTable): The input feature data
+        y (ww.DataColumn): The input target data
+        sampler_type (str): The sampler_type argument passed to AutoMLSearch
+        sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
+            or should balance the classes to.
+
+    Returns:
+        str: The string name of the sampling component to use
+    """
+    # we check for the class balances
+    counts = y.to_series().value_counts()
+    minority_class = min(counts)
+    class_ratios = minority_class / counts
+    # if all class ratios are larger than the ratio provided, we don't need to sample
+    if all(class_ratios >= sampler_balanced_ratio):
+        return None
+    # we default to using the Undersampler
+    return 'Undersampler'

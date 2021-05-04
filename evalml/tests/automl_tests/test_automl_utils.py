@@ -7,6 +7,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
+    get_best_sampler_for_data,
     get_default_primary_search_objective,
     make_data_splitter,
     tune_binary_threshold
@@ -167,3 +168,17 @@ def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_en
     pipeline = dummy_binary_pipeline_class({})
     tune_binary_threshold(pipeline, F1(), 'multiclass', X, y)
     assert pipeline.threshold is None
+
+
+@pytest.mark.parametrize("size", ['large', 'small'])
+@pytest.mark.parametrize("categorical_columns", ['none', 'all', 'some'])
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
+@pytest.mark.parametrize("sampler_balanced_ratio", [1, 0.5, 0.25, 0.2, 0.1, 0.05])
+def test_get_best_sampler_for_data_auto(sampler_balanced_ratio, problem_type, categorical_columns, size, mock_imbalanced_data_X_y):
+    X, y = mock_imbalanced_data_X_y(problem_type, categorical_columns, size)
+    name_output = get_best_sampler_for_data(X, y, "auto", sampler_balanced_ratio)
+    if sampler_balanced_ratio <= 0.2:
+        # the imbalanced data we get has a class ratio of 0.2 minority:majority
+        assert name_output is None
+    else:
+        assert name_output == 'Undersampler'

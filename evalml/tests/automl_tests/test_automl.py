@@ -341,7 +341,7 @@ def test_automl_str_no_param_search(X_y_binary):
         'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
-        'Data Splitting': 'StratifiedKFold(n_splits=3, random_state=None, shuffle=False)',
+        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
             'AUC',
