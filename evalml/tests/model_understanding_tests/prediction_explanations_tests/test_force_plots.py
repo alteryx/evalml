@@ -6,7 +6,7 @@ import shap
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.model_family.model_family import ModelFamily
-from evalml.model_understanding.graphs import force_plot, graph_force_plot
+from evalml.model_understanding.force_plots import graph_force_plot, force_plot
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -168,7 +168,7 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
     assert isinstance(results[0]["force_plot"], expected_plot_class)
 
 
-@pytest.mark.parametrize("rows_to_explain, return_data", product([[0], [0, 1, 2, 3, 4]], [True, False]))
+@pytest.mark.parametrize("rows_to_explain, return_data", product([[0], [0, 1, 2, 3, 4]], [True]))
 def test_force_plot(rows_to_explain, return_data, X_y_regression, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
@@ -186,7 +186,7 @@ def test_force_plot(rows_to_explain, return_data, X_y_regression, has_minimal_de
     pipeline.fit(X, y)
 
     results = force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=pd.DataFrame(X),
-                         return_data=return_data, matplotlib=False)
+                         y=pd.DataFrame(y), return_data=return_data, matplotlib=False)
 
     # Should have a single force plot.
     assert len(results) == 1

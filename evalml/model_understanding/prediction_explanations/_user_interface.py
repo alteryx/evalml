@@ -12,7 +12,7 @@ from evalml.problem_types import ProblemTypes
 
 
 def _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values=False,
-               convert_numeric_to_string=True):
+               include_expected_value=False, convert_numeric_to_string=True):
     """Makes the rows (one row for each feature) for the SHAP table.
 
     Arguments:
@@ -24,6 +24,7 @@ def _make_rows(shap_values, normalized_values, pipeline_features, original_featu
             will display the original feature value.
         top_k (int): How many of the highest/lowest features to include in the table.
         include_shap_values (bool): Whether to include the SHAP values in their own column.
+        include_expected_value (bool): Whether the expected value in its own column.
         convert_numeric_to_string (bool): Whether numeric values should be converted to strings from numeric
 
     Returns:
@@ -105,7 +106,7 @@ def _make_json_serializable(value):
 
 
 def _make_text_table(shap_values, normalized_values, pipeline_features, original_features,
-                     top_k, include_shap_values=False):
+                     top_k, include_shap_values=False, include_expected_value=False):
     """Make a table displaying the SHAP values for a prediction.
 
     Arguments:
@@ -114,6 +115,7 @@ def _make_text_table(shap_values, normalized_values, pipeline_features, original
         normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
         top_k (int): How many of the highest/lowest features to include in the table.
         include_shap_values (bool): Whether to include the SHAP values in their own column.
+        include_expected_value (bool): Whether to include the expected value in their own column.
 
     Returns:
         str
@@ -132,7 +134,7 @@ def _make_text_table(shap_values, normalized_values, pipeline_features, original
         header.append("SHAP Value")
 
     rows = [header]
-    rows += _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values)
+    rows += _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values, include_expected_value)
     table.add_rows(rows)
     return table.draw()
 
@@ -140,9 +142,10 @@ def _make_text_table(shap_values, normalized_values, pipeline_features, original
 class _TableMaker(abc.ABC):
     """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
 
-    def __init__(self, top_k, include_shap_values, provenance):
+    def __init__(self, top_k, include_shap_values, include_expected_value, provenance):
         self.top_k = top_k
         self.include_shap_values = include_shap_values
+        self.include_expected_value = include_expected_value
         self.provenance = provenance
 
     @staticmethod
@@ -197,25 +200,26 @@ class _RegressionSHAPTable(_TableMaker):
     def make_text(self, aggregated_shap_values, aggregated_normalized_values,
                   shap_values, normalized_values, pipeline_features, original_features):
         return _make_text_table(aggregated_shap_values, aggregated_normalized_values, pipeline_features, original_features,
-                                self.top_k, self.include_shap_values)
+                                self.top_k, self.include_shap_values, self.include_expected_value)
 
     def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+                  shap_values, normalized_values, pipeline_features, original_features, expected_value):
         rows = _make_rows(aggregated_shap_values, aggregated_normalized_values, pipeline_features, original_features,
-                          self.top_k, self.include_shap_values, convert_numeric_to_string=False)
+                          self.top_k, self.include_shap_values, self.include_expected_value, convert_numeric_to_string=False)
         json_rows = _rows_to_dict(rows)
         drill_down = self.make_drill_down_dict(self.provenance, shap_values, normalized_values,
                                                pipeline_features, original_features, self.include_shap_values)
         json_rows["class_name"] = None
         json_rows["drill_down"] = drill_down
+        json_rows["expected_value"] = expected_value
         return {"explanations": [json_rows]}
 
 
 class _BinarySHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a binary classification problem."""
 
-    def __init__(self, top_k, include_shap_values, class_names, provenance):
-        super().__init__(top_k, include_shap_values, provenance)
+    def __init__(self, top_k, include_shap_values, include_expected_value, class_names, provenance):
+        super().__init__(top_k, include_shap_values, include_expected_value, provenance)
         self.class_names = class_names
 
     def make_text(self, aggregated_shap_values, aggregated_normalized_values,
@@ -226,7 +230,7 @@ class _BinarySHAPTable(_TableMaker):
                                 pipeline_features, original_features, self.top_k, self.include_shap_values)
 
     def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+                  shap_values, normalized_values, pipeline_features, original_features, expected_value):
         rows = _make_rows(aggregated_shap_values[1], aggregated_normalized_values[1], pipeline_features, original_features,
                           self.top_k, self.include_shap_values, convert_numeric_to_string=False)
         dict_rows = _rows_to_dict(rows)
@@ -234,14 +238,15 @@ class _BinarySHAPTable(_TableMaker):
                                                pipeline_features, original_features, self.include_shap_values)
         dict_rows["drill_down"] = drill_down
         dict_rows["class_name"] = _make_json_serializable(self.class_names[1])
+        dict_rows["expected_value"] = expected_value
         return {"explanations": [dict_rows]}
 
 
 class _MultiClassSHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a multiclass classification problem."""
 
-    def __init__(self, top_k, include_shap_values, class_names, provenance):
-        super().__init__(top_k, include_shap_values, provenance)
+    def __init__(self, top_k, include_shap_values, include_expected_value, class_names, provenance):
+        super().__init__(top_k, include_shap_values, include_expected_value, provenance)
         self.class_names = class_names
 
     def make_text(self, aggregated_shap_values, aggregated_normalized_values,
@@ -257,7 +262,7 @@ class _MultiClassSHAPTable(_TableMaker):
         return "\n".join(strings)
 
     def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+                  shap_values, normalized_values, pipeline_features, original_features, expected_value):
         json_output = []
         for class_index, class_name in enumerate(self.class_names):
             rows = _make_rows(aggregated_shap_values[class_index], aggregated_normalized_values[class_index],
@@ -270,11 +275,12 @@ class _MultiClassSHAPTable(_TableMaker):
             json_output_for_class["drill_down"] = drill_down
             json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
+        json_output["expected_value"] = expected_value
         return {"explanations": json_output}
 
 
 def _make_single_prediction_shap_table(pipeline, pipeline_features, input_features, index_to_explain, top_k=3,
-                                       include_shap_values=False, output_format="text"):
+                                       include_shap_values=False, include_expected_value=False, output_format="text"):
     """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
     Arguments:
@@ -288,6 +294,7 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
             This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
         include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
             Default is False.
+        include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): The desired format of the output.  Can be "text", "dict", or "dataframe".
 
     Returns:
@@ -301,7 +308,10 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     if pipeline_features_row.isna().any(axis=None):
         raise ValueError(f"Requested index ({index_to_explain}) produces NaN in features.")
 
-    shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0))
+    shap_values, explainer = _compute_shap_values(pipeline, pipeline_features_row,
+                                       training_data=pipeline_features.dropna(axis=0),
+                                       return_explainer=True)
+    expected_value = explainer.expected_value
     normalized_values = _normalize_shap_values(shap_values)
 
     provenance = pipeline._get_feature_provenance()
@@ -312,19 +322,19 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     if hasattr(pipeline, "classes_"):
         class_names = pipeline.classes_
 
-    table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, provenance),
-                    ProblemTypes.BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, provenance),
-                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, provenance),
-                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, provenance),
-                    ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, provenance),
-                    ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, provenance)}
+    table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, include_expected_value, provenance),
+                    ProblemTypes.BINARY: _BinarySHAPTable(top_k, include_shap_values, include_expected_value, class_names, provenance),
+                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, include_expected_value, class_names, provenance),
+                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, include_expected_value, provenance),
+                    ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(top_k, include_shap_values, include_expected_value, class_names, provenance),
+                    ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, include_expected_value, class_names, provenance)}
 
     table_maker_class = table_makers[pipeline.problem_type]
     table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
                    "dataframe": table_maker_class.make_dataframe}[output_format]
 
     return table_maker(aggregated_shap_values, aggregated_normalized_shap_values,
-                       shap_values, normalized_values, pipeline_features_row, input_features_row)
+                       shap_values, normalized_values, pipeline_features_row, input_features_row, expected_value)
 
 
 class _SectionMaker(abc.ABC):
@@ -472,9 +482,10 @@ class _RegressionPredictedValues(_SectionMaker):
 
 
 class _SHAPTable(_SectionMaker):
-    def __init__(self, top_k_features, include_shap_values):
+    def __init__(self, top_k_features, include_shap_values, include_expected_value):
         self.top_k_features = top_k_features
         self.include_shap_values = include_shap_values
+        self.include_expected_value = include_expected_value
 
     def make_text(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section for reports formatted as text.
@@ -495,7 +506,8 @@ class _SHAPTable(_SectionMaker):
                                                    input_features,
                                                    index_to_explain=index,
                                                    top_k=self.top_k_features,
-                                                   include_shap_values=self.include_shap_values, output_format="text")
+                                                   include_shap_values=self.include_shap_values,
+                                                   output_format="text")
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
@@ -506,6 +518,7 @@ class _SHAPTable(_SectionMaker):
                                                          index_to_explain=index,
                                                          top_k=self.top_k_features,
                                                          include_shap_values=self.include_shap_values,
+                                                         include_expected_value=self.include_expected_value,
                                                          output_format="dict")
         return json_output
 
@@ -516,6 +529,7 @@ class _SHAPTable(_SectionMaker):
                                                   index_to_explain=index,
                                                   top_k=self.top_k_features,
                                                   include_shap_values=self.include_shap_values,
+                                                  include_expected_value=self.include_expected_value,
                                                   output_format="dataframe")
 
 
