@@ -255,8 +255,10 @@ def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeli
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.fit')
 def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regression):
     X, y = X_y_regression
+    X = pd.DataFrame(X, columns=[f"Column_{str(i)}" for i in range(20)])
+    X["Date"] = pd.date_range(start='1/1/2018', periods=X.shape[0])
 
-    configuration = {"gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
+    configuration = {"date_index": "Date", "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration=configuration,
                           max_batches=2)
@@ -267,6 +269,6 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
 
         if result["id"] == 0:
             continue
-
-        assert result['parameters']['Delayed Feature Transformer'] == configuration
-        assert result['parameters']['pipeline'] == configuration
+        for param_key, param_val in configuration.items():
+            assert result['parameters']['Delayed Feature Transformer'][param_key] == configuration[param_key]
+            assert result['parameters']['pipeline'][param_key] == configuration[param_key]

@@ -26,20 +26,20 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
     component_graph = components + [estimator]
     if "Delayed Feature Transformer" not in components:
         pl = pipeline_class(component_graph=component_graph,
-                            parameters={'pipeline': {"gap": 3, "max_delay": 5}})
+                            parameters={'pipeline': {"date_index": None, "gap": 3, "max_delay": 5}})
         assert "Delayed Feature Transformer" not in pl.parameters
-        assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5}
+        assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5, "date_index": None}
     else:
-        parameters = {"Delayed Feature Transformer": {"gap": 3, "max_delay": 5},
-                      "pipeline": {"gap": 3, "max_delay": 5}}
+        parameters = {"Delayed Feature Transformer": {"date_index": None, "gap": 3, "max_delay": 5},
+                      "pipeline": {"date_index": None, "gap": 3, "max_delay": 5}}
         pl = pipeline_class(component_graph=component_graph, parameters=parameters)
-        assert pl.parameters['Delayed Feature Transformer'] == {"gap": 3, "max_delay": 5,
+        assert pl.parameters['Delayed Feature Transformer'] == {"date_index": None, "gap": 3, "max_delay": 5,
                                                                 "delay_features": True, "delay_target": True}
-        assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5}
+        assert pl.parameters['pipeline'] == {"gap": 3, "max_delay": 5, "date_index": None}
 
     assert pipeline_class(component_graph=component_graph, parameters=pl.parameters) == pl
 
-    with pytest.raises(ValueError, match="gap and max_delay parameters cannot be omitted from the parameters dict"):
+    with pytest.raises(ValueError, match="date_index, gap, and max_delay parameters cannot be omitted from the parameters dict"):
         pipeline_class(component_graph, {})
 
 
@@ -68,10 +68,10 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
         expected_target = np.arange(1 + gap, 32)
 
     pl = pipeline_class(component_graph=["Delayed Feature Transformer", estimator_name],
-                        parameters={"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                        parameters={"Delayed Feature Transformer": {"date_index": None, "gap": gap, "max_delay": max_delay,
                                                                     "delay_features": include_delayed_features,
                                                                     "delay_target": include_delayed_features},
-                                    "pipeline": {"gap": gap, "max_delay": max_delay}})
+                                    "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay}})
 
     if only_use_y:
         pl.fit(None, y)
@@ -94,7 +94,8 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
 
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
-@pytest.mark.parametrize("gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 1), (1, 2), (2, 2), (7, 3), (2, 4)])
+@pytest.mark.parametrize("gap,max_delay,date_index", [(0, 0, None), (1, 0, None), (0, 2, None), (1, 1, None),
+                                                      (1, 2, None), (2, 2, None), (7, 3, None), (2, 4, None)])
 @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
                                                            (TimeSeriesBinaryClassificationPipeline, "Random Forest Classifier"),
                                                            (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier")])
@@ -106,7 +107,7 @@ def test_fit_drop_nans_before_estimator(mock_encode_targets, mock_classifier_fit
 def test_predict_pad_nans(mock_decode_targets,
                           mock_regressor_predict, mock_regressor_fit, mock_classifier_predict, mock_classifier_fit,
                           pipeline_class,
-                          estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
+                          estimator_name, gap, max_delay, date_index, include_delayed_features, only_use_y, ts_data):
 
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
         pytest.skip("This would result in an empty feature dataframe.")
@@ -114,10 +115,10 @@ def test_predict_pad_nans(mock_decode_targets,
     X, y = ts_data
 
     pl = pipeline_class(component_graph=["Delayed Feature Transformer", estimator_name],
-                        parameters={"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                        parameters={"Delayed Feature Transformer": {"date_index": None, "gap": gap, "max_delay": max_delay,
                                                                     "delay_features": include_delayed_features,
                                                                     "delay_target": include_delayed_features},
-                                    "pipeline": {"gap": gap, "max_delay": max_delay}})
+                                    "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay}})
 
     def mock_predict(df, y=None):
         return ww.DataColumn(pd.Series(range(200, 200 + df.shape[0])))
@@ -143,7 +144,8 @@ def test_predict_pad_nans(mock_decode_targets,
 
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
-@pytest.mark.parametrize("gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 1), (1, 2), (2, 2), (7, 3), (2, 4)])
+@pytest.mark.parametrize("gap,max_delay,date_index", [(0, 0, None), (1, 0, None), (0, 2, None), (1, 1, None), (1, 2, None),
+                                                      (2, 2, None), (7, 3, None), (2, 4, None)])
 @pytest.mark.parametrize("pipeline_class,estimator_name", [(TimeSeriesRegressionPipeline, "Random Forest Regressor"),
                                                            (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
                                                            (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier")])
@@ -158,7 +160,7 @@ def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
                           mock_classifier_predict, mock_classifier_fit,
                           mock_regressor_predict, mock_regressor_fit,
                           pipeline_class,
-                          estimator_name, gap, max_delay, include_delayed_features, only_use_y, ts_data):
+                          estimator_name, gap, max_delay, date_index, include_delayed_features, only_use_y, ts_data):
     if pipeline_class == TimeSeriesBinaryClassificationPipeline:
         mock_score = mock_binary_score
     if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
@@ -174,10 +176,10 @@ def test_score_drops_nans(mock_binary_score, mock_score, mock_encode_targets,
         target_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
 
     pl = pipeline_class(component_graph=["Delayed Feature Transformer", estimator_name],
-                        parameters={"Delayed Feature Transformer": {"gap": gap, "max_delay": max_delay,
+                        parameters={"Delayed Feature Transformer": {"date_index": None, "gap": gap, "max_delay": max_delay,
                                                                     "delay_features": include_delayed_features,
                                                                     "delay_target": include_delayed_features},
-                                    "pipeline": {"gap": gap, "max_delay": max_delay}})
+                                    "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay}})
 
     def mock_predict(X, y=None):
         return ww.DataColumn(pd.Series(range(200, 200 + X.shape[0])))
@@ -226,8 +228,8 @@ def test_classification_pipeline_encodes_targets(mock_encode, mock_decode,
     mock_decode.return_value = y_encoded
 
     pl = pipeline_class(component_graph=['Delayed Feature Transformer', 'Logistic Regression Classifier'],
-                        parameters={"Delayed Feature Transformer": {"gap": 0, "max_delay": 1},
-                                    "pipeline": {"gap": 0, "max_delay": 1}})
+                        parameters={"Delayed Feature Transformer": {"date_index": None, "gap": 0, "max_delay": 1},
+                                    "pipeline": {"date_index": None, "gap": 0, "max_delay": 1}})
 
     # Check fit encodes target
     pl.fit(X, y_encoded)
@@ -270,7 +272,7 @@ def test_score_works(pipeline_class, objectives, data_type, X_y_binary, X_y_mult
         components = preprocessing + ["Logistic Regression Classifier"]
 
     pl = pipeline_class(component_graph=components,
-                        parameters={"pipeline": {"gap": 1, "max_delay": 2, "delay_features": False},
+                        parameters={"pipeline": {"date_index": None, "gap": 1, "max_delay": 2, "delay_features": False},
                                     components[-1]: {'n_jobs': 1}})
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
@@ -307,7 +309,7 @@ def test_binary_classification_predictions_thresholded_properly(mock_predict, mo
     mock_decode.return_value = pd.Series([0, 1])
     X, y = X_y_binary
     binary_pipeline = dummy_ts_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                 "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                 "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.fit(X, y)
     binary_pipeline.predict(X, y)
@@ -357,7 +359,7 @@ def test_binary_classification_predictions_thresholded_properly(mock_predict, mo
 def test_binary_predict_pipeline_objective_mismatch(mock_transform, X_y_binary, dummy_ts_binary_pipeline_class):
     X, y = X_y_binary
     binary_pipeline = dummy_ts_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                 "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                 "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     binary_pipeline.fit(X, y)
     with pytest.raises(ValueError, match="Objective Precision Micro is not defined for time series binary classification."):
         binary_pipeline.predict(X, y, "precision micro")
@@ -372,16 +374,16 @@ def test_time_series_pipeline_not_fitted_error(problem_type, X_y_binary, X_y_mul
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
         clf = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                           "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                           "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = X_y_multi
         clf = time_series_multiclass_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                               "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                               "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         X, y = X_y_regression
         clf = time_series_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1},
-                                                                "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X)
@@ -429,7 +431,7 @@ def test_ts_binary_pipeline_target_thresholding(make_data_type, time_series_bina
     objective = get_objective("F1", return_instance=True)
 
     binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     binary_pipeline.fit(X, y)
     assert binary_pipeline.threshold is None
     pred_proba = binary_pipeline.predict_proba(X, y).iloc[:, 1]
@@ -441,7 +443,7 @@ def test_ts_binary_pipeline_target_thresholding(make_data_type, time_series_bina
 def test_binary_predict_pipeline_use_objective(mock_decision_function, X_y_binary, time_series_binary_classification_pipeline_class):
     X, y = X_y_binary
     binary_pipeline = time_series_binary_classification_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1},
-                                                                                   "pipeline": {"gap": 0, "max_delay": 0}})
+                                                                                   "pipeline": {"gap": 0, "max_delay": 0, "date_index": None}})
     mock_decision_function.return_value = pd.Series([0] * 98)
     binary_pipeline.threshold = 0.7
     binary_pipeline.fit(X, y)

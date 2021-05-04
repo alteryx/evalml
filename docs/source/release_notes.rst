@@ -2,15 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added `date_index` as a required parameter for TimeSeries problems :pr:`2217`
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
         * Added Oversampler transformer component to EvalML :pr:`2079`
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
+        * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Add ``HighlyNullRowsDataCheck`` :pr:`2222`
+        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
+        * Enable prediction explanations for catboost for multiclass problems :pr:`2224`
     * Changes
         * Deleted baseline pipeline classes :pr:`2202`
         * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`

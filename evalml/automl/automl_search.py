@@ -22,6 +22,7 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter
 )
+from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -60,6 +61,53 @@ from evalml.utils.logger import (
 )
 
 logger = get_logger(__file__)
+
+
+def search(X_train=None, y_train=None, problem_type=None, objective='auto', **kwargs):
+    """Given data and configuration, run an automl search.
+
+    This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
+
+    This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
+
+    Arguments:
+        X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
+
+        y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
+
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+        objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
+            When set to 'auto', chooses:
+
+            - LogLossBinary for binary classification problems,
+            - LogLossMulticlass for multiclass classification problems, and
+            - R2 for regression problems.
+
+    Other keyword arguments which are provided will be passed to AutoMLSearch.
+
+    Returns:
+        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+    """
+    X_train = infer_feature_types(X_train)
+    y_train = infer_feature_types(y_train)
+    problem_type = handle_problem_types(problem_type)
+    if objective == 'auto':
+        objective = get_default_primary_search_objective(problem_type)
+    objective = get_objective(objective, return_instance=False)
+
+    automl_config = kwargs
+    automl_config.update({'X_train': X_train, 'y_train': y_train, 'problem_type': problem_type,
+                          'objective': objective, 'max_batches': 1})
+
+    data_checks = DefaultDataChecks(problem_type=problem_type, objective=objective)
+    data_check_results = data_checks.validate(X_train, y=y_train)
+    if len(data_check_results.get('errors', [])):
+        return None, data_check_results
+
+    automl = AutoMLSearch(**automl_config)
+    automl.search()
+    return automl, data_check_results
 
 
 class AutoMLSearch:
@@ -168,7 +216,7 @@ class AutoMLSearch:
                 max_iterations have precedence over stopping the search.
 
             problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-                in time series problems, values should be passed in for the gap and max_delay variables.
+                in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -443,9 +491,9 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
-            required_parameters = {'gap', 'max_delay'}
+            required_parameters = {'date_index', 'gap', 'max_delay'}
             if not problem_configuration or not all(p in problem_configuration for p in required_parameters):
-                raise ValueError("user_parameters must be a dict containing values for at least the gap and max_delay "
+                raise ValueError("user_parameters must be a dict containing values for at least the date_index, gap, and max_delay "
                                  f"parameters. Received {problem_configuration}.")
         return problem_configuration or {}
 
@@ -666,12 +714,13 @@ class AutoMLSearch:
             pipeline_class, pipeline_name = {ProblemTypes.TIME_SERIES_REGRESSION: (TimeSeriesRegressionPipeline, "Time Series Baseline Regression Pipeline"),
                                              ProblemTypes.TIME_SERIES_MULTICLASS: (TimeSeriesMulticlassClassificationPipeline, "Time Series Baseline Multiclass Pipeline"),
                                              ProblemTypes.TIME_SERIES_BINARY: (TimeSeriesBinaryClassificationPipeline, "Time Series Baseline Binary Pipeline")}[self.problem_type]
+            date_index = self.problem_configuration['date_index']
             gap = self.problem_configuration['gap']
             max_delay = self.problem_configuration['max_delay']
             baseline = pipeline_class(component_graph=["Time Series Baseline Estimator"],
                                       custom_name=pipeline_name,
-                                      parameters={"pipeline": {"gap": gap, "max_delay": max_delay},
-                                                  "Time Series Baseline Estimator": {"gap": gap, "max_delay": max_delay}})
+                                      parameters={"pipeline": {"date_index": date_index, "gap": gap, "max_delay": max_delay},
+                                                  "Time Series Baseline Estimator": {"date_index": date_index, "gap": gap, "max_delay": max_delay}})
         return baseline
 
     def _add_baseline_pipelines(self):

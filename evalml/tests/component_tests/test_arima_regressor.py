@@ -146,7 +146,7 @@ def test_fit_predict_date_col_named(ts_data):
 
     X = X.reset_index()
     assert not isinstance(X.index, pd.DatetimeIndex)
-    m_clf = ARIMARegressor(p=1, d=0, q=0, date_column='index')
+    m_clf = ARIMARegressor(p=1, d=0, q=0, date_index='index')
     clf_ = m_clf.fit(X=X, y=y)
     y_pred = clf_.predict(X=X, y=y)
 
