@@ -384,7 +384,7 @@ def test_iterative_algorithm_results_best_pipeline_info_id(dummy_binary_pipeline
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
+def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_minimal_dependencies):
     X, y = X_y_binary
     estimators = get_estimators(problem_type, None)
     pipelines = [make_pipeline(X, y, e, problem_type) for e in estimators]
@@ -393,32 +393,29 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary):
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     estimators_in_first_batch = [p.estimator.name for p in next_batch]
+
+    final_estimators = []
+    if has_minimal_dependencies:
+        final_estimators = ['XGBoost Regressor',
+                            'LightGBM Regressor',
+                            'CatBoost Regressor']
     if problem_type == ProblemTypes.REGRESSION:
         assert estimators_in_first_batch == ['Linear Regressor',
                                              'Elastic Net Regressor',
                                              'Decision Tree Regressor',
                                              'Extra Trees Regressor',
-                                             'Random Forest Regressor',
-                                             'XGBoost Regressor',
-                                             'LightGBM Regressor',
-                                             'CatBoost Regressor']
+                                             'Random Forest Regressor'] + final_estimators
     elif problem_type == ProblemTypes.BINARY:
         assert estimators_in_first_batch == ['Elastic Net Classifier',
                                              'Logistic Regression Classifier',
                                              'Decision Tree Classifier',
                                              'Extra Trees Classifier',
-                                             'Random Forest Classifier',
-                                             'XGBoost Classifier',
-                                             'LightGBM Classifier',
-                                             'CatBoost Classifier']
+                                             'Random Forest Classifier'] + final_estimators
     elif problem_type == ProblemTypes.MULTICLASS:
         assert estimators_in_first_batch == ['Elastic Net Classifier',
                                              'Logistic Regression Classifier',
                                              'Decision Tree Classifier',
                                              'Extra Trees Classifier',
-                                             'Random Forest Classifier',
-                                             'XGBoost Classifier',
-                                             'LightGBM Classifier',
-                                             'CatBoost Classifier']
+                                             'Random Forest Classifier'] + final_estimators
     else:
         assert False, "Invalid problem type in test"
