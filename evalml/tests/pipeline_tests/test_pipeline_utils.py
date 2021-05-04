@@ -21,7 +21,6 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    RandomForestClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -34,8 +33,7 @@ from evalml.pipelines.utils import (
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
-    make_pipeline,
-    make_pipeline_from_components
+    make_pipeline
 )
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -68,8 +66,8 @@ def test_make_pipeline_custom_hyperparameters(problem_type):
         for problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters, custom_hyperparameters)
             assert pipeline.custom_hyperparameters == custom_hyperparameters
@@ -98,8 +96,8 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -109,8 +107,6 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
                 delayed_features = [DelayedFeatureTransformer]
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
             else:
                 estimator_components = [estimator_class]
             assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
@@ -136,8 +132,8 @@ def test_make_pipeline(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -174,8 +170,8 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -212,8 +208,8 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -247,8 +243,8 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -285,8 +281,8 @@ def test_make_pipeline_text_columns(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -322,8 +318,8 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -356,8 +352,8 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -385,8 +381,8 @@ def test_make_pipeline_numpy_input(problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": None, "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -419,8 +415,8 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
             if is_time_series(problem_type):
-                parameters = {"pipeline": {"gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"gap": 1, "max_delay": 1}}
+                parameters = {"pipeline": {"date_index": "soem dates", "gap": 1, "max_delay": 1},
+                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
@@ -446,78 +442,6 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_pipeline_from_components(X_y_binary, logistic_regression_binary_pipeline_class):
-    with pytest.raises(ValueError, match="Pipeline needs to have an estimator at the last position of the component list"):
-        make_pipeline_from_components([Imputer()], problem_type='binary')
-
-    with pytest.raises(KeyError, match="Problem type 'invalid_type' does not exist"):
-        make_pipeline_from_components([RandomForestClassifier()], problem_type='invalid_type')
-
-    with pytest.raises(TypeError, match="Custom pipeline name must be a string"):
-        make_pipeline_from_components([RandomForestClassifier()], problem_type='binary', custom_name=True)
-
-    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
-        make_pipeline_from_components([RandomForestClassifier], problem_type='binary')
-
-    with pytest.raises(TypeError, match="Every element of `component_instances` must be an instance of ComponentBase"):
-        make_pipeline_from_components(['RandomForestClassifier'], problem_type='binary')
-
-    imp = Imputer(numeric_impute_strategy='median', random_seed=5)
-    est = RandomForestClassifier(random_seed=7)
-    pipeline = make_pipeline_from_components([imp, est], ProblemTypes.BINARY, custom_name='My Pipeline',
-                                             random_seed=15)
-    assert [c.__class__ for c in pipeline] == [Imputer, RandomForestClassifier]
-    assert [(c.random_seed == 15) for c in pipeline]
-    assert pipeline.problem_type == ProblemTypes.BINARY
-    assert pipeline.custom_name == 'My Pipeline'
-    expected_parameters = {
-        'Imputer': {
-            'categorical_impute_strategy': 'most_frequent',
-            'numeric_impute_strategy': 'median',
-            'categorical_fill_value': None,
-            'numeric_fill_value': None},
-        'Random Forest Classifier': {
-            'n_estimators': 100,
-            'max_depth': 6,
-            'n_jobs': -1}
-    }
-    assert pipeline.parameters == expected_parameters
-    assert pipeline.random_seed == 15
-
-    class DummyEstimator(Estimator):
-        name = "Dummy!"
-        model_family = "foo"
-        supported_problem_types = [ProblemTypes.BINARY]
-        parameters = {'bar': 'baz'}
-        hyperparameter_ranges = None
-    random_seed = 42
-    pipeline = make_pipeline_from_components([DummyEstimator(random_seed=3)],
-                                             ProblemTypes.BINARY,
-                                             random_seed=random_seed)
-    components_list = [c for c in pipeline]
-    assert len(components_list) == 1
-    assert isinstance(components_list[0], DummyEstimator)
-    assert components_list[0].random_seed == random_seed
-    expected_parameters = {'Dummy!': {'bar': 'baz'}}
-    assert pipeline.parameters == expected_parameters
-    assert pipeline.random_seed == random_seed
-
-    X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                         random_seed=42)
-    component_instances = [c for c in pipeline]
-    new_pipeline = make_pipeline_from_components(component_instances, ProblemTypes.BINARY)
-    pipeline.fit(X, y)
-    predictions = pipeline.predict(X)
-    new_pipeline.fit(X, y)
-    new_predictions = new_pipeline.predict(X)
-    assert np.array_equal(predictions, new_predictions)
-    assert np.array_equal(pipeline.feature_importance, new_pipeline.feature_importance)
-    assert pipeline.parameters == new_pipeline.parameters
-    for component, new_component in zip(pipeline._component_graph, new_pipeline._component_graph):
-        assert isinstance(new_component, type(component))
-
-
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION])
 def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_regression,
                                        stackable_classifiers,
@@ -529,21 +453,21 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
         X, y = X_y_binary
         base_pipeline_class = BinaryClassificationPipeline
         stacking_component_name = StackedEnsembleClassifier.name
-        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
+        input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers]
         comparison_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         objective = 'Log Loss Binary'
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         base_pipeline_class = MulticlassClassificationPipeline
         stacking_component_name = StackedEnsembleClassifier.name
-        input_pipelines = [make_pipeline_from_components([classifier], problem_type) for classifier in stackable_classifiers]
+        input_pipelines = [MulticlassClassificationPipeline([classifier]) for classifier in stackable_classifiers]
         comparison_pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         objective = 'Log Loss Multiclass'
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         base_pipeline_class = RegressionPipeline
         stacking_component_name = StackedEnsembleRegressor.name
-        input_pipelines = [make_pipeline_from_components([regressor], problem_type) for regressor in stackable_regressors]
+        input_pipelines = [RegressionPipeline([regressor]) for regressor in stackable_regressors]
         comparison_pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
         objective = 'R2'
     parameters = {
@@ -579,6 +503,36 @@ def test_make_component_list_from_actions():
                DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "most_frequent"})]
     assert _make_component_list_from_actions(actions) == [DropColumns(columns=['some col']),
                                                           TargetImputer(impute_strategy="most_frequent")]
+
+
+@pytest.mark.parametrize("samplers", [None, "Undersampler", "SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"])
+@pytest.mark.parametrize("problem_type", ['binary', 'multiclass', 'regression'])
+def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X_y_regression, has_minimal_dependencies):
+    if problem_type == 'binary':
+        X, y = X_y_binary
+    elif problem_type == 'multiclass':
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+    estimators = get_estimators(problem_type=problem_type)
+
+    for estimator in estimators:
+        if problem_type == 'regression' and samplers is not None:
+            with pytest.raises(ValueError, match='Sampling is unsupported for'):
+                make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
+        else:
+            pipeline = make_pipeline(X, y, estimator, problem_type, sampler_name=samplers)
+            if has_minimal_dependencies and samplers is not None:
+                samplers = 'Undersampler'
+            # check that we do add the sampler properly
+            if samplers is not None and problem_type != 'regression':
+                # we add the sampler before the scaler if it exists
+                if pipeline.component_graph[-2].name == 'Standard Scaler':
+                    assert pipeline.component_graph[-3].name == samplers
+                else:
+                    assert pipeline.component_graph[-2].name == samplers
+            else:
+                assert not any('sampler' in comp.name for comp in pipeline.component_graph)
 
 
 def test_get_estimators(has_minimal_dependencies):

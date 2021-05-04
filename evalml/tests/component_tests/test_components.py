@@ -16,6 +16,7 @@ from evalml.exceptions import (
     MethodPropertyNotFoundError
 )
 from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
 from evalml.pipelines.components import (
     LSA,
     PCA,
@@ -73,7 +74,6 @@ from evalml.pipelines.components.utils import (
     all_components,
     generate_component_code
 )
-from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -179,7 +179,8 @@ def test_describe_component():
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
     assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
                                                    'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
-                                                                  'encode_as_categories': False}}
+                                                                  'encode_as_categories': False,
+                                                                  'date_index': None}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
@@ -836,9 +837,10 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             component = helper_functions.safe_init_component_with_njobs_1(component_class)
         except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
-                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)], n_jobs=1)
+                component = component_class(input_pipelines=[BinaryClassificationPipeline([RandomForestClassifier],
+                                                                                          parameters={"Random Forest Classifier": {"n_jobs": 1}})])
             elif (component_class == StackedEnsembleRegressor):
-                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)], n_jobs=1)
+                component = component_class(input_pipelines=[RegressionPipeline([RandomForestRegressor], parameters={"Random Forest Regressor": {"n_jobs": 1}})])
         if isinstance(component, Estimator) and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types:
             X, y = ts_data
         else:
@@ -1049,7 +1051,7 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
 
 def test_generate_code_errors():
     with pytest.raises(ValueError, match="Element must be a component instance"):
-        generate_component_code(make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY))
+        generate_component_code(BinaryClassificationPipeline([RandomForestClassifier]))
 
     with pytest.raises(ValueError, match="Element must be a component instance"):
         generate_component_code(LinearRegressor)

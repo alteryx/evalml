@@ -253,6 +253,14 @@ def test_featurizer_with_custom_indices(text_df):
     assert not X_t.isnull().any().any()
 
 
+def test_text_featurizer_does_not_modify_input_data(text_df):
+    X = text_df
+    expected = X.copy()
+    tf = TextFeaturizer(text_columns=['col_1', 'col_2'])
+    _ = tf.fit_transform(X)
+    pd.testing.assert_frame_equal(X, expected)
+
+
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.Series([1, 2, 10], dtype="Int64")),
                                   pd.DataFrame(pd.Series([1., 2., 10.], dtype="float")),
                                   pd.DataFrame(pd.Series(['a', 'b', 'ab'], dtype="category")),

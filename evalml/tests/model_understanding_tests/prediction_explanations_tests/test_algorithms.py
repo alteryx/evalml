@@ -15,17 +15,16 @@ from evalml.model_understanding.prediction_explanations._algorithms import (
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    MeanBaselineRegressionPipeline,
-    ModeBaselineBinaryPipeline,
-    ModeBaselineMulticlassPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesBaselineRegressionPipeline
+    TimeSeriesRegressionPipeline
 )
 from evalml.pipelines.components import (
-    CatBoostClassifier,
+    BaselineClassifier,
+    BaselineRegressor,
     LinearRegressor,
-    RandomForestClassifier
+    RandomForestClassifier,
+    TimeSeriesBaselineEstimator
 )
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import make_pipeline
@@ -49,17 +48,14 @@ def make_test_pipeline(estimator, base_class):
 
 
 baseline_message = "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed."
-xg_boost_message = "SHAP values cannot currently be computed for xgboost models."
-catboost_message = "SHAP values cannot currently be computed for catboost models for multiclass problems."
 datatype_message = "^Unknown shap_values datatype"
 data_message = "You must pass in a value for parameter 'training_data' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
 
-@pytest.mark.parametrize("pipeline,exception,match", [(MeanBaselineRegressionPipeline, ValueError, baseline_message),
-                                                      (ModeBaselineBinaryPipeline, ValueError, baseline_message),
-                                                      (ModeBaselineMulticlassPipeline, ValueError, baseline_message),
-                                                      (TimeSeriesBaselineRegressionPipeline, ValueError, baseline_message),
-                                                      (make_test_pipeline(CatBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, catboost_message),
+@pytest.mark.parametrize("pipeline,exception,match", [(make_test_pipeline(BaselineRegressor, RegressionPipeline), ValueError, baseline_message),
+                                                      (make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline), ValueError, baseline_message),
+                                                      (make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline), ValueError, baseline_message),
+                                                      (make_test_pipeline(TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
@@ -69,7 +65,7 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
     if "catboost" in pipeline.custom_name.lower():
         pytest.importorskip("catboost", "Skipping test because catboost is not installed.")
 
-    pipeline = pipeline({"pipeline": {"gap": 1, "max_delay": 1}})
+    pipeline = pipeline({"pipeline": {"date_index": None, "gap": 1, "max_delay": 1}})
 
     with pytest.raises(exception, match=match):
         _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
@@ -104,9 +100,6 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
-
-    if problem_type == ProblemTypes.MULTICLASS and estimator.model_family == ModelFamily.CATBOOST:
-        pytest.skip("Skipping Catboost for multiclass problems.")
 
     if problem_type == ProblemTypes.BINARY:
         training_data, y = X_y_binary

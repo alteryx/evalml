@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
 import evalml
@@ -57,14 +57,14 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators
 )
-from evalml.pipelines.utils import make_pipeline, make_pipeline_from_components
-from evalml.preprocessing import (
-    BalancedClassificationDataCVSplit,
-    BalancedClassificationDataTVSplit,
-    TrainingValidationSplit,
-    split_data
+from evalml.pipelines.utils import make_pipeline
+from evalml.preprocessing import TrainingValidationSplit, split_data
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_classification,
+    is_time_series
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.tuners import NoParamsException, RandomSearchTuner
 
 
@@ -278,7 +278,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'patience': 2,
         'tolerance': 0.5,
         'allowed_model_families': ['random_forest', 'linear_model'],
-        'data_splitter': BalancedClassificationDataCVSplit(n_splits=5),
+        'data_splitter': StratifiedKFold(n_splits=5),
         'tuner_class': RandomSearchTuner,
         'start_iteration_callback': _dummy_callback,
         'add_result_callback': None,
@@ -294,7 +294,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
         'Allowed Pipelines': [],
         'Patience': search_params['patience'],
         'Tolerance': search_params['tolerance'],
-        'Data Splitting': ('BalancedClassificationDataCVSplit(', 'sampling_ratio=0.25,', 'n_splits=5, random_seed=0'),
+        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'RandomSearchTuner',
         'Start Iteration Callback': '_dummy_callback',
         'Add Result Callback': None,
@@ -342,7 +342,7 @@ def test_automl_str_no_param_search(X_y_binary):
         'Allowed Pipelines': [],
         'Patience': 'None',
         'Tolerance': '0.0',
-        'Data Splitting': 'BalancedClassificationDataCVSplit(n_splits=3, random_state=0, shuffle=True)',
+        'Data Splitting': 'StratifiedKFold(n_splits=5, random_state=None, shuffle=False)',
         'Tuner': 'SKOptTuner',
         'Additional Objectives': [
             'AUC',
@@ -521,7 +521,7 @@ def test_large_dataset_binary(mock_score):
                           n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -538,7 +538,7 @@ def test_large_dataset_multiclass(mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_time=1, max_iterations=1, n_jobs=1)
     mock_score.return_value = {automl.objective.name: 1.234}
     automl.search()
-    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
     for pipeline_id in automl.results['search_order']:
@@ -581,7 +581,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
     under_max_rows = _LARGE_DATA_ROW_THRESHOLD - 1
     X, y = generate_fake_dataset(under_max_rows)
@@ -592,7 +592,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
 
     automl.data_splitter = None
     over_max_rows = _LARGE_DATA_ROW_THRESHOLD + 1
@@ -605,7 +605,7 @@ def test_large_dataset_split_size(X_y_binary):
                           max_time=1,
                           max_iterations=1,
                           optimize_thresholds=True)
-    assert isinstance(automl.data_splitter, BalancedClassificationDataTVSplit)
+    assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.test_size == (_LARGE_DATA_PERCENT_VALIDATION)
 
 
@@ -764,7 +764,7 @@ def test_add_to_rankings_no_search(mock_fit, mock_score, dummy_binary_pipeline_c
     automl.add_to_rankings(test_pipeline)
     best_pipeline = automl.best_pipeline
     assert best_pipeline is not None
-    assert isinstance(automl.data_splitter, BalancedClassificationDataCVSplit)
+    assert isinstance(automl.data_splitter, StratifiedKFold)
     assert len(automl.rankings) == 1
     assert 0.5234 in automl.rankings["mean_cv_score"].values
     assert np.isnan(automl.results['pipeline_results'][0]['percent_better_than_baseline'])
@@ -1090,7 +1090,6 @@ class KeyboardInterruptOnKthPipeline:
 
     def __call__(self):
         """Raises KeyboardInterrupt on the kth call.
-
         Arguments are ignored but included to meet the call back API.
         """
         if self.n_calls == self.k:
@@ -1288,10 +1287,10 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
                       ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
                       ProblemTypes.REGRESSION: dummy_regression_pipeline_class,
                       ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regression_pipeline_class}[problem_type_value]
-    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.ModeBaselineBinaryPipeline",
-                               ProblemTypes.MULTICLASS: "evalml.pipelines.ModeBaselineMulticlassPipeline",
-                               ProblemTypes.REGRESSION: "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesBaselineRegressionPipeline"
+    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+                               ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
+                               ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline"
                                }[problem_type_value]
 
     class DummyPipeline(pipeline_class):
@@ -1326,8 +1325,8 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
                               additional_objectives=[], optimize_thresholds=False, n_jobs=1)
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
-                              allowed_pipelines=[Pipeline1({'pipeline': {'gap': 0, 'max_delay': 0}}), Pipeline2({'pipeline': {'gap': 0, 'max_delay': 0}})], objective=objective,
-                              additional_objectives=[], problem_configuration={'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
+                              allowed_pipelines=[Pipeline1({'pipeline': {'date_index': None, 'gap': 0, 'max_delay': 0}}), Pipeline2({'pipeline': {'date_index': None, 'gap': 0, 'max_delay': 0}})], objective=objective,
+                              additional_objectives=[], problem_configuration={'date_index': None, 'gap': 0, 'max_delay': 0}, train_best_pipeline=False, n_jobs=1)
     else:
         automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type_value, max_iterations=3,
                               allowed_pipelines=[Pipeline1({}), Pipeline2({})], objective=objective,
@@ -1350,14 +1349,14 @@ def test_percent_better_than_baseline_in_rankings(objective, pipeline_scores, ba
 
 @pytest.mark.parametrize("custom_additional_objective", [True, False])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression", "time series regression"])
-@patch("evalml.pipelines.ModeBaselineBinaryPipeline.fit")
-@patch("evalml.pipelines.ModeBaselineMulticlassPipeline.fit")
-@patch("evalml.pipelines.MeanBaselineRegressionPipeline.fit")
-@patch("evalml.pipelines.TimeSeriesBaselineRegressionPipeline.fit")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
+@patch("evalml.pipelines.RegressionPipeline.fit")
+@patch("evalml.pipelines.TimeSeriesRegressionPipeline.fit")
 def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_series_baseline_regression_fit,
-                                                                  mock_baseline_regression_fit,
-                                                                  mock_baseline_multiclass_fit,
-                                                                  mock_baseline_binary_fit,
+                                                                  mock_regression_fit,
+                                                                  mock_multiclass_fit,
+                                                                  mock_binary_fit,
                                                                   problem_type,
                                                                   custom_additional_objective,
                                                                   dummy_binary_pipeline_class,
@@ -1373,11 +1372,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
                       "multiclass": dummy_multiclass_pipeline_class,
                       "regression": dummy_regression_pipeline_class,
                       "time series regression": dummy_time_series_regression_pipeline_class}[problem_type]
-    baseline_pipeline_class = {"binary": "evalml.pipelines.ModeBaselineBinaryPipeline",
-                               "multiclass": "evalml.pipelines.ModeBaselineMulticlassPipeline",
-                               "regression": "evalml.pipelines.MeanBaselineRegressionPipeline",
-                               "time series regression": "evalml.pipelines.TimeSeriesBaselineRegressionPipeline"
-                               }[problem_type]
+    baseline_pipeline_class = {ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+                               ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
+                               ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+                               ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline"
+                               }[problem_type_enum]
 
     class DummyPipeline(pipeline_class):
         name = "Dummy 1"
@@ -1419,11 +1418,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
     DummyPipeline.score = mock_score_1
     parameters = {}
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
-        parameters = {"pipeline": {"gap": 6, "max_delay": 3}}
+        parameters = {"pipeline": {'date_index': None, "gap": 6, "max_delay": 3}}
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_iterations=2,
                           allowed_pipelines=[DummyPipeline(parameters)],
-                          objective="auto", problem_configuration={'gap': 1, 'max_delay': 1},
+                          objective="auto", problem_configuration={'date_index': None, 'gap': 1, 'max_delay': 1},
                           additional_objectives=additional_objectives)
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
@@ -1438,19 +1437,15 @@ def test_percent_better_than_baseline_computed_for_all_objectives(mock_time_seri
 
 
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
-@patch("evalml.pipelines.ModeBaselineBinaryPipeline.score", return_value={'Log Loss Binary': 1, 'F1': 1})
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={'Log Loss Binary': 1, 'F1': 1})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_percent_better_than_baseline_scores_different_folds(mock_fit,
                                                              mock_score,
-                                                             mock_baseline_score,
                                                              fold_scores,
                                                              dummy_binary_pipeline_class,
                                                              X_y_binary):
     # Test that percent-better-than-baseline is correctly computed when scores differ across folds
     X, y = X_y_binary
-
-    mock_score.side_effect = [{"Log Loss Binary": 1, "F1": val} for val in fold_scores]
 
     class DummyPipeline(dummy_binary_pipeline_class):
         name = "Dummy 1"
@@ -1464,6 +1459,9 @@ def test_percent_better_than_baseline_scores_different_folds(mock_fit,
 
         def clone(self):
             return self.__class__(self.parameters, random_seed=self.random_seed)
+
+    mock_score = MagicMock(side_effect=[{"Log Loss Binary": 1, "F1": val} for val in fold_scores])
+    DummyPipeline.score = mock_score
     f1 = get_objective("f1")()
 
     if np.isnan(fold_scores[0]):
@@ -2075,15 +2073,17 @@ def test_automl_validates_problem_configuration(X_y_binary):
     assert AutoMLSearch(X_train=X, y_train=y, problem_type="binary").problem_configuration == {}
     assert AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass").problem_configuration == {}
     assert AutoMLSearch(X_train=X, y_train=y, problem_type="regression").problem_configuration == {}
-    msg = "user_parameters must be a dict containing values for at least the gap and max_delay parameters"
+    msg = "user_parameters must be a dict containing values for at least the date_index, gap, and max_delay parameters"
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression")
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration={"gap": 3})
+    with pytest.raises(ValueError, match=msg):
+        AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression", problem_configuration={"max_delay": 2, "gap": 3})
 
     problem_config = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression",
-                                  problem_configuration={"max_delay": 2, "gap": 3}).problem_configuration
-    assert problem_config == {"max_delay": 2, "gap": 3}
+                                  problem_configuration={"date_index": "Date", "max_delay": 2, "gap": 3}).problem_configuration
+    assert problem_config == {"date_index": "Date", "max_delay": 2, "gap": 3}
 
 
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
@@ -2165,12 +2165,12 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(mock_fit, mock_scor
 
     X, y = X_y_regression
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression",
-                          problem_configuration={"gap": 6, "max_delay": 3}, max_iterations=1)
+                          problem_configuration={"date_index": None, "gap": 6, "max_delay": 3}, max_iterations=1)
     automl.search()
 
     # Best pipeline is baseline pipeline because we only run one iteration
-    assert automl.best_pipeline.parameters == {"pipeline": {"gap": 6, "max_delay": 3},
-                                               "Time Series Baseline Estimator": {"gap": 6, "max_delay": 3}}
+    assert automl.best_pipeline.parameters == {"pipeline": {"date_index": None, "gap": 6, "max_delay": 3},
+                                               "Time Series Baseline Estimator": {"date_index": None, "gap": 6, "max_delay": 3}}
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
@@ -2186,7 +2186,7 @@ def test_automl_does_not_include_positive_only_objectives_by_default(problem_typ
             only_positive.append(objective_class)
 
     search = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
-                          problem_configuration={'gap': 0, 'max_delay': 0})
+                          problem_configuration={"date_index": None, 'gap': 0, 'max_delay': 0})
     assert search.objective not in only_positive
     assert all([obj not in only_positive for obj in search.additional_objectives])
 
@@ -2486,19 +2486,6 @@ def test_automl_best_pipeline_feature_types_ensembling(mock_fit, mock_score, X_y
     assert str(mock_fit.call_args_list[-1][0][0].ww.logical_types['text column']) == 'Categorical'
 
 
-@patch('evalml.preprocessing.data_splitters.balanced_classification_splitter.BalancedClassificationDataCVSplit.transform_sample', return_value=[0, 1, 2])
-@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={'Log Loss Multiclass': 0.2})
-@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_best_pipeline_data_splitter_transform(mock_fit, mock_score, mock_transform, X_y_multi):
-    X, y = X_y_multi
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass')
-    automl.search()
-    assert mock_transform.is_called()
-    # since we have the transformer return 3 indices only, we want to make sure the last training sample, after transform, has 3 values only
-    assert len(mock_fit.call_args_list[-1][0][0]) == 3
-    assert len(mock_fit.call_args_list[-1][0][1]) == 3
-
-
 def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
@@ -2625,8 +2612,9 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
         return DummyPipeline({'Mock Classifier': {'a': index}})
 
     pipelines = [make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)]
-    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
-    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)], problem_type="binary")
+    input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers[:2]]
+    ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
+                                            parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}})
     pipelines.append(ensemble)
 
     def train_batch_and_check():
@@ -2720,10 +2708,10 @@ def test_score_batch_works(mock_score, pipeline_score_side_effect, X_y_binary,
         return DummyPipeline({'Mock Classifier': {'a': index}})
 
     pipelines = [make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)]
-    ensemble_input_pipelines = [make_pipeline_from_components([classifier], problem_type="binary") for classifier in stackable_classifiers[:2]]
-    ensemble = make_pipeline_from_components([StackedEnsembleClassifier(ensemble_input_pipelines, n_jobs=1)],
-                                             custom_name="Templated Pipeline",
-                                             problem_type="binary")
+    input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers[:2]]
+    ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
+                                            parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}},
+                                            custom_name="Templated Pipeline")
     pipelines.append(ensemble)
 
     def score_batch_and_check():
@@ -2835,7 +2823,7 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
 
     with warnings.catch_warnings(record=True) as warn:
         warnings.simplefilter("always")
-        AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"gap": 0, "max_delay": 2})
+        AutoMLSearch(X, y, problem_type=problem_type, problem_configuration={"date_index": None, "gap": 0, "max_delay": 2})
         assert len(warn) == 1
         message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
         assert str(warn[0].message).startswith(message)
@@ -2864,7 +2852,6 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
 
 
 def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_binary_pipeline_class):
-
     X, y = X_y_binary
 
     with pytest.raises(ValueError, match="Parameter allowed_pipelines must be either None or a list!"):
@@ -2875,3 +2862,62 @@ def test_automl_validates_data_passed_in_to_allowed_pipelines(X_y_binary, dummy_
 
     with pytest.raises(ValueError, match="Every element of allowed_pipelines must an instance of PipelineBase!"):
         AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[dummy_binary_pipeline_class.custom_name, dummy_binary_pipeline_class])
+
+
+@pytest.mark.parametrize("problem_type", [problem_type for problem_type in ProblemTypes.all_problem_types if not is_time_series(problem_type)])
+def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
+    X = pd.DataFrame({'one': [1, 2, 3, 4], 'two': [2, 3, 4, 5], 'three': [1, 2, 3, 4]})
+    y = pd.Series([10, 11, 10, 10])
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([10, 11, 12, 11])
+    automl = AutoMLSearch(X, y, problem_type=problem_type)
+    baseline = automl._get_baseline_pipeline()
+    baseline.fit(X, y)
+
+    if problem_type == ProblemTypes.BINARY:
+        expected_predictions = pd.Series(np.array([10] * len(X)), dtype="Int64")
+        expected_predictions_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
+    if problem_type == ProblemTypes.MULTICLASS:
+        expected_predictions = pd.Series(np.array([11] * len(X)), dtype="Int64")
+        expected_predictions_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
+    if problem_type == ProblemTypes.REGRESSION:
+        mean = y.mean()
+        expected_predictions = pd.Series([mean] * len(X))
+
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X).to_series())
+    if is_classification(problem_type):
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X).to_dataframe())
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
+
+
+@pytest.mark.parametrize('gap', [0, 1])
+@pytest.mark.parametrize("problem_type", [problem_type for problem_type in ProblemTypes.all_problem_types if is_time_series(problem_type)])
+def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type, gap):
+    X = pd.DataFrame({"a": [4, 5, 6, 7, 8]})
+    y = pd.Series([0, 1, 1, 0, 1])
+    expected_predictions_proba = pd.DataFrame({0: pd.Series([1, 0, 0, 1, 0], dtype="float64"),
+                                               1: pd.Series([0, 1, 1, 0, 1], dtype="float64")})
+    if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        y = pd.Series([0, 1, 2, 2, 1])
+        expected_predictions_proba = pd.DataFrame({0: pd.Series([1, 0, 0, 0, 0], dtype="float64"),
+                                                   1: pd.Series([0, 1, 0, 0, 1], dtype="float64"),
+                                                   2: pd.Series([0, 0, 1, 1, 0], dtype="float64")})
+    if gap == 0:
+        # Shift to pad the first row with Nans
+        expected_predictions_proba = expected_predictions_proba.shift(1)
+
+    automl = AutoMLSearch(X, y,
+                          problem_type=problem_type,
+                          problem_configuration={"date_index": None, "gap": gap, "max_delay": 1})
+    baseline = automl._get_baseline_pipeline()
+    baseline.fit(X, y)
+
+    expected_predictions = y.shift(1) if gap == 0 else y
+    expected_predictions = expected_predictions.reset_index(drop=True)
+    if not expected_predictions.isnull().values.any():
+        expected_predictions = expected_predictions.astype("Int64")
+
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y).to_series())
+    if is_classification(problem_type):
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y).to_dataframe())
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
