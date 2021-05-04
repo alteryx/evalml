@@ -106,10 +106,10 @@ def test_datetime_featurizer_fit_transform_date_index():
                       'Date Col 1': pd.date_range('2020-05-19', periods=20, freq='D'),
                       'Date Col 2': pd.date_range('2020-02-03', periods=20, freq='W'),
                       'Numerical 2': [0] * 20})
-    transformed_df = datetime_transformer.fit_transform(X).to_dataframe()
+    transformed_df = datetime_transformer.fit_transform(X)
     assert list(transformed_df.columns) == ['Numerical 1', 'Numerical 2', 'Date Col 1_year', 'Date Col 2_year']
-    assert transformed_df["Date Col 1_year"].equals(pd.Series([2020] * 20, dtype="Int64"))
-    assert transformed_df["Date Col 2_year"].equals(pd.Series([2020] * 20, dtype="Int64"))
+    assert transformed_df["Date Col 1_year"].equals(pd.Series([2020] * 20, dtype="int64"))
+    assert transformed_df["Date Col 2_year"].equals(pd.Series([2020] * 20, dtype="int64"))
     assert datetime_transformer.get_feature_names() == {}
 
 
