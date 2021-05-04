@@ -433,7 +433,6 @@ def test_iterative_algorithm_sampling_params(problem_type, sampler, mock_imbalan
     algo = IterativeAlgorithm(allowed_pipelines=pipelines,
                               random_seed=0,
                               _frozen_pipeline_parameters={sampler: {"sampling_ratio": 0.5}})
-
     next_batch = algo.next_batch()
     for p in next_batch:
         for component in p._component_graph:

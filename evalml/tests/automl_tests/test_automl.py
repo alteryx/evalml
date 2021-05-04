@@ -1089,7 +1089,6 @@ class KeyboardInterruptOnKthPipeline:
 
     def __call__(self):
         """Raises KeyboardInterrupt on the kth call.
-
         Arguments are ignored but included to meet the call back API.
         """
         if self.n_calls == self.k:
