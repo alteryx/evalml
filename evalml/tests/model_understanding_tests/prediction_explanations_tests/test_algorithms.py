@@ -49,8 +49,6 @@ def make_test_pipeline(estimator, base_class):
 
 
 baseline_message = "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed."
-xg_boost_message = "SHAP values cannot currently be computed for xgboost models."
-catboost_message = "SHAP values cannot currently be computed for catboost models for multiclass problems."
 datatype_message = "^Unknown shap_values datatype"
 data_message = "You must pass in a value for parameter 'training_data' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
@@ -59,7 +57,6 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
                                                       (make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline), ValueError, baseline_message),
                                                       (make_test_pipeline(TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline), ValueError, baseline_message),
-                                                      (make_test_pipeline(CatBoostClassifier, MulticlassClassificationPipeline), NotImplementedError, catboost_message),
                                                       (make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline), ValueError, datatype_message),
                                                       (make_test_pipeline(LinearRegressor, RegressionPipeline), ValueError, data_message)])
 @patch("evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer")
