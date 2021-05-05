@@ -426,7 +426,9 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_min
 
 @pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_iterative_algorithm_sampling_params(problem_type, sampler, mock_imbalanced_data_X_y):
+def test_iterative_algorithm_sampling_params(problem_type, sampler, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    if has_minimal_dependencies and sampler != "Undersampler":
+        pytest.skip("Minimal dependencies, so we don't test the oversamplers for iterative algorithm")
     X, y = mock_imbalanced_data_X_y(problem_type, "some", 'small')
     estimators = get_estimators(problem_type, None)
     pipelines = [make_pipeline(X, y, e, problem_type, sampler_name=sampler) for e in estimators]
