@@ -36,11 +36,11 @@ def test_highly_null_data_check_warnings():
                          'b': [None, "text", "text_1"]})
     zero_null_check = HighlyNullRowsDataCheck(pct_null_threshold=0.0)
     assert zero_null_check.validate(data) == {
-        'warnings': [DataCheckWarning(message="Row '0' is more than 0% null",
+        'warnings': [DataCheckWarning(message="Row '0' is more than 0.0% null",
                                       data_check_name=HighlyNullRowsDataCheck.name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                                       details={'row': 0, 'pct_null_cols': 1.0}).to_dict(),
-                     DataCheckWarning(message="Row '1' is more than 0% null",
+                     DataCheckWarning(message="Row '1' is more than 0.0% null",
                                       data_check_name=HighlyNullRowsDataCheck.name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                                       details={'row': 1, 'pct_null_cols': 0.5}).to_dict()],
