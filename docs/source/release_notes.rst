@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
     * Testing Changes
 
@@ -33,8 +34,6 @@ Release Notes
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
         * Removed all old datasplitters from EvalML :pr:`2193`
         * Deleted ``make_pipeline_from_components`` :pr:`2218`
-        * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
-
     * Documentation Changes
         * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
         * Updated documentation to use pipeline instances instead of pipeline subclasses :pr:`2195`
