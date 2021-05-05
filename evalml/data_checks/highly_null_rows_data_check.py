@@ -15,8 +15,8 @@ class HighlyNullRowsDataCheck(DataCheck):
         """Checks if there are any highly-null rows in the input.
 
         Arguments:
-            pct_null_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
-                that feature will be considered highly-null. Defaults to 0.95.
+            pct_null_threshold(float): If the percentage of NaN values in a row exceeds this amount,
+                that row will be considered highly-null. Defaults to 0.5.
 
         """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
