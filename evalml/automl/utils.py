@@ -129,7 +129,7 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
         str: The string name of the sampling component to use
     """
     # we check for the class balances
-    counts = y.to_series().value_counts()
+    counts = y.value_counts()
     minority_class = min(counts)
     class_ratios = minority_class / counts
     # if all class ratios are larger than the ratio provided, we don't need to sample

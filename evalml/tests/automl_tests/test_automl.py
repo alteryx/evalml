@@ -2638,28 +2638,6 @@ def test_train_batch_works(mock_score, pipeline_fit_side_effect, X_y_binary,
     train_batch_and_check()
 
 
-@patch('evalml.automl.engine.sequential_engine.train_pipeline')
-def test_train_pipelines_performs_undersampling(mock_train, X_y_binary, dummy_binary_pipeline_class):
-    X, y = X_y_binary
-    X = pd.DataFrame(X)
-    y = pd.Series(y)
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time=1, max_iterations=2,
-                          train_best_pipeline=False, n_jobs=1)
-
-    train_indices = automl.data_splitter.transform_sample(X, y)
-    X_train = X.iloc[train_indices]
-    y_train = y.iloc[train_indices]
-
-    pipelines = [dummy_binary_pipeline_class({})]
-    mock_train.reset_mock()
-    automl.train_pipelines(pipelines)
-
-    args, kwargs = mock_train.call_args  # args are (pipeline, X, y, optimize_thresholds, objective)
-    pd.testing.assert_frame_equal(X_train, kwargs['X'])
-    pd.testing.assert_series_equal(y_train, kwargs['y'])
-
-
 no_exception_scores = {"F1": 0.9, "AUC": 0.7, "Log Loss Binary": 0.25}
 
 
@@ -2875,18 +2853,18 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     baseline.fit(X, y)
 
     if problem_type == ProblemTypes.BINARY:
-        expected_predictions = pd.Series(np.array([10] * len(X)), dtype="Int64")
+        expected_predictions = pd.Series(np.array([10] * len(X)), dtype="int64")
         expected_predictions_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
     if problem_type == ProblemTypes.MULTICLASS:
-        expected_predictions = pd.Series(np.array([11] * len(X)), dtype="Int64")
+        expected_predictions = pd.Series(np.array([11] * len(X)), dtype="int64")
         expected_predictions_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
     if problem_type == ProblemTypes.REGRESSION:
         mean = y.mean()
         expected_predictions = pd.Series([mean] * len(X))
 
-    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X).to_series())
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X))
     if is_classification(problem_type):
-        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X).to_dataframe())
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X))
     np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
@@ -2915,9 +2893,9 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     expected_predictions = y.shift(1) if gap == 0 else y
     expected_predictions = expected_predictions.reset_index(drop=True)
     if not expected_predictions.isnull().values.any():
-        expected_predictions = expected_predictions.astype("Int64")
+        expected_predictions = expected_predictions.astype("int64")
 
-    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y).to_series())
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y))
     if is_classification(problem_type):
-        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y).to_dataframe())
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y))
     np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
