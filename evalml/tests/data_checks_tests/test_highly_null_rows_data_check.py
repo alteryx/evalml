@@ -14,7 +14,7 @@ from evalml.data_checks import (
 
 def test_highly_null_data_check_init():
     highly_null_check = HighlyNullRowsDataCheck()
-    assert highly_null_check.pct_null_threshold == 0.5
+    assert highly_null_check.pct_null_threshold == 0.75
 
     highly_null_check = HighlyNullRowsDataCheck(pct_null_threshold=0.0)
     assert highly_null_check.pct_null_threshold == 0
@@ -31,9 +31,10 @@ def test_highly_null_data_check_init():
         HighlyNullRowsDataCheck(pct_null_threshold=1.1)
 
 
-def test_highly_null_data_check_warnings():
-    data = pd.DataFrame({'a': [None, None, 10],
-                         'b': [None, "text", "text_1"]})
+@pytest.mark.parametrize("null_type", [None, np.nan])
+def test_highly_null_data_check_warnings(null_type):
+    data = pd.DataFrame({'a': [null_type, null_type, 10],
+                         'b': [null_type, "text", "text_1"]})
     zero_null_check = HighlyNullRowsDataCheck(pct_null_threshold=0.0)
     assert zero_null_check.validate(data) == {
         'warnings': [DataCheckWarning(message="Row '0' is more than 0.0% null",
