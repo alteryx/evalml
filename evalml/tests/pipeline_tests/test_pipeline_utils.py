@@ -636,7 +636,7 @@ def test_generate_code_pipeline():
     expected_code = "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
         "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'Random Forest Classifier'], " \
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
-        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_hyperparameters={'Imputer':{'numeric_impute_strategy': 'most_frequent'},}, random_seed=0)"
+        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_hyperparameters={'Imputer':{'numeric_impute_strategy': 'most_frequent'}}, random_seed=0)"
     pipeline = generate_pipeline_code(binary_pipeline)
     assert expected_code == pipeline
 
