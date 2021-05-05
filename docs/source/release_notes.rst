@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.24.0 May. 04, 2021**
+    * Enhancements
         * Added `date_index` as a required parameter for TimeSeries problems :pr:`2217`
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
         * Added Oversampler transformer component to EvalML :pr:`2079`
