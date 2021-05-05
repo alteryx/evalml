@@ -525,7 +525,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_graph_repr = ", ".join([f"'{component}'" if isinstance(component, str) else component.__name__ for component in self.component_graph])
         component_graph_str = f"[{component_graph_repr}]"
 
-        custom_hyperparameters_repr = ', '.join([f"'{component}':{{{repr_component(hyperparameters)}}}," for component, hyperparameters in self.custom_hyperparameters.items()]) if self.custom_hyperparameters else None
+        custom_hyperparameters_repr = ', '.join([f"'{component}':{{{repr_component(hyperparameters)}}}" for component, hyperparameters in self.custom_hyperparameters.items()]) if self.custom_hyperparameters else None
         custom_hyperparmeter_str = f"custom_hyperparameters={{{custom_hyperparameters_repr}}}" if custom_hyperparameters_repr else None
 
         parameters_repr = ', '.join([f"'{component}':{{{repr_component(parameters)}}}" for component, parameters in self.parameters.items()])

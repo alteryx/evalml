@@ -1529,15 +1529,26 @@ def test_pipeline_repr(pipeline_class):
 
     custom_name = "Mock Pipeline"
     component_graph = ['Imputer', final_estimator]
-
-    pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
+    custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ['mean', 'median']
+        },
+        final_estimator: {
+            "n_estimators": Integer(50, 100)
+        }
+    }
+    pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name, custom_hyperparameters=custom_hyperparameters)
     expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
-        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, custom_name='Mock Pipeline', random_seed=0)"
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, " \
+        f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, " \
+        "custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline) == expected_repr
 
-    pipeline_with_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': 42}})
+    pipeline_with_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': 42}}, custom_name=custom_name, custom_hyperparameters=custom_hyperparameters)
     expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
-        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, " \
+        f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, " \
+        "custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_parameters) == expected_repr
 
     pipeline_with_inf_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
