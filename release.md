@@ -3,10 +3,9 @@
 ## 0. Pre-Release Checklist
 Before starting the release process, verify the following:
 * All work required for this release has been completed and the team is ready to release.
-* [All CircleCI tests are green on main](https://app.circleci.com/pipelines/github/alteryx/evalml?branch=main).
+* [All Github Actions tests are green on main](https://github.com/alteryx/evalml/actions?query=branch%3Amain).
 * The [ReadtheDocs build](https://readthedocs.com/projects/feature-labs-inc-evalml/builds/) for "latest" is marked as passed. To avoid mysterious errors, best practice is to empty your browser cache when reading new versions of the docs!
 * The [public documentation for the "latest" branch](https://evalml.featurelabs.com/en/latest/) looks correct, and the [release notes](https://evalml.featurelabs.com/en/latest/release_notes.html) includes the last change which was made on main.
-* The [performance tests](https://github.com/FeatureLabs/evalml_looking_glass) have passed on latest main, and the team has reviewed the results.
 * Get agreement on the version number to use for the release.
 
 #### Version Numbering
@@ -26,7 +25,7 @@ Please use the following pattern for the release PR branch name: "release_vX.X.X
 Create a release PR with the following changes:
 * Update `setup.py` and `evalml/__init__.py` to bump `__version__` to the new version.
 * Move all entries in `docs/source/release_notes.rst` currently listed under `**Future Releases**` to be under a new heading with the version number and release date.
-* Make sure `**Future Releases**` is empty except for the sub-headings, so its ready for new entries.
+* Make sure `**Future Releases**` is empty except for the sub-headings, so it's ready for new entries.
 * Populate the release PR body with a copy of this release's release notes, reformatted to [GitHub markdown](https://guides.github.com/features/mastering-markdown/). You'll reuse this text in step 2. You can generate the markdown by running `tools/format_release_notes.sh` locally.
 * Confirm that all release items are in the release notes under the correct header, and that no extra items are listed. You may have to do an "empty cache and hard reset" in your browser to see updates.
 
@@ -37,6 +36,8 @@ Checklist before merging:
 * All tests are currently green on checkin and on main.
 * The ReadtheDocs build for the release PR branch has passed, and the resulting docs contain the expected release notes.
 * Confirm with the team that `main` will be frozen until step 3 (github release) is complete.
+
+Merge the release PR.
 
 After merging, verify again that ReadtheDocs "latest" is correct.
 
