@@ -1,5 +1,3 @@
-import json
-
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -38,7 +36,7 @@ from evalml.pipelines.components import (  # noqa: F401
     TextFeaturizer,
     Undersampler
 )
-from evalml.pipelines.components.utils import all_components, get_estimators
+from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,

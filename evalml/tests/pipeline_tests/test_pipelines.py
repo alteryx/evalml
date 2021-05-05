@@ -1531,25 +1531,24 @@ def test_pipeline_repr(pipeline_class):
     component_graph = ['Imputer', final_estimator]
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
-    import pdb; pdb.set_trace()
     expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
         f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline) == expected_repr
 
-    # pipeline_with_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': 42}})
-    # expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
-    #     "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}, 'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
-    # assert repr(pipeline_with_parameters) == expected_repr
+    pipeline_with_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': 42}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
+    assert repr(pipeline_with_parameters) == expected_repr
 
-    # pipeline_with_inf_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
-    # expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
-    #     "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}, 'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
-    # assert repr(pipeline_with_inf_parameters) == expected_repr
+    pipeline_with_inf_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
+    assert repr(pipeline_with_inf_parameters) == expected_repr
 
-    # pipeline_with_nan_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
-    # expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
-    #     f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}, random_seed=0)"
-    # assert repr(pipeline_with_nan_parameters) == expected_repr
+    pipeline_with_nan_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
+    assert repr(pipeline_with_nan_parameters) == expected_repr
 
 
 @pytest.mark.parametrize("pipeline_class", [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline])
@@ -1572,7 +1571,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
-        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},  custom_name='Mock Pipeline', random_seed=0)"
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline) == expected_repr
 
     pipeline_with_parameters = pipeline_class(component_graph=component_graph, custom_name=custom_name, parameters={'Imputer': {'numeric_fill_value': 42}})
@@ -1580,7 +1579,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}, " \
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
-        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},  custom_name='Mock Pipeline', random_seed=0)"
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_parameters) == expected_repr
 
     pipeline_with_inf_parameters = pipeline_class(component_graph=component_graph, custom_name=custom_name, parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
@@ -1588,7 +1587,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}, " \
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
-        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},  custom_name='Mock Pipeline', random_seed=0)"
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_inf_parameters) == expected_repr
 
     pipeline_with_nan_parameters = pipeline_class(component_graph=component_graph, custom_name=custom_name, parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
@@ -1596,7 +1595,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}, " \
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
-        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},  custom_name='Mock Pipeline', random_seed=0)"
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_nan_parameters) == expected_repr
 
 
