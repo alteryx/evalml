@@ -83,6 +83,7 @@ class TextFeaturizer(TextTransformer):
         self._features = ft.dfs(entityset=es,
                                 target_entity='X',
                                 trans_primitives=self._trans,
+                                max_depth=1,
                                 features_only=True)
         return self
 

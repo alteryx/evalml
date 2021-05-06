@@ -97,10 +97,7 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert isinstance(data_splitter, expected_data_splitter)
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
-    if str(problem_type) == 'regression':
-        assert data_splitter.random_state == random_seed
-    else:
-        assert data_splitter.random_state == random_seed
+    assert data_splitter.random_state == random_seed
 
 
 def test_make_data_splitter_parameters_time_series():
