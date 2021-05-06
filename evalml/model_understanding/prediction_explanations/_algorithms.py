@@ -31,7 +31,7 @@ def _create_dictionary(shap_values, feature_names):
     return mapping
 
 
-def _compute_shap_values(pipeline, features, training_data=None):
+def _compute_shap_values(pipeline, features, training_data=None, return_explainer=False):
     """Computes SHAP values for each feature.
 
     Arguments:
@@ -39,10 +39,12 @@ def _compute_shap_values(pipeline, features, training_data=None):
         features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
             For non-tree estimators, we need a sample of training data for the KernelSHAP algorithm.
+        return_explainer (bool): Whether to return the explainer used in the SHAP computation.
 
     Returns:
         dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
             For classification problems, returns a list of dictionaries. One for each class.
+        shap.Explainer: if return_explainer is True.
     """
     estimator = pipeline.estimator
     if estimator.model_family == ModelFamily.BASELINE:
@@ -97,10 +99,12 @@ def _compute_shap_values(pipeline, features, training_data=None):
         mappings = []
         for class_shap_values in shap_values:
             mappings.append(_create_dictionary(class_shap_values, feature_names))
-        return mappings
+        return mappings if not return_explainer else mappings, explainer
     # regression problem
     elif isinstance(shap_values, np.ndarray):
-        return _create_dictionary(shap_values, feature_names)
+        dic = _create_dictionary(shap_values, feature_names)
+        return dic if not return_explainer else dic, explainer
+
     else:
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 
