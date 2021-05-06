@@ -82,8 +82,8 @@ def test_graph_force_plot(estimator, problem_type, n_points_to_explain, X_y_bina
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-@pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
-def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
+@pytest.mark.parametrize("rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True]))
+def test_force_plot_binary(rows_to_explain, just_data, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
     if len(rows_to_explain) == 1:
@@ -99,8 +99,11 @@ def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
     pipeline = RFBinaryClassificationPipeline({})
     pipeline.fit(X, y)
 
-    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df,
-                               y=y, matplotlib=False)
+    if just_data:
+        results = force_plot(pipeline, rows_to_explain, X.df, y)
+    else:
+        results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df,
+                                   y=y, matplotlib=False)
 
     # Should have one result per class.
     assert len(results) == 1
@@ -109,13 +112,14 @@ def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
     classes = set(results.keys())
     assert classes == {"malignant"}
 
-    # Should have a force plot in each dictionary.
-    force_plots = [results[r]["plot"] for r in results]
-    assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
+    if not just_data:
+        # Should have a force plot in each dictionary.
+        force_plots = [results[r]["plot"] for r in results]
+        assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-@pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
-def test_force_plot_multiclass(rows_to_explain, has_minimal_dependencies):
+@pytest.mark.parametrize("rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True]))
+def test_force_plot_multiclass(rows_to_explain, just_data, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
     if len(rows_to_explain) == 1:
@@ -132,8 +136,11 @@ def test_force_plot_multiclass(rows_to_explain, has_minimal_dependencies):
     pipeline = RFMultiClassificationPipeline({})
     pipeline.fit(X, y)
 
-    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df,
-                               y=y, matplotlib=False)
+    if just_data:
+        results = force_plot(pipeline, rows_to_explain, X.df, y)
+    else:
+        results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df,
+                                   y=y, matplotlib=False)
 
     # Should have one result per class.
     assert len(results) == 3
@@ -142,13 +149,14 @@ def test_force_plot_multiclass(rows_to_explain, has_minimal_dependencies):
     classes = set(results.keys())
     assert classes == {"class_0", "class_1", "class_2"}
 
-    # Should have a force plot in each dictionary.
-    force_plots = [results[r]["plot"] for r in results]
-    assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
+    if not just_data:
+        # Should have a force plot in each dictionary.
+        force_plots = [results[r]["plot"] for r in results]
+        assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
-@pytest.mark.parametrize("rows_to_explain", [[0], [0, 1, 2, 3, 4]])
-def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_dependencies):
+@pytest.mark.parametrize("rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True]))
+def test_force_plot_regression(rows_to_explain, just_data, X_y_regression, has_minimal_dependencies):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
     if len(rows_to_explain) == 1:
@@ -158,6 +166,8 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
 
     X, y = X_y_regression
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
 
     class TestRegressionPipeline(RegressionPipeline):
         component_graph = ['Simple Imputer', 'LightGBM Regressor']
@@ -165,11 +175,17 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
     pipeline = TestRegressionPipeline({})
     pipeline.fit(X, y)
 
-    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=pd.DataFrame(X),
-                               y=y, matplotlib=False)
+    if just_data:
+        results = force_plot(pipeline, rows_to_explain, X, y)
+    else:
+        results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X,
+                                   y=y, matplotlib=False)
 
     # Should have a single force plot.
     assert len(results) == 1
     assert "regression" in results.keys()
-    assert isinstance(results["regression"]["plot"], expected_plot_class)
 
+    if not just_data:
+        # Should have a force plot in each dictionary.
+        force_plots = [results[r]["plot"] for r in results]
+        assert all([isinstance(fp, expected_plot_class) for fp in force_plots])

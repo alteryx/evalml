@@ -42,7 +42,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
         shap_plot = shap.force_plot(expected_value, np.array(shap_values), training_data_sample, matplotlib=matplotlib)
         return shap_plot
 
-    shap_plots = force_plot(pipeline, rows_to_explain, training_data, y, return_data=False, matplotlib=matplotlib)
+    shap_plots = force_plot(pipeline, rows_to_explain, training_data, y)
     for cls in shap_plots:
         cls_dict = shap_plots[cls]
         cls_dict["plot"] = gen_force_plot(cls_dict["shap_values"],
@@ -53,16 +53,13 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
     return shap_plots
 
 
-def force_plot(pipeline, rows_to_explain, training_data, y, return_data=True, matplotlib=False):
+def force_plot(pipeline, rows_to_explain, training_data, y):
     """ Function to generate a force plot for a pipeline.
 
     Args:
         pipeline (PipelineBase): the pipeline to generate the force plot for.
         rows_to_explain (list(int)): a list of the indices of the training_data to explain
         training_data (pandas.DataFrame): the data used to train the pipeline
-        return_data (bool): whether to return a dictionary of force plot data (True) or
-            the actual plots (False)
-        matplotlib (bool): flag to display the force plot using matplotlib (outside of jupyter)
 
     Returns:
         list(dict()): list of dictionaries where each dict
