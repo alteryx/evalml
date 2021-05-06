@@ -1528,27 +1528,38 @@ def test_pipeline_repr(pipeline_class):
     else:
         final_estimator = 'Random Forest Regressor'
 
-    class MockPipeline(pipeline_class):
-        custom_name = "Mock Pipeline"
-        component_graph = ['Imputer', final_estimator]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
-
-    pipeline = MockPipeline(parameters={})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    custom_name = "Mock Pipeline"
+    component_graph = ['Imputer', final_estimator]
+    custom_hyperparameters = {
+        "Imputer": {
+            "numeric_impute_strategy": ['mean', 'median']
+        },
+        final_estimator: {
+            "n_estimators": Integer(50, 100)
+        }
+    }
+    pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name, custom_hyperparameters=custom_hyperparameters)
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, " \
+        f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, " \
+        "custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline) == expected_repr
 
-    pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline_with_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': 42}}, custom_name=custom_name, custom_hyperparameters=custom_hyperparameters)
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, " \
+        f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, " \
+        "custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_parameters) == expected_repr
 
-    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline_with_inf_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
     assert repr(pipeline_with_inf_parameters) == expected_repr
 
-    pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline_with_nan_parameters = pipeline_class(component_graph=component_graph, parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], " \
+        f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
     assert repr(pipeline_with_nan_parameters) == expected_repr
 
 
@@ -1559,32 +1570,44 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     else:
         final_estimator = 'Random Forest Regressor'
 
-    class MockPipeline(pipeline_class):
-        custom_name = "Mock Pipeline"
-        component_graph = {
-            'Imputer': ['Imputer'],
-            'OHE_1': ['One Hot Encoder', 'Imputer'],
-            'OHE_2': ['One Hot Encoder', 'Imputer'],
-            'Estimator': [final_estimator, 'OHE_1', 'OHE_2']
-        }
+    custom_name = "Mock Pipeline"
+    component_graph = {
+        'Imputer': ['Imputer'],
+        'OHE_1': ['One Hot Encoder', 'Imputer'],
+        'OHE_2': ['One Hot Encoder', 'Imputer'],
+        'Estimator': [final_estimator, 'OHE_1', 'OHE_2']
+    }
 
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
-
-    pipeline = MockPipeline(parameters={})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], " \
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
+        "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline) == expected_repr
 
-    pipeline_with_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': 42}})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline_with_parameters = pipeline_class(component_graph=component_graph, custom_name=custom_name, parameters={'Imputer': {'numeric_fill_value': 42}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], " \
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}, " \
+        "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_parameters) == expected_repr
 
-    pipeline_with_inf_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline_with_inf_parameters = pipeline_class(component_graph=component_graph, custom_name=custom_name, parameters={'Imputer': {'numeric_fill_value': float('inf'), 'categorical_fill_value': np.inf}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], " \
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}, " \
+        "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_inf_parameters) == expected_repr
 
-    pipeline_with_nan_parameters = MockPipeline(parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
-    expected_repr = f"MockPipeline(parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, 'OHE_1':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'OHE_2':{{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}}, 'Estimator':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}},}})"
+    pipeline_with_nan_parameters = pipeline_class(component_graph=component_graph, custom_name=custom_name, parameters={'Imputer': {'numeric_fill_value': float('nan'), 'categorical_fill_value': np.nan}})
+    expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], " \
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}, " \
+        "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \
+        "'Estimator':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Pipeline', random_seed=0)"
     assert repr(pipeline_with_nan_parameters) == expected_repr
 
 

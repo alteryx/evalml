@@ -1,5 +1,3 @@
-import json
-
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -38,7 +36,7 @@ from evalml.pipelines.components import (  # noqa: F401
     TextFeaturizer,
     Undersampler
 )
-from evalml.pipelines.components.utils import all_components, get_estimators
+from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -180,40 +178,13 @@ def generate_pipeline_code(element):
         Does not include code for custom component implementation.
     """
     # hold the imports needed and add code to end
-    code_strings = ['import json']
+    code_strings = []
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
     if isinstance(element.component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
-
-    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element])
-    code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
-    # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
-    pipeline_list = []
-    for k, v in sorted(list(filter(lambda item: item[0][0] != '_', element.__class__.__dict__.items())), key=lambda x: x[0]):
-        if k == 'component_graph':
-            continue
-        pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
-
-    pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
-    pipeline_string += "\n\tdef __init__(self, parameters, random_seed=0):"
-    pipeline_string += "\n\t\tsuper().__init__(self.component_graph, custom_name=self.custom_name, parameters=parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)\n"
-    try:
-        ret = json.dumps(element.parameters, indent='\t')
-    except TypeError:
-        raise TypeError(f"Value {element.parameters} cannot be JSON-serialized")
-    # create the base string for the pipeline
-    base_string = "\nclass {0}({1}):\n" \
-                  "\tcomponent_graph = [\n\t\t{2}\n\t]\n" \
-                  "{3}" \
-                  "\nparameters = json.loads(\"\"\"{4}\"\"\")\n" \
-                  "pipeline = {0}(parameters)" \
-                  .format(element.__class__.__name__,
-                          element.__class__.__bases__[0].__name__,
-                          component_graph_string,
-                          pipeline_string,
-                          ret)
-    code_strings.append(base_string)
+    code_strings.append("from {} import {}".format(element.__class__.__module__, element.__class__.__name__))
+    code_strings.append(repr(element))
     return "\n".join(code_strings)
 
 
