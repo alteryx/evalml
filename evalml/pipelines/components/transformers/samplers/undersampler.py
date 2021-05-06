@@ -13,12 +13,13 @@ class Undersampler(BaseSampler):
     name = "Undersampler"
     hyperparameter_ranges = {}
 
-    def __init__(self, sampling_ratio=0.25, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
+    def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
         """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
         Arguments:
             sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
                 represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
+            sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Defaults to None.
             min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
                 To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
                 Must be greater than 0. Defaults to 100.
@@ -36,6 +37,7 @@ class Undersampler(BaseSampler):
         super().__init__(parameters=parameters,
                          component_obj=sampler,
                          random_seed=random_seed)
+        super()._convert_dictionary("hello", "bye")
 
     def fit_transform(self, X, y):
         """Fit and transform the data using the undersampler. Used during training of the pipeline
