@@ -424,6 +424,36 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_min
                                              'Random Forest Classifier'] + final_estimators
 
 
+def test_iterative_algorithm_first_batch_order_param(X_y_binary, has_minimal_dependencies):
+    X, y = X_y_binary
+    estimators = get_estimators('binary', None)
+    pipelines = [make_pipeline(X, y, e, 'binary') for e in estimators]
+    # put random forest first
+    estimator_family_order = [
+        ModelFamily.RANDOM_FOREST,
+        ModelFamily.LINEAR_MODEL,
+        ModelFamily.DECISION_TREE,
+        ModelFamily.EXTRA_TREES,
+        ModelFamily.XGBOOST,
+        ModelFamily.LIGHTGBM,
+        ModelFamily.CATBOOST
+    ]
+    algo = IterativeAlgorithm(allowed_pipelines=pipelines, _estimator_family_order=estimator_family_order)
+    next_batch = algo.next_batch()
+    estimators_in_first_batch = [p.estimator.name for p in next_batch]
+
+    final_estimators = ['XGBoost Classifier',
+                        'LightGBM Classifier',
+                        'CatBoost Classifier']
+    if has_minimal_dependencies:
+        final_estimators = []
+    assert estimators_in_first_batch == ['Random Forest Classifier',
+                                         'Elastic Net Classifier',
+                                         'Logistic Regression Classifier',
+                                         'Decision Tree Classifier',
+                                         'Extra Trees Classifier'] + final_estimators
+
+
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_iterative_algorithm_sampling_params(problem_type, mock_imbalanced_data_X_y):
     X, y = mock_imbalanced_data_X_y(problem_type, "some", 'small')
