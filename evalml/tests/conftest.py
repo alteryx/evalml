@@ -100,11 +100,19 @@ def pytest_addoption(parser):
     parser.addoption("--has-minimal-dependencies", action="store_true", default=False,
                      help="If true, tests will assume only the dependencies in"
                      "core-requirements.txt have been installed.")
+    parser.addoption("--is-using-conda", action="store_true", default=False,
+                     help="If true, tests will assume that they are being run as part of"
+                          "the build_conda_pkg workflow with the feedstock.")
 
 
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
+
+
+@pytest.fixture
+def is_using_conda(pytestconfig):
+    return pytestconfig.getoption("--is-using-conda")
 
 
 @pytest.fixture

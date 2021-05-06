@@ -36,10 +36,6 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           make installdeps-test
-      - name: Install pmdarima
-        run: |
-          source test_python/bin/activate
-          pip install pmdarima==1.8.0
       - name: Clone Feedstock, Copy to Container, and Run Update
         env:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}

@@ -5,7 +5,7 @@ import pytest
 import requirements
 
 
-def test_has_minimal_deps(has_minimal_dependencies, is_running_py_39_or_above):
+def test_has_minimal_deps(has_minimal_dependencies, is_running_py_39_or_above, is_using_conda):
     reqs_path = pathlib.Path(__file__).absolute().parents[3].joinpath('requirements.txt')
     lines = open(reqs_path, 'r').readlines()
     lines = [line for line in lines if '-r ' not in line]
@@ -15,6 +15,10 @@ def test_has_minimal_deps(has_minimal_dependencies, is_running_py_39_or_above):
     for module in extra_deps:
         # We don't expect to install sktime in python 3.9. Let's verify it's not present:
         if module == 'sktime' and is_running_py_39_or_above:
+            with pytest.raises(ModuleNotFoundError):
+                import_module(module)
+            continue
+        if module == 'pmdarima' and is_using_conda:
             with pytest.raises(ModuleNotFoundError):
                 import_module(module)
             continue
