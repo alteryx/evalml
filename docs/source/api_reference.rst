@@ -480,6 +480,7 @@ Data Check Classes
     DataCheck
     InvalidTargetDataCheck
     HighlyNullDataCheck
+    HighlyNullRowsDataCheck
     IDColumnsDataCheck
     TargetLeakageDataCheck
     OutliersDataCheck

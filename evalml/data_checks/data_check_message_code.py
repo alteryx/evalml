@@ -7,6 +7,9 @@ class DataCheckMessageCode(Enum):
     HIGHLY_NULL = "highly_null"
     """Message code for highly null columns."""
 
+    HIGHLY_NULL_ROWS = "highly_null_rows"
+    """Message code for highly null rows."""
+
     HAS_ID_COLUMN = "has_id_column"
     """Message code for data that has ID columns."""
 
