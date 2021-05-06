@@ -10,11 +10,13 @@ from evalml.utils.woodwork_utils import (
 class BalancedClassificationSampler(SamplerBase):
     """Class for balanced classification downsampler."""
 
-    def __init__(self, sampling_ratio=0.25, min_samples=100, min_percentage=0.1, random_seed=0):
+    def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, min_samples=100, min_percentage=0.1, random_seed=0):
         """
         Arguments:
             sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
                 represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
+
+            sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Defaults to None.
 
             min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
                 To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
@@ -37,6 +39,7 @@ class BalancedClassificationSampler(SamplerBase):
         self.min_samples = min_samples
         self.min_percentage = min_percentage
         self.random_state = np.random.RandomState(self.random_seed)
+        self.sampling_ratio_dict = sampling_ratio_dict or {}
 
     def _find_ideal_samples(self, y):
         """Returns dictionary of examples to drop for each class if we need to resample.
@@ -68,6 +71,22 @@ class BalancedClassificationSampler(SamplerBase):
         drop_values = {k: max(0, counts[k] - goal_value) for k in undersample_classes}
         return {k: v for k, v in drop_values.items() if v > 0}
 
+    def _sampling_dict_to_remove_dict(self, y):
+        """Turns the sampling dict input into a dict of samples to remove for each target, similar to the return of _find_ideal_samples.
+
+        Arguments:
+            y (pd.Series): Training data targets
+
+        Returns:
+            (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
+                If we don't need to resample, returns empty dictionary.
+        """
+        y_dict = y.value_counts().to_dict()
+        new_dic = {}
+        for k, v in self.sampling_ratio_dict.items():
+            new_dic[k] = max(y_dict[k] - v, 0)
+        return new_dic
+
     def fit_resample(self, X, y):
         """Resampling technique for this sampler.
 
@@ -80,7 +99,11 @@ class BalancedClassificationSampler(SamplerBase):
         """
         y_ww = infer_feature_types(y)
         y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        result = self._find_ideal_samples(y)
+        # if we have a dictionary provided, opt to use that
+        if len(self.sampling_ratio_dict):
+            result = self._sampling_dict_to_remove_dict(y)
+        else:
+            result = self._find_ideal_samples(y)
         indices_to_drop = []
         if len(result):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
