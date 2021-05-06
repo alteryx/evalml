@@ -1195,5 +1195,3 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
     fig.update_layout(title='t-SNE', yaxis_zeroline=False, xaxis_zeroline=False)
 
     return fig
-
-

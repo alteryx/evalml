@@ -103,7 +103,7 @@ def _compute_shap_values(pipeline, features, training_data=None, return_explaine
     # regression problem
     elif isinstance(shap_values, np.ndarray):
         dic = _create_dictionary(shap_values, feature_names)
-        return dic  if not return_explainer else dic, explainer
+        return dic if not return_explainer else dic, explainer
 
     else:
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")

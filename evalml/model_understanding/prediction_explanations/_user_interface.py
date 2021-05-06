@@ -314,8 +314,8 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
         raise ValueError(f"Requested index ({index_to_explain}) produces NaN in features.")
 
     shap_values, explainer = _compute_shap_values(pipeline, pipeline_features_row,
-                                       training_data=pipeline_features.dropna(axis=0),
-                                       return_explainer=True)
+                                                  training_data=pipeline_features.dropna(axis=0),
+                                                  return_explainer=True)
     expected_value = explainer.expected_value
     normalized_values = _normalize_shap_values(shap_values)
 

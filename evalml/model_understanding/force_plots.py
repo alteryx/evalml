@@ -1,10 +1,9 @@
-import shap
 import numpy as np
+import shap
 
-from evalml.model_family import ModelFamily
-from evalml.model_understanding.prediction_explanations import explain_predictions
-from evalml.model_understanding.prediction_explanations._algorithms import _compute_shap_values
-from evalml.problem_types import ProblemTypes
+from evalml.model_understanding.prediction_explanations import (
+    explain_predictions
+)
 
 
 def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=False):
@@ -85,8 +84,8 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
 
     explanations = {}
     prediction_explanations = explain_predictions(pipeline, training_data, y, rows_to_explain,
-                            top_k_features=3, include_shap_values=True,
-                            output_format="dict")
+                                                  top_k_features=3, include_shap_values=True,
+                                                  output_format="dict")
     row_explanations = prediction_explanations["explanations"]
     for row_explanation in row_explanations:
         row_exp = row_explanation["explanations"]
@@ -96,6 +95,6 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
             feature_names = cls_exp["feature_names"]
             shap_values = cls_exp["quantitative_explanation"]
             explanations[cls] = {"expected_value": expected_value, "feature_names": feature_names,
-                               "shap_values": shap_values}
+                                 "shap_values": shap_values}
 
     return explanations

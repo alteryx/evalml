@@ -6,7 +6,7 @@ import shap
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.model_family.model_family import ModelFamily
-from evalml.model_understanding.force_plots import graph_force_plot, force_plot
+from evalml.model_understanding.force_plots import force_plot, graph_force_plot
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
