@@ -2,6 +2,20 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
+    * Fixes
+    * Changes
+        * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
+    * Documentation Changes
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.24.0 May. 04, 2021**
+    * Enhancements
         * Added `date_index` as a required parameter for TimeSeries problems :pr:`2217`
         * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
         * Added Oversampler transformer component to EvalML :pr:`2079`

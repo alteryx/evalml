@@ -519,12 +519,23 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.name
 
     def __repr__(self):
-
         def repr_component(parameters):
             return ', '.join([f"'{key}': {safe_repr(value)}" for key, value in parameters.items()])
 
-        parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
-        return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
+        component_graph_repr = ", ".join([f"'{component}'" if isinstance(component, str) else component.__name__ for component in self.component_graph])
+        component_graph_str = f"[{component_graph_repr}]"
+
+        custom_hyperparameters_repr = ', '.join([f"'{component}':{{{repr_component(hyperparameters)}}}" for component, hyperparameters in self.custom_hyperparameters.items()]) if self.custom_hyperparameters else None
+        custom_hyperparmeter_str = f"custom_hyperparameters={{{custom_hyperparameters_repr}}}" if custom_hyperparameters_repr else None
+
+        parameters_repr = ', '.join([f"'{component}':{{{repr_component(parameters)}}}" for component, parameters in self.parameters.items()])
+        parameters_str = f"parameters={{{parameters_repr}}}"
+
+        custom_name_repr = f"custom_name='{self.custom_name}'" if self.custom_name else None
+        random_seed_str = f"random_seed={self.random_seed}"
+        additional_args_str = ", ".join([arg for arg in [parameters_str, custom_hyperparmeter_str, custom_name_repr, random_seed_str] if arg is not None])
+
+        return f'pipeline = {(type(self).__name__)}(component_graph={component_graph_str}, {additional_args_str})'
 
     def __iter__(self):
         return self
