@@ -13,7 +13,7 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_classification, is_regression
+from evalml.problem_types import is_binary, is_multiclass, is_regression
 from evalml.problem_types.problem_types import ProblemTypes
 from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_algorithms import (
     all_problems,
@@ -23,9 +23,9 @@ from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_a
 
 def test_exceptions():
     with pytest.raises(TypeError, match="rows_to_explain should be provided as a list of row index integers!"):
-        force_plot(None, None, None)
+        force_plot(None, None, None, None)
     with pytest.raises(TypeError, match="rows_to_explain should only contain integers!"):
-        force_plot(pipeline=None, rows_to_explain=["this", "party's", "over"], training_data=None)
+        force_plot(pipeline=None, rows_to_explain=["this", "party's", "over"], training_data=None, y=None)
 
 
 @pytest.mark.parametrize("estimator,problem_type,n_points_to_explain",
@@ -54,31 +54,31 @@ def test_graph_force_plot(estimator, problem_type, n_points_to_explain, X_y_bina
 
     pipeline.fit(training_data, y)
 
-    results = graph_force_plot(pipeline, n_points_to_explain, training_data)
+    results = graph_force_plot(pipeline, n_points_to_explain, training_data, y)
 
     if len(n_points_to_explain) == 1:
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
     else:
         expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
 
-    if is_classification(pipeline.problem_type):
-        # Should have one result per class.
+    if is_binary(pipeline.problem_type):
+        # Binary results should have one result for the "positive class.
+        assert len(results) == 1
+
+    elif is_multiclass(pipeline.problem_type):
+        # Multiclass results should have one result per class.
         assert len(results) == len(set(y))
 
-        # Should have integer labeled classes.
-        classes = [r["class"] for r in results]
-        assert classes == [x for x in range(len(set(y)))]
-
     elif is_regression(pipeline.problem_type):
-        # Should have one result per class.
+        # Regression results should have a single result.
         assert len(results) == 1
 
         # Should have integer labeled classes.
-        classes = [r["class"] for r in results]
-        assert classes == ["regression"]
+        assert "regression" in results.keys()
 
     # Should have a force plot in each dictionary.
-    force_plots = [r["force_plot"] for r in results]
+    force_plots = [results[r]["plot"] for r in results]
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
@@ -90,6 +90,7 @@ def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
     else:
         expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
     X, y = load_breast_cancer()
 
     class RFBinaryClassificationPipeline(BinaryClassificationPipeline):
@@ -98,17 +99,18 @@ def test_force_plot_binary(rows_to_explain, has_minimal_dependencies):
     pipeline = RFBinaryClassificationPipeline({})
     pipeline.fit(X, y)
 
-    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df, matplotlib=False)
+    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df,
+                               y=y, matplotlib=False)
 
     # Should have one result per class.
-    assert len(results) == 2
+    assert len(results) == 1
 
-    # Should have integer labeled classes.
-    classes = [r["class"] for r in results]
-    assert classes == [0, 1]
+    # Should have single class label for the dataset's "positive" class
+    classes = set(results.keys())
+    assert classes == {"malignant"}
 
     # Should have a force plot in each dictionary.
-    force_plots = [r["force_plot"] for r in results]
+    force_plots = [results[r]["plot"] for r in results]
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
@@ -120,6 +122,7 @@ def test_force_plot_multiclass(rows_to_explain, has_minimal_dependencies):
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
     else:
         expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
+        expected_plot_class = shap.plots._force.AdditiveForceVisualizer
 
     X, y = load_wine()
 
@@ -129,17 +132,18 @@ def test_force_plot_multiclass(rows_to_explain, has_minimal_dependencies):
     pipeline = RFMultiClassificationPipeline({})
     pipeline.fit(X, y)
 
-    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df, matplotlib=False)
+    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=X.df,
+                               y=y, matplotlib=False)
 
     # Should have one result per class.
     assert len(results) == 3
 
     # Should have integer labeled classes.
-    classes = [r["class"] for r in results]
-    assert classes == [0, 1, 2]
+    classes = set(results.keys())
+    assert classes == {"class_0", "class_1", "class_2"}
 
     # Should have a force plot in each dictionary.
-    force_plots = [r["force_plot"] for r in results]
+    force_plots = [results[r]["plot"] for r in results]
     assert all([isinstance(fp, expected_plot_class) for fp in force_plots])
 
 
@@ -151,31 +155,7 @@ def test_force_plot_regression(rows_to_explain, X_y_regression, has_minimal_depe
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
     else:
         expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
-
-    X, y = X_y_regression
-
-    class TestRegressionPipeline(RegressionPipeline):
-        component_graph = ['Simple Imputer', 'LightGBM Regressor']
-
-    pipeline = TestRegressionPipeline({})
-    pipeline.fit(X, y)
-
-    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=pd.DataFrame(X), matplotlib=False)
-
-    # Should have a single force plot.
-    assert len(results) == 1
-    assert results[0]["class"] == "regression"
-    assert isinstance(results[0]["force_plot"], expected_plot_class)
-
-
-@pytest.mark.parametrize("rows_to_explain, return_data", product([[0], [0, 1, 2, 3, 4]], [True]))
-def test_force_plot(rows_to_explain, return_data, X_y_regression, has_minimal_dependencies):
-    if has_minimal_dependencies:
-        pytest.skip("Skipping because plotly not installed for minimal dependencies")
-    if len(rows_to_explain) == 1:
         expected_plot_class = shap.plots._force.AdditiveForceVisualizer
-    else:
-        expected_plot_class = shap.plots._force.AdditiveForceArrayVisualizer
 
     X, y = X_y_regression
 
@@ -185,22 +165,11 @@ def test_force_plot(rows_to_explain, return_data, X_y_regression, has_minimal_de
     pipeline = TestRegressionPipeline({})
     pipeline.fit(X, y)
 
-    results = force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=pd.DataFrame(X),
-                         y=pd.DataFrame(y), return_data=return_data, matplotlib=False)
+    results = graph_force_plot(pipeline, rows_to_explain=rows_to_explain, training_data=pd.DataFrame(X),
+                               y=y, matplotlib=False)
 
     # Should have a single force plot.
     assert len(results) == 1
-    assert results[0]["class"] == "regression"
-    assert isinstance(results[0], dict)
-    if return_data:
-        assert "data" in results[0].keys()
-        assert isinstance(results[0]["data"], dict)
+    assert "regression" in results.keys()
+    assert isinstance(results["regression"]["plot"], expected_plot_class)
 
-        # Test that the data dictionary contains the expected keys.
-        if len(rows_to_explain) == 1:
-            assert {'outNames', 'baseValue', 'outValue', 'link', 'featureNames', 'features', 'plot_cmap'} == set(results[0]["data"].keys())
-        else:
-            assert {'baseValue', 'explanations', 'featureNames', 'link', 'ordering_keys', 'ordering_keys_time_format', 'outNames', 'plot_cmap'} == set(results[0]["data"].keys())
-    else:
-        assert "force_plot" in results[0].keys()
-        assert isinstance(results[0]["force_plot"], expected_plot_class)

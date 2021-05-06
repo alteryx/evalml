@@ -238,7 +238,12 @@ class _BinarySHAPTable(_TableMaker):
                                                pipeline_features, original_features, self.include_shap_values)
         dict_rows["drill_down"] = drill_down
         dict_rows["class_name"] = _make_json_serializable(self.class_names[1])
-        dict_rows["expected_value"] = expected_value
+
+        # Accounts for CatBoost returning expected_value as float for positive class
+        try:
+            dict_rows["expected_value"] = expected_value[1]
+        except IndexError:
+            dict_rows["expected_value"] = expected_value
         return {"explanations": [dict_rows]}
 
 
@@ -273,9 +278,9 @@ class _MultiClassSHAPTable(_TableMaker):
                                                    normalized_values[class_index], pipeline_features, original_features,
                                                    self.include_shap_values)
             json_output_for_class["drill_down"] = drill_down
+            json_output_for_class["expected_value"] = expected_value[class_index]
             json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
-        json_output["expected_value"] = expected_value
         return {"explanations": json_output}
 
 
