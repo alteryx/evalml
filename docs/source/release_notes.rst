@@ -12,7 +12,7 @@ Release Notes
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
-        * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:``
+        * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
         * Enable prediction explanations for catboost for multiclass problems :pr:`2224`
