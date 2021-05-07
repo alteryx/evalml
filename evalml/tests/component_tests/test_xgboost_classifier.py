@@ -43,11 +43,11 @@ def test_xgboost_feature_name_with_random_ascii(problem_type, X_y_binary, X_y_mu
     clf.fit(X, y)
     predictions = clf.predict(X)
     assert len(predictions) == len(y)
-    assert not np.isnan(predictions.to_series()).all()
+    assert not np.isnan(predictions).all()
 
     predictions = clf.predict_proba(X)
     assert predictions.shape == (len(y), expected_cols)
-    assert not np.isnan(predictions.to_dataframe()).all().all()
+    assert not np.isnan(predictions).all().all()
 
     assert len(clf.feature_importance) == len(X.columns)
     assert not np.isnan(clf.feature_importance).all().all()
@@ -66,5 +66,5 @@ def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
-    assert not y_pred.to_series().isnull().values.any()
-    assert not y_pred_proba.to_dataframe().isnull().values.any().any()
+    assert not y_pred.isnull().values.any()
+    assert not y_pred_proba.isnull().values.any().any()

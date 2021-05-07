@@ -40,8 +40,8 @@ class ColumnSelector(Transformer):
         """Fits the transformer by checking if column names are present in the dataset.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to check.
-            y (ww.DataColumn, pd.Series, optional): Targets.
+            X (pd.DataFrame): Data to check.
+            y (pd.Series, optional): Targets.
 
         Returns:
             self
@@ -65,17 +65,17 @@ class DropColumns(ColumnSelector):
     needs_fitting = False
 
     def _modify_columns(self, cols, X, y=None):
-        return X.drop(columns=cols)
+        return X.ww.drop(cols)
 
     def transform(self, X, y=None):
         """Transforms data X by dropping columns.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Targets.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
 
         Returns:
-            ww.DataTable: Transformed X.
+            pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)
 
@@ -87,16 +87,16 @@ class SelectColumns(ColumnSelector):
     needs_fitting = False
 
     def _modify_columns(self, cols, X, y=None):
-        return X[cols]
+        return X.ww[cols]
 
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform.
-            y (ww.DataColumn, pd.Series, optional): Targets.
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
 
         Returns:
-            ww.DataTable: Transformed X.
+            pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)

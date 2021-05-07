@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.model_understanding.graphs import visualize_decision_tree
 from evalml.pipelines.components import ComponentBase
@@ -216,16 +215,16 @@ def _check_equality(data, expected, check_index_type=True):
 
 
 @pytest.mark.parametrize("data,num_to_pad,expected",
-                         [(pd.Series([1, 2, 3]), 1, pd.Series([np.nan, 1, 2, 3], dtype="Float64")),
+                         [(pd.Series([1, 2, 3]), 1, pd.Series([np.nan, 1, 2, 3], dtype="float64")),
                           (pd.Series([1, 2, 3]), 0, pd.Series([1, 2, 3])),
                           (pd.Series([1, 2, 3, 4], index=pd.date_range("2020-10-01", "2020-10-04")),
-                           2, pd.Series([np.nan, np.nan, 1, 2, 3, 4], dtype="Float64")),
+                           2, pd.Series([np.nan, np.nan, 1, 2, 3, 4], dtype="float64")),
                           (pd.DataFrame({"a": [1., 2., 3.], "b": [4., 5., 6.]}), 0,
-                           pd.DataFrame({"a": pd.Series([1., 2., 3.], dtype="Float64"), "b": pd.Series([4., 5., 6.], dtype="Float64")})),
+                           pd.DataFrame({"a": pd.Series([1., 2., 3.], dtype="float64"), "b": pd.Series([4., 5., 6.], dtype="float64")})),
                           (pd.DataFrame({"a": [4, 5, 6], "b": ["a", "b", "c"]}), 1,
-                           pd.DataFrame({"a": pd.Series([np.nan, 4, 5, 6], dtype="Float64"), "b": [np.nan, "a", "b", "c"]})),
+                           pd.DataFrame({"a": pd.Series([np.nan, 4, 5, 6], dtype="float64"), "b": [np.nan, "a", "b", "c"]})),
                           (pd.DataFrame({"a": [1, 0, 1]}), 2,
-                           pd.DataFrame({"a": pd.Series([np.nan, np.nan, 1, 0, 1], dtype="Float64")}))])
+                           pd.DataFrame({"a": pd.Series([np.nan, np.nan, 1, 0, 1], dtype="float64")}))])
 def test_pad_with_nans(data, num_to_pad, expected):
     padded = pad_with_nans(data, num_to_pad)
     _check_equality(padded, expected)
@@ -235,7 +234,7 @@ def test_pad_with_nans_with_series_name():
     name = "data to pad"
     data = pd.Series([1, 2, 3], name=name)
     padded = pad_with_nans(data, 1)
-    _check_equality(padded, pd.Series([np.nan, 1, 2, 3], name=name, dtype="Float64"))
+    _check_equality(padded, pd.Series([np.nan, 1, 2, 3], name=name, dtype="float64"))
 
 
 @pytest.mark.parametrize("data, expected",
@@ -263,11 +262,10 @@ def test_rename_column_names_to_numeric():
     X = pd.DataFrame({"<>": [1, 2], ">>": [2, 4]})
     pd.testing.assert_frame_equal(_rename_column_names_to_numeric(X), pd.DataFrame({0: [1, 2], 1: [2, 4]}))
 
-    X = ww.DataTable(pd.DataFrame({"<>": [1, 2], ">>": [2, 4]}), logical_types={"<>": "categorical", ">>": "categorical"})
+    X.ww.init(logical_types={"<>": "categorical", ">>": "categorical"})
     X_renamed = _rename_column_names_to_numeric(X)
     X_expected = pd.DataFrame({0: pd.Series([1, 2], dtype="category"), 1: pd.Series([2, 4], dtype="category")})
-    pd.testing.assert_frame_equal(X_renamed.to_dataframe(), X_expected)
-    assert X_renamed.logical_types == {0: ww.logical_types.Categorical, 1: ww.logical_types.Categorical}
+    pd.testing.assert_frame_equal(X_renamed, X_expected)
 
 
 @pytest.mark.parametrize("file_name,format,interactive",

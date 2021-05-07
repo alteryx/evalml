@@ -6,7 +6,9 @@ from evalml import AutoMLSearch
 from evalml.objectives import LeadScoring
 
 
-def test_lead_scoring_objective(X_y_binary):
+@pytest.mark.objective_test_uses_automl
+def test_lead_scoring_works_during_automl_search(X_y_binary):
+
     X, y = X_y_binary
 
     objective = LeadScoring(true_positives=1,
@@ -20,6 +22,12 @@ def test_lead_scoring_objective(X_y_binary):
     pipeline.predict(X)
     pipeline.predict_proba(X)
     pipeline.score(X, y, [objective])
+
+
+def test_lead_scoring_objective():
+
+    objective = LeadScoring(true_positives=1,
+                            false_positives=-1)
 
     predicted = pd.Series([1, 10, .5, 5])
     out = objective.decision_function(predicted, 1)

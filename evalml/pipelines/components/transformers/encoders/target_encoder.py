@@ -7,7 +7,6 @@ from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
     OneHotEncoderMeta
 )
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     import_or_raise,
     infer_feature_types
@@ -64,13 +63,11 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     def transform(self, X, y=None):
         X_ww = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         if y is not None:
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
         X_t = self._component_obj.transform(X, y)
-        X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Categorical])
+        X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
+        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t_df, ltypes_to_ignore=[Categorical])
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)

@@ -5,11 +5,7 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    get_random_state,
-    infer_feature_types
-)
+from evalml.utils import get_random_state, infer_feature_types
 
 
 class BaselineClassifier(Estimator):
@@ -47,7 +43,6 @@ class BaselineClassifier(Estimator):
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
 
         vals, counts = np.unique(y, return_counts=True)
         self._classes = list(vals)

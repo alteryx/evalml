@@ -118,7 +118,10 @@ def test_target_leakage_data_check_input_formats():
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
+    X_ww = X.copy()
+    X_ww.ww.init()
+    y_ww = ww.init_series(y)
+    assert leakage_check.validate(X_ww, y_ww) == expected
 
     # test y as list
     assert leakage_check.validate(X, y.values) == expected
@@ -239,7 +242,10 @@ def test_target_leakage_multi():
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
+    X_ww = X.copy()
+    X_ww.ww.init()
+    y_ww = ww.init_series(y)
+    assert leakage_check.validate(X_ww, y_ww) == expected
 
     #  test y as list
     assert leakage_check.validate(X, y.values) == expected
@@ -284,7 +290,10 @@ def test_target_leakage_regression():
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
+    X_ww = X.copy()
+    X_ww.ww.init()
+    y_ww = ww.init_series(y)
+    assert leakage_check.validate(X_ww, y_ww) == expected
 
     #  test y as list
     assert leakage_check.validate(X, y.values) == expected
@@ -399,7 +408,10 @@ def test_target_leakage_data_check_input_formats_pearson():
     }
 
     # test X as ww.DataTable, y as ww.DataColumn
-    assert leakage_check.validate(ww.DataTable(X), ww.DataColumn(y)) == expected
+    X_ww = X.copy()
+    X_ww.ww.init()
+    y_ww = ww.init_series(y)
+    assert leakage_check.validate(X_ww, y_ww) == expected
 
     #  test y as list
     assert leakage_check.validate(X, y.values) == expected

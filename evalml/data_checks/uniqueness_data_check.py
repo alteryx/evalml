@@ -10,10 +10,7 @@ from evalml.problem_types import (
     is_multiclass,
     is_regression
 )
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 warning_not_unique_enough = "Input columns ({}) for {} problem type are not unique enough."
 warning_too_unique = "Input columns ({}) for {} problem type are too unique."
@@ -43,8 +40,8 @@ class UniquenessDataCheck(DataCheck):
         problems or not unique enough in the case of regression problems.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
-            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.  Defaults to None.
+            X (pd.DataFrame, np.ndarray): Features.
+            y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
         Returns:
             dict: dict with a DataCheckWarning if there are any too unique or not
@@ -73,7 +70,6 @@ class UniquenessDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         res = X.apply(UniquenessDataCheck.uniqueness_score)
 

@@ -22,7 +22,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         verbose (bool): If True, prints information about features and target
 
     Returns:
-        ww.DataTable, ww.DataColumn: Features matrix and target
+       pd.DataFrame, pd.Series: Features matrix and target
     """
 
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
@@ -42,17 +42,15 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         # target distribution
         print(target_distribution(y))
 
-    X = infer_feature_types(X)
-    y = infer_feature_types(y)
-    return X, y
+    return infer_feature_types(X), infer_feature_types(y)
 
 
 def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_seed=0):
     """Splits data into train and test sets.
 
     Arguments:
-        X (ww.DataTable, pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
-        y (ww.DataColumn, pd.Series, or np.ndarray): target data of length [n_samples]
+        X (pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
+        y (pd.Series, or np.ndarray): target data of length [n_samples]
         problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
@@ -60,9 +58,8 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
-        ww.DataTable, ww.DataTable, ww.DataColumn, ww.DataColumn: Feature and target data each split into train and test sets
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets
     """
-
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
@@ -74,12 +71,12 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
     elif is_classification(problem_type):
         data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
 
-    train, test = next(data_splitter.split(X.to_dataframe(), y.to_series()))
+    train, test = next(data_splitter.split(X, y))
 
-    X_train = X.iloc[train]
-    X_test = X.iloc[test]
-    y_train = y.iloc[train]
-    y_test = y.iloc[test]
+    X_train = X.ww.iloc[train]
+    X_test = X.ww.iloc[test]
+    y_train = y.ww.iloc[train]
+    y_test = y.ww.iloc[test]
 
     return X_train, X_test, y_train, y_test
 

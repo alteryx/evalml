@@ -93,16 +93,17 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
     override_types = [Integer, Double, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df.copy()
+            X.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
 
         rf_classifier.fit(X, y)
         transformed = rf_classifier.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {0: logical_type, 'another column': Double}
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {0: logical_type, 'another column': Double}
 
         rf_regressor.fit(X, y)
         transformed = rf_regressor.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
-        assert transformed.logical_types == {0: logical_type, 'another column': Double}
+        assert isinstance(transformed, pd.DataFrame)
+        assert transformed.ww.logical_types == {0: logical_type, 'another column': Double}

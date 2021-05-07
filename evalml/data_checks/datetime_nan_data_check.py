@@ -1,8 +1,5 @@
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 error_contains_nan = "Input datetime column(s) ({}) contains NaN values. Please impute NaN values or drop these rows or columns."
 
@@ -18,8 +15,8 @@ class DateTimeNaNDataCheck(DataCheck):
         """Checks if any datetime columns contain NaN values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
-            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.  Defaults to None.
+            X (pd.DataFrame, np.ndarray): Features.
+            y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
         Returns:
             dict: dict with a DataCheckError if NaN values are present in datetime columns.
@@ -46,7 +43,7 @@ class DateTimeNaNDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        datetime_cols = _convert_woodwork_types_wrapper(X.select("datetime").to_dataframe())
+        datetime_cols = X.ww.select("datetime")
         nan_columns = datetime_cols.columns[datetime_cols.isna().any()].tolist()
         if len(nan_columns) > 0:
             nan_columns = [str(col) for col in nan_columns]

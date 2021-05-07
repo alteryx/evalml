@@ -27,7 +27,7 @@ def test_lsa_only_text(text_df):
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_lsa_with_nontext(text_df):
@@ -44,7 +44,7 @@ def test_lsa_with_nontext(text_df):
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 5
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_lsa_no_text():
@@ -66,7 +66,7 @@ def test_some_missing_col_names(text_df, caplog):
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_lsa_empty_text_column():
@@ -107,7 +107,7 @@ def test_index_col_names():
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_float_col_names():
@@ -128,7 +128,7 @@ def test_float_col_names():
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.logical_types.values()) == {ww.logical_types.Double}
+    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
 
 
 def test_lsa_output():
@@ -144,7 +144,7 @@ def test_lsa_output():
     X_t = lsa.transform(X)
     cols = [col for col in X_t.columns if 'LSA' in col]
     features = X_t[cols]
-    assert_frame_equal(expected_features, features.to_dataframe(), atol=1e-3)
+    assert_frame_equal(expected_features, features, atol=1e-3)
 
 
 def test_lsa_with_custom_indices(text_df):
@@ -153,7 +153,7 @@ def test_lsa_with_custom_indices(text_df):
     lsa = LSA(text_columns=['col_1', 'col_2'])
     lsa.fit(X)
     X_t = lsa.transform(X)
-    assert not X_t.to_dataframe().isnull().any().any()
+    assert not X_t.isnull().any().any()
 
 
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
@@ -169,14 +169,15 @@ def test_lsa_woodwork_custom_overrides_returned_by_components(X_df):
     lsa = LSA()
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df
+            X.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
             continue
 
         lsa.fit(X)
         transformed = lsa.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
+        assert isinstance(transformed, pd.DataFrame)
         if logical_type == NaturalLanguage:
-            assert transformed.logical_types == {'LSA(0)[0]': Double, 'LSA(0)[1]': Double, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}
+            assert transformed.ww.logical_types == {'LSA(0)[0]': Double, 'LSA(0)[1]': Double, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}
         else:
-            assert transformed.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}
+            assert transformed.ww.logical_types == {0: logical_type, 'LSA(text col)[0]': Double, 'LSA(text col)[1]': Double}

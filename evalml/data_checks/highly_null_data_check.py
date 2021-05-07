@@ -5,7 +5,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class HighlyNullDataCheck(DataCheck):
@@ -27,8 +27,8 @@ class HighlyNullDataCheck(DataCheck):
         """Checks if there are any highly-null columns in the input.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features
-            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
+            X (pd.DataFrame, np.ndarray): Features
+            y (pd.Series, np.ndarray): Ignored.
 
         Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns.
@@ -56,7 +56,6 @@ class HighlyNullDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         percent_null = (X.isnull().mean()).to_dict()
         highly_null_cols = []

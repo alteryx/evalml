@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
@@ -68,7 +67,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logisti
 
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_binary_pipeline_class):
@@ -85,7 +84,7 @@ def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_bi
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
@@ -111,7 +110,7 @@ def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 def test_stacked_problem_types():
@@ -137,25 +136,25 @@ def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_cla
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, ww.DataColumn)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert isinstance(y_pred, pd.Series)
+    assert not np.isnan(y_pred).all()
 
     y_pred_proba = clf.predict_proba(X)
-    assert isinstance(y_pred_proba, ww.DataTable)
+    assert isinstance(y_pred_proba, pd.DataFrame)
     assert y_pred_proba.shape == (len(y), num_classes)
-    assert not np.isnan(y_pred_proba.to_dataframe()).all().all()
+    assert not np.isnan(y_pred_proba).all().all()
 
     clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, final_estimator=RandomForestClassifier(), n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, ww.DataColumn)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert isinstance(y_pred, pd.Series)
+    assert not np.isnan(y_pred).all()
 
     y_pred_proba = clf.predict_proba(X)
     assert y_pred_proba.shape == (len(y), num_classes)
-    assert isinstance(y_pred_proba, ww.DataTable)
-    assert not np.isnan(y_pred_proba.to_dataframe()).all().all()
+    assert isinstance(y_pred_proba, pd.DataFrame)
+    assert not np.isnan(y_pred_proba).all().all()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

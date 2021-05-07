@@ -35,7 +35,7 @@ class SMOTENCSampler(BaseOverSampler):
 
     def _get_categorical(self, X):
         X = infer_feature_types(X)
-        self.categorical_features = [i for i, val in enumerate(X.types['Logical Type'].items()) if str(val[1]) == 'Categorical']
+        self.categorical_features = [i for i, val in enumerate(X.ww.types['Logical Type'].items()) if str(val[1]) == 'Categorical']
         self._parameters['categorical_features'] = self.categorical_features
 
     def fit(self, X, y):

@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckError,
@@ -95,7 +94,8 @@ def test_nl_nan_check_input_formats():
     nl_col = [None, "string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"]
 
     #  test Woodwork
-    ww_input = ww.DataTable(pd.DataFrame(nl_col, columns=['nl']), logical_types={'nl': 'NaturalLanguage'})
+    ww_input = pd.DataFrame(nl_col, columns=['nl'])
+    ww_input.ww.init(logical_types={'nl': 'NaturalLanguage'})
     assert nl_nan_check.validate(ww_input) == expected
 
     expected = {

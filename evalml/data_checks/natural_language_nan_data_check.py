@@ -15,8 +15,8 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         """Checks if any natural language columns contain NaN values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
-            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.  Defaults to None.
+            X (pd.DataFrame, np.ndarray): Features.
+            y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
         Returns:
             dict: dict with a DataCheckError if NaN values are present in natural language columns.
@@ -47,8 +47,8 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = X.select('natural_language')
-        X_describe = X.describe_dict()
+        X = X.ww.select('natural_language')
+        X_describe = X.ww.describe_dict()
         nan_columns = [str(col) for col in X_describe if X_describe[col]['nan_count'] > 0]
         if len(nan_columns) > 0:
             cols_str = ', '.join(nan_columns)

@@ -4,11 +4,7 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types,
-    pad_with_nans
-)
+from evalml.utils import infer_feature_types, pad_with_nans
 
 
 class TimeSeriesBaselineEstimator(Estimator):
@@ -57,7 +53,6 @@ class TimeSeriesBaselineEstimator(Estimator):
         if y is None:
             raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.gap == 0:
             y = y.shift(periods=1)
@@ -68,8 +63,7 @@ class TimeSeriesBaselineEstimator(Estimator):
         if y is None:
             raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
-        preds = self.predict(X, y).to_series().dropna(axis=0, how='any').astype('int')
+        preds = self.predict(X, y).dropna(axis=0, how='any').astype('int')
         proba_arr = np.zeros((len(preds), y.max() + 1))
         proba_arr[np.arange(len(preds)), preds] = 1
         padded = pad_with_nans(pd.DataFrame(proba_arr), len(y) - len(preds))

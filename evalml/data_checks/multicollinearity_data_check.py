@@ -24,7 +24,7 @@ class MulticollinearityDataCheck(DataCheck):
         """Check if any set of features are likely to be multicollinear.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
+            X (pd.DataFrame, np.ndarray): The input features to check
 
         Returns:
             dict: dict with a DataCheckWarning if there are any potentially multicollinear columns.
@@ -37,7 +37,7 @@ class MulticollinearityDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        mutual_info_df = X.mutual_information()
+        mutual_info_df = X.ww.mutual_information()
         if mutual_info_df.empty:
             return results
         above_threshold = mutual_info_df.loc[mutual_info_df['mutual_info'] >= self.threshold]

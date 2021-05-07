@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckAction,
@@ -19,10 +18,14 @@ all_null_X = pd.DataFrame({"feature": [None] * 4,
                            "feature_2": list(range(4))})
 two_distinct_with_nulls_X = pd.DataFrame({"feature": [1, 1, None, None],
                                           "feature_2": list(range(4))})
+two_distinct_with_nulls_X_ww = two_distinct_with_nulls_X.copy()
+two_distinct_with_nulls_X_ww.ww.init()
 
 all_distinct_y = pd.Series([1, 2, 3, 4])
 all_null_y = pd.Series([None] * 4)
 two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
+two_distinct_with_nulls_y_ww = two_distinct_with_nulls_y.copy()
+two_distinct_with_nulls_y_ww.ww.init()
 all_null_y_with_name = pd.Series([None] * 4)
 all_null_y_with_name.name = "Labels"
 
@@ -72,7 +75,7 @@ cases = [(all_distinct_X, all_distinct_y, True, {"warnings": [], "errors": [], "
                                                                                   message_code=DataCheckMessageCode.NO_VARIANCE,
                                                                                   details={"column": "Labels"}).to_dict()],
                                                         "actions": []}),
-         (ww.DataTable(two_distinct_with_nulls_X), ww.DataColumn(two_distinct_with_nulls_y), True,
+         (two_distinct_with_nulls_X_ww, two_distinct_with_nulls_y_ww, True,
           {"warnings": [DataCheckWarning(message="feature has two unique values including nulls. Consider encoding the nulls for "
                                          "this column to be useful for machine learning.",
                                          data_check_name=no_variance_data_check_name,

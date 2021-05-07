@@ -46,7 +46,7 @@ def test_fit_predict_regression(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)
 
 
 def test_feature_importance(X_y_regression):
@@ -80,7 +80,7 @@ def test_fit_string_features(X_y_regression):
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)
 
 
 @patch('evalml.pipelines.components.estimators.estimator.Estimator.predict')
@@ -188,4 +188,4 @@ def test_lightgbm_multiindex(data_type, X_y_regression, make_data_type):
     clf = LightGBMRegressor()
     clf.fit(X, y)
     y_pred = clf.predict(X)
-    assert not y_pred.to_series().isnull().values.any()
+    assert not y_pred.isnull().values.any()
