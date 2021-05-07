@@ -282,6 +282,14 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
     assert_frame_equal(answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y=None))
 
 
+def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features_data):
+    X, _ = delayed_features_data
+    expected = X.copy()
+    _ = DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y=None)
+
+    assert_frame_equal(X, expected)
+
+
 @pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
                                   pd.DataFrame(pd.Series([1, 2, 3], dtype="int64")),
                                   pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),

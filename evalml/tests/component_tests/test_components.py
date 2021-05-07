@@ -441,8 +441,6 @@ def test_component_parameters_getter(test_classes):
 def test_component_parameters_init(logistic_regression_binary_pipeline_class,
                                    linear_regression_pipeline_class):
     for component_class in all_components():
-        if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-            continue
         print('Testing component {}'.format(component_class.name))
         try:
             component = component_class()
@@ -834,8 +832,6 @@ def test_no_fitting_required_components(X_y_binary, test_estimator_needs_fitting
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), 'component.pkl')
     for component_class in all_components():
-        if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-            continue
         print('Testing serialization of component {}'.format(component_class.name))
         try:
             component = helper_functions.safe_init_component_with_njobs_1(component_class)
@@ -881,8 +877,6 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 def test_estimators_accept_all_kwargs(estimator_class,
                                       logistic_regression_binary_pipeline_class,
                                       linear_regression_pipeline_class):
-    if estimator_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
     try:
         estimator = estimator_class()
     except EnsembleMissingPipelinesError:
@@ -964,8 +958,6 @@ def test_component_equality():
 def test_component_equality_all_components(component_class,
                                            logistic_regression_binary_pipeline_class,
                                            linear_regression_pipeline_class):
-    if component_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
     if component_class == StackedEnsembleClassifier:
         component = component_class(input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})])
     elif component_class == StackedEnsembleRegressor:
@@ -1153,8 +1145,6 @@ def test_estimator_fit_respects_custom_indices(use_custom_index, estimator_class
                                                logistic_regression_binary_pipeline_class,
                                                linear_regression_pipeline_class,
                                                helper_functions):
-    if estimator_class in {StackedEnsembleClassifier, StackedEnsembleRegressor}:
-        pytest.skip("Skipping stacked ensemble tests because pipelines not updated yet.")
 
     if estimator_class == StackedEnsembleRegressor:
         input_pipelines = [helper_functions.safe_init_pipeline_with_njobs_1(linear_regression_pipeline_class)]

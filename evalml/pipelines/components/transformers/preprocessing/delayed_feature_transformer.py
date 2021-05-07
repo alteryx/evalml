@@ -87,7 +87,7 @@ class DelayedFeatureTransformer(Transformer):
         if X is None:
             X = pd.DataFrame()
         # Normalize the data into pandas objects
-        X_ww = infer_feature_types(X)
+        X_ww = infer_feature_types(X).ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(X_ww[categorical_columns])

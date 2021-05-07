@@ -54,5 +54,5 @@ def test_woodwork_classification_pipeline(logistic_regression_binary_pipeline_cl
     X, y = load_breast_cancer()
     mock_pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     mock_pipeline.fit(X, y)
-    assert not pd.isnull(mock_pipeline.predict(X).to_series()).any()
-    assert not pd.isnull(mock_pipeline.predict_proba(X).to_dataframe()).any().any()
+    assert not pd.isnull(mock_pipeline.predict(X)).any()
+    assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()

@@ -23,23 +23,23 @@ test:
 .PHONY: git-test
 git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests \
+	--ignore evalml/tests/automl_tests \
 	--ignore evalml/tests/model_understanding_tests \
-	-k "not test_save and not objective_test_uses_automl and not test_stacked and not test_scikit_learn_wrapper"
+	-k "not objective_test_uses_automl"
 
 .PHONY: git-test-minimal-deps
 git-test-minimal-deps:
 	pytest evalml/ -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests \
+	--ignore evalml/tests/automl_tests \
 	--ignore evalml/tests/model_understanding_tests \
-	-k "not test_save and not objective_test_uses_automl and not test_stacked and not test_scikit_learn_wrapper" --has-minimal-dependencies
+	-k "not objective_test_uses_automl" --has-minimal-dependencies
 
 .PHONY: win-git-test
 win-git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore evalml/tests/pipeline_tests --ignore evalml/tests/automl_tests \
+	--ignore evalml/tests/automl_tests \
 	--ignore evalml/tests/model_understanding_tests \
-	-k "not test_save and not objective_test_uses_automl and not test_stacked and not test_scikit_learn_wrapper"
+	-k "not objective_test_uses_automl"
 
 .PHONY: installdeps
 installdeps:
