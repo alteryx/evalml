@@ -14,6 +14,7 @@ from evalml.problem_types import (
     is_binary,
     is_time_series
 )
+from evalml.utils import import_or_raise
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 
@@ -125,7 +126,7 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
             or should balance the classes to.
 
     Returns:
-        str: The string name of the sampling component to use
+        str, None: The string name of the sampling component to use, or None if no sampler is necessary
     """
     # we check for the class balances
     counts = y.to_series().value_counts()
@@ -134,5 +135,19 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     # if all class ratios are larger than the ratio provided, we don't need to sample
     if all(class_ratios >= sampler_balanced_ratio):
         return None
-    # we default to using the Undersampler
-    return 'Undersampler'
+    # We set a threshold to use the Undersampler in order to avoid long runtimes
+    elif len(y) >= 20000:
+        return 'Undersampler'
+    else:
+        try:
+            import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
+            cat_cols = X.select('Categorical').columns
+            # Use different samplers depending on the number of categorical columns
+            if len(cat_cols) == X.shape[1]:
+                return 'SMOTEN Oversampler'
+            elif not len(cat_cols):
+                return 'SMOTE Oversampler'
+            else:
+                return 'SMOTENC Oversampler'
+        except ImportError:
+            return 'Undersampler'
