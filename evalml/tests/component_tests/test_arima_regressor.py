@@ -70,8 +70,9 @@ def test_format_dates(predict, dates_shape, ts_data):
                 clf._format_dates(date_index, X, y, True)
     else:
         if dates_shape != 2:
-            X_, y_ = clf._format_dates(date_index, X, y, False)
+            X_, y_, _ = clf._format_dates(date_index, X, y, False)
             assert X_.index.equals(y_.index)
+            assert _ is None
         elif dates_shape == 2:
             with pytest.raises(ValueError, match='Found 2 columns'):
                 clf._format_dates(date_index, X, y, False)
