@@ -109,7 +109,7 @@ class ARIMARegressor(Estimator):
             fh_ = forecasting_.ForecastingHorizon(dates, is_relative=False)
             return X, y, fh_
         else:
-            return X, y
+            return X, y, None
 
     def fit(self, X, y=None):
         if y is None:
@@ -117,7 +117,7 @@ class ARIMARegressor(Estimator):
 
         X, y = self._manage_woodwork(X, y)
         dates, X = self._get_dates(X, y)
-        X, y = self._format_dates(dates, X, y)
+        X, y, _ = self._format_dates(dates, X, y)
         if X is not None and not X.empty:
             X = X.select_dtypes(exclude=['datetime64'])
             self._component_obj.fit(y=y, X=X)
@@ -140,6 +140,8 @@ class ARIMARegressor(Estimator):
                 if "When an ARIMA is fit with an X array" in error:
                     raise ValueError("If X was passed to the fit method of the ARIMARegressor, "
                                      "then it must be passed to the predict method as well.")
+                else:
+                    raise ve
         return infer_feature_types(y_pred)
 
     @property

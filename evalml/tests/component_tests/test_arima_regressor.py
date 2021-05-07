@@ -227,6 +227,18 @@ def test_predict_ts_without_X_error(ts_data):
         clf_.predict(y=y)
 
 
+@patch('sktime.forecasting.base._sktime._SktimeForecaster.predict')
+def test_predict_ts_X_error(mock_sktime_predict, ts_data):
+    X, y = ts_data
+
+    mock_sktime_predict.side_effect = ValueError("Sktime value error")
+
+    m_clf = ARIMARegressor()
+    clf_ = m_clf.fit(X=X, y=y)
+    with pytest.raises(ValueError, match='Sktime value error'):
+        clf_.predict(y=y)
+
+
 def test_fit_ts_with_not_X_not_y_index(ts_data):
     X, y = ts_data
     X = X.reset_index(drop=True)
