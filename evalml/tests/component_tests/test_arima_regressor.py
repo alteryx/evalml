@@ -150,7 +150,7 @@ def test_fit_predict_ts_with_X_and_y_index(mock_get_dates, mock_format_dates, ts
     assert isinstance(y.index, pd.DatetimeIndex)
 
     mock_get_dates.return_value = (X.index, X)
-    mock_format_dates.return_value = (X, y)
+    mock_format_dates.return_value = (X, y, None)
 
     fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
