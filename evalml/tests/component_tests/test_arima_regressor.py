@@ -174,7 +174,7 @@ def test_fit_predict_ts_with_X_not_y_index(mock_get_dates, mock_format_dates, ts
     assert isinstance(y.index, pd.DatetimeIndex)
 
     mock_get_dates.return_value = (X.index, X)
-    mock_format_dates.return_value = (X, y)
+    mock_format_dates.return_value = (X, y, None)
 
     fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
@@ -199,7 +199,7 @@ def test_fit_predict_ts_with_y_not_X_index(mock_get_dates, mock_format_dates, ts
     X, y = ts_data_seasonal
 
     mock_get_dates.return_value = (y.index, X)
-    mock_format_dates.return_value = (X, y)
+    mock_format_dates.return_value = (X, y, None)
 
     fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
