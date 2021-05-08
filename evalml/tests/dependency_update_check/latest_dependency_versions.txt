@@ -4,6 +4,7 @@ cloudpickle==1.6.0
 colorama==0.4.4
 dask==2021.4.1
 featuretools==0.24.0
+fbprophet==0.7.1
 graphviz==0.16
 imbalanced-learn==0.8.0
 ipywidgets==7.6.3
@@ -17,6 +18,7 @@ numpy==1.20.2
 pandas==1.2.4
 plotly==4.14.3
 psutil==5.8.0
+pystan==2.19.1.1
 pyzmq==21.0.2
 requirements-parser==0.2.0
 scikit-learn==0.24.2

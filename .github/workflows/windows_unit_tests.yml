@@ -58,6 +58,13 @@ jobs:
           conda config --add channels conda-forge
           conda activate curr_py
           conda install numba -q -y
+      - run:
+        name: Install cython and pystan (for prophet)
+        command: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda config --add channels conda-forge
+          conda activate curr_py
+          conda install libpython m2w64-toolchain -c msys2
       - name: Install EvalML with test requirements
         shell: pwsh
         run: |

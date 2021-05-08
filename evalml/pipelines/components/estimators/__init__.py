@@ -21,4 +21,6 @@ from .regressors import (LinearRegressor,
                          TimeSeriesBaselineEstimator,
                          DecisionTreeRegressor,
                          SVMRegressor,
-                         ARIMARegressor)
+                         ARIMARegressor,
+                         ProphetRegressor,
+                         SVMRegressor)
