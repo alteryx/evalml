@@ -13,50 +13,59 @@ class ARIMARegressor(Estimator):
     Autoregressive Integrated Moving Average Model.
     The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order.
     More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html
+
+    Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
+
     """
     name = "ARIMA Regressor"
     hyperparameter_ranges = {
-        "p": Integer(0, 10),
-        "d": Integer(0, 10),
-        "q": Integer(0, 10),
+        "start_p": Integer(1, 3),
+        "d": Integer(0, 2),
+        "start_q": Integer(1, 3),
+        "max_p": Integer(3, 10),
+        "max_d": Integer(2, 5),
+        "max_q": Integer(3, 10),
+        "seasonal": [True, False]
     }
     model_family = ModelFamily.ARIMA
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, date_index=None, trend='n', p=1, d=0, q=0,
-                 random_seed=0, **kwargs):
+    def __init__(self, date_index=None, trend=None, start_p=2, d=0, start_q=2, max_p=5, max_d=2, max_q=5, seasonal=True,
+                 n_jobs=-1, random_seed=0, **kwargs):
         """
         Arguments:
-            date_column (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+            date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
             trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
                 't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
                 as [1, 1, 0, 1].
-            p (int or list(int)): Autoregressive order.
-            d (int): Differencing degree.
-            q (int or list(int)): Moving Average order.
+            start_p (int): Minimum Autoregressive order.
+            d (int): Minimum Differencing degree.
+            start_q (int): Minimum Moving Average order.
+            max_p (int): Maximum Autoregressive order.
+            max_d (int): Maximum Differencing degree.
+            max_q (int): Maximum Moving Average order.
+            seasonal (bool): Whether to fit a seasonal model to ARIMA.
         """
-        order = (p, d, q)
-        parameters = {'order': order,
-                      'trend': trend}
+
+        parameters = {'trend': trend,
+                      'start_p': start_p,
+                      'd': d,
+                      'start_q': start_q,
+                      'max_p': max_p,
+                      'max_d': max_d,
+                      'max_q': max_q,
+                      'seasonal': seasonal,
+                      "n_jobs": n_jobs,
+                      "date_index": date_index}
 
         parameters.update(kwargs)
-        self.date_index = date_index
 
-        p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
-
-        arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
-        try:
-            sum_p = sum(p) if isinstance(p, list) else p
-            sum_q = sum(q) if isinstance(q, list) else q
-            arima.ARIMA(endog=np.zeros(sum_p + d + sum_q + 1), **parameters)
-        except TypeError:
-            raise TypeError("Unable to instantiate ARIMA due to an unexpected argument")
-        parameters.update({'p': p,
-                           'd': d,
-                           'q': q})
+        arima_model_msg = "sktime is not installed. Please install using `pip install sktime.`"
+        sktime_arima = import_or_raise("sktime.forecasting.arima", error_msg=arima_model_msg)
+        arima_model = sktime_arima.AutoARIMA(**parameters)
 
         super().__init__(parameters=parameters,
-                         component_obj=None,
+                         component_obj=arima_model,
                          random_seed=random_seed)
 
     def _get_dates(self, X, y):
@@ -67,8 +76,8 @@ class ARIMARegressor(Estimator):
                 date_col = y.index
         if X is not None:
             X_index_type = infer_feature_types(pd.Series(X.index)).logical_type.type_string
-            if self.date_index in X.columns:
-                date_col = X.pop(self.date_index)
+            if self.parameters['date_index'] in X.columns:
+                date_col = X.pop(self.parameters['date_index'])
             elif X_index_type == 'datetime':
                 date_col = X.index
         if date_col is None:
@@ -84,40 +93,58 @@ class ARIMARegressor(Estimator):
             y.index = date_col
         return X, y
 
+    def _format_dates(self, dates, X, y, predict=False):
+        if len(dates.shape) == 1:
+            dates = pd.DataFrame(dates)
+        if dates.shape[1] == 1:
+            dates.set_index(dates.columns[0], drop=True, inplace=True)
+            dates = pd.DatetimeIndex(dates.index)
+        elif dates.shape[1] > 1:
+            raise ValueError(f"The dates parameter should not consist of any additional data outside of the datetime information located in the index or in a column."
+                             f" Found {dates.shape[1]} columns.")
+        freq = 'M' if pd.infer_freq(dates) == 'MS' else pd.infer_freq(dates)
+        dates = dates.to_period(freq=freq)
+        X, y = self._match_indices(X, y, dates)
+        if predict:
+            arima_model_msg = "sktime is not installed. Please install using `pip install sktime.`"
+            forecasting_ = import_or_raise("sktime.forecasting.base", error_msg=arima_model_msg)
+            fh_ = forecasting_.ForecastingHorizon(dates, is_relative=False)
+            return X, y, fh_
+        else:
+            return X, y, None
+
     def fit(self, X, y=None):
         if y is None:
             raise ValueError('ARIMA Regressor requires y as input.')
 
-        p_error_msg = "ARIMA is not installed. Please install using `pip install statsmodels`."
-        arima = import_or_raise("statsmodels.tsa.arima.model", error_msg=p_error_msg)
-
         X, y = self._manage_woodwork(X, y)
         dates, X = self._get_dates(X, y)
-        X, y = self._match_indices(X, y, dates)
-        new_params = {}
-        for key, val in self.parameters.items():
-            if key not in ['p', 'd', 'q']:
-                new_params[key] = val
-        if X is not None:
-            arima_with_data = arima.ARIMA(endog=y, exog=X, dates=dates, **new_params)
+        X, y, _ = self._format_dates(dates, X, y)
+        if X is not None and not X.empty:
+            X = X.select_dtypes(exclude=['datetime64'])
+            self._component_obj.fit(y=y, X=X)
         else:
-            arima_with_data = arima.ARIMA(endog=y, dates=dates, **new_params)
-
-        self._component_obj = arima_with_data.fit()
+            self._component_obj.fit(y=y)
         return self
 
     def predict(self, X, y=None):
         X, y = self._manage_woodwork(X, y)
         dates, X = self._get_dates(X, y)
-        X, y = self._match_indices(X, y, dates)
-        start = dates.min()
-        end = dates.max()
-        params = self.parameters['order']
-        if X is not None:
-            y_pred = self._component_obj.predict(params=params, start=start, end=end, exog=X)
+        X, y, fh_ = self._format_dates(dates, X, y, predict=True)
+        if X is not None and not X.empty:
+            X = X.select_dtypes(exclude=['datetime64'])
+            y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
-            y_pred = self._component_obj.predict(params=params, start=start, end=end)
-        return y_pred
+            try:
+                y_pred = self._component_obj.predict(fh=fh_)
+            except ValueError as ve:
+                error = str(ve)
+                if "When an ARIMA is fit with an X array" in error:
+                    raise ValueError("If X was passed to the fit method of the ARIMARegressor, "
+                                     "then it must be passed to the predict method as well.")
+                else:
+                    raise ve
+        return infer_feature_types(y_pred)
 
     @property
     def feature_importance(self):

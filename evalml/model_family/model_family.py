@@ -34,7 +34,7 @@ class ModelFamily(Enum):
     DECISION_TREE = 'decision_tree'
     """Decision Tree model family."""
 
-    ARIMA = 'ARIMA'
+    ARIMA = 'arima'
     """ARIMA model family."""
 
     BASELINE = 'baseline'

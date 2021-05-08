@@ -16,7 +16,8 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.RANDOM_FOREST,
     ModelFamily.XGBOOST,
     ModelFamily.LIGHTGBM,
-    ModelFamily.CATBOOST
+    ModelFamily.CATBOOST,
+    ModelFamily.ARIMA
 ]
 
 
