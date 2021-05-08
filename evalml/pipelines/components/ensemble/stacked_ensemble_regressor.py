@@ -1,8 +1,10 @@
 from sklearn.ensemble import StackingRegressor
+from sklearn.linear_model import RidgeCV, ElasticNetCV
+from evalml.pipelines.components import RandomForestRegressor
 from sklearn.model_selection import KFold
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import LinearRegressor
+from evalml.pipelines.components import LinearRegressor, ElasticNetRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
@@ -14,7 +16,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingRegressor
-    _default_final_estimator = LinearRegressor
+    _default_final_estimator = RidgeCV
     _default_cv = KFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
