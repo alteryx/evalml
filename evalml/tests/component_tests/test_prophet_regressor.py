@@ -8,7 +8,7 @@ from evalml.pipelines.components import ProphetRegressor
 from evalml.problem_types import ProblemTypes
 from evalml.utils.gen_utils import suppress_stdout_stderr
 
-prophet = importorskip('fbprophet', reason='Skipping test because xgboost not installed')
+prophet = importorskip('fbprophet', reason='Skipping test because prophet not installed')
 
 
 def test_model_family():

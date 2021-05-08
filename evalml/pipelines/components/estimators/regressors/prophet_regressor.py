@@ -5,12 +5,8 @@ from skopt.space import Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, import_or_raise
-from evalml.utils.gen_utils import (
-    _convert_to_woodwork_structure,
-    _convert_woodwork_types_wrapper,
-    suppress_stdout_stderr
-)
+from evalml.utils import SEED_BOUNDS, import_or_raise, infer_feature_types
+from evalml.utils.gen_utils import suppress_stdout_stderr
 
 
 class ProphetRegressor(Estimator):
@@ -83,11 +79,8 @@ class ProphetRegressor(Estimator):
         if X is None:
             X = pd.DataFrame()
 
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
-
-        y = _convert_to_woodwork_structure(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
+        X = infer_feature_types(X)
+        X = X.to_dataframe()
 
         prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column=self.date_column)
 
@@ -99,8 +92,8 @@ class ProphetRegressor(Estimator):
         if X is None:
             X = pd.DataFrame()
 
-        X = _convert_to_woodwork_structure(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = infer_feature_types(X)
+        X = X.to_dataframe()
 
         prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column=self.date_column)
 
