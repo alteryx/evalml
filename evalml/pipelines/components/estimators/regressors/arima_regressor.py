@@ -14,6 +14,8 @@ class ARIMARegressor(Estimator):
     The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order.
     More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html
 
+    Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
+
     """
     name = "ARIMA Regressor"
     hyperparameter_ranges = {
