@@ -67,6 +67,12 @@ jobs:
           python -m pip install .
           python -m pip install -r test-requirements.txt
           pip freeze
+      - name: Install prophet
+        run: |
+          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
+          conda config --add channels conda-forge
+          conda activate curr_py
+          conda install prophet
       - name: Run unit tests
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
