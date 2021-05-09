@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
-        * Added ``ProphetRegressor`` to estimators :pr:``
+        * Added ``ProphetRegressor`` to estimators :pr:`2242`
     * Fixes
     * Changes
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
