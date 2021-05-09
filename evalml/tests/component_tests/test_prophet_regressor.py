@@ -38,6 +38,19 @@ def test_feature_importance(ts_data):
     clf.feature_importance == np.zeros(1)
 
 
+def test_get_params(ts_data):
+    X, y = ts_data
+
+    clf = ProphetRegressor()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    assert clf.get_params() == {'changepoint_prior_scale': 0.05,
+                               'seasonality_prior_scale': 10,
+                               'holidays_prior_scale': 10,
+                               'seasonality_mode': 'additive'}
+
+
 def test_fit_predict_ts_with_X_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -111,9 +124,13 @@ def test_fit_predict_date_col(ts_data):
     assert (y_pred == y_pred_p).all()
 
 
-def test_fit_predict_no_date_col_or_index(X_y_binary):
-    X, y = X_y_binary
+def test_fit_predict_no_date_col_or_index(ts_data):
+    X, y = ts_data
+    X = X.reset_index(drop=True)
+    y = y.reset_index(drop=True)
+    assert not isinstance(X.index, pd.DatetimeIndex)
+    assert not isinstance(y.index, pd.DatetimeIndex)
 
     clf = ProphetRegressor()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match='Prophet estimator requires input data X to have a datetime column'):
         clf.fit(X, y)

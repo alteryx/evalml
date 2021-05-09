@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 import pandas as pd
 from skopt.space import Real
@@ -31,7 +32,7 @@ class ProphetRegressor(Estimator):
     SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, date_column='ds', changepoint_prior_scale=0.05, seasonality_prior_scale=10, holidays_prior_scale=10, seasonality_mode="additive",
-                 random_state=0, **kwargs):
+                 random_seed=0, **kwargs):
         self.date_column = date_column
 
         parameters = {'changepoint_prior_scale': changepoint_prior_scale,
@@ -47,14 +48,14 @@ class ProphetRegressor(Estimator):
         prophet_regressor = prophet.Prophet(**parameters)
         super().__init__(parameters=parameters,
                          component_obj=prophet_regressor,
-                         random_state=random_state)
+                         random_state=random_seed)
 
     @staticmethod
     def build_prophet_df(X, y=None, date_column='ds'):
         if X is not None:
-            X = X.copy(deep=True)
+            X = copy.deepcopy(X)
         if y is not None:
-            y = y.copy(deep=True)
+            y = copy.deepcopy(y)
 
         if date_column in X.columns:
             date_col = X[date_column]
@@ -100,6 +101,9 @@ class ProphetRegressor(Estimator):
         with suppress_stdout_stderr():
             y_pred = self._component_obj.predict(prophet_df)['yhat']
             return y_pred
+
+    def get_params(self):
+        return self.__dict__['_parameters']
 
     @property
     def feature_importance(self):

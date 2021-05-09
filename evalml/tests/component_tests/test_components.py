@@ -892,10 +892,12 @@ def test_estimators_accept_all_kwargs(estimator_class,
         pytest.skip(f"Skipping {estimator_class} because does not have component object.")
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
         params = estimator.parameters
+    elif estimator_class.model_family == ModelFamily.PROPHET:
+        params = estimator.get_params()
     else:
         params = estimator._component_obj.get_params()
-        if "random_state" in params:
-            del params["random_state"]
+    if "random_state" in params:
+        del params["random_state"]
     estimator_class(**params)
 
 
