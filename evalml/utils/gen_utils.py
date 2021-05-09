@@ -158,7 +158,6 @@ _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBas
                        'SVMClassifier', 'SVMRegressor', 'ARIMARegressor', 'ProphetRegressor'}
 
 
-
 def get_importable_subclasses(base_class, used_in_automl=True):
     """Get importable subclasses of a base class. Used to list all of our
     estimators, transformers, components and pipelines dynamically.

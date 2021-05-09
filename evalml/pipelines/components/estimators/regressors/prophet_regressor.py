@@ -1,4 +1,5 @@
 import copy
+
 import numpy as np
 import pandas as pd
 from skopt.space import Real
@@ -6,7 +7,7 @@ from skopt.space import Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import SEED_BOUNDS, import_or_raise, infer_feature_types
+from evalml.utils import import_or_raise, infer_feature_types
 from evalml.utils.gen_utils import suppress_stdout_stderr
 
 
@@ -27,9 +28,6 @@ class ProphetRegressor(Estimator):
     }
     model_family = ModelFamily.PROPHET
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
-
-    SEED_MIN = 0
-    SEED_MAX = SEED_BOUNDS.max_bound
 
     def __init__(self, date_column='ds', changepoint_prior_scale=0.05, seasonality_prior_scale=10, holidays_prior_scale=10, seasonality_mode="additive",
                  random_seed=0, **kwargs):

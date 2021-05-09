@@ -22,5 +22,4 @@ from .regressors import (LinearRegressor,
                          DecisionTreeRegressor,
                          SVMRegressor,
                          ARIMARegressor,
-                         ProphetRegressor,
-                         SVMRegressor)
+                         ProphetRegressor)

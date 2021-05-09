@@ -39,16 +39,11 @@ def test_feature_importance(ts_data):
 
 
 def test_get_params(ts_data):
-    X, y = ts_data
-
     clf = ProphetRegressor()
-    clf.fit(X, y)
-    y_pred = clf.predict(X)
-
     assert clf.get_params() == {'changepoint_prior_scale': 0.05,
-                               'seasonality_prior_scale': 10,
-                               'holidays_prior_scale': 10,
-                               'seasonality_mode': 'additive'}
+                                'seasonality_prior_scale': 10,
+                                'holidays_prior_scale': 10,
+                                'seasonality_mode': 'additive'}
 
 
 def test_fit_predict_ts_with_X_index(ts_data):
