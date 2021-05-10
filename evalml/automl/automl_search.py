@@ -72,9 +72,9 @@ def search(X_train=None, y_train=None, problem_type=None, objective='auto', **kw
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
     Arguments:
-        X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
+        X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
-        y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
+        y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
         problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
@@ -151,9 +151,9 @@ class AutoMLSearch:
         """Automated pipeline search
 
         Arguments:
-            X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
+            X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
-            y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
+            y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
             problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
@@ -1052,8 +1052,8 @@ class AutoMLSearch:
 
         Arguments:
             pipelines (list(PipelineBase)): List of pipelines to train.
-            X_holdout (ww.DataTable, pd.DataFrame): Holdout features.
-            y_holdout (ww.DataTable, pd.DataFrame): Holdout targets for scoring.
+            X_holdout (pd.DataFrame): Holdout features.
+            y_holdout (pd.Series): Holdout targets for scoring.
             objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
 
         Returns:

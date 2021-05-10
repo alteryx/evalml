@@ -9,13 +9,15 @@ from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine
 from evalml.automl.engine.engine_base import (
     JobLogger,
     evaluate_pipeline,
-    train_pipeline
+    train_pipeline,
 )
+from evalml.automl.utils import AutoMLConfig
 from evalml.automl.engine.sequential_engine import SequentialEngine
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_test_utils import (
     TestPipelineSlow,
+    TestSchemaCheckPipeline,
     automl_data
 )
 
@@ -239,6 +241,37 @@ class TestDaskEngine(unittest.TestCase):
         pipeline_future = engine.submit_training_job(X=X, y=y, automl_config=automl_data, pipeline=pipeline)
         pipeline_future.cancel()
         assert pipeline_future.is_cancelled
+
+    def test_dask_sends_woodwork_schema(self):
+        X, y = self.X_y_binary
+        engine = DaskEngine(client=self.client)
+
+        X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ['my cool feature']})
+        y.ww.init()
+
+        # TestSchemaCheckPipeline is running the checks we need to make
+        pipeline = TestSchemaCheckPipeline(component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
+                                           parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                           X_schema_to_check=X.ww.schema, y_schema_to_check=y.ww.schema)
+
+        future = engine.submit_training_job(X=X, y=y, automl_config=automl_data, pipeline=pipeline)
+        fitted_pipeline = future.get_result()
+
+        future = engine.submit_scoring_job(X=X, y=y, automl_config=automl_data, pipeline=fitted_pipeline, objectives=["F1"])
+        _ = future.get_result()
+
+        new_config = AutoMLConfig(ensembling_indices=automl_data.ensembling_indices,
+                                  data_splitter=automl_data.data_splitter,
+                                  problem_type=automl_data.problem_type,
+                                  objective=automl_data.objective,
+                                  additional_objectives=automl_data.additional_objectives,
+                                  optimize_thresholds=automl_data.optimize_thresholds,
+                                  error_callback=automl_data.error_callback,
+                                  random_seed=automl_data.random_seed,
+                                  X_schema=X.ww.schema,
+                                  y_schema=y.ww.schema)
+        future = engine.submit_evaluation_job(new_config, pipeline, X, y)
+        future.get_result()
 
     @classmethod
     def tearDownClass(cls) -> None:

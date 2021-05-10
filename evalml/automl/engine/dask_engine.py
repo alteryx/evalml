@@ -55,8 +55,8 @@ class DaskEngine(EngineBase):
         dask best practices.
 
         Args:
-            X (pd.DataFrame, ww.DataTable): input data for modeling
-            y (pd.DataSeries, ww.DataColumn): target data for modeling
+            X (pd.DataFrame): input data for modeling
+            y (pd.DataSeries): target data for modeling
         Return:
             dask.Future: the modeling data
         """
@@ -74,8 +74,8 @@ class DaskEngine(EngineBase):
         Args:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to evaluate
-            X (pd.DataFrame, ww.DataTable): input data for modeling
-            y (pd.DataSeries, ww.DataColumn): target data for modeling
+            X (pd.DataFrame): input data for modeling
+            y (pd.DataSeries): target data for modeling
         Return:
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
@@ -95,8 +95,8 @@ class DaskEngine(EngineBase):
         Args:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
-            X (pd.DataFrame, ww.DataTable): input data for modeling
-            y (pd.DataSeries, ww.DataColumn): target data for modeling
+            X (pd.DataFrame): input data for modeling
+            y (pd.DataSeries): target data for modeling
         Return:
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
@@ -120,8 +120,8 @@ class DaskEngine(EngineBase):
         Args:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
-            X (pd.DataFrame, ww.DataTable): input data for modeling
-            y (pd.DataSeries, ww.DataColumn): target data for modeling
+            X (pd.DataFrame): input data for modeling
+            y (pd.DataSeries): target data for modeling
         Return:
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster

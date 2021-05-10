@@ -96,8 +96,8 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective, X_schema=None
 
     Arguments:
         pipeline (PipelineBase): Pipeline to train.
-        X (ww.DataTable, pd.DataFrame): Features to train on.
-        y (ww.DataColumn, pd.Series): Target to train on.
+        X (pd.DataFrame): Features to train on.
+        y (pd.Series): Target to train on.
         optimize_thresholds (bool): Whether to tune the threshold (if pipeline supports it).
         objective (ObjectiveBase): Objective used in threshold tuning.
         X_schema (ww.TableSchema): Woodwork schema.
@@ -128,8 +128,8 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     Arguments:
         pipeline (PipelineBase): The pipeline to score
         automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
-        full_X_train (ww.DataTable): Training features
-        full_y_train (ww.DataColumn): Training target
+        full_X_train (pd.DataFrame): Training features
+        full_y_train (pd.Series): Training target
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -208,8 +208,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     Arguments:
         pipeline (PipelineBase): The pipeline to score
         automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback
-        X (ww.DataTable): Training features
-        y (ww.DataColumn): Training target
+        X (pd.DataFrame): Training features
+        y (pd.Series): Training target
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -237,8 +237,8 @@ def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
 
         Arguments:
         pipeline (PipelineBase): The pipeline to score.
-        X (ww.DataTable): Features to score on.
-        y (ww.DataColumn): Target used to calcualte scores.
+        X (pd.DataFrame): Features to score on.
+        y (pd.Series): Target used to calcualte scores.
         X_schema (ww.TableSchema): Schema for features.
         y_schema (ww.ColumnSchema): Schema for columns.
 
