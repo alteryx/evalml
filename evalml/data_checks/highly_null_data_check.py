@@ -58,24 +58,14 @@ class HighlyNullDataCheck(DataCheck):
         X = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
-        percent_null = (X.isnull().mean()).to_dict()
-        highly_null_cols = []
-        if self.pct_null_threshold == 0.0:
-            highly_null_cols = {key: value for key, value in percent_null.items() if value > 0.0}
-            warning_msg = "Column '{}' is more than 0% null"
-            results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name),
-                                                         data_check_name=self.name,
-                                                         message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                                         details={"column": col_name, "pct_null_rows": highly_null_cols[col_name]}).to_dict()
-                                        for col_name in highly_null_cols])
-        else:
-            highly_null_cols = {key: value for key, value in percent_null.items() if value >= self.pct_null_threshold}
-            warning_msg = "Column '{}' is {}% or more null"
-            results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
-                                                         data_check_name=self.name,
-                                                         message_code=DataCheckMessageCode.HIGHLY_NULL,
-                                                         details={"column": col_name, "pct_null_rows": highly_null_cols[col_name]}).to_dict()
-                                        for col_name in highly_null_cols])
+        percent_null_cols = (X.isnull().mean()).to_dict()
+        highly_null_cols = {key: value for key, value in percent_null_cols.items() if value >= self.pct_null_threshold and value != 0}
+        warning_msg = "Column '{}' is {}% or more null"
+        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
+                                                     data_check_name=self.name,
+                                                     message_code=DataCheckMessageCode.HIGHLY_NULL,
+                                                     details={"column": col_name, "pct_null_rows": highly_null_cols[col_name]}).to_dict()
+                                    for col_name in highly_null_cols])
 
         results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
                                                    metadata={"column": col_name}).to_dict()

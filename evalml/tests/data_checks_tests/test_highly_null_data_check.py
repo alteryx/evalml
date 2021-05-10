@@ -39,11 +39,11 @@ def test_highly_null_data_check_warnings():
                          'no_null': [1, 2, 3, 4, 5]})
     no_null_check = HighlyNullDataCheck(pct_null_threshold=0.0)
     assert no_null_check.validate(data) == {
-        "warnings": [DataCheckWarning(message="Column 'lots_of_null' is more than 0% null",
+        "warnings": [DataCheckWarning(message="Column 'lots_of_null' is 0.0% or more null",
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "lots_of_null", "pct_null_rows": 0.8}).to_dict(),
-                     DataCheckWarning(message="Column 'all_null' is more than 0% null",
+                     DataCheckWarning(message="Column 'all_null' is 0.0% or more null",
                                       data_check_name=highly_null_data_check_name,
                                       message_code=DataCheckMessageCode.HIGHLY_NULL,
                                       details={"column": "all_null", "pct_null_rows": 1.0}).to_dict()],
