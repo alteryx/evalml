@@ -6,7 +6,6 @@ from evalml import AutoMLSearch
 from evalml.objectives import LeadScoring
 
 
-@pytest.mark.objective_test_uses_automl
 def test_lead_scoring_works_during_automl_search(X_y_binary):
 
     X, y = X_y_binary
