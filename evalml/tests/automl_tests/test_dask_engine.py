@@ -9,10 +9,10 @@ from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine
 from evalml.automl.engine.engine_base import (
     JobLogger,
     evaluate_pipeline,
-    train_pipeline,
+    train_pipeline
 )
-from evalml.automl.utils import AutoMLConfig
 from evalml.automl.engine.sequential_engine import SequentialEngine
+from evalml.automl.utils import AutoMLConfig
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_test_utils import (
