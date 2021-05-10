@@ -26,12 +26,7 @@ from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes, is_classification
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    import_or_raise,
-    infer_feature_types,
-    jupyter_check
-)
+from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
