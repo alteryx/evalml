@@ -12,7 +12,6 @@ import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
-import evalml
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import (
     log_error_callback,

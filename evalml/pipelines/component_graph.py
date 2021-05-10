@@ -220,7 +220,7 @@ class ComponentGraph:
                 else:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
                     if isinstance(parent_x, pd.Series):
-                        parent_x = pd.Series(parent_x, name=parent_input)
+                        parent_x = parent_x.rename(parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, most_recent_y)
             self.input_feature_names.update({component_name: list(input_x.columns)})

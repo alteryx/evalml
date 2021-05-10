@@ -4,7 +4,10 @@ from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import infer_feature_types, _retain_custom_types_and_initalize_woodwork
+from evalml.utils import (
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
+)
 
 
 class OneHotEncoderMeta(ComponentBaseMeta):

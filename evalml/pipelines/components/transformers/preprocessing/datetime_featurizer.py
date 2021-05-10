@@ -1,5 +1,8 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import infer_feature_types, _retain_custom_types_and_initalize_woodwork
+from evalml.utils import (
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types
+)
 
 
 def _extract_year(col, encode_as_categories=False):

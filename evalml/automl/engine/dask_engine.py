@@ -8,7 +8,6 @@ from evalml.automl.engine.engine_base import (
     score_pipeline,
     train_pipeline
 )
-from evalml.utils import infer_feature_types
 
 
 class DaskComputation(EngineComputation):

@@ -2,8 +2,8 @@ from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
     evaluate_pipeline,
-    train_pipeline,
-    score_pipeline
+    score_pipeline,
+    train_pipeline
 )
 from evalml.objectives.utils import get_objective
 

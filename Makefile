@@ -23,21 +23,18 @@ test:
 .PHONY: git-test
 git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore evalml/tests/model_understanding_tests \
+	--ignore evalml/tests/model_understanding_tests
+
 
 .PHONY: git-test-minimal-deps
 git-test-minimal-deps:
 	pytest evalml/ -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore evalml/tests/automl_tests \
-	--ignore evalml/tests/model_understanding_tests \
-	-k "not objective_test_uses_automl" --has-minimal-dependencies
+	--ignore evalml/tests/automl_tests
 
 .PHONY: win-git-test
 win-git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore evalml/tests/automl_tests \
-	--ignore evalml/tests/model_understanding_tests \
-	-k "not objective_test_uses_automl"
+	--ignore evalml/tests/automl_tests
 
 .PHONY: installdeps
 installdeps:

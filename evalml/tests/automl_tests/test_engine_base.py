@@ -112,7 +112,7 @@ def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dumm
     ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
                                             parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}})
 
-    _ = evaluate_pipeline(ensemble, automl, X, y, logger=MagicMock())
+    _ = evaluate_pipeline(ensemble, automl.automl_config, X, y, logger=MagicMock())
     assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(ensembling_indices))
 
 
