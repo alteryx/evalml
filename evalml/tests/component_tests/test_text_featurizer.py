@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -279,3 +281,15 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
                                              'DIVERSITY_SCORE(text col)': Double,
                                              'MEAN_CHARACTERS_PER_WORD(text col)': Double,
                                              'POLARITY_SCORE(text col)': Double}
+
+
+@patch("featuretools.dfs")
+def test_text_featurizer_sets_max_depth_1(mock_dfs):
+    X = pd.DataFrame(
+        {'polarity': ['This is neutral.',
+                      'Everything is bad. Nothing is happy, he hates milk and can\'t stand gross foods, we are being very negative.',
+                      'Everything is awesome! Everything is cool when you\'re part of a team! He loves milk and cookies!']})
+    tf = TextFeaturizer()
+    tf.fit(X)
+    _, kwargs = mock_dfs.call_args
+    assert kwargs['max_depth'] == 1
