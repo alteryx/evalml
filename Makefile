@@ -22,7 +22,7 @@ test:
 
 .PHONY: git-test
 git-test:
-	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 4 --durations=25 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-minimal-deps
 git-test-minimal-deps:
@@ -30,7 +30,7 @@ git-test-minimal-deps:
 
 .PHONY: win-git-test
 win-git-test:
-	pytest evalml/ -n 4 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 4 --durations=25 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: installdeps
 installdeps:
