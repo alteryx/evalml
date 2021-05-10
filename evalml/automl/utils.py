@@ -43,8 +43,8 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
-        X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features].
-        y (ww.DataColumn, pd.Series): The target training data of length [n_samples].
+        X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+        y (pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables. Defaults to None.
@@ -77,8 +77,8 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
         pipeline (Pipeline): Pipeline instance to threshold.
         objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
-        X_threshold_tuning (ww.DataTable): Features to tune pipeline to.
-        y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to.
+        X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
+        y_threshold_tuning (pd.Series): Target data to tune pipeline to.
     """
     if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and objective.can_optimize_threshold:
         pipeline.threshold = 0.5
@@ -119,8 +119,8 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     """Returns the name of the sampler component to use for AutoMLSearch.
 
     Arguments:
-        X (ww.DataTable): The input feature data
-        y (ww.DataColumn): The input target data
+        X (pd.DataFrame): The input feature data
+        y (pd.Series): The input target data
         sampler_type (str): The sampler_type argument passed to AutoMLSearch
         sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
             or should balance the classes to.
