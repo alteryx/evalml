@@ -56,7 +56,8 @@ class DFSTransformer(Transformer):
         es = self._make_entity_set(X)
         self.features = dfs(entityset=es,
                             target_entity='X',
-                            features_only=True)
+                            features_only=True,
+                            max_depth=1)
         return self
 
     def transform(self, X, y=None):

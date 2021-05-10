@@ -2,9 +2,11 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added ``HighlyNullRowsDataCheck`` :pr:`2222`
+        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
+        * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
     * Changes
+        * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
     * Testing Changes
 
