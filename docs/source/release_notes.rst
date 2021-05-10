@@ -7,6 +7,7 @@ Release Notes
     * Changes
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
+        * Fixed ``conf.py`` for the neweset Sphinx version :pr:``
     * Testing Changes
 
 
