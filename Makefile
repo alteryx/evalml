@@ -23,7 +23,7 @@ test:
 
 .PHONY: git-test
 git-test:
-	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/ -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-nocov
 git-test-nocov:
@@ -31,7 +31,7 @@ git-test-nocov:
 
 .PHONY: git-test-minimal-deps
 git-test-minimal-deps:
-	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+	pytest evalml/ -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
 
 .PHONY: git-test-minimal-deps-nocov
 git-test-minimal-deps-nocov:
