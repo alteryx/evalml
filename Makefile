@@ -34,7 +34,7 @@ git-test-minimal-deps:
 .PHONY: win-git-test
 win-git-test:
 	pytest evalml -n 4 --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure \
-	--ignore valml/tests/model_understanding_tests
+	--ignore evalml/tests/model_understanding_tests
 
 .PHONY: installdeps
 installdeps:
