@@ -243,6 +243,53 @@ def test_default_data_checks_regression(input_type):
                                           "actions": expected_actions_with_drop_and_impute}
 
 
+def test_default_data_checks_null_rows():
+    class SeriesWrap():
+        def __init__(self, series):
+            self.series = series
+
+        def __eq__(self, series_2):
+            return all(self.series.eq(series_2.series))
+
+    X = pd.DataFrame({'all_null': [None, None, None, None, None],
+                      'also_all_null': [None, None, None, None, None]})
+    y = pd.Series([0, 1, np.nan, 1, 0])
+    data_checks = DefaultDataChecks("regression", get_default_primary_search_objective("regression"))
+    highly_null_rows = SeriesWrap(pd.Series([1.0, 1.0, 1.0, 1.0, 1.0]))
+    expected = {
+        "warnings": [DataCheckWarning(message="5 out of 5 rows are more than 95.0% null",
+                                      data_check_name="HighlyNullDataCheck",
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
+                                      details={"pct_null_cols": highly_null_rows}).to_dict(),
+                     DataCheckWarning(message="Column 'all_null' is 95.0% or more null",
+                                      data_check_name="HighlyNullDataCheck",
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+                                      details={"column": 'all_null', "pct_null_rows": 1.0}).to_dict(),
+                     DataCheckWarning(message="Column 'also_all_null' is 95.0% or more null",
+                                      data_check_name="HighlyNullDataCheck",
+                                      message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+                                      details={"column": 'also_all_null', "pct_null_rows": 1.0}).to_dict()],
+        "errors": [DataCheckError(message="1 row(s) (20.0%) of target values are null",
+                                  data_check_name="InvalidTargetDataCheck",
+                                  message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+                                  details={"num_null_rows": 1, "pct_null_rows": 20.0}).to_dict(),
+                   DataCheckError(message="all_null has 0 unique value.",
+                                  data_check_name="NoVarianceDataCheck",
+                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                  details={"column": "all_null"}).to_dict(),
+                   DataCheckError(message="also_all_null has 0 unique value.",
+                                  data_check_name="NoVarianceDataCheck",
+                                  message_code=DataCheckMessageCode.NO_VARIANCE,
+                                  details={"column": "also_all_null"}).to_dict()],
+        "actions": [DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'also_all_null'}).to_dict(),
+                    DataCheckAction(DataCheckActionCode.IMPUTE_COL, metadata={"column": None, "is_target": True, "impute_strategy": "mean"}).to_dict()]}
+    validation_results = data_checks.validate(X, y)
+    validation_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validation_results['warnings'][0]['details']['pct_null_cols'])
+    assert validation_results == expected
+
+
 def test_default_data_checks_time_series_regression():
     regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("regression", get_default_primary_search_objective("regression")).data_checks]
     ts_regression_data_check_classes = [check.__class__ for check in DefaultDataChecks("time series regression", get_default_primary_search_objective("time series regression")).data_checks]
