@@ -19,4 +19,3 @@ from .sparsity_data_check import SparsityDataCheck
 from .uniqueness_data_check import UniquenessDataCheck
 from .datetime_nan_data_check import DateTimeNaNDataCheck
 from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
-from .highly_null_rows_data_check import HighlyNullRowsDataCheck

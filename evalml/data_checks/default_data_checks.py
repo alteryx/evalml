@@ -2,7 +2,6 @@ from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .data_checks import DataChecks
 from .datetime_nan_data_check import DateTimeNaNDataCheck
 from .highly_null_data_check import HighlyNullDataCheck
-from .highly_null_rows_data_check import HighlyNullRowsDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .invalid_targets_data_check import InvalidTargetDataCheck
 from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
@@ -28,7 +27,7 @@ class DefaultDataChecks(DataChecks):
 
     """
 
-    _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, HighlyNullRowsDataCheck, IDColumnsDataCheck,
+    _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
                                    TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck,
                                    NaturalLanguageNaNDataCheck, DateTimeNaNDataCheck]
 

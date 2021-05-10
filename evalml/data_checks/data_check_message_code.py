@@ -4,7 +4,7 @@ from enum import Enum
 class DataCheckMessageCode(Enum):
     """Enum for data check message code."""
 
-    HIGHLY_NULL = "highly_null"
+    HIGHLY_NULL_COLS = "highly_null_cols"
     """Message code for highly null columns."""
 
     HIGHLY_NULL_ROWS = "highly_null_rows"
