@@ -155,16 +155,13 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
     """
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    if isinstance(y_pred_proba, ww.DataTable):
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe())
+
+    if isinstance(y_pred_proba, pd.DataFrame):
         y_pred_proba_shape = y_pred_proba.shape
         try:
             y_pred_proba = y_pred_proba.iloc[:, pos_label_idx]
         except IndexError:
             raise NoPositiveLabelException(f"Predicted probabilities of shape {y_pred_proba_shape} don't contain a column at index {pos_label_idx}")
-    else:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
@@ -216,13 +213,8 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = infer_feature_types(y_true)
-    y_pred_proba = infer_feature_types(y_pred_proba)
-    if isinstance(y_pred_proba, ww.DataTable):
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
-    else:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
+    y_true = infer_feature_types(y_true).to_numpy()
+    y_pred_proba = infer_feature_types(y_pred_proba).to_numpy()
 
     if len(y_pred_proba.shape) == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
@@ -331,7 +323,7 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     Only used for pipelines that support this optimization.
     """
 
-    precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
+    precomputed_features = pipeline.compute_estimator_features(X, y)
 
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
@@ -339,10 +331,8 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
             preds = pipeline.estimator.predict_proba(features)
-            preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
         else:
             preds = pipeline.estimator.predict(features)
-            preds = _convert_woodwork_types_wrapper(preds.to_series())
         score = pipeline._score(X, y, preds, objective)
         return score if objective.greater_is_better else -score
 
@@ -373,8 +363,6 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
-    y = _convert_woodwork_types_wrapper(y.to_series())
 
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
@@ -512,9 +500,9 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 def _is_feature_of_type(feature, X, ltype):
     """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
     if isinstance(feature, int):
-        is_type = X[X.to_dataframe().columns[feature]].logical_type == ltype
+        is_type = X.ww.logical_types[X.columns[feature]] == ltype
     else:
-        is_type = X[feature].logical_type == ltype
+        is_type = X.ww.logical_types[feature] == ltype
     return is_type
 
 
@@ -536,7 +524,7 @@ def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
     feature_list = []
     for name_or_index in names_or_col_indices:
         if isinstance(name_or_index, int):
-            feature_list.append(X.to_dataframe().columns[name_or_index])
+            feature_list.append(X.columns[name_or_index])
         else:
             feature_list.append(name_or_index)
     return feature_list
@@ -618,6 +606,7 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     # Dynamically set the grid resolution to the maximum number of values
     # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
     X = infer_feature_types(X)
+
     if isinstance(features, (list, tuple)):
         is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
         is_datetime = [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
@@ -631,18 +620,18 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
-        X_features = X.iloc[:, list(features)] if isinstance(features[0], int) else X[list(features)]
+        X_features = X.ww.iloc[:, list(features)] if isinstance(features[0], int) else X.ww[list(features)]
     else:
-        X_features = ww.DataTable(X.to_dataframe().iloc[:, features].to_frame()) if isinstance(features, int) else ww.DataTable(X.to_dataframe()[features].to_frame())
+        X_features = X.ww.iloc[:, [features]] if isinstance(features, int) else X.ww[[features]]
 
-    X_cats = X_features.select("categorical")
+    X_cats = X_features.ww.select("categorical")
     if any(is_categorical):
-        max_num_cats = max(X_cats.describe().loc["nunique"])
+        max_num_cats = max(X_cats.ww.describe().loc["nunique"])
         grid_resolution = max([max_num_cats + 1, grid_resolution])
 
-    X_dt = X_features.select("datetime")
+    X_dt = X_features.ww.select("datetime")
     if any(is_datetime):
-        max_num_dt = max(X_dt.describe().loc["nunique"])
+        max_num_dt = max(X_dt.ww.describe().loc["nunique"])
         grid_resolution = max([max_num_dt + 1, grid_resolution])
 
     if isinstance(features, (list, tuple)):
@@ -658,8 +647,6 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
     feature_list = X[feature_names]
 
@@ -874,9 +861,7 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
     y_true = infer_feature_types(y_true)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     y_pred = infer_feature_types(y_pred)
-    y_pred = _convert_woodwork_types_wrapper(y_pred.to_series())
 
     predictions = y_pred.reset_index(drop=True)
     actual = y_true.reset_index(drop=True)
@@ -1069,8 +1054,6 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
 
-    dates = _convert_woodwork_types_wrapper(dates.to_series())
-    y = _convert_woodwork_types_wrapper(y.to_series())
     return pd.DataFrame({"dates": dates.reset_index(drop=True),
                          "target": y.reset_index(drop=True),
                          "prediction": prediction.reset_index(drop=True)})
@@ -1152,7 +1135,6 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
         raise ValueError("The parameter perplexity must be non-negative")
 
     X = infer_feature_types(X)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
     X_new = t_sne_.fit_transform(X)
     return X_new

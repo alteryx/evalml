@@ -45,11 +45,7 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    get_random_state,
-    infer_feature_types
-)
+from evalml.utils import get_random_state, infer_feature_types
 
 
 @pytest.fixture
@@ -386,7 +382,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
 
     y_true_unique = y_true
     if data_type == 'ww':
-        y_true_unique = y_true.to_series()
+        y_true_unique = y_true
 
     for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
@@ -808,8 +804,8 @@ def test_graph_prediction_vs_actual(data_type):
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
     if data_type == "ww":
-        y_true = ww.DataColumn(y_true)
-        y_pred = ww.DataColumn(y_pred)
+        y_true = ww.init_series(y_true)
+        y_pred = ww.init_series(y_pred)
     fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6.1)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -849,7 +845,6 @@ def test_graph_prediction_vs_actual_over_time():
 
         def predict(self, X, y):
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
             preds = y + 10
             preds.index = range(100, 161)
             return preds
@@ -1095,7 +1090,8 @@ def test_t_sne(data_type):
     elif data_type == 'pd':
         X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     elif data_type == 'ww':
-        X = ww.DataTable(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
+        X = pd.DataFrame(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
+        X.ww.init()
 
     output_ = t_sne(X, n_components=2, perplexity=50, learning_rate=200.0)
     assert isinstance(output_, np.ndarray)
