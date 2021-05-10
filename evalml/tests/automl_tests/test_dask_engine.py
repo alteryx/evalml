@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from distributed import Client
 
 from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine
@@ -91,7 +92,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as simply running the evaluate_pipeline function. """
         X, y = self.X_y_binary
         X.ww.init()
-        y.ww.init()
+        y = ww.init_series(y)
 
         pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                 parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -131,7 +132,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as the sequential engine. """
         X, y = self.X_y_binary
         X.ww.init()
-        y.ww.init()
+        y = ww.init_series(y)
 
         pipelines = [BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                   parameters={"Logistic Regression Classifier": {"n_jobs": 1}}),
@@ -173,7 +174,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as simply running the score_pipeline function. """
         X, y = self.X_y_binary
         X.ww.init()
-        y.ww.init()
+        y = ww.init_series(y)
 
         pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                 parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
@@ -199,7 +200,7 @@ class TestDaskEngine(unittest.TestCase):
         same results as the sequential engine. """
         X, y = self.X_y_binary
         X.ww.init()
-        y.ww.init()
+        y = ww.init_series(y)
 
         pipelines = [BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                   parameters={"Logistic Regression Classifier": {"n_jobs": 1}}),
@@ -247,9 +248,10 @@ class TestDaskEngine(unittest.TestCase):
         engine = DaskEngine(client=self.client)
 
         X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ['my cool feature']})
-        y.ww.init()
+        y = ww.init_series(y)
 
-        # TestSchemaCheckPipeline is running the checks we need to make
+        # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
+        # pipeline.fit and pipeline.score
         pipeline = TestSchemaCheckPipeline(component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
                                            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                            X_schema_to_check=X.ww.schema, y_schema_to_check=y.ww.schema)
