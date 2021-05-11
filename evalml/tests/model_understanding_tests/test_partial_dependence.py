@@ -93,7 +93,7 @@ def test_partial_dependence_with_non_numeric_columns(data_type, linear_regressio
                       'string': ['a', 'b', 'a', 'c'],
                       'also string': ['c', 'b', 'a', 'd']})
     if data_type == "ww":
-        X = ww.DataTable(X)
+        X.ww.init()
     y = [0, 0.2, 1.4, 1]
     pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}})
     pipeline.fit(X, y)
@@ -184,7 +184,7 @@ def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_c
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
     pipeline.fit(X, y)
 
-    num_classes = y.to_series().nunique()
+    num_classes = y.nunique()
     grid_resolution = 20
 
     one_way_part_dep = partial_dependence(pipeline=pipeline,
@@ -252,7 +252,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(logistic_regres
     X = X.drop(columns=['datetime', 'expiration_date', 'country', 'region', 'provider'])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
-    num_cat_features = len(set(X["currency"].to_series()))
+    num_cat_features = len(set(X["currency"]))
     assert num_cat_features == 164
 
     part_dep_ans = {0.1432616813857269: 154, 0.1502346349971562: 1, 0.14487916687594762: 1,
@@ -452,10 +452,8 @@ def test_partial_dependence_multiclass_categorical(class_label,
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
 
     X, y = load_wine()
-    X['categorical_column'] = ww.DataColumn(pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
-                                            logical_type="Categorical")
-    X['categorical_column_2'] = ww.DataColumn(pd.Series([i % 6 for i in range(X.shape[0])]).astype(str),
-                                              logical_type="Categorical")
+    X.ww['categorical_column'] = ww.init_series(pd.Series([i % 3 for i in range(X.shape[0])]).astype(str), logical_type="Categorical")
+    X.ww['categorical_column_2'] = ww.init_series(pd.Series([i % 6 for i in range(X.shape[0])]).astype(str), logical_type="Categorical")
 
     pipeline = logistic_regression_multiclass_pipeline_class({"Logistic Regression Classifier": {"n_jobs": 1}})
 
@@ -601,16 +599,15 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     assert plot_data['x'].tolist() == list(pd.date_range('20200101', periods=X.shape[0]))
 
 
-def test_partial_dependence_respect_grid_resolution():
-    X, y = load_fraud(1000)
-
+def test_partial_dependence_respect_grid_resolution(fraud_100):
+    X, y = fraud_100
     pl = BinaryClassificationPipeline(component_graph=["DateTime Featurization Component", "One Hot Encoder", "Random Forest Classifier"])
     pl.fit(X, y)
     dep = partial_dependence(pl, X, features="amount", grid_resolution=20)
 
     assert dep.shape[0] == 20
-    assert dep.shape[0] != max(X.select('categorical').describe().loc["nunique"]) + 1
+    assert dep.shape[0] != max(X.ww.select('categorical').ww.describe().loc["nunique"]) + 1
 
     dep = partial_dependence(pl, X, features="provider", grid_resolution=20)
-    assert dep.shape[0] == X['provider'].to_series().nunique()
-    assert dep.shape[0] != max(X.select('categorical').describe().loc["nunique"]) + 1
+    assert dep.shape[0] == X['provider'].nunique()
+    assert dep.shape[0] != max(X.ww.select('categorical').ww.describe().loc["nunique"]) + 1
