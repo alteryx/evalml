@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
+        * Removed data splitter sampler calls during training :pr:``
     * Changes
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
