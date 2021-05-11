@@ -713,6 +713,7 @@ def test_binary_predict_pipeline_use_objective(
                                              ["Polynomial Detrender", "Delayed Feature Transformer", "Linear Regressor"]
                                              ])
 def test_time_series_pipeline_with_detrender(component_graph, ts_data):
+    pytest.importorskip('sktime', reason='Skipping polynomial detrending tests because sktime not installed')
     X, y = ts_data
     pipeline = TimeSeriesRegressionPipeline(component_graph=component_graph,
                                             parameters={"pipeline": {"gap": 1, "max_delay": 2, "date_index": None},
