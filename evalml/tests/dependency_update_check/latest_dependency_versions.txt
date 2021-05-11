@@ -1,5 +1,5 @@
 catboost==0.25.1
-click==7.1.2
+click==8.0.0
 cloudpickle==1.6.0
 colorama==0.4.4
 dask==2021.4.1
@@ -14,7 +14,7 @@ matplotlib==3.4.2
 matplotlib-inline==0.1.2
 networkx==2.5.1
 nlp-primitives==1.1.0
-numpy==1.20.2
+numpy==1.20.3
 pandas==1.2.4
 plotly==4.14.3
 psutil==5.8.0
