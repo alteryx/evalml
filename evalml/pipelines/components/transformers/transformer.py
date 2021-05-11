@@ -82,5 +82,5 @@ class TargetTransformer(Transformer):
     """A component that transforms the target."""
 
     @abstractmethod
-    def inverse_transform(self, X, y):
+    def inverse_transform(self, y):
         """Inverts the transformation."""

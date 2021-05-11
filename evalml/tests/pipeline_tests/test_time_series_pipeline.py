@@ -723,6 +723,6 @@ def test_time_series_pipeline_with_detrender(component_graph, ts_data):
     detrender = pipeline._component_graph.get_component("Polynomial Detrender")
     preds = pipeline.estimator.predict(features.iloc[2:]).to_series()
     preds.index = y.index[2:]
-    _, expected = detrender.inverse_transform(None, preds)
+    expected = detrender.inverse_transform(preds)
     expected = infer_feature_types(pad_with_nans(expected.to_series(), 2)).to_series()
     pd.testing.assert_series_equal(predictions, expected)

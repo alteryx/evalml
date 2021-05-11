@@ -586,13 +586,14 @@ class ComponentGraph:
             raise StopIteration
 
     def _get_parent_y(self, component_name):
+        """Helper for inverse_transform method."""
         parents = self.get_parents(component_name)
         return next(iter(p[:-2] for p in parents if ".y" in p), None)
 
     def inverse_transform(self, y):
         """Apply component inverse_transform methods to estimator predictions in reverse order.
 
-        Components that implement inverse_transform are PolynomialDetrender, LabelEncoder.
+        Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
 
         Arguments:
             y: (pd.Series, ww.DataTable): Final component features
@@ -604,10 +605,8 @@ class ComponentGraph:
             parent_y = self._get_parent_y(current_component)
             if parent_y:
                 component = self.get_component(parent_y)
-                if hasattr(component, "inverse_transform"):
-                    _, data_to_transform = component.inverse_transform(
-                        None, data_to_transform
-                    )
+                if isinstance(component, TargetTransformer):
+                    data_to_transform = component.inverse_transform(data_to_transform)
                 current_component = parent_y
             else:
                 has_incoming_y_from_parent = False

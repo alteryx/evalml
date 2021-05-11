@@ -91,12 +91,12 @@ class PolynomialDetrender(TargetTransformer):
         """
         return self.fit(X, y).transform(X, y)
 
-    def inverse_transform(self, X, y):
+    def inverse_transform(self, y):
         """Adds back fitted trend to target variable.
 
         Arguments:
             X (pd.DataFrame, optional): Ignored.
-            y (pd.Series): Target variable.
+            y (ww.DataColumn, pd.Series): Target variable.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
@@ -107,4 +107,4 @@ class PolynomialDetrender(TargetTransformer):
         y_dt = infer_feature_types(y)
         y_t = self._component_obj.inverse_transform(y_dt)
         y_t = infer_feature_types(pd.Series(y_t, index=y_dt.index))
-        return X, y_t
+        return y_t
