@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
@@ -74,3 +76,11 @@ class Transformer(ComponentBase):
 
     def _get_feature_provenance(self):
         return {}
+
+
+class TargetTransformer(Transformer):
+    """A component that transforms the target."""
+
+    @abstractmethod
+    def inverse_transform(self, X, y):
+        """Inverts the transformation."""

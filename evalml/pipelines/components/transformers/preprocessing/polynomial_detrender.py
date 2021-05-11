@@ -1,14 +1,15 @@
 import pandas as pd
 from skopt.space import Integer
 
-from evalml.pipelines.components.transformers.transformer import Transformer
+from evalml.pipelines.components.transformers.transformer import TargetTransformer
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class PolynomialDetrender(Transformer):
+class PolynomialDetrender(TargetTransformer):
     """Removes trends from time series by fitting a polynomial to the data."""
 
     name = "Polynomial Detrender"
+    _defines_inverse_transform = True
 
     hyperparameter_ranges = {"degree": Integer(1, 3)}
 

@@ -708,3 +708,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             and objective.is_defined_for_problem_type(self.problem_type)
             and objective.can_optimize_threshold
         )
+
+    def inverse_transform(self, y):
+        return self._component_graph.inverse_transform(y)
