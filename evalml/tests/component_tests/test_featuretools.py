@@ -128,3 +128,14 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
             assert transformed.logical_types == {'DAY(0)': Integer, 'MONTH(0)': Integer, 'WEEKDAY(0)': Integer, 'YEAR(0)': Integer}
         else:
             assert transformed.logical_types == {'0': logical_type}
+
+
+@patch('evalml.pipelines.components.transformers.preprocessing.featuretools.dfs')
+def test_dfs_sets_max_depth_1(mock_dfs, X_y_multi):
+    X, y = X_y_multi
+    X_pd = pd.DataFrame(X)
+
+    feature = DFSTransformer()
+    feature.fit(X_pd, y)
+    _, kwargs = mock_dfs.call_args
+    assert kwargs['max_depth'] == 1

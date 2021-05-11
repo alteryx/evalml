@@ -1,5 +1,3 @@
-import json
-
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -28,32 +26,37 @@ from evalml.pipelines.components import (  # noqa: F401
     Imputer,
     OneHotEncoder,
     RandomForestClassifier,
+    SMOTENCSampler,
+    SMOTENSampler,
+    SMOTESampler,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer
+    TextFeaturizer,
+    Undersampler
 )
-from evalml.pipelines.components.utils import all_components, get_estimators
+from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
     is_time_series
 )
-from evalml.utils import get_logger, infer_feature_types
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
 logger = get_logger(__file__)
 
 
-def _get_preprocessing_components(X, y, problem_type, estimator_class):
+def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_name=None):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Arguments:
         X (ww.DataTable): The input data of shape [n_samples, n_features]
         y (ww.DataColumn): The target data of length [n_samples]
         problem_type (ProblemTypes or str): Problem type
-        estimator_class (class): A class which subclasses Estimator estimator for pipeline
+        estimator_class (class): A class which subclasses Estimator estimator for pipeline,
+        sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None
 
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator
@@ -89,8 +92,23 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class):
     if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
         pp_components.append(OneHotEncoder)
 
+    sampler_components = {
+        "Undersampler": Undersampler,
+        "SMOTE Oversampler": SMOTESampler,
+        "SMOTENC Oversampler": SMOTENCSampler,
+        "SMOTEN Oversampler": SMOTENSampler
+    }
+    if sampler_name is not None:
+        try:
+            import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
+            pp_components.append(sampler_components[sampler_name])
+        except ImportError:
+            logger.debug(f'Could not import imblearn.over_sampling, so defaulting to use Undersampler')
+            pp_components.append(Undersampler)
+
     if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         pp_components.append(StandardScaler)
+
     return pp_components
 
 
@@ -110,7 +128,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperparameters=None):
+def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperparameters=None, sampler_name=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -124,6 +142,8 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
             An empty dictionary or None implies using all default values for component parameters.
         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
             with component name as key and dictionary of parameters as the value
+        sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+            Defaults to None
 
     Returns:
         PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
@@ -135,7 +155,9 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
     problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator)
+    if not is_classification(problem_type) and sampler_name is not None:
+        raise ValueError(f"Sampling is unsupported for problem_type {str(problem_type)}")
+    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator, sampler_name)
     complete_component_graph = preprocessing_components + [estimator]
 
     if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
@@ -156,40 +178,13 @@ def generate_pipeline_code(element):
         Does not include code for custom component implementation.
     """
     # hold the imports needed and add code to end
-    code_strings = ['import json']
+    code_strings = []
     if not isinstance(element, PipelineBase):
         raise ValueError("Element must be a pipeline instance, received {}".format(type(element)))
     if isinstance(element.component_graph, dict):
         raise ValueError("Code generation for nonlinear pipelines is not supported yet")
-
-    component_graph_string = ',\n\t\t'.join([com.__class__.__name__ if com.__class__ not in all_components() else "'{}'".format(com.name) for com in element])
-    code_strings.append("from {} import {}".format(element.__class__.__bases__[0].__module__, element.__class__.__bases__[0].__name__))
-    # check for other attributes associated with pipeline (ie name, custom_hyperparameters)
-    pipeline_list = []
-    for k, v in sorted(list(filter(lambda item: item[0][0] != '_', element.__class__.__dict__.items())), key=lambda x: x[0]):
-        if k == 'component_graph':
-            continue
-        pipeline_list += ["{} = '{}'".format(k, v)] if isinstance(v, str) else ["{} = {}".format(k, v)]
-
-    pipeline_string = "\t" + "\n\t".join(pipeline_list) + "\n" if len(pipeline_list) else ""
-    pipeline_string += "\n\tdef __init__(self, parameters, random_seed=0):"
-    pipeline_string += "\n\t\tsuper().__init__(self.component_graph, custom_name=self.custom_name, parameters=parameters, custom_hyperparameters=custom_hyperparameters, random_seed=random_seed)\n"
-    try:
-        ret = json.dumps(element.parameters, indent='\t')
-    except TypeError:
-        raise TypeError(f"Value {element.parameters} cannot be JSON-serialized")
-    # create the base string for the pipeline
-    base_string = "\nclass {0}({1}):\n" \
-                  "\tcomponent_graph = [\n\t\t{2}\n\t]\n" \
-                  "{3}" \
-                  "\nparameters = json.loads(\"\"\"{4}\"\"\")\n" \
-                  "pipeline = {0}(parameters)" \
-                  .format(element.__class__.__name__,
-                          element.__class__.__bases__[0].__name__,
-                          component_graph_string,
-                          pipeline_string,
-                          ret)
-    code_strings.append(base_string)
+    code_strings.append("from {} import {}".format(element.__class__.__module__, element.__class__.__name__))
+    code_strings.append(repr(element))
     return "\n".join(code_strings)
 
 

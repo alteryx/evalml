@@ -422,3 +422,31 @@ def test_iterative_algorithm_first_batch_order(problem_type, X_y_binary, has_min
                                              'Decision Tree Classifier',
                                              'Extra Trees Classifier',
                                              'Random Forest Classifier'] + final_estimators
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+def test_iterative_algorithm_sampling_params(problem_type, mock_imbalanced_data_X_y):
+    X, y = mock_imbalanced_data_X_y(problem_type, "some", 'small')
+    estimators = get_estimators(problem_type, None)
+    pipelines = [make_pipeline(X, y, e, problem_type, sampler_name='Undersampler') for e in estimators]
+    algo = IterativeAlgorithm(allowed_pipelines=pipelines,
+                              random_seed=0,
+                              _frozen_pipeline_parameters={"Undersampler": {"sampling_ratio": 0.5}})
+
+    next_batch = algo.next_batch()
+    for p in next_batch:
+        for component in p._component_graph:
+            if "sampler" in component.name:
+                assert component.parameters["sampling_ratio"] == 0.5
+
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    # # make sure that future batches remain in the hyperparam range
+    for i in range(1, 5):
+        next_batch = algo.next_batch()
+        for p in next_batch:
+            for component in p._component_graph:
+                if "sampler" in component.name:
+                    assert component.parameters["sampling_ratio"] == 0.5
