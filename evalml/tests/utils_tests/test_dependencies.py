@@ -8,7 +8,7 @@ import requirements
 def _get_req_name(name):
     if name == 'imbalanced-learn':
         return 'imblearn'
-    elif name == 'MarkUpSafe':
+    elif name == 'MarkupSafe':
         return 'markupsafe'
     return name
 
