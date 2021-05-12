@@ -90,7 +90,7 @@ class DateTimeFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X = infer_feature_types(X)
+        X = infer_feature_types(X).ww.copy()
         original_ltypes = X.ww.schema.logical_types
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
