@@ -17,7 +17,7 @@ from evalml.problem_types import (
 from evalml.utils import import_or_raise
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
-
+_SAMPLER_THRESHOLD = 20000
 _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
 
@@ -136,7 +136,7 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     if all(class_ratios >= sampler_balanced_ratio):
         return None
     # We set a threshold to use the Undersampler in order to avoid long runtimes
-    elif len(y) >= 20000:
+    elif len(y) >= _SAMPLER_THRESHOLD:
         return 'Undersampler'
     else:
         try:

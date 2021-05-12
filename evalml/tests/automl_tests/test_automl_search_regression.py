@@ -284,8 +284,9 @@ def test_automl_supports_time_series_regression(mock_fit, mock_score, X_y_regres
             assert result['parameters']['pipeline'][param_key] == configuration[param_key]
 
 
-def test_automl_regression_no_sampler(X_y_regression):
+@pytest.mark.parametrize("sampler_method", [None, 'auto', 'Undersampler', 'SMOTE Oversampler', 'SMOTENC Oversampler', 'SMOTEN Oversampler'])
+def test_automl_regression_no_sampler(sampler_method, X_y_regression):
     X, y = X_y_regression
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression')
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', sampler_method=sampler_method)
     for pipeline in automl.allowed_pipelines:
         assert not any("sampler" in c.name for c in pipeline.component_graph)
