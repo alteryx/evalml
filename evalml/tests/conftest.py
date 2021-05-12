@@ -100,11 +100,19 @@ def pytest_addoption(parser):
     parser.addoption("--has-minimal-dependencies", action="store_true", default=False,
                      help="If true, tests will assume only the dependencies in"
                      "core-requirements.txt have been installed.")
+    parser.addoption("--is-using-conda", action="store_true", default=False,
+                     help="If true, tests will assume that they are being run as part of"
+                          "the build_conda_pkg workflow with the feedstock.")
 
 
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
+
+
+@pytest.fixture
+def is_using_conda(pytestconfig):
+    return pytestconfig.getoption("--is-using-conda")
 
 
 @pytest.fixture
@@ -203,6 +211,15 @@ def ts_data():
     X, y = pd.DataFrame({"features": range(101, 132)}), pd.Series(range(1, 32))
     y.index = pd.date_range("2020-10-01", "2020-10-31")
     X.index = pd.date_range("2020-10-01", "2020-10-31")
+    return X, y
+
+
+@pytest.fixture
+def ts_data_seasonal():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
+    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
+    y.index = pd.date_range(start='1/1/2018', periods=500)
+    X.index = pd.date_range(start='1/1/2018', periods=500)
     return X, y
 
 

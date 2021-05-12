@@ -12,4 +12,5 @@ seaborn>=0.11.1
 category_encoders>=2.0.0
 statsmodels >= 0.12.2
 imbalanced-learn>=0.8.0
+pmdarima==1.8.0
 sktime>=0.5.3;python_version<"3.9"

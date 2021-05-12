@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``GAM Classifier`` and ``GAM Regressor`` to estimators :pr:`1674`
+        * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
     * Changes
