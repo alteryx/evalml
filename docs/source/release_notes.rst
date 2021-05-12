@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
