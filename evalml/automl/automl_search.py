@@ -8,7 +8,6 @@ from collections import defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -46,7 +45,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -339,7 +337,6 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
-        self.ensembling_indices = None
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_seed=self.random_seed)

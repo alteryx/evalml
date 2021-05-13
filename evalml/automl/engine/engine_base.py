@@ -199,21 +199,22 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
             "logger": logger}
 
 
-def evaluate_pipeline(pipeline, automl_config, X_train, y_train, logger):
+def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     """Function submitted to the submit_evaluation_job engine method.
 
     Arguments:
         pipeline (PipelineBase): The pipeline to score
         automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback
-        X_train (ww.DataTable): Training features
-        y_train (ww.DataColumn): Training target
+        X (ww.DataTable): Training features
+        y (ww.DataColumn): Training target
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
             Second - The pipeline class we trained and scored. Third - the job logger instance with all the recorded messages.
     """
     logger.info(f"{pipeline.name}:")
-    return train_and_score_pipeline(pipeline, automl_config=automl_config, full_X_train=X_train, full_y_train=y_train,
+    return train_and_score_pipeline(pipeline, automl_config=automl_config,
+                                    full_X_train=X, full_y_train=y,
                                     logger=logger)
 
 
