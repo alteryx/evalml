@@ -45,7 +45,7 @@ jobs:
         run: |
           printf "${{ steps.min_dep_gen_reqs.outputs.min_reqs }}" > /tmp/minimum_requirements.txt
           diff /tmp/minimum_requirements.txt evalml/tests/dependency_update_check/minimum_requirements.txt
-      - name: if min deps have changed, write output file
+      - name: if min requirements have changed, write output file
         if: steps.check_min_reqs.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_reqs.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_requirements.txt
@@ -55,19 +55,19 @@ jobs:
         with:
           requirements_paths: 'core-requirements.txt'
       - name: Save min core requirements and run diff
-        id: check_core_deps
+        id: check_core_reqs
         continue-on-error: true
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
           diff /tmp/minimum_core_requirements.txt evalml/tests/dependency_update_check/minimum_core_requirements.txt
-      - name: if min core requirements deps have changed, write output file
-        if: steps.check_core_deps.outcome != 'success'
+      - name: if min core requirements have changed, write output file
+        if: steps.check_core_reqs.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_core_requirements.txt
       - name: Create Pull Request
         uses: FeatureLabs/create-pull-request@v3
         with:
-          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          token: ${{ secrets.MACHINEFL_DEPENDENCY_CHECKER_TOKEN }}
           commit-message: Update minimum dependencies
           title: Automated Minimum Dependency Updates
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
@@ -76,4 +76,4 @@ jobs:
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: thehomebrewnerd, tamargrey, jeff-hernandez
+          reviewers: angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh
