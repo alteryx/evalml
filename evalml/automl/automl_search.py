@@ -383,6 +383,8 @@ class AutoMLSearch:
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+        else:
+            logger.info("Pipelines generated.")
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling

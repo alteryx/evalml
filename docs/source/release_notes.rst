@@ -6,6 +6,7 @@ Release Notes
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
     * Changes
+        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:``
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
         * Capped Sphinx version under 4.0.0 :pr:`2244`
