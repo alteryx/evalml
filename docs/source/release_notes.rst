@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
-        * Added dictionary input functionality for ``Undersampler`` component :pr:``
+        * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
     * Fixes
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
     * Changes
