@@ -10,6 +10,7 @@ Release Notes
     * Documentation Changes
         * Capped Sphinx version under 4.0.0 :pr:`2244`
     * Testing Changes
+        * Change number of cores for pytest from 4 to 2 :pr:`2266`
 
 
 .. warning::
