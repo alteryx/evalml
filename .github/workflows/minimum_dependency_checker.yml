@@ -49,18 +49,18 @@ jobs:
         if: steps.check_min_reqs.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_reqs.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_requirements.txt
-      - name: Run min dep generator - koalas
+      - name: Run min dep generator - core requirements
         id: min_dep_gen_core
         uses: alteryx/minimum-dependency-generator@v2
         with:
-          requirements_paths: 'koalas-requirements.txt requirements.txt'
-      - name: Save min koalas deps and run diff
+          requirements_paths: 'core-requirements.txt'
+      - name: Save min core requirements and run diff
         id: check_core_deps
         continue-on-error: true
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > /tmp/minimum_core_requirements.txt
           diff /tmp/minimum_core_requirements.txt evalml/tests/dependency_update_check/minimum_core_requirements.txt
-      - name: if min koalas deps have changed, write output file
+      - name: if min core requirements deps have changed, write output file
         if: steps.check_core_deps.outcome != 'success'
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_core_requirements.txt
