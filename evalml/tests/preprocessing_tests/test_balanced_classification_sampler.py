@@ -385,3 +385,44 @@ def test_balance_ratio_value():
     indices = bcs.fit_resample(X, y)
     # make sure there was no resampling done
     assert len(indices) == 1000
+
+
+def test_dict_overrides_ratio():
+    X = pd.DataFrame({"a": [i for i in range(1000)]})
+    y = pd.Series([0] * 200 + [1] * 800)
+    sampling_ratio_dict = {0: 200, 1: 800}
+    bcs = BalancedClassificationSampler(sampling_ratio=0.1, sampling_ratio_dict=sampling_ratio_dict)
+    indices = bcs.fit_resample(X, y)
+    y_new = y.iloc[indices]
+    y_sampled_count = y_new.value_counts().to_dict()
+    assert y_sampled_count == sampling_ratio_dict
+
+
+@pytest.mark.parametrize("sampling_ratio_dict,expected", [({0: 200, 1: 700}, {0: 200, 1: 700}),
+                                                          ({0: 100, 1: 100}, {0: 100, 1: 100}),
+                                                          ({0: 200, 1: 800}, {0: 200, 1: 800}),
+                                                          ({0: 100, 1: 805}, {0: 100, 1: 800}),
+                                                          ({0: 200, 1: 805}, {0: 200, 1: 800})])
+def test_sampler_ratio_dictionary_binary(sampling_ratio_dict, expected):
+    X = pd.DataFrame({"a": [i for i in range(1000)]})
+    y = pd.Series([0] * 200 + [1] * 800)
+    bcs = BalancedClassificationSampler(sampling_ratio_dict=sampling_ratio_dict)
+    indices = bcs.fit_resample(X, y)
+    y_new = y.iloc[indices]
+    y_sampled_count = y_new.value_counts().to_dict()
+    assert y_sampled_count == expected
+
+
+@pytest.mark.parametrize("sampling_ratio_dict,expected", [({0: 200, 1: 700, 2: 150}, {0: 200, 1: 700, 2: 150}),
+                                                          ({0: 100, 1: 100, 2: 150}, {0: 100, 1: 100, 2: 150}),
+                                                          ({0: 200, 1: 800, 2: 200}, {0: 200, 1: 800, 2: 200}),
+                                                          ({0: 100, 1: 805, 2: 400}, {0: 100, 1: 800, 2: 200}),
+                                                          ({0: 200, 1: 805, 2: 400}, {0: 200, 1: 800, 2: 200})])
+def test_sampler_ratio_dictionary_multiclass(sampling_ratio_dict, expected):
+    X = pd.DataFrame({"a": [i for i in range(1200)]})
+    y = pd.Series([0] * 200 + [1] * 800 + [2] * 200)
+    bcs = BalancedClassificationSampler(sampling_ratio_dict=sampling_ratio_dict)
+    indices = bcs.fit_resample(X, y)
+    y_new = y.iloc[indices]
+    y_sampled_count = y_new.value_counts().to_dict()
+    assert y_sampled_count == expected
