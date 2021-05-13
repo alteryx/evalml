@@ -13,12 +13,14 @@ class Undersampler(BaseSampler):
     name = "Undersampler"
     hyperparameter_ranges = {}
 
-    def __init__(self, sampling_ratio=0.25, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
+    def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
         """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
         Arguments:
             sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
                 represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
+            sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Overrides sampling_ratio if provided.
+                Defaults to None.
             min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
                 To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
                 Must be greater than 0. Defaults to 100.
@@ -29,12 +31,12 @@ class Undersampler(BaseSampler):
         """
         parameters = {"sampling_ratio": sampling_ratio,
                       "min_samples": min_samples,
-                      "min_percentage": min_percentage}
+                      "min_percentage": min_percentage,
+                      "sampling_ratio_dict": sampling_ratio_dict}
         parameters.update(kwargs)
-        sampler = BalancedClassificationSampler(**parameters, random_seed=random_seed)
 
         super().__init__(parameters=parameters,
-                         component_obj=sampler,
+                         component_obj=None,
                          random_seed=random_seed)
 
     def fit_transform(self, X, y):
@@ -48,6 +50,10 @@ class Undersampler(BaseSampler):
             ww.DataTable, ww.DataColumn: Undersampled X and y data
         """
         X, y, X_pd, y_pd = self._prepare_data(X, y)
+        param_dic = self._dictionary_to_params(self.parameters['sampling_ratio_dict'], y_pd)
+        sampler = BalancedClassificationSampler(**param_dic, random_seed=self.random_seed)
+        self._component_obj = sampler
+
         index_df = pd.Series(y_pd.index)
         indices = self._component_obj.fit_resample(X_pd, y_pd)
         train_indices = index_df[index_df.isin(indices)].index.values.tolist()

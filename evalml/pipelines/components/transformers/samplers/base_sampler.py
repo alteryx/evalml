@@ -59,6 +59,51 @@ class BaseSampler(Transformer):
             y = infer_feature_types(y)
         return X, y
 
+    def _convert_dictionary(self, sampling_dict, y):
+        """Expects the dictionary keys to be the target values y.
+        In the case of ClassificationPipelines and AutoMLSearch, the targets get encoded to
+        0 to n-1 int values.
+
+        Arguments:
+            sampling_dict (dict): The input sampling dictionary passed in from user
+            y (ww.DataColumn): The target values
+
+        Returns:
+            dict: A dictionary with target values as keys and the number of samples as values
+        """
+        # check that the lengths of the dict and y are equal
+        y_unique = y.unique()
+        if len(sampling_dict) != len(y_unique):
+            raise ValueError("Lengths are diff!")
+
+        if len(set(sampling_dict.keys()).intersection(set(y_unique))) != len(y_unique):
+            raise ValueError("Dictionary keys are different from target values!")
+
+        new_dic = {}
+        y_counts = y.value_counts()
+        for k, v in sampling_dict.items():
+            # turn the ratios into sampler values
+            # for undersampling, we make sure we never sample more than the
+            # total samples for that class
+            new_dic[k] = int(min(y_counts.values[-1] / v, y_counts[k]))
+        return new_dic
+
+    def _dictionary_to_params(self, sampling_dict, y):
+        """Adds the sampling dictionary to the parameters and initializes the sampler accordingly
+
+        Arguments:
+            sampling_dict (dict): The input sampling dictionary passed in from user
+            y (ww.DataColumn): The target values
+
+        Returns:
+            dict: The parameters dictionary with the values replaced as necessary
+        """
+        param_copy = copy.copy(self.parameters)
+        if self.parameters['sampling_ratio_dict']:
+            new_dic = self._convert_dictionary(self.parameters['sampling_ratio_dict'], y)
+            param_copy['sampling_ratio_dict'] = new_dic
+        return param_copy
+
 
 class BaseOverSampler(BaseSampler):
     """Base Oversampler component. Used as the base class of all imbalance-learn oversampler components"""
