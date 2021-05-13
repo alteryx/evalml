@@ -6,6 +6,7 @@ Release Notes
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
         * Changed the default parameter values for ``Elastic Net Classifier`` :pr:`2269`
     * Fixes
+        * Removed data splitter sampler calls during training :pr:`2253`
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
     * Changes
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
