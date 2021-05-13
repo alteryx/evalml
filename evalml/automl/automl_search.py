@@ -713,15 +713,15 @@ class AutoMLSearch:
         if self.problem_type == ProblemTypes.BINARY:
             baseline = BinaryClassificationPipeline(component_graph=["Baseline Classifier"],
                                                     custom_name="Mode Baseline Binary Classification Pipeline",
-                                                    custom_hyperparameters={"strategy": ["mode"]})
+                                                    parameters={"Baseline Classifier": {"strategy": "mode"}})
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = MulticlassClassificationPipeline(component_graph=["Baseline Classifier"],
                                                         custom_name="Mode Baseline Multiclass Classification Pipeline",
-                                                        custom_hyperparameters={"strategy": ["mode"]})
+                                                        parameters={"Baseline Classifier": {"strategy": "mode"}})
         elif self.problem_type == ProblemTypes.REGRESSION:
             baseline = RegressionPipeline(component_graph=["Baseline Regressor"],
                                           custom_name="Mean Baseline Regression Pipeline",
-                                          custom_hyperparameters={"strategy": ["mean"]})
+                                          parameters={"Baseline Classifier": {"strategy": "mean"}})
         else:
             pipeline_class, pipeline_name = {ProblemTypes.TIME_SERIES_REGRESSION: (TimeSeriesRegressionPipeline, "Time Series Baseline Regression Pipeline"),
                                              ProblemTypes.TIME_SERIES_MULTICLASS: (TimeSeriesMulticlassClassificationPipeline, "Time Series Baseline Multiclass Pipeline"),
