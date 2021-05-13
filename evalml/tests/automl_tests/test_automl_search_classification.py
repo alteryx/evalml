@@ -744,7 +744,7 @@ def test_automl_search_sampler_ratio(sampling_ratio, size, categorical_features,
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
 @pytest.mark.parametrize("sampler_method,categorical_features", [(None, 'none'), (None, 'some'), (None, 'all'),
                                                                  ('Undersampler', 'none'), ('Undersampler', 'some'), ('Undersampler', 'all'),
-                                                                 ('SMOTE Oversampler', 'none'), ('SMOTENC Oversampler', 'some'), ('SMOTEN Oversampler', 'all')])
+                                                                 ('Oversampler', 'none'), ('Oversampler', 'some'), ('Oversampler', 'all')])
 def test_automl_search_sampler_method(sampler_method, categorical_features, problem_type, mock_imbalanced_data_X_y, has_minimal_dependencies, caplog):
     # 0.2 minority:majority class ratios
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, 'small')

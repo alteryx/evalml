@@ -115,13 +115,13 @@ AutoMLConfig = namedtuple("AutoMLConfig", ["ensembling_indices", "data_splitter"
                                            "error_callback", "random_seed"])
 
 
-def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
+def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     """Returns the name of the sampler component to use for AutoMLSearch.
 
     Arguments:
         X (ww.DataTable): The input feature data
         y (ww.DataColumn): The input target data
-        sampler_type (str): The sampler_type argument passed to AutoMLSearch
+        sampler_method (str): The sampler_method argument passed to AutoMLSearch
         sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
             or should balance the classes to.
 
@@ -136,7 +136,7 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     if all(class_ratios >= sampler_balanced_ratio):
         return None
     # We set a threshold to use the Undersampler in order to avoid long runtimes
-    elif len(y) >= _SAMPLER_THRESHOLD:
+    elif len(y) >= _SAMPLER_THRESHOLD and sampler_method != 'Oversampler':
         return 'Undersampler'
     else:
         try:
