@@ -4,6 +4,8 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
+
     * Documentation Changes
     * Testing Changes
 
