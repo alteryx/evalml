@@ -9,7 +9,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
+    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -17,16 +17,8 @@ jobs:
         include:
           - python_version: "3.7"
             core_dependencies: false
-            codecov: false
-          - python_version: "3.8"
-            core_dependencies: false
-            codecov: true
-          - python_version: "3.8"
+          - python_version: "3.7"
             core_dependencies: true
-            codecov: true
-          - python_version: "3.9"
-            core_dependencies: false
-            codecov: false
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -40,37 +32,27 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.core_dependencies }}
-        name: Installing Core Dependencies
+      - name: Create virtual environment
         run: |
           python -m pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
-          python -m pip install -e . --no-dependencies
-          python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
-          python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-          # "!" negates return code. exit nonzero if any of these deps are found
-          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
-          exit $?
-      - name: Erase Coverage
-        run: |
-          source test_python/bin/activate
-          coverage erase
       - if: ${{ matrix.core_dependencies }}
-        name: Run unit tests with minimal dependencies
+        name: Installing Core Dependencies
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps
+          python -m pip install -e . --no-dependencies
+          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_test_requirements.txt
       - if: ${{ !matrix.core_dependencies }}
-        name: Run unit tests
+        name: Installing Dependencies
         run: |
           source test_python/bin/activate
-          make git-test
-      - if: ${{ matrix.codecov }}
-        name: Upload coverage to Codecov
+          python -m pip install -e . --no-dependencies
+          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_requirements.txt
+          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_test_requirements.txt
+      - name: Create virtual environment
         run: |
-          virtualenv test_python -q
-          source test_python/bin/activate
-          pip install coverage
-          bash <(curl -s https://codecov.io/bash) -C ${{ github.event.pull_request.head.sha }}
+          pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure
