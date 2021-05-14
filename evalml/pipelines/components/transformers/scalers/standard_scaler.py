@@ -27,9 +27,13 @@ class StandardScaler(Transformer):
     def transform(self, X, y=None):
         X_ww = infer_feature_types(X)
         X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = X.select_dtypes(exclude=['datetime'])
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t_df, ltypes_to_ignore=[Integer, Categorical])
 
     def fit_transform(self, X, y=None):
+        X_ww = infer_feature_types(X)
+        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = X.select_dtypes(exclude=['datetime'])
         return self.fit(X, y).transform(X, y)
