@@ -61,8 +61,6 @@ class BaseSampler(Transformer):
 
     def _convert_dictionary(self, sampling_dict, y):
         """Expects the dictionary keys to be the target values y.
-        In the case of ClassificationPipelines and AutoMLSearch, the targets get encoded to
-        0 to n-1 int values.
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user
@@ -74,7 +72,7 @@ class BaseSampler(Transformer):
         # check that the lengths of the dict and y are equal
         y_unique = y.unique()
         if len(sampling_dict) != len(y_unique):
-            raise ValueError("Lengths are diff!")
+            raise ValueError("Lengths are different!")
 
         if len(set(sampling_dict.keys()).intersection(set(y_unique))) != len(y_unique):
             raise ValueError("Dictionary keys are different from target values!")
@@ -89,14 +87,14 @@ class BaseSampler(Transformer):
         return new_dic
 
     def _dictionary_to_params(self, sampling_dict, y):
-        """Adds the sampling dictionary to the parameters and initializes the sampler accordingly
+        """Adds the sampling dictionary to the parameters and returns the updated parameter dictionary.
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user
             y (ww.DataColumn): The target values
 
         Returns:
-            dict: The parameters dictionary with the values replaced as necessary
+            dict: The parameters dictionary with the sampling_ratio_dict value replaced as necessary
         """
         param_copy = copy.copy(self.parameters)
         if self.parameters['sampling_ratio_dict']:
