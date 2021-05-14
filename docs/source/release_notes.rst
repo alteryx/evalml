@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
+        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
         * Changed the default parameter values for ``Elastic Net Classifier`` :pr:`2269`
     * Fixes

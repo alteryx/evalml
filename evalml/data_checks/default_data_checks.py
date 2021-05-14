@@ -16,6 +16,7 @@ class DefaultDataChecks(DataChecks):
     Includes:
 
         - `HighlyNullDataCheck`
+        - `HighlyNullRowsDataCheck`
         - `IDColumnsDataCheck`
         - `TargetLeakageDataCheck`
         - `InvalidTargetDataCheck`
