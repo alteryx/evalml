@@ -55,4 +55,5 @@ jobs:
           python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
       - name: Create virtual environment
         run: |
+          source test_python/bin/activate
           python -m pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure
