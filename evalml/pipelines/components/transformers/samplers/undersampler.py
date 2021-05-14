@@ -41,7 +41,7 @@ class Undersampler(BaseSampler):
 
     def _initialize_undersampler(self, y):
         """Helper function to initialize the undersampler component object.
-        
+
         Arguments:
             y (pd.Series): The target data
         """
