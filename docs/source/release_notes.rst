@@ -30,7 +30,7 @@ Release Notes
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
-        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
+        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
         * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
