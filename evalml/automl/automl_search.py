@@ -641,10 +641,6 @@ class AutoMLSearch:
             if self._train_best_pipeline:
                 X_train = self.X_train
                 y_train = self.y_train
-                if hasattr(self.data_splitter, "transform_sample"):
-                    train_indices = self.data_splitter.transform_sample(X_train, y_train)
-                    X_train = X_train.iloc[train_indices]
-                    y_train = y_train.iloc[train_indices]
                 best_pipeline = self._engine.submit_training_job(self.automl_config, best_pipeline,
                                                                  X_train, y_train).get_result()
             self._best_pipeline = best_pipeline
@@ -1009,12 +1005,6 @@ class AutoMLSearch:
         computations = []
         X_train = self.X_train
         y_train = self.y_train
-
-        # Apply sampling
-        if hasattr(self.data_splitter, "transform_sample"):
-            train_indices = self.data_splitter.transform_sample(X_train, y_train)
-            X_train = X_train.iloc[train_indices]
-            y_train = y_train.iloc[train_indices]
 
         for pipeline in pipelines:
             computations.append(self._engine.submit_training_job(self.automl_config, pipeline, X_train, y_train))

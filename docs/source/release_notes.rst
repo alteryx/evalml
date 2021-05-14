@@ -3,8 +3,10 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
+        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
+        * Removed data splitter sampler calls during training :pr:`2253`
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
     * Changes
         * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
@@ -30,6 +32,7 @@ Release Notes
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
+        * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
         * Enable prediction explanations for catboost for multiclass problems :pr:`2224`
