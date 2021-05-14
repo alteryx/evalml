@@ -43,16 +43,16 @@ jobs:
         run: |
           source test_python/bin/activate
           python -m pip install -e . --no-dependencies
-          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_core_requirements.txt
-          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_test_requirements.txt
+          python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
       - if: ${{ !matrix.core_dependencies }}
         name: Installing Dependencies
         run: |
           source test_python/bin/activate
           python -m pip install -e . --no-dependencies
-          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_core_requirements.txt
-          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_requirements.txt
-          python -m pip install -r evalml/evalml/tests/dependency_update_check/minimum_test_requirements.txt
+          python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          python -m pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
+          python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
       - name: Create virtual environment
         run: |
           pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure
