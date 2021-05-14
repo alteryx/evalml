@@ -15,6 +15,7 @@ Release Notes
     * Testing Changes
         * Change number of cores for pytest from 4 to 2 :pr:`2266`
         * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
+        * Add unit tests with minimum dependencies  :pr:`2277`
 
 .. warning::
 
