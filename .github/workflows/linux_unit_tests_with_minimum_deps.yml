@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-      - name: Create virtual environment
+      - name: Create virtual environment, upgrade pip
         run: |
           python -m pip install virtualenv
           virtualenv test_python -q

@@ -1,6 +1,6 @@
-pytest==4.4.1
-pytest-xdist==1.26.1
-pytest-cov==2.6.1
+pytest==6.0.1
+pytest-xdist==2.1.0
+pytest-cov==2.10.1
 nbval==0.9.3
 IPython>=5.0.0
 codecov==2.1.11
