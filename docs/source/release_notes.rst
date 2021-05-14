@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
+        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
     * Fixes
