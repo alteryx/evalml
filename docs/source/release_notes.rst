@@ -14,7 +14,7 @@ Release Notes
     * Documentation Changes
         * Capped Sphinx version under 4.0.0 :pr:`2244`
     * Testing Changes
-
+        * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
 
 .. warning::
 
