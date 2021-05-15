@@ -213,13 +213,19 @@ def test_time_elapsed(mock_time, time_passed, answer):
     assert time == answer
 
 
-@pytest.mark.parametrize("type_, number_", [("binary", 8), ("multiclass", 8), ("regression", 8)])
-def test_pipeline_output(type_, number_, X_y_binary, X_y_multi, X_y_regression, caplog):
+@pytest.mark.parametrize("type_, allowed_families, number_", [("binary", None, 8), ("multiclass", 3, 3), ("regression", 4, 4)])
+def test_pipeline_output(type_, allowed_families, number_, X_y_binary, X_y_multi, X_y_regression, caplog):
     if type_ == 'binary':
         X, y = X_y_binary
     elif type_ == 'multiclass':
         X, y = X_y_multi
     else:
         X, y = X_y_regression
-    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
+    if not allowed_families:
+        _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
+    else:
+        if allowed_families == 3:
+            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['xgboost', 'lightgbm', 'decision_tree'])
+        elif allowed_families == 4:
+            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['xgboost', 'lightgbm', 'decision_tree', 'catboost'])
     assert f"{number_} pipelines ready for search" in caplog.text
