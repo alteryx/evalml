@@ -6,6 +6,7 @@ from unittest.mock import call, patch
 
 import pytest
 
+from evalml import AutoMLSearch
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -210,3 +211,15 @@ def test_time_elapsed(mock_time, time_passed, answer):
     mock_time.return_value = time_passed
     time = time_elapsed(start_time=0)
     assert time == answer
+
+
+@pytest.mark.parametrize("type_, number_", [("binary", 8), ("multiclass", 8), ("regression", 8)])
+def test_pipeline_output(type_, number_, X_y_binary, X_y_multi, X_y_regression, caplog):
+    if type_ == 'binary':
+        X, y = X_y_binary
+    elif type_ == 'multiclass':
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
+    assert f"{number_} pipelines ready for search" in caplog.text
