@@ -59,4 +59,4 @@ def test_undersample_imbalanced(data_type, make_data_type):
     transform_X, transform_y = undersampler.transform(X, y)
 
     np.testing.assert_equal(X, transform_X.values)
-    np.testing.assert_equal(y, transform_y.values)
+    np.testing.assert_equal(None, transform_y)

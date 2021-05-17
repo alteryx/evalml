@@ -52,7 +52,7 @@ class BaseSampler(Transformer):
         X = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
-        return X, y
+        return X, None
 
 
 class BaseOverSampler(BaseSampler):
