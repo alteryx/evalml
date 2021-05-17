@@ -213,17 +213,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
             Second - The pipeline class we trained and scored. Third - the job logger instance with all the recorded messages.
     """
     logger.info(f"{pipeline.name}:")
-
-    X_train, y_train = X, y
-
-    if pipeline.model_family == ModelFamily.ENSEMBLE:
-        X_train, y_train = X.iloc[automl_config.ensembling_indices], y.iloc[automl_config.ensembling_indices]
-    elif automl_config.ensembling_indices is not None:
-        training_indices = [i for i in range(len(X)) if i not in automl_config.ensembling_indices]
-        X_train = X.iloc[training_indices]
-        y_train = y.iloc[training_indices]
-
-    return train_and_score_pipeline(pipeline, automl_config=automl_config, full_X_train=X_train, full_y_train=y_train,
+    return train_and_score_pipeline(pipeline, automl_config=automl_config,
+                                    full_X_train=X, full_y_train=y,
                                     logger=logger)
 
 
