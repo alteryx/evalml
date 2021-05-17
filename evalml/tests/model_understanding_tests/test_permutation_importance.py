@@ -290,3 +290,19 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
     not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
     assert correlated_importance_val > not_correlated_importance_val
+
+
+def test_undersampler(X_y_binary):
+    """Smoke test to enable hotfix for 0.24.0.  Prior to the 0.24.0 hotfix, this test will
+    generate a ValueError within calculate_permutation_importance.
+
+    TODO: Remove with github issue #2273
+    """
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    pipeline = BinaryClassificationPipeline(component_graph=["Undersampler", "Elastic Net Classifier"])
+    pipeline.fit(X=X, y=y)
+    pipeline.predict(X)
+    test = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
+    assert test is not None
