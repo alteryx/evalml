@@ -2,16 +2,11 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import evaluate_pipeline, train_pipeline
 from evalml.automl.engine.engine_base import JobLogger
 from evalml.objectives import F1, LogLossBinary
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    StackedEnsembleClassifier
-)
 from evalml.preprocessing import split_data
 from evalml.utils import get_logger
 
@@ -86,32 +81,6 @@ def test_train_pipeline_trains_and_tunes_threshold(mock_split_data, mock_pipelin
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_called_once()
     mock_split_data.assert_called_once()
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_evaluate_pipeline_handles_ensembling_indices(mock_fit, mock_score, dummy_binary_pipeline_class,
-                                                      stackable_classifiers):
-    X = ww.DataTable(pd.DataFrame({"a": [i for i in range(100)]}))
-    y = ww.DataColumn(pd.Series([i % 2 for i in range(100)]))
-
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=19, ensembling=True, _ensembling_split_size=0.25)
-
-    training_indices, ensembling_indices, _, _ = split_data(ww.DataTable(np.arange(X.shape[0])), y, problem_type='binary', test_size=0.25, random_seed=0)
-    training_indices, ensembling_indices = training_indices.to_dataframe()[0].tolist(), ensembling_indices.to_dataframe()[0].tolist()
-
-    pipeline1 = dummy_binary_pipeline_class({'Mock Classifier': {'a': 1}})
-
-    _ = evaluate_pipeline(pipeline1, automl, X, y, logger=MagicMock())
-    # check the fit length is correct, taking into account the data splits
-    assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(training_indices))
-
-    input_pipelines = [BinaryClassificationPipeline([classifier]) for classifier in stackable_classifiers]
-    ensemble = BinaryClassificationPipeline([StackedEnsembleClassifier],
-                                            parameters={"Stacked Ensemble Classifier": {"input_pipelines": input_pipelines, "n_jobs": 1}})
-
-    _ = evaluate_pipeline(ensemble, automl, X, y, logger=MagicMock())
-    assert len(mock_fit.call_args[0][0]) == int(2 / 3 * len(ensembling_indices))
 
 
 def test_job_logger_warning_and_error_messages(caplog):
