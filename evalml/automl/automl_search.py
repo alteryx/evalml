@@ -8,7 +8,6 @@ from collections import defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots
@@ -46,7 +45,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -339,7 +337,6 @@ class AutoMLSearch:
 
         self.X_train = infer_feature_types(X_train)
         self.y_train = infer_feature_types(y_train)
-        self.ensembling_indices = None
 
         default_data_splitter = make_data_splitter(self.X_train, self.y_train, self.problem_type, self.problem_configuration,
                                                    n_splits=3, shuffle=True, random_seed=self.random_seed)
@@ -417,20 +414,13 @@ class AutoMLSearch:
                                        num_ensemble_batches)
             else:
                 self.max_iterations = 1 + len(self.allowed_pipelines) + (self._pipelines_per_batch * (self.max_batches - 1))
-        if run_ensembling:
-            if not (0 < _ensembling_split_size < 1):
-                raise ValueError(f"Ensembling split size must be between 0 and 1 exclusive, received {_ensembling_split_size}")
-            X_shape = ww.DataTable(np.arange(self.X_train.shape[0]))
-            _, ensembling_indices, _, _ = split_data(X_shape, self.y_train, problem_type=self.problem_type, test_size=_ensembling_split_size, random_seed=self.random_seed)
-            self.ensembling_indices = ensembling_indices.to_dataframe()[0].tolist()
 
         if not engine:
             self._engine = SequentialEngine()
         else:
             self._engine = engine
 
-        self.automl_config = AutoMLConfig(self.ensembling_indices,
-                                          self.data_splitter, self.problem_type,
+        self.automl_config = AutoMLConfig(self.data_splitter, self.problem_type,
                                           self.objective, self.additional_objectives, self.optimize_thresholds,
                                           self.error_callback, self.random_seed)
 
