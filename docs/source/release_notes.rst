@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.24.1 May. 16, 2021**
+    * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
@@ -18,9 +30,6 @@ Release Notes
         * Change number of cores for pytest from 4 to 2 :pr:`2266`
         * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
 
-.. warning::
-
-    **Breaking Changes**
 
 **v0.24.0 May. 04, 2021**
     * Enhancements
