@@ -225,7 +225,7 @@ def test_pipeline_output(type_, allowed_families, number_, X_y_binary, X_y_multi
         _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
     else:
         if allowed_families == 2:
-            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['lightgbm', 'decision_tree'])
+            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['random_forest', 'decision_tree'])
         elif allowed_families == 3:
-            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['lightgbm', 'decision_tree', 'catboost'])
+            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['random_forest', 'decision_tree', 'extra_trees'])
     assert f"{number_} pipelines ready for search" in caplog.text
