@@ -82,7 +82,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if is_regression(pipeline.problem_type):
             link_function = "identity"
             decision_function = estimator._component_obj.predict
-        elif pipeline.component_graph[-1].name == "Elastic Net Classifier":
+        elif pipeline.component_graph[-1] == "Elastic Net Classifier":
             link_function = "identity"
             decision_function = estimator._component_obj.predict_proba
         else:
