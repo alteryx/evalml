@@ -107,7 +107,7 @@ def test_oversample_imbalanced_binary(data_type, sampler, make_data_type):
         y = y.values
 
     np.testing.assert_equal(X, transform_X.to_dataframe().values)
-    np.testing.assert_equal(y, transform_y.to_series().values)
+    np.testing.assert_equal(None, transform_y)
 
 
 @pytest.mark.parametrize("sampling_ratio", [0.2, 0.5])
@@ -148,7 +148,7 @@ def test_oversample_imbalanced_multiclass(data_type, sampler, sampling_ratio, ma
         y = y.values
 
     np.testing.assert_equal(X, transform_X.to_dataframe().values)
-    np.testing.assert_equal(y, transform_y.to_series().values)
+    np.testing.assert_equal(None, transform_y)
 
 
 @pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
@@ -237,8 +237,6 @@ def test_smotenc_output_shape(X_y_binary):
         snc.fit(X_ww, y_value)
         X_out, y_out = snc.transform(X_ww, y_value)
         assert X_out.shape[1] == X_ww.shape[1]
-        assert y_out.shape[0] == X_out.shape[0]
 
         X_out, y_out = snc.fit_transform(X_ww, y)
         assert X_out.shape[1] == X_ww.shape[1]
-        assert y_out.shape[0] == X_out.shape[0]

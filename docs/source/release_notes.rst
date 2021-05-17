@@ -2,12 +2,25 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.24.1 May. 16, 2021**
+    * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
+        * Changed BaseSampler to return None instead of y :pr:`2272`
     * Changes
         * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
@@ -17,9 +30,6 @@ Release Notes
         * Change number of cores for pytest from 4 to 2 :pr:`2266`
         * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
 
-.. warning::
-
-    **Breaking Changes**
 
 **v0.24.0 May. 04, 2021**
     * Enhancements
