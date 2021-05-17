@@ -5,7 +5,7 @@ Release Notes
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
-        * Changed the default parameter values for ``Elastic Net Classifier`` :pr:`2269`
+        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
