@@ -250,18 +250,6 @@ class TestDaskEngine(unittest.TestCase):
         X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ['my cool feature']})
         y = ww.init_series(y)
 
-        # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
-        # pipeline.fit and pipeline.score
-        pipeline = TestSchemaCheckPipeline(component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
-                                           parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                           X_schema_to_check=X.ww.schema, y_schema_to_check=y.ww.schema)
-
-        future = engine.submit_training_job(X=X, y=y, automl_config=automl_data, pipeline=pipeline)
-        fitted_pipeline = future.get_result()
-
-        future = engine.submit_scoring_job(X=X, y=y, automl_config=automl_data, pipeline=fitted_pipeline, objectives=["F1"])
-        _ = future.get_result()
-
         new_config = AutoMLConfig(ensembling_indices=automl_data.ensembling_indices,
                                   data_splitter=automl_data.data_splitter,
                                   problem_type=automl_data.problem_type,
@@ -272,6 +260,19 @@ class TestDaskEngine(unittest.TestCase):
                                   random_seed=automl_data.random_seed,
                                   X_schema=X.ww.schema,
                                   y_schema=y.ww.schema)
+
+        # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
+        # pipeline.fit and pipeline.score
+        pipeline = TestSchemaCheckPipeline(component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
+                                           parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                           X_schema_to_check=X.ww.schema, y_schema_to_check=y.ww.schema)
+
+        future = engine.submit_training_job(X=X, y=y, automl_config=new_config, pipeline=pipeline)
+        fitted_pipeline = future.get_result()
+
+        future = engine.submit_scoring_job(X=X, y=y, automl_config=new_config, pipeline=fitted_pipeline, objectives=["F1"])
+        _ = future.get_result()
+
         future = engine.submit_evaluation_job(new_config, pipeline, X, y)
         future.get_result()
 

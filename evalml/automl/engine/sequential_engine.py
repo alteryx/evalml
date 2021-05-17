@@ -56,8 +56,8 @@ class SequentialEngine(EngineBase):
                                      y=y,
                                      optimize_thresholds=automl_config.optimize_thresholds,
                                      objective=automl_config.objective,
-                                     X_schema=X.ww.schema,
-                                     y_schema=y.ww.schema)
+                                     X_schema=automl_config.X_schema,
+                                     y_schema=automl_config.y_schema)
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         objectives = [get_objective(o, return_instance=True) for o in objectives]

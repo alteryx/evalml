@@ -56,7 +56,7 @@ class DaskEngine(EngineBase):
 
         Args:
             X (pd.DataFrame): input data for modeling
-            y (pd.DataSeries): target data for modeling
+            y (pd.Series): target data for modeling
         Return:
             dask.Future: the modeling data
         """
@@ -75,7 +75,7 @@ class DaskEngine(EngineBase):
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
-            y (pd.DataSeries): target data for modeling
+            y (pd.Series): target data for modeling
         Return:
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
@@ -96,22 +96,19 @@ class DaskEngine(EngineBase):
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
-            y (pd.DataSeries): target data for modeling
+            y (pd.Series): target data for modeling
         Return:
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
-        # Get the schema before we lose it
-        X_schema = X.ww.schema
-        y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(train_pipeline,
                                          pipeline=pipeline, X=X,
                                          y=y,
                                          optimize_thresholds=automl_config.optimize_thresholds,
                                          objective=automl_config.objective,
-                                         X_schema=X_schema,
-                                         y_schema=y_schema)
+                                         X_schema=automl_config.X_schema,
+                                         y_schema=automl_config.y_schema)
         return DaskComputation(dask_future)
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives) -> EngineComputation:
@@ -121,7 +118,7 @@ class DaskEngine(EngineBase):
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
-            y (pd.DataSeries): target data for modeling
+            y (pd.Series): target data for modeling
         Return:
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
