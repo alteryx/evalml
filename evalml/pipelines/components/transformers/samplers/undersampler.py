@@ -19,8 +19,9 @@ class Undersampler(BaseSampler):
         Arguments:
             sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
                 represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
-            sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Overrides sampling_ratio if provided.
-                Defaults to None.
+            sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. For instance, in a binary case where class 1 is the minority, we could specify:
+                `sampling_ratio_dict={0: 0.5, 1: 1}`, which means we would undersample class 0 to have twice the number of samples as class 1 (minority:majority ratio = 0.5), and don't sample class 1.
+                Overrides sampling_ratio if provided. Defaults to None.
             min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
                 To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
                 Must be greater than 0. Defaults to 100.

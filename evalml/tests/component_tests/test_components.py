@@ -556,9 +556,12 @@ def test_transformer_transform_output_type(X_y_binary):
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
-            if isinstance(component, TargetImputer) or 'sampler' in component.name:
+            if isinstance(component, TargetImputer):
                 assert isinstance(transform_output[0], ww.DataTable)
                 assert isinstance(transform_output[1], ww.DataColumn)
+            elif 'sampler' in component.name:
+                assert isinstance(transform_output[0], ww.DataTable)
+                assert transform_output[1] is None
             else:
                 assert isinstance(transform_output, ww.DataTable)
 
@@ -580,7 +583,6 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert len(transform_output[1].shape) == 1
             elif 'sampler' in component.name:
                 assert transform_output[0].shape == X.shape
-                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
@@ -1122,7 +1124,11 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if 'sampler' in transformer.name or transformer_class == TargetImputer:
+    if 'sampler' in transformer.name:
+        X_t, y_t = transformer.transform(X, y)
+        X_t = X_t.to_dataframe()
+        assert y_t is None
+    elif transformer_class == TargetImputer:
         X_t, y_t = transformer.transform(X, y)
         X_t = X_t.to_dataframe()
         pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)

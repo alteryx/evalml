@@ -74,7 +74,7 @@ def test_undersample_imbalanced(data_type, make_data_type):
         y = y.values
 
     np.testing.assert_equal(X, transform_X.to_dataframe().values)
-    np.testing.assert_equal(y, transform_y.to_series().values)
+    np.testing.assert_equal(None, transform_y)
 
 
 @pytest.mark.parametrize("dictionary,msg", [({'majority': 0.5}, "Lengths are diff"),
@@ -90,19 +90,19 @@ def test_undersampler_sampling_dict_errors(dictionary, msg):
         undersampler.fit_transform(X, y)
 
 
-@pytest.mark.parametrize("dictionary,dictionary_values", [({0: 1, 1: 0.5}, {0: 150, 1: 300}),
-                                                          ({0: 1, 1: 0.25}, {0: 150, 1: 600}),
-                                                          ({0: 1, 1: 0.1}, {0: 150, 1: 850}),
-                                                          ({0: 0.1, 1: 0.1}, {0: 150, 1: 850}),
-                                                          ({0: 0.1, 1: 1}, {0: 150, 1: 150})])
-def test_undersampler_sampling_dict(dictionary, dictionary_values):
+@pytest.mark.parametrize("sampling_ratio_dict,expected_dict_values", [({0: 1, 1: 0.5}, {0: 150, 1: 300}),
+                                                                      ({0: 1, 1: 0.25}, {0: 150, 1: 600}),
+                                                                      ({0: 1, 1: 0.1}, {0: 150, 1: 850}),
+                                                                      ({0: 0.1, 1: 0.1}, {0: 150, 1: 850}),
+                                                                      ({0: 0.1, 1: 1}, {0: 150, 1: 150})])
+def test_undersampler_sampling_dict(sampling_ratio_dict, expected_dict_values):
     X = np.array([[i] for i in range(1000)])
     y = np.array([0] * 150 + [1] * 850)
-    undersampler = Undersampler(sampling_ratio_dict=dictionary)
+    undersampler = Undersampler(sampling_ratio_dict=sampling_ratio_dict)
     new_X, new_y = undersampler.fit_transform(X, y)
 
-    assert len(new_X) == sum(dictionary_values.values())
-    assert new_y.to_series().value_counts().to_dict() == dictionary_values
+    assert len(new_X) == sum(expected_dict_values.values())
+    assert new_y.to_series().value_counts().to_dict() == expected_dict_values
 
 
 def test_undersampler_dictionary_overrides_ratio():
