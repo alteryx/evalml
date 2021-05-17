@@ -109,8 +109,12 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         is_binary = False
     else:
         training_data, y = X_y_regression
+    if "Elastic Net" in estimator.name:
+        parameters = {"Elastic Net Classifier": {"alpha": 0.5, "l1_ratio": 0.5, 'n_jobs': 1}}
+    else:
+        parameters = {estimator.name: {"n_jobs": 1}}
     try:
-        pipeline = make_pipeline(training_data, y, estimator, problem_type, parameters={estimator.name: {'n_jobs': 1}})
+        pipeline = make_pipeline(training_data, y, estimator, problem_type, parameters=parameters)
     except ValueError:
         pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
