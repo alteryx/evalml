@@ -109,6 +109,7 @@ def test_shap(estimator, problem_type, n_points_to_explain, X_y_binary, X_y_mult
         is_binary = False
     else:
         training_data, y = X_y_regression
+    # TODO: Figure out why we need to change the params in order for shap to pass. Filed as issue 2281
     if "Elastic Net" in estimator.name:
         parameters = {"Elastic Net Classifier": {"alpha": 0.5, "l1_ratio": 0.5, 'n_jobs': 1}}
     else:
