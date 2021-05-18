@@ -8,6 +8,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Removed MarkupSafe dependency version pin from requirements.txt and moved instead into RTD docs build CI :pr:`2261`
 
 .. warning::
 
