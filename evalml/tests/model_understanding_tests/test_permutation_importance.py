@@ -14,7 +14,6 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     TextFeaturizer
 )
-from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
@@ -309,7 +308,7 @@ def test_undersampler(X_y_binary):
     assert test is not None
 
 
-@pytest.mark.parametrize("estimator", [est for est in _all_estimators_used_in_search() if "Classifier" in est.name])
+@pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "Decision Tree Classifier", "Extra Trees Classifier"])
 def test_oversampler(estimator, fraud_100):
     pytest.importorskip('imblearn', reason='Skipping test because imblearn not installed')
     X, y = fraud_100
