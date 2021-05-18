@@ -213,8 +213,8 @@ def test_time_elapsed(mock_time, time_passed, answer):
     assert time == answer
 
 
-@pytest.mark.parametrize("type_, allowed_families, number_", [("binary", None, 8), ("multiclass", 2, 2), ("regression", 3, 3)])
-def test_pipeline_output(type_, allowed_families, number_, X_y_binary, X_y_multi, X_y_regression, caplog):
+@pytest.mark.parametrize("type_, allowed_families, number_, number_min_dep", [("binary", None, 8, 4), ("multiclass", 3, 3, 2), ("regression", 4, 4, 3)])
+def test_pipeline_count(type_, allowed_families, number_, number_min_dep, X_y_binary, X_y_multi, X_y_regression, caplog, has_minimal_dependencies):
     if type_ == 'binary':
         X, y = X_y_binary
     elif type_ == 'multiclass':
@@ -224,8 +224,11 @@ def test_pipeline_output(type_, allowed_families, number_, X_y_binary, X_y_multi
     if not allowed_families:
         _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
     else:
-        if allowed_families == 2:
-            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['random_forest', 'decision_tree'])
-        elif allowed_families == 3:
-            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['random_forest', 'decision_tree', 'extra_trees'])
-    assert f"{number_} pipelines ready for search" in caplog.text
+        if allowed_families == 3:
+            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['random_forest', 'decision_tree', 'xgboost'])
+        elif allowed_families == 4:
+            _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, allowed_model_families=['random_forest', 'decision_tree', 'extra_trees', 'xgboost'])
+    if has_minimal_dependencies:
+        assert f"{number_min_dep} pipelines ready for search" in caplog.text
+    else:
+        assert f"{number_} pipelines ready for search" in caplog.text
