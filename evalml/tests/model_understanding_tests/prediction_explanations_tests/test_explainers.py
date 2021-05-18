@@ -825,7 +825,7 @@ def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemb
         explain_predictions_best_worst(pipeline, X, y)
 
 
-@pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "XGBoost Classifier", "Decision Tree Classifier", "Extra Trees Classifier", "LightGBM Classifier"])
+@pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "Decision Tree Classifier", "Extra Trees Classifier"])
 def test_explain_predictions_oversampler(estimator, fraud_100):
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", estimator])
