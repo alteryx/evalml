@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added oversamplers to AutoMLSearch :pr:`2213`
-        * Added tests for model understanding for oversamplers :pr:``
+        * Added tests for model understanding for oversamplers :pr:`2286`
     * Fixes
     * Changes
     * Documentation Changes
