@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Use codecov action to update coverage reports :pr:`2238`
 
 .. warning::
 
