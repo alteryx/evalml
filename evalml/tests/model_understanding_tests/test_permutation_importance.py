@@ -311,6 +311,7 @@ def test_undersampler(X_y_binary):
 
 @pytest.mark.parametrize("estimator", [est for est in _all_estimators_used_in_search() if "Classifier" in est.name])
 def test_oversampler(estimator, fraud_100):
+    pytest.importorskip('imblearn', reason='Skipping test because imblearn not installed')
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", "SMOTENC Oversampler", estimator])
     pipeline.fit(X=X, y=y)
