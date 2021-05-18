@@ -19,6 +19,7 @@ class ComponentBaseMeta(BaseMeta):
             if not self._is_fitted and self.needs_fitting:
                 raise ComponentNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
             elif method.__name__ == 'inverse_transform':
+                # Since inverse transform only takes one argument, the y is actually "called" X in this piece of code.
                 return method(self, X)
             elif X is None and y is None:
                 return method(self)

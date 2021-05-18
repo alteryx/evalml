@@ -93,16 +93,11 @@ class ComponentGraph:
         # Logic is as follows: Create the component dict for the non-target transformers as expected.
         # If there are target transformers present, connect them together and then pass the final output
         # to the sampler (if present) or the final estimator
-        with_inverse_transform = list(
-            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
-        )
-        without_inverse_transform = list(
-            filter(
-                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
-            )
-        )
 
-        for component_name, component_class in without_inverse_transform:
+        target_transformers = list(filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list))
+        not_target_transformers = list(filter(lambda tup: not issubclass(tup[1], TargetTransformer), component_list))
+
+        for component_name, component_class in not_target_transformers:
             component_dict[component_name] = [component_class]
             if previous_component is not None:
                 if "sampler" in previous_component:
@@ -114,26 +109,15 @@ class ComponentGraph:
             previous_component = component_name
 
         previous_component = None
-        for component_name, component_class in with_inverse_transform:
+        for component_name, component_class in target_transformers:
             component_dict[component_name] = [component_class]
             if previous_component is not None:
                 component_dict[component_name].append(f"{previous_component}.y")
             previous_component = component_name
 
-        if with_inverse_transform:
-            sampler_index = next(
-                iter(
-                    [
-                        i
-                        for i, tup in enumerate(without_inverse_transform)
-                        if "sampler" in tup[0]
-                    ]
-                ),
-                -1,
-            )
-            component_dict[without_inverse_transform[sampler_index][0]].append(
-                f"{with_inverse_transform[-1][0]}.y"
-            )
+        if target_transformers:
+            sampler_index = next(iter([i for i, tup in enumerate(not_target_transformers) if "sampler" in tup[0]]), -1)
+            component_dict[not_target_transformers[sampler_index][0]].append(f"{target_transformers[-1][0]}.y")
 
         return cls(component_dict, random_seed=random_seed)
 
