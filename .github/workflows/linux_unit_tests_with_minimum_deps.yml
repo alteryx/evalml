@@ -3,6 +3,11 @@ name: Linux Unit Tests with Minimum Dependencies
 on:
   pull_request:
     types: [opened, synchronize]
+    paths:
+      - 'requirements.txt'
+      - 'core-requirements.txt'
+      - 'test-requirements.txt'
+      - 'evalml/tests/dependency_update_check/**'
   push:
     branches:
       - main
