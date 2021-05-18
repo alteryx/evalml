@@ -174,11 +174,36 @@ def test_tune_binary_threshold(mock_fit, mock_score, mock_predict_proba, mock_en
 @pytest.mark.parametrize("categorical_columns", ['none', 'all', 'some'])
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
 @pytest.mark.parametrize("sampler_balanced_ratio", [1, 0.5, 0.25, 0.2, 0.1, 0.05])
-def test_get_best_sampler_for_data_auto(sampler_balanced_ratio, problem_type, categorical_columns, size, mock_imbalanced_data_X_y):
+def test_get_best_sampler_for_data_auto(sampler_balanced_ratio, problem_type, categorical_columns, size, mock_imbalanced_data_X_y, has_minimal_dependencies):
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_columns, size)
     name_output = get_best_sampler_for_data(X, y, "auto", sampler_balanced_ratio)
+    print(size, len(y))
     if sampler_balanced_ratio <= 0.2:
         # the imbalanced data we get has a class ratio of 0.2 minority:majority
         assert name_output is None
     else:
+        if size == 'large' or has_minimal_dependencies:
+            assert name_output == 'Undersampler'
+        else:
+            if categorical_columns == 'none':
+                assert name_output == 'SMOTE Oversampler'
+            elif categorical_columns == 'some':
+                assert name_output == 'SMOTENC Oversampler'
+            else:
+                assert name_output == 'SMOTEN Oversampler'
+
+
+@pytest.mark.parametrize("sampler_method", ["Undersampler", "Oversampler"])
+@pytest.mark.parametrize("categorical_columns", ['none', 'all', 'some'])
+def test_get_best_sampler_for_data_sampler_method(categorical_columns, sampler_method, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    X, y = mock_imbalanced_data_X_y('binary', categorical_columns, 'large')
+    name_output = get_best_sampler_for_data(X, y, sampler_method, 0.5)
+    if sampler_method == 'Undersampler' or has_minimal_dependencies:
         assert name_output == 'Undersampler'
+    else:
+        if categorical_columns == 'none':
+            assert name_output == 'SMOTE Oversampler'
+        elif categorical_columns == 'some':
+            assert name_output == 'SMOTENC Oversampler'
+        else:
+            assert name_output == 'SMOTEN Oversampler'

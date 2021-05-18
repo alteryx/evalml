@@ -225,7 +225,7 @@ class AutoMLSearch:
             pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
 
             sampler_method (str): The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
-                Either 'auto', which will use our preferred sampler for the data, the name of the sampling component to use, or None. Defaults to 'auto'.
+                Either 'auto', which will use our preferred sampler for the data, 'Undersampler', 'Oversampler', or None. Defaults to 'auto'.
 
             sampler_balanced_ratio (float): The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value,
                 then we will not add a sampler since the data is then considered balanced. Defaults to 0.25.
@@ -356,7 +356,7 @@ class AutoMLSearch:
         self._sampler_name = None
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
-            if self.sampler_method == 'auto':
+            if self.sampler_method in ['auto', 'Oversampler']:
                 self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
             self._frozen_pipeline_parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
 
