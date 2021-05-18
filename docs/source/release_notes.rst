@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
     * Changes
     * Documentation Changes
