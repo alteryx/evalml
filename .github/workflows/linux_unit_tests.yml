@@ -77,6 +77,9 @@ jobs:
           source test_python/bin/activate
           make git-test
       - if: ${{ matrix.codecov }}
+        name: install coverage
+        run: pip install coverage
+      - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
