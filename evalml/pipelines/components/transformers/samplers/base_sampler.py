@@ -66,7 +66,7 @@ class BaseSampler(Transformer):
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user
-            y (ww.DataColumn): The target values
+            y (pd.Series): The target values
 
         Returns:
             dict: A dictionary with target values as keys and the number of samples as values
@@ -83,9 +83,14 @@ class BaseSampler(Transformer):
         y_counts = y.value_counts()
         for k, v in sampling_dict.items():
             # turn the ratios into sampler values
-            # for undersampling, we make sure we never sample more than the
-            # total samples for that class
-            new_dic[k] = int(min(y_counts.values[-1] / v, y_counts[k]))
+            if self.__class__.__name__ == "Undersampler":
+                # for undersampling, we make sure we never sample more than the
+                # total samples for that class
+                new_dic[k] = int(min(y_counts.values[-1] / v, y_counts[k]))
+            else:
+                # for oversampling, we need to make sure we never sample less than
+                # the total samples for that class
+                new_dic[k] = int(max(y_counts.values[0] * v, y_counts[k]))
         return new_dic
 
     def _dictionary_to_params(self, sampling_dict, y):
@@ -109,7 +114,7 @@ class BaseSampler(Transformer):
 class BaseOverSampler(BaseSampler):
     """Base Oversampler component. Used as the base class of all imbalance-learn oversampler components"""
 
-    def __init__(self, sampler, sampling_ratio=0.25, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
+    def __init__(self, sampler, sampling_ratio=0.25, sampling_ratio_dict=None, k_neighbors=5, n_jobs=-1, random_seed=0, **kwargs):
         """Initializes the oversampler component.
 
         Arguments:
@@ -123,7 +128,8 @@ class BaseOverSampler(BaseSampler):
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         parameters = {"sampling_ratio": sampling_ratio,
                       "k_neighbors": k_neighbors,
-                      "n_jobs": n_jobs}
+                      "n_jobs": n_jobs,
+                      "sampling_ratio_dict": sampling_ratio_dict}
         parameters.update(kwargs)
         self.sampler = {"SMOTE": im.SMOTE,
                         "SMOTENC": im.SMOTENC,
@@ -155,10 +161,14 @@ class BaseOverSampler(BaseSampler):
             sampler_class (imblearn.BaseSampler): The sampler we want to initialize
         """
         _, _, _, y_pd = self._prepare_data(X, y)
-        sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k != 'sampling_ratio'}
-        # create the sampling dictionary
-        sampling_ratio = self.parameters['sampling_ratio']
-        dic = make_balancing_dictionary(y_pd, sampling_ratio)
+        sampler_params = {k: v for k, v in copy.copy(self.parameters).items() if k not in ['sampling_ratio', 'sampling_ratio_dict']}
+        if self.parameters['sampling_ratio_dict'] is not None:
+            # make the dictionary
+            dic = self._convert_dictionary(self.parameters['sampling_ratio_dict'], y_pd)
+        else:
+            # create the sampling dictionary
+            sampling_ratio = self.parameters['sampling_ratio']
+            dic = make_balancing_dictionary(y_pd, sampling_ratio)
         sampler_params['sampling_strategy'] = dic
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
