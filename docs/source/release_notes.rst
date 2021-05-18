@@ -24,6 +24,7 @@ Release Notes
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
         * Changed BaseSampler to return None instead of y :pr:`2272`
     * Changes
+        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
         * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
