@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
+        * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
     * Changes
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
@@ -65,7 +66,6 @@ Release Notes
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
-        * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
