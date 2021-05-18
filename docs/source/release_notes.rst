@@ -26,6 +26,7 @@ Release Notes
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
     * Documentation Changes
+        * Minor changes to the release procedure :pr:`2230`
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`
         * Removed MarkupSafe dependency version pin from requirements.txt and moved instead into RTD docs build CI :pr:`2261`
