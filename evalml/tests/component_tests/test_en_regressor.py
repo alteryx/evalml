@@ -31,8 +31,8 @@ def test_problem_types():
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(alpha=0.5,
-                                   l1_ratio=0.5,
+    sk_clf = SKElasticNetRegressor(alpha=0.0001,
+                                   l1_ratio=0.15,
                                    random_state=0,
                                    normalize=False,
                                    max_iter=1000)
@@ -50,8 +50,8 @@ def test_fit_predict(X_y_regression):
 def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(alpha=0.5,
-                                   l1_ratio=0.5,
+    sk_clf = SKElasticNetRegressor(alpha=0.0001,
+                                   l1_ratio=0.15,
                                    random_state=0,
                                    normalize=False,
                                    max_iter=1000)
