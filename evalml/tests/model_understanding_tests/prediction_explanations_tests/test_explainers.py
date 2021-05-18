@@ -827,7 +827,7 @@ def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemb
 
 @pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "Decision Tree Classifier", "Extra Trees Classifier"])
 def test_explain_predictions_oversampler(estimator, fraud_100):
-    pytest.importorskip('imblearn', reason='Skipping test because imblearn not installed')
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", estimator])
     pipeline.fit(X, y)

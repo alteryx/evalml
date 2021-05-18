@@ -309,8 +309,8 @@ def test_undersampler(X_y_binary):
 
 
 @pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "Decision Tree Classifier", "Extra Trees Classifier"])
-def test_oversampler(estimator, fraud_100):
-    pytest.importorskip('imblearn', reason='Skipping test because imblearn not installed')
+def test_permutation_importance_oversampler(estimator, fraud_100):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", "SMOTENC Oversampler", estimator])
     pipeline.fit(X=X, y=y)
