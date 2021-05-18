@@ -14,9 +14,10 @@ from evalml.problem_types import (
     is_binary,
     is_time_series
 )
+from evalml.utils import import_or_raise
 
 _LARGE_DATA_ROW_THRESHOLD = int(1e5)
-
+_SAMPLER_THRESHOLD = 20000
 _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
 
@@ -109,23 +110,23 @@ def check_all_pipeline_names_unique(pipelines):
         raise ValueError(f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.")
 
 
-AutoMLConfig = namedtuple("AutoMLConfig", ["ensembling_indices", "data_splitter", "problem_type",
+AutoMLConfig = namedtuple("AutoMLConfig", ["data_splitter", "problem_type",
                                            "objective", "additional_objectives", "optimize_thresholds",
                                            "error_callback", "random_seed"])
 
 
-def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
+def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     """Returns the name of the sampler component to use for AutoMLSearch.
 
     Arguments:
         X (ww.DataTable): The input feature data
         y (ww.DataColumn): The input target data
-        sampler_type (str): The sampler_type argument passed to AutoMLSearch
+        sampler_method (str): The sampler_method argument passed to AutoMLSearch
         sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
             or should balance the classes to.
 
     Returns:
-        str: The string name of the sampling component to use
+        str, None: The string name of the sampling component to use, or None if no sampler is necessary
     """
     # we check for the class balances
     counts = y.to_series().value_counts()
@@ -134,5 +135,19 @@ def get_best_sampler_for_data(X, y, sampler_type, sampler_balanced_ratio):
     # if all class ratios are larger than the ratio provided, we don't need to sample
     if all(class_ratios >= sampler_balanced_ratio):
         return None
-    # we default to using the Undersampler
-    return 'Undersampler'
+    # We set a threshold to use the Undersampler in order to avoid long runtimes
+    elif len(y) >= _SAMPLER_THRESHOLD and sampler_method != 'Oversampler':
+        return 'Undersampler'
+    else:
+        try:
+            import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
+            cat_cols = X.select('Categorical').columns
+            # Use different samplers depending on the number of categorical columns
+            if len(cat_cols) == X.shape[1]:
+                return 'SMOTEN Oversampler'
+            elif not len(cat_cols):
+                return 'SMOTE Oversampler'
+            else:
+                return 'SMOTENC Oversampler'
+        except ImportError:
+            return 'Undersampler'
