@@ -77,10 +77,10 @@ def test_undersample_imbalanced(data_type, make_data_type):
     np.testing.assert_equal(None, transform_y)
 
 
-@pytest.mark.parametrize("dictionary,msg", [({'majority': 0.5}, "Lengths are diff"),
-                                            ({'minority': 1}, "Lengths are diff"),
+@pytest.mark.parametrize("dictionary,msg", [({'majority': 0.5}, "Sampling dictionary contains a different number"),
+                                            ({'minority': 1}, "Sampling dictionary contains a different number"),
                                             ({0: 1, 1: 0.1}, "Dictionary keys are different from"),
-                                            ({1: 0.1}, "Lengths are diff")])
+                                            ({1: 0.1}, "Sampling dictionary contains a different number")])
 def test_undersampler_sampling_dict_errors(dictionary, msg):
     X = np.array([[i] for i in range(1000)])
     y = np.array(["minority"] * 150 + ["majority"] * 850)
