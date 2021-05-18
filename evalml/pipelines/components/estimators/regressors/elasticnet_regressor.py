@@ -16,7 +16,7 @@ class ElasticNetRegressor(Estimator):
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, alpha=0.5, l1_ratio=0.5, max_iter=1000, normalize=False, random_seed=0, **kwargs):
+    def __init__(self, alpha=0.0001, l1_ratio=0.15, max_iter=1000, normalize=False, random_seed=0, **kwargs):
         parameters = {'alpha': alpha,
                       'l1_ratio': l1_ratio,
                       'max_iter': max_iter,
