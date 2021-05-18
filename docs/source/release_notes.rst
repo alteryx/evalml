@@ -2,6 +2,8 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
+        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
     * Changes
     * Documentation Changes
