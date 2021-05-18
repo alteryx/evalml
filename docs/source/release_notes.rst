@@ -48,6 +48,7 @@ Release Notes
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
         * Refactored ``calculate_permutation_importance`` method and add per-column permutation importance method :pr:`2302`
+        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
     * Documentation Changes
         * Minor changes to the release procedure :pr:`2230`
     * Testing Changes
@@ -71,7 +72,6 @@ Release Notes
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
         * Changed BaseSampler to return None instead of y :pr:`2272`
     * Changes
-        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
         * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
