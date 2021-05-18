@@ -1301,6 +1301,7 @@ class DoubleTransform(TargetTransformer):
 
 
 class SubsetData(Transformer):
+    """To simulate a transformer that modifies the target but is not a target transformer, e.g. a sampler."""
     name = "Subset Data"
 
     def __init__(self, parameters=None, random_seed=0):
