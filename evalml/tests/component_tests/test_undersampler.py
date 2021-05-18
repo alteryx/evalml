@@ -98,11 +98,13 @@ def test_undersampler_sampling_dict_errors(dictionary, msg):
 def test_undersampler_sampling_dict(sampling_ratio_dict, expected_dict_values):
     X = np.array([[i] for i in range(1000)])
     y = np.array([0] * 150 + [1] * 850)
-    undersampler = Undersampler(sampling_ratio_dict=sampling_ratio_dict)
+    undersampler = Undersampler(sampling_ratio_dict=sampling_ratio_dict, random_seed=12)
     new_X, new_y = undersampler.fit_transform(X, y)
 
     assert len(new_X) == sum(expected_dict_values.values())
     assert new_y.to_series().value_counts().to_dict() == expected_dict_values
+    assert undersampler.random_seed == 12
+    assert undersampler._component_obj.random_seed == 12
 
 
 def test_undersampler_dictionary_overrides_ratio():
