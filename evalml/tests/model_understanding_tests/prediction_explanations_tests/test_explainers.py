@@ -823,3 +823,13 @@ def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemb
 
     with pytest.raises(ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"):
         explain_predictions_best_worst(pipeline, X, y)
+
+
+@pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "XGBoost Classifier", "Decision Tree Classifier", "Extra Trees Classifier", "LightGBM Classifier"])
+def test_explain_predictions_oversampler(estimator, fraud_100):
+    X, y = fraud_100
+    pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", estimator])
+    pipeline.fit(X, y)
+    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dataframe", top_k_features=4)
+    assert report['feature_names'].isnull().sum() == 0
+    assert report['feature_values'].isnull().sum() == 0
