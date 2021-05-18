@@ -20,7 +20,7 @@ class ElasticNetClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
                                ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
 
-    def __init__(self, alpha=0.0001, l1_ratio=0.15, n_jobs=-1, max_iter=1000,
+    def __init__(self, alpha=0.5, l1_ratio=0.5, n_jobs=-1, max_iter=1000,
                  random_seed=0, penalty='elasticnet',
                  **kwargs):
         parameters = {'alpha': alpha,
