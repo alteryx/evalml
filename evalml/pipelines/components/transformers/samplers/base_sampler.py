@@ -74,7 +74,7 @@ class BaseSampler(Transformer):
         # check that the lengths of the dict and y are equal
         y_unique = y.unique()
         if len(sampling_dict) != len(y_unique):
-            raise ValueError("Lengths are different!")
+            raise ValueError("Sampling dictionary contains a different number of targets than are provided in the data.")
 
         if len(set(sampling_dict.keys()).intersection(set(y_unique))) != len(y_unique):
             raise ValueError("Dictionary keys are different from target values!")
