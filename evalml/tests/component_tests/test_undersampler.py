@@ -73,4 +73,4 @@ def test_undersample_imbalanced(data_type, make_data_type):
         y = y.values
 
     np.testing.assert_equal(X, transform_X.to_dataframe().values)
-    np.testing.assert_equal(y, transform_y.to_series().values)
+    np.testing.assert_equal(None, transform_y)

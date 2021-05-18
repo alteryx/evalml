@@ -2,22 +2,34 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.24.1 May. 16, 2021**
+    * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
         * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
+        * Changed BaseSampler to return None instead of y :pr:`2272`
     * Changes
+        * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
         * Capped Sphinx version under 4.0.0 :pr:`2244`
     * Testing Changes
+        * Change number of cores for pytest from 4 to 2 :pr:`2266`
+        * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
 
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.24.0 May. 04, 2021**
     * Enhancements
@@ -30,7 +42,7 @@ Release Notes
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
-        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223`
+        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
         * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
     * Fixes
         * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
