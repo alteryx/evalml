@@ -6,6 +6,7 @@ Release Notes
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
     * Changes
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class :pr:`2290`
     * Documentation Changes
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`

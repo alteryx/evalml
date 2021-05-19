@@ -584,12 +584,12 @@ def test_automl_allowed_pipelines_search(mock_fit, mock_score, is_linear, dummy_
         pipeline_class = dummy_binary_pipeline_class
     else:
         pipeline_class = nonlinear_binary_pipeline_class
-        
+
     allowed_pipelines = [pipeline_class({})]
 
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
-    max_iterations=2, start_iteration_callback=start_iteration_callback,
+                          max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
     automl.search()
 
