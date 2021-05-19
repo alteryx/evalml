@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -97,36 +99,36 @@ def make_pipeline(X, y, estimator_class, problem_type, parameters=None, custom_h
     if not is_classification(problem_type) and sampler_name is not None:
         raise ValueError(f"Sampling is unsupported for problem_type {str(problem_type)}")
 
+    graph_dict = OrderedDict()
     X_pd = X.to_dataframe()
-    pp_components = []
 
     all_null_cols = X_pd.columns[X_pd.isnull().all()]
     if len(all_null_cols) > 0:
-        pp_components.append(DropNullColumns)
+        graph_dict[DropNullColumns.name] = [DropNullColumns]
     input_logical_types = set(X.logical_types.values())
     types_imputer_handles = {logical_types.Boolean, logical_types.Categorical, logical_types.Double, logical_types.Integer}
     if len(input_logical_types.intersection(types_imputer_handles)) > 0:
-        pp_components.append(Imputer)
+        graph_dict[Imputer.name] = [Imputer, graph_dict.values()[-1][0].name]
 
     text_columns = list(X.select('natural_language').columns)
     if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
+        graph_dict[TextFeaturizer.name] = [TextFeaturizer, graph_dict.values()[-1][0].name]
 
     index_columns = list(X.select('index').columns)
     if len(index_columns) > 0:
-        pp_components.append(DropColumns)
+        graph_dict[DropColumns.name] = [DropColumns, graph_dict.values()[-1][0].name]
 
     datetime_cols = X.select(["Datetime"])
     add_datetime_featurizer = len(datetime_cols.columns) > 0
     if add_datetime_featurizer and estimator_class.model_family != ModelFamily.ARIMA:
-        pp_components.append(DateTimeFeaturizer)
+        graph_dict[DateTimeFeaturizer.name] = [DateTimeFeaturizer, graph_dict.values()[-1][0].name]
 
     if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
-        pp_components.append(DelayedFeatureTransformer)
+        graph_dict[DelayedFeatureTransformer.name] = [DelayedFeatureTransformer, graph_dict.values()[-1][0].name]
 
     categorical_cols = X.select('category')
     if len(categorical_cols.columns) > 0 and estimator_class not in {CatBoostClassifier, CatBoostRegressor}:
-        pp_components.append(OneHotEncoder)
+        graph_dict[OneHotEncoder.name] = [OneHotEncoder, graph_dict.values()[-1][0].name]
 
     sampler_components = {
         "Undersampler": Undersampler,
@@ -137,21 +139,16 @@ def make_pipeline(X, y, estimator_class, problem_type, parameters=None, custom_h
     if sampler_name is not None:
         try:
             import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
-            pp_components.append(sampler_components[sampler_name])
+            sampler_component = sampler_components[sampler_name]
         except ImportError:
             logger.debug(f'Could not import imblearn.over_sampling, so defaulting to use Undersampler')
-            pp_components.append(Undersampler)
+            sampler_component = Undersampler
+        graph_dict[sampler_component.name] = [sampler_component, graph_dict.values()[-1][0].name]
 
     if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-        pp_components.append(StandardScaler)
+        graph_dict[StandardScaler.name] = [StandardScaler, graph_dict.values()[-1][0].name]
 
-    graph_dict = dict()
-    for i, component in enumerate(pp_components):
-        inputs = []
-        if i > 0:
-            inputs = [pp_components[i - 1].name]
-        graph_dict[component.name] = [component] + inputs
-    graph_dict[estimator_class.name] = [estimator_class, pp_components[-1].name]
+    graph_dict[estimator_class.name] = [estimator_class, graph_dict.values()[-1][0].name]
 
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(graph_dict, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
