@@ -20,6 +20,7 @@ from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline
 )
+from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
@@ -825,11 +826,11 @@ def test_explain_predictions_stacked_ensemble(problem_type, dummy_stacked_ensemb
         explain_predictions_best_worst(pipeline, X, y)
 
 
-@pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "Decision Tree Classifier", "Extra Trees Classifier"])
+@pytest.mark.parametrize("estimator", [e for e in _all_estimators() if ('Classifier' in e.name and not any(s in e.name for s in ["Baseline", "Cat", "Elastic", "KN", "Ensemble"]))])
 def test_explain_predictions_oversampler(estimator, fraud_100):
     pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
     X, y = fraud_100
-    pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", estimator])
+    pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", "SMOTENC Oversampler", estimator])
     pipeline.fit(X, y)
     report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dataframe", top_k_features=4)
     assert report['feature_names'].isnull().sum() == 0

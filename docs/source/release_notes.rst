@@ -2,8 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added oversamplers to AutoMLSearch :pr:`2213`
-        * Added tests for model understanding for oversamplers :pr:`2286`
+        * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes

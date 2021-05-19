@@ -14,6 +14,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     TextFeaturizer
 )
+from evalml.pipelines.components.utils import _all_estimators
 from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
 
 
@@ -308,7 +309,7 @@ def test_undersampler(X_y_binary):
     assert test is not None
 
 
-@pytest.mark.parametrize("estimator", ["Logistic Regression Classifier", "Decision Tree Classifier", "Extra Trees Classifier"])
+@pytest.mark.parametrize("estimator", [e for e in _all_estimators() if ('Classifier' in e.name and not any(s in e.name for s in ["Baseline", "Cat", "Elastic", "KN", "Ensemble"]))])
 def test_permutation_importance_oversampler(estimator, fraud_100):
     pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
     X, y = fraud_100
