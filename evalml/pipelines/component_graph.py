@@ -277,14 +277,10 @@ class ComponentGraph:
                     output_x, output_y = output[0], output[1]
                 else:
                     output_x = output
-                    output_y = None
-                output_cache[f"{component_name}.x"] = output_x
-                output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
                     component_instance.fit(input_x, input_y)
                 if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(input_x)
                     output_y = component_instance.predict(input_x)
             if output_x is not None:
                 output_cache[f"{component_name}.x"] = output_x
