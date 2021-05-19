@@ -77,9 +77,10 @@ jobs:
           source test_python/bin/activate
           make git-test
       - if: ${{ matrix.codecov }}
+        name: install coverage
+        run: pip install coverage
+      - if: ${{ matrix.codecov }}
         name: Upload coverage to Codecov
-        run: |
-          virtualenv test_python -q
-          source test_python/bin/activate
-          pip install coverage
-          bash <(curl -s https://codecov.io/bash) -C ${{ github.event.pull_request.head.sha }}
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true

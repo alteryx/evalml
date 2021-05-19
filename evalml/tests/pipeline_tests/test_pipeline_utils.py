@@ -553,11 +553,7 @@ def test_make_pipeline_samplers(problem_type, samplers, X_y_binary, X_y_multi, X
                 samplers = 'Undersampler'
             # check that we do add the sampler properly
             if samplers is not None and problem_type != 'regression':
-                # we add the sampler before the scaler if it exists
-                if pipeline.component_graph[-2].name == 'Standard Scaler':
-                    assert pipeline.component_graph[-3].name == samplers
-                else:
-                    assert pipeline.component_graph[-2].name == samplers
+                assert any('sampler' in comp.name for comp in pipeline.component_graph)
             else:
                 assert not any('sampler' in comp.name for comp in pipeline.component_graph)
 

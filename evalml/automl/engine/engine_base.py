@@ -217,18 +217,11 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     """
     logger.info(f"{pipeline.name}:")
 
-    X_train, y_train = X, y
-    X_train.ww.init(schema=automl_config.X_schema)
-    y_train.ww.init(schema=automl_config.y_schema)
+    X.ww.init(schema=automl_config.X_schema)
+    y.ww.init(schema=automl_config.y_schema)
 
-    if pipeline.model_family == ModelFamily.ENSEMBLE:
-        X_train, y_train = X.ww.iloc[automl_config.ensembling_indices], y.ww.iloc[automl_config.ensembling_indices]
-    elif automl_config.ensembling_indices is not None:
-        training_indices = [i for i in range(len(X)) if i not in automl_config.ensembling_indices]
-        X_train = X.ww.iloc[training_indices]
-        y_train = y.ww.iloc[training_indices]
-
-    return train_and_score_pipeline(pipeline, automl_config=automl_config, full_X_train=X_train, full_y_train=y_train,
+    return train_and_score_pipeline(pipeline, automl_config=automl_config,
+                                    full_X_train=X, full_y_train=y,
                                     logger=logger)
 
 

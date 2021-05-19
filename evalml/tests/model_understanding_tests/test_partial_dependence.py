@@ -606,8 +606,8 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
     dep = partial_dependence(pl, X, features="amount", grid_resolution=20)
 
     assert dep.shape[0] == 20
-    assert dep.shape[0] != max(X.ww.select('categorical').ww.describe().loc["nunique"]) + 1
+    assert dep.shape[0] != max(X.ww.select('categorical').describe().loc["unique"]) + 1
 
     dep = partial_dependence(pl, X, features="provider", grid_resolution=20)
     assert dep.shape[0] == X['provider'].nunique()
-    assert dep.shape[0] != max(X.ww.select('categorical').ww.describe().loc["nunique"]) + 1
+    assert dep.shape[0] != max(X.ww.select('categorical').describe().loc["unique"]) + 1

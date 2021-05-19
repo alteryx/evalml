@@ -250,8 +250,7 @@ class TestDaskEngine(unittest.TestCase):
         X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ['my cool feature']})
         y = ww.init_series(y)
 
-        new_config = AutoMLConfig(ensembling_indices=automl_data.ensembling_indices,
-                                  data_splitter=automl_data.data_splitter,
+        new_config = AutoMLConfig(data_splitter=automl_data.data_splitter,
                                   problem_type=automl_data.problem_type,
                                   objective=automl_data.objective,
                                   additional_objectives=automl_data.additional_objectives,

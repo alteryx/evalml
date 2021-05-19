@@ -79,7 +79,6 @@ def _compute_shap_values(pipeline, features, training_data=None):
         # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
         sampled_training_data_features = shap.sample(training_data, 100)
         sampled_training_data_features = check_array(sampled_training_data_features)
-
         if is_regression(pipeline.problem_type):
             link_function = "identity"
             decision_function = estimator._component_obj.predict

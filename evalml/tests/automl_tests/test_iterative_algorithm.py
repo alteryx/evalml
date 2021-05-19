@@ -454,15 +454,17 @@ def test_iterative_algorithm_first_batch_order_param(X_y_binary, has_minimal_dep
                                          'Extra Trees Classifier'] + final_estimators
 
 
+@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_iterative_algorithm_sampling_params(problem_type, mock_imbalanced_data_X_y):
+def test_iterative_algorithm_sampling_params(problem_type, sampler, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    if has_minimal_dependencies and sampler != "Undersampler":
+        pytest.skip("Minimal dependencies, so we don't test the oversamplers for iterative algorithm")
     X, y = mock_imbalanced_data_X_y(problem_type, "some", 'small')
     estimators = get_estimators(problem_type, None)
-    pipelines = [make_pipeline(X, y, e, problem_type, sampler_name='Undersampler') for e in estimators]
+    pipelines = [make_pipeline(X, y, e, problem_type, sampler_name=sampler) for e in estimators]
     algo = IterativeAlgorithm(allowed_pipelines=pipelines,
                               random_seed=0,
-                              _frozen_pipeline_parameters={"Undersampler": {"sampling_ratio": 0.5}})
-
+                              _frozen_pipeline_parameters={sampler: {"sampling_ratio": 0.5}})
     next_batch = algo.next_batch()
     for p in next_batch:
         for component in p._component_graph:

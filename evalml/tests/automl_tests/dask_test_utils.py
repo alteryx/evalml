@@ -12,7 +12,6 @@ def err_call(*args, **kwargs):
     """No-op"""
 
 
-ensembling_indices = [0]
 data_splitter = TrainingValidationSplit()
 problem_type = "binary"
 objective = get_objective("Log Loss Binary", return_instance=True)
@@ -20,8 +19,7 @@ additional_objectives = []
 optimize_thresholds = False
 error_callback = err_call
 random_seed = 0
-automl_data = AutoMLConfig(ensembling_indices=ensembling_indices,
-                           data_splitter=data_splitter,
+automl_data = AutoMLConfig(data_splitter=data_splitter,
                            problem_type=problem_type,
                            objective=objective,
                            additional_objectives=additional_objectives,

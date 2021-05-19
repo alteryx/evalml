@@ -2,10 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
+        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Use codecov action to update coverage reports :pr:`2238`
+        * Removed MarkupSafe dependency version pin from requirements.txt and moved instead into RTD docs build CI :pr:`2261`
 
 .. warning::
 
@@ -22,6 +26,8 @@ Release Notes
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
         * Changed BaseSampler to return None instead of y :pr:`2272`
     * Changes
+        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
+        * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
         * Capped Sphinx version under 4.0.0 :pr:`2244`
@@ -39,6 +45,7 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
+        * Added oversamplers to AutoMLSearch :pr:`2213`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
