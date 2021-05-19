@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+import pandas as pd
 import pytest
 import woodwork as ww
 from distributed import Client
@@ -12,10 +13,12 @@ from evalml.automl.engine.engine_base import (
     train_pipeline
 )
 from evalml.automl.engine.sequential_engine import SequentialEngine
+from evalml.automl.utils import AutoMLConfig
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_test_utils import (
     TestPipelineSlow,
+    TestSchemaCheckPipeline,
     automl_data
 )
 
@@ -51,7 +54,7 @@ class TestDaskEngine(unittest.TestCase):
         original_pipeline_fitted = train_pipeline(pipeline, X, y, optimize_thresholds=automl_data.optimize_thresholds,
                                                   objective=automl_data.objective)
         assert dask_pipeline_fitted == original_pipeline_fitted
-        assert dask_pipeline_fitted.predict(X) == original_pipeline_fitted.predict(X)
+        pd.testing.assert_series_equal(dask_pipeline_fitted.predict(X), original_pipeline_fitted.predict(X))
 
     def test_submit_training_jobs_multiple(self):
         """ Test that training multiple pipelines using the parallel engine produces the
@@ -88,8 +91,9 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that evaluating a single pipeline using the parallel engine produces the
         same results as simply running the evaluate_pipeline function. """
         X, y = self.X_y_binary
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
+
         pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                 parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
@@ -127,6 +131,9 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that evaluating multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
+        X.ww.init()
+        y = ww.init_series(y)
+
         pipelines = [BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                   parameters={"Logistic Regression Classifier": {"n_jobs": 1}}),
                      BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
@@ -135,7 +142,7 @@ class TestDaskEngine(unittest.TestCase):
         def eval_pipelines(pipelines, engine):
             futures = []
             for pipeline in pipelines:
-                futures.append(engine.submit_evaluation_job(X=ww.DataTable(X), y=ww.DataColumn(y),
+                futures.append(engine.submit_evaluation_job(X=X, y=y,
                                                             automl_config=automl_data, pipeline=pipeline))
             results = [f.get_result() for f in futures]
             return results
@@ -166,15 +173,18 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that scoring a single pipeline using the parallel engine produces the
         same results as simply running the score_pipeline function. """
         X, y = self.X_y_binary
+        X.ww.init()
+        y = ww.init_series(y)
+
         pipeline = BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                 parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
         engine = DaskEngine(client=self.client)
         objectives = [automl_data.objective]
 
-        pipeline_future = engine.submit_training_job(X=ww.DataTable(X), y=ww.DataColumn(y),
+        pipeline_future = engine.submit_training_job(X=X, y=y,
                                                      automl_config=automl_data, pipeline=pipeline)
         pipeline = pipeline_future.get_result()
-        pipeline_score_future = engine.submit_scoring_job(X=ww.DataTable(X), y=ww.DataColumn(y),
+        pipeline_score_future = engine.submit_scoring_job(X=X, y=y,
                                                           automl_config=automl_data, pipeline=pipeline,
                                                           objectives=objectives)
         assert isinstance(pipeline_score_future, DaskComputation)
@@ -189,6 +199,9 @@ class TestDaskEngine(unittest.TestCase):
         """ Test that scoring multiple pipelines using the parallel engine produces the
         same results as the sequential engine. """
         X, y = self.X_y_binary
+        X.ww.init()
+        y = ww.init_series(y)
+
         pipelines = [BinaryClassificationPipeline(component_graph=["Logistic Regression Classifier"],
                                                   parameters={"Logistic Regression Classifier": {"n_jobs": 1}}),
                      BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
@@ -197,12 +210,12 @@ class TestDaskEngine(unittest.TestCase):
         def score_pipelines(pipelines, engine):
             futures = []
             for pipeline in pipelines:
-                futures.append(engine.submit_training_job(X=ww.DataTable(X), y=ww.DataColumn(y),
+                futures.append(engine.submit_training_job(X=X, y=y,
                                                           automl_config=automl_data, pipeline=pipeline))
             pipelines = [f.get_result() for f in futures]
             futures = []
             for pipeline in pipelines:
-                futures.append(engine.submit_scoring_job(X=ww.DataTable(X), y=ww.DataColumn(y),
+                futures.append(engine.submit_scoring_job(X=X, y=y,
                                                          automl_config=automl_data, pipeline=pipeline,
                                                          objectives=[automl_data.objective]))
             results = [f.get_result() for f in futures]
@@ -229,6 +242,39 @@ class TestDaskEngine(unittest.TestCase):
         pipeline_future = engine.submit_training_job(X=X, y=y, automl_config=automl_data, pipeline=pipeline)
         pipeline_future.cancel()
         assert pipeline_future.is_cancelled
+
+    def test_dask_sends_woodwork_schema(self):
+        X, y = self.X_y_binary
+        engine = DaskEngine(client=self.client)
+
+        X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ['my cool feature']})
+        y = ww.init_series(y)
+
+        new_config = AutoMLConfig(ensembling_indices=automl_data.ensembling_indices,
+                                  data_splitter=automl_data.data_splitter,
+                                  problem_type=automl_data.problem_type,
+                                  objective=automl_data.objective,
+                                  additional_objectives=automl_data.additional_objectives,
+                                  optimize_thresholds=automl_data.optimize_thresholds,
+                                  error_callback=automl_data.error_callback,
+                                  random_seed=automl_data.random_seed,
+                                  X_schema=X.ww.schema,
+                                  y_schema=y.ww.schema)
+
+        # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
+        # pipeline.fit and pipeline.score
+        pipeline = TestSchemaCheckPipeline(component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
+                                           parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                           X_schema_to_check=X.ww.schema, y_schema_to_check=y.ww.schema)
+
+        future = engine.submit_training_job(X=X, y=y, automl_config=new_config, pipeline=pipeline)
+        fitted_pipeline = future.get_result()
+
+        future = engine.submit_scoring_job(X=X, y=y, automl_config=new_config, pipeline=fitted_pipeline, objectives=["F1"])
+        _ = future.get_result()
+
+        future = engine.submit_evaluation_job(new_config, pipeline, X, y)
+        future.get_result()
 
     @classmethod
     def tearDownClass(cls) -> None:

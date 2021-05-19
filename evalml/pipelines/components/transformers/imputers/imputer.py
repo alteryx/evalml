@@ -1,3 +1,5 @@
+import pandas as pd
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils import (
@@ -68,15 +70,15 @@ class Imputer(Transformer):
         cat_cols = list(X.ww.select(['category', 'boolean']).columns)
         numeric_cols = list(X.ww.select(['numeric']).columns)
 
-        self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
-        X_null_dropped = X.ww.drop(self._all_null_cols)
+        nan_ratio = X.ww.describe().loc['nan_count'] / X.shape[0]
+        self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X_numerics = X_null_dropped[[col for col in numeric_cols if col not in self._all_null_cols]]
+        X_numerics = X[[col for col in numeric_cols if col not in self._all_null_cols]]
         if len(X_numerics.columns) > 0:
             self._numeric_imputer.fit(X_numerics, y)
             self._numeric_cols = X_numerics.columns
 
-        X_categorical = X_null_dropped[[col for col in cat_cols if col not in self._all_null_cols]]
+        X_categorical = X[[col for col in cat_cols if col not in self._all_null_cols]]
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
@@ -93,19 +95,21 @@ class Imputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_ww = infer_feature_types(X)
-        X_null_dropped = X_ww.ww.drop(self._all_null_cols)
-        if X_null_dropped.empty:
-            return X_null_dropped
+        X = infer_feature_types(X)
+        original_ltypes = X.ww.schema.logical_types
+        if len(self._all_null_cols) == X.shape[1]:
+            df = pd.DataFrame(index=X.index)
+            return _retain_custom_types_and_initalize_woodwork(original_ltypes, df)
+
+        X.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
-            X_numeric = X_null_dropped.ww[self._numeric_cols.tolist()]
+            X_numeric = X[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
-            X_null_dropped[X_numeric.columns] = imputed
+            X[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
-            X_categorical = X_null_dropped.ww[self._categorical_cols.tolist()]
+            X_categorical = X[self._categorical_cols.tolist()]
             imputed = self._categorical_imputer.transform(X_categorical)
-            X_null_dropped[X_categorical.columns] = imputed
-        X_null_dropped = _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_null_dropped)
-        return X_null_dropped
+            X[X_categorical.columns] = imputed
+        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X)

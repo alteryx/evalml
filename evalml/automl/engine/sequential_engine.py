@@ -2,6 +2,7 @@ from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
     evaluate_pipeline,
+    score_pipeline,
     train_pipeline
 )
 from evalml.objectives.utils import get_objective
@@ -54,11 +55,15 @@ class SequentialEngine(EngineBase):
                                      pipeline=pipeline, X=X,
                                      y=y,
                                      optimize_thresholds=automl_config.optimize_thresholds,
-                                     objective=automl_config.objective)
+                                     objective=automl_config.objective,
+                                     X_schema=automl_config.X_schema,
+                                     y_schema=automl_config.y_schema)
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        computation = SequentialComputation(work=pipeline.score,
-                                            X=X, y=y, objectives=objectives)
+        computation = SequentialComputation(work=score_pipeline,
+                                            pipeline=pipeline,
+                                            X=X, y=y, objectives=objectives,
+                                            X_schema=X.ww.schema, y_schema=y.ww.schema)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation

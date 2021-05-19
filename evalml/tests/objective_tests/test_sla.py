@@ -14,7 +14,6 @@ class TestSLA(TestBinaryObjective):
     def assign_objective(self, alert_rate):
         self.objective = SensitivityLowAlert(alert_rate)
 
-    @pytest.mark.objective_test_uses_automl
     def test_sla_objective(self, X_y_binary):
         self.assign_problem_type()
         self.assign_objective(0.1)

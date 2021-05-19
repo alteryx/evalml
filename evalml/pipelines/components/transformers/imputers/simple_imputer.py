@@ -47,6 +47,8 @@ class SimpleImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
+        nan_ratio = X.ww.describe().loc['nan_count'] / X.shape[0]
+        self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         # Not using select because we just need column names, not a new dataframe
         natural_language_columns = [col for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage]
@@ -59,7 +61,6 @@ class SimpleImputer(Transformer):
             X = X.astype('category')
 
         self._component_obj.fit(X, y)
-        self._all_null_cols = set(X.columns) - set(X.dropna(axis=1, how='all').columns)
         return self
 
     def transform(self, X, y=None):
@@ -72,25 +73,25 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_ww = infer_feature_types(X)
-        original_logical_types = X_ww.ww.schema.logical_types
+        X = infer_feature_types(X)
+        original_logical_types = X.ww.schema.logical_types
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
-        if (X_ww.dtypes == bool).all():
-            return X_ww
+        if (X.dtypes == bool).all():
+            return X
 
-        X_null_dropped = X_ww.ww.drop(self._all_null_cols)
+        not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
+        original_index = X.index
 
         # Not using select because we just need column names, not a new dataframe
-        X_ww.ww.set_types({col: "Categorical" for col, ltype in X_ww.ww.logical_types.items() if ltype == NaturalLanguage})
+        X.ww.set_types({col: "Categorical" for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage})
 
-        X_t = self._component_obj.transform(X_ww)
+        X = self._component_obj.transform(X)
+        X = pd.DataFrame(X, columns=not_all_null_cols)
+        if not_all_null_cols:
+            X.index = original_index
 
-        X_t = pd.DataFrame(X_t, columns=X_null_dropped.columns)
-        if not X_null_dropped.empty:
-            X_t.index = X_null_dropped.index
-
-        return _retain_custom_types_and_initalize_woodwork(original_logical_types, X_t)
+        return _retain_custom_types_and_initalize_woodwork(original_logical_types, X)
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

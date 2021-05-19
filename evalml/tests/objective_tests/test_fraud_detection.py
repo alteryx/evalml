@@ -6,7 +6,6 @@ from evalml import AutoMLSearch
 from evalml.objectives import FraudCost
 
 
-@pytest.mark.objective_test_uses_automl
 def test_fraud_objective(X_y_binary):
     X, y = X_y_binary
 

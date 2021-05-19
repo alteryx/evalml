@@ -21,7 +21,6 @@ def test_cbm_init():
                           false_positive=-7, false_negative=None)
 
 
-@pytest.mark.objective_test_uses_automl
 @pytest.mark.parametrize("optimize_thresholds", [True, False])
 def test_cbm_objective_automl(optimize_thresholds, X_y_binary):
     X, y = X_y_binary
