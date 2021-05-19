@@ -184,7 +184,7 @@ def test_callback(X_y_binary):
         "add_result_callback": 0,
     }
 
-    def start_iteration_callback(pipeline_class, parameters, automl_obj, counts=counts):
+    def start_iteration_callback(pipeline, parameters, automl_obj, counts=counts):
         counts["start_iteration_callback"] += 1
 
     def add_result_callback(results, trained_pipeline, automl_obj, counts=counts):
@@ -574,36 +574,28 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
     mock_score.assert_called()
 
 
+@pytest.mark.parametrize('is_linear', [True, False])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, is_linear, dummy_binary_pipeline_class, nonlinear_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
+    if is_linear:
+        pipeline_class = dummy_binary_pipeline_class
+    else:
+        pipeline_class = nonlinear_binary_pipeline_class
+        
+    allowed_pipelines = [pipeline_class({})]
 
-    allowed_pipelines = [dummy_binary_pipeline_class({})]
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2, start_iteration_callback=start_iteration_callback,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
+    max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
-
-
-def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-
-    allowed_pipelines = [nonlinear_binary_pipeline_class({})]
-    start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
-                          start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines, n_jobs=1)
-    automl.search()
-
-    assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_binary_pipeline_class
+    assert isinstance(start_iteration_callback.call_args_list[0][0][0], BinaryClassificationPipeline)
+    assert isinstance(start_iteration_callback.call_args_list[1][0][0], pipeline_class)
 
 
 def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_multiclass_pipeline_class, X_y_multi):

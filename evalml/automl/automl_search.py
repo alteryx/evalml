@@ -193,7 +193,7 @@ class AutoMLSearch:
             optimize_thresholds (bool): Whether or not to optimize the binary pipeline threshold. Defaults to True.
 
             start_iteration_callback (callable): Function called before each pipeline training iteration.
-                Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
+                Callback function takes three positional parameters: The pipeline instance, the pipeline parameters, and the AutoMLSearch object.
 
             add_result_callback (callable): Function called after each pipeline training iteration.
                 Callback function takes three positional parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
@@ -450,7 +450,7 @@ class AutoMLSearch:
 
     def _pre_evaluation_callback(self, pipeline):
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
+            self.start_iteration_callback(pipeline, pipeline.parameters, self)
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
