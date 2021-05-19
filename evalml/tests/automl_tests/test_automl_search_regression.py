@@ -226,12 +226,7 @@ def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_sco
 def test_automl_allowed_pipelines_search(mock_fit, mock_score, is_linear, dummy_regression_pipeline_class, nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
     mock_score.return_value = {'R2': 1.0}
-
-    if is_linear:
-        pipeline_class = dummy_regression_pipeline_class
-    else:
-        pipeline_class = nonlinear_regression_pipeline_class
-
+    pipeline_class = dummy_regression_pipeline_class if is_linear else nonlinear_regression_pipeline_class
     allowed_pipelines = [pipeline_class({})]
 
     start_iteration_callback = MagicMock()
