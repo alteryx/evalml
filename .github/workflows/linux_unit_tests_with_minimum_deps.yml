@@ -61,8 +61,10 @@ jobs:
       - if: ${{ matrix.core_dependencies }}
         name: run tests with minimal dependencies
         run: |
+          source test_python/bin/activate
           python -m pytest evalml/ -n 2 --doctest-modules --has-minimal-dependencies
       - if: ${{ !matrix.core_dependencies }}
         name: run tests
         run: |
+          source test_python/bin/activate
           python -m pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure
