@@ -55,6 +55,8 @@ jobs:
         run: |
           source test_python/bin/activate
           python -m pip install -e . --no-dependencies
+          python -m pip install "$(cat evalml/tests/dependency_update_check/minimum_test_requirements.txt | grep wheel)"
+          python -m pip install "$(cat evalml/tests/dependency_update_check/minimum_test_requirements.txt | grep setuptools)"
           python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           python -m pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
           python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
