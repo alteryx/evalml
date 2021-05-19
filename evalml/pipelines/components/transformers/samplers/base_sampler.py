@@ -61,7 +61,7 @@ class BaseSampler(Transformer):
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user
-            y (ww.DataColumn): The target values
+            y (pd.Series): The target values
 
         Returns:
             dict: A dictionary with target values as keys and the number of samples as values
@@ -89,7 +89,7 @@ class BaseSampler(Transformer):
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user
-            y (ww.DataColumn): The target values
+            y (pd.Series): The target values
 
         Returns:
             dict: The parameters dictionary with the sampling_ratio_dict value replaced as necessary

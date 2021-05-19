@@ -117,7 +117,7 @@ def test_target_leakage_data_check_input_formats():
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict(),
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'd'}).to_dict()]
     }
-    # test X as ww.DataTable, y as ww.DataColumn
+    # test X, y with ww
     X_ww = X.copy()
     X_ww.ww.init()
     y_ww = ww.init_series(y)
@@ -241,7 +241,7 @@ def test_target_leakage_multi():
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'c'}).to_dict()]
     }
 
-    # test X as ww.DataTable, y as ww.DataColumn
+    # test X, y with ww
     X_ww = X.copy()
     X_ww.ww.init()
     y_ww = ww.init_series(y)
@@ -289,7 +289,7 @@ def test_target_leakage_regression():
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 'e'}).to_dict()]
     }
 
-    # test X as ww.DataTable, y as ww.DataColumn
+    # test X, y with ww
     X_ww = X.copy()
     X_ww.ww.init()
     y_ww = ww.init_series(y)
@@ -407,7 +407,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": 3}).to_dict()]
     }
 
-    # test X as ww.DataTable, y as ww.DataColumn
+    # test X, y with ww
     X_ww = X.copy()
     X_ww.ww.init()
     y_ww = ww.init_series(y)

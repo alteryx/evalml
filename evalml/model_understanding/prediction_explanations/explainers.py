@@ -27,8 +27,8 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (ww.DataTable, pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
-        y (ww.DataColumn, pd.Series): Labels for the input data.
+        input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
+        y (pd.Series): Labels for the input data.
         indices_to_explain (list(int)): List of integer indices to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.  Default is 3.
@@ -74,8 +74,8 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
 
     Arguments:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
-        input_features (ww.DataTable, pd.DataFrame): Input data to evaluate the pipeline on.
-        y_true (ww.DataColumn, pd.Series): True labels for the input data.
+        input_features (pd.DataFrame): Input data to evaluate the pipeline on.
+        y_true (pd.Series): True labels for the input data.
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
