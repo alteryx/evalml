@@ -1,3 +1,4 @@
+from os import pipe
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -575,42 +576,40 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
 
 
 @pytest.mark.parametrize('is_linear', [True, False])
+@pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_search(mock_fit, mock_score, is_linear, dummy_binary_pipeline_class, nonlinear_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
-    if is_linear:
-        pipeline_class = dummy_binary_pipeline_class
+def test_automl_allowed_pipelines_search(mock_binary_fit, mock_binary_score,
+                                         mock_multi_fit, mock_multi_score,
+                                         is_linear, problem_type,
+                                         dummy_binary_pipeline_class, nonlinear_binary_pipeline_class,
+                                         dummy_multiclass_pipeline_class, nonlinear_multiclass_pipeline_class,
+                                         X_y_binary, X_y_multi):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        mock_binary_score.return_value = {'Log Loss Binary': 1.0}
+        expected_mock_class = BinaryClassificationPipeline
+        pipeline_class = dummy_binary_pipeline_class if is_linear else nonlinear_binary_pipeline_class
     else:
-        pipeline_class = nonlinear_binary_pipeline_class
+        X, y = X_y_multi
+        mock_multi_score.return_value = {'Log Loss Multiclass': 1.0}
+        expected_mock_class = MulticlassClassificationPipeline
+
+        pipeline_class = dummy_multiclass_pipeline_class if is_linear else nonlinear_multiclass_pipeline_class
 
     allowed_pipelines = [pipeline_class({})]
 
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
-                          max_iterations=2, start_iteration_callback=start_iteration_callback,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
+                          max_iterations=5, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
     automl.search()
 
-    assert start_iteration_callback.call_count == 2
-    assert isinstance(start_iteration_callback.call_args_list[0][0][0], BinaryClassificationPipeline)
-    assert isinstance(start_iteration_callback.call_args_list[1][0][0], pipeline_class)
-
-
-def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_multiclass_pipeline_class, X_y_multi):
-    X, y = X_y_multi
-
-    allowed_pipelines = [nonlinear_multiclass_pipeline_class({})]
-    start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_iterations=5,
-                          start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines, n_jobs=1)
-    automl.search()
-
-    assert start_iteration_callback.call_args_list[0][0][0] == MulticlassClassificationPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
-    assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class
+    assert isinstance(start_iteration_callback.call_args_list[0][0][0], expected_mock_class)
+    for i in range(1, 5):
+        assert isinstance(start_iteration_callback.call_args_list[i][0][0], pipeline_class)
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY])
