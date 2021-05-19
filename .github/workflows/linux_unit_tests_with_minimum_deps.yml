@@ -44,14 +44,16 @@ jobs:
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
       - if: ${{ matrix.core_dependencies }}
-        name: install evalml with core dependencies, and test dependencies, run tests
+        name: install evalml with core dependencies, & test dependencies
         run: |
           source test_python/bin/activate
           python -m pip install -e . --no-dependencies
+          python -m pip install "$(cat evalml/tests/dependency_update_check/minimum_test_requirements.txt | grep wheel)"
+          python -m pip install "$(cat evalml/tests/dependency_update_check/minimum_test_requirements.txt | grep setuptools)"
           python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
       - if: ${{ !matrix.core_dependencies }}
-        name: install evalml with core dependencies, optional requirements, and test dependencies, run tests
+        name: install evalml with core dependencies, optional requirements, & test dependencies
         run: |
           source test_python/bin/activate
           python -m pip install -e . --no-dependencies
