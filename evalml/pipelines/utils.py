@@ -48,22 +48,58 @@ from evalml.utils import get_logger, import_or_raise, infer_feature_types
 logger = get_logger(__file__)
 
 
-def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_name=None):
-    """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
+def _get_pipeline_base_class(problem_type):
+    """Returns pipeline base class for problem_type"""
+    if problem_type == ProblemTypes.BINARY:
+        return BinaryClassificationPipeline
+    elif problem_type == ProblemTypes.MULTICLASS:
+        return MulticlassClassificationPipeline
+    elif problem_type == ProblemTypes.REGRESSION:
+        return RegressionPipeline
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        return TimeSeriesRegressionPipeline
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        return TimeSeriesBinaryClassificationPipeline
+    else:
+        return TimeSeriesMulticlassClassificationPipeline
 
-    Arguments:
-        X (ww.DataTable): The input data of shape [n_samples, n_features]
-        y (ww.DataColumn): The target data of length [n_samples]
-        problem_type (ProblemTypes or str): Problem type
-        estimator_class (class): A class which subclasses Estimator estimator for pipeline,
-        sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None
+
+def make_pipeline(X, y, estimator_class, problem_type, parameters=None, custom_hyperparameters=None, sampler_name=None):
+    """Given input data, target data, an estimator class and the problem type,
+        generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
+        The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
+
+   Arguments:
+        X (pd.DataFrame, ww.DataTable): The input data of shape [n_samples, n_features]
+        y (pd.Series, ww.DataColumn): The target data of length [n_samples]
+        estimator_class (Estimator): Estimator class to construct a pipeline for
+        problem_type (ProblemTypes or str): Problem type for pipeline to generate
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+            An empty dictionary or None implies using all default values for component parameters.
+        custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
+            with component name as key and dictionary of parameters as the value
+        sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+            Defaults to None
 
     Returns:
-        list[Transformer]: A list of applicable preprocessing components to use with the estimator
+        PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
+
     """
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
+
+    if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
+        raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
+
+    problem_type = handle_problem_types(problem_type)
+    if estimator_class not in get_estimators(problem_type):
+        raise ValueError(f"{estimator_class.name} is not a valid estimator for problem type")
+    if not is_classification(problem_type) and sampler_name is not None:
+        raise ValueError(f"Sampling is unsupported for problem_type {str(problem_type)}")
 
     X_pd = X.to_dataframe()
     pp_components = []
+
     all_null_cols = X_pd.columns[X_pd.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
@@ -109,62 +145,16 @@ def _get_preprocessing_components(X, y, problem_type, estimator_class, sampler_n
     if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         pp_components.append(StandardScaler)
 
-    return pp_components
-
-
-def _get_pipeline_base_class(problem_type):
-    """Returns pipeline base class for problem_type"""
-    if problem_type == ProblemTypes.BINARY:
-        return BinaryClassificationPipeline
-    elif problem_type == ProblemTypes.MULTICLASS:
-        return MulticlassClassificationPipeline
-    elif problem_type == ProblemTypes.REGRESSION:
-        return RegressionPipeline
-    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        return TimeSeriesRegressionPipeline
-    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        return TimeSeriesBinaryClassificationPipeline
-    else:
-        return TimeSeriesMulticlassClassificationPipeline
-
-
-def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperparameters=None, sampler_name=None):
-    """Given input data, target data, an estimator class and the problem type,
-        generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
-        The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
-
-   Arguments:
-        X (pd.DataFrame, ww.DataTable): The input data of shape [n_samples, n_features]
-        y (pd.Series, ww.DataColumn): The target data of length [n_samples]
-        estimator (Estimator): Estimator for pipeline
-        problem_type (ProblemTypes or str): Problem type for pipeline to generate
-        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-            An empty dictionary or None implies using all default values for component parameters.
-        custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
-            with component name as key and dictionary of parameters as the value
-        sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
-            Defaults to None
-
-    Returns:
-        PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
-
-    """
-    X = infer_feature_types(X)
-    y = infer_feature_types(y)
-
-    problem_type = handle_problem_types(problem_type)
-    if estimator not in get_estimators(problem_type):
-        raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    if not is_classification(problem_type) and sampler_name is not None:
-        raise ValueError(f"Sampling is unsupported for problem_type {str(problem_type)}")
-    preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator, sampler_name)
-    complete_component_graph = preprocessing_components + [estimator]
-
-    if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
-        raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
+    graph_dict = dict()
+    for i, component in enumerate(pp_components):
+        inputs = []
+        if i > 0:
+            inputs = [pp_components[i - 1].name]
+        graph_dict[component.name] = [component] + inputs
+    graph_dict[estimator_class.name] = [estimator_class, pp_components[-1].name]
 
     base_class = _get_pipeline_base_class(problem_type)
-    return base_class(complete_component_graph, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
+    return base_class(graph_dict, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
 
 
 def generate_pipeline_code(element):
