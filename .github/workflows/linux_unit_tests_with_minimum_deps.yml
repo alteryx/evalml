@@ -50,7 +50,6 @@ jobs:
           python -m pip install -e . --no-dependencies
           python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-          pytest evalml/ -n 2 --doctest-modules --has-minimal-dependencies
       - if: ${{ !matrix.core_dependencies }}
         name: install evalml with core dependencies, optional requirements, and test dependencies, run tests
         run: |
@@ -59,4 +58,11 @@ jobs:
           python -m pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           python -m pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
           python -m pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
-          pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure
+      - if: ${{ matrix.core_dependencies }}
+        name: run tests with minimal dependencies
+        run: |
+          python -m pytest evalml/ -n 2 --doctest-modules --has-minimal-dependencies
+      - if: ${{ !matrix.core_dependencies }}
+        name: run tests
+        run: |
+          python -m pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure
