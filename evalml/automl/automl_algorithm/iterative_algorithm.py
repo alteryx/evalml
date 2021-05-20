@@ -124,7 +124,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def _combine_parameters(self, pipeline, proposed_parameters):
         """Helper function for logic to transform proposed parameters and frozen parameters."""
-        return {**self._transform_parameters(pipeline, proposed_parameters), **self._frozen_pipeline_parameters}
+        print(f'Iterative Algorithm - _combine_parameters - pipeline: {pipeline}')
+        print(f'Iterative Algorithm - _combine_parameters - proposed_parameters: {proposed_parameters}')
+        print(f'Iterative Algorithm - _combine_parameters - self._frozen_pipeline_parameters: {self._frozen_pipeline_parameters}')
+        _returning = {**self._transform_parameters(pipeline, proposed_parameters), **self._frozen_pipeline_parameters}
+        print(f'Iterative Algorithm - _combine_parameters - returning combined parameters: {_returning}')
+        return _returning
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline
@@ -186,4 +191,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[name] = component_parameters
+            print(f'Iterative Algorithm - _transform_parameters - component_parameters: {component_parameters}')
+        print(f'Iterative Algorithm - _transform_parameters - final transformed parameters: {parameters}')
         return parameters
