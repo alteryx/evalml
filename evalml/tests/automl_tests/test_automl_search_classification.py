@@ -184,7 +184,7 @@ def test_callback(X_y_binary):
         "add_result_callback": 0,
     }
 
-    def start_iteration_callback(pipeline, parameters, automl_obj, counts=counts):
+    def start_iteration_callback(pipeline, automl_obj, counts=counts):
         counts["start_iteration_callback"] += 1
 
     def add_result_callback(results, trained_pipeline, automl_obj, counts=counts):
