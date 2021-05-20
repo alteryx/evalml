@@ -89,5 +89,5 @@ class TargetTransformer(Transformer):
             y (ww.DataColumn, pd.Series): Target transformed by this component.
 
         Returns:
-            ww.DataColumn: Target without the transformation. 
+            ww.DataColumn: Target without the transformation.
         """
