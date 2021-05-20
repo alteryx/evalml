@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import BaseCrossValidator
 
-from .pipeline_search_plots import PipelineSearchPlots
+from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
@@ -336,6 +336,7 @@ class AutoMLSearch:
                                                    n_splits=3, shuffle=True, random_seed=self.random_seed)
         self.data_splitter = self.data_splitter or default_data_splitter
         self.pipeline_parameters = pipeline_parameters if pipeline_parameters is not None else {}
+        self.search_iteration_plot = None
         self._interrupted = False
         self._frozen_pipeline_parameters = {}
 
@@ -563,6 +564,9 @@ class AutoMLSearch:
         if self.max_time is not None:
             logger.info("Will stop searching for new pipelines after %d seconds.\n" % self.max_time)
         logger.info("Allowed model families: %s\n" % ", ".join([model.value for model in self.allowed_model_families]))
+        self.search_iteration_plot = None
+        if self.plot:
+            self.search_iteration_plot = self.plot.search_iteration_plot(interactive_plot=show_iteration_plot)
 
         self._start = time.time()
 
@@ -810,8 +814,8 @@ class AutoMLSearch:
             except PipelineNotFoundError:
                 pass
 
-        if self.search_iteration_plot:
-            self.search_iteration_plot.update()
+        if isinstance(self.search_iteration_plot, SearchIterationPlot):
+            self.search_iteration_plot.update(self.results, self.objective)
 
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
@@ -1075,14 +1079,6 @@ class AutoMLSearch:
     def plot(self):
         try:
             return PipelineSearchPlots(self.results, self.objective)
-        except ImportError:
-            logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
-        return None
-
-    @property
-    def search_iteration_plot(self):
-        try:
-            return self.plot.search_iteration_plot()
         except ImportError:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
         return None

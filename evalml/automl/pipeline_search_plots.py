@@ -8,13 +8,11 @@ class SearchIterationPlot:
         if jupyter_check():
             import_or_raise("ipywidgets", warning=True)
 
-        self.results = results
-        self.objective = objective
         self.best_score_by_iter_fig = None
         self.curr_iteration_scores = list()
         self.best_iteration_scores = list()
 
-        title = 'Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>'.format(self.objective.name)
+        title = 'Pipeline Search: Iteration vs. {}<br><sub>Gray marker indicates the score at current iteration</sub>'.format(objective.name)
         data = [
             self._go.Scatter(x=[], y=[], mode='lines+markers', name='Best Score'),
             self._go.Scatter(x=[], y=[], mode='markers', name='Iter score', marker={'color': 'gray'})
@@ -31,12 +29,12 @@ class SearchIterationPlot:
         }
         self.best_score_by_iter_fig = self._go.FigureWidget(data, layout)
         self.best_score_by_iter_fig.update_layout(showlegend=False)
-        self.update()
+        self.update(results, objective)
 
-    def update(self):
-        if len(self.results['search_order']) > 0 and len(self.results['pipeline_results']) > 0:
-            iter_idx = self.results['search_order']
-            pipeline_res = self.results['pipeline_results']
+    def update(self, results, objective):
+        if len(results['search_order']) > 0 and len(results['pipeline_results']) > 0:
+            iter_idx = results['search_order']
+            pipeline_res = results['pipeline_results']
             iter_scores = [pipeline_res[i]["mean_cv_score"] for i in iter_idx]
 
             iter_score_pairs = zip(iter_idx, iter_scores)
@@ -51,8 +49,8 @@ class SearchIterationPlot:
                     best_iteration_scores.append(score)
                     curr_best = score
                 else:
-                    if self.objective.greater_is_better and score > curr_best \
-                            or not self.objective.greater_is_better and score < curr_best:
+                    if objective.greater_is_better and score > curr_best \
+                            or not objective.greater_is_better and score < curr_best:
                         best_iteration_scores.append(score)
                         curr_best = score
                     else:
