@@ -1,4 +1,4 @@
-name: Linux Unit Tests
+name: Linux Unit Tests with Latest Dependencies
 
 on:
   pull_request:
