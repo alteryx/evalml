@@ -306,3 +306,13 @@ def test_undersampler(X_y_binary):
     pipeline.predict(X)
     test = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
     assert test is not None
+
+
+def test_permutation_importance_oversampler(fraud_100):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+    X, y = fraud_100
+    pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", "SMOTENC Oversampler", "Decision Tree Classifier"])
+    pipeline.fit(X=X, y=y)
+    pipeline.predict(X)
+    importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
+    assert not importance.isnull().all().all()
