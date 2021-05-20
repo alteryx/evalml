@@ -70,7 +70,7 @@ def test_callback(X_y_regression):
         "add_result_callback": 0,
     }
 
-    def start_iteration_callback(pipeline_class, parameters, automl_obj, counts=counts):
+    def start_iteration_callback(pipeline, automl_obj, counts=counts):
         counts["start_iteration_callback"] += 1
 
     def add_result_callback(results, trained_pipeline, automl_obj, counts=counts):

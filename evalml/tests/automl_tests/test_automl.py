@@ -394,7 +394,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    proposed_parameters = start_iteration_callback.call_args_list[1][0][1]
+    proposed_parameters = start_iteration_callback.call_args_list[1][0][0].parameters
     assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
     assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
 
