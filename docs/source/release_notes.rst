@@ -6,6 +6,7 @@ Release Notes
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
+        * Set default `n_jobs` to None for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based multithreading can be found :pr:``
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
     * Documentation Changes
