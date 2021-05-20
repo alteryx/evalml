@@ -6,7 +6,7 @@ Release Notes
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
     * Fixes
-        * Set default `n_jobs` to None for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism can be found :pr:`2295`
+        * Set default `n_jobs` to None for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
     * Documentation Changes
