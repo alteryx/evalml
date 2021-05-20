@@ -758,3 +758,84 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
             sampler_method = 'Undersampler'
             assert 'Could not import imblearn.over_sampling' in caplog.text
         assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+
+
+@pytest.mark.parametrize("sampling_ratio", [0.1, 0.2, 0.5, 1])
+@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+def test_automl_search_ratio_overrides_sampler_ratio(sampler, sampling_ratio, mock_imbalanced_data_X_y):
+    X, y = mock_imbalanced_data_X_y("binary", 'none', 'small')
+    pipeline_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler_method=sampler, pipeline_parameters=pipeline_parameters, sampler_balanced_ratio=0.5)
+    # make sure that our sampling_balanced_ratio of 0.5 overrides the pipeline params passed in
+    pipelines = automl.allowed_pipelines
+    for pipeline in pipelines:
+        seen_sampler = False
+        for comp in pipeline._component_graph:
+            if comp.name == sampler:
+                assert comp.parameters['sampling_ratio'] == 0.5
+                seen_sampler = True
+        assert seen_sampler
+
+
+@pytest.mark.parametrize("problem_type,sampling_ratio_dict,length", [("binary", {0: 0.5, 1: 1}, 600),
+                                                                     ("binary", {0: 0.2, 1: 1}, 800),
+                                                                     ("multiclass", {0: 0.5, 1: 1, 2: 1}, 400),
+                                                                     ("multiclass", {0: 0.75, 1: 1, 2: 1}, 333)])
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.5})
+def test_automl_search_dictionary_undersampler(mock_multi_score, mock_binary_score, mock_est_fit,
+                                               problem_type, sampling_ratio_dict, length):
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    if problem_type == 'binary':
+        y = pd.Series([0] * 900 + [1] * 300)
+    else:
+        y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
+    pipeline_parameters = {"Undersampler": {"sampling_ratio_dict": sampling_ratio_dict}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='Undersampler', pipeline_parameters=pipeline_parameters)
+    # check that the sampling dict got set properly
+    pipelines = automl.allowed_pipelines
+    for pipeline in pipelines:
+        seen_under = False
+        for comp in pipeline._component_graph:
+            if comp.name == 'Undersampler':
+                assert comp.parameters['sampling_ratio_dict'] == sampling_ratio_dict
+                seen_under = True
+        assert seen_under
+    automl.search()
+    # assert we sample the right number of elements for our estimator
+    assert len(mock_est_fit.call_args[0][0]) == length
+
+
+@pytest.mark.parametrize("problem_type,sampling_ratio_dict,length", [("binary", {0: 1, 1: 0.5}, 900),
+                                                                     ("binary", {0: 1, 1: 0.8}, 1080),
+                                                                     ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1200),
+                                                                     ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 1560)])
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.5})
+def test_automl_search_dictionary_oversampler(mock_multi_score, mock_binary_score, mock_est_fit,
+                                              problem_type, sampling_ratio_dict, length):
+    # split this from the undersampler since the dictionaries are formatted differently
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    if problem_type == 'binary':
+        y = pd.Series([0] * 900 + [1] * 300)
+    else:
+        y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
+    # we only test with SMOTE Oversampler since the oversamplers perform similarly
+    pipeline_parameters = {"SMOTE Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='SMOTE Oversampler', pipeline_parameters=pipeline_parameters)
+    # check that the sampling dict got set properly
+    pipelines = automl.allowed_pipelines
+    for pipeline in pipelines:
+        seen_under = False
+        for comp in pipeline._component_graph:
+            if comp.name == 'SMOTE Oversampler':
+                assert comp.parameters['sampling_ratio_dict'] == sampling_ratio_dict
+                seen_under = True
+        assert seen_under
+    automl.search()
+    # assert we sample the right number of elements for our estimator
+    assert len(mock_est_fit.call_args[0][0]) == length
