@@ -265,7 +265,7 @@ def test_rankings(X_y_binary, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, X_y_binary):
-    def _dummy_callback(param1, param2, param3):
+    def _dummy_callback(pipeline, automl_obj):
         return None
 
     X, y = X_y_binary
@@ -394,7 +394,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    proposed_parameters = start_iteration_callback.call_args_list[1][0][1]
+    proposed_parameters = start_iteration_callback.call_args_list[1][0][0].parameters
     assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
     assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
 
