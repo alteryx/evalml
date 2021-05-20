@@ -83,4 +83,11 @@ class TargetTransformer(Transformer):
 
     @abstractmethod
     def inverse_transform(self, y):
-        """Inverts the transformation."""
+        """Inverts the transformation done by the transform method.
+
+         Arguments:
+            y (ww.DataColumn, pd.Series): Target transformed by this component.
+
+        Returns:
+            ww.DataColumn: Target without the transformation. 
+        """

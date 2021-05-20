@@ -9,7 +9,6 @@ class PolynomialDetrender(TargetTransformer):
     """Removes trends from time series by fitting a polynomial to the data."""
 
     name = "Polynomial Detrender"
-    _defines_inverse_transform = True
 
     hyperparameter_ranges = {"degree": Integer(1, 3)}
 
