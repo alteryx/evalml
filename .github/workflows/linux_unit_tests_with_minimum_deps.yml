@@ -62,7 +62,7 @@ jobs:
         name: run tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps
+          make git-test-minimal-deps-nocov
       - if: ${{ !matrix.core_dependencies }}
         name: run tests
         run: |
