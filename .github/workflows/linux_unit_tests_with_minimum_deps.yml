@@ -14,7 +14,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }})
+    name: ${{ matrix.python_version }} min unit tests, core deps (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
