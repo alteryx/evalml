@@ -8,6 +8,7 @@ Release Notes
         * Added dictionary input functionality for the Oversampler components :pr:`2288`
     * Fixes
     * Changes
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
     * Documentation Changes
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`
@@ -16,6 +17,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
 
 
 **v0.24.1 May. 16, 2021**
