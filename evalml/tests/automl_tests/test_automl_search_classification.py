@@ -753,12 +753,12 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
 @pytest.mark.parametrize("sampling_ratio", [0.1, 0.2, 0.5, 1])
 @pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
 def test_automl_search_ratio_overrides_sampler_ratio(sampler, sampling_ratio, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    if has_minimal_dependencies and sampler == "SMOTE Oversampler":
+        pytest.skip("Skipping test with minimal dependencies")
     X, y = mock_imbalanced_data_X_y("binary", 'none', 'small')
     pipeline_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler_method=sampler, pipeline_parameters=pipeline_parameters, sampler_balanced_ratio=0.5)
     # make sure that our sampling_balanced_ratio of 0.5 overrides the pipeline params passed in
-    if has_minimal_dependencies:
-        sampler = 'Undersampler'
     pipelines = automl.allowed_pipelines
     for pipeline in pipelines:
         seen_sampler = False
