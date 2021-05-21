@@ -5,8 +5,11 @@ Release Notes
         * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
     * Fixes
     * Changes
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
     * Documentation Changes
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`
@@ -15,6 +18,9 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
 
 
 **v0.24.1 May. 16, 2021**
@@ -35,6 +41,7 @@ Release Notes
     * Testing Changes
         * Change number of cores for pytest from 4 to 2 :pr:`2266`
         * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
+        * Add unit tests with minimum dependencies  :pr:`2277`
 
 
 **v0.24.0 May. 04, 2021**
@@ -71,8 +78,6 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
-        * Upgraded minimum woodwork to version 0.2.0. Previous versions will not be supported :pr:`2181`
         * All baseline pipeline classes (``BaselineBinaryPipeline``, ``BaselineMulticlassPipeline``, ``BaselineRegressionPipeline``, etc.) have been deleted :pr:`2202`
         * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
         * Removed all old datasplitters from EvalML :pr:`2193`
