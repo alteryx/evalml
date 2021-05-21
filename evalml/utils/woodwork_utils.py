@@ -68,10 +68,6 @@ def infer_feature_types(data, feature_types=None):
         return ww_data
 
 
-def _convert_woodwork_types_wrapper():
-    """Placeholder so we don't have to edit every file in the repo yet."""
-
-
 def _retain_custom_types_and_initalize_woodwork(old_logical_types, new_dataframe, ltypes_to_ignore=None):
     """
     Helper method which will take an old Woodwork data structure and a new pandas data structure and return a
