@@ -6,6 +6,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
+from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
@@ -832,3 +833,24 @@ def test_automl_search_dictionary_oversampler(mock_multi_score, mock_binary_scor
     automl.search()
     # assert we sample the right number of elements for our estimator
     assert len(mock_est_fit.call_args[0][0]) == length
+
+
+@pytest.mark.parametrize("sampling_ratio_dict,errors", [({0: 1, 1: 0.5}, False),
+                                                        ({"majority": 1, "minority": 0.5}, True)])
+@pytest.mark.parametrize("sampler", ['Undersampler', 'SMOTE Oversampler'])
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+def test_automl_search_sampler_dictionary_keys(mock_binary_score, mock_est_fit, sampler, sampling_ratio_dict, errors, has_minimal_dependencies):
+    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+        pytest.skip("Skipping tests since imblearn isn't installed")
+    # split this from the undersampler since the dictionaries are formatted differently
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    y = pd.Series(["majority"] * 900 + ["minority"] * 300)
+    pipeline_parameters = {sampler: {"sampling_ratio_dict": sampling_ratio_dict}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', error_callback=raise_error_callback, sampler_method=sampler, pipeline_parameters=pipeline_parameters)
+    if errors:
+        with pytest.raises(ValueError, match='Dictionary keys are different from target'):
+            automl.search()
+    else:
+        automl.search()
