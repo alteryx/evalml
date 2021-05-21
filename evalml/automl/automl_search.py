@@ -452,6 +452,9 @@ class AutoMLSearch:
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
+        for pipe_ in self.allowed_pipelines:
+            print(f"automlsearch - init - pre iterative algorithm pipeline parameters: {pipe_.parameters}")
+
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
             allowed_pipelines=self.allowed_pipelines,
@@ -614,7 +617,9 @@ class AutoMLSearch:
                 log_title(logger, f"Evaluating Batch Number {self._get_batch_number()}")
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
+                    print(f"automlsearch - search - pipeline pre submit evaluation: {pipeline.parameters}")
                     computation = self._engine.submit_evaluation_job(self.automl_config, pipeline, self.X_train, self.y_train)
+                    print(f"automlsearch - search - computation: {computation}")
                     computations.append(computation)
                 current_computation_index = 0
                 while self._should_continue() and len(computations) > 0:
@@ -666,6 +671,7 @@ class AutoMLSearch:
             if self._train_best_pipeline:
                 X_train = self.X_train
                 y_train = self.y_train
+                print(f"automlsearch - _add_baseline_pipelines - best_pipeline: {best_pipeline}")
                 best_pipeline = self._engine.submit_training_job(self.automl_config, best_pipeline,
                                                                  X_train, y_train).get_result()
             self._best_pipeline = best_pipeline
@@ -761,6 +767,7 @@ class AutoMLSearch:
         baseline = self._get_baseline_pipeline()
         self._pre_evaluation_callback(baseline)
         logger.info(f"Evaluating Baseline Pipeline: {baseline.name}")
+        print(f"automlsearch - _add_baseline_pipelines - baseline: {baseline}")
         computation = self._engine.submit_evaluation_job(self.automl_config, baseline, self.X_train, self.y_train)
         evaluation = computation.get_result()
         data, pipeline, job_log = evaluation.get('scores'), evaluation.get("pipeline"), evaluation.get("logger")
@@ -830,6 +837,7 @@ class AutoMLSearch:
         if not is_baseline:
             score_to_minimize = -cv_score if self.objective.greater_is_better else cv_score
             try:
+                print(f"automlsearch - _post_evaluation_callback - pipeline: {pipeline}")
                 self._automl_algorithm.add_result(score_to_minimize, pipeline, self._results['pipeline_results'][pipeline_id])
             except PipelineNotFoundError:
                 pass
@@ -932,13 +940,15 @@ class AutoMLSearch:
             pipeline (PipelineBase): pipeline to train and evaluate.
         """
         pipeline_rows = self.full_rankings[self.full_rankings['pipeline_name'] == pipeline.name]
+        print(f"automlsearch - add_to_rankings - pipeline_rows: {pipeline_rows}")
         for parameter in pipeline_rows['parameters']:
             if pipeline.parameters == parameter:
                 return
-
+        print(f"automlsearch - add_to_rankings - pipeline: {pipeline}")
         computation = self._engine.submit_evaluation_job(self.automl_config, pipeline, self.X_train, self.y_train)
         evaluation = computation.get_result()
         data, pipeline, job_log = evaluation.get('scores'), evaluation.get("pipeline"), evaluation.get("logger")
+        print(f"automlsearch - add_to_rankings - pipeline: {pipeline}")
         self._post_evaluation_callback(pipeline, data, job_log)
         self._find_best_pipeline()
 
@@ -1032,6 +1042,7 @@ class AutoMLSearch:
         y_train = self.y_train
 
         for pipeline in pipelines:
+            print(f"automlsearch - train_pipelines - pipeline: {pipeline}")
             computations.append(self._engine.submit_training_job(self.automl_config, pipeline, X_train, y_train))
 
         while computations:
@@ -1070,6 +1081,7 @@ class AutoMLSearch:
 
         computations = []
         for pipeline in pipelines:
+            print(f"automlsearch - score_pipelines - pipeline: {pipeline}")
             computations.append(self._engine.submit_scoring_job(self.automl_config, pipeline, X_holdout, y_holdout, objectives))
 
         while computations:

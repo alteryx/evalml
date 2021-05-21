@@ -91,6 +91,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         if self._batch_number == 0:
+            for pipeline in self.allowed_pipelines:
+                print(f"iterative_algorithm - next_batch - new pipeline parameters for batch 0: {self._combine_parameters(pipeline, {})}")
             next_batch = [pipeline.new(parameters=self._combine_parameters(pipeline, {}), random_seed=self.random_seed)
                           for pipeline in self.allowed_pipelines]
 
@@ -114,9 +116,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             num_pipelines = (len(self._first_batch_results) + 1) if self.ensembling else len(self._first_batch_results)
             idx = (self._batch_number - 1) % num_pipelines
             pipeline = self._first_batch_results[idx][1]
+            print(f"iterative_algorithm - next_batch - pipeline: {pipeline.parameters}")
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._combine_parameters(pipeline, proposed_parameters)
+                print(f"iterative_algorithm - next_batch - new pipeline parameters: {parameters}")
                 next_batch.append(pipeline.new(parameters=parameters, random_seed=self.random_seed))
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
@@ -162,19 +166,21 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
+        print('-------------------------')
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
         for name, component_class in pipeline.linearized_component_graph:
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-
+            print(f"iterativealgorithm - _transform_parameters - init_params: {init_params}")
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in init_params:
                 component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
             # For first batch, pass the pipeline params to the components that need them
+            print(f"iterativealgorithm - _transform_parameters - self._pipeline_params: {self._pipeline_params}")
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
                     if isinstance(value, (Integer, Real)):
@@ -190,7 +196,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 for param_name, value in self._pipeline_params['pipeline'].items():
                     if param_name in init_params:
                         component_parameters[param_name] = value
+            print(f"iterativealgorithm - _transform_parameters - component_parameters: {component_parameters}")
             parameters[name] = component_parameters
-            print(f'Iterative Algorithm - _transform_parameters - component_parameters: {component_parameters}')
-        print(f'Iterative Algorithm - _transform_parameters - final transformed parameters: {parameters}')
+        print(f"iterativealgorithm - _transform_parameters - parameters: {parameters}")
+        print('-------------------------')
         return parameters
