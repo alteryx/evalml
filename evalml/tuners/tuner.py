@@ -44,6 +44,7 @@ class Tuner(ABC):
             component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
             if component_name not in pipeline_parameters or parameter_name not in pipeline_parameters[component_name]:
                 raise TypeError('Pipeline parameters missing required field "{}" for component "{}"'.format(parameter_name, component_name))
+            print(f"tuner - _convert_to_flat_parameters - adding value to flat parameters: {component_name} - {parameter_name} - {pipeline_parameters[component_name][parameter_name]}")
             flat_parameter_values.append(pipeline_parameters[component_name][parameter_name])
         return flat_parameter_values
 
