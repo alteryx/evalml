@@ -54,12 +54,12 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logisti
     X, y = X_y_binary
     input_pipelines = [logistic_regression_binary_pipeline_class(parameters={}),
                        logistic_regression_binary_pipeline_class(parameters={})]
-    clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, n_jobs=1)
+    clf = StackedEnsembleClassifier(input_pipelines=input_pipelines)
     expected_parameters = {
         "input_pipelines": input_pipelines,
         "final_estimator": None,
         'cv': None,
-        'n_jobs': 1
+        'n_jobs': None
     }
     assert clf.parameters == expected_parameters
 
