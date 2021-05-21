@@ -33,7 +33,8 @@ from evalml.utils import (
     jupyter_check
 )
 
-
+from sklearn.utils import check_array, check_random_state, Bunch
+from sklearn.metrics import check_scoring
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
 
@@ -388,7 +389,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         def scorer(pipeline, X, y):
             scores = pipeline.score(X, y, objectives=[objective])
             return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-        perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs,
+        perm_importance = permutation_importance_own(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs,
                                                     random_state=random_seed)
     mean_perm_importance = perm_importance["importances_mean"]
     feature_names = list(X.columns)
@@ -396,6 +397,66 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
+
+def _weights_scorer(scorer, estimator, X, y, sample_weight):
+    if sample_weight is not None:
+        return scorer(estimator, X, y, sample_weight)
+    return scorer(estimator, X, y)
+
+
+def permutation_importance_own(pipeline, X, y, n_repeats, scoring, n_jobs,
+                                                    random_state):
+    if not hasattr(X, "iloc"):
+        X = check_array(X, force_all_finite='allow-nan', dtype=None)
+
+    # Precompute random seed from the random state to be used
+    # to get a fresh independent RandomState instance for each
+    # parallel call to _calculate_permutation_scores, irrespective of
+    # the fact that variables are shared or not depending on the active
+    # joblib backend (sequential, thread-based or process-based).
+    random_state = check_random_state(random_state)
+    random_seed = random_state.randint(np.iinfo(np.int32).max + 1)
+
+    scorer = check_scoring(pipeline, scoring=scoring)
+    baseline_score = _weights_scorer(scorer, pipeline, X, y, None)
+
+    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores)(
+        pipeline, X, y, None, col_idx, random_seed, n_repeats, scorer
+    ) for col_idx in range(X.shape[1]))
+
+    importances = baseline_score - np.array(scores)
+    return Bunch(importances_mean=np.mean(importances, axis=1),
+                 importances_std=np.std(importances, axis=1),
+                 importances=importances)
+
+def _calculate_permutation_scores(estimator, X, y, sample_weight, col_idx,
+                                  random_state, n_repeats, scorer):
+    """Calculate score when `col_idx` is permuted."""
+    random_state = check_random_state(random_state)
+
+    # Work on a copy of X to to ensure thread-safety in case of threading based
+    # parallelism. Furthermore, making a copy is also useful when the joblib
+    # backend is 'loky' (default) or the old 'multiprocessing': in those cases,
+    # if X is large it will be automatically be backed by a readonly memory map
+    # (memmap). X.copy() on the other hand is always guaranteed to return a
+    # writable data-structure whose columns can be shuffled inplace.
+    X_permuted = X.copy()
+    scores = np.zeros(n_repeats)
+    shuffling_idx = np.arange(X.shape[0])
+    for n_round in range(n_repeats):
+        random_state.shuffle(shuffling_idx)
+        if hasattr(X_permuted, "iloc"):
+            col = X_permuted.iloc[shuffling_idx, col_idx]
+            col.index = X_permuted.index
+            X_permuted.iloc[:, col_idx] = col
+        else:
+            X_permuted[:, col_idx] = X_permuted[shuffling_idx, col_idx]
+        feature_score = _weights_scorer(
+            scorer, estimator, X_permuted, y, sample_weight
+        )
+        scores[n_round] = feature_score
+
+    return scores
 
 def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
     """Generate a bar graph of the pipeline's permutation importance.
