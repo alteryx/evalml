@@ -321,6 +321,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
                 component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
             hyperparameter_ranges[component_name] = component_hyperparameters
+        print(f"pipeline_base - hyperparameters - hyperparameter_ranges: {hyperparameter_ranges}")
         return hyperparameter_ranges
 
     @property
