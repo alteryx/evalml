@@ -1,11 +1,6 @@
-import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers import BaseSampler
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
 
 
 class Undersampler(BaseSampler):
@@ -70,9 +65,7 @@ class Undersampler(BaseSampler):
             ww.DataTable, ww.DataColumn: Undersampled X and y data
         """
         X, y, X_pd, y_pd = self._prepare_data(X, y)
-        param_dic = self._dictionary_to_params(self.parameters['sampling_ratio_dict'], y)
-        sampler = BalancedClassificationSampler(**param_dic, random_seed=self.random_seed)
-        self._component_obj = sampler
+        self._initialize_undersampler(y_pd)
 
         index_df = pd.Series(y_pd.index)
         indices = self._component_obj.fit_resample(X_pd, y_pd)
