@@ -399,6 +399,11 @@ class AutoMLSearch:
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
 
+        from pprint import pprint as pp
+        for pipe_ in self.allowed_pipelines:
+            pp(f"automl_search - init - pipelines: {pipe_}")
+            pp(f"automl_search - init - pipelines parameters: {pipe_.parameters}")
+
         logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
