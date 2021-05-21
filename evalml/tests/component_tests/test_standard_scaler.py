@@ -1,4 +1,5 @@
 import pandas as pd
+import woodwork as ww
 import pytest
 from woodwork.logical_types import Boolean, Categorical, Double, Integer
 
@@ -12,7 +13,10 @@ def test_standard_scaler_woodwork_custom_overrides_returned_by_components(X_df):
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, Boolean]
     for logical_type in override_types:
-        X_df.ww.init(logical_types={0: logical_type})
+        try:
+            X_df.ww.init(logical_types={0: logical_type})
+        except ww.exceptions.TypeConversionError:
+            continue
 
         std_scaler = StandardScaler()
         std_scaler.fit(X_df, y)
