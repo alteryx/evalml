@@ -29,7 +29,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
             >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
             >>> data['C'] = np.random.randint(0, 3, size=len(data))
-            >>> data = ww.DataTable(data, logical_types={'A': 'NaturalLanguage', 'B': 'NaturalLanguage'})
+            >>> data.ww.init(logical_types={'A': 'NaturalLanguage', 'B': 'NaturalLanguage'})
             >>> nl_nan_check = NaturalLanguageNaNDataCheck()
             >>> assert nl_nan_check.validate(data) == {
             ...        "warnings": [],

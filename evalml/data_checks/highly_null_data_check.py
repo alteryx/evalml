@@ -27,10 +27,8 @@ class HighlyNullDataCheck(DataCheck):
         """Checks if there are any highly-null columns or rows in the input.
 
         Arguments:
-            X (pd.DataFrame, np.ndarray): Features
+            X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Data
-            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
 
         Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns or rows.

@@ -27,9 +27,10 @@ class DateTimeNaNDataCheck(DataCheck):
             >>> import numpy as np
             >>> dates = np.arange(np.datetime64('2017-01-01'), np.datetime64('2017-01-08'))
             >>> dates[0] = np.datetime64('NaT')
-            >>> ww_input = ww.DataTable(pd.DataFrame(dates, columns=['index']))
+            >>> df = pd.DataFrame(dates, columns=['index'])
+            >>> df.ww.init()
             >>> dt_nan_check = DateTimeNaNDataCheck()
-            >>> assert dt_nan_check.validate(ww_input) == {"warnings": [],
+            >>> assert dt_nan_check.validate(df) == {"warnings": [],
             ...                                             "actions": [],
             ...                                             "errors": [DataCheckError(message='Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.',
             ...                                                                     data_check_name=DateTimeNaNDataCheck.name,

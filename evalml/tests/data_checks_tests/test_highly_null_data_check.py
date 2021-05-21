@@ -138,12 +138,6 @@ def test_highly_null_data_check_input_formats():
     validate_results = highly_null_check.validate(ww_input)
     validate_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validate_results['warnings'][0]['details']['pct_null_cols'])
     assert validate_results == expected
-# =======
-#     ww_input = ww.DataTable(pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]]))
-#     validate_results = highly_null_check.validate(ww_input)
-#     validate_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validate_results['warnings'][0]['details']['pct_null_cols'])
-#     assert validate_results == expected
-# >>>>>>> main
 
     # #  test 2D list
     validate_results = highly_null_check.validate([[None, None, None, None, 0], [None, None, None, "hi", 5]])
