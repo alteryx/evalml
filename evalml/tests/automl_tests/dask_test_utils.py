@@ -133,12 +133,6 @@ class TestSchemaCheckPipeline(BinaryClassificationPipeline):
                               custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed,
                               X_schema_to_check=self.X_schema_to_check, y_schema_to_check=self.y_schema_to_check)
 
-    def new(self, parameters, random_seed=0):
-        return self.__class__(self.component_graph, parameters=parameters,
-                              custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters,
-                              random_seed=random_seed,
-                              X_schema_to_check=self.X_schema_to_check, y_schema_to_check=self.y_schema_to_check)
-
     def fit(self, X, y):
         assert X.ww.schema == self.X_schema_to_check
         assert y.ww.schema == self.y_schema_to_check
