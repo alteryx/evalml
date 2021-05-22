@@ -34,6 +34,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  number_features=None,  # TODO remove
                  ensembling=False,
                  pipeline_params=None,
+                 custom_hyperparameters=None,
                  _frozen_pipeline_parameters=None,
                  _estimator_family_order=None):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
@@ -48,6 +49,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
+            custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over.
             _frozen_pipeline_parameters (dict or None): Pipeline-level parameters are frozen and used in the proposed pipelines.
             _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to _ESTIMATOR_FAMILY_ORDER.
         """
@@ -76,6 +78,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self._pipeline_params = pipeline_params or {}
+        self._custom_hyperparameters = custom_hyperparameters or {}
         self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
 
     def next_batch(self):
@@ -171,6 +174,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
         for name, component_class in pipeline.linearized_component_graph:
+            print(f"iterativealgorithm - _transform_parameters - pipeline: {pipeline}")
+            print(f"iterativealgorithm - _transform_parameters - pipeline.linearized_component_graph: {pipeline.linearized_component_graph}")
+            print(f"iterativealgorithm - _transform_parameters - pipeline parameters: {pipeline.parameters}")
+            print(f"iterativealgorithm - _transform_parameters - pipeline hyperparameters: {pipeline.custom_hyperparameters}")
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             print(f"iterativealgorithm - _transform_parameters - init_params: {init_params}")
@@ -181,6 +188,15 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters['number_features'] = self.number_features
             # For first batch, pass the pipeline params to the components that need them
             print(f"iterativealgorithm - _transform_parameters - self._pipeline_params: {self._pipeline_params}")
+            if name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[name].items():
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
+                    elif isinstance(value, Categorical):
+                        component_parameters[param_name] = value.rvs(random_state=self.random_seed)
+                    else:
+                        component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
                     if isinstance(value, (Integer, Real)):
