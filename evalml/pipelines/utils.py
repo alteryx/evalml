@@ -128,7 +128,7 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperparameters=None, sampler_name=None):
+def make_pipeline(X, y, estimator, problem_type, parameters=None, sampler_name=None):
     """Given input data, target data, an estimator class and the problem type,
         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -140,8 +140,6 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
         problem_type (ProblemTypes or str): Problem type for pipeline to generate
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
             An empty dictionary or None implies using all default values for component parameters.
-        custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
-            with component name as key and dictionary of parameters as the value
         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
             Defaults to None
 
@@ -160,11 +158,8 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, custom_hyperpa
     preprocessing_components = _get_preprocessing_components(X, y, problem_type, estimator, sampler_name)
     complete_component_graph = preprocessing_components + [estimator]
 
-    if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
-        raise ValueError(f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}")
-
     base_class = _get_pipeline_base_class(problem_type)
-    return base_class(complete_component_graph, parameters=parameters, custom_hyperparameters=custom_hyperparameters)
+    return base_class(complete_component_graph, parameters=parameters)
 
 
 def generate_pipeline_code(element):

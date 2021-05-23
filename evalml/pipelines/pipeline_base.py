@@ -506,7 +506,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         custom_name_repr = f"custom_name='{self.custom_name}'" if self.custom_name else None
         random_seed_str = f"random_seed={self.random_seed}"
-        additional_args_str = ", ".join([arg for arg in [parameters_str, custom_hyperparmeter_str, custom_name_repr, random_seed_str] if arg is not None])
+        additional_args_str = ", ".join([arg for arg in [parameters_str, custom_name_repr, random_seed_str] if arg is not None])
 
         return f'pipeline = {(type(self).__name__)}(component_graph={component_graph_str}, {additional_args_str})'
 

@@ -16,7 +16,7 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
-    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0):
+    def __init__(self, component_graph, parameters=None, custom_name=None, random_seed=0):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 
         Arguments:
@@ -41,7 +41,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         super().__init__(component_graph,
                          custom_name=custom_name,
                          parameters=parameters,
-                         custom_hyperparameters=custom_hyperparameters,
                          random_seed=random_seed)
 
     def fit(self, X, y):

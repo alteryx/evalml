@@ -14,6 +14,7 @@ class AutoMLAlgorithm(ABC):
 
     def __init__(self,
                  allowed_pipelines=None,
+                 custom_hyperparameters=None,
                  max_iterations=None,
                  tuner_class=None,
                  random_seed=0):
@@ -33,7 +34,15 @@ class AutoMLAlgorithm(ABC):
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         for pipeline in self.allowed_pipelines:
-            self._tuners[pipeline.name] = self._tuner_class(pipeline.hyperparameters, random_seed=self.random_seed)
+            print(f"AutoMLAlgorithm - init - pipeline: {pipeline}")
+            pipeline_hyperparameters = dict()
+            for comp_name in custom_hyperparameters.keys():
+                print(f"AutoMLAlgorithm - init - comp_name: {comp_name}")
+                if comp_name in pipeline.parameters.keys():
+                    print(f"AutoMLAlgorithm - init - hyperparameter key in pipeline keys: {comp_name}")
+                    pipeline_hyperparameters[comp_name] = custom_hyperparameters[comp_name]
+            print(f"AutoMLAlgorithm - init - pipeline_hyperparameters: {pipeline_hyperparameters}")
+            self._tuners[pipeline.name] = self._tuner_class(pipeline_hyperparameters, random_seed=self.random_seed)
         self._pipeline_number = 0
         self._batch_number = 0
 
