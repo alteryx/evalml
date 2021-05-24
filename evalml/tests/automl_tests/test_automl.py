@@ -265,7 +265,7 @@ def test_rankings(X_y_binary, X_y_regression):
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode_targets, mock_optimize_threshold, X_y_binary):
-    def _dummy_callback(param1, param2, param3):
+    def _dummy_callback(pipeline, automl_obj):
         return None
 
     X, y = X_y_binary
@@ -394,7 +394,7 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    proposed_parameters = start_iteration_callback.call_args_list[1][0][1]
+    proposed_parameters = start_iteration_callback.call_args_list[1][0][0].parameters
     assert proposed_parameters.keys() == {'RF Classifier Select From Model', 'Logistic Regression Classifier'}
     assert proposed_parameters['RF Classifier Select From Model']['number_features'] == X.shape[1]
 
@@ -1897,6 +1897,49 @@ def test_search_with_text(mock_fit, mock_score):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary')
     automl.search()
     assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
+
+
+@pytest.mark.parametrize("problem_type,pipeline_name,ensemble_name",
+                         [('binary', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
+                          ('multiclass', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
+                          ('regression', 'Stacked Ensemble Regression Pipeline', 'Stacked Ensemble Regressor')])
+@pytest.mark.parametrize("df_text", [True, False])
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_search_with_text_and_ensembling(mock_iter, df_text, problem_type, pipeline_name, ensemble_name):
+    X_with_text = pd.DataFrame(
+        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I dreamed a dream in days gone by, when hope was high and life worth living',
+                   'Red, the blood of angry men - black, the dark of ages past',
+                   'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'Red, the blood of angry men - black, the dark of ages past',
+                   'It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...']
+         })
+    X_no_text = pd.DataFrame({'col_1': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3]})
+
+    if df_text:
+        X = X_with_text
+    else:
+        X = X_no_text
+    if problem_type == 'binary':
+        y = [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+    elif problem_type == 'multiclass':
+        y = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2]
+    else:
+        y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    mock_iter.return_value = None
+    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["random_forest", "decision_tree"],
+                     max_batches=4, ensembling=True)
+    call_args = mock_iter.call_args_list[0][1]
+    if df_text:
+        assert call_args['text_in_ensembling']
+    else:
+        assert not call_args['text_in_ensembling']
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})

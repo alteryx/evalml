@@ -193,7 +193,7 @@ class AutoMLSearch:
             optimize_thresholds (bool): Whether or not to optimize the binary pipeline threshold. Defaults to True.
 
             start_iteration_callback (callable): Function called before each pipeline training iteration.
-                Callback function takes three positional parameters: The pipeline class, the pipeline parameters, and the AutoMLSearch object.
+                Callback function takes three positional parameters: The pipeline instance and the AutoMLSearch object.
 
             add_result_callback (callable): Function called after each pipeline training iteration.
                 Callback function takes three positional parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
@@ -385,6 +385,7 @@ class AutoMLSearch:
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
+        text_in_ensembling = len(infer_feature_types(X_train).select('natural_language').columns) > 0
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
             run_ensembling = False
@@ -438,6 +439,7 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
+            text_in_ensembling=text_in_ensembling,
             pipeline_params=parameters,
             _frozen_pipeline_parameters=self._frozen_pipeline_parameters
         )
@@ -450,7 +452,7 @@ class AutoMLSearch:
 
     def _pre_evaluation_callback(self, pipeline):
         if self.start_iteration_callback:
-            self.start_iteration_callback(pipeline.__class__, pipeline.parameters, self)
+            self.start_iteration_callback(pipeline, self)
 
     def _validate_objective(self, objective):
         non_core_objectives = get_non_core_objectives()
