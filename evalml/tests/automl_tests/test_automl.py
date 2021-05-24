@@ -2,7 +2,7 @@ import os
 import warnings
 from collections import OrderedDict
 from itertools import product
-from unittest.mock import ANY, MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
 import numpy as np
@@ -1933,8 +1933,8 @@ def test_search_with_text_and_ensembling(mock_iter, df_text, problem_type, pipel
     else:
         y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     mock_iter.return_value = None
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
-                          max_batches=4, ensembling=True)
+    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
+                     max_batches=4, ensembling=True)
     call_args = mock_iter.call_args_list[0][1]
     if df_text:
         assert call_args['text_in_ensembling']
