@@ -312,6 +312,10 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
+        if not self.plot:
+            logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
+
+
         if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
             raise ValueError("Parameter allowed_pipelines must be either None or a list!")
         if allowed_pipelines is not None and not all(isinstance(p, PipelineBase) for p in allowed_pipelines):
@@ -814,6 +818,7 @@ class AutoMLSearch:
             except PipelineNotFoundError:
                 pass
 
+        # True when running in a jupyter notebook, else the plot is an instance of plotly.Figure
         if isinstance(self.search_iteration_plot, SearchIterationPlot):
             self.search_iteration_plot.update(self.results, self.objective)
 
@@ -1080,5 +1085,4 @@ class AutoMLSearch:
         try:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:
-            logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
-        return None
+            return None
