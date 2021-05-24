@@ -191,7 +191,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if name in self._custom_hyperparameters and self._batch_number == 0:
                 print(f"iterativealgorithm - _transform_parameters - hyperparameter name batch 0: {name}")
                 for param_name, value in self._custom_hyperparameters[name].items():
-                    print(f"iterativealgorithm - _transform_parameters - param_name name/value: {param_name} - {value}")
+                    print(f"iterativealgorithm - _transform_parameters - hyperparam_name name/value: {param_name} - {value}")
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
@@ -201,6 +201,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
+                    print(f"iterativealgorithm - _transform_parameters - param_name name/value: {param_name} - {value}")
                     if isinstance(value, (Integer, Real, Categorical)):
                         raise ValueError("Pipeline parameters should not contain skopt.Space variables, please pass them "
                                          "to custom_hyperparameters instead!")
