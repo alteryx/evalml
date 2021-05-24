@@ -108,7 +108,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 parameters = self._combine_parameters(pipeline, pipeline_params)
                 input_pipelines.append(pipeline.new(parameters=parameters,
                                                     random_seed=self.random_seed))
-            n_jobs_ensemble = 1 if self.text_in_ensembling else -1
+            n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_seed=self.random_seed,
                                                        n_jobs=n_jobs_ensemble)
