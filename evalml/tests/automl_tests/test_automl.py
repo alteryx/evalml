@@ -1901,10 +1901,12 @@ def test_search_with_text(mock_fit, mock_score):
 
 @pytest.mark.parametrize("problem_type,pipeline_name,ensemble_name",
                          [('binary', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
+                          ('multiclass', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
                           ('regression', 'Stacked Ensemble Regression Pipeline', 'Stacked Ensemble Regressor')])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.8})
 @patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
-def test_search_with_text_and_ensembling(mock_score_reg, mock_score_bin, problem_type, pipeline_name, ensemble_name):
+def test_search_with_text_and_ensembling(mock_score_reg, mock_score_multi, mock_score_bin, problem_type, pipeline_name, ensemble_name):
     X = pd.DataFrame(
         {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
                    'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
@@ -1921,6 +1923,8 @@ def test_search_with_text_and_ensembling(mock_score_reg, mock_score_bin, problem
          })
     if problem_type == 'binary':
         y = [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+    elif problem_type == 'multiclass':
+        y = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2]
     else:
         y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
