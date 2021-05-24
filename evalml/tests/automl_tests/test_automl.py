@@ -1933,7 +1933,7 @@ def test_search_with_text_and_ensembling(mock_iter, df_text, problem_type, pipel
     else:
         y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     mock_iter.return_value = None
-    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
+    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["random_forest", "decision_tree"],
                      max_batches=4, ensembling=True)
     call_args = mock_iter.call_args_list[0][1]
     if df_text:
