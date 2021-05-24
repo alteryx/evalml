@@ -1901,10 +1901,8 @@ def test_search_with_text(mock_fit, mock_score):
 
 @pytest.mark.parametrize("problem_type", ['binary', 'regression'])
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
-@patch('evalml.pipelines.RegressionPipeline.fit')
-def test_search_with_text_and_ensembling(mock_fit_reg, mock_score_reg, mock_fit_bin, mock_score_bin, problem_type):
+def test_search_with_text_and_ensembling(mock_score_reg, mock_score_bin, problem_type):
     X = pd.DataFrame(
         {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
                    'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
@@ -1926,6 +1924,7 @@ def test_search_with_text_and_ensembling(mock_fit_reg, mock_score_reg, mock_fit_
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
                           max_batches=4, ensembling=True)
     automl.search()
+    assert automl.full_rankings.iloc[0].parameters['Stacked Ensemble Classifier']['parameters']['n_jobs'] == 1
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
