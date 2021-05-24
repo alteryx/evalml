@@ -2,7 +2,7 @@ import os
 import warnings
 from collections import OrderedDict
 from itertools import product
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import ANY, MagicMock, PropertyMock, patch
 
 import cloudpickle
 import numpy as np
@@ -1903,11 +1903,10 @@ def test_search_with_text(mock_fit, mock_score):
                          [('binary', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
                           ('multiclass', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
                           ('regression', 'Stacked Ensemble Regression Pipeline', 'Stacked Ensemble Regressor')])
-@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
-@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.8})
-@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
-def test_search_with_text_and_ensembling(mock_score_reg, mock_score_multi, mock_score_bin, problem_type, pipeline_name, ensemble_name):
-    X = pd.DataFrame(
+@pytest.mark.parametrize("df_text", [True, False])
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_search_with_text_and_ensembling(mock_iter, df_text, problem_type, pipeline_name, ensemble_name):
+    X_with_text = pd.DataFrame(
         {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
                    'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
                    'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!',
@@ -1921,16 +1920,26 @@ def test_search_with_text_and_ensembling(mock_score_reg, mock_score_multi, mock_
                    'Red, the blood of angry men - black, the dark of ages past',
                    'It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...']
          })
+    X_no_text = pd.DataFrame({'col_1': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3]})
+
+    if df_text:
+        X = X_with_text
+    else:
+        X = X_no_text
     if problem_type == 'binary':
         y = [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
     elif problem_type == 'multiclass':
         y = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2]
     else:
         y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    mock_iter.return_value = None
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
                           max_batches=4, ensembling=True)
-    automl.search()
-    assert automl.full_rankings.loc[automl.full_rankings['pipeline_name'] == pipeline_name].parameters.iloc[0][ensemble_name]['n_jobs'] == 1
+    call_args = mock_iter.call_args_list[0][1]
+    if df_text:
+        assert call_args['text_in_ensembling']
+    else:
+        assert not call_args['text_in_ensembling']
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
