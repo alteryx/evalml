@@ -1900,15 +1900,19 @@ def test_search_with_text(mock_fit, mock_score):
 
 
 @pytest.mark.parametrize("problem_type", ['binary', 'regression'])
-def test_search_with_text_and_ensembling(problem_type):
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.score', return_value={"R2": 0.8})
+@patch('evalml.pipelines.RegressionPipeline.fit')
+def test_search_with_text_and_ensembling(mock_fit_reg, mock_score_reg, mock_fit_bin, mock_score_bin, problem_type):
     X = pd.DataFrame(
         {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
                    'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
                    'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!',
                    'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
                    'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
-                   'I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!'],
-         'col_2': ['do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
                    'I dreamed a dream in days gone by, when hope was high and life worth living',
                    'Red, the blood of angry men - black, the dark of ages past',
                    'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
@@ -1916,9 +1920,9 @@ def test_search_with_text_and_ensembling(problem_type):
                    'It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...']
          })
     if problem_type == 'binary':
-        y = [0, 1, 1, 0, 1, 0]
+        y = [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
     else:
-        y = [1, 2, 3, 4, 5, 6]
+        y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
                           max_batches=4, ensembling=True)
     automl.search()
