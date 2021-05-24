@@ -19,7 +19,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     _default_cv = StratifiedKFold
 
     def __init__(self, input_pipelines=None, final_estimator=None,
-                 cv=None, n_jobs=None, random_seed=0, **kwargs):
+                 cv=None, n_jobs=-1, random_seed=0, **kwargs):
         """Stacked ensemble classifier.
 
         Arguments:

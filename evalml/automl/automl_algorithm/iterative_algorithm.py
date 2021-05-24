@@ -33,6 +33,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                  n_jobs=-1,  # TODO remove
                  number_features=None,  # TODO remove
                  ensembling=False,
+                 text_in_ensembling=False,
                  pipeline_params=None,
                  _frozen_pipeline_parameters=None,
                  _estimator_family_order=None):
@@ -47,6 +48,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             number_features (int): The number of columns in the input features.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
+            text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
             _frozen_pipeline_parameters (dict or None): Pipeline-level parameters are frozen and used in the proposed pipelines.
             _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to _ESTIMATOR_FAMILY_ORDER.
@@ -75,6 +77,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._first_batch_results = []
         self._best_pipeline_info = {}
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
+        self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
         self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
 
@@ -105,9 +108,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 parameters = self._combine_parameters(pipeline, pipeline_params)
                 input_pipelines.append(pipeline.new(parameters=parameters,
                                                     random_seed=self.random_seed))
+            n_jobs_ensemble = 1 if self.text_in_ensembling else -1
             ensemble = _make_stacked_ensemble_pipeline(input_pipelines, input_pipelines[0].problem_type,
                                                        random_seed=self.random_seed,
-                                                       n_jobs=self.n_jobs)
+                                                       n_jobs=n_jobs_ensemble)
 
             next_batch.append(ensemble)
         else:

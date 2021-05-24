@@ -69,7 +69,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_regression, lin
     assert not np.isnan(y_pred.to_series()).all()
 
 
-def test_stacked_ensemble_n_jobs_none(X_y_regression, linear_regression_pipeline_class):
+def test_stacked_ensemble_n_jobs_negative_one(X_y_regression, linear_regression_pipeline_class):
     X, y = X_y_regression
     input_pipelines = [linear_regression_pipeline_class(parameters={})]
     clf = StackedEnsembleRegressor(input_pipelines=input_pipelines)
@@ -77,7 +77,7 @@ def test_stacked_ensemble_n_jobs_none(X_y_regression, linear_regression_pipeline
         "input_pipelines": input_pipelines,
         "final_estimator": None,
         'cv': None,
-        'n_jobs': None
+        'n_jobs': -1
     }
     assert clf.parameters == expected_parameters
     clf.fit(X, y)
