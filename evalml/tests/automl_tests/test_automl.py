@@ -1919,9 +1919,9 @@ def test_search_with_text_and_ensembling(problem_type):
         y = [0, 1, 1, 0, 1, 0]
     else:
         y = [1, 2, 3, 4, 5, 6]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["catboost", "xgboost"],
+                          max_batches=4, ensembling=True)
     automl.search()
-    #assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
