@@ -297,7 +297,6 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, objective, col_name,
                                        random_seed, n_repeats, scorer, baseline_score):
     """Calculate the permutation score when `col_name` is permuted."""
-
     random_state = np.random.RandomState(random_seed)
 
     scores = np.zeros(n_repeats)
@@ -311,21 +310,52 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
     else:
         col_idx = [precomputed_features.columns.get_loc(col) for col in pipeline._get_feature_provenance()[col_name]]
 
-    # This is what sk_permutation_importance does. Useful for thread safety
-    X_permuted = precomputed_features.copy()
+    return do_shuffle(precomputed_features, n_repeats, random_state, col_idx, scorer, True, pipeline, y, objective)
 
-    shuffling_idx = np.arange(precomputed_features.shape[0])
+def do_shuffle(X_features, n_repeats, random_state, col_idx, scorer, is_fast, pipeline, y, objective):
+    scores = np.zeros(n_repeats)
+  
+    # This is what sk_permutation_importance does. Useful for thread safety
+    X_permuted = X_features.copy()
+
+    shuffling_idx = np.arange(X_features.shape[0])
     for n_round in range(n_repeats):
         random_state.shuffle(shuffling_idx)
         col = X_permuted.iloc[shuffling_idx, col_idx]
         col.index = X_permuted.index
         X_permuted.iloc[:, col_idx] = col
-
-        feature_score = scorer(pipeline, X_permuted, y, objective)
+        if is_fast:
+            feature_score = scorer(pipeline, X_permuted, y, objective)
+        else:
+            feature_score = scorer(pipeline, X_permuted, y)
         scores[n_round] = feature_score
-
     return scores
 
+def perm_importance_one_col(X, y, pipeline, fast, objective, random_seed, col_name, n_repeats):
+    if fast:
+        precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
+
+        if is_classification(pipeline.problem_type):
+            y = pipeline._encode_targets(y)
+
+        def scorer(pipeline, features, y, objective):
+            if objective.score_needs_proba:
+                preds = pipeline.estimator.predict_proba(features)
+                preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
+            else:
+                preds = pipeline.estimator.predict(features)
+                preds = _convert_woodwork_types_wrapper(preds.to_series())
+            score = pipeline._score(X, y, preds, objective)
+            return score if objective.greater_is_better else -score
+
+        baseline_score = scorer(pipeline, precomputed_features, y, objective)
+
+        scores = _calculate_permutation_scores_fast(
+            pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
+        )
+
+    importances = baseline_score - np.array(scores)
+    return {'importances_mean': np.mean(importances, axis=1)}
 
 def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
     """Calculate permutation importance faster by only computing the estimator features once.
@@ -382,15 +412,32 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     if not objective.is_defined_for_problem_type(pipeline.problem_type):
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
-    if pipeline._supports_fast_permutation_importance:
+    if False:
+    # if pipeline._supports_fast_permutation_importance:
+        print ('fast')
         perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs,
                                                        random_seed=random_seed)
     else:
+        print ('slow')
+
         def scorer(pipeline, X, y):
             scores = pipeline.score(X, y, objectives=[objective])
             return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-        perm_importance = permutation_importance_own(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs,
-                                                    random_state=random_seed)
+
+        baseline_score = scorer(pipeline, X, y)
+
+        scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_slow)(
+            pipeline, X, y, col_idx, random_seed, n_repeats, scorer
+        ) for col_idx in range(X.shape[1]))
+
+        importances = baseline_score - np.array(scores)
+        perm_importance = Bunch(importances_mean=np.mean(importances, axis=1),
+                    importances_std=np.std(importances, axis=1),
+                    importances=importances)
+
+        # perm_importance = permutation_importance_slow(pipeline, X, y, n_repeats, scorer, n_jobs, random_seed)
+
+
     mean_perm_importance = perm_importance["importances_mean"]
     feature_names = list(X.columns)
     mean_perm_importance = list(zip(feature_names, mean_perm_importance))
@@ -398,69 +445,16 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def _weights_scorer(scorer, estimator, X, y, sample_weight):
-    if sample_weight is not None:
-        return scorer(estimator, X, y, sample_weight)
-    return scorer(estimator, X, y)
 
-
-def permutation_importance_own(pipeline, X, y, n_repeats, scoring, n_jobs,
-                                                    random_state):
-    if not hasattr(X, "iloc"):
-        X = check_array(X, force_all_finite='allow-nan', dtype=None)
-
-    # Precompute random seed from the random state to be used
-    # to get a fresh independent RandomState instance for each
-    # parallel call to _calculate_permutation_scores, irrespective of
-    # the fact that variables are shared or not depending on the active
-    # joblib backend (sequential, thread-based or process-based).
-    random_state = check_random_state(random_state)
-    random_seed = random_state.randint(np.iinfo(np.int32).max + 1)
-
-    scorer = check_scoring(pipeline, scoring=scoring)
-    baseline_score = _weights_scorer(scorer, pipeline, X, y, None)
-
-    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores)(
-        pipeline, X, y, None, col_idx, random_seed, n_repeats, scorer
-    ) for col_idx in range(X.shape[1]))
-
-    importances = baseline_score - np.array(scores)
-    return Bunch(importances_mean=np.mean(importances, axis=1),
-                 importances_std=np.std(importances, axis=1),
-                 importances=importances)
-
-def _calculate_permutation_scores(estimator, X, y, sample_weight, col_idx,
-                                  random_state, n_repeats, scorer):
+def _calculate_permutation_scores_slow(estimator, X, y, col_idx,
+                                  random_seed, n_repeats, scorer):
     """Calculate score when `col_idx` is permuted."""
-    random_state = check_random_state(random_state)
-
-    # Work on a copy of X to to ensure thread-safety in case of threading based
-    # parallelism. Furthermore, making a copy is also useful when the joblib
-    # backend is 'loky' (default) or the old 'multiprocessing': in those cases,
-    # if X is large it will be automatically be backed by a readonly memory map
-    # (memmap). X.copy() on the other hand is always guaranteed to return a
-    # writable data-structure whose columns can be shuffled inplace.
-    X_permuted = X.copy()
-    scores = np.zeros(n_repeats)
-    shuffling_idx = np.arange(X.shape[0])
-    for n_round in range(n_repeats):
-        random_state.shuffle(shuffling_idx)
-        if hasattr(X_permuted, "iloc"):
-            col = X_permuted.iloc[shuffling_idx, col_idx]
-            col.index = X_permuted.index
-            X_permuted.iloc[:, col_idx] = col
-        else:
-            X_permuted[:, col_idx] = X_permuted[shuffling_idx, col_idx]
-        feature_score = _weights_scorer(
-            scorer, estimator, X_permuted, y, sample_weight
-        )
-        scores[n_round] = feature_score
-
-    return scores
+    random_state = np.random.RandomState(random_seed)
+    return do_shuffle(X, n_repeats, random_state, col_idx, scorer, False, estimator, y, None)
 
 def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
     """Generate a bar graph of the pipeline's permutation importance.
-
+å
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame): The input data used to score and compute permutation importance
