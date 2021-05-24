@@ -385,6 +385,7 @@ class AutoMLSearch:
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
+        text_in_ensembling = len(infer_feature_types(X_train).select('natural_language').columns) > 0
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
             run_ensembling = False
@@ -438,6 +439,7 @@ class AutoMLSearch:
             number_features=self.X_train.shape[1],
             pipelines_per_batch=self._pipelines_per_batch,
             ensembling=run_ensembling,
+            text_in_ensembling=text_in_ensembling,
             pipeline_params=parameters,
             _frozen_pipeline_parameters=self._frozen_pipeline_parameters
         )
