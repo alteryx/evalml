@@ -719,11 +719,11 @@ def test_time_series_pipeline_with_detrender(component_graph, ts_data):
                                             parameters={"pipeline": {"gap": 1, "max_delay": 2, "date_index": None},
                                                         "DelayedFeatures": {"max_delay": 2}})
     pipeline.fit(X, y)
-    predictions = pipeline.predict(X, y).to_series()
+    predictions = pipeline.predict(X, y)
     features = pipeline.compute_estimator_features(X, y)
     detrender = pipeline._component_graph.get_component("Polynomial Detrender")
-    preds = pipeline.estimator.predict(features.iloc[2:]).to_series()
+    preds = pipeline.estimator.predict(features.iloc[2:])
     preds.index = y.index[2:]
     expected = detrender.inverse_transform(preds)
-    expected = infer_feature_types(pad_with_nans(expected.to_series(), 2)).to_series()
+    expected = infer_feature_types(pad_with_nans(expected, 2))
     pd.testing.assert_series_equal(predictions, expected)

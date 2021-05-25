@@ -103,7 +103,7 @@ class TimeSeriesRegressionPipeline(
         predictions = self.estimator.predict(features_no_nan, y_arg)
 
         predictions.index = y.index
-        predictions = self.inverse_transform(predictions).to_series()
+        predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(
             predictions, max(0, features.shape[0] - predictions.shape[0])
