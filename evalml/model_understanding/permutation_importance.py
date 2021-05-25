@@ -31,10 +31,15 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
     if pipeline._supports_fast_permutation_importance:
-        perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs,
+        perm_importance = _fast_permutation_importance(pipeline, X, y, objective,
+                                                       n_repeats=n_repeats,
+                                                       n_jobs=n_jobs,
                                                        random_seed=random_seed)
     else:
-        perm_importance = _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=n_jobs, random_seed=random_seed)
+        perm_importance = _slow_permutation_importance(pipeline, X, y, objective,
+                                                       n_repeats=n_repeats,
+                                                       n_jobs=n_jobs,
+                                                       random_seed=random_seed)
 
     mean_perm_importance = perm_importance["importances_mean"]
     feature_names = list(X.columns)
