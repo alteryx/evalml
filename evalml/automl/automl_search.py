@@ -1081,7 +1081,7 @@ class AutoMLSearch:
 
     @property
     def plot(self):
-        # Return an instance of the plot with the
+        # Return an instance of the plot with the latest scores
         try:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:
