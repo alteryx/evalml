@@ -1,6 +1,5 @@
 from unittest.mock import PropertyMock, patch
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -145,8 +144,8 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
 
 @pytest.mark.parametrize('pipeline_class, parameters', test_cases)
 @patch('evalml.pipelines.PipelineBase._supports_fast_permutation_importance', new_callable=PropertyMock)
-def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_importance, pipeline_class, parameters,
-                                                            has_minimal_dependencies):
+def test_fast_permutation_importance_matches_slow_output(mock_supports_fast_importance, pipeline_class, parameters,
+                                                         has_minimal_dependencies):
     if has_minimal_dependencies and pipeline_class == LinearPipelineWithTargetEncoderAndOHE:
         pytest.skip("Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
                     "dependency not installed.")
@@ -156,15 +155,15 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
         X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
 
     # Do this to make sure we use the same int as sklearn under the hood
-    random_state = np.random.RandomState(0)
-    random_seed = random_state.randint(np.iinfo(np.int32).max + 1)
+    # random_state = np.random.RandomState(0)
+    # random_seed = random_state.randint(np.iinfo(np.int32).max + 1)
 
     mock_supports_fast_importance.return_value = True
     parameters['Random Forest Classifier'] = {'n_jobs': 1}
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
-                                                   random_seed=random_seed)
+                                                   random_seed=0)
     mock_supports_fast_importance.return_value = False
     slow_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
                                                    random_seed=0)
