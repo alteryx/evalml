@@ -4,7 +4,6 @@ from skopt.space import Real
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types,
     is_all_numeric
@@ -42,7 +41,6 @@ class PCA(Transformer):
         X = infer_feature_types(X)
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._component_obj.fit(X)
         return self
 
@@ -50,16 +48,14 @@ class PCA(Transformer):
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.transform(X)
-        X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
+        X_t = pd.DataFrame(X_t, index=X_ww.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")
-        X = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
         X_t = self._component_obj.fit_transform(X, y)
-        X_t = pd.DataFrame(X_t, index=X.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
+        X_t = pd.DataFrame(X_t, index=X_ww.index, columns=[f"component_{i}" for i in range(X_t.shape[1])])
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)

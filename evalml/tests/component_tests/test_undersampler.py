@@ -36,15 +36,8 @@ def test_no_undersample(data_type, make_data_type, X_y_binary):
     undersampler = Undersampler()
     new_X, new_y = undersampler.fit_transform(X, y)
 
-    if data_type == "ww":
-        X = X.to_dataframe().values
-        y = y.to_series().values
-    elif data_type == "pd":
-        X = X.values
-        y = y.values
-
-    np.testing.assert_equal(X, new_X.to_dataframe().values)
-    np.testing.assert_equal(y, new_y.to_series().values)
+    np.testing.assert_equal(X, new_X.values)
+    np.testing.assert_equal(y, new_y.values)
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -60,20 +53,13 @@ def test_undersample_imbalanced(data_type, make_data_type):
 
     assert len(new_X) == 750
     assert len(new_y) == 750
-    value_counts = new_y.to_series().value_counts()
+    value_counts = new_y.value_counts()
     assert value_counts.values[1] / value_counts.values[0] == sampling_ratio
     pd.testing.assert_series_equal(value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False)
 
     transform_X, transform_y = undersampler.transform(X, y)
 
-    if data_type == "ww":
-        X = X.to_dataframe().values
-        y = y.to_series().values
-    elif data_type == "pd":
-        X = X.values
-        y = y.values
-
-    np.testing.assert_equal(X, transform_X.to_dataframe().values)
+    np.testing.assert_equal(X, transform_X.values)
     np.testing.assert_equal(None, transform_y)
 
 
@@ -102,7 +88,7 @@ def test_undersampler_sampling_dict(sampling_ratio_dict, expected_dict_values):
     new_X, new_y = undersampler.fit_transform(X, y)
 
     assert len(new_X) == sum(expected_dict_values.values())
-    assert new_y.to_series().value_counts().to_dict() == expected_dict_values
+    assert new_y.value_counts().to_dict() == expected_dict_values
     assert undersampler.random_seed == 12
     assert undersampler._component_obj.random_seed == 12
 
@@ -116,7 +102,7 @@ def test_undersampler_dictionary_overrides_ratio():
     new_X, new_y = undersampler.fit_transform(X, y)
 
     assert len(new_X) == sum(expected_result.values())
-    assert new_y.to_series().value_counts().to_dict() == expected_result
+    assert new_y.value_counts().to_dict() == expected_result
 
 
 def test_undersampler_sampling_dict_strings():
@@ -128,4 +114,4 @@ def test_undersampler_sampling_dict_strings():
     new_X, new_y = undersampler.fit_transform(X, y)
 
     assert len(new_X) == sum(expected_result.values())
-    assert new_y.to_series().value_counts().to_dict() == expected_result
+    assert new_y.value_counts().to_dict() == expected_result

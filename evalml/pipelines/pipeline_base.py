@@ -200,10 +200,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Input data to the pipeline to transform.
+            X (pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            ww.DataTable: New transformed features.
+            pd.DataFrame: New transformed features.
         """
         X_t = self._component_graph.compute_final_component_features(X, y=y)
         return X_t
@@ -224,8 +224,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Build a model
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target training data of length [n_samples]
 
         Returns:
             self
@@ -236,25 +236,24 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            ww.DataColumn: Predicted values.
+            pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
         predictions = self._component_graph.predict(X)
-        predictions_series = predictions.to_series()
-        predictions_series.name = self.input_target_name
-        return infer_feature_types(predictions_series)
+        predictions.name = self.input_target_name
+        return infer_feature_types(predictions)
 
     @abstractmethod
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, ww.DataColumn, or np.ndarray): True labels of length [n_samples]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): True labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:

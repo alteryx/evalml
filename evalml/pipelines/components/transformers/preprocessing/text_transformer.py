@@ -22,6 +22,4 @@ class TextTransformer(Transformer):
 
     def _get_text_columns(self, X):
         """Returns the ordered list of columns names in the input which have been designated as text columns."""
-        text_column_vals = X.select('natural_language')
-        text_columns = list(text_column_vals.to_dataframe().columns)
-        return text_columns
+        return list(X.ww.select('NaturalLanguage').columns)

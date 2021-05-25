@@ -5,7 +5,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class ClassImbalanceDataCheck(DataCheck):
@@ -39,8 +39,8 @@ class ClassImbalanceDataCheck(DataCheck):
             Ignores NaN values in target labels if they appear.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features. Ignored.
-            y (ww.DataColumn, pd.Series, np.ndarray): Target labels to check for imbalanced data.
+            X (pd.DataFrame, np.ndarray): Features. Ignored.
+            y (pd.Series, np.ndarray): Target labels to check for imbalanced data.
 
         Returns:
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold,
@@ -75,7 +75,6 @@ class ClassImbalanceDataCheck(DataCheck):
         }
 
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
 
         fold_counts = y.value_counts(normalize=False, sort=True)
         if len(fold_counts) == 0:
