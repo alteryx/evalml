@@ -13,20 +13,18 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (ww.DataTable, pd.DataFrame): The input data used to score and compute permutation importance
-        y (ww.DataColumn, pd.Series): The target data
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        y (pd.Series): The target data
         objective (str, ObjectiveBase): Objective to score on
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
-        pd.DataFrame, Mean feature importance scores over 5 shuffles.
+        pd.DataFrame, Mean feature importance scores over a number of shuffles.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
-    y = _convert_woodwork_types_wrapper(y.to_series())
 
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(pipeline.problem_type):

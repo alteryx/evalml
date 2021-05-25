@@ -145,8 +145,9 @@ def X_y_binary():
 
 @pytest.fixture(scope="class")
 def X_y_binary_cls(request):
-    request.cls.X_y_binary = datasets.make_classification(n_samples=100, n_features=20,
-                                                          n_informative=2, n_redundant=2, random_state=0)
+    X, y = datasets.make_classification(n_samples=100, n_features=20,
+                                        n_informative=2, n_redundant=2, random_state=0)
+    request.cls.X_y_binary = pd.DataFrame(X), pd.Series(y)
 
 
 @pytest.fixture
@@ -690,9 +691,9 @@ def make_data_type():
                 data = pd.DataFrame(data)
         if data_type == "ww":
             if len(data.shape) == 1:
-                data = ww.DataColumn(data)
+                data = ww.init_series(data)
             else:
-                data = ww.DataTable(data)
+                data.ww.init()
         return data
 
     return _make_data_type
@@ -700,7 +701,9 @@ def make_data_type():
 
 @pytest.fixture
 def fraud_100():
-    return load_fraud(n_rows=100)
+    X, y = load_fraud(n_rows=100)
+    X.ww.set_types(logical_types={'provider': 'Categorical', 'region': 'Categorical'})
+    return X, y
 
 
 @pytest.fixture
@@ -722,16 +725,16 @@ def mock_imbalanced_data_X_y():
         X_dict = {col_name: [i % (j + 1) for i in range(1, 100)] for j, col_name in enumerate(col_names)}
         X = pd.DataFrame(X_dict)
         if categorical_columns == 'all':
-            X_ww = ww.DataTable(X, logical_types={col_name: "Categorical" for col_name in col_names})
+            X.ww.init(logical_types={col_name: "Categorical" for col_name in col_names})
         elif categorical_columns == 'some':
-            X_ww = ww.DataTable(X, logical_types={col_name: "Categorical" for col_name in col_names[: len(col_names) // 2]})
+            X.ww.init(logical_types={col_name: "Categorical" for col_name in col_names[: len(col_names) // 2]})
         else:
-            X_ww = ww.DataTable(X)
+            X.ww.init()
         if problem_type == 'binary':
             targets = [0] * 3500 + [1] * 700
         else:
             targets = [0] * 3000 + [1] * 600 + [2] * 600
         targets *= multiplier
-        y_ww = ww.DataColumn(pd.Series(targets))
-        return X_ww, y_ww
+        y = ww.init_series(pd.Series(targets))
+        return X, y
     return _imbalanced_data_X_y

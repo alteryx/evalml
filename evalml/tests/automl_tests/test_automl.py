@@ -318,7 +318,7 @@ def test_automl_str_search(mock_fit, mock_score, mock_predict_proba, mock_encode
     assert "Search Results" not in str_rep
 
     mock_score.return_value = {automl.objective.name: 1.0}
-    mock_predict_proba.return_value = ww.DataTable(pd.DataFrame([[1.0, 0.0], [0.0, 1.0]]))
+    mock_predict_proba.return_value = pd.DataFrame([[1.0, 0.0], [0.0, 1.0]])
     automl.search()
     mock_fit.assert_called()
     mock_score.assert_called()
@@ -1039,24 +1039,24 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object'])
 def test_targets_pandas_data_types_classification(data_type, automl_type, target_type, make_data_type):
     if data_type == 'np' and target_type in ['Int64', 'boolean']:
         pytest.skip("Skipping test where data type is numpy and target type is nullable dtype")
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_breast_cancer(return_pandas=True)
+        X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
         if "bool" in target_type:
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
-        X, y = load_wine(return_pandas=True)
+        X, y = load_wine()
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in ['category', 'object']:
         if target_type == "category":
-            y = pd.Categorical(y)
+            y = pd.Series(pd.Categorical(y))
     elif "int" in target_type.lower():
         y = y.map({unique_vals[i]: int(i) for i in range(len(unique_vals))})
     elif "float" in target_type.lower():
@@ -1899,6 +1899,49 @@ def test_search_with_text(mock_fit, mock_score):
     assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
 
 
+@pytest.mark.parametrize("problem_type,pipeline_name,ensemble_name",
+                         [('binary', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
+                          ('multiclass', 'Stacked Ensemble Classification Pipeline', 'Stacked Ensemble Classifier'),
+                          ('regression', 'Stacked Ensemble Regression Pipeline', 'Stacked Ensemble Regressor')])
+@pytest.mark.parametrize("df_text", [True, False])
+@patch('evalml.automl.automl_algorithm.IterativeAlgorithm.__init__')
+def test_search_with_text_and_ensembling(mock_iter, df_text, problem_type, pipeline_name, ensemble_name):
+    X_with_text = pd.DataFrame(
+        {'col_1': ['I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m gonna be the main event, like no king was before! I\'m brushing up on looking down, I\'m working on my ROAR!',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.',
+                   'I\'m singing in the rain! Just singing in the rain, what a glorious feeling, I\'m happy again!',
+                   'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'I dreamed a dream in days gone by, when hope was high and life worth living',
+                   'Red, the blood of angry men - black, the dark of ages past',
+                   'do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!',
+                   'Red, the blood of angry men - black, the dark of ages past',
+                   'It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...']
+         })
+    X_no_text = pd.DataFrame({'col_1': [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3]})
+
+    if df_text:
+        X = X_with_text
+    else:
+        X = X_no_text
+    if problem_type == 'binary':
+        y = [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0]
+    elif problem_type == 'multiclass':
+        y = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2]
+    else:
+        y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    mock_iter.return_value = None
+    _ = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, allowed_model_families=["random_forest", "decision_tree"],
+                     max_batches=4, ensembling=True)
+    call_args = mock_iter.call_args_list[0][1]
+    if df_text:
+        assert call_args['text_in_ensembling']
+    else:
+        assert not call_args['text_in_ensembling']
+
+
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.8})
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_pipelines_per_batch(mock_fit, mock_score, X_y_binary):
@@ -2036,28 +2079,28 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
     X['cat col'] = pd.Series(new_col)
     X['num col'] = pd.Series(new_col)
     X['text col'] = pd.Series([f"{num}" for num in range(len(new_col))])
-    X = ww.DataTable(X, semantic_tags={'cat col': 'category', 'num col': 'numeric'},
-                     logical_types={'cat col': 'Categorical', 'num col': 'Integer', 'text col': 'NaturalLanguage'})
+    X.ww.init(semantic_tags={'cat col': 'category', 'num col': 'numeric'},
+              logical_types={'cat col': 'Categorical', 'num col': 'Integer', 'text col': 'NaturalLanguage'})
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_batches=5)
     automl.search()
     for arg in mock_fit.call_args[0]:
-        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
-        if isinstance(arg, ww.DataTable):
-            assert arg.semantic_tags['cat col'] == {'category'}
-            assert arg.logical_types['cat col'] == ww.logical_types.Categorical
-            assert arg.semantic_tags['num col'] == {'numeric'}
-            assert arg.logical_types['num col'] == ww.logical_types.Integer
-            assert arg.semantic_tags['text col'] == set()
-            assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+        assert isinstance(arg, (pd.DataFrame, pd.Series))
+        if isinstance(arg, pd.DataFrame):
+            assert arg.ww.semantic_tags['cat col'] == {'category'}
+            assert arg.ww.logical_types['cat col'] == ww.logical_types.Categorical
+            assert arg.ww.semantic_tags['num col'] == {'numeric'}
+            assert arg.ww.logical_types['num col'] == ww.logical_types.Integer
+            assert arg.ww.semantic_tags['text col'] == set()
+            assert arg.ww.logical_types['text col'] == ww.logical_types.NaturalLanguage
     for arg in mock_score.call_args[0]:
-        assert isinstance(arg, (ww.DataTable, ww.DataColumn))
-        if isinstance(arg, ww.DataTable):
-            assert arg.semantic_tags['cat col'] == {'category'}
-            assert arg.logical_types['cat col'] == ww.logical_types.Categorical
-            assert arg.semantic_tags['num col'] == {'numeric'}
-            assert arg.logical_types['num col'] == ww.logical_types.Integer
-            assert arg.semantic_tags['text col'] == set()
-            assert arg.logical_types['text col'] == ww.logical_types.NaturalLanguage
+        assert isinstance(arg, (pd.DataFrame, pd.Series))
+        if isinstance(arg, pd.DataFrame):
+            assert arg.ww.semantic_tags['cat col'] == {'category'}
+            assert arg.ww.logical_types['cat col'] == ww.logical_types.Categorical
+            assert arg.ww.semantic_tags['num col'] == {'numeric'}
+            assert arg.ww.logical_types['num col'] == ww.logical_types.Integer
+            assert arg.ww.semantic_tags['text col'] == set()
+            assert arg.ww.logical_types['text col'] == ww.logical_types.NaturalLanguage
 
 
 def test_automl_validates_problem_configuration(X_y_binary):
@@ -2627,7 +2670,7 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(X_
         automl.train_pipelines([Pipeline2({}), Pipeline1({})])
 
     with pytest.raises(ValueError, match="All pipeline names must be unique. The name 'My Pipeline' was repeated."):
-        automl.score_pipelines([Pipeline2({}), Pipeline1({})], None, None, None)
+        automl.score_pipelines([Pipeline2({}), Pipeline1({})], X, y, None)
 
 
 def test_score_batch_before_fitting_yields_error_nan_scores(X_y_binary, dummy_binary_pipeline_class, caplog):
@@ -2689,7 +2732,7 @@ def test_automl_supports_float_targets_for_classification(mock_train, mock_binar
     # Assert that we train pipeline on the original target, not the encoded one used in EngineBase for data splitting
     _, kwargs = mock_train.call_args
     mock_y = kwargs["y"]
-    pd.testing.assert_series_equal(mock_y.to_series(), y, check_dtype=False)
+    pd.testing.assert_series_equal(mock_y, y, check_dtype=False)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY,
@@ -2712,8 +2755,7 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X['index_col'] = pd.Series(range(len(X)))
-    X = ww.DataTable(X)
-    X = X.set_index('index_col')
+    X.ww.init(index='index_col')
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
     automl.search()
@@ -2753,18 +2795,18 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     baseline.fit(X, y)
 
     if problem_type == ProblemTypes.BINARY:
-        expected_predictions = pd.Series(np.array([10] * len(X)), dtype="Int64")
+        expected_predictions = pd.Series(np.array([10] * len(X)), dtype="int64")
         expected_predictions_proba = pd.DataFrame({10: [1., 1., 1., 1.], 11: [0., 0., 0., 0.]})
     if problem_type == ProblemTypes.MULTICLASS:
-        expected_predictions = pd.Series(np.array([11] * len(X)), dtype="Int64")
+        expected_predictions = pd.Series(np.array([11] * len(X)), dtype="int64")
         expected_predictions_proba = pd.DataFrame({10: [0., 0., 0., 0.], 11: [1., 1., 1., 1.], 12: [0., 0., 0., 0.]})
     if problem_type == ProblemTypes.REGRESSION:
         mean = y.mean()
         expected_predictions = pd.Series([mean] * len(X))
 
-    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X).to_series())
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X))
     if is_classification(problem_type):
-        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X).to_dataframe())
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X))
     np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
 
 
@@ -2793,9 +2835,9 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     expected_predictions = y.shift(1) if gap == 0 else y
     expected_predictions = expected_predictions.reset_index(drop=True)
     if not expected_predictions.isnull().values.any():
-        expected_predictions = expected_predictions.astype("Int64")
+        expected_predictions = expected_predictions.astype("int64")
 
-    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y).to_series())
+    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y))
     if is_classification(problem_type):
-        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y).to_dataframe())
+        pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y))
     np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))

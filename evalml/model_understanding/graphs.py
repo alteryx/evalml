@@ -26,20 +26,15 @@ from evalml.model_understanding.permutation_importance import (
 )
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    import_or_raise,
-    infer_feature_types,
-    jupyter_check
-)
+from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
 def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """Confusion matrix for binary and multiclass classification.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -47,8 +42,8 @@ def confusion_matrix(y_true, y_predicted, normalize_method='true'):
     """
     y_true = infer_feature_types(y_true)
     y_predicted = infer_feature_types(y_predicted)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
-    y_predicted = _convert_woodwork_types_wrapper(y_predicted.to_series()).to_numpy()
+    y_true = y_true.to_numpy()
+    y_predicted = y_predicted.to_numpy()
     labels = unique_labels(y_true, y_predicted)
     conf_mat = sklearn_confusion_matrix(y_true, y_predicted)
     conf_mat = pd.DataFrame(conf_mat, index=labels, columns=labels)
@@ -61,14 +56,13 @@ def normalize_confusion_matrix(conf_mat, normalize_method='true'):
     """Normalizes a confusion matrix.
 
     Arguments:
-        conf_mat (ww.DataTable, pd.DataFrame or np.ndarray): Confusion matrix to normalize.
+        conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
     """
     conf_mat = infer_feature_types(conf_mat)
-    conf_mat = _convert_woodwork_types_wrapper(conf_mat.to_dataframe())
     col_names = conf_mat.columns
 
     conf_mat = conf_mat.to_numpy()
@@ -93,8 +87,8 @@ def graph_confusion_matrix(y_true, y_pred, normalize_method='true', title_additi
     If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
         title_addition (str or None): if not None, append to plot title. Defaults to None.
 
@@ -142,8 +136,8 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
     Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred_proba (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
         pos_label_idx (int): the column index corresponding to the positive class. If predicted probabilities are two-dimensional, this will be used to access the probabilities for the positive class.
 
     Returns:
@@ -156,16 +150,13 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
     """
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
-    if isinstance(y_pred_proba, ww.DataTable):
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe())
+
+    if isinstance(y_pred_proba, pd.DataFrame):
         y_pred_proba_shape = y_pred_proba.shape
         try:
             y_pred_proba = y_pred_proba.iloc[:, pos_label_idx]
         except IndexError:
             raise NoPositiveLabelException(f"Predicted probabilities of shape {y_pred_proba_shape} don't contain a column at index {pos_label_idx}")
-    else:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series())
 
     precision, recall, thresholds = sklearn_precision_recall_curve(y_true, y_pred_proba)
     auc_score = sklearn_auc(recall, precision)
@@ -179,8 +170,8 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     """Generate and display a precision-recall plot.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True binary labels.
-        y_pred_proba (ww.DataColumn, pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
+        y_true (pd.Series or np.ndarray): True binary labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
         title_addition (str or None): If not None, append to plot title. Default None.
 
     Returns:
@@ -206,8 +197,8 @@ def roc_curve(y_true, y_pred_proba):
     Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True labels.
-        y_pred_proba (ww.DataColumn, pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied.
+        y_true (pd.Series or np.ndarray): True labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied.
 
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
@@ -217,13 +208,8 @@ def roc_curve(y_true, y_pred_proba):
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = infer_feature_types(y_true)
-    y_pred_proba = infer_feature_types(y_pred_proba)
-    if isinstance(y_pred_proba, ww.DataTable):
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_dataframe()).to_numpy()
-    else:
-        y_pred_proba = _convert_woodwork_types_wrapper(y_pred_proba.to_series()).to_numpy()
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series()).to_numpy()
+    y_true = infer_feature_types(y_true).to_numpy()
+    y_pred_proba = infer_feature_types(y_pred_proba).to_numpy()
 
     if len(y_pred_proba.shape) == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
@@ -254,8 +240,8 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series or np.ndarray): True labels.
-        y_pred_proba (ww.DataColumn, pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
+        y_true (pd.Series or np.ndarray): True labels.
+        y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
         custom_class_labels (list or None): If not None, custom labels for classes. Default None.
         title_addition (str or None): if not None, append to plot title. Default None.
 
@@ -298,8 +284,8 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (ww.DataTable, pd.DataFrame): The input data used to score and compute permutation importance
-        y (ww.DataColumn, pd.Series): The target data
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        y (pd.Series): The target data
         objective (str, ObjectiveBase): Objective to score on
         importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
@@ -349,8 +335,8 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
-        X (ww.DataTable, pd.DataFrame): The input data used to compute objective score
-        y (ww.DataColumn, pd.Series): The target labels
+        X (pd.DataFrame): The input data used to compute objective score
+        y (pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score
         steps (int): Number of intervals to divide and calculate objective score at
 
@@ -380,8 +366,8 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (ww.DataTable, pd.DataFrame): The input data used to score and compute scores
-        y (ww.DataColumn, pd.Series): The target labels
+        X (pd.DataFrame): The input data used to score and compute scores
+        y (pd.Series): The target labels
         objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
         steps (int): Number of intervals to divide and calculate objective score at
 
@@ -409,9 +395,9 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 def _is_feature_of_type(feature, X, ltype):
     """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
     if isinstance(feature, int):
-        is_type = X[X.to_dataframe().columns[feature]].logical_type == ltype
+        is_type = X.ww.logical_types[X.columns[feature]] == ltype
     else:
-        is_type = X[feature].logical_type == ltype
+        is_type = X.ww.logical_types[feature] == ltype
     return is_type
 
 
@@ -433,7 +419,7 @@ def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
     feature_list = []
     for name_or_index in names_or_col_indices:
         if isinstance(name_or_index, int):
-            feature_list.append(X.to_dataframe().columns[name_or_index])
+            feature_list.append(X.columns[name_or_index])
         else:
             feature_list.append(name_or_index)
     return feature_list
@@ -476,7 +462,7 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
+        X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
@@ -515,6 +501,7 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
     # Dynamically set the grid resolution to the maximum number of values
     # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
     X = infer_feature_types(X)
+
     if isinstance(features, (list, tuple)):
         is_categorical = [_is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features]
         is_datetime = [_is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features]
@@ -528,18 +515,18 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
                              "dependence is supported.")
         if not (all([isinstance(x, str) for x in features]) or all([isinstance(x, int) for x in features])):
             raise ValueError("Features provided must be a tuple entirely of integers or strings, not a mixture of both.")
-        X_features = X.iloc[:, list(features)] if isinstance(features[0], int) else X[list(features)]
+        X_features = X.ww.iloc[:, list(features)] if isinstance(features[0], int) else X.ww[list(features)]
     else:
-        X_features = ww.DataTable(X.to_dataframe().iloc[:, features].to_frame()) if isinstance(features, int) else ww.DataTable(X.to_dataframe()[features].to_frame())
+        X_features = X.ww.iloc[:, [features]] if isinstance(features, int) else X.ww[[features]]
 
-    X_cats = X_features.select("categorical")
+    X_cats = X_features.ww.select("categorical")
     if any(is_categorical):
-        max_num_cats = max(X_cats.describe().loc["nunique"])
+        max_num_cats = max(X_cats.ww.describe().loc["nunique"])
         grid_resolution = max([max_num_cats + 1, grid_resolution])
 
-    X_dt = X_features.select("datetime")
+    X_dt = X_features.ww.select("datetime")
     if any(is_datetime):
-        max_num_dt = max(X_dt.describe().loc["nunique"])
+        max_num_dt = max(X_dt.ww.describe().loc["nunique"])
         grid_resolution = max([max_num_dt + 1, grid_resolution])
 
     if isinstance(features, (list, tuple)):
@@ -555,8 +542,6 @@ def partial_dependence(pipeline, X, features, percentiles=(0.05, 0.95), grid_res
         raise ValueError("Pipeline to calculate partial dependence for must be fitted")
     if pipeline.model_family == ModelFamily.BASELINE:
         raise ValueError("Partial dependence plots are not supported for Baseline pipelines")
-
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
     feature_list = X[feature_names]
 
@@ -633,7 +618,7 @@ def graph_partial_dependence(pipeline, X, features, class_label=None, grid_resol
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
-        X (ww.DataTable, pd.DataFrame, np.ndarray): The input data used to generate a grid of values
+        X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
@@ -754,8 +739,8 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
     """Combines y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
 
     Arguments:
-        y_true (pd.Series, ww.DataColumn, or np.ndarray): The real target values of the data
-        y_pred (pd.Series, ww.DataColumn, or np.ndarray): The predicted values outputted by the regression model.
+        y_true (pd.Series, or np.ndarray): The real target values of the data
+        y_pred (pd.Series, or np.ndarray): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to None
@@ -771,9 +756,7 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
         raise ValueError(f"Threshold must be positive! Provided threshold is {outlier_threshold}")
 
     y_true = infer_feature_types(y_true)
-    y_true = _convert_woodwork_types_wrapper(y_true.to_series())
     y_pred = infer_feature_types(y_pred)
-    y_pred = _convert_woodwork_types_wrapper(y_pred.to_series())
 
     predictions = y_pred.reset_index(drop=True)
     actual = y_true.reset_index(drop=True)
@@ -791,8 +774,8 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
 
     Arguments:
-        y_true (ww.DataColumn, pd.Series): The real target values of the data
-        y_pred (ww.DataColumn, pd.Series): The predicted values outputted by the regression model.
+        y_true (pd.Series): The real target values of the data
+        y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
                                  Defaults to None
@@ -954,9 +937,9 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (ww.DataTable, pd.DataFrame): Features used to generate new predictions.
-        y (ww.DataColumn, pd.Series): Target values to compare predictions against.
-        dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
+        X (pd.DataFrame): Features used to generate new predictions.
+        y (pd.Series): Target values to compare predictions against.
+        dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
        pd.DataFrame
@@ -966,8 +949,6 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
 
-    dates = _convert_woodwork_types_wrapper(dates.to_series())
-    y = _convert_woodwork_types_wrapper(y.to_series())
     return pd.DataFrame({"dates": dates.reset_index(drop=True),
                          "target": y.reset_index(drop=True),
                          "prediction": prediction.reset_index(drop=True)})
@@ -978,9 +959,9 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
-        X (ww.DataTable, pd.DataFrame): Features used to generate new predictions.
-        y (ww.DataColumn, pd.Series): Target values to compare predictions against.
-        dates (ww.DataColumn, pd.Series): Dates corresponding to target values and predictions.
+        X (pd.DataFrame): Features used to generate new predictions.
+        y (pd.Series): Target values to compare predictions against.
+        dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
         plotly.Figure: Showing the prediction vs actual over time.
@@ -1032,7 +1013,7 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
     """Get the transformed output after fitting X to the embedded space using t-SNE.
 
      Arguments:
-        X (np.ndarray, ww.DataTable, pd.DataFrame): Data to be transformed. Must be numeric.
+        X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
         algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
@@ -1049,7 +1030,6 @@ def t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric='eucli
         raise ValueError("The parameter perplexity must be non-negative")
 
     X = infer_feature_types(X)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     t_sne_ = TSNE(n_components=n_components, perplexity=perplexity, learning_rate=learning_rate, metric=metric, **kwargs)
     X_new = t_sne_.fit_transform(X)
     return X_new
@@ -1059,7 +1039,7 @@ def graph_t_sne(X, n_components=2, perplexity=30.0, learning_rate=200.0, metric=
     """Plot high dimensional data into lower dimensional space using t-SNE .
 
     Arguments:
-        X (np.ndarray, pd.DataFrame, ww.DataTable): Data to be transformed. Must be numeric.
+        X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
         algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.

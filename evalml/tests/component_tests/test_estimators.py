@@ -43,7 +43,7 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             clf.fit(X, y)
             assert len(clf.feature_importance) == len(X.columns)
             assert not np.isnan(clf.feature_importance).all().all()
-            predictions = clf.predict(X).to_series()
+            predictions = clf.predict(X)
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
             assert (clf.input_feature_names == col_names)
@@ -58,7 +58,7 @@ def test_binary_classification_estimators_predict_proba_col_order(helper_functio
         if ProblemTypes.BINARY in supported_problem_types:
             estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             estimator.fit(X, y)
-            predicted_proba = estimator.predict_proba(X).to_dataframe()
+            predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
 
@@ -137,7 +137,7 @@ def test_estimator_predict_output_type(X_y_binary, ts_data, helper_functions):
             component = helper_functions.safe_init_component_with_njobs_1(component_class)
             component.fit(X, y=y)
             predict_output = component.predict(X)
-            assert isinstance(predict_output, ww.DataColumn)
+            assert isinstance(predict_output, pd.Series)
             assert len(predict_output) == len(y)
             if component_class.name == 'ARIMA Regressor':
                 assert predict_output.name == 'predicted_mean'
@@ -153,7 +153,7 @@ def test_estimator_predict_output_type(X_y_binary, ts_data, helper_functions):
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
             predict_proba_output = component.predict_proba(X)
-            assert isinstance(predict_proba_output, ww.DataTable)
+            assert isinstance(predict_proba_output, pd.DataFrame)
             assert predict_proba_output.shape == (len(y), len(np.unique(y)))
             assert (list(predict_proba_output.columns) == y_cols_expected).all()
 
@@ -207,10 +207,10 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
 def test_estimator_manage_woodwork(X_y_binary):
     X_df = pd.DataFrame({"foo": [1, 2, 3], "bar": [4, 5, 6], "baz": [7, 8, 9]})
-    X_ww = ww.DataTable(X_df)
+    X_df.ww.init()
 
     y_series = pd.Series([1, 2, 3])
-    y_ww = ww.DataColumn(y_series)
+    y_series = ww.init_series(y_series)
 
     class MockEstimator(Estimator):
         name = "Mock Estimator Subclass"
@@ -219,11 +219,11 @@ def test_estimator_manage_woodwork(X_y_binary):
 
     # Test y is None case
     est = MockEstimator()
-    X, y = est._manage_woodwork(X_ww, y=None)
+    X, y = est._manage_woodwork(X_df, y=None)
     assert isinstance(X, pd.DataFrame)
     assert y is None
 
     # Test y is not None case
-    X, y = est._manage_woodwork(X_ww, y_ww)
+    X, y = est._manage_woodwork(X_df, y_series)
     assert isinstance(X, pd.DataFrame)
     assert isinstance(y, pd.Series)

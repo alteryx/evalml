@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily
@@ -100,8 +99,8 @@ def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
     dt_clf.fit(X=X[:250], y=y[:250])
     y_pred_dt = dt_clf.predict(X=X[250:])
 
-    assert isinstance(y_pred_dt, woodwork.DataColumn)
-    pd.testing.assert_series_equal(y_pred.to_series(), y_pred_dt.to_series())
+    assert isinstance(y_pred_dt, pd.Series)
+    pd.testing.assert_series_equal(y_pred, y_pred_dt)
 
 
 def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal):
@@ -121,7 +120,7 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal):
     m_clf.fit(X=X[:250], y=y[:250])
     y_pred = m_clf.predict(X=X[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk.to_period('D') == y_pred).all()
 
 
 def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
@@ -139,7 +138,7 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     m_clf.fit(X=X[:250], y=y[:250])
     y_pred = m_clf.predict(X=X[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk.to_period('D') == y_pred).all()
 
 
 @patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
@@ -163,7 +162,7 @@ def test_fit_predict_ts_with_X_and_y_index(mock_get_dates, mock_format_dates, ts
     mock_format_dates.return_value = (X, y, fh_)
     y_pred = m_clf.predict(X=X)
 
-    assert (y_pred_sk == y_pred.to_series()).all()
+    assert (y_pred_sk == y_pred).all()
 
 
 @patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
@@ -190,7 +189,7 @@ def test_fit_predict_ts_with_X_not_y_index(mock_get_dates, mock_format_dates, ts
     mock_format_dates.return_value = (X, y, fh_)
     y_pred = clf_.predict(X=X)
 
-    assert (y_pred_sk == y_pred.to_series()).all()
+    assert (y_pred_sk == y_pred).all()
 
 
 @patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
@@ -216,7 +215,7 @@ def test_fit_predict_ts_with_y_not_X_index(mock_get_dates, mock_format_dates, ts
     mock_format_dates.return_value = (X, y, fh_)
     y_pred = clf_.predict(X=X, y=y)
 
-    assert (y_pred_sk == y_pred.to_series()).all()
+    assert (y_pred_sk == y_pred).all()
 
 
 def test_predict_ts_without_X_error(ts_data):
@@ -284,7 +283,7 @@ def test_fit_predict_ts_no_X_out_of_sample(ts_data_seasonal):
     m_clf.fit(X=None, y=y[:250])
     y_pred = m_clf.predict(X=None, y=y[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk.to_period('D') == y_pred).all()
 
 
 @pytest.mark.parametrize("X_none", [True, False])
@@ -311,4 +310,4 @@ def test_fit_predict_date_index_named_out_of_sample(X_none, ts_data_seasonal):
         m_clf.fit(X=X[:250], y=y[:250])
         y_pred = m_clf.predict(X=X[250:], y=y[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred.to_series()).all()
+    assert (y_pred_sk.to_period('D') == y_pred).all()

@@ -1,16 +1,11 @@
 import networkx as nx
 import pandas as pd
-import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    import_or_raise,
-    infer_feature_types
-)
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class ComponentGraph:
@@ -116,11 +111,10 @@ class ComponentGraph:
         """Fit each component in the graph
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -129,11 +123,11 @@ class ComponentGraph:
         """Fit all components save the final one, usually an estimator
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]
 
         Returns:
-            ww.DataTable: Transformed values.
+            pd.DataFrame: Transformed values.
         """
         return self._fit_transform_features_helper(True, X, y)
 
@@ -142,11 +136,11 @@ class ComponentGraph:
         to get all the information that should be fed to the final component
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            ww.DataTable: Transformed values.
+            pd.DataFrame: Transformed values.
         """
         return self._fit_transform_features_helper(False, X, y)
 
@@ -155,11 +149,11 @@ class ComponentGraph:
 
         Arguments:
             needs_fitting (boolean): Determines if components should be fit.
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]. Defaults to None.
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            ww.DataTable: Transformed values.
+            pd.DataFrame: Transformed values.
         """
         if len(self.compute_order) <= 1:
             X = infer_feature_types(X)
@@ -169,13 +163,12 @@ class ComponentGraph:
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
             parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
-            if isinstance(parent_output, ww.DataColumn):
-                parent_output = parent_output.to_series()
+            if isinstance(parent_output, pd.Series):
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = infer_feature_types(parent_output)
             if parent_output is not None:
                 final_component_inputs.append(parent_output)
-        concatted = pd.concat([component_input.to_dataframe() for component_input in final_component_inputs], axis=1)
+        concatted = pd.concat([component_input for component_input in final_component_inputs], axis=1)
         if needs_fitting:
             self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
         return infer_feature_types(concatted)
@@ -184,10 +177,10 @@ class ComponentGraph:
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataColumn: Predicted values.
+            pd.Series: Predicted values.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
@@ -200,8 +193,8 @@ class ComponentGraph:
 
         Arguments:
             component_list (list): The list of component names to compute.
-            X (ww.DataTable, d.DataFrame): Input data to the pipeline to transform.
-            y (ww.DataColumn, pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series): The target training data of length [n_samples]
             fit (bool): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
@@ -226,10 +219,8 @@ class ComponentGraph:
                     y_input = output_cache[parent_input]
                 else:
                     parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
-                    if isinstance(parent_x, ww.DataTable):
-                        parent_x = _convert_woodwork_types_wrapper(parent_x.to_dataframe())
-                    elif isinstance(parent_x, ww.DataColumn):
-                        parent_x = pd.Series(_convert_woodwork_types_wrapper(parent_x.to_series()), name=parent_input)
+                    if isinstance(parent_x, pd.Series):
+                        parent_x = parent_x.rename(parent_input)
                     x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, most_recent_y)
             self.input_feature_names.update({component_name: list(input_x.columns)})
@@ -312,11 +303,11 @@ class ComponentGraph:
         Arguments:
             x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
             y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
-            X (ww.DataTable, pd.DataFrame): The original X input, to be used if there is no parent X input
-            y (ww.DataColumn, pd.Series): The original y input, to be used if there is no parent y input
+            X (pd.DataFrame): The original X input, to be used if there is no parent X input
+            y (pd.Series): The original y input, to be used if there is no parent y input
 
         Returns:
-            ww.DataTable, ww.DataColumn: The X and y transformed values to evaluate a component with
+            pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
         """
         if len(x_inputs) == 0:
             return_x = X

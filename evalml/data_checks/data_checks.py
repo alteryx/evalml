@@ -76,8 +76,8 @@ class DataChecks:
         Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target data of length [n_samples]
+            X (pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target data of length [n_samples]
 
         Returns:
             dict: Dictionary containing DataCheckMessage objects
@@ -89,7 +89,7 @@ class DataChecks:
             "actions": []
         }
         X = infer_feature_types(X)
-        X = X.drop(list(X.select('index').columns))
+        X = X.ww.drop(list(X.ww.select('index').columns))
         if y is not None:
             y = infer_feature_types(y)
 
