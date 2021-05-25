@@ -64,7 +64,6 @@ class AutoMLAlgorithm(ABC):
         """
         if pipeline.name not in self._tuners:
             raise PipelineNotFoundError(f"No such pipeline allowed in this AutoML search: {pipeline.name}")
-        print(f"automlalgorithm - add_result - pipeline name: {pipeline.name}")
         print(f"automlalgorithm - add_result - pipeline: {pipeline}")
         print(f"automlalgorithm - add_result - pipeline parameters: {pipeline.parameters}")
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)

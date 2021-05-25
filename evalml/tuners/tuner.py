@@ -41,6 +41,8 @@ class Tuner(ABC):
         """Convert from pipeline parameters to a flat list of values"""
         flat_parameter_values = []
         for flat_parameter_name in self._search_space_names:
+            print(f"tuner - _convert_to_flat_parameters - flat_parameter_name: {flat_parameter_name}")
+            print(f"tuner - _convert_to_flat_parameters - self._parameter_names_map[flat_parameter_name]: {self._parameter_names_map[flat_parameter_name]}")
             component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
             if component_name not in pipeline_parameters or parameter_name not in pipeline_parameters[component_name]:
                 raise TypeError('Pipeline parameters missing required field "{}" for component "{}"'.format(parameter_name, component_name))

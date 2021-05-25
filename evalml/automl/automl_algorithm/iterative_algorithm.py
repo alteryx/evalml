@@ -150,6 +150,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number == 1:
                 try:
+                    print(f'iterative algorithm - add_result - pipeline: {pipeline}')
+                    print(f'iterative algorithm - add_result - trained_pipeline_results: {trained_pipeline_results}')
                     super().add_result(score_to_minimize, pipeline, trained_pipeline_results)
                 except ValueError as e:
                     if 'is not within the bounds of the space' in str(e):
