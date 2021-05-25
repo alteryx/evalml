@@ -315,7 +315,6 @@ class AutoMLSearch:
         if not self.plot:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
 
-
         if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
             raise ValueError("Parameter allowed_pipelines must be either None or a list!")
         if allowed_pipelines is not None and not all(isinstance(p, PipelineBase) for p in allowed_pipelines):
@@ -1082,6 +1081,7 @@ class AutoMLSearch:
 
     @property
     def plot(self):
+        # Return an instance of the plot with the
         try:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:
