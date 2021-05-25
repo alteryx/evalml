@@ -236,10 +236,11 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         assert any([p != logistic_regression_binary_pipeline_class({}).default_parameters for p in all_parameters])
 
 
+@pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
-def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary_pipeline_classes):
+def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, text_in_ensembling, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
-    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=True, n_jobs=n_jobs)
+    algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes, ensembling=True, text_in_ensembling=text_in_ensembling, n_jobs=n_jobs)
     next_batch = algo.next_batch()
     seen_ensemble = False
     scores = range(0, len(next_batch))
@@ -251,13 +252,17 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(n_jobs, dummy_binary
         for pipeline in next_batch:
             if isinstance(pipeline.estimator, StackedEnsembleClassifier):
                 seen_ensemble = True
-                assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == n_jobs
+                if text_in_ensembling:
+                    assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == 1
+                else:
+                    assert pipeline.parameters['Stacked Ensemble Classifier']['n_jobs'] == n_jobs
     assert seen_ensemble
 
 
+@pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
-def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_regression_pipeline_class):
-    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class({}), linear_regression_pipeline_class({})], ensembling=True, n_jobs=n_jobs)
+def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, text_in_ensembling, linear_regression_pipeline_class):
+    algo = IterativeAlgorithm(allowed_pipelines=[linear_regression_pipeline_class({}), linear_regression_pipeline_class({})], ensembling=True, text_in_ensembling=text_in_ensembling, n_jobs=n_jobs)
     next_batch = algo.next_batch()
     seen_ensemble = False
     scores = range(0, len(next_batch))
@@ -269,7 +274,10 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_r
         for pipeline in next_batch:
             if isinstance(pipeline.estimator, StackedEnsembleRegressor):
                 seen_ensemble = True
-                assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == n_jobs
+                if text_in_ensembling:
+                    assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == 1
+                else:
+                    assert pipeline.parameters['Stacked Ensemble Regressor']['n_jobs'] == n_jobs
     assert seen_ensemble
 
 
