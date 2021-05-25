@@ -295,7 +295,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 
 def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
     """Generate a bar graph of the pipeline's permutation importance.
-å
+
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (ww.DataTable, pd.DataFrame): The input data used to score and compute permutation importance

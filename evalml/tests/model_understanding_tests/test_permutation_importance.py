@@ -154,10 +154,6 @@ def test_fast_permutation_importance_matches_slow_output(mock_supports_fast_impo
     if pipeline_class == LinearPipelineWithTextFeatures:
         X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
 
-    # Do this to make sure we use the same int as sklearn under the hood
-    # random_state = np.random.RandomState(0)
-    # random_seed = random_state.randint(np.iinfo(np.int32).max + 1)
-
     mock_supports_fast_importance.return_value = True
     parameters['Random Forest Classifier'] = {'n_jobs': 1}
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
