@@ -73,14 +73,14 @@ def calculate_permutation_importance_one_column(X, y, pipeline, col_name, object
             raise ValueError("Fast method of calculating permutation importance requires precomputed_features")
         if is_classification(pipeline.problem_type):
             y = pipeline._encode_targets(y)
-        baseline_score = _fast_scorer(pipeline, precomputed_features, y, objective)
+        baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
         scores = _calculate_permutation_scores_fast(
             pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
         )
         importances = baseline_score - np.array(scores)
         return np.mean(importances)
     else:
-        baseline_score = _slow_scorer(pipeline, X, y)
+        baseline_score = _slow_scorer(pipeline, X, y, objective)
         scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, random_seed, n_repeats, _slow_scorer)
         importances = baseline_score - np.array(scores)
         return np.mean(importances)
@@ -97,7 +97,7 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
 
-    baseline_score = _fast_scorer(pipeline, precomputed_features, y, objective)
+    baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
 
     scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
         pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
@@ -127,7 +127,7 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
 
 
 def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
-    baseline_score = _slow_scorer(pipeline, X, y)
+    baseline_score = _slow_scorer(pipeline, X, y, objective)
 
     scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_slow)(
         pipeline, X, y, col_idx, random_seed, n_repeats, _slow_scorer
@@ -163,9 +163,9 @@ def _shuffle_and_score_helper(X_features, n_repeats, random_state, col_idx, scor
         col.index = X_permuted.index
         X_permuted.iloc[:, col_idx] = col
         if is_fast:
-            feature_score = scorer(pipeline, X_permuted, y, objective)
+            feature_score = scorer(pipeline, X_permuted, X_features, y, objective)
         else:
-            feature_score = scorer(pipeline, X_permuted, y)
+            feature_score = scorer(pipeline, X_permuted, y, objective)
         scores[n_round] = feature_score
     return scores
 
