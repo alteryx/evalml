@@ -309,3 +309,45 @@ def test_permutation_importance_oversampler(fraud_100):
     pipeline.predict(X)
     importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
     assert not importance.isnull().all().all()
+
+
+
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+def test_get_permutation_importance_binary_one_col(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
+                                           binary_core_objectives, make_data_type):
+    X, y = X_y_binary
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                         random_seed=42)
+    pipeline.fit(X, y)
+    for objective in binary_core_objectives:
+        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+        assert list(permutation_importance.columns) == ["feature", "importance"]
+        assert not permutation_importance.isnull().all().all()
+
+
+def test_get_permutation_importance_multiclass_one_col(X_y_multi, logistic_regression_multiclass_pipeline_class,
+                                               multiclass_core_objectives):
+    X, y = X_y_multi
+    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                             random_seed=42)
+    pipeline.fit(X, y)
+    for objective in multiclass_core_objectives:
+        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+        assert list(permutation_importance.columns) == ["feature", "importance"]
+        assert not permutation_importance.isnull().all().all()
+
+
+def test_get_permutation_importance_regression_one_col(linear_regression_pipeline_class, regression_core_objectives):
+    X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
+    y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
+    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
+                                                random_seed=42)
+    pipeline.fit(X, y)
+
+    for objective in regression_core_objectives:
+        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
+        assert list(permutation_importance.columns) == ["feature", "importance"]
+        assert not permutation_importance.isnull().all().all()

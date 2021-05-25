@@ -5,7 +5,7 @@ from sklearn.utils import Bunch
 
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import is_classification
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=0):
@@ -51,10 +51,8 @@ def calculate_permutation_importance_one_column(X, y, pipeline, objective, rando
         def scorer(pipeline, features, y, objective):
             if objective.score_needs_proba:
                 preds = pipeline.estimator.predict_proba(features)
-                preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
             else:
                 preds = pipeline.estimator.predict(features)
-                preds = _convert_woodwork_types_wrapper(preds.to_series())
             score = pipeline._score(X, y, preds, objective)
             return score if objective.greater_is_better else -score
 
@@ -72,9 +70,7 @@ def calculate_permutation_importance_one_column(X, y, pipeline, objective, rando
             return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
 
         baseline_score = scorer(pipeline, X, y)
-
         scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, random_seed, n_repeats, scorer)
-
         importances = baseline_score - np.array(scores)
         perm_importance = Bunch(importances_mean=np.mean(importances),
                                 importances_std=np.std(importances),
@@ -88,7 +84,7 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     Only used for pipelines that support this optimization.
     """
 
-    precomputed_features = _convert_woodwork_types_wrapper(pipeline.compute_estimator_features(X, y).to_dataframe())
+    precomputed_features = pipeline.compute_estimator_features(X, y)
 
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
@@ -96,10 +92,8 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     def scorer(pipeline, features, y, objective):
         if objective.score_needs_proba:
             preds = pipeline.estimator.predict_proba(features)
-            preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
         else:
             preds = pipeline.estimator.predict(features)
-            preds = _convert_woodwork_types_wrapper(preds.to_series())
         score = pipeline._score(X, y, preds, objective)
         return score if objective.greater_is_better else -score
 
@@ -186,9 +180,7 @@ def _slow_scorer(pipeline, X, y, objective):
 def _fast_scorer(pipeline, features, X, y, objective):
     if objective.score_needs_proba:
         preds = pipeline.estimator.predict_proba(features)
-        preds = _convert_woodwork_types_wrapper(preds.to_dataframe())
     else:
         preds = pipeline.estimator.predict(features)
-        preds = _convert_woodwork_types_wrapper(preds.to_series())
     score = pipeline._score(X, y, preds, objective)
     return score if objective.greater_is_better else -score
