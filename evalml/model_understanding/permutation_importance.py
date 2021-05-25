@@ -43,8 +43,29 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def calculate_permutation_importance_one_column(X, y, pipeline, objective, random_seed, col_name, n_repeats, fast, precomputed_features=None):
+def calculate_permutation_importance_one_column(X, y, pipeline, col_name, objective, n_repeats=5, fast=True, precomputed_features=None, random_seed=0):
+    """Calculates permutation importance for one column in the original dataframe.
+
+    Arguments:
+        pipeline (PipelineBase or subclass): Fitted pipeline
+        X (pd.DataFrame): The input data used to score and compute permutation importance
+        y (pd.Series): The target data
+        objective (str, ObjectiveBase): Objective to score on
+        n_repeats (int): Number of times to permute a feature. Defaults to 5.
+        fast (bool): Whether to use the fast method of calculating the permutation importance or not.
+        precomputed_features (pd.DataFrame): Precomputed features necessary to calculate permutation importance using the fast method. Defaults to None.
+
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    Returns:
+        pd.DataFrame, Mean feature importance scores over a number of shuffles.
+    """
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
+    objective = get_objective(objective, return_instance=True)
+
     if fast:
+        if precomputed_features is None:
+            raise ValueError("Fast method of calculating permutation importance requires precomputed_features")
         if is_classification(pipeline.problem_type):
             y = pipeline._encode_targets(y)
 
@@ -57,14 +78,12 @@ def calculate_permutation_importance_one_column(X, y, pipeline, objective, rando
             return score if objective.greater_is_better else -score
 
         baseline_score = scorer(pipeline, precomputed_features, y, objective)
-
         scores = _calculate_permutation_scores_fast(
             pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
         )
         importances = baseline_score - np.array(scores)
-        return {'importances_mean': np.mean(importances)}
+        return np.mean(importances)
     else:
-
         def scorer(pipeline, X, y):
             scores = pipeline.score(X, y, objectives=[objective])
             return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
@@ -72,10 +91,7 @@ def calculate_permutation_importance_one_column(X, y, pipeline, objective, rando
         baseline_score = scorer(pipeline, X, y)
         scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, random_seed, n_repeats, scorer)
         importances = baseline_score - np.array(scores)
-        perm_importance = Bunch(importances_mean=np.mean(importances),
-                                importances_std=np.std(importances),
-                                importances=importances)
-        return perm_importance
+        return np.mean(importances)
 
 
 def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
@@ -145,10 +161,13 @@ def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     return perm_importance
 
 
-def _calculate_permutation_scores_slow(estimator, X, y, col_idx,
+def _calculate_permutation_scores_slow(estimator, X, y, col_name,
                                        random_seed, n_repeats, scorer):
     """Calculate score when `col_idx` is permuted."""
     random_state = np.random.RandomState(random_seed)
+    col_idx = col_name
+    if col_name in X.columns:
+        col_idx = X.columns.get_loc(col_name)
     return _shuffle_and_score_helper(X, n_repeats, random_state, col_idx, scorer, False, estimator, y, None)
 
 
@@ -157,7 +176,6 @@ def _shuffle_and_score_helper(X_features, n_repeats, random_state, col_idx, scor
 
     # This is what sk_permutation_importance does. Useful for thread safety
     X_permuted = X_features.copy()
-
     shuffling_idx = np.arange(X_features.shape[0])
     for n_round in range(n_repeats):
         random_state.shuffle(shuffling_idx)

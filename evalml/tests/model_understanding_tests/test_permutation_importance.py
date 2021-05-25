@@ -1,9 +1,13 @@
 from unittest.mock import PropertyMock, patch
 
+import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.model_understanding.graphs import calculate_permutation_importance
+from evalml.model_understanding.permutation_importance import (
+    calculate_permutation_importance,
+    calculate_permutation_importance_one_column
+)
 from evalml.pipelines import BinaryClassificationPipeline, Transformer
 from evalml.pipelines.components import (
     PCA,
@@ -163,6 +167,12 @@ def test_fast_permutation_importance_matches_slow_output(mock_supports_fast_impo
                                                    random_seed=0)
     pd.testing.assert_frame_equal(fast_scores, slow_scores)
 
+    precomputed_features = pipeline.compute_estimator_features(X, y)
+    for col in X.columns:
+        permutation_importance_one_col_fast = calculate_permutation_importance_one_column(X, y, pipeline, col, 'Log Loss Binary', fast=True, precomputed_features=precomputed_features)
+        permutation_importance_one_col_slow = calculate_permutation_importance_one_column(X, y, pipeline, col, 'Log Loss Binary', fast=False)
+        np.testing.assert_almost_equal(permutation_importance_one_col_fast, permutation_importance_one_col_slow)
+
 
 class PipelineWithDimReduction(BinaryClassificationPipeline):
     component_graph = [PCA, 'Logistic Regression Classifier']
@@ -228,7 +238,7 @@ def test_get_permutation_importance_invalid_objective(X_y_regression, linear_reg
         calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['pd', 'ww'])
 def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
                                            binary_core_objectives, make_data_type):
     X, y = X_y_binary
@@ -243,10 +253,16 @@ def test_get_permutation_importance_binary(X_y_binary, data_type, logistic_regre
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
+        permutation_importance_sorted = permutation_importance.sort_values('feature', ascending=True).reset_index(drop=True)
+        for col in X.columns:
+            permutation_importance_one_col = calculate_permutation_importance_one_column(X, y, pipeline, col, objective, fast=False)
+            np.testing.assert_almost_equal(permutation_importance_sorted["importance"][col], permutation_importance_one_col)
+
 
 def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_multiclass_pipeline_class,
                                                multiclass_core_objectives):
     X, y = X_y_multi
+    X = pd.DataFrame(X)
     pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                              random_seed=42)
     pipeline.fit(X, y)
@@ -254,6 +270,11 @@ def test_get_permutation_importance_multiclass(X_y_multi, logistic_regression_mu
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
+
+        permutation_importance_sorted = permutation_importance.sort_values('feature', ascending=True).reset_index(drop=True)
+        for col in X.columns:
+            permutation_importance_one_col = calculate_permutation_importance_one_column(X, y, pipeline, col, objective, fast=False)
+            np.testing.assert_almost_equal(permutation_importance_sorted["importance"][col], permutation_importance_one_col)
 
 
 def test_get_permutation_importance_regression(linear_regression_pipeline_class, regression_core_objectives):
@@ -267,6 +288,11 @@ def test_get_permutation_importance_regression(linear_regression_pipeline_class,
         permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
+
+        permutation_importance_sorted = permutation_importance.sort_values('feature', ascending=True).reset_index(drop=True)
+        for col in X.columns:
+            permutation_importance_one_col = calculate_permutation_importance_one_column(X, y, pipeline, col, objective, fast=False)
+            np.testing.assert_almost_equal(permutation_importance_sorted["importance"][col], permutation_importance_one_col)
 
 
 def test_get_permutation_importance_correlated_features(logistic_regression_binary_pipeline_class):
@@ -311,10 +337,8 @@ def test_permutation_importance_oversampler(fraud_100):
     assert not importance.isnull().all().all()
 
 
-
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
-def test_get_permutation_importance_binary_one_col(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
-                                           binary_core_objectives, make_data_type):
+def test_get_permutation_importance_one_column_fast_slow(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
+                                                         binary_core_objectives, make_data_type):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -327,27 +351,7 @@ def test_get_permutation_importance_binary_one_col(X_y_binary, data_type, logist
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
 
-
-def test_get_permutation_importance_multiclass_one_col(X_y_multi, logistic_regression_multiclass_pipeline_class,
-                                               multiclass_core_objectives):
-    X, y = X_y_multi
-    pipeline = logistic_regression_multiclass_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-                                                             random_seed=42)
-    pipeline.fit(X, y)
-    for objective in multiclass_core_objectives:
-        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
-        assert list(permutation_importance.columns) == ["feature", "importance"]
-        assert not permutation_importance.isnull().all().all()
-
-
-def test_get_permutation_importance_regression_one_col(linear_regression_pipeline_class, regression_core_objectives):
-    X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    pipeline = linear_regression_pipeline_class(parameters={"Linear Regressor": {"n_jobs": 1}},
-                                                random_seed=42)
-    pipeline.fit(X, y)
-
-    for objective in regression_core_objectives:
-        permutation_importance = calculate_permutation_importance(pipeline, X, y, objective)
-        assert list(permutation_importance.columns) == ["feature", "importance"]
-        assert not permutation_importance.isnull().all().all()
+        permutation_importance_sorted = permutation_importance.sort_values('feature', ascending=True).reset_index(drop=True)
+        for col in X.columns:
+            permutation_importance_one_col = calculate_permutation_importance_one_column(X, y, pipeline, col, objective, fast=False)
+            np.testing.assert_almost_equal(permutation_importance_sorted["importance"][col], permutation_importance_one_col)
