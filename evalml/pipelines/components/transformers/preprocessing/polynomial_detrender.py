@@ -1,7 +1,9 @@
 import pandas as pd
 from skopt.space import Integer
 
-from evalml.pipelines.components.transformers.transformer import TargetTransformer
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer
+)
 from evalml.utils import import_or_raise, infer_feature_types
 
 
