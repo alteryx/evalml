@@ -199,6 +199,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
                     else:
                         component_parameters[param_name] = value
+            if name in pipeline.parameters and self._batch_number == 0:
+                for param_name, value in pipeline.parameters[name].items():
+                    print(f"iterativealgorithm - _transform_parameters - pipeline.parameters name/value: {param_name} - {value}")
+                    if isinstance(value, (Integer, Real, Categorical)):
+                        raise ValueError("Pipeline parameters should not contain skopt.Space variables, please pass them "
+                                         "to custom_hyperparameters instead!")
+                    else:
+                        component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
                     print(f"iterativealgorithm - _transform_parameters - param_name name/value: {param_name} - {value}")
