@@ -36,15 +36,15 @@ class AutoMLAlgorithm(ABC):
         self._tuners = {}
         for pipeline in self.allowed_pipelines:
             print(f"AutoMLAlgorithm - init - pipeline: {pipeline}")
-            pipeline_hyperparameters = dict()
+            print(f"AutoMLAlgorithm - init - pipeline.parameters: {pipeline.parameters}")
+            pipeline_hyperparameters = get_hyperparameter_ranges(pipeline.component_graph, custom_hyperparameters)
+            print(f"AutoMLAlgorithm - init - pipeline.pipeline_hyperparameters: {pipeline_hyperparameters}")
             for comp_name in custom_hyperparameters.keys():
-                print(f"AutoMLAlgorithm - init - comp_name: {comp_name}")
                 if comp_name in pipeline.parameters.keys():
-                    print(f"AutoMLAlgorithm - init - hyperparameter key in pipeline keys: {comp_name}")
-                    pipeline_hyperparameters[comp_name] = custom_hyperparameters[comp_name]
+                    print(f"AutoMLAlgorithm - init - hyperparameter in pipeline: {comp_name} - {custom_hyperparameters[comp_name]}")
+                    pipeline_hyperparameters[comp_name].update(custom_hyperparameters[comp_name])
             print(f"AutoMLAlgorithm - init - pipeline_hyperparameters: {pipeline_hyperparameters}")
-            print(f"AutoMLAlgorithm - init - component_graph: {pipeline.component_graph}")
-            self._tuners[pipeline.name] = self._tuner_class(get_hyperparameter_ranges(pipeline.component_graph, custom_hyperparameters), random_seed=self.random_seed)
+            self._tuners[pipeline.name] = self._tuner_class(pipeline_hyperparameters, random_seed=self.random_seed)
         self._pipeline_number = 0
         self._batch_number = 0
 
