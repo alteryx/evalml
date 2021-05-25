@@ -338,7 +338,7 @@ def test_permutation_importance_oversampler(fraud_100):
 
 
 def test_get_permutation_importance_one_column_fast_slow(X_y_binary, logistic_regression_binary_pipeline_class,
-                                                         binary_core_objectives, make_data_type):
+                                                         binary_core_objectives):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series(y)
@@ -355,3 +355,11 @@ def test_get_permutation_importance_one_column_fast_slow(X_y_binary, logistic_re
         for col in X.columns:
             permutation_importance_one_col = calculate_permutation_importance_one_column(X, y, pipeline, col, objective, fast=False)
             np.testing.assert_almost_equal(permutation_importance_sorted["importance"][col], permutation_importance_one_col)
+
+
+def test_get_permutation_importance_one_column_fast_no_precomputed_features(X_y_binary, logistic_regression_binary_pipeline_class):
+    X, y = X_y_binary
+    pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+                                                         random_seed=42)
+    with pytest.raises(ValueError, match="Fast method of calculating permutation importance requires precomputed_features"):
+        calculate_permutation_importance_one_column(X, y, pipeline, 0, "log loss binary", fast=True)

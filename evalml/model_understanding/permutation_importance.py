@@ -73,28 +73,15 @@ def calculate_permutation_importance_one_column(X, y, pipeline, col_name, object
             raise ValueError("Fast method of calculating permutation importance requires precomputed_features")
         if is_classification(pipeline.problem_type):
             y = pipeline._encode_targets(y)
-
-        def scorer(pipeline, features, y, objective):
-            if objective.score_needs_proba:
-                preds = pipeline.estimator.predict_proba(features)
-            else:
-                preds = pipeline.estimator.predict(features)
-            score = pipeline._score(X, y, preds, objective)
-            return score if objective.greater_is_better else -score
-
-        baseline_score = scorer(pipeline, precomputed_features, y, objective)
+        baseline_score = _fast_scorer(pipeline, precomputed_features, y, objective)
         scores = _calculate_permutation_scores_fast(
-            pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
+            pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
         )
         importances = baseline_score - np.array(scores)
         return np.mean(importances)
     else:
-        def scorer(pipeline, X, y):
-            scores = pipeline.score(X, y, objectives=[objective])
-            return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-
-        baseline_score = scorer(pipeline, X, y)
-        scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, random_seed, n_repeats, scorer)
+        baseline_score = _slow_scorer(pipeline, X, y)
+        scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, random_seed, n_repeats, _slow_scorer)
         importances = baseline_score - np.array(scores)
         return np.mean(importances)
 
@@ -110,18 +97,10 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
 
-    def scorer(pipeline, features, y, objective):
-        if objective.score_needs_proba:
-            preds = pipeline.estimator.predict_proba(features)
-        else:
-            preds = pipeline.estimator.predict(features)
-        score = pipeline._score(X, y, preds, objective)
-        return score if objective.greater_is_better else -score
-
-    baseline_score = scorer(pipeline, precomputed_features, y, objective)
+    baseline_score = _fast_scorer(pipeline, precomputed_features, y, objective)
 
     scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
-        pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
+        pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
     ) for col_name in X.columns)
 
     importances = baseline_score - np.array(scores)
@@ -148,14 +127,10 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
 
 
 def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
-    def scorer(pipeline, X, y):
-        scores = pipeline.score(X, y, objectives=[objective])
-        return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-
-    baseline_score = scorer(pipeline, X, y)
+    baseline_score = _slow_scorer(pipeline, X, y)
 
     scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_slow)(
-        pipeline, X, y, col_idx, random_seed, n_repeats, scorer
+        pipeline, X, y, col_idx, random_seed, n_repeats, _slow_scorer
     ) for col_idx in range(X.shape[1]))
 
     importances = baseline_score - np.array(scores)
