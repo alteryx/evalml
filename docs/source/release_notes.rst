@@ -7,6 +7,7 @@ Release Notes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
     * Documentation Changes
+        * Updated the release procedure documentation :pr:`2230`
 
 .. warning::
 
