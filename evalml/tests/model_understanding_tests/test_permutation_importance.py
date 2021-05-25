@@ -337,11 +337,11 @@ def test_permutation_importance_oversampler(fraud_100):
     assert not importance.isnull().all().all()
 
 
-def test_get_permutation_importance_one_column_fast_slow(X_y_binary, data_type, logistic_regression_binary_pipeline_class,
+def test_get_permutation_importance_one_column_fast_slow(X_y_binary, logistic_regression_binary_pipeline_class,
                                                          binary_core_objectives, make_data_type):
     X, y = X_y_binary
-    X = make_data_type(data_type, X)
-    y = make_data_type(data_type, y)
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
 
     pipeline = logistic_regression_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
                                                          random_seed=42)
