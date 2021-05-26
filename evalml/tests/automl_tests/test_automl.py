@@ -1765,8 +1765,9 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
 
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None, custom_hyperparameters) for estimator in estimators]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines, n_jobs=1)
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None) for estimator in estimators]
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines,
+                          custom_hyperparameters=custom_hyperparameters, n_jobs=1)
 
     mock_add.side_effect = ValueError("Alternate error that can be thrown")
     with pytest.raises(ValueError) as error:

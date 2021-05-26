@@ -186,8 +186,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in init_params:
                 component_parameters['n_jobs'] = self.n_jobs
-            if 'number_features' in init_params:
-                component_parameters['number_features'] = self.number_features
+            print(f"iterativealgorithm - _transform_parameters - component_parameters 0: {component_parameters}")
             # For first batch, pass the pipeline params to the components that need them
             print(f"iterativealgorithm - _transform_parameters - self._pipeline_params: {self._pipeline_params}")
             if name in self._custom_hyperparameters and self._batch_number == 0:
@@ -212,6 +211,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         raise ValueError("Pipeline parameters should not contain skopt.Space variables, please pass them "
                                          "to custom_hyperparameters instead!")
                     else:
+
                         component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
@@ -221,6 +221,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                                          "to custom_hyperparameters instead!")
                     else:
                         component_parameters[param_name] = value
+            print(f"iterativealgorithm - _transform_parameters - component_parameters 1: {component_parameters}")
+            if 'number_features' in init_params:
+                print(f"iterativealgorithm - _transform_parameters - component_parameters 2: {component_parameters}")
+                component_parameters['number_features'] = self.number_features
             if name in self._pipeline_params and name == 'Drop Columns Transformer' and self._batch_number > 0:
                 component_parameters['columns'] = self._pipeline_params[name]['columns']
             if 'pipeline' in self._pipeline_params:

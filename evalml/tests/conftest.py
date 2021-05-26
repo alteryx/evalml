@@ -391,7 +391,7 @@ def logistic_regression_multiclass_pipeline_class():
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         def clone(self):
             return self.__class__(self.parameters, random_seed=self.random_seed)
@@ -405,7 +405,7 @@ def logistic_regression_binary_pipeline_class():
         custom_name = "Logistic Regression Binary Pipeline"
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
