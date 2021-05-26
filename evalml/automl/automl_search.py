@@ -360,10 +360,9 @@ class AutoMLSearch:
                 self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
             if self._sampler_name not in parameters:
                 parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
-                self._frozen_pipeline_parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
-            elif self._sampler_name in parameters:
+            else:
                 parameters[self._sampler_name].update({"sampling_ratio": self.sampler_balanced_ratio})
-                self._frozen_pipeline_parameters[self._sampler_name] = parameters[self._sampler_name]
+            self._frozen_pipeline_parameters[self._sampler_name] = parameters[self._sampler_name]
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
