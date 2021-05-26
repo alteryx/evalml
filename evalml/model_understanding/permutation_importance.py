@@ -81,7 +81,7 @@ def calculate_permutation_importance_one_column(X, y, pipeline, col_name, object
         return np.mean(importances)
     else:
         baseline_score = _slow_scorer(pipeline, X, y, objective)
-        scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, random_seed, n_repeats, _slow_scorer)
+        scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, objective, _slow_scorer, n_repeats, random_seed)
         importances = baseline_score - np.array(scores)
         return np.mean(importances)
 
@@ -123,14 +123,14 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
     else:
         col_idx = [precomputed_features.columns.get_loc(col) for col in pipeline._get_feature_provenance()[col_name]]
 
-    return _shuffle_and_score_helper(precomputed_features, n_repeats, random_state, col_idx, scorer, True, pipeline, y, objective)
+    return _shuffle_and_score_helper(pipeline, precomputed_features, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=True)
 
 
 def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
     baseline_score = _slow_scorer(pipeline, X, y, objective)
 
     scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_slow)(
-        pipeline, X, y, col_idx, random_seed, n_repeats, _slow_scorer
+        pipeline, X, y, col_idx, objective, _slow_scorer, n_repeats, random_seed
     ) for col_idx in range(X.shape[1]))
 
     importances = baseline_score - np.array(scores)
@@ -141,17 +141,17 @@ def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     return perm_importance
 
 
-def _calculate_permutation_scores_slow(estimator, X, y, col_name,
-                                       random_seed, n_repeats, scorer):
+def _calculate_permutation_scores_slow(estimator, X, y, col_name, objective, scorer,
+                                       n_repeats, random_seed):
     """Calculate score when `col_idx` is permuted."""
     random_state = np.random.RandomState(random_seed)
     col_idx = col_name
     if col_name in X.columns:
         col_idx = X.columns.get_loc(col_name)
-    return _shuffle_and_score_helper(X, n_repeats, random_state, col_idx, scorer, False, estimator, y, None)
+    return _shuffle_and_score_helper(estimator, X, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=False)
 
 
-def _shuffle_and_score_helper(X_features, n_repeats, random_state, col_idx, scorer, is_fast, pipeline, y, objective):
+def _shuffle_and_score_helper(pipeline, X_features, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=False):
     scores = np.zeros(n_repeats)
 
     # This is what sk_permutation_importance does. Useful for thread safety
