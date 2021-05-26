@@ -30,6 +30,20 @@ class ComponentGraph:
         self._feature_provenance = {}
         self._i = 0
 
+    @property
+    def default_parameters(self):
+        """The default parameter dictionary for this pipeline.
+
+        Returns:
+            dict: Dictionary of all component default parameters.
+        """
+        defaults = {}
+        for c in self.component_instances:
+            component = handle_component_class(self.component_instances[c].__class__)
+            if component.default_parameters:
+                defaults[component.name] = component.default_parameters
+        return defaults
+
     @classmethod
     def linearized_component_graph(cls, components):
         """Return a list of (component name, component class) tuples from a pre-initialized component graph defined
