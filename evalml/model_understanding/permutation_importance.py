@@ -21,7 +21,7 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
-        pd.DataFrame, Mean feature importance scores over a number of shuffles.
+        pd.DataFrame: Mean feature importance scores over a number of shuffles.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -48,7 +48,8 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def calculate_permutation_importance_one_column(X, y, pipeline, col_name, objective, n_repeats=5, fast=True, precomputed_features=None, random_seed=0):
+def calculate_permutation_importance_one_column(X, y, pipeline, col_name, objective,
+                                                n_repeats=5, fast=False, precomputed_features=None, random_seed=0):
     """Calculates permutation importance for one column in the original dataframe.
 
     Arguments:
@@ -57,12 +58,12 @@ def calculate_permutation_importance_one_column(X, y, pipeline, col_name, object
         y (pd.Series): The target data
         objective (str, ObjectiveBase): Objective to score on
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
-        fast (bool): Whether to use the fast method of calculating the permutation importance or not.
+        fast (bool): Whether to use the fast method of calculating the permutation importance or not. Defaults to True.
         precomputed_features (pd.DataFrame): Precomputed features necessary to calculate permutation importance using the fast method. Defaults to None.
-
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
     Returns:
-        pd.DataFrame, Mean feature importance scores over a number of shuffles.
+        float: Mean feature importance scores over a number of shuffles.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -91,14 +92,12 @@ def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
 
     Only used for pipelines that support this optimization.
     """
-
     precomputed_features = pipeline.compute_estimator_features(X, y)
 
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
 
     baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
-
     scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
         pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
     ) for col_name in X.columns)
@@ -111,7 +110,6 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
                                        random_seed, n_repeats, scorer, baseline_score):
     """Calculate the permutation score when `col_name` is permuted."""
     random_state = np.random.RandomState(random_seed)
-
     scores = np.zeros(n_repeats)
 
     # If column is not in the features or provenance, assume the column was dropped
@@ -137,7 +135,6 @@ def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=
     perm_importance = Bunch(importances_mean=np.mean(importances, axis=1),
                             importances_std=np.std(importances, axis=1),
                             importances=importances)
-
     return perm_importance
 
 
