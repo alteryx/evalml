@@ -1,5 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class DropNullColumns(Transformer):
@@ -29,7 +29,6 @@ class DropNullColumns(Transformer):
     def fit(self, X, y=None):
         pct_null_threshold = self.parameters["pct_null_threshold"]
         X_t = infer_feature_types(X)
-        X_t = _convert_woodwork_types_wrapper(X_t.to_dataframe())
         percent_null = X_t.isnull().mean()
         if pct_null_threshold == 0.0:
             null_cols = percent_null[percent_null > 0]
@@ -42,13 +41,13 @@ class DropNullColumns(Transformer):
         """Transforms data X by dropping columns that exceed the threshold of null values.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
         X_t = infer_feature_types(X)
         if len(self._cols_to_drop) == 0:
             return X_t
-        return X_t.drop(self._cols_to_drop)
+        return X_t.ww.drop(self._cols_to_drop)

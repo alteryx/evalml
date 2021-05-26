@@ -2,10 +2,9 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from evalml.problem_types import handle_problem_types
-from evalml.utils import _convert_woodwork_types_wrapper, classproperty
+from evalml.utils import classproperty
 
 
 class ObjectiveBase(ABC):
@@ -85,17 +84,13 @@ class ObjectiveBase(ABC):
         """Standardize input to pandas for scoring.
 
         Arguments:
-            input_data (list, ww.DataTable, ww.DataColumn, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
+            input_data (list, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
             pd.DataFrame or pd.Series: a pd.Series, or pd.DataFrame object if predicted probabilities were provided.
         """
         if isinstance(input_data, (pd.Series, pd.DataFrame)):
-            return _convert_woodwork_types_wrapper(input_data)
-        if isinstance(input_data, ww.DataTable):
-            return _convert_woodwork_types_wrapper(input_data.to_dataframe())
-        if isinstance(input_data, ww.DataColumn):
-            return _convert_woodwork_types_wrapper(input_data.to_series())
+            return input_data
         if isinstance(input_data, list):
             if isinstance(input_data[0], list):
                 return pd.DataFrame(input_data)
@@ -109,8 +104,8 @@ class ObjectiveBase(ABC):
         """Validates the input based on a few simple checks.
 
         Arguments:
-            y_predicted (ww.DataColumn, ww.DataTable, pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
-            y_true (ww.DataColumn, pd.Series): Actual class labels of length [n_samples]
+            y_predicted (pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
+            y_true (pd.Series): Actual class labels of length [n_samples]
 
         Returns:
             None

@@ -71,9 +71,9 @@ def search(X_train=None, y_train=None, problem_type=None, objective='auto', **kw
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
     Arguments:
-        X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
+        X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
-        y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
+        y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
         problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
@@ -150,9 +150,9 @@ class AutoMLSearch:
         """Automated pipeline search
 
         Arguments:
-            X_train (pd.DataFrame, ww.DataTable): The input training data of shape [n_samples, n_features]. Required.
+            X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
-            y_train (pd.Series, ww.DataColumn): The target training data of length [n_samples]. Required for supervised learning tasks.
+            y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
             problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
@@ -370,7 +370,7 @@ class AutoMLSearch:
             allowed_estimators = get_estimators(self.problem_type, self.allowed_model_families)
             logger.debug(f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}")
             drop_columns = self.pipeline_parameters['Drop Columns Transformer']['columns'] if 'Drop Columns Transformer' in self.pipeline_parameters else None
-            index_columns = list(self.X_train.select('index').columns)
+            index_columns = list(self.X_train.ww.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
                 self._frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=self._frozen_pipeline_parameters, custom_hyperparameters=parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
@@ -390,7 +390,7 @@ class AutoMLSearch:
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
-        text_in_ensembling = len(infer_feature_types(X_train).select('natural_language').columns) > 0
+        text_in_ensembling = len(self.X_train.ww.select('natural_language').columns) > 0
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning("Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run.")
             run_ensembling = False
@@ -428,7 +428,9 @@ class AutoMLSearch:
 
         self.automl_config = AutoMLConfig(self.data_splitter, self.problem_type,
                                           self.objective, self.additional_objectives, self.optimize_thresholds,
-                                          self.error_callback, self.random_seed)
+                                          self.error_callback, self.random_seed,
+                                          self.X_train.ww.schema,
+                                          self.y_train.ww.schema)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
@@ -652,6 +654,7 @@ class AutoMLSearch:
                 y_train = self.y_train
                 best_pipeline = self._engine.submit_training_job(self.automl_config, best_pipeline,
                                                                  X_train, y_train).get_result()
+
             self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
@@ -1039,8 +1042,8 @@ class AutoMLSearch:
 
         Arguments:
             pipelines (list(PipelineBase)): List of pipelines to train.
-            X_holdout (ww.DataTable, pd.DataFrame): Holdout features.
-            y_holdout (ww.DataTable, pd.DataFrame): Holdout targets for scoring.
+            X_holdout (pd.DataFrame): Holdout features.
+            y_holdout (pd.Series): Holdout targets for scoring.
             objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
 
         Returns:
@@ -1048,6 +1051,7 @@ class AutoMLSearch:
             Note that the any pipelines that error out during scoring will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
+        X_holdout, y_holdout = infer_feature_types(X_holdout), infer_feature_types(y_holdout)
         check_all_pipeline_names_unique(pipelines)
         scores = {}
         objectives = [get_objective(o, return_instance=True) for o in objectives]
