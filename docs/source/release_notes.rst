@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`, :pr:`2310`
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
