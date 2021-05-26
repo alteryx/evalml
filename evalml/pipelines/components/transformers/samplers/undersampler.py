@@ -1,19 +1,26 @@
 import pandas as pd
 
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.preprocessing.data_splitters.balanced_classification_sampler import (
-    BalancedClassificationSampler
+    BalancedClassificationSampler,
 )
 
 
 class Undersampler(BaseSampler):
     """Random undersampler component. This component is only run during training and not during predict."""
+
     name = "Undersampler"
     hyperparameter_ranges = {}
 
-    def __init__(self, sampling_ratio=0.25, sampling_ratio_dict=None, min_samples=100, min_percentage=0.1, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        sampling_ratio=0.25,
+        sampling_ratio_dict=None,
+        min_samples=100,
+        min_percentage=0.1,
+        random_seed=0,
+        **kwargs
+    ):
         """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
         Arguments:
@@ -30,15 +37,17 @@ class Undersampler(BaseSampler):
                 Must be between 0 and 0.5, inclusive. Defaults to 0.1.
             random_seed (int): The seed to use for random sampling. Defaults to 0.
         """
-        parameters = {"sampling_ratio": sampling_ratio,
-                      "min_samples": min_samples,
-                      "min_percentage": min_percentage,
-                      "sampling_ratio_dict": sampling_ratio_dict}
+        parameters = {
+            "sampling_ratio": sampling_ratio,
+            "min_samples": min_samples,
+            "min_percentage": min_percentage,
+            "sampling_ratio_dict": sampling_ratio_dict,
+        }
         parameters.update(kwargs)
 
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def _initialize_undersampler(self, y):
         """Helper function to initialize the undersampler component object.
@@ -46,8 +55,12 @@ class Undersampler(BaseSampler):
         Arguments:
             y (pd.Series): The target data
         """
-        param_dic = self._dictionary_to_params(self.parameters['sampling_ratio_dict'], y)
-        sampler = BalancedClassificationSampler(**param_dic, random_seed=self.random_seed)
+        param_dic = self._dictionary_to_params(
+            self.parameters["sampling_ratio_dict"], y
+        )
+        sampler = BalancedClassificationSampler(
+            **param_dic, random_seed=self.random_seed
+        )
         self._component_obj = sampler
 
     def fit_transform(self, X, y):

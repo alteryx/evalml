@@ -18,9 +18,6 @@ from .graphs import (
     partial_dependence,
     precision_recall_curve,
     roc_curve,
-    t_sne
+    t_sne,
 )
-from .prediction_explanations import (
-    explain_predictions,
-    explain_predictions_best_worst
-)
+from .prediction_explanations import explain_predictions, explain_predictions_best_worst

@@ -10,7 +10,7 @@ from evalml.utils import (
     get_logger,
     infer_feature_types,
     log_subtitle,
-    safe_repr
+    safe_repr,
 )
 
 logger = get_logger(__file__)
@@ -18,6 +18,7 @@ logger = get_logger(__file__)
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components."""
+
     _default_parameters = None
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
@@ -41,9 +42,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @classproperty
     def needs_fitting(self):
         """Returns boolean determining if component needs fitting before
-            calling predict, predict_proba, transform, or feature_importances.
-            This can be overridden to False for components that do not need to be fit
-            or whose fit methods do nothing."""
+        calling predict, predict_proba, transform, or feature_importances.
+        This can be overridden to False for components that do not need to be fit
+        or whose fit methods do nothing."""
         return True
 
     @property
@@ -55,10 +56,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def default_parameters(cls):
         """Returns the default parameters for this component.
 
-         Our convention is that Component.default_parameters == Component().parameters.
+        Our convention is that Component.default_parameters == Component().parameters.
 
-         Returns:
-             dict: default parameters for this component.
+        Returns:
+            dict: default parameters for this component.
         """
 
         if cls._default_parameters is None:
@@ -91,7 +92,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             self._component_obj.fit(X, y)
             return self
         except AttributeError:
-            raise MethodPropertyNotFoundError("Component requires a fit method or a component_obj that implements fit")
+            raise MethodPropertyNotFoundError(
+                "Component requires a fit method or a component_obj that implements fit"
+            )
 
     def describe(self, print_name=False, return_dict=False):
         """Describe a component and its parameters
@@ -107,7 +110,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             title = self.name
             log_subtitle(logger, title)
         for parameter in self.parameters:
-            parameter_str = ("\t * {} : {}").format(parameter, self.parameters[parameter])
+            parameter_str = ("\t * {} : {}").format(
+                parameter, self.parameters[parameter]
+            )
             logger.info(parameter_str)
         if return_dict:
             component_dict = {"name": self.name}
@@ -124,7 +129,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             None
         """
-        with open(file_path, 'wb') as f:
+        with open(file_path, "wb") as f:
             cloudpickle.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
@@ -137,7 +142,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             ComponentBase object
         """
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             return cloudpickle.load(f)
 
     def __eq__(self, other):
@@ -146,7 +151,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         random_seed_eq = self.random_seed == other.random_seed
         if not random_seed_eq:
             return False
-        attributes_to_check = ['_parameters', '_is_fitted']
+        attributes_to_check = ["_parameters", "_is_fitted"]
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
@@ -156,5 +161,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return self.name
 
     def __repr__(self):
-        parameters_repr = ', '.join([f'{key}={safe_repr(value)}' for key, value in self.parameters.items()])
-        return f'{(type(self).__name__)}({parameters_repr})'
+        parameters_repr = ", ".join(
+            [f"{key}={safe_repr(value)}" for key, value in self.parameters.items()]
+        )
+        return f"{(type(self).__name__)}({parameters_repr})"

@@ -12,11 +12,15 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     This is useful as a simple baseline estimator for time series problems
     """
+
     name = "Time Series Baseline Estimator"
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
-    supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY,
-                               ProblemTypes.TIME_SERIES_MULTICLASS]
+    supported_problem_types = [
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]
     predict_uses_y = True
 
     def __init__(self, gap=1, random_seed=0, **kwargs):
@@ -34,13 +38,15 @@ class TimeSeriesBaselineEstimator(Estimator):
         self.gap = gap
 
         if gap < 0:
-            raise ValueError(f'gap value must be a positive integer. {gap} was provided.')
+            raise ValueError(
+                f"gap value must be a positive integer. {gap} was provided."
+            )
 
         parameters = {"gap": gap}
         parameters.update(kwargs)
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         if X is None:
@@ -51,7 +57,9 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     def predict(self, X, y=None):
         if y is None:
-            raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
+            raise ValueError(
+                "Cannot predict Time Series Baseline Estimator if y is None"
+            )
         y = infer_feature_types(y)
 
         if self.gap == 0:
@@ -61,9 +69,11 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     def predict_proba(self, X, y=None):
         if y is None:
-            raise ValueError("Cannot predict Time Series Baseline Estimator if y is None")
+            raise ValueError(
+                "Cannot predict Time Series Baseline Estimator if y is None"
+            )
         y = infer_feature_types(y)
-        preds = self.predict(X, y).dropna(axis=0, how='any').astype('int')
+        preds = self.predict(X, y).dropna(axis=0, how="any").astype("int")
         proba_arr = np.zeros((len(preds), y.max() + 1))
         proba_arr[np.arange(len(preds)), preds] = 1
         padded = pad_with_nans(pd.DataFrame(proba_arr), len(y) - len(preds))

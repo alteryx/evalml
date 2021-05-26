@@ -8,10 +8,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import (
-    EnsembleMissingPipelinesError,
-    MissingComponentError
-)
+from evalml.exceptions import EnsembleMissingPipelinesError, MissingComponentError
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -31,13 +28,13 @@ def import_or_raise(library, error_msg=None, warning=False):
     except ImportError:
         if error_msg is None:
             error_msg = ""
-        msg = (f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}")
+        msg = f"Missing optional dependency '{library}'. Please use pip to install {library}. {error_msg}"
         if warning:
             warnings.warn(msg)
         else:
             raise ImportError(msg)
     except Exception as ex:
-        msg = (f"An exception occurred while trying to import `{library}`: {str(ex)}")
+        msg = f"An exception occurred while trying to import `{library}`: {str(ex)}"
         if warning:
             warnings.warn(msg)
         else:
@@ -46,11 +43,11 @@ def import_or_raise(library, error_msg=None, warning=False):
 
 def convert_to_seconds(input_str):
     """Converts a string describing a length of time to its length in seconds."""
-    hours = {'h', 'hr', 'hour', 'hours'}
-    minutes = {'m', 'min', 'minute', 'minutes'}
-    seconds = {'s', 'sec', 'second', 'seconds'}
+    hours = {"h", "hr", "hour", "hours"}
+    minutes = {"m", "min", "minute", "minutes"}
+    seconds = {"s", "sec", "second", "seconds"}
     value, unit = input_str.split()
-    if unit[-1] == 's' and len(unit) != 1:
+    if unit[-1] == "s" and len(unit) != 1:
         unit = unit[:-1]
     if unit in seconds:
         return float(value)
@@ -59,14 +56,18 @@ def convert_to_seconds(input_str):
     elif unit in hours:
         return float(value) * 3600
     else:
-        msg = "Invalid unit. Units must be hours, mins, or seconds. Received '{}'".format(unit)
+        msg = (
+            "Invalid unit. Units must be hours, mins, or seconds. Received '{}'".format(
+                unit
+            )
+        )
         raise AssertionError(msg)
 
 
 # specifies the min and max values a seed to np.random.RandomState is allowed to take.
 # these limits were chosen to fit in the numpy.int32 datatype to avoid issues with 32-bit systems
 # see https://docs.scipy.org/doc/numpy-1.15.0/reference/generated/numpy.random.RandomState.html
-SEED_BOUNDS = namedtuple('SEED_BOUNDS', ('min_bound', 'max_bound'))(0, 2**31 - 1)
+SEED_BOUNDS = namedtuple("SEED_BOUNDS", ("min_bound", "max_bound"))(0, 2 ** 31 - 1)
 
 
 def get_random_state(seed):
@@ -75,12 +76,20 @@ def get_random_state(seed):
     Arguments:
         seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive. Otherwise, an exception will be thrown.
     """
-    if isinstance(seed, (int, np.integer)) and (seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed):
-        raise ValueError('Seed "{}" is not in the range [{}, {}], inclusive'.format(seed, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound))
+    if isinstance(seed, (int, np.integer)) and (
+        seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed
+    ):
+        raise ValueError(
+            'Seed "{}" is not in the range [{}, {}], inclusive'.format(
+                seed, SEED_BOUNDS.min_bound, SEED_BOUNDS.max_bound
+            )
+        )
     return check_random_state(seed)
 
 
-def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound):
+def get_random_seed(
+    random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEED_BOUNDS.max_bound
+):
     """Given a numpy.random.RandomState object, generate an int representing a seed value for another random number generator. Or, if given an int, return that int.
 
     To protect against invalid input to a particular library's random number generator, if an int value is provided, and it is outside the bounds "[min_bound, max_bound)", the value will be projected into the range between the min_bound (inclusive) and max_bound (exclusive) using modular arithmetic.
@@ -94,7 +103,11 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
         int: seed for random number generator
     """
     if not min_bound < max_bound:
-        raise ValueError("Provided min_bound {} is not less than max_bound {}".format(min_bound, max_bound))
+        raise ValueError(
+            "Provided min_bound {} is not less than max_bound {}".format(
+                min_bound, max_bound
+            )
+        )
     if isinstance(random_state, np.random.RandomState):
         return random_state.randint(min_bound, max_bound)
     if random_state < min_bound or random_state >= max_bound:
@@ -104,20 +117,20 @@ def get_random_seed(random_state, min_bound=SEED_BOUNDS.min_bound, max_bound=SEE
 
 class classproperty:
     """Allows function to be accessed as a class level property.
-        Example:
-        class LogisticRegressionBinaryPipeline(PipelineBase):
-            component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
+    Example:
+    class LogisticRegressionBinaryPipeline(PipelineBase):
+        component_graph = ['Simple Imputer', 'Logistic Regression Classifier']
 
-            @classproperty
-            def summary(cls):
-            summary = ""
-            for component in cls.component_graph:
-                component = handle_component_class(component)
-                summary += component.name + " + "
-            return summary
+        @classproperty
+        def summary(cls):
+        summary = ""
+        for component in cls.component_graph:
+            component = handle_component_class(component)
+            summary += component.name + " + "
+        return summary
 
-            assert LogisticRegressionBinaryPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "
-            assert LogisticRegressionBinaryPipeline().summary == "Simple Imputer + Logistic Regression Classifier + "
+        assert LogisticRegressionBinaryPipeline.summary == "Simple Imputer + Logistic Regression Classifier + "
+        assert LogisticRegressionBinaryPipeline().summary == "Simple Imputer + Logistic Regression Classifier + "
     """
 
     def __init__(self, func):
@@ -152,9 +165,16 @@ def _get_subclasses(base_class):
     return subclasses
 
 
-_not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineEstimator',
-                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor', 'KNeighborsClassifier',
-                       'SVMClassifier', 'SVMRegressor'}
+_not_used_in_automl = {
+    "BaselineClassifier",
+    "BaselineRegressor",
+    "TimeSeriesBaselineEstimator",
+    "StackedEnsembleClassifier",
+    "StackedEnsembleRegressor",
+    "KNeighborsClassifier",
+    "SVMClassifier",
+    "SVMRegressor",
+}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
@@ -176,13 +196,15 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 
     classes = []
     for cls in all_classes:
-        if 'evalml.pipelines' not in cls.__module__:
+        if "evalml.pipelines" not in cls.__module__:
             continue
         try:
             cls()
             classes.append(cls)
         except (ImportError, MissingComponentError, TypeError):
-            logger.debug(f'Could not import class {cls.__name__} in get_importable_subclasses')
+            logger.debug(
+                f"Could not import class {cls.__name__} in get_importable_subclasses"
+            )
         except EnsembleMissingPipelinesError:
             classes.append(cls)
     if used_in_automl:
@@ -210,9 +232,13 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
     if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
         flat_col_names = list(map(str, X_renamed.columns))
         X_renamed.columns = flat_col_names
-        rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
+        rename_cols_dict = dict(
+            (str(col), col_num) for col_num, col in enumerate(list(X.columns))
+        )
     else:
-        rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
+        rename_cols_dict = dict(
+            (col, col_num) for col_num, col in enumerate(list(X.columns))
+        )
     X_renamed.rename(columns=rename_cols_dict, inplace=True)
     return X_renamed
 
@@ -244,7 +270,7 @@ def safe_repr(value):
     """
     if isinstance(value, float):
         if pd.isna(value):
-            return 'np.nan'
+            return "np.nan"
         if np.isinf(value):
             return f"float('{repr(value)}')"
     return repr(value)
@@ -280,13 +306,17 @@ def pad_with_nans(pd_data, num_to_pad):
     if isinstance(pd_data, pd.Series):
         padding = pd.Series([np.nan] * num_to_pad, name=pd_data.name)
     else:
-        padding = pd.DataFrame({col: [np.nan] * num_to_pad
-                                for col in pd_data.columns})
+        padding = pd.DataFrame({col: [np.nan] * num_to_pad for col in pd_data.columns})
     padded = pd.concat([padding, pd_data], ignore_index=True)
     # By default, pd.concat will convert all types to object if there are mixed numerics and objects
     # The call to convert_dtypes ensures numerics stay numerics in the new dataframe.
-    return padded.convert_dtypes(infer_objects=True, convert_string=False, convert_floating=False,
-                                 convert_integer=False, convert_boolean=False)
+    return padded.convert_dtypes(
+        infer_objects=True,
+        convert_string=False,
+        convert_floating=False,
+        convert_integer=False,
+        convert_boolean=False,
+    )
 
 
 def _get_rows_without_nans(*data):
@@ -299,6 +329,7 @@ def _get_rows_without_nans(*data):
         np.ndarray: mask where each entry is True if and only if all corresponding entries in that index in data
             are non-nan.
     """
+
     def _not_nan(pd_data):
         if pd_data is None or len(pd_data) == 0:
             return np.array([True])
@@ -308,6 +339,7 @@ def _get_rows_without_nans(*data):
             return ~pd_data.isna().any(axis=1).values
         else:
             return pd_data
+
     mask = reduce(lambda a, b: np.logical_and(_not_nan(a), _not_nan(b)), data)
     return mask
 
@@ -332,8 +364,8 @@ def drop_rows_with_nans(*pd_data):
     return [_subset(data) for data in pd_data]
 
 
-def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=False):
-    """ Helper function to check the filepath being passed.
+def _file_path_check(filepath=None, format="png", interactive=False, is_plotly=False):
+    """Helper function to check the filepath being passed.
 
     Arguments:
         filepath (str or Path, optional): Location to save file.
@@ -349,21 +381,25 @@ def _file_path_check(filepath=None, format='png', interactive=False, is_plotly=F
         path_and_name, extension = os.path.splitext(filepath)
         extension = extension[1:].lower() if extension else None
         if is_plotly and interactive:
-            format_ = 'html'
+            format_ = "html"
         elif not extension and not interactive:
             format_ = format
         else:
             format_ = extension
-        filepath = f'{path_and_name}.{format_}'
+        filepath = f"{path_and_name}.{format_}"
         try:
-            f = open(filepath, 'w')
+            f = open(filepath, "w")
             f.close()
         except (IOError, FileNotFoundError):
-            raise ValueError(('Specified filepath is not writeable: {}'.format(filepath)))
+            raise ValueError(
+                ("Specified filepath is not writeable: {}".format(filepath))
+            )
     return filepath
 
 
-def save_plot(fig, filepath=None, format='png', interactive=False, return_filepath=False):
+def save_plot(
+    fig, filepath=None, format="png", interactive=False, return_filepath=False
+):
     """Saves fig to filepath if specified, or to a default location if not.
 
     Arguments:
@@ -380,8 +416,12 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         Defaults to None.
     """
     plotly_ = import_or_raise("plotly", error_msg="Cannot find dependency plotly")
-    graphviz_ = import_or_raise('graphviz', error_msg='Please install graphviz to visualize trees.')
-    matplotlib = import_or_raise("matplotlib", error_msg="Cannot find dependency matplotlib")
+    graphviz_ = import_or_raise(
+        "graphviz", error_msg="Please install graphviz to visualize trees."
+    )
+    matplotlib = import_or_raise(
+        "matplotlib", error_msg="Cannot find dependency matplotlib"
+    )
     plt_ = matplotlib.pyplot
     axes_ = matplotlib.axes
 
@@ -390,7 +430,7 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
     is_plt = False
     is_seaborn = False
 
-    format = format if format else 'png'
+    format = format if format else "png"
     if isinstance(fig, plotly_.graph_objects.Figure):
         is_plotly = True
     elif isinstance(fig, graphviz_.Source):
@@ -401,10 +441,12 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         is_seaborn = True
 
     if not filepath:
-        extension = 'html' if interactive and is_plotly else format
-        filepath = os.path.join(os.getcwd(), f'test_plot.{extension}')
+        extension = "html" if interactive and is_plotly else format
+        filepath = os.path.join(os.getcwd(), f"test_plot.{extension}")
 
-    filepath = _file_path_check(filepath, format=format, interactive=interactive, is_plotly=is_plotly)
+    filepath = _file_path_check(
+        filepath, format=format, interactive=interactive, is_plotly=is_plotly
+    )
 
     if is_plotly and interactive:
         fig.write_html(file=filepath)
@@ -412,8 +454,8 @@ def save_plot(fig, filepath=None, format='png', interactive=False, return_filepa
         fig.write_image(file=filepath, engine="kaleido")
     elif is_graphviz:
         filepath_, format_ = os.path.splitext(filepath)
-        fig.format = 'png'
-        filepath = f'{filepath_}.png'
+        fig.format = "png"
+        filepath = f"{filepath_}.png"
         fig.render(filename=filepath_, view=False, cleanup=True)
     elif is_plt:
         fig.savefig(fname=filepath)
@@ -439,7 +481,9 @@ def deprecate_arg(old_arg, new_arg, old_value, new_value):
     """
     value_to_use = new_value
     if old_value is not None:
-        warnings.warn(f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}'. "
-                      f"Passing '{old_arg}' in future versions will result in an error.")
+        warnings.warn(
+            f"Argument '{old_arg}' has been deprecated in favor of '{new_arg}'. "
+            f"Passing '{old_arg}' in future versions will result in an error."
+        )
         value_to_use = old_value
     return value_to_use

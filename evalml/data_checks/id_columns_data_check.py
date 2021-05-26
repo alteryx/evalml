@@ -1,10 +1,9 @@
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
     DataCheckActionCode,
     DataCheckMessageCode,
-    DataCheckWarning
+    DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
 
@@ -52,35 +51,60 @@ class IDColumnsDataCheck(DataCheck):
                                                      "actions": [{"code": "DROP_COL",\
                                                                  "metadata": {"column": "df_id"}}]}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
 
         col_names = [col for col in X.columns]
-        cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
+        cols_named_id = [
+            col for col in col_names if (str(col).lower() == "id")
+        ]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        X = X.ww.select(include=['Integer', 'Categorical'])
+        X = X.ww.select(include=["Integer", "Categorical"])
 
-        check_all_unique = (X.nunique() == len(X))
-        cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique
-        id_cols.update([(col, 1.0) if col in id_cols else (col, 0.95) for col in cols_with_all_unique])
+        check_all_unique = X.nunique() == len(X)
+        cols_with_all_unique = check_all_unique[
+            check_all_unique
+        ].index.tolist()  # columns whose values are all unique
+        id_cols.update(
+            [
+                (col, 1.0) if col in id_cols else (col, 0.95)
+                for col in cols_with_all_unique
+            ]
+        )
 
-        col_ends_with_id = [col for col in col_names if str(col).lower().endswith("_id")]  # columns whose name ends with "_id"
-        id_cols.update([(col, 1.0) if str(col) in id_cols else (col, 0.95) for col in col_ends_with_id])
+        col_ends_with_id = [
+            col for col in col_names if str(col).lower().endswith("_id")
+        ]  # columns whose name ends with "_id"
+        id_cols.update(
+            [
+                (col, 1.0) if str(col) in id_cols else (col, 0.95)
+                for col in col_ends_with_id
+            ]
+        )
 
-        id_cols_above_threshold = {key: value for key, value in id_cols.items() if value >= self.id_threshold}
+        id_cols_above_threshold = {
+            key: value for key, value in id_cols.items() if value >= self.id_threshold
+        }
         warning_msg = "Column '{}' is {}% or more likely to be an ID column"
-        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.id_threshold * 100),
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                                                     details={"column": col_name}).to_dict()
-                                    for col_name in id_cols_above_threshold])
-        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   metadata={"column": col_name}).to_dict()
-                                   for col_name in id_cols_above_threshold])
+        results["warnings"].extend(
+            [
+                DataCheckWarning(
+                    message=warning_msg.format(col_name, self.id_threshold * 100),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                    details={"column": col_name},
+                ).to_dict()
+                for col_name in id_cols_above_threshold
+            ]
+        )
+        results["actions"].extend(
+            [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL, metadata={"column": col_name}
+                ).to_dict()
+                for col_name in id_cols_above_threshold
+            ]
+        )
         return results

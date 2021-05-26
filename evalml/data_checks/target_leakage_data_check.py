@@ -5,12 +5,9 @@ from evalml.data_checks import (
     DataCheckAction,
     DataCheckActionCode,
     DataCheckMessageCode,
-    DataCheckWarning
+    DataCheckWarning,
 )
-from evalml.utils.woodwork_utils import (
-    infer_feature_types,
-    numeric_and_boolean_ww
-)
+from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
 
 
 class TargetLeakageDataCheck(DataCheck):
@@ -29,8 +26,10 @@ class TargetLeakageDataCheck(DataCheck):
 
         """
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
-            raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
-        if method not in ['mutual', 'pearson']:
+            raise ValueError(
+                "pct_corr_threshold must be a float between 0 and 1, inclusive."
+            )
+        if method not in ["mutual", "pearson"]:
             raise ValueError(f"Method '{method}' not in ['mutual', 'pearson']")
         self.pct_corr_threshold = pct_corr_threshold
         self.method = method
@@ -40,15 +39,24 @@ class TargetLeakageDataCheck(DataCheck):
         X_num = X.ww.select(include=numeric_and_boolean_ww)
         if y.ww.logical_type not in numeric_and_boolean_ww or len(X_num.columns) == 0:
             return highly_corr_cols
-        highly_corr_cols = [label for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
+        highly_corr_cols = [
+            label
+            for label, col in X_num.iteritems()
+            if abs(y.corr(col)) >= self.pct_corr_threshold
+        ]
         return highly_corr_cols
 
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
         for col in X.columns:
-            cols_to_compare = infer_feature_types(pd.DataFrame({col: X[col], str(col) + "y": y}))
+            cols_to_compare = infer_feature_types(
+                pd.DataFrame({col: X[col], str(col) + "y": y})
+            )
             mutual_info = cols_to_compare.ww.mutual_information()
-            if len(mutual_info) > 0 and mutual_info['mutual_info'].iloc[0] > self.pct_corr_threshold:
+            if (
+                len(mutual_info) > 0
+                and mutual_info["mutual_info"].iloc[0] > self.pct_corr_threshold
+            ):
                 highly_corr_cols.append(col)
         return highly_corr_cols
 
@@ -83,27 +91,34 @@ class TargetLeakageDataCheck(DataCheck):
                                                                "actions": [{"code": "DROP_COL",\
                                                                             "metadata": {"column": "leak"}}]}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
-        if self.method == 'pearson':
+        if self.method == "pearson":
             highly_corr_cols = self._calculate_pearson(X, y)
         else:
             highly_corr_cols = self._calculate_mutual_information(X, y)
 
         warning_msg = "Column '{}' is {}% or more correlated with the target"
-        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                                                     details={"column": col_name}).to_dict()
-                                    for col_name in highly_corr_cols])
-        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   metadata={"column": col_name}).to_dict()
-                                   for col_name in highly_corr_cols])
+        results["warnings"].extend(
+            [
+                DataCheckWarning(
+                    message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                    details={"column": col_name},
+                ).to_dict()
+                for col_name in highly_corr_cols
+            ]
+        )
+        results["actions"].extend(
+            [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL, metadata={"column": col_name}
+                ).to_dict()
+                for col_name in highly_corr_cols
+            ]
+        )
         return results

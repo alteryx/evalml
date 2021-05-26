@@ -18,8 +18,10 @@ def load_churn(n_rows=None, verbose=True):
     data_folder_path = os.path.join(currdir_path, "data")
     churn_data_path = os.path.join(data_folder_path, "churn.csv")
 
-    return load_data(path=churn_data_path,
-                     index="customerID",
-                     target="Churn",
-                     n_rows=n_rows,
-                     verbose=verbose)
+    return load_data(
+        path=churn_data_path,
+        index="customerID",
+        target="Churn",
+        n_rows=n_rows,
+        verbose=verbose,
+    )

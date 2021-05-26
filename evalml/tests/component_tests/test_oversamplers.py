@@ -3,33 +3,32 @@ import pandas as pd
 import pytest
 
 from evalml.exceptions import ComponentNotYetFittedError
-from evalml.pipelines.components import (
-    SMOTENCSampler,
-    SMOTENSampler,
-    SMOTESampler
-)
+from evalml.pipelines.components import SMOTENCSampler, SMOTENSampler, SMOTESampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
-im = pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+im = pytest.importorskip(
+    "imblearn.over_sampling",
+    reason="Skipping test because imbalanced-learn not installed",
+)
 
 
 @pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
 def test_init(sampler):
-    parameters = {
-        "sampling_ratio": 0.5,
-        "k_neighbors": 2,
-        "n_jobs": -1
-    }
+    parameters = {"sampling_ratio": 0.5, "k_neighbors": 2, "n_jobs": -1}
     oversampler = sampler(**parameters)
     assert oversampler.parameters == parameters
 
 
-@pytest.mark.parametrize("sampler", [SMOTESampler(sampling_ratio=1),
-                                     SMOTENCSampler(sampling_ratio=1),
-                                     SMOTENSampler(sampling_ratio=1)])
+@pytest.mark.parametrize(
+    "sampler",
+    [
+        SMOTESampler(sampling_ratio=1),
+        SMOTENCSampler(sampling_ratio=1),
+        SMOTENSampler(sampling_ratio=1),
+    ],
+)
 def test_none_y(sampler):
-    X = pd.DataFrame({"a": [i for i in range(5)],
-                      "b": [1 for i in range(5)]})
+    X = pd.DataFrame({"a": [i for i in range(5)], "b": [1 for i in range(5)]})
     X = infer_feature_types(X, feature_types={"a": "Categorical"})
     oversampler = sampler
     with pytest.raises(ValueError, match="y cannot be none"):
@@ -40,9 +39,14 @@ def test_none_y(sampler):
     oversampler.transform(X, None)
 
 
-@pytest.mark.parametrize("sampler", [SMOTESampler(sampling_ratio=1),
-                                     SMOTENCSampler(sampling_ratio=1),
-                                     SMOTENSampler(sampling_ratio=1)])
+@pytest.mark.parametrize(
+    "sampler",
+    [
+        SMOTESampler(sampling_ratio=1),
+        SMOTENCSampler(sampling_ratio=1),
+        SMOTENSampler(sampling_ratio=1),
+    ],
+)
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_no_oversample(data_type, sampler, make_data_type, X_y_binary):
     X, y = X_y_binary
@@ -62,14 +66,23 @@ def test_no_oversample(data_type, sampler, make_data_type, X_y_binary):
     np.testing.assert_equal(y, new_y.values)
 
 
-@pytest.mark.parametrize("sampler", [SMOTESampler(sampling_ratio=1),
-                                     SMOTENCSampler(sampling_ratio=1),
-                                     SMOTENSampler(sampling_ratio=1)])
+@pytest.mark.parametrize(
+    "sampler",
+    [
+        SMOTESampler(sampling_ratio=1),
+        SMOTENCSampler(sampling_ratio=1),
+        SMOTENSampler(sampling_ratio=1),
+    ],
+)
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_oversample_imbalanced_binary(data_type, sampler, make_data_type):
-    X = np.array([[i for i in range(1000)],
-                  [i % 7 for i in range(1000)],
-                  [0.3 * (i % 3) for i in range(1000)]]).T
+    X = np.array(
+        [
+            [i for i in range(1000)],
+            [i % 7 for i in range(1000)],
+            [0.3 * (i % 3) for i in range(1000)],
+        ]
+    ).T
     y = np.array([0] * 150 + [1] * 850)
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -88,7 +101,9 @@ def test_oversample_imbalanced_binary(data_type, sampler, make_data_type):
     assert len(new_y) == new_length
     value_counts = new_y.value_counts()
     assert value_counts.values[0] == value_counts.values[1]
-    pd.testing.assert_series_equal(value_counts, pd.Series([850, 850]), check_dtype=False)
+    pd.testing.assert_series_equal(
+        value_counts, pd.Series([850, 850]), check_dtype=False
+    )
 
     transform_X, transform_y = oversampler.transform(X, y)
 
@@ -99,16 +114,22 @@ def test_oversample_imbalanced_binary(data_type, sampler, make_data_type):
 @pytest.mark.parametrize("sampling_ratio", [0.2, 0.5])
 @pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_oversample_imbalanced_multiclass(data_type, sampler, sampling_ratio, make_data_type):
-    X = np.array([[i for i in range(1000)],
-                  [i % 7 for i in range(1000)],
-                  [0.3 * (i % 3) for i in range(1000)]]).T
+def test_oversample_imbalanced_multiclass(
+    data_type, sampler, sampling_ratio, make_data_type
+):
+    X = np.array(
+        [
+            [i for i in range(1000)],
+            [i % 7 for i in range(1000)],
+            [0.3 * (i % 3) for i in range(1000)],
+        ]
+    ).T
     y = np.array([0] * 800 + [1] * 100 + [2] * 100)
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     X2 = X
     oversampler = sampler(sampling_ratio=sampling_ratio)
-    if sampler.name == 'SMOTENC Oversampler':
+    if sampler.name == "SMOTENC Oversampler":
         X2 = infer_feature_types(X, feature_types={0: "Categorical"})
         if data_type == "ww":
             X2.ww.set_types({0: "Categorical"})
@@ -139,7 +160,7 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
     samplers = []
     for seed in [0, 0, 1]:
         oversampler = sampler(sampling_ratio=1, random_seed=seed)
-        if 'NC' in sampler.name:
+        if "NC" in sampler.name:
             X = infer_feature_types(X, feature_types={1: "Categorical"})
             oversampler = sampler(sampling_ratio=1, random_seed=seed)
         samplers.append(oversampler)
@@ -160,13 +181,19 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
         pd.testing.assert_series_equal(y1, y2)
 
 
-@pytest.mark.parametrize("component_sampler,imblearn_sampler",
-                         [(SMOTESampler, im.SMOTE),
-                          (SMOTENCSampler, im.SMOTENC),
-                          (SMOTENSampler, im.SMOTEN)])
-@pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
-def test_samplers_perform_equally(problem_type, component_sampler, imblearn_sampler, X_y_binary, X_y_multi):
-    if problem_type == 'binary':
+@pytest.mark.parametrize(
+    "component_sampler,imblearn_sampler",
+    [
+        (SMOTESampler, im.SMOTE),
+        (SMOTENCSampler, im.SMOTENC),
+        (SMOTENSampler, im.SMOTEN),
+    ],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
+def test_samplers_perform_equally(
+    problem_type, component_sampler, imblearn_sampler, X_y_binary, X_y_multi
+):
+    if problem_type == "binary":
         X, _ = X_y_binary
         y = np.array([0] * 90 + [1] * 10)
         imb_learn_sampling_ratio = 0.5
@@ -177,16 +204,30 @@ def test_samplers_perform_equally(problem_type, component_sampler, imblearn_samp
         imb_learn_sampling_ratio = {0: 70, 1: 35, 2: 35}
         expected_y = np.array([0] * 70 + [1] * 35 + [2] * 35)
     sampling_ratio = 0.5
-    sampling_dic = {'sampling_ratio': sampling_ratio}
+    sampling_dic = {"sampling_ratio": sampling_ratio}
     X2 = X
     random_seed = 1
     if component_sampler != SMOTENCSampler:
         component = component_sampler(**sampling_dic, random_seed=random_seed)
-        imb_sampler = imblearn_sampler(sampling_strategy=imb_learn_sampling_ratio, random_state=random_seed)
+        imb_sampler = imblearn_sampler(
+            sampling_strategy=imb_learn_sampling_ratio, random_state=random_seed
+        )
     else:
-        X2 = infer_feature_types(X, feature_types={1: "Categorical", 2: "Categorical", 3: "Categorical", 4: "Categorical"})
+        X2 = infer_feature_types(
+            X,
+            feature_types={
+                1: "Categorical",
+                2: "Categorical",
+                3: "Categorical",
+                4: "Categorical",
+            },
+        )
         component = component_sampler(**sampling_dic, random_seed=random_seed)
-        imb_sampler = imblearn_sampler(sampling_strategy=imb_learn_sampling_ratio, categorical_features=[1, 2, 3, 4], random_state=random_seed)
+        imb_sampler = imblearn_sampler(
+            sampling_strategy=imb_learn_sampling_ratio,
+            categorical_features=[1, 2, 3, 4],
+            random_state=random_seed,
+        )
 
     X_com, y_com = component.fit_transform(X2, y)
     X_im, y_im = imb_sampler.fit_resample(X, y)
@@ -198,7 +239,7 @@ def test_samplers_perform_equally(problem_type, component_sampler, imblearn_samp
 
 def test_smotenc_categorical_features(X_y_binary):
     X, y = X_y_binary
-    X_ww = infer_feature_types(X, feature_types={0: 'Categorical', 1: 'Categorical'})
+    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
     snc = SMOTENCSampler()
     X_out, y_out = snc.fit_transform(X_ww, y)
     assert snc.categorical_features == [0, 1]
@@ -207,9 +248,11 @@ def test_smotenc_categorical_features(X_y_binary):
 def test_smotenc_output_shape(X_y_binary):
     X, y = X_y_binary
     y_imbalanced = pd.Series([0] * 90 + [1] * 10)
-    X_ww = infer_feature_types(X, feature_types={0: 'Categorical', 1: 'Categorical'})
+    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
     snc = SMOTENCSampler()
-    with pytest.raises(ComponentNotYetFittedError, match=f'You must fit SMOTENCSampler'):
+    with pytest.raises(
+        ComponentNotYetFittedError, match=f"You must fit SMOTENCSampler"
+    ):
         snc.transform(X_ww, y)
     # test sampling and no sampling
     for y_value in [y, y_imbalanced]:

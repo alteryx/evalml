@@ -4,15 +4,12 @@ import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit
-)
+from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_binary,
-    is_time_series
+    is_time_series,
 )
 from evalml.utils import import_or_raise
 
@@ -31,16 +28,26 @@ def get_default_primary_search_objective(problem_type):
         ObjectiveBase: primary objective instance for the problem type.
     """
     problem_type = handle_problem_types(problem_type)
-    objective_name = {'binary': 'Log Loss Binary',
-                      'multiclass': 'Log Loss Multiclass',
-                      'regression': 'R2',
-                      'time series regression': 'R2',
-                      'time series binary': 'Log Loss Binary',
-                      'time series multiclass': 'Log Loss Multiclass'}[problem_type.value]
+    objective_name = {
+        "binary": "Log Loss Binary",
+        "multiclass": "Log Loss Multiclass",
+        "regression": "R2",
+        "time series regression": "R2",
+        "time series binary": "Log Loss Binary",
+        "time series multiclass": "Log Loss Multiclass",
+    }[problem_type.value]
     return get_objective(objective_name, return_instance=True)
 
 
-def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=3, shuffle=True, random_seed=0):
+def make_data_splitter(
+    X,
+    y,
+    problem_type,
+    problem_configuration=None,
+    n_splits=3,
+    shuffle=True,
+    random_seed=0,
+):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
@@ -60,18 +67,30 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     problem_type = handle_problem_types(problem_type)
     if is_time_series(problem_type):
         if not problem_configuration:
-            raise ValueError("problem_configuration is required for time series problem types")
-        return TimeSeriesSplit(n_splits=n_splits, gap=problem_configuration.get('gap'),
-                               max_delay=problem_configuration.get('max_delay'), date_index=problem_configuration.get('date_index'))
+            raise ValueError(
+                "problem_configuration is required for time series problem types"
+            )
+        return TimeSeriesSplit(
+            n_splits=n_splits,
+            gap=problem_configuration.get("gap"),
+            max_delay=problem_configuration.get("max_delay"),
+            date_index=problem_configuration.get("date_index"),
+        )
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
-        return TrainingValidationSplit(test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle)
+        return TrainingValidationSplit(
+            test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle
+        )
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return StratifiedKFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
+        return StratifiedKFold(
+            n_splits=n_splits, random_state=random_seed, shuffle=shuffle
+        )
 
 
-def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning):
+def tune_binary_threshold(
+    pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning
+):
     """Tunes the threshold of a binary pipeline to the X and y thresholding data
 
     Arguments:
@@ -81,12 +100,18 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
         X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
         y_threshold_tuning (pd.Series): Target data to tune pipeline to.
     """
-    if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and objective.can_optimize_threshold:
+    if (
+        is_binary(problem_type)
+        and objective.is_defined_for_problem_type(problem_type)
+        and objective.can_optimize_threshold
+    ):
         pipeline.threshold = 0.5
         if X_threshold_tuning is not None:
             y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
             y_predict_proba = y_predict_proba.iloc[:, 1]
-            pipeline.optimize_threshold(X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective)
+            pipeline.optimize_threshold(
+                X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective
+            )
 
 
 def check_all_pipeline_names_unique(pipelines):
@@ -107,13 +132,25 @@ def check_all_pipeline_names_unique(pipelines):
     if duplicate_names:
         plural, tense = ("s", "were") if len(duplicate_names) > 1 else ("", "was")
         duplicates = ", ".join([f"'{name}'" for name in sorted(duplicate_names)])
-        raise ValueError(f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated.")
+        raise ValueError(
+            f"All pipeline names must be unique. The name{plural} {duplicates} {tense} repeated."
+        )
 
 
-AutoMLConfig = namedtuple("AutoMLConfig", ["data_splitter", "problem_type",
-                                           "objective", "additional_objectives", "optimize_thresholds",
-                                           "error_callback", "random_seed",
-                                           "X_schema", "y_schema"])
+AutoMLConfig = namedtuple(
+    "AutoMLConfig",
+    [
+        "data_splitter",
+        "problem_type",
+        "objective",
+        "additional_objectives",
+        "optimize_thresholds",
+        "error_callback",
+        "random_seed",
+        "X_schema",
+        "y_schema",
+    ],
+)
 
 
 def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
@@ -137,18 +174,20 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     if all(class_ratios >= sampler_balanced_ratio):
         return None
     # We set a threshold to use the Undersampler in order to avoid long runtimes
-    elif len(y) >= _SAMPLER_THRESHOLD and sampler_method != 'Oversampler':
-        return 'Undersampler'
+    elif len(y) >= _SAMPLER_THRESHOLD and sampler_method != "Oversampler":
+        return "Undersampler"
     else:
         try:
-            import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
-            cat_cols = X.ww.select('Categorical').columns
+            import_or_raise(
+                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
+            )
+            cat_cols = X.ww.select("Categorical").columns
             # Use different samplers depending on the number of categorical columns
             if len(cat_cols) == X.shape[1]:
-                return 'SMOTEN Oversampler'
+                return "SMOTEN Oversampler"
             elif not len(cat_cols):
-                return 'SMOTE Oversampler'
+                return "SMOTE Oversampler"
             else:
-                return 'SMOTENC Oversampler'
+                return "SMOTENC Oversampler"
         except ImportError:
-            return 'Undersampler'
+            return "Undersampler"

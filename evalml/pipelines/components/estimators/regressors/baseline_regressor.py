@@ -12,10 +12,14 @@ class BaselineRegressor(Estimator):
 
     This is useful as a simple baseline regressor to compare with other regressors.
     """
+
     name = "Baseline Regressor"
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
-    supported_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+    supported_problem_types = [
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]
 
     def __init__(self, strategy="mean", random_seed=0, **kwargs):
         """Baseline regressor that uses a simple strategy to make predictions.
@@ -25,15 +29,17 @@ class BaselineRegressor(Estimator):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mean", "median"]:
-            raise ValueError("'strategy' parameter must equal either 'mean' or 'median'")
+            raise ValueError(
+                "'strategy' parameter must equal either 'mean' or 'median'"
+            )
         parameters = {"strategy": strategy}
         parameters.update(kwargs)
 
         self._prediction_value = None
         self._num_features = None
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         if y is None:

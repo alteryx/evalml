@@ -3,14 +3,13 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 
-from evalml.pipelines.components.transformers.preprocessing import (
-    TextTransformer
-)
+from evalml.pipelines.components.transformers.preprocessing import TextTransformer
 from evalml.utils import infer_feature_types
 
 
 class LSA(TextTransformer):
     """Transformer to calculate the Latent Semantic Analysis Values of text input"""
+
     name = "LSA Transformer"
     hyperparameter_ranges = {}
 
@@ -20,10 +19,11 @@ class LSA(TextTransformer):
         Arguments:
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._lsa_pipeline = make_pipeline(TfidfVectorizer(), TruncatedSVD(random_state=random_seed))
+        self._lsa_pipeline = make_pipeline(
+            TfidfVectorizer(), TruncatedSVD(random_state=random_seed)
+        )
         self._provenance = {}
-        super().__init__(random_seed=random_seed,
-                         **kwargs)
+        super().__init__(random_seed=random_seed, **kwargs)
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
@@ -55,9 +55,13 @@ class LSA(TextTransformer):
         provenance = {}
         for col in self._text_columns:
             transformed = self._lsa_pipeline.transform(X_ww[col])
-            X_ww.ww['LSA({})[0]'.format(col)] = pd.Series(transformed[:, 0], index=X_ww.index)
-            X_ww.ww['LSA({})[1]'.format(col)] = pd.Series(transformed[:, 1], index=X_ww.index)
-            provenance[col] = ['LSA({})[0]'.format(col), 'LSA({})[1]'.format(col)]
+            X_ww.ww["LSA({})[0]".format(col)] = pd.Series(
+                transformed[:, 0], index=X_ww.index
+            )
+            X_ww.ww["LSA({})[1]".format(col)] = pd.Series(
+                transformed[:, 1], index=X_ww.index
+            )
+            provenance[col] = ["LSA({})[0]".format(col), "LSA({})[1]".format(col)]
         self._provenance = provenance
 
         X_t = X_ww.ww.drop(columns=self._text_columns)

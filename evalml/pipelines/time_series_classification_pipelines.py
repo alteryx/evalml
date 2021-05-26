@@ -1,25 +1,27 @@
-
 import pandas as pd
 
-from .binary_classification_pipeline_mixin import (
-    BinaryClassificationPipelineMixin
-)
+from .binary_classification_pipeline_mixin import BinaryClassificationPipelineMixin
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    drop_rows_with_nans,
-    infer_feature_types,
-    pad_with_nans
-)
+from evalml.utils import drop_rows_with_nans, infer_feature_types, pad_with_nans
 
 
-class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesClassificationPipeline(
+    ClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta
+):
     """Pipeline base class for time series classification problems."""
 
-    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0):
+    def __init__(
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        custom_hyperparameters=None,
+        random_seed=0,
+    ):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 
         Arguments:
@@ -35,17 +37,21 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if "pipeline" not in parameters:
-            raise ValueError("date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
-                             "Please specify them as a dictionary with the key 'pipeline'.")
+            raise ValueError(
+                "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
+                "Please specify them as a dictionary with the key 'pipeline'."
+            )
         pipeline_params = parameters["pipeline"]
-        self.date_index = pipeline_params['date_index']
-        self.gap = pipeline_params['gap']
-        self.max_delay = pipeline_params['max_delay']
-        super().__init__(component_graph,
-                         custom_name=custom_name,
-                         parameters=parameters,
-                         custom_hyperparameters=custom_hyperparameters,
-                         random_seed=random_seed)
+        self.date_index = pipeline_params["date_index"]
+        self.gap = pipeline_params["gap"]
+        self.max_delay = pipeline_params["max_delay"]
+        super().__init__(
+            component_graph,
+            custom_name=custom_name,
+            parameters=parameters,
+            custom_hyperparameters=custom_hyperparameters,
+            random_seed=random_seed,
+        )
 
     @staticmethod
     def _convert_to_woodwork(X, y):
@@ -100,7 +106,9 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
         predictions = self._estimator_predict(features_no_nan, y_no_nan)
         if pad:
-            padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+            padded = pad_with_nans(
+                predictions, max(0, features.shape[0] - predictions.shape[0])
+            )
             return infer_feature_types(padded)
         return predictions
 
@@ -121,7 +129,9 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
         predictions = self._predict(X, y, objective=objective, pad=False)
         # In case gap is 0 and this is a baseline pipeline, we drop the nans in the
         # predictions before decoding them
-        predictions = pd.Series(self._decode_targets(predictions.dropna()), name=self.input_target_name)
+        predictions = pd.Series(
+            self._decode_targets(predictions.dropna()), name=self.input_target_name
+        )
         padded = pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
         return infer_feature_types(padded)
 
@@ -159,14 +169,26 @@ class TimeSeriesClassificationPipeline(ClassificationPipeline, metaclass=TimeSer
 
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
-        y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives, time_series=True)
-        y_shifted, y_predicted, y_predicted_proba = drop_rows_with_nans(y_shifted, y_predicted, y_predicted_proba)
-        return self._score_all_objectives(X, y_shifted, y_predicted,
-                                          y_pred_proba=y_predicted_proba,
-                                          objectives=objectives)
+        y_predicted, y_predicted_proba = self._compute_predictions(
+            X, y, objectives, time_series=True
+        )
+        y_shifted, y_predicted, y_predicted_proba = drop_rows_with_nans(
+            y_shifted, y_predicted, y_predicted_proba
+        )
+        return self._score_all_objectives(
+            X,
+            y_shifted,
+            y_predicted,
+            y_pred_proba=y_predicted_proba,
+            objectives=objectives,
+        )
 
 
-class TimeSeriesBinaryClassificationPipeline(BinaryClassificationPipelineMixin, TimeSeriesClassificationPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesBinaryClassificationPipeline(
+    BinaryClassificationPipelineMixin,
+    TimeSeriesClassificationPipeline,
+    metaclass=TimeSeriesPipelineBaseMeta,
+):
     problem_type = ProblemTypes.TIME_SERIES_BINARY
 
     def _predict(self, X, y, objective=None, pad=False):
@@ -176,7 +198,9 @@ class TimeSeriesBinaryClassificationPipeline(BinaryClassificationPipelineMixin, 
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
-                raise ValueError(f"Objective {objective.name} is not defined for time series binary classification.")
+                raise ValueError(
+                    f"Objective {objective.name} is not defined for time series binary classification."
+                )
 
         if self.threshold is None:
             predictions = self._estimator_predict(features_no_nan, y_no_nan)
@@ -186,15 +210,18 @@ class TimeSeriesBinaryClassificationPipeline(BinaryClassificationPipelineMixin, 
             if objective is None:
                 predictions = proba > self.threshold
             else:
-                predictions = objective.decision_function(proba, threshold=self.threshold, X=features_no_nan)
+                predictions = objective.decision_function(
+                    proba, threshold=self.threshold, X=features_no_nan
+                )
         if pad:
-            predictions = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+            predictions = pad_with_nans(
+                predictions, max(0, features.shape[0] - predictions.shape[0])
+            )
         return infer_feature_types(predictions)
 
     @staticmethod
     def _score(X, y, predictions, objective):
-        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
-        """
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score."""
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
         return TimeSeriesClassificationPipeline._score(X, y, predictions, objective)
