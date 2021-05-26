@@ -233,7 +233,7 @@ def test_iterative_algorithm_one_allowed_pipeline(ensembling_value, logistic_reg
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
-        assert any([p != logistic_regression_binary_pipeline_class({}).default_parameters for p in all_parameters])
+        assert any([p != logistic_regression_binary_pipeline_class({})._component_graph.default_parameters for p in all_parameters])
 
 
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
