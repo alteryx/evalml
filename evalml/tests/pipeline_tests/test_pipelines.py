@@ -459,7 +459,7 @@ def make_mock_multiclass_pipeline():
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
     X, y = X_y_regression
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2']
@@ -472,7 +472,7 @@ def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_nonlinear_regression(mock_predict, mock_fit, nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = nonlinear_regression_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['r2']
@@ -520,8 +520,8 @@ def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary
 @patch('evalml.pipelines.ComponentGraph.predict')
 def test_score_nonlinear_multiclass(mock_predict, mock_fit, mock_encode, nonlinear_multiclass_pipeline_class, X_y_multi):
     X, y = X_y_multi
-    mock_predict.return_value = ww.DataColumn(y)
-    mock_encode.return_value = y
+    mock_predict.return_value = pd.Series(y)
+    mock_encode.return_value = pd.Series(y)
     clf = nonlinear_multiclass_pipeline_class({})
     clf.fit(X, y)
     objective_names = ['f1 micro', 'precision micro']
@@ -534,7 +534,7 @@ def test_score_nonlinear_multiclass(mock_predict, mock_fit, mock_encode, nonline
 @patch('evalml.pipelines.RegressionPipeline.predict')
 def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
@@ -581,7 +581,7 @@ def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
 def test_score_regression_objective_error(mock_predict, mock_fit, mock_objective_score, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     clf = make_mock_regression_pipeline()
     clf.fit(X, y)
     objective_names = ['r2', 'mse']
@@ -625,7 +625,7 @@ def test_score_binary_objective_error(mock_predict, mock_fit, mock_objective_sco
 def test_score_nonlinear_binary_objective_error(mock_predict, mock_fit, mock_objective_score, mock_encode, nonlinear_binary_pipeline_class, X_y_binary):
     mock_objective_score.side_effect = Exception('finna kabooom 💣')
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
     mock_encode.return_value = y
     clf = nonlinear_binary_pipeline_class({})
     clf.fit(X, y)
@@ -670,16 +670,16 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = pd.DataFrame(index=X.index, columns=X.columns).fillna(0)
-    mock_imputer.return_value = ww.DataTable(X)
-    mock_ohe.return_value = ww.DataTable(X)
-    mock_scaler.return_value = ww.DataTable(X_expected)
-    X_expected = X_expected.astype("Int64")
+    mock_imputer.return_value = X
+    mock_ohe.return_value = X
+    mock_scaler.return_value = X_expected
+    X_expected = X_expected.astype("int64")
 
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
 
     X_t = pipeline.compute_estimator_features(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
     assert mock_scaler.call_count == 2
@@ -691,17 +691,17 @@ def test_compute_estimator_features(mock_scaler, mock_ohe, mock_imputer, X_y_bin
 @patch('evalml.pipelines.components.ElasticNetClassifier.predict')
 def test_compute_estimator_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, X_y_binary, nonlinear_binary_pipeline_class):
     X, y = X_y_binary
-    mock_imputer.return_value = ww.DataTable(X)
-    mock_ohe.return_value = ww.DataTable(X)
-    mock_en_predict.return_value = ww.DataColumn(np.ones(X.shape[0]))
-    mock_rf_predict.return_value = ww.DataColumn(np.zeros(X.shape[0]))
+    mock_imputer.return_value = pd.DataFrame(X)
+    mock_ohe.return_value = pd.DataFrame(X)
+    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
     X_expected_df = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
 
     pipeline = nonlinear_binary_pipeline_class({})
     pipeline.fit(X, y)
     X_t = pipeline.compute_estimator_features(X)
 
-    assert_frame_equal(X_expected_df, X_t.to_dataframe())
+    assert_frame_equal(X_expected_df, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
     assert mock_en_predict.call_count == 2
@@ -938,7 +938,7 @@ def test_hyperparameters_linear_pipeline_duplicate_components():
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_score_with_objective_that_requires_predict_proba(mock_predict, dummy_regression_pipeline_class, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(pd.Series([1] * 100))
+    mock_predict.return_value = pd.Series([1] * 100)
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
         clf = dummy_regression_pipeline_class(parameters={})
@@ -1041,7 +1041,7 @@ def test_clone_fitted(is_linear, X_y_binary, logistic_regression_binary_pipeline
     pipeline_clone.fit(X, y)
 
     X_t_clone = pipeline_clone.predict_proba(X)
-    assert_frame_equal(X_t.to_dataframe(), X_t_clone.to_dataframe())
+    assert_frame_equal(X_t, X_t_clone)
 
 
 def test_feature_importance_has_feature_names(X_y_binary, logistic_regression_binary_pipeline_class):
@@ -1157,7 +1157,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object', 'Int64', 'boolean'])
+@pytest.mark.parametrize("target_type", ['int16', 'int32', 'int64', 'float16', 'float32', 'float64', 'bool', 'category', 'object'])
 def test_targets_data_types_classification_pipelines(data_type, problem_type, target_type, all_binary_pipeline_classes,
                                                      make_data_type, all_multiclass_pipeline_classes, helper_functions):
     if data_type == 'np' and target_type in ['Int64', 'boolean']:
@@ -1166,7 +1166,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
-        X, y = load_breast_cancer(return_pandas=True)
+        X, y = load_breast_cancer()
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -1174,7 +1174,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
             pytest.skip("Skipping test where problem type is multiclass but target type is boolean")
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
-        X, y = load_wine(return_pandas=True)
+        X, y = load_wine()
 
     # Update target types as necessary
     unique_vals = y.unique()
@@ -1186,7 +1186,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
         unique_vals = y.unique()
         y = y.map({unique_vals[i]: float(i) for i in range(len(unique_vals))})
     if target_type == "category":
-        y = pd.Categorical(y)
+        y = pd.Series(pd.Categorical(y))
     else:
         y = y.astype(target_type)
     unique_vals = y.unique()
@@ -1197,7 +1197,7 @@ def test_targets_data_types_classification_pipelines(data_type, problem_type, ta
     for pipeline_class in pipeline_classes:
         pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
         pipeline.fit(X, y)
-        predictions = pipeline.predict(X, objective).to_series()
+        predictions = pipeline.predict(X, objective)
         assert set(predictions.unique()).issubset(unique_vals)
         predict_proba = pipeline.predict_proba(X)
         assert set(predict_proba.columns) == set(unique_vals)
@@ -1772,7 +1772,7 @@ def test_binary_pipeline_string_target_thresholding(is_time_series, make_data_ty
                                                     X_y_binary):
     X, y = X_y_binary
     X = make_data_type('ww', X)
-    y = make_data_type('ww', pd.Series([f"String value {i}" for i in y]))
+    y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
     objective = get_objective("F1", return_instance=True)
     pipeline_class = time_series_binary_classification_pipeline_class if is_time_series else logistic_regression_binary_pipeline_class
 
@@ -1794,7 +1794,7 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
     pipeline.fit(X, y)
     # make sure we undersample to 500 values in the X and y
     assert len(mock_fit.call_args[0][0]) == 500
-    assert all(mock_fit.call_args[0][1].to_series().value_counts().values == [400, 100])
+    assert all(mock_fit.call_args[0][1].value_counts().values == [400, 100])
 
     # balance the data
     y_balanced = pd.Series([0] * 400 + [1] * 600)
@@ -1822,13 +1822,13 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)],
                       "c": [i % 7 for i in range(1, 1001)]})
-    X = ww.DataTable(X, logical_types={"c": "Categorical"})
+    X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(['Imputer', oversampler, 'Logistic Regression Classifier'])
     pipeline.fit(X, y)
     # make sure we oversample 0 to 225 values values in the X and y
     assert len(mock_fit.call_args[0][0]) == 1125
-    assert all(mock_fit.call_args[0][1].to_series().value_counts().values == [900, 225])
+    assert all(mock_fit.call_args[0][1].value_counts().values == [900, 225])
 
     # balance the data
     y_balanced = pd.Series([0] * 400 + [1] * 600)
@@ -1842,7 +1842,7 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     X = pd.DataFrame({"a": [i for i in range(1000)],
                       "b": [i % 3 for i in range(1000)],
                       "c": [i % 7 for i in range(1, 1001)]})
-    X = ww.DataTable(X, logical_types={"c": "Categorical"})
+    X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(['Imputer', oversampler, 'Logistic Regression Classifier'])
     pipeline.fit(X, y)

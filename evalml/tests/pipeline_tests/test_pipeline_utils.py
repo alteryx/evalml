@@ -84,8 +84,8 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
                       "num": [1, 2, 3, 4, 5]})
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -120,8 +120,8 @@ def test_make_pipeline(input_type, problem_type):
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 0, 1, 0, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -161,8 +161,8 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 1, 1, 0, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -202,8 +202,8 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
                       "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan]})
     y = pd.Series([0, 1, 1, 0, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -241,8 +241,8 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
     X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
     y = pd.Series([0, 0, 1])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
     if problem_type == ProblemTypes.MULTICLASS:
@@ -281,8 +281,8 @@ def test_make_pipeline_text_columns(input_type, problem_type):
                       "text": ["string one", "another", "text for a column, this should be a text column!!", "text string", "hello world"]})
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -321,8 +321,8 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
                       "another text": ["ladidididididida", "cats are great", "text for a column, this should be a text column!!", "text string", "goodbye world"]})
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -358,8 +358,8 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
                       "some other dates": pd.date_range('2000-05-19', periods=5, freq='W')})
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -427,8 +427,8 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
                       "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
     y = pd.Series([0, 1, 1, 0, 0])
     if input_type == 'ww':
-        X = ww.DataTable(X)
-        y = ww.DataColumn(y)
+        X.ww.init()
+        y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -508,13 +508,13 @@ def test_stacked_estimator_in_pipeline(problem_type, X_y_binary, X_y_multi, X_y_
     pipeline = base_pipeline_class(component_graph=graph, parameters=parameters)
     pipeline.fit(X, y)
     comparison_pipeline.fit(X, y)
-    assert not np.isnan(pipeline.predict(X).to_series()).values.any()
+    assert not np.isnan(pipeline.predict(X)).values.any()
 
     pipeline_score = pipeline.score(X, y, [objective])[objective]
     comparison_pipeline_score = comparison_pipeline.score(X, y, [objective])[objective]
 
     if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
-        assert not np.isnan(pipeline.predict_proba(X).to_dataframe()).values.any()
+        assert not np.isnan(pipeline.predict_proba(X)).values.any()
         assert (pipeline_score <= comparison_pipeline_score)
     else:
         assert (pipeline_score >= comparison_pipeline_score)

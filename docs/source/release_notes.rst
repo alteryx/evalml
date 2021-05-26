@@ -2,6 +2,21 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+    * Fixes
+    * Changes
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+    * Documentation Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Due to the weak-ref in woodwork, set the result of ``infer_feature_types`` to a variable before accessing woodwork :pr:`2181`
+
+**v0.24.2 May. 24, 2021**
+    * Enhancements
         * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`

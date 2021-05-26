@@ -79,8 +79,8 @@ class TestBinaryObjective(metaclass=ABCMeta):
         """Objective score matches expected score
 
         Args:
-            y_true (ww.DataColumn, pd.Series): true classes
-            y_predicted (ww.DataColumn, pd.Series): predicted classes
+            y_true (pd.Series): true classes
+            y_predicted (pd.Series): predicted classes
             expected_score (float): expected output from objective.objective_function()
         """
 

@@ -4,7 +4,7 @@ import pandas as pd
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class BaselineRegressor(Estimator):
@@ -40,7 +40,6 @@ class BaselineRegressor(Estimator):
             raise ValueError("Cannot fit Baseline regressor if y is None")
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
 
         if self.parameters["strategy"] == "mean":
             self._prediction_value = y.mean()
