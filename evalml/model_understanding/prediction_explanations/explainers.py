@@ -70,13 +70,11 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
 
 def _update_progress(start_time, current_time, progress_stage, callback_function):
     """
-    Helper function for updating progress of a function and making a call to the progress callback
-    function, if provided. Adds the progress increment to the current progress amount and returns the
-    updated progress amount.
+    Helper function for updating progress of a function and making a call to the user-provided callback
+    function, if provided. Returns the current progress stage.
 
     If provided, the callback function should accept the following parameters:
-        - update: percentage change (float between 0 and 100) in progress since last call
-        - progress_percent: percentage (float between 0 and 100) of total computation completed
+        - progress_stage: stage of computation
         - time_elapsed: total time in seconds that has elapsed since start of call
     """
     if callback_function is not None:
