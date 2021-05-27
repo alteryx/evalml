@@ -9,8 +9,8 @@ import pytest
 import woodwork as ww
 from sklearn.exceptions import NotFittedError, UndefinedMetricWarning
 from sklearn.preprocessing import label_binarize
-from skopt.space import Real
 
+from evalml.exceptions import NoPositiveLabelException
 from evalml.model_understanding.graphs import (
     binary_objective_vs_threshold,
     calculate_permutation_importance,
@@ -45,11 +45,7 @@ from evalml.pipelines import (
     RegressionPipeline
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    get_random_state,
-    infer_feature_types
-)
+from evalml.utils import get_random_state, infer_feature_types
 
 
 @pytest.fixture
@@ -57,14 +53,8 @@ def test_pipeline():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
 
-        hyperparameters = {
-            "penalty": ["l2"],
-            "C": Real(.01, 10),
-            "impute_strategy": ["mean", "median", "most_frequent"],
-        }
-
         def __init__(self, parameters):
-            super().__init__(parameters=parameters)
+            super().__init__(self.component_graph, parameters=parameters)
 
     return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
@@ -221,10 +211,16 @@ def test_precision_recall_curve_return_type():
     assert isinstance(precision_recall_curve_data['auc_score'], float)
 
 
-@pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ['np', 'pd', 'pd2d', 'li', 'ww'])
 def test_precision_recall_curve(data_type, make_data_type):
     y_true = np.array([0, 0, 1, 1])
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
+    if data_type == 'pd2d':
+        data_type = 'pd'
+        y_predict_proba = np.array([[0.9, 0.1],
+                                    [0.6, 0.4],
+                                    [0.65, 0.35],
+                                    [0.2, 0.8]])
     y_true = make_data_type(data_type, y_true)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
 
@@ -241,6 +237,46 @@ def test_precision_recall_curve(data_type, make_data_type):
     np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
     np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
     np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+
+def test_precision_recall_curve_pos_label_idx():
+    y_true = pd.Series(np.array([0, 0, 1, 1]))
+    y_predict_proba = pd.DataFrame(np.array([[0.9, 0.1],
+                                             [0.6, 0.4],
+                                             [0.65, 0.35],
+                                             [0.2, 0.8]]))
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba, pos_label_idx=1)
+
+    precision = precision_recall_curve_data.get('precision')
+    recall = precision_recall_curve_data.get('recall')
+    thresholds = precision_recall_curve_data.get('thresholds')
+
+    precision_expected = np.array([0.66666667, 0.5, 1, 1])
+    recall_expected = np.array([1, 0.5, 0.5, 0])
+    thresholds_expected = np.array([0.35, 0.4, 0.8])
+    np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
+    np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
+    np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+    y_predict_proba = pd.DataFrame(np.array([[0.1, 0.9],
+                                             [0.4, 0.6],
+                                             [0.35, 0.65],
+                                             [0.8, 0.2]]))
+    precision_recall_curve_data = precision_recall_curve(y_true, y_predict_proba, pos_label_idx=0)
+    np.testing.assert_almost_equal(precision_expected, precision, decimal=5)
+    np.testing.assert_almost_equal(recall_expected, recall, decimal=5)
+    np.testing.assert_almost_equal(thresholds_expected, thresholds, decimal=5)
+
+
+def test_precision_recall_curve_pos_label_idx_error(make_data_type):
+    y_true = np.array([0, 0, 1, 1])
+    y_predict_proba = np.array([[0.9, 0.1],
+                                [0.6, 0.4],
+                                [0.65, 0.35],
+                                [0.2, 0.8]])
+    with pytest.raises(NoPositiveLabelException,
+                       match="Predicted probabilities of shape \\(4, 2\\) don't contain a column at index 9001"):
+        precision_recall_curve(y_true, y_predict_proba, pos_label_idx=9001)
 
 
 @pytest.mark.parametrize("data_type", ['np', 'pd', 'ww'])
@@ -346,7 +382,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
 
     y_true_unique = y_true
     if data_type == 'ww':
-        y_true_unique = y_true.to_series()
+        y_true_unique = y_true
 
     for i in np.unique(y_true_unique):
         fpr_rates = roc_curve_data[i].get('fpr_rates')
@@ -768,8 +804,8 @@ def test_graph_prediction_vs_actual(data_type):
     y_true = pd.Series(y_true)
     y_pred = pd.Series(y_pred)
     if data_type == "ww":
-        y_true = ww.DataColumn(y_true)
-        y_pred = ww.DataColumn(y_pred)
+        y_true = ww.init_series(y_true)
+        y_pred = ww.init_series(y_pred)
     fig = graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=6.1)
     assert isinstance(fig, type(go.Figure()))
     fig_dict = fig.to_dict()
@@ -809,7 +845,6 @@ def test_graph_prediction_vs_actual_over_time():
 
         def predict(self, X, y):
             y = infer_feature_types(y)
-            y = _convert_woodwork_types_wrapper(y.to_series())
             preds = y + 10
             preds.index = range(100, 161)
             return preds
@@ -887,41 +922,27 @@ def test_decision_tree_data_from_estimator(fitted_tree_estimators):
 
 
 def test_decision_tree_data_from_pipeline_not_fitted():
-    class MockPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Decision Tree Classifier']
-
-    mock_pipeline = MockPipeline({})
+    mock_pipeline = MulticlassClassificationPipeline(component_graph=['Decision Tree Classifier'])
     with pytest.raises(NotFittedError, match="The DecisionTree estimator associated with this pipeline is not fitted yet. "
                                              "Call 'fit' with appropriate arguments before using this estimator."):
         decision_tree_data_from_pipeline(mock_pipeline)
 
 
 def test_decision_tree_data_from_pipeline_wrong_type():
-    class MockPipeline(MulticlassClassificationPipeline):
-        component_graph = ['Logistic Regression Classifier']
-
-    mock_pipeline = MockPipeline({})
+    mock_pipeline = MulticlassClassificationPipeline(component_graph=['Logistic Regression Classifier'])
     with pytest.raises(ValueError, match="Tree structure reformatting is only supported for decision tree estimators"):
         decision_tree_data_from_pipeline(mock_pipeline)
 
 
 def test_decision_tree_data_from_pipeline_feature_length(X_y_categorical_regression):
-    class MockPipeline(RegressionPipeline):
-        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
-
-    mock_pipeline = MockPipeline({})
-
+    mock_pipeline = RegressionPipeline(component_graph=['One Hot Encoder', 'Imputer', 'Decision Tree Regressor'])
     X, y = X_y_categorical_regression
     mock_pipeline.fit(X, y)
     assert len(mock_pipeline.input_feature_names[mock_pipeline.estimator.name]) == mock_pipeline.estimator._component_obj.n_features_
 
 
 def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
-    class MockPipeline(RegressionPipeline):
-        component_graph = ['One Hot Encoder', 'Imputer', 'Decision Tree Regressor']
-
-    mock_pipeline = MockPipeline({})
-
+    mock_pipeline = RegressionPipeline(component_graph=['One Hot Encoder', 'Imputer', 'Decision Tree Regressor'])
     X, y = X_y_categorical_regression
     mock_pipeline.fit(X, y)
     formatted_ = decision_tree_data_from_pipeline(mock_pipeline)
@@ -1037,11 +1058,7 @@ def test_linear_coefficients_output(estimator):
     est_.fit(X, y)
 
     output_ = get_linear_coefficients(est_, features=['First', 'Second', 'Third', 'Fourth'])
-
-    if estimator.name == 'Linear Regressor':
-        assert (output_.index == ['Intercept', 'Second', 'Fourth', 'First', 'Third']).all()
-    elif estimator.name == 'Elastic Net Regressor':
-        assert (output_.index == ['Intercept', 'Second', 'Third', 'Fourth', 'First']).all()
+    assert (output_.index == ['Intercept', 'Second', 'Fourth', 'First', 'Third']).all()
     assert output_.shape[0] == X.shape[1] + 1
     assert (pd.Series(est_._component_obj.intercept_, index=['Intercept']).append(pd.Series(est_.feature_importance).sort_values()) == output_.values).all()
 
@@ -1069,7 +1086,8 @@ def test_t_sne(data_type):
     elif data_type == 'pd':
         X = pd.DataFrame([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     elif data_type == 'ww':
-        X = ww.DataTable(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
+        X = pd.DataFrame(np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]]))
+        X.ww.init()
 
     output_ = t_sne(X, n_components=2, perplexity=50, learning_rate=200.0)
     assert isinstance(output_, np.ndarray)

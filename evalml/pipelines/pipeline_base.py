@@ -1,7 +1,6 @@
 import copy
 import inspect
 import os
-import re
 import sys
 import traceback
 from abc import ABC, abstractmethod
@@ -20,17 +19,12 @@ from .components import (
 )
 from .components.utils import all_components, handle_component_class
 
-from evalml.exceptions import (
-    IllFormattedClassNameError,
-    ObjectiveCreationError,
-    PipelineScoreError
-)
+from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
-    classproperty,
     get_logger,
     import_or_raise,
     infer_feature_types,
@@ -46,73 +40,82 @@ logger = get_logger(__file__)
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """Base class for all pipelines."""
 
-    @property
-    @classmethod
-    @abstractmethod
-    def component_graph(cls):
-        """Returns list or dictionary of components representing pipeline graph structure
-
-        Returns:
-            list(str / ComponentBase subclass): List of ComponentBase subclasses or strings denotes graph structure of this pipeline.
-        """
-
-    custom_hyperparameters = None
-    custom_name = None
     problem_type = None
 
-    def __init__(self, parameters, random_seed=0):
+    def __init__(self,
+                 component_graph,
+                 parameters=None,
+                 custom_name=None,
+                 custom_hyperparameters=None,
+                 random_seed=0):
         """Machine learning pipeline made out of transformers and a estimator.
 
-        Required Class Variables:
+        Arguments:
             component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
                 Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
                 component's index in the list. For example, the component graph
                 [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
                 ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
-
-        Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary {} implies using all default values for component parameters.
+                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+            custom_name (str): Custom name for the pipeline. Defaults to None.
+            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
+        self._custom_hyperparameters = custom_hyperparameters
         self.random_seed = random_seed
-        if isinstance(self.component_graph, list):  # Backwards compatibility
-            self._component_graph = ComponentGraph().from_list(self.component_graph, random_seed=self.random_seed)
+
+        self.component_graph = component_graph
+        if isinstance(component_graph, list):  # Backwards compatibility
+            self._component_graph = ComponentGraph().from_list(component_graph, random_seed=self.random_seed)
         else:
-            self._component_graph = ComponentGraph(component_dict=self.component_graph, random_seed=self.random_seed)
+            self._component_graph = ComponentGraph(component_dict=component_graph, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
         self.input_target_name = None
 
-        final_component = self._component_graph.get_last_component()
-        self.estimator = final_component if isinstance(final_component, Estimator) else None
+        self.estimator = None
+        if len(self._component_graph.compute_order) > 0:
+            final_component = self._component_graph.get_last_component()
+            self.estimator = final_component if isinstance(final_component, Estimator) else None
         self._estimator_name = self._component_graph.compute_order[-1] if self.estimator is not None else None
 
         self._validate_estimator_problem_type()
         self._is_fitted = False
-        self._pipeline_params = parameters.get("pipeline", {})
 
-    @classproperty
-    def name(cls):
-        """Returns a name describing the pipeline.
-        By default, this will take the class name and add a space between each capitalized word (class name should be in Pascal Case). If the pipeline has a custom_name attribute, this will be returned instead.
-        """
-        if cls.custom_name:
-            name = cls.custom_name
-        else:
-            rex = re.compile(r'(?<=[a-z])(?=[A-Z])')
-            name = rex.sub(' ', cls.__name__)
-            if name == cls.__name__:
-                raise IllFormattedClassNameError("Pipeline Class {} needs to follow Pascal Case standards or `custom_name` must be defined.".format(cls.__name__))
-        return name
+        self._pipeline_params = None
+        if parameters is not None:
+            self._pipeline_params = parameters.get("pipeline", {})
 
-    @classproperty
-    def summary(cls):
-        """Returns a short summary of the pipeline structure, describing the list of components used.
+        self._custom_name = custom_name
+
+    @property
+    def custom_hyperparameters(self):
+        """Custom hyperparameters for the pipeline."""
+        return self._custom_hyperparameters
+
+    @custom_hyperparameters.setter
+    def custom_hyperparameters(self, value):
+        """Custom hyperparameters for the pipeline."""
+        self._custom_hyperparameters = value
+
+    @property
+    def custom_name(self):
+        """Custom name of the pipeline."""
+        return self._custom_name
+
+    @property
+    def name(self):
+        """Name of the pipeline."""
+        return self.custom_name or self.summary
+
+    @property
+    def summary(self):
+        """A short summary of the pipeline structure, describing the list of components used.
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
-        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(cls.linearized_component_graph)]
+        component_graph = [handle_component_class(component_class) for _, component_class in copy.copy(self.linearized_component_graph)]
         if len(component_graph) == 0:
             return "Empty Pipeline"
         summary = "Pipeline"
@@ -126,10 +129,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_names = [component_class.name for component_class in component_graph]
         return '{} w/ {}'.format(summary, ' + '.join(component_names))
 
-    @classproperty
-    def linearized_component_graph(cls):
-        """Returns a component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
-        return ComponentGraph.linearized_component_graph(cls.component_graph)
+    @property
+    def linearized_component_graph(self):
+        """A component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
+        return ComponentGraph.linearized_component_graph(self.component_graph)
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -197,10 +200,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Input data to the pipeline to transform.
+            X (pd.DataFrame): Input data to the pipeline to transform.
 
         Returns:
-            ww.DataTable: New transformed features.
+            pd.DataFrame: New transformed features.
         """
         X_t = self._component_graph.compute_final_component_features(X, y=y)
         return X_t
@@ -221,8 +224,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Build a model
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (ww.DataColumn, pd.Series, np.ndarray): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): The target training data of length [n_samples]
 
         Returns:
             self
@@ -233,25 +236,24 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            ww.DataColumn: Predicted values.
+            pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
         predictions = self._component_graph.predict(X)
-        predictions_series = predictions.to_series()
-        predictions_series.name = self.input_target_name
-        return infer_feature_types(predictions_series)
+        predictions.name = self.input_target_name
+        return infer_feature_types(predictions)
 
     @abstractmethod
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, ww.DataColumn, or np.ndarray): True labels of length [n_samples]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): True labels of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
         Returns:
@@ -298,31 +300,31 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
         return y_pred
 
-    @classproperty
-    def model_family(cls):
+    @property
+    def model_family(self):
         """Returns model family of this pipeline template"""
-        component_graph = copy.copy(cls.component_graph)
+        component_graph = copy.copy(self._component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
         else:
-            order = ComponentGraph.generate_order(component_graph)
+            order = ComponentGraph.generate_order(component_graph.component_dict)
             final_component = order[-1]
-            return handle_component_class(component_graph[final_component][0]).model_family
+            return handle_component_class(component_graph[final_component].__class__).model_family
 
-    @classproperty
-    def hyperparameters(cls):
+    @property
+    def hyperparameters(self):
         """Returns hyperparameter ranges from all components as a dictionary"""
         hyperparameter_ranges = dict()
-        for component_name, component_class in cls.linearized_component_graph:
+        for component_name, component_class in self.linearized_component_graph:
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-            if cls.custom_hyperparameters and component_name in cls.custom_hyperparameters:
-                component_hyperparameters.update(cls.custom_hyperparameters.get(component_name, {}))
+            if self.custom_hyperparameters and component_name in self.custom_hyperparameters:
+                component_hyperparameters.update(self.custom_hyperparameters.get(component_name, {}))
             hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
 
     @property
     def parameters(self):
-        """Returns parameter dictionary for this pipeline
+        """Parameter dictionary for this pipeline
 
         Returns:
             dict: Dictionary of all component parameters
@@ -333,15 +335,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_parameters['pipeline'] = self._pipeline_params
         return component_parameters
 
-    @classproperty
-    def default_parameters(cls):
-        """Returns the default parameter dictionary for this pipeline.
+    @property
+    def default_parameters(self):
+        """The default parameter dictionary for this pipeline.
 
         Returns:
             dict: Dictionary of all component default parameters.
         """
         defaults = {}
-        for c in cls.component_graph:
+        for c in self.component_graph:
             component = handle_component_class(c)
             if component.default_parameters:
                 defaults[component.name] = component.default_parameters
@@ -349,7 +351,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def feature_importance(self):
-        """Return importance associated with each feature. Features dropped by the feature selection are excluded.
+        """Importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
             pd.DataFrame including feature names and their corresponding importance
@@ -376,7 +378,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             raise RuntimeError(
-                "To graph entity sets, a graphviz backend is required.\n" +
+                "To graph pipelines, a graphviz backend is required.\n" +
                 "Install the backend using one of the following commands:\n" +
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
@@ -485,7 +487,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(self.parameters, random_seed=self.random_seed)
+        return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed)
+
+    def new(self, parameters, random_seed=0):
+        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters.
+            Not to be confused with python's __new__ method.
+
+        Arguments:
+            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+        Returns:
+            A new instance of this pipeline with identical components.
+        """
+        return self.__class__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=self.custom_hyperparameters, random_seed=random_seed)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -503,12 +518,23 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.name
 
     def __repr__(self):
-
         def repr_component(parameters):
             return ', '.join([f"'{key}': {safe_repr(value)}" for key, value in parameters.items()])
 
-        parameters_repr = ' '.join([f"'{component}':{{{repr_component(parameters)}}}," for component, parameters in self.parameters.items()])
-        return f'{(type(self).__name__)}(parameters={{{parameters_repr}}})'
+        component_graph_repr = ", ".join([f"'{component}'" if isinstance(component, str) else component.__name__ for component in self.component_graph])
+        component_graph_str = f"[{component_graph_repr}]"
+
+        custom_hyperparameters_repr = ', '.join([f"'{component}':{{{repr_component(hyperparameters)}}}" for component, hyperparameters in self.custom_hyperparameters.items()]) if self.custom_hyperparameters else None
+        custom_hyperparmeter_str = f"custom_hyperparameters={{{custom_hyperparameters_repr}}}" if custom_hyperparameters_repr else None
+
+        parameters_repr = ', '.join([f"'{component}':{{{repr_component(parameters)}}}" for component, parameters in self.parameters.items()])
+        parameters_str = f"parameters={{{parameters_repr}}}"
+
+        custom_name_repr = f"custom_name='{self.custom_name}'" if self.custom_name else None
+        random_seed_str = f"random_seed={self.random_seed}"
+        additional_args_str = ", ".join([arg for arg in [parameters_str, custom_hyperparmeter_str, custom_name_repr, random_seed_str] if arg is not None])
+
+        return f'pipeline = {(type(self).__name__)}(component_graph={component_graph_str}, {additional_args_str})'
 
     def __iter__(self):
         return self

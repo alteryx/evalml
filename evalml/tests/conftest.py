@@ -42,11 +42,18 @@ def create_mock_pipeline(estimator, problem_type):
         class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
         return MockBinaryPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.MULTICLASS:
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+
+            def __init__(self, parameters, random_seed=0):
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+
         return MockMulticlassPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.REGRESSION:
         class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
@@ -93,11 +100,19 @@ def pytest_addoption(parser):
     parser.addoption("--has-minimal-dependencies", action="store_true", default=False,
                      help="If true, tests will assume only the dependencies in"
                      "core-requirements.txt have been installed.")
+    parser.addoption("--is-using-conda", action="store_true", default=False,
+                     help="If true, tests will assume that they are being run as part of"
+                          "the build_conda_pkg workflow with the feedstock.")
 
 
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
+
+
+@pytest.fixture
+def is_using_conda(pytestconfig):
+    return pytestconfig.getoption("--is-using-conda")
 
 
 @pytest.fixture
@@ -110,8 +125,8 @@ def assert_allowed_pipelines_equal_helper():
     def assert_allowed_pipelines_equal_helper(actual_allowed_pipelines, expected_allowed_pipelines):
         for actual, expected in zip(actual_allowed_pipelines, expected_allowed_pipelines):
             for pipeline_subclass in [BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline]:
-                if issubclass(expected, pipeline_subclass):
-                    assert issubclass(expected, pipeline_subclass)
+                if isinstance(expected, pipeline_subclass):
+                    assert isinstance(expected, pipeline_subclass)
                     break
             assert actual.parameters == expected.parameters
             assert actual.name == expected.name
@@ -130,8 +145,9 @@ def X_y_binary():
 
 @pytest.fixture(scope="class")
 def X_y_binary_cls(request):
-    request.cls.X_y_binary = datasets.make_classification(n_samples=100, n_features=20,
-                                                          n_informative=2, n_redundant=2, random_state=0)
+    X, y = datasets.make_classification(n_samples=100, n_features=20,
+                                        n_informative=2, n_redundant=2, random_state=0)
+    request.cls.X_y_binary = pd.DataFrame(X), pd.Series(y)
 
 
 @pytest.fixture
@@ -193,6 +209,15 @@ def ts_data():
 
 
 @pytest.fixture
+def ts_data_seasonal():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
+    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
+    y.index = pd.date_range(start='1/1/2018', periods=500)
+    X.index = pd.date_range(start='1/1/2018', periods=500)
+    return X, y
+
+
+@pytest.fixture
 def dummy_pipeline_hyperparameters():
     return {'Mock Classifier': {
         'param a': Integer(0, 10),
@@ -244,9 +269,18 @@ def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
     class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
+        custom_name = "Mock Binary Classification Pipeline"
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockBinaryClassificationPipeline
 
 
@@ -257,7 +291,16 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         estimator = MockEstimator
         component_graph = [MockEstimator]
+        custom_name = None
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockMulticlassClassificationPipeline
 
 
@@ -285,6 +328,16 @@ def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
 
     class MockRegressionPipeline(RegressionPipeline):
         component_graph = [MockRegressor]
+        custom_name = "Mock Regression Pipeline"
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return MockRegressionPipeline
 
 
@@ -309,6 +362,11 @@ def dummy_time_series_regression_pipeline_class(dummy_time_series_regressor_esti
 
     class MockTimeSeriesRegressionPipeline(TimeSeriesRegressionPipeline):
         component_graph = [MockTimeSeriesRegressor]
+        custom_name = None
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
     return MockTimeSeriesRegressionPipeline
 
 
@@ -320,6 +378,9 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return MockBinaryClassificationPipeline
 
 
@@ -327,7 +388,14 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
 def logistic_regression_multiclass_pipeline_class():
     class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
         """Logistic Regression Pipeline for binary classification."""
+        custom_name = "Logistic Regression Multiclass Pipeline"
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return LogisticRegressionMulticlassPipeline
 
 
@@ -335,6 +403,17 @@ def logistic_regression_multiclass_pipeline_class():
 def logistic_regression_binary_pipeline_class():
     class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
         component_graph = ['Imputer', 'One Hot Encoder', 'Standard Scaler', 'Logistic Regression Classifier']
+        custom_name = "Logistic Regression Binary Pipeline"
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
     return LogisticRegressionBinaryPipeline
 
 
@@ -343,6 +422,16 @@ def linear_regression_pipeline_class():
     class LinearRegressionPipeline(RegressionPipeline):
         """Linear Regression Pipeline for regression problems."""
         component_graph = ['One Hot Encoder', 'Imputer', 'Standard Scaler', 'Linear Regressor']
+        custom_name = "Linear Regression Pipeline"
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return LinearRegressionPipeline
 
 
@@ -372,6 +461,10 @@ def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
         component_graph = ['Delayed Feature Transformer', 'Random Forest Regressor']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return TSRegressionPipeline
 
 
@@ -380,6 +473,10 @@ def time_series_binary_classification_pipeline_class():
     class TSBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
         """Logistic Regression Pipeline for time series binary classification problems."""
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return TSBinaryPipeline
 
 
@@ -388,14 +485,16 @@ def time_series_multiclass_classification_pipeline_class():
     class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
         """Logistic Regression Pipeline for time series multiclass classification problems."""
         component_graph = ['Delayed Feature Transformer', 'Logistic Regression Classifier']
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, random_seed=random_seed)
+
     return TSMultiPipeline
 
 
 @pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
-    class DTBinaryClassificationPipeline(BinaryClassificationPipeline):
-        component_graph = ['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier']
-    pipeline = DTBinaryClassificationPipeline({})
+    pipeline = BinaryClassificationPipeline(['Simple Imputer', 'One Hot Encoder', 'Standard Scaler', 'Decision Tree Classifier'])
     X, y = X_y_categorical_classification
     pipeline.fit(X, y)
     return pipeline
@@ -404,6 +503,7 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 @pytest.fixture
 def nonlinear_binary_pipeline_class():
     class NonLinearBinaryPipeline(BinaryClassificationPipeline):
+        custom_name = "Non Linear Binary Pipeline"
         component_graph = {
             'Imputer': ['Imputer'],
             'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'],
@@ -412,6 +512,15 @@ def nonlinear_binary_pipeline_class():
             'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
             'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearBinaryPipeline
 
 
@@ -426,6 +535,15 @@ def nonlinear_multiclass_pipeline_class():
             'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'],
             'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearMulticlassPipeline
 
 
@@ -439,6 +557,15 @@ def nonlinear_regression_pipeline_class():
             'Elastic Net': ['Elastic Net Regressor', 'OneHot.x'],
             'Linear Regressor': ['Linear Regressor', 'Random Forest', 'Elastic Net']
         }
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(self.component_graph, parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
     return NonLinearRegressionPipeline
 
 
@@ -483,7 +610,7 @@ def stackable_classifiers(helper_functions):
                                              ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_classifiers.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
+            stackable_classifiers.append(estimator_class)
     return stackable_classifiers
 
 
@@ -495,7 +622,7 @@ def stackable_regressors(helper_functions):
         if (set(supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION} and
             estimator_class.model_family not in _nonstackable_model_families and
                 estimator_class.model_family != ModelFamily.ENSEMBLE):
-            stackable_regressors.append(helper_functions.safe_init_component_with_njobs_1(estimator_class))
+            stackable_regressors.append(estimator_class)
     return stackable_regressors
 
 
@@ -564,9 +691,9 @@ def make_data_type():
                 data = pd.DataFrame(data)
         if data_type == "ww":
             if len(data.shape) == 1:
-                data = ww.DataColumn(data)
+                data = ww.init_series(data)
             else:
-                data = ww.DataTable(data)
+                data.ww.init()
         return data
 
     return _make_data_type
@@ -574,4 +701,40 @@ def make_data_type():
 
 @pytest.fixture
 def fraud_100():
-    return load_fraud(n_rows=100)
+    X, y = load_fraud(n_rows=100)
+    X.ww.set_types(logical_types={'provider': 'Categorical', 'region': 'Categorical'})
+    return X, y
+
+
+@pytest.fixture
+def mock_imbalanced_data_X_y():
+    """Helper function to return an imbalanced binary or multiclass dataset"""
+    def _imbalanced_data_X_y(problem_type, categorical_columns, size):
+        """"Generates a dummy classification dataset with particular amounts of class imbalance and categorical input columns.
+        For our targets, we maintain a 1:5, or 0.2, class ratio of minority : majority.
+        We only generate minimum amount for X to set the logical_types, so the length of X and y will be different.
+
+        Arguments:
+            problem_type (str): Either 'binary' or 'multiclass'
+            categorical_columns (str): Determines how many categorical cols to use. Either 'all', 'some', or 'none'.
+            size (str): Either 'large' or 'small'. 'large' returns a dataset of size 21,000, while 'small' returns a size of 4200
+        """
+        multiplier = 5 if size == 'large' else 1
+        col_names = [f"col_{i}" for i in range(100)]
+        # generate X to be all int values
+        X_dict = {col_name: [i % (j + 1) for i in range(1, 100)] for j, col_name in enumerate(col_names)}
+        X = pd.DataFrame(X_dict)
+        if categorical_columns == 'all':
+            X.ww.init(logical_types={col_name: "Categorical" for col_name in col_names})
+        elif categorical_columns == 'some':
+            X.ww.init(logical_types={col_name: "Categorical" for col_name in col_names[: len(col_names) // 2]})
+        else:
+            X.ww.init()
+        if problem_type == 'binary':
+            targets = [0] * 3500 + [1] * 700
+        else:
+            targets = [0] * 3000 + [1] * 600 + [2] * 600
+        targets *= multiplier
+        y = ww.init_series(pd.Series(targets))
+        return X, y
+    return _imbalanced_data_X_y

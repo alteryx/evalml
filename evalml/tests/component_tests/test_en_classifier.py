@@ -24,8 +24,8 @@ def test_fit_predict_binary(X_y_binary):
 
     sk_clf = SKElasticNetClassifier(loss="log",
                                     penalty="elasticnet",
-                                    alpha=0.5,
-                                    l1_ratio=0.5,
+                                    alpha=0.0001,
+                                    l1_ratio=0.15,
                                     n_jobs=-1,
                                     random_state=0)
     sk_clf.fit(X, y)
@@ -37,8 +37,8 @@ def test_fit_predict_binary(X_y_binary):
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.values, decimal=5)
 
 
 def test_fit_predict_multi(X_y_multi):
@@ -46,8 +46,8 @@ def test_fit_predict_multi(X_y_multi):
 
     sk_clf = SKElasticNetClassifier(loss="log",
                                     penalty="elasticnet",
-                                    alpha=0.5,
-                                    l1_ratio=0.5,
+                                    alpha=0.0001,
+                                    l1_ratio=0.15,
                                     n_jobs=-1,
                                     random_state=0)
     sk_clf.fit(X, y)
@@ -61,8 +61,8 @@ def test_fit_predict_multi(X_y_multi):
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
 
-    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
-    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.to_dataframe().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.values, decimal=5)
 
 
 def test_feature_importance(X_y_binary):
@@ -70,8 +70,8 @@ def test_feature_importance(X_y_binary):
 
     sk_clf = SKElasticNetClassifier(loss="log",
                                     penalty="elasticnet",
-                                    alpha=0.5,
-                                    l1_ratio=0.5,
+                                    alpha=0.0001,
+                                    l1_ratio=0.15,
                                     n_jobs=1,
                                     random_state=0)
     sk_clf.fit(X, y)
@@ -87,8 +87,8 @@ def test_feature_importance_multi(X_y_multi):
 
     sk_clf = SKElasticNetClassifier(loss="log",
                                     penalty="elasticnet",
-                                    alpha=0.5,
-                                    l1_ratio=0.5,
+                                    alpha=0.0001,
+                                    l1_ratio=0.15,
                                     n_jobs=1,
                                     random_state=0)
     sk_clf.fit(X, y)

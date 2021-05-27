@@ -13,11 +13,6 @@ class ObjectiveNotFoundError(Exception):
     pass
 
 
-class IllFormattedClassNameError(Exception):
-    """Exception to raise when a class name does not comply with EvalML standards"""
-    pass
-
-
 class MissingComponentError(Exception):
     """An exception raised when a component is not found in all_components()"""
     pass
@@ -78,3 +73,7 @@ class NullsInColumnWarning(UserWarning):
 
 class ObjectiveCreationError(Exception):
     """Exception when get_objective tries to instantiate an objective and required args are not provided."""
+
+
+class NoPositiveLabelException(Exception):
+    """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values"""

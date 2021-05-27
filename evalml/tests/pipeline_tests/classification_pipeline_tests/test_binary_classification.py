@@ -3,18 +3,92 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 import woodwork as ww
+from skopt.space import Categorical
 
 from evalml.exceptions import PipelineScoreError
 from evalml.objectives import FraudCost, get_objective
+from evalml.pipelines import BinaryClassificationPipeline
+
+
+def test_binary_init():
+    clf = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"])
+    assert clf.parameters == {
+        'Imputer': {
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'mean',
+            'categorical_fill_value': None,
+            'numeric_fill_value': None
+        },
+        'One Hot Encoder': {
+            'top_n': 10,
+            'features_to_encode': None,
+            'categories': None,
+            'drop': 'if_binary',
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'Random Forest Classifier': {
+            'n_estimators': 100,
+            'max_depth': 6,
+            'n_jobs': -1
+        }
+    }
+    assert clf.custom_hyperparameters is None
+    assert clf.name == "Random Forest Classifier w/ Imputer + One Hot Encoder"
+    assert clf.random_seed == 0
+    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                              "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
+                              "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
+    parameters = {
+        "One Hot Encoder": {
+            "top_n": 20
+        }
+    }
+    clf = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "Random Forest Classifier"],
+                                       parameters=parameters,
+                                       custom_hyperparameters=custom_hyperparameters,
+                                       custom_name="Custom Pipeline",
+                                       random_seed=42)
+
+    assert clf.parameters == {
+        'Imputer': {
+            'categorical_impute_strategy': 'most_frequent',
+            'numeric_impute_strategy': 'mean',
+            'categorical_fill_value': None,
+            'numeric_fill_value': None
+        },
+        'One Hot Encoder': {
+            'top_n': 20,
+            'features_to_encode': None,
+            'categories': None,
+            'drop': 'if_binary',
+            'handle_unknown': 'ignore',
+            'handle_missing': 'error'
+        },
+        'Random Forest Classifier': {
+            'n_estimators': 100,
+            'max_depth': 6,
+            'n_jobs': -1
+        }
+    }
+    assert clf.custom_hyperparameters == custom_hyperparameters
+    assert clf.name == "Custom Pipeline"
+    assert clf.random_seed == 42
 
 
 @patch('evalml.pipelines.ClassificationPipeline._decode_targets', return_value=[0, 1])
 @patch('evalml.objectives.BinaryClassificationObjective.decision_function', return_value=pd.Series([1, 0]))
-@patch('evalml.pipelines.components.Estimator.predict_proba', return_value=ww.DataTable(pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])))
-@patch('evalml.pipelines.components.Estimator.predict', return_value=ww.DataColumn(pd.Series([1, 0])))
+@patch('evalml.pipelines.components.Estimator.predict_proba')
+@patch('evalml.pipelines.components.Estimator.predict')
 def test_binary_classification_pipeline_predict(mock_predict, mock_predict_proba,
                                                 mock_obj_decision, mock_decode,
                                                 X_y_binary, dummy_binary_pipeline_class):
+    proba = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
+    proba.ww.init()
+    predict = ww.init_series(pd.Series([1, 0]))
+    mock_predict.return_value = predict
+    mock_predict_proba.return_value = proba
+
     mock_objs = [mock_decode, mock_predict]
     X, y = X_y_binary
     binary_pipeline = dummy_binary_pipeline_class(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})

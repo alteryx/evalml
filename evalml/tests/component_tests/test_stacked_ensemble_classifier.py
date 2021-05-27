@@ -3,16 +3,18 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline
+)
 from evalml.pipelines.components import (
     BaselineClassifier,
     RandomForestClassifier
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
-from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -36,12 +38,12 @@ def test_stacked_ensemble_init_with_invalid_estimators_parameter():
 
 def test_stacked_ensemble_nonstackable_model_families():
     with pytest.raises(ValueError, match="Pipelines with any of the following model families cannot be used as base pipelines"):
-        StackedEnsembleClassifier(input_pipelines=[make_pipeline_from_components([BaselineClassifier()], ProblemTypes.BINARY)])
+        StackedEnsembleClassifier(input_pipelines=[BinaryClassificationPipeline([BaselineClassifier])])
 
 
 def test_stacked_different_input_pipelines_classification():
-    input_pipelines = [make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.MULTICLASS),
-                       make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)]
+    input_pipelines = [BinaryClassificationPipeline([RandomForestClassifier]),
+                       MulticlassClassificationPipeline([RandomForestClassifier])]
     with pytest.raises(ValueError, match="All pipelines must have the same problem type."):
         StackedEnsembleClassifier(input_pipelines=input_pipelines)
 
@@ -65,7 +67,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(X_y_binary, logisti
 
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_binary_pipeline_class):
@@ -82,7 +84,7 @@ def test_stacked_ensemble_n_jobs_negative_one(X_y_binary, logistic_regression_bi
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 @patch('evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class')
@@ -108,7 +110,7 @@ def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert not np.isnan(y_pred).all()
 
 
 def test_stacked_problem_types():
@@ -124,35 +126,35 @@ def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_cla
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         num_classes = 2
+        pipeline_class = BinaryClassificationPipeline
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         num_classes = 3
-
-    input_pipelines = [make_pipeline_from_components([classifier], problem_type)
-                       for classifier in stackable_classifiers]
+        pipeline_class = MulticlassClassificationPipeline
+    input_pipelines = [pipeline_class([classifier]) for classifier in stackable_classifiers]
     clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, ww.DataColumn)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert isinstance(y_pred, pd.Series)
+    assert not np.isnan(y_pred).all()
 
     y_pred_proba = clf.predict_proba(X)
-    assert isinstance(y_pred_proba, ww.DataTable)
+    assert isinstance(y_pred_proba, pd.DataFrame)
     assert y_pred_proba.shape == (len(y), num_classes)
-    assert not np.isnan(y_pred_proba.to_dataframe()).all().all()
+    assert not np.isnan(y_pred_proba).all().all()
 
     clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, final_estimator=RandomForestClassifier(), n_jobs=1)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert len(y_pred) == len(y)
-    assert isinstance(y_pred, ww.DataColumn)
-    assert not np.isnan(y_pred.to_series()).all()
+    assert isinstance(y_pred, pd.Series)
+    assert not np.isnan(y_pred).all()
 
     y_pred_proba = clf.predict_proba(X)
     assert y_pred_proba.shape == (len(y), num_classes)
-    assert isinstance(y_pred_proba, ww.DataTable)
-    assert not np.isnan(y_pred_proba.to_dataframe()).all().all()
+    assert isinstance(y_pred_proba, pd.DataFrame)
+    assert not np.isnan(y_pred_proba).all().all()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -160,10 +162,11 @@ def test_stacked_fit_predict_classification(X_y_binary, X_y_multi, stackable_cla
 def test_stacked_feature_importance(mock_fit, X_y_binary, X_y_multi, stackable_classifiers, problem_type):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
+        pipeline_class = BinaryClassificationPipeline
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-    input_pipelines = [make_pipeline_from_components([classifier], problem_type)
-                       for classifier in stackable_classifiers]
+        pipeline_class = MulticlassClassificationPipeline
+    input_pipelines = [pipeline_class([classifier]) for classifier in stackable_classifiers]
     clf = StackedEnsembleClassifier(input_pipelines=input_pipelines, n_jobs=1)
     clf.fit(X, y)
     mock_fit.assert_called()

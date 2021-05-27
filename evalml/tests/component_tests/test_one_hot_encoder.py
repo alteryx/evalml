@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from pandas.testing import assert_frame_equal
+from woodwork.exceptions import TypeConversionError
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -14,11 +14,7 @@ from woodwork.logical_types import (
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import OneHotEncoder
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    get_random_seed,
-    infer_feature_types
-)
+from evalml.utils import get_random_seed, infer_feature_types
 
 
 def test_init():
@@ -183,7 +179,7 @@ def test_handle_unknown():
 
     encoder = OneHotEncoder(handle_unknown='error')
     encoder.fit(X)
-    assert isinstance(encoder.transform(X), ww.DataTable)
+    assert isinstance(encoder.transform(X), pd.DataFrame)
 
     X = pd.DataFrame({"col_1": ["x", "b", "c", "d", "e", "f", "g"],
                       "col_2": ["a", "c", "d", "b", "e", "e", "f"],
@@ -283,7 +279,6 @@ def test_more_top_n_unique_values():
 
     # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
     X = infer_feature_types(X)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
@@ -318,7 +313,6 @@ def test_more_top_n_unique_values_large():
 
     # Conversion changes the resulting dataframe dtype, resulting in a different random state, so we need make the conversion here too
     X = infer_feature_types(X)
-    X = _convert_woodwork_types_wrapper(X.to_dataframe())
     col_1_counts = X["col_1"].value_counts(dropna=False).to_frame()
     col_1_counts = col_1_counts.sample(frac=1, random_state=random_seed)
     col_1_counts = col_1_counts.sort_values(["col_1"], ascending=False, kind='mergesort')
@@ -341,7 +335,7 @@ def test_categorical_dtype():
 
     encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
-    X_t = encoder.transform(X).to_dataframe()
+    X_t = encoder.transform(X)
 
     expected_col_names = set(["col_1_f", "col_1_b", "col_1_c", "col_1_d", "col_1_e",
                               "col_2_d", "col_2_e", "col_2_a", "col_3_a",
@@ -357,11 +351,11 @@ def test_all_numerical_dtype():
                       "col_2": [3, 2, 5, 1, 3],
                       "col_3": [0, 0, 1, 3, 2],
                       "col_4": [2, 4, 1, 4, 0]})
-    X_expected = X.astype("Int64")
+    X_expected = X.copy()
     encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
 
 
 def test_numpy_input():
@@ -369,7 +363,7 @@ def test_numpy_input():
     encoder = OneHotEncoder()
     encoder.fit(X)
     X_t = encoder.transform(X)
-    assert_frame_equal(pd.DataFrame(X), X_t.to_dataframe(), check_dtype=False)
+    assert_frame_equal(pd.DataFrame(X), X_t, check_dtype=False)
 
 
 def test_large_number_of_categories():
@@ -399,10 +393,11 @@ def test_data_types(data_type):
     elif data_type == 'pd_index':
         X = pd.DataFrame(["a", "b", "c"], columns=['0'])
     elif data_type == 'ww':
-        X = ww.DataTable(pd.DataFrame(["a", "b", "c"]))
+        X = pd.DataFrame(["a", "b", "c"])
+        X.ww.init()
     encoder = OneHotEncoder()
     encoder.fit(X)
-    X_t = encoder.transform(X).to_dataframe()
+    X_t = encoder.transform(X)
     assert list(X_t.columns) == ['0_a', '0_b', '0_c']
     np.testing.assert_array_equal(X_t.to_numpy(), np.identity(3))
 
@@ -416,7 +411,7 @@ def test_ohe_preserves_custom_index(index):
     df = pd.DataFrame({"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
                       index=index)
     ohe = OneHotEncoder()
-    new_df = ohe.fit_transform(df).to_dataframe()
+    new_df = ohe.fit_transform(df)
     pd.testing.assert_index_equal(new_df.index, df.index)
     assert not new_df.isna().any(axis=None)
 
@@ -459,7 +454,7 @@ def test_ohe_features_to_encode():
 
     encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1'])
     encoder.fit(X)
-    X_t = encoder.transform(X).to_dataframe()
+    X_t = encoder.transform(X)
     expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2', 'col_2'])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
@@ -467,7 +462,7 @@ def test_ohe_features_to_encode():
 
     encoder = OneHotEncoder(top_n=5, features_to_encode=['col_1', 'col_2'])
     encoder.fit(X)
-    X_t = encoder.transform(X).to_dataframe()
+    X_t = encoder.transform(X)
     expected_col_names = set(['col_1_0', 'col_1_1', 'col_1_2',
                               'col_2_a', 'col_2_b', 'col_2_c', 'col_2_d'])
     col_names = set(X_t.columns)
@@ -489,7 +484,7 @@ def test_ohe_features_to_encode_no_col_names():
     X = pd.DataFrame([["b", 0], ["a", 1], ["b", 1]])
     encoder = OneHotEncoder(top_n=5, features_to_encode=[0])
     encoder.fit(X)
-    X_t = encoder.transform(X).to_dataframe()
+    X_t = encoder.transform(X)
     expected_col_names = set([1, "0_a"])
     col_names = set(X_t.columns)
     assert (col_names == expected_col_names)
@@ -502,8 +497,8 @@ def test_ohe_top_n_categories_always_the_same():
 
     def check_df_equality(random_seed):
         ohe = OneHotEncoder(top_n=4, random_seed=random_seed)
-        df1 = ohe.fit_transform(df).to_dataframe()
-        df2 = ohe.fit_transform(df).to_dataframe()
+        df1 = ohe.fit_transform(df)
+        df2 = ohe.fit_transform(df)
         assert_frame_equal(df1, df2)
 
     check_df_equality(5)
@@ -540,13 +535,31 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
     override_types = [Integer, Double, Categorical, NaturalLanguage, Datetime, Boolean]
     for logical_type in override_types:
         try:
-            X = ww.DataTable(X_df, logical_types={0: logical_type})
-        except TypeError:
+            X = X_df.copy()
+            X.ww.init(logical_types={0: logical_type})
+        except TypeConversionError:
             continue
 
         ohe = OneHotEncoder()
         ohe.fit(X, y)
         transformed = ohe.transform(X, y)
-        assert isinstance(transformed, ww.DataTable)
+        assert isinstance(transformed, pd.DataFrame)
         if logical_type != Categorical:
-            assert transformed.logical_types == {0: logical_type}
+            assert transformed.ww.logical_types == {0: logical_type}
+
+
+def test_ohe_output_bools():
+    X = pd.DataFrame({"bool": [bool(i % 2) for i in range(100)],
+                      "categorical": ["dog"] * 20 + ["cat"] * 40 + ["fish"] * 40,
+                      "integers": [i for i in range(100)]})
+    X.ww.init()
+    y = pd.Series([i % 2 for i in range(100)])
+    y.ww.init()
+    ohe = OneHotEncoder()
+    output = ohe.fit_transform(X, y)
+    for name, types in output.ww.types["Logical Type"].items():
+        if name == 'integers':
+            assert str(types) == "Integer"
+        else:
+            assert str(types) == "Boolean"
+    assert len(output.columns) == 5

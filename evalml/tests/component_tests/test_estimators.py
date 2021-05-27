@@ -22,8 +22,10 @@ from evalml.problem_types import (
 from evalml.utils import get_random_state
 
 
-def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, helper_functions):
+def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_regression, ts_data, helper_functions):
     for estimator_class in _all_estimators_used_in_search():
+        if estimator_class.__name__ == 'ARIMARegressor':
+            continue
         supported_problem_types = [handle_problem_types(pt) for pt in estimator_class.supported_problem_types]
         for problem_type in supported_problem_types:
             clf = helper_functions.safe_init_component_with_njobs_1(estimator_class)
@@ -41,7 +43,7 @@ def test_estimators_feature_name_with_random_ascii(X_y_binary, X_y_multi, X_y_re
             clf.fit(X, y)
             assert len(clf.feature_importance) == len(X.columns)
             assert not np.isnan(clf.feature_importance).all().all()
-            predictions = clf.predict(X).to_series()
+            predictions = clf.predict(X)
             assert len(predictions) == len(y)
             assert not np.isnan(predictions).all()
             assert (clf.input_feature_names == col_names)
@@ -56,7 +58,7 @@ def test_binary_classification_estimators_predict_proba_col_order(helper_functio
         if ProblemTypes.BINARY in supported_problem_types:
             estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
             estimator.fit(X, y)
-            predicted_proba = estimator.predict_proba(X).to_dataframe()
+            predicted_proba = estimator.predict_proba(X)
             expected = np.concatenate([(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1)
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
 
@@ -98,23 +100,36 @@ def test_all_estimators_check_fit_input_type_regression(data_type, X_y_regressio
         component.predict(X)
 
 
-def test_estimator_predict_output_type(X_y_binary, helper_functions):
+def test_estimator_predict_output_type(X_y_binary, ts_data, helper_functions):
     X_np, y_np = X_y_binary
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
+
     y_list = list(y_np)
     X_df_no_col_names = pd.DataFrame(X_np)
     range_index = pd.RangeIndex(start=0, stop=X_np.shape[1], step=1)
     X_df_with_col_names = pd.DataFrame(X_np, columns=['x' + str(i) for i in range(X_np.shape[1])])
     y_series_no_name = pd.Series(y_np)
     y_series_with_name = pd.Series(y_np, name='target')
-    datatype_combos = [(X_np, y_np, range_index, np.unique(y_np)),
-                       (X_np, y_list, range_index, np.unique(y_np)),
-                       (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique()),
-                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique())]
+    X_df_no_col_names_ts = pd.DataFrame(data=X_df_no_col_names.values, columns=X_df_no_col_names.columns,
+                                        index=pd.date_range(start='1/1/2018', periods=X_df_no_col_names.shape[0]))
+    X_df_with_col_names_ts = pd.DataFrame(data=X_df_with_col_names.values,
+                                          columns=['x' + str(i) for i in range(X_np.shape[1])],
+                                          index=pd.date_range(start='1/1/2018', periods=X_df_with_col_names.shape[0]))
+
+    datatype_combos = [(X_np, y_np, range_index, np.unique(y_np), False),
+                       (X_np, y_list, range_index, np.unique(y_np), False),
+                       (X_df_no_col_names, y_series_no_name, range_index, y_series_no_name.unique(), False),
+                       (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns, y_series_with_name.unique(), False),
+                       (X_df_no_col_names_ts, y_series_no_name, range_index, y_series_no_name.unique(), True),
+                       (X_df_with_col_names_ts, y_series_with_name, X_df_with_col_names_ts.columns, y_series_with_name.unique(), True)]
 
     for component_class in _all_estimators_used_in_search():
-        for X, y, X_cols_expected, y_cols_expected in datatype_combos:
+        for X, y, X_cols_expected, y_cols_expected, time_series in datatype_combos:
+            if component_class.name == 'ARIMA Regressor' and not time_series:
+                continue
+            elif component_class.name != 'ARIMA Regressor' and time_series:
+                continue
             print('Checking output of predict for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
@@ -122,19 +137,23 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
             component = helper_functions.safe_init_component_with_njobs_1(component_class)
             component.fit(X, y=y)
             predict_output = component.predict(X)
-            assert isinstance(predict_output, ww.DataColumn)
+            assert isinstance(predict_output, pd.Series)
             assert len(predict_output) == len(y)
-            assert predict_output.name is None
+            if component_class.name == 'ARIMA Regressor':
+                assert predict_output.name == 'predicted_mean'
+            else:
+                assert predict_output.name is None
 
             if not ((ProblemTypes.BINARY in component_class.supported_problem_types) or
                     (ProblemTypes.MULTICLASS in component_class.supported_problem_types)):
                 continue
+
             print('Checking output of predict_proba for estimator "{}" on X type {} cols {}, y type {} name {}'
                   .format(component_class.name, type(X),
                           X.columns if isinstance(X, pd.DataFrame) else None, type(y),
                           y.name if isinstance(y, pd.Series) else None))
             predict_proba_output = component.predict_proba(X)
-            assert isinstance(predict_proba_output, ww.DataTable)
+            assert isinstance(predict_proba_output, pd.DataFrame)
             assert predict_proba_output.shape == (len(y), len(np.unique(y)))
             assert (list(predict_proba_output.columns) == y_cols_expected).all()
 
@@ -188,10 +207,10 @@ def test_estimator_check_for_fit_with_overrides(X_y_binary):
 
 def test_estimator_manage_woodwork(X_y_binary):
     X_df = pd.DataFrame({"foo": [1, 2, 3], "bar": [4, 5, 6], "baz": [7, 8, 9]})
-    X_ww = ww.DataTable(X_df)
+    X_df.ww.init()
 
     y_series = pd.Series([1, 2, 3])
-    y_ww = ww.DataColumn(y_series)
+    y_series = ww.init_series(y_series)
 
     class MockEstimator(Estimator):
         name = "Mock Estimator Subclass"
@@ -200,11 +219,11 @@ def test_estimator_manage_woodwork(X_y_binary):
 
     # Test y is None case
     est = MockEstimator()
-    X, y = est._manage_woodwork(X_ww, y=None)
+    X, y = est._manage_woodwork(X_df, y=None)
     assert isinstance(X, pd.DataFrame)
     assert y is None
 
     # Test y is not None case
-    X, y = est._manage_woodwork(X_ww, y_ww)
+    X, y = est._manage_woodwork(X_df, y_series)
     assert isinstance(X, pd.DataFrame)
     assert isinstance(y, pd.Series)

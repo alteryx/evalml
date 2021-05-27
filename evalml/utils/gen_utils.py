@@ -6,7 +6,6 @@ from functools import reduce
 
 import numpy as np
 import pandas as pd
-import woodwork as ww
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import (
@@ -154,12 +153,8 @@ def _get_subclasses(base_class):
 
 
 _not_used_in_automl = {'BaselineClassifier', 'BaselineRegressor', 'TimeSeriesBaselineEstimator',
-                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor',
-                       'ModeBaselineBinaryPipeline', 'BaselineBinaryPipeline', 'MeanBaselineRegressionPipeline',
-                       'BaselineRegressionPipeline', 'ModeBaselineMulticlassPipeline', 'BaselineMulticlassPipeline',
-                       'TimeSeriesBaselineRegressionPipeline', 'TimeSeriesBaselineBinaryPipeline',
-                       'TimeSeriesBaselineMulticlassPipeline', 'KNeighborsClassifier',
-                       'SVMClassifier', 'SVMRegressor', 'ARIMARegressor'}
+                       'StackedEnsembleClassifier', 'StackedEnsembleRegressor', 'KNeighborsClassifier',
+                       'SVMClassifier', 'SVMRegressor'}
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
@@ -211,20 +206,14 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
     if isinstance(X, (np.ndarray, list)):
         return pd.DataFrame(X)
 
-    if isinstance(X, ww.DataTable):
-        X_t = X.to_dataframe()
-    else:
-        X_t = X.copy()
-
-    if flatten_tuples and (len(X_t.columns) > 0 and isinstance(X_t.columns, pd.MultiIndex)):
-        flat_col_names = list(map(str, X_t.columns))
-        X_t.columns = flat_col_names
+    X_renamed = X.copy()
+    if flatten_tuples and (len(X.columns) > 0 and isinstance(X.columns, pd.MultiIndex)):
+        flat_col_names = list(map(str, X_renamed.columns))
+        X_renamed.columns = flat_col_names
         rename_cols_dict = dict((str(col), col_num) for col_num, col in enumerate(list(X.columns)))
     else:
         rename_cols_dict = dict((col, col_num) for col_num, col in enumerate(list(X.columns)))
-    X_renamed = X_t.rename(columns=rename_cols_dict)
-    if isinstance(X, ww.DataTable):
-        X_renamed = ww.DataTable(X_renamed)
+    X_renamed.rename(columns=rename_cols_dict, inplace=True)
     return X_renamed
 
 
@@ -261,20 +250,20 @@ def safe_repr(value):
     return repr(value)
 
 
-def is_all_numeric(dt):
-    """Checks if the given DataTable contains only numeric values
+def is_all_numeric(df):
+    """Checks if the given DataFrame contains only numeric values
 
     Arguments:
-        dt (ww.DataTable): The DataTable to check data types of.
+        df (pd.DataFrame): The DataFrame to check data types of.
 
     Returns:
-        True if all the DataTable columns are numeric and are not missing any values, False otherwise.
+        True if all the columns are numeric and are not missing any values, False otherwise.
     """
-    for col_tags in dt.semantic_tags.values():
+    for col_tags in df.ww.semantic_tags.values():
         if "numeric" not in col_tags:
             return False
 
-    if dt.to_dataframe().isnull().any().any():
+    if df.isnull().any().any():
         return False
     return True
 
@@ -296,7 +285,7 @@ def pad_with_nans(pd_data, num_to_pad):
     padded = pd.concat([padding, pd_data], ignore_index=True)
     # By default, pd.concat will convert all types to object if there are mixed numerics and objects
     # The call to convert_dtypes ensures numerics stay numerics in the new dataframe.
-    return padded.convert_dtypes(infer_objects=True, convert_string=False,
+    return padded.convert_dtypes(infer_objects=True, convert_string=False, convert_floating=False,
                                  convert_integer=False, convert_boolean=False)
 
 
@@ -319,7 +308,6 @@ def _get_rows_without_nans(*data):
             return ~pd_data.isna().any(axis=1).values
         else:
             return pd_data
-
     mask = reduce(lambda a, b: np.logical_and(_not_nan(a), _not_nan(b)), data)
     return mask
 

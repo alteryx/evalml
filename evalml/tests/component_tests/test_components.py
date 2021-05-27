@@ -8,7 +8,6 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from skopt.space import Categorical
 
 from evalml.exceptions import (
@@ -17,6 +16,7 @@ from evalml.exceptions import (
     MethodPropertyNotFoundError
 )
 from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
 from evalml.pipelines.components import (
     LSA,
     PCA,
@@ -50,6 +50,9 @@ from evalml.pipelines.components import (
     RFRegressorSelectFromModel,
     SelectColumns,
     SimpleImputer,
+    SMOTENCSampler,
+    SMOTENSampler,
+    SMOTESampler,
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
@@ -71,7 +74,6 @@ from evalml.pipelines.components.utils import (
     all_components,
     generate_component_code
 )
-from evalml.pipelines.utils import make_pipeline_from_components
 from evalml.problem_types import ProblemTypes
 
 
@@ -177,13 +179,23 @@ def test_describe_component():
     assert drop_null_transformer.describe(return_dict=True) == {'name': 'Drop Null Columns Transformer', 'parameters': {'pct_null_threshold': 1.0}}
     assert datetime.describe(return_dict=True) == {'name': 'DateTime Featurization Component',
                                                    'parameters': {'features_to_extract': ['year', 'month', 'day_of_week', 'hour'],
-                                                                  'encode_as_categories': False}}
+                                                                  'encode_as_categories': False,
+                                                                  'date_index': None}}
     assert text_featurizer.describe(return_dict=True) == {'name': 'Text Featurization Component', 'parameters': {}}
     assert lsa.describe(return_dict=True) == {'name': 'LSA Transformer', 'parameters': {}}
     assert pca.describe(return_dict=True) == {'name': 'PCA Transformer', 'parameters': {'n_components': None, 'variance': 0.95}}
     assert lda.describe(return_dict=True) == {'name': 'Linear Discriminant Analysis Transformer', 'parameters': {'n_components': None}}
     assert ft.describe(return_dict=True) == {'name': 'DFS Transformer', 'parameters': {"index": "index"}}
-    assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"sampling_ratio": 0.25, "min_samples": 100, "min_percentage": 0.1}}
+    assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"sampling_ratio": 0.25, "sampling_ratio_dict": None, "min_samples": 100, "min_percentage": 0.1}}
+    try:
+        smote = SMOTESampler()
+        assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
+        smote = SMOTENCSampler()
+        assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
+        smote = SMOTENSampler()
+        assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
+    except ImportError:
+        pass
     # testing estimators
     base_classifier = BaselineClassifier()
     base_regressor = BaselineRegressor()
@@ -200,8 +212,8 @@ def test_describe_component():
     assert base_classifier.describe(return_dict=True) == {'name': 'Baseline Classifier', 'parameters': {'strategy': 'mode'}}
     assert base_regressor.describe(return_dict=True) == {'name': 'Baseline Regressor', 'parameters': {'strategy': 'mean'}}
     assert lr_classifier.describe(return_dict=True) == {'name': 'Logistic Regression Classifier', 'parameters': {'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}
-    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'n_jobs': -1, 'max_iter': 1000, "loss": 'log', 'penalty': 'elasticnet'}}
-    assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.5, 'l1_ratio': 0.5, 'max_iter': 1000, 'normalize': False}}
+    assert en_classifier.describe(return_dict=True) == {'name': 'Elastic Net Classifier', 'parameters': {'alpha': 0.0001, 'l1_ratio': 0.15, 'n_jobs': -1, 'max_iter': 1000, "loss": 'log', 'penalty': 'elasticnet'}}
+    assert en_regressor.describe(return_dict=True) == {'name': 'Elastic Net Regressor', 'parameters': {'alpha': 0.0001, 'l1_ratio': 0.15, 'max_iter': 1000, 'normalize': False}}
     assert et_classifier.describe(return_dict=True) == {'name': 'Extra Trees Classifier', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
     assert et_regressor.describe(return_dict=True) == {'name': 'Extra Trees Regressor', 'parameters': {'n_estimators': 10, 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'n_jobs': -1}}
     assert rf_classifier.describe(return_dict=True) == {'name': 'Random Forest Classifier', 'parameters': {'n_estimators': 10, 'max_depth': 3, 'n_jobs': -1}}
@@ -323,7 +335,7 @@ def test_component_fit_transform(X_y_binary):
         hyperparameter_ranges = {}
 
         def fit_transform(self, X, y=None):
-            return ww.DataTable(X)
+            return X
 
         def __init__(self):
             parameters = {}
@@ -352,7 +364,7 @@ def test_component_fit_transform(X_y_binary):
             return self
 
         def transform(self, X, y=None):
-            return ww.DataTable(X)
+            return X
 
         def __init__(self):
             parameters = {}
@@ -379,14 +391,14 @@ def test_component_fit_transform(X_y_binary):
     y = pd.Series(y)
 
     component = MockTransformerWithFitTransform()
-    assert isinstance(component.fit_transform(X, y), ww.DataTable)
+    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
 
     component = MockTransformerWithFitTransformButError()
     with pytest.raises(RuntimeError):
         component.fit_transform(X, y)
 
     component = MockTransformerWithFitAndTransform()
-    assert isinstance(component.fit_transform(X, y), ww.DataTable)
+    assert isinstance(component.fit_transform(X, y), pd.DataFrame)
 
     component = MockTransformerWithOnlyFit()
     with pytest.raises(MethodPropertyNotFoundError):
@@ -534,14 +546,24 @@ def test_transformer_transform_output_type(X_y_binary):
                           y.name if isinstance(y, pd.Series) else None))
 
             component = component_class()
+            # SMOTE will throw an error if we pass a ratio lower than the current class balance
+            if "SMOTE" in component_class.name:
+                component = component_class(sampling_ratio=1)
+            if component_class.name == "SMOTENC Oversampler":
+                # we cover this case in test_oversamplers
+                continue
 
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
-            if isinstance(component, TargetImputer) or 'sampler' in component.name:
-                assert isinstance(transform_output[0], ww.DataTable)
-                assert isinstance(transform_output[1], ww.DataColumn)
+
+            if isinstance(component, TargetImputer):
+                assert isinstance(transform_output[0], pd.DataFrame)
+                assert isinstance(transform_output[1], pd.Series)
+            elif 'sampler' in component.name:
+                assert isinstance(transform_output[0], pd.DataFrame)
+                assert transform_output[1] is None
             else:
-                assert isinstance(transform_output, ww.DataTable)
+                assert isinstance(transform_output, pd.DataFrame)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
@@ -561,17 +583,16 @@ def test_transformer_transform_output_type(X_y_binary):
                 assert len(transform_output[1].shape) == 1
             elif 'sampler' in component.name:
                 assert transform_output[0].shape == X.shape
-                assert transform_output[1].shape[0] == X.shape[0]
             else:
                 assert transform_output.shape == X.shape
                 assert (list(transform_output.columns) == list(X_cols_expected))
 
             transform_output = component.fit_transform(X, y=y)
             if isinstance(component, TargetImputer) or 'sampler' in component.name:
-                assert isinstance(transform_output[0], ww.DataTable)
-                assert isinstance(transform_output[1], ww.DataColumn)
+                assert isinstance(transform_output[0], pd.DataFrame)
+                assert isinstance(transform_output[1], pd.Series)
             else:
-                assert isinstance(transform_output, ww.DataTable)
+                assert isinstance(transform_output, pd.DataFrame)
 
             if isinstance(component, SelectColumns):
                 assert transform_output.shape == (X.shape[0], 0)
@@ -615,10 +636,14 @@ def test_estimator_check_for_fit(X_y_binary):
             return self
 
         def predict(self, X):
-            return ww.DataColumn(pd.Series())
+            series = pd.Series()
+            series.ww.init()
+            return series
 
         def predict_proba(self, X):
-            return ww.DataTable(pd.DataFrame())
+            df = pd.DataFrame()
+            df.ww.init()
+            return df
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -687,7 +712,9 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
             return self
 
         def transform(self, X):
-            return ww.DataTable(pd.DataFrame())
+            df = pd.DataFrame()
+            df.ww.init()
+            return df
 
     class MockTransformerWithOverrideSubclass(Transformer):
         name = "Mock Transformer Subclass"
@@ -696,7 +723,9 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
             return self
 
         def transform(self, X):
-            return ww.DataTable(pd.DataFrame())
+            df = pd.DataFrame()
+            df.ww.init()
+            return df
 
     X, y = X_y_binary
     transformer = MockTransformerWithOverride()
@@ -728,6 +757,13 @@ def test_all_transformers_check_fit(X_y_binary):
             continue
 
         component = component_class()
+        # SMOTE will throw errors if we call it but cannot oversample
+        if "SMOTE" in component_class.name:
+            component = component_class(sampling_ratio=1)
+        if component_class.name == "SMOTENC Oversampler":
+            # handled in test_oversamplers
+            continue
+
         with pytest.raises(ComponentNotYetFittedError, match=f'You must fit {component_class.__name__}'):
             component.transform(X, y)
 
@@ -735,6 +771,8 @@ def test_all_transformers_check_fit(X_y_binary):
         component.transform(X, y)
 
         component = component_class()
+        if "SMOTE" in component_class.name:
+            component = component_class(sampling_ratio=1)
         component.fit_transform(X, y)
         component.transform(X, y)
 
@@ -775,7 +813,8 @@ def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
     for component_class in _all_transformers():
-        if not component_class.needs_fitting:
+        if not component_class.needs_fitting or "SMOTENC" in component_class.name:
+            # since SMOTENC determines categorical columns through the logical type, it can only accept ww data
             continue
 
         component = component_class()
@@ -801,9 +840,10 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             component = helper_functions.safe_init_component_with_njobs_1(component_class)
         except EnsembleMissingPipelinesError:
             if (component_class == StackedEnsembleClassifier):
-                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY)], n_jobs=1)
+                component = component_class(input_pipelines=[BinaryClassificationPipeline([RandomForestClassifier],
+                                                                                          parameters={"Random Forest Classifier": {"n_jobs": 1}})])
             elif (component_class == StackedEnsembleRegressor):
-                component = component_class(input_pipelines=[make_pipeline_from_components([RandomForestRegressor()], ProblemTypes.REGRESSION)], n_jobs=1)
+                component = component_class(input_pipelines=[RegressionPipeline([RandomForestRegressor], parameters={"Random Forest Regressor": {"n_jobs": 1}})])
         if isinstance(component, Estimator) and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types:
             X, y = ts_data
         else:
@@ -1014,7 +1054,7 @@ def test_categorical_hyperparameters(X_y_binary, categorical):
 
 def test_generate_code_errors():
     with pytest.raises(ValueError, match="Element must be a component instance"):
-        generate_component_code(make_pipeline_from_components([RandomForestClassifier()], ProblemTypes.BINARY))
+        generate_component_code(BinaryClassificationPipeline([RandomForestClassifier]))
 
     with pytest.raises(ValueError, match="Element must be a component instance"):
         generate_component_code(LinearRegressor)
@@ -1092,12 +1132,14 @@ def test_transformer_fit_and_transform_respect_custom_indices(use_custom_index, 
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if 'sampler' in transformer.name or transformer_class == TargetImputer:
+    if 'sampler' in transformer.name:
         X_t, y_t = transformer.transform(X, y)
-        X_t = X_t.to_dataframe()
-        pd.testing.assert_index_equal(y_t.to_series().index, y_original_index, check_names=check_names)
+        assert y_t is None
+    elif transformer_class == TargetImputer:
+        X_t, y_t = transformer.transform(X, y)
+        pd.testing.assert_index_equal(y_t.index, y_original_index, check_names=check_names)
     else:
-        X_t = transformer.transform(X, y).to_dataframe()
+        X_t = transformer.transform(X, y)
         pd.testing.assert_index_equal(y.index, y_original_index, check_names=check_names)
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
 

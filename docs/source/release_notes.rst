@@ -2,11 +2,108 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+    * Fixes
+    * Changes
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+    * Documentation Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Due to the weak-ref in woodwork, set the result of ``infer_feature_types`` to a variable before accessing woodwork :pr:`2181`
+
+**v0.24.2 May. 24, 2021**
+    * Enhancements
+        * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
+        * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
+        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
+    * Fixes
+        * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
+    * Changes
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+    * Documentation Changes
+    * Testing Changes
+        * Use codecov action to update coverage reports :pr:`2238`
+        * Removed MarkupSafe dependency version pin from requirements.txt and moved instead into RTD docs build CI :pr:`2261`
+
+.. warning::
+
+    **Breaking Changes**
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+
+
+**v0.24.1 May. 16, 2021**
+    * Enhancements
+        * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
+        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
+        * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
+    * Fixes
+        * Removed data splitter sampler calls during training :pr:`2253`
+        * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
+        * Changed BaseSampler to return None instead of y :pr:`2272`
+    * Changes
+        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
+        * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
+        * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
+    * Documentation Changes
+        * Capped Sphinx version under 4.0.0 :pr:`2244`
+    * Testing Changes
+        * Change number of cores for pytest from 4 to 2 :pr:`2266`
+        * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
+        * Add unit tests with minimum dependencies  :pr:`2277`
+
+
+**v0.24.0 May. 04, 2021**
+    * Enhancements
+        * Added `date_index` as a required parameter for TimeSeries problems :pr:`2217`
+        * Have the ``OneHotEncoder`` return the transformed columns as booleans rather than floats :pr:`2170`
+        * Added Oversampler transformer component to EvalML :pr:`2079`
+        * Added Undersampler to AutoMLSearch, as well as arguments ``_sampler_method`` and ``sampler_balanced_ratio`` :pr:`2128`
+        * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
+        * Added partial dependence for datetime columns :pr:`2180`
+        * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
+        * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
+        * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
+        * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
+        * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
+    * Fixes
+        * Fixed partial dependence not respecting grid resolution parameter for numerical features :pr:`2180`
+        * Enable prediction explanations for catboost for multiclass problems :pr:`2224`
+    * Changes
+        * Deleted baseline pipeline classes :pr:`2202`
+        * Reverting user specified date feature PR :pr:`2155` until `pmdarima` installation fix is found :pr:`2214`
+        * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
+        * Deleted ``make_pipeline_from_components`` :pr:`2218`
+    * Documentation Changes
+        * Renamed dataset to clarify that its gzipped but not a tarball :pr:`2183`
+        * Updated documentation to use pipeline instances instead of pipeline subclasses :pr:`2195`
+        * Updated contributing guide with a note about GitHub Actions permissions :pr:`2090`
+        * Updated automl and model understanding user guides :pr:`2090`
+    * Testing Changes
+        * Use machineFL user token for dependency update bot, and add more reviewers :pr:`2189`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * All baseline pipeline classes (``BaselineBinaryPipeline``, ``BaselineMulticlassPipeline``, ``BaselineRegressionPipeline``, etc.) have been deleted :pr:`2202`
+        * Updated pipeline API to accept component graph and other class attributes as instance parameters. Old pipeline API still works but will not be supported long-term. Pipelines can now be initialized by specifying the component graph as the first parameter, and then passing in optional arguments such as ``custom_name``, ``parameters``, etc. For example, ``BinaryClassificationPipeline(["Random Forest Classifier"], parameters={})``.  :pr:`2091`
+        * Removed all old datasplitters from EvalML :pr:`2193`
+        * Deleted utility method ``make_pipeline_from_components`` :pr:`2218`
+
+
+**v0.23.0 Apr. 20, 2021**
+    * Enhancements
         * Refactored ``EngineBase`` and ``SequentialEngine`` api. Adding ``DaskEngine`` :pr:`1975`.
         * Added optional ``engine`` argument to ``AutoMLSearch`` :pr:`1975`
         * Added a warning about how time series support is still in beta when a user passes in a time series problem to ``AutoMLSearch`` :pr:`2118`
         * Added ``NaturalLanguageNaNDataCheck`` data check :pr:`2122`
         * Added ValueError to ``partial_dependence`` to prevent users from computing partial dependence on columns with all NaNs :pr:`2120`
+        * Added standard deviation of cv scores to rankings table :pr:`2154`
     * Fixes
         * Fixed ``BalancedClassificationDataCVSplit``, ``BalancedClassificationDataTVSplit``, and ``BalancedClassificationSampler`` to use ``minority:majority`` ratio instead of ``majority:minority`` :pr:`2077`
         * Fixed bug where two-way partial dependence plots with categorical variables were not working correctly :pr:`2117`
@@ -18,9 +115,11 @@ Release Notes
         * Renamed ``TARGET_BINARY_NOT_TWO_EXAMPLES_PER_CLASS`` data check message code to ``TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS`` :pr:`2126`
         * Modified one-way partial dependence plots of categorical features to display data with a bar plot :pr:`2117`
         * Renamed ``score`` column for ``automl.rankings`` as ``mean_cv_score`` :pr:`2135`
+        * Remove 'warning' from docs tool output :pr:`2031`
     * Documentation Changes
         * Fixed ``conf.py`` file :pr:`2112`
         * Added a sentence to the automl user guide stating that our support for time series problems is still in beta. :pr:`2118`
+        * Fixed documentation demos :pr:`2139`
         * Update test badge in README to use GitHub Actions :pr:`2150`
     * Testing Changes
         * Fixed ``test_describe_pipeline`` for ``pandas`` ``v1.2.4`` :pr:`2129`
@@ -110,6 +209,7 @@ Release Notes
         * Added ``score_pipelines`` and ``train_pipelines`` methods to ``AutoMLSearch`` :pr:`1913`
         * Added support for ``pandas`` version 1.2.0 :pr:`1708`
         * Added ``score_batch`` and ``train_batch`` abstact methods to ``EngineBase`` and implementations in ``SequentialEngine`` :pr:`1913`
+        * Added ability to handle index columns in ``AutoMLSearch`` and ``DataChecks`` :pr:`2138`
     * Fixes
         * Removed CI check for ``check_dependencies_updated_linux`` :pr:`1950`
         * Added metaclass for time series pipelines and fix binary classification pipeline ``predict`` not using objective if it is passed as a named argument :pr:`1874`

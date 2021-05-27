@@ -8,7 +8,6 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
     infer_feature_types,
     numeric_and_boolean_ww
 )
@@ -38,11 +37,9 @@ class TargetLeakageDataCheck(DataCheck):
 
     def _calculate_pearson(self, X, y):
         highly_corr_cols = []
-        X_num = X.select(include=numeric_and_boolean_ww)
-        if y.logical_type not in numeric_and_boolean_ww or len(X_num.columns) == 0:
+        X_num = X.ww.select(include=numeric_and_boolean_ww)
+        if y.ww.logical_type not in numeric_and_boolean_ww or len(X_num.columns) == 0:
             return highly_corr_cols
-        X_num = _convert_woodwork_types_wrapper(X_num.to_dataframe())
-        y = _convert_woodwork_types_wrapper(y.to_series())
         highly_corr_cols = [label for label, col in X_num.iteritems() if abs(y.corr(col)) >= self.pct_corr_threshold]
         return highly_corr_cols
 
@@ -50,7 +47,7 @@ class TargetLeakageDataCheck(DataCheck):
         highly_corr_cols = []
         for col in X.columns:
             cols_to_compare = infer_feature_types(pd.DataFrame({col: X[col], str(col) + "y": y}))
-            mutual_info = cols_to_compare.mutual_information()
+            mutual_info = cols_to_compare.ww.mutual_information()
             if len(mutual_info) > 0 and mutual_info['mutual_info'].iloc[0] > self.pct_corr_threshold:
                 highly_corr_cols.append(col)
         return highly_corr_cols
@@ -62,8 +59,8 @@ class TargetLeakageDataCheck(DataCheck):
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
-            y (ww.DataColumn, pd.Series, np.ndarray): The target data
+            X (pd.DataFrame, np.ndarray): The input features to check
+            y (pd.Series, np.ndarray): The target data
 
         Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
@@ -98,8 +95,6 @@ class TargetLeakageDataCheck(DataCheck):
         if self.method == 'pearson':
             highly_corr_cols = self._calculate_pearson(X, y)
         else:
-            X = _convert_woodwork_types_wrapper(X.to_dataframe())
-            y = _convert_woodwork_types_wrapper(y.to_series())
             highly_corr_cols = self._calculate_mutual_information(X, y)
 
         warning_msg = "Column '{}' is {}% or more correlated with the target"

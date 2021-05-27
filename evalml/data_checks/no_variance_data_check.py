@@ -6,7 +6,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -56,8 +56,8 @@ class NoVarianceDataCheck(DataCheck):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features.
-            y (ww.DataColumn, pd.Series, np.ndarray): The target data.
+            X (pd.DataFrame, np.ndarray): The input features.
+            y (pd.Series, np.ndarray): The target data.
 
         Returns:
             dict: dict of warnings/errors corresponding to features or target with no variance.
@@ -69,9 +69,7 @@ class NoVarianceDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         y = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y.to_series())
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()

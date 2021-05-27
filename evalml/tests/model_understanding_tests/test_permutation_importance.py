@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.demos import load_fraud
 from evalml.model_understanding.graphs import calculate_permutation_importance
 from evalml.pipelines import BinaryClassificationPipeline, Transformer
 from evalml.pipelines.components import (
@@ -14,7 +13,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     TextFeaturizer
 )
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class DoubleColumns(Transformer):
@@ -25,6 +24,7 @@ class DoubleColumns(Transformer):
     that in the future.
     """
     name = "DoubleColumns"
+    hyperparameter_ranges = {}
 
     def __init__(self, drop_old_columns=True, random_seed=0):
         self._provenance = {}
@@ -36,7 +36,6 @@ class DoubleColumns(Transformer):
 
     def transform(self, X, y=None):
         self._provenance = {col: [f"{col}_doubled"] for col in X.columns}
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
         new_X = X.assign(**{f"{col}_doubled": 2 * X.loc[:, col] for col in X.columns})
         if self.drop_old_columns:
             new_X = new_X.drop(columns=X.columns)
@@ -145,14 +144,14 @@ test_cases = [(LinearPipelineWithDropCols, {"Drop Columns Transformer": {'column
 @pytest.mark.parametrize('pipeline_class, parameters', test_cases)
 @patch('evalml.pipelines.PipelineBase._supports_fast_permutation_importance', new_callable=PropertyMock)
 def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_importance, pipeline_class, parameters,
-                                                            has_minimal_dependencies):
+                                                            has_minimal_dependencies, fraud_100):
     if has_minimal_dependencies and pipeline_class == LinearPipelineWithTargetEncoderAndOHE:
         pytest.skip("Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
                     "dependency not installed.")
-    X, y = load_fraud(100)
+    X, y = fraud_100
 
     if pipeline_class == LinearPipelineWithTextFeatures:
-        X = X.set_types(logical_types={'provider': 'NaturalLanguage'})
+        X.ww.set_types(logical_types={'provider': 'NaturalLanguage'})
 
     # Do this to make sure we use the same int as sklearn under the hood
     random_state = np.random.RandomState(0)
@@ -160,7 +159,7 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
 
     mock_supports_fast_importance.return_value = True
     parameters['Random Forest Classifier'] = {'n_jobs': 1}
-    pipeline = pipeline_class(parameters=parameters)
+    pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(pipeline, X, y, objective='Log Loss Binary',
                                                    random_seed=random_seed)
@@ -172,6 +171,9 @@ def test_fast_permutation_importance_matches_sklearn_output(mock_supports_fast_i
 
 class PipelineWithDimReduction(BinaryClassificationPipeline):
     component_graph = [PCA, 'Logistic Regression Classifier']
+
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
 class EnsembleDag(BinaryClassificationPipeline):
@@ -187,20 +189,33 @@ class EnsembleDag(BinaryClassificationPipeline):
         'Ensembler': ['Logistic Regression Classifier', 'Estimator_1', 'Estimator_2']
     }
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class PipelineWithDFS(BinaryClassificationPipeline):
     component_graph = [DFSTransformer, 'Logistic Regression Classifier']
+
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
 
 class PipelineWithCustomComponent(BinaryClassificationPipeline):
     component_graph = [DoubleColumns, 'Logistic Regression Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
+
 
 class StackedEnsemblePipeline(BinaryClassificationPipeline):
     component_graph = ['Stacked Ensemble Classifier']
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_hyperparameters=None, random_seed=random_seed)
 
-pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction, PipelineWithDFS,
+
+pipelines_that_do_not_support_fast_permutation_importance = [PipelineWithDimReduction,
+                                                             PipelineWithDFS,
                                                              PipelineWithCustomComponent,
                                                              EnsembleDag, StackedEnsemblePipeline]
 
@@ -273,3 +288,29 @@ def test_get_permutation_importance_correlated_features(logistic_regression_bina
     correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "correlated"][0]]
     not_correlated_importance_val = importance["importance"][importance.index[importance["feature"] == "not correlated"][0]]
     assert correlated_importance_val > not_correlated_importance_val
+
+
+def test_undersampler(X_y_binary):
+    """Smoke test to enable hotfix for 0.24.0.  Prior to the 0.24.0 hotfix, this test will
+    generate a ValueError within calculate_permutation_importance.
+
+    TODO: Remove with github issue #2273
+    """
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    pipeline = BinaryClassificationPipeline(component_graph=["Undersampler", "Elastic Net Classifier"])
+    pipeline.fit(X=X, y=y)
+    pipeline.predict(X)
+    test = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
+    assert test is not None
+
+
+def test_permutation_importance_oversampler(fraud_100):
+    pytest.importorskip('imblearn.over_sampling', reason='Skipping test because imbalanced-learn not installed')
+    X, y = fraud_100
+    pipeline = BinaryClassificationPipeline(component_graph=["Imputer", "One Hot Encoder", "DateTime Featurization Component", "SMOTENC Oversampler", "Decision Tree Classifier"])
+    pipeline.fit(X=X, y=y)
+    pipeline.predict(X)
+    importance = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
+    assert not importance.isnull().all().all()

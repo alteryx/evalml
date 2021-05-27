@@ -12,6 +12,6 @@ fi
 evalml_version=$(sed -n -E "s/.*version=\'([0-9A-Za-z\.\_]+)\'.*/\1/p" setup.py)
 content_raw=$(sed -n -E '/^\*\*v[A-Za-z0-9\., ]+\*\*$/,$p' docs/source/release_notes.rst | tail -n +2 | sed -E '/\*\*v[A-Za-z0-9\., ]+\*\*$/q' | sed '$ d' | awk 'NF')
 date_formatted=$(date '+%b. %-d, %Y')
-content_markdown=$(echo -n "${content_raw}" | sed 's/^        \* /- /g' | sed 's/^    \* /### /g' | sed 's/    \*\*Breaking Changes\*\*/### Breaking Changes/g' | sed -E "s/:pr:\`([0-9]+)\`/#\1/g")
+content_markdown=$(echo -n "${content_raw}" | grep -v ".. warning::" | sed 's/^        \* /- /g' | sed 's/^    \* /### /g' | sed 's/    \*\*Breaking Changes\*\*/### Breaking Changes/g' | sed -E "s/:pr:\`([0-9]+)\`/#\1/g")
 full_markdown=$(echo -e "# v${evalml_version} ${date_formatted}\n${content_markdown}")
 echo -e "${full_markdown}"

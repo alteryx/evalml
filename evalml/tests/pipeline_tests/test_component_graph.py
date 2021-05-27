@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 from pandas.testing import (
     assert_frame_equal,
     assert_index_equal,
@@ -350,8 +349,8 @@ def test_get_last_component(example_graph):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_fit(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_fit_transform.return_value = ww.DataTable(X)
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_fit_transform.return_value = pd.DataFrame(X)
+    mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
@@ -367,15 +366,15 @@ def test_fit_correct_inputs(mock_ohe_fit_transform, mock_imputer_fit_transform, 
     X = pd.DataFrame(X)
     y = pd.Series(y)
     graph = {'Imputer': [Imputer], 'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y']}
-    expected_x = ww.DataTable(pd.DataFrame(index=X.index, columns=X.index).fillna(1))
-    expected_y = ww.DataColumn(pd.Series(index=y.index).fillna(0))
+    expected_x = pd.DataFrame(index=X.index, columns=X.index).fillna(1)
+    expected_y = pd.Series(index=y.index).fillna(0)
     mock_imputer_fit_transform.return_value = tuple((expected_x, expected_y))
     mock_ohe_fit_transform.return_value = expected_x
     component_graph = ComponentGraph(graph).instantiate({})
     component_graph.fit(X, y)
-    expected_x_df = expected_x.to_dataframe().astype("Int64")
-    assert_frame_equal(expected_x_df, mock_ohe_fit_transform.call_args[0][0].to_dataframe())
-    assert_series_equal(expected_y.to_series(), mock_ohe_fit_transform.call_args[0][1].to_series())
+    expected_x_df = expected_x.astype("int64")
+    assert_frame_equal(expected_x_df, mock_ohe_fit_transform.call_args[0][0])
+    assert_series_equal(expected_y, mock_ohe_fit_transform.call_args[0][1])
 
 
 @patch('evalml.pipelines.components.Transformer.fit_transform')
@@ -387,9 +386,9 @@ def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
     component_graph = ComponentGraph.from_list(component_list)
     component_graph.instantiate({})
 
-    mock_fit_transform.return_value = ww.DataTable(np.ones(X.shape))
+    mock_fit_transform.return_value = pd.DataFrame(np.ones(X.shape))
     mock_fit.return_value = Estimator
-    mock_predict.return_value = ww.DataColumn(y)
+    mock_predict.return_value = pd.Series(y)
 
     component_graph.fit_features(X, y)
 
@@ -406,10 +405,10 @@ def test_fit_features_nonlinear(mock_predict, mock_fit, mock_fit_transform, exam
     component_graph = ComponentGraph(example_graph)
     component_graph.instantiate({})
 
-    mock_X_t = ww.DataTable(np.ones(pd.DataFrame(X).shape))
+    mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
     mock_fit_transform.return_value = mock_X_t
     mock_fit.return_value = Estimator
-    mock_predict.return_value = ww.DataColumn(pd.Series(y))
+    mock_predict.return_value = pd.Series(y)
 
     component_graph.fit_features(X, y)
 
@@ -422,7 +421,7 @@ def test_fit_features_nonlinear(mock_predict, mock_fit, mock_fit_transform, exam
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(pd.Series(y))
+    mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
@@ -435,7 +434,7 @@ def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
 @patch('evalml.pipelines.components.Estimator.predict')
 def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
-    mock_predict.return_value = ww.DataColumn(pd.Series(y))
+    mock_predict.return_value = pd.Series(y)
 
     graph = {'Imputer': [Imputer],
              'OneHot_RandomForest': [OneHotEncoder, 'Imputer.x'],
@@ -460,8 +459,8 @@ def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_bin
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X_expected = X.fillna(0)
-    mock_imputer.return_value = ww.DataTable(X)
-    mock_ohe.return_value = ww.DataTable(X_expected)
+    mock_imputer.return_value = X
+    mock_ohe.return_value = X_expected
 
     component_list = ['Imputer', 'One Hot Encoder', 'Random Forest Classifier']
     component_graph = ComponentGraph().from_list(component_list)
@@ -469,7 +468,7 @@ def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_bin
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
 
@@ -480,16 +479,16 @@ def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_bin
 @patch('evalml.pipelines.components.ElasticNetClassifier.predict')
 def test_compute_final_component_features_nonlinear(mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_imputer.return_value = ww.DataTable(pd.DataFrame(X))
-    mock_ohe.return_value = ww.DataTable(pd.DataFrame(X))
-    mock_en_predict.return_value = ww.DataColumn(pd.Series(np.ones(X.shape[0])))
-    mock_rf_predict.return_value = ww.DataColumn(pd.Series(np.zeros(X.shape[0])))
+    mock_imputer.return_value = pd.DataFrame(X)
+    mock_ohe.return_value = pd.DataFrame(X)
+    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
+    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
     X_expected = pd.DataFrame({'Random Forest': np.zeros(X.shape[0]), 'Elastic Net': np.ones(X.shape[0])})
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    assert_frame_equal(X_expected, X_t.to_dataframe())
+    assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
 
@@ -498,12 +497,12 @@ def test_compute_final_component_features_nonlinear(mock_en_predict, mock_rf_pre
 def test_compute_final_component_features_single_component(mock_transform, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
-    mock_transform.return_value = ww.DataTable(X)
+    mock_transform.return_value = X
     component_graph = ComponentGraph({'Dummy Component': [DummyTransformer]}).instantiate({})
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
-    assert_frame_equal(X, X_t.to_dataframe())
+    assert_frame_equal(X, X_t)
 
 
 @patch('evalml.pipelines.components.Imputer.fit_transform')
@@ -527,7 +526,7 @@ def test_predict_empty_graph(X_y_binary):
 
     component_graph.fit(X, y)
     X_t = component_graph.predict(X)
-    assert_frame_equal(X, X_t.to_dataframe())
+    assert_frame_equal(X, X_t)
 
 
 @patch('evalml.pipelines.components.OneHotEncoder.fit_transform')
@@ -541,7 +540,7 @@ def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary)
 
     component_graph.fit(X, y)
     output = component_graph.predict(X)
-    assert_frame_equal(pd.DataFrame(X), output.to_dataframe())
+    assert_frame_equal(pd.DataFrame(X), output)
 
 
 def test_no_instantiate_before_fit(X_y_binary):
@@ -594,7 +593,7 @@ def test_computation_input_custom_index(index):
     component_graph.instantiate({})
     component_graph.fit(X, y)
 
-    X_t = component_graph.predict(X).to_series()
+    X_t = component_graph.predict(X)
     assert_index_equal(X_t.index, pd.RangeIndex(start=0, stop=5, step=1))
     assert not X_t.isna().any(axis=None)
 
@@ -607,12 +606,12 @@ def test_computation_input_custom_index(index):
 @patch(f'{__name__}.TransformerA.transform')
 def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_transc, mock_preda, mock_predb, mock_predc, dummy_components):
     TransformerA, TransformerB, TransformerC, EstimatorA, EstimatorB, EstimatorC = dummy_components
-    mock_transa.return_value = ww.DataTable(pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)}))
-    mock_transb.return_value = ww.DataTable(pd.DataFrame({'feature b': np.ones(6) * 2}))
-    mock_transc.return_value = ww.DataTable(pd.DataFrame({'feature c': np.ones(6) * 3}))
-    mock_preda.return_value = ww.DataColumn(pd.Series([0, 0, 0, 1, 0, 0]))
-    mock_predb.return_value = ww.DataColumn(pd.Series([0, 0, 0, 0, 1, 0]))
-    mock_predc.return_value = ww.DataColumn(pd.Series([0, 0, 0, 0, 0, 1]))
+    mock_transa.return_value = pd.DataFrame({'feature trans': [1, 0, 0, 0, 0, 0], 'feature a': np.ones(6)})
+    mock_transb.return_value = pd.DataFrame({'feature b': np.ones(6) * 2})
+    mock_transc.return_value = pd.DataFrame({'feature c': np.ones(6) * 3})
+    mock_preda.return_value = pd.Series([0, 0, 0, 1, 0, 0])
+    mock_predb.return_value = pd.Series([0, 0, 0, 0, 1, 0])
+    mock_predc.return_value = pd.Series([0, 0, 0, 0, 0, 1])
     graph = {
         'transformer a': [TransformerA],
         'transformer b': [TransformerB, 'transformer a'],
@@ -628,25 +627,25 @@ def test_component_graph_evaluation_plumbing(mock_transa, mock_transb, mock_tran
     component_graph.fit(X, y)
     predict_out = component_graph.predict(X)
 
-    assert_frame_equal(mock_transa.call_args[0][0].to_dataframe(), X)
-    assert_frame_equal(mock_transb.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                 'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
-    assert_frame_equal(mock_transc.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                 'feature a': np.ones(6),
-                                                                                 'feature b': np.ones(6) * 2},
-                                                                                columns=['feature trans', 'feature a', 'feature b']))
-    assert_frame_equal(mock_preda.call_args[0][0].to_dataframe(), X)
-    assert_frame_equal(mock_predb.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                'feature a': np.ones(6)},
-                                                                               columns=['feature trans', 'feature a']))
-    assert_frame_equal(mock_predc.call_args[0][0].to_dataframe(), pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="Int64"),
-                                                                                'feature a': np.ones(6),
-                                                                                'estimator a': pd.Series([0, 0, 0, 1, 0, 0], dtype="Int64"),
-                                                                                'feature b': np.ones(6) * 2,
-                                                                                'estimator b': pd.Series([0, 0, 0, 0, 1, 0], dtype="Int64"),
-                                                                                'feature c': np.ones(6) * 3},
-                                                                               columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
-    assert_series_equal(pd.Series([0, 0, 0, 0, 0, 1], dtype="Int64"), predict_out.to_series())
+    assert_frame_equal(mock_transa.call_args[0][0], X)
+    assert_frame_equal(mock_transb.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
+                                                                  'feature a': np.ones(6)}, columns=['feature trans', 'feature a']))
+    assert_frame_equal(mock_transc.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
+                                                                  'feature a': np.ones(6),
+                                                                  'feature b': np.ones(6) * 2},
+                                                                 columns=['feature trans', 'feature a', 'feature b']))
+    assert_frame_equal(mock_preda.call_args[0][0], X)
+    assert_frame_equal(mock_predb.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
+                                                                 'feature a': np.ones(6)},
+                                                                columns=['feature trans', 'feature a']))
+    assert_frame_equal(mock_predc.call_args[0][0], pd.DataFrame({'feature trans': pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
+                                                                 'feature a': np.ones(6),
+                                                                 'estimator a': pd.Series([0, 0, 0, 1, 0, 0], dtype="int64"),
+                                                                 'feature b': np.ones(6) * 2,
+                                                                 'estimator b': pd.Series([0, 0, 0, 0, 1, 0], dtype="int64"),
+                                                                 'feature c': np.ones(6) * 3},
+                                                                columns=['feature trans', 'feature a', 'estimator a', 'feature b', 'estimator b', 'feature c']))
+    assert_series_equal(pd.Series([0, 0, 0, 0, 0, 1], dtype="int64"), predict_out)
 
 
 def test_input_feature_names(example_graph):
@@ -800,4 +799,39 @@ def test_component_graph_dataset_with_target_imputer():
 
     component_graph.fit(X, y)
     predictions = component_graph.predict(X)
-    assert not pd.isnull(predictions.to_series()).any()
+    assert not pd.isnull(predictions).any()
+
+
+@patch('evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit')
+def test_component_graph_sampler_y_passes(mock_estimator_fit):
+    pytest.importorskip("imblearn.over_sampling", reason="Cannot import imblearn, skipping tests")
+    # makes sure the y value from oversampler gets passed to the estimator, even though StandardScaler has no y output
+    X = pd.DataFrame({"a": [i for i in range(100)],
+                      "b": [i % 3 for i in range(100)]})
+    y = pd.Series([0] * 90 + [1] * 10)
+    component_list = ['Imputer', 'SMOTE Oversampler', 'Standard Scaler', 'Logistic Regression Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    assert len(mock_estimator_fit.call_args[0][0]) == len(mock_estimator_fit.call_args[0][1])
+    assert len(mock_estimator_fit.call_args[0][0]) == int(1.25 * 90)
+
+
+@patch('evalml.pipelines.components.estimators.RandomForestClassifier.fit')
+@patch('evalml.pipelines.components.estimators.DecisionTreeClassifier.fit')
+def test_component_graph_sampler_same_given_components(mock_dt_fit, mock_rf_fit):
+    pytest.importorskip("imblearn.over_sampling", reason="Cannot import imblearn, skipping tests")
+    X = pd.DataFrame({"a": [i for i in range(100)],
+                      "b": [i % 3 for i in range(100)]})
+    y = pd.Series([0] * 90 + [1] * 10)
+    component_list = ['Imputer', 'SMOTE Oversampler', 'Random Forest Classifier']
+    component_graph = ComponentGraph.from_list(component_list)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+
+    component_list2 = ['Imputer', 'SMOTE Oversampler', 'Decision Tree Classifier']
+    component_graph2 = ComponentGraph.from_list(component_list2)
+    component_graph2.instantiate({})
+    component_graph2.fit(X, y)
+    pd.testing.assert_frame_equal(mock_dt_fit.call_args[0][0], mock_rf_fit.call_args[0][0])
+    pd.testing.assert_series_equal(mock_dt_fit.call_args[0][1], mock_rf_fit.call_args[0][1])

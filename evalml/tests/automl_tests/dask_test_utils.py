@@ -12,7 +12,6 @@ def err_call(*args, **kwargs):
     """No-op"""
 
 
-ensembling_indices = [0]
 data_splitter = TrainingValidationSplit()
 problem_type = "binary"
 objective = get_objective("Log Loss Binary", return_instance=True)
@@ -20,14 +19,15 @@ additional_objectives = []
 optimize_thresholds = False
 error_callback = err_call
 random_seed = 0
-automl_data = AutoMLConfig(ensembling_indices=ensembling_indices,
-                           data_splitter=data_splitter,
+automl_data = AutoMLConfig(data_splitter=data_splitter,
                            problem_type=problem_type,
                            objective=objective,
                            additional_objectives=additional_objectives,
                            optimize_thresholds=optimize_thresholds,
                            error_callback=error_callback,
-                           random_seed=random_seed)
+                           random_seed=random_seed,
+                           X_schema=None,
+                           y_schema=None)
 
 
 def delayed(delay):
@@ -43,21 +43,18 @@ def delayed(delay):
     return wrap
 
 
-class TestLRCPipeline(BinaryClassificationPipeline):
-    component_graph = ["Logistic Regression Classifier"]
-
-
-class TestSVMPipeline(BinaryClassificationPipeline):
-    component_graph = ["SVM Classifier"]
-
-
-class TestBaselinePipeline(BinaryClassificationPipeline):
-    component_graph = ["Baseline Classifier"]
-
-
 class TestPipelineWithFitError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
+
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+    def new(self, parameters, random_seed=0):
+        return self.__class__(parameters, random_seed=random_seed)
+
+    def clone(self):
+        return self.__class__(self.parameters, random_seed=self.random_seed)
 
     @delayed(5)
     def fit(self, X, y):
@@ -67,6 +64,9 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
 class TestPipelineWithScoreError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
+
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     def score(self, X, y, objectives):
         raise PipelineScoreError(exceptions={"AUC": (Exception(), []),
@@ -85,6 +85,15 @@ class TestPipelineSlow(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "SlowPipeline"
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+    def new(self, parameters, random_seed=0):
+        return self.__class__(parameters, random_seed=random_seed)
+
+    def clone(self):
+        return self.__class__(self.parameters, random_seed=self.random_seed)
+
     @delayed(15)
     def fit(self, X, y):
         super().fit(X, y)
@@ -97,6 +106,39 @@ class TestPipelineFast(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "FastPipeline"
 
+    def __init__(self, parameters, random_seed=0):
+        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+
+    def new(self, parameters, random_seed=0):
+        return self.__class__(parameters, random_seed=random_seed)
+
+    def clone(self):
+        return self.__class__(self.parameters, random_seed=self.random_seed)
+
     def fit(self, X, y):
         self._is_fitted = True
         super().fit(X, y)
+
+
+class TestSchemaCheckPipeline(BinaryClassificationPipeline):
+
+    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0,
+                 X_schema_to_check=None, y_schema_to_check=None):
+        self.X_schema_to_check = X_schema_to_check
+        self.y_schema_to_check = y_schema_to_check
+        super().__init__(component_graph, parameters, custom_name, custom_hyperparameters, random_seed)
+
+    def clone(self):
+        return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name,
+                              custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed,
+                              X_schema_to_check=self.X_schema_to_check, y_schema_to_check=self.y_schema_to_check)
+
+    def fit(self, X, y):
+        assert X.ww.schema == self.X_schema_to_check
+        assert y.ww.schema == self.y_schema_to_check
+        return super().fit(X, y)
+
+    def score(self, X, y, objectives):
+        assert X.ww.schema == self.X_schema_to_check
+        assert y.ww.schema == self.y_schema_to_check
+        return super().score(X, y, objectives)

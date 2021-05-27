@@ -48,7 +48,10 @@ from .transformers import (
     DFSTransformer,
     Undersampler,
     TargetImputer,
-    PolynomialDetrender
+    PolynomialDetrender,
+    SMOTESampler,
+    SMOTENCSampler,
+    SMOTENSampler
 )
 from .ensemble import (
     StackedEnsembleClassifier,

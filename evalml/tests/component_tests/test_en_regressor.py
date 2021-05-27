@@ -31,8 +31,8 @@ def test_problem_types():
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(alpha=0.5,
-                                   l1_ratio=0.5,
+    sk_clf = SKElasticNetRegressor(alpha=0.0001,
+                                   l1_ratio=0.15,
                                    random_state=0,
                                    normalize=False,
                                    max_iter=1000)
@@ -44,14 +44,14 @@ def test_fit_predict(X_y_regression):
     assert isinstance(fitted, ElasticNetRegressor)
 
     y_pred = clf.predict(X)
-    np.testing.assert_almost_equal(y_pred_sk, y_pred.to_series().values, decimal=5)
+    np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)
 
 
 def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(alpha=0.5,
-                                   l1_ratio=0.5,
+    sk_clf = SKElasticNetRegressor(alpha=0.0001,
+                                   l1_ratio=0.15,
                                    random_state=0,
                                    normalize=False,
                                    max_iter=1000)

@@ -6,7 +6,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning
 )
-from evalml.utils import _convert_woodwork_types_wrapper, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class IDColumnsDataCheck(DataCheck):
@@ -30,7 +30,7 @@ class IDColumnsDataCheck(DataCheck):
             - column contains all unique values (and is categorical / integer type)
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): The input features to check
+            X (pd.DataFrame, np.ndarray): The input features to check
 
         Returns:
             dict: A dictionary of features with column name or index and their probability of being ID columns
@@ -64,8 +64,7 @@ class IDColumnsDataCheck(DataCheck):
         cols_named_id = [col for col in col_names if (str(col).lower() == "id")]  # columns whose name is "id"
         id_cols = {col: 0.95 for col in cols_named_id}
 
-        X = X.select(include=['Integer', 'Categorical'])
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        X = X.ww.select(include=['Integer', 'Categorical'])
 
         check_all_unique = (X.nunique() == len(X))
         cols_with_all_unique = check_all_unique[check_all_unique].index.tolist()  # columns whose values are all unique
