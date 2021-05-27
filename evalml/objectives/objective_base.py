@@ -76,6 +76,7 @@ class ObjectiveBase(ABC):
             X = self._standardize_input_type(X)
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
+        y_true, y_predicted = self.drop_target_with_nan_values(y_true, y_predicted)
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(y_true, y_predicted, X=X)
 
@@ -118,10 +119,22 @@ class ObjectiveBase(ABC):
             raise ValueError("y_true contains NaN or infinity")
         # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
         y_pred_flat = y_predicted.to_numpy().flatten()
-        if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
-            raise ValueError("y_predicted contains NaN or infinity")
+        if np.isinf(y_pred_flat).any():
+            raise ValueError("y_predicted contains infinity values")
         if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
             raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+
+    def drop_target_with_nan_values(self, y_true, y_predicted):
+        y_true_nan_indices = y_true.index[y_true.isnull()]
+        if isinstance(y_predicted, pd.DataFrame):
+            rows_with_nan = y_predicted[y_predicted.isnull().any(axis=1)]
+            y_predicted_nan_indices = rows_with_nan.index
+        else:
+            y_predicted_nan_indices = y_predicted.index[y_predicted.isnull()]
+        indices_to_drop = y_true_nan_indices.union(y_predicted_nan_indices)
+        y_true_without_nans = y_true.drop(indices_to_drop)
+        y_predicted_without_nans = y_predicted.drop(indices_to_drop)
+        return y_true_without_nans, y_predicted_without_nans
 
     @classmethod
     def calculate_percent_difference(cls, score, baseline_score):
