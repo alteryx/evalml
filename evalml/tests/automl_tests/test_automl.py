@@ -2428,6 +2428,12 @@ def test_pipelines_true_true_true(X_y_binary):
 
 
 def test_pipelines_true_true_false(X_y_binary):
+    '''
+        The parameters passed in pipeline_parameters are set for the first iteration but the remaining default
+        to the parameter in the estimator, here from 222 to 100.
+        The problem is that
+        Solution
+    '''
     X, y = X_y_binary
 
     component_graph = ['Imputer', 'Random Forest Classifier']
