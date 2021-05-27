@@ -44,6 +44,6 @@ def test_data_check_action_to_dict():
     data_check_action_empty_metadata = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={})
     data_check_action_with_metadata = DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"some detail": ["this is different"]})
 
-    assert data_check_action.to_dict() == {"code": DataCheckActionCode.DROP_COL.name, "metadata": {}}
-    assert data_check_action_empty_metadata.to_dict() == {"code": DataCheckActionCode.DROP_COL.name, "metadata": {}}
-    assert data_check_action_with_metadata.to_dict() == {"code": DataCheckActionCode.DROP_COL.name, "metadata": {"some detail": ["this is different"]}}
+    assert data_check_action.to_dict() == {"code": DataCheckActionCode.DROP_COL, "metadata": {}}
+    assert data_check_action_empty_metadata.to_dict() == {"code": DataCheckActionCode.DROP_COL, "metadata": {}}
+    assert data_check_action_with_metadata.to_dict() == {"code": DataCheckActionCode.DROP_COL, "metadata": {"some detail": ["this is different"]}}
