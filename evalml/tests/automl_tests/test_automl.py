@@ -2457,8 +2457,31 @@ def test_pipelines_true_true_false(X_y_binary):
         pp(pipeline)
 
 
-def test_pipelines_true_false_true():
-    pass
+def test_pipelines_true_false_true(X_y_binary):
+    '''
+
+    '''
+    X, y = X_y_binary
+
+    component_graph = ['Imputer', 'Random Forest Classifier']
+    parameters = {
+        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
+        "Random Forest Classifier": {'n_estimators': 200,
+                                     "max_depth": 11}
+    }
+    custom_hyperparameters = {
+        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
+    }
+
+    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
+
+    automl = AutoMLSearch(X, y, problem_type="binary", custom_hyperparameters=custom_hyperparameters,
+                          max_batches=3, allowed_pipelines=[pipeline_])
+    automl.search()
+
+    print(automl.full_rankings)
+    for pipeline in automl.full_rankings.parameters:
+        pp(pipeline)
 
 
 def test_pipelines_true_false_false():
