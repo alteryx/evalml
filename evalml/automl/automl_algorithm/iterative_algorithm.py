@@ -189,7 +189,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             init_params = inspect.signature(component_class.__init__).parameters
             print(f"iterativealgorithm - _transform_parameters - init_params: {init_params}")
             # For first batch, pass the pipeline params to the components that need them
-            print(f"iterativealgorithm - _transform_parameters - component_parameters - 0: {component_parameters}")
+            print(f"iterativealgorithm - _transform_parameters - component_parameters: {component_parameters}")
             if name in self._custom_hyperparameters and self._batch_number == 0:
                 print(f"iterativealgorithm - _transform_parameters - hyperparameter name: {name}")
                 for param_name, value in self._custom_hyperparameters[name].items():
@@ -201,7 +201,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
                     else:
                         component_parameters[param_name] = value
-            print(f"iterativealgorithm - _transform_parameters - component_parameters - 1: {component_parameters}")
             if name in pipeline.parameters and self._batch_number == 0:
                 for param_name, value in pipeline.parameters[name].items():
                     print(f"iterativealgorithm - _transform_parameters - pipeline.parameters name/value: {param_name} - {value}")
@@ -211,7 +210,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     else:
 
                         component_parameters[param_name] = value
-            print(f"iterativealgorithm - _transform_parameters - component_parameters - 2: {component_parameters}")
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
                     print(f"iterativealgorithm - _transform_parameters - self._pipeline_params name/value: {param_name} - {value}")
@@ -220,7 +218,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                                          "to custom_hyperparameters instead!")
                     else:
                         component_parameters[param_name] = value
-            print(f"iterativealgorithm - _transform_parameters - component_parameters - 3: {component_parameters}")
             # Inspects each component and adds the following parameters when needed
             if 'n_jobs' in init_params:
                 component_parameters['n_jobs'] = self.n_jobs
@@ -234,7 +231,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     print(f"iterativealgorithm - _transform_parameters - self._pipeline_params['pipeline'] name/value: {param_name} - {value}")
                     if param_name in init_params:
                         component_parameters[param_name] = value
-            print(f"iterativealgorithm - _transform_parameters - component_parameters - 4: {component_parameters}")
+            print(f"iterativealgorithm - _transform_parameters - component_parameters: {component_parameters}")
             parameters[name] = component_parameters
         print(f"iterativealgorithm - _transform_parameters - parameters: {parameters}")
         return parameters
