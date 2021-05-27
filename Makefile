@@ -13,7 +13,7 @@ lint:
 
 .PHONY: lint-fix
 lint-fix:
-	black .
+	black evalml
 	isort --recursive evalml
 	python docs/notebook_version_standardizer.py standardize
 
