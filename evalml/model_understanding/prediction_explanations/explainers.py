@@ -84,7 +84,8 @@ class ExplainPredictionsStage(Enum):
     PREPROCESSING_STAGE = "preprocessing_stage",
     PREDICT_STAGE = "predict_stage",
     COMPUTE_FEATURE_STAGE = "compute_feature_stage",
-    COMPUTE_SHAP_VALUES_STAGE = "compute_shap_value_stage"
+    COMPUTE_SHAP_VALUES_STAGE = "compute_shap_value_stage",
+    DONE = "done"
 
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
@@ -178,6 +179,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
+
+    _update_progress(start_time, timer(), ExplainPredictionsStage.DONE, callback)
+
     return report_creator(data)
 
 
