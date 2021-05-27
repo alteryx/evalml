@@ -2377,9 +2377,9 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(mock_sco
 def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
     mock_score.return_value = {'Log Loss Multiclass': 1.0}
     X, y = X_y_multi
-    params = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
+    hyperparams = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
               'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', pipeline_parameters=params,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', custom_hyperparameters=hyperparams,
                           allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
@@ -2388,6 +2388,66 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 1
+
+
+#@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+#@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_pipelines_true_true_true(X_y_binary):
+    '''
+        The numeric_impute_strategy: most_frequent parameter of Imputer won't be found in the hyperparameter ranges.
+        The tuner will look for most_frequent but only find mean.
+        Solution is to ignore conflicting hyperparameters
+    '''
+    X, y = X_y_binary
+
+    component_graph = ['Imputer', 'Random Forest Classifier']
+    parameters = {
+        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
+        "Random Forest Classifier": {'n_estimators': 200,
+                                     "max_depth": 11}
+    }
+    custom_hyperparameters = {
+        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
+    }
+
+    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
+
+    automl = AutoMLSearch(X, y, problem_type="binary",
+                                    max_batches=3, allowed_pipelines=[pipeline_],
+                                    custom_hyperparameters=custom_hyperparameters)
+    automl.search()
+
+
+def test_pipelines_true_true_false():
+    pass
+
+
+def test_pipelines_true_false_true():
+    pass
+
+
+def test_pipelines_true_false_false():
+    pass
+
+
+def test_pipelines_false_true_true():
+    pass
+
+
+def test_pipelines_false_true_false():
+    pass
+
+
+def test_pipelines_false_false_true():
+    pass
+
+
+def test_pipelines_false_false_false():
+    pass
+
+
+
+
 
 
 @pytest.mark.parametrize("random_seed", [0, 1, 9])
