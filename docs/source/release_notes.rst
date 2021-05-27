@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Cleaned up data checks actions API: standardized metadata to ``columns`` and updated ``to_dict`` to return ``DataCheckActionCode`` enum instead of name :pr:`2156`
     * Documentation Changes
 
 .. warning::
