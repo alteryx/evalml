@@ -363,8 +363,8 @@ class AutoMLSearch:
         self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
-        print(f"automl_search - init - parameters: {parameters}")
         custom_hyperparameters = copy.copy(self.custom_hyperparameters)
+
         if self.problem_configuration:
             parameters.update({'pipeline': self.problem_configuration})
             self._frozen_pipeline_parameters.update({'pipeline': self.problem_configuration})
@@ -372,12 +372,12 @@ class AutoMLSearch:
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
+
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
             if self.sampler_method in ['auto', 'Oversampler']:
                 self._sampler_name = get_best_sampler_for_data(self.X_train, self.y_train, self.sampler_method, self.sampler_balanced_ratio)
             self._frozen_pipeline_parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
-            parameters[self._sampler_name] = {"sampling_ratio": self.sampler_balanced_ratio}
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")
@@ -387,8 +387,7 @@ class AutoMLSearch:
             index_columns = list(self.X_train.select('index').columns)
             if len(index_columns) > 0 and drop_columns is None:
                 self._frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
-                parameters['Drop Columns Transformer'] = {'columns': index_columns}
-            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
+            self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=self._frozen_pipeline_parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
