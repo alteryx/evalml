@@ -79,7 +79,7 @@ def _update_progress(start_time, current_time, progress_stage, callback_function
         elapsed_time = current_time - start_time
         callback_function(progress_stage, elapsed_time)
 
-class PredictionStage(Enum):
+class ExplainPredictionsStage(Enum):
     PREPROCESSING_STAGE = "preprocessing_stage",
     PREDICT_STAGE = "predict_stage",
     COMPUTE_FEATURE_STAGE = "compute_feature_stage",
@@ -119,7 +119,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     start_time = timer()
-    _update_progress(start_time, timer(), PredictionStage.PREPROCESSING_STAGE, callback)
+    _update_progress(start_time, timer(), ExplainPredictionsStage.PREPROCESSING_STAGE, callback)
 
     input_features = infer_feature_types(input_features)
     y_true = infer_feature_types(y_true)
@@ -137,7 +137,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
-    _update_progress(start_time, timer(), PredictionStage.PREDICT_STAGE, callback)
+    _update_progress(start_time, timer(), ExplainPredictionsStage.PREDICT_STAGE, callback)
 
     try:
         if is_regression(pipeline.problem_type):
@@ -166,11 +166,11 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     best_indices = sorted_scores.index[:num_to_explain]
     worst_indices = sorted_scores.index[-num_to_explain:]
     index_list = best_indices.tolist() + worst_indices.tolist()
-    _update_progress(start_time, timer(), PredictionStage.COMPUTE_FEATURE_STAGE, callback)
+    _update_progress(start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback)
 
     pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
 
-    _update_progress(start_time, timer(), PredictionStage.COMPUTE_SHAP_VALUES_STAGE, callback)
+    _update_progress(start_time, timer(), ExplainPredictionsStage.COMPUTE_SHAP_VALUES_STAGE, callback)
 
     data = _ReportData(pipeline, pipeline_features, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
