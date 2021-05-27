@@ -854,3 +854,22 @@ def test_automl_search_sampler_dictionary_keys(mock_binary_score, mock_est_fit, 
             automl.search()
     else:
         automl.search()
+
+
+@pytest.mark.parametrize("sampler", ['Undersampler', 'SMOTE Oversampler'])
+def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependencies):
+    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+        pytest.skip("Skipping tests since imblearn isn't installed")
+    # split this from the undersampler since the dictionaries are formatted differently
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    y = pd.Series(["majority"] * 900 + ["minority"] * 300)
+    pipeline_parameters = {sampler: {"k_neighbors": 2}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler_method=sampler, pipeline_parameters=pipeline_parameters)
+    for pipeline in automl.allowed_pipelines:
+        seen_under = False
+        for comp in pipeline._component_graph:
+            if comp.name == sampler:
+                assert comp.parameters['k_neighbors'] == 2
+                seen_under = True
+        assert seen_under
