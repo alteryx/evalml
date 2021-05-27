@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Added support for computing scores of prediction and target data with NaN values :pr:`2313`
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
