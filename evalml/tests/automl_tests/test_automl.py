@@ -3,6 +3,7 @@ import warnings
 from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
+from pprint import pp
 
 import cloudpickle
 import numpy as np
@@ -2409,17 +2410,45 @@ def test_pipelines_true_true_true(X_y_binary):
     custom_hyperparameters = {
         "Random Forest Classifier": {"max_depth": Integer(11, 12)}
     }
+    pipeine_parameters = {
+        "Random Forest Classifier": {'n_estimators': 222}
+    }
 
     pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
 
     automl = AutoMLSearch(X, y, problem_type="binary",
-                                    max_batches=3, allowed_pipelines=[pipeline_],
+                                    max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeine_parameters,
                                     custom_hyperparameters=custom_hyperparameters)
     automl.search()
 
+    print(automl.full_rankings)
+    for pipeline in automl.full_rankings.parameters:
+        pp(pipeline)
 
-def test_pipelines_true_true_false():
-    pass
+
+
+def test_pipelines_true_true_false(X_y_binary):
+    X, y = X_y_binary
+
+    component_graph = ['Imputer', 'Random Forest Classifier']
+    parameters = {
+        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
+        "Random Forest Classifier": {'n_estimators': 200,
+                                     "max_depth": 11}
+    }
+    pipeine_parameters = {
+        "Random Forest Classifier": {'n_estimators': 222}
+    }
+
+    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
+
+    automl = AutoMLSearch(X, y, problem_type="binary", pipeline_parameters=pipeine_parameters,
+                          max_batches=3, allowed_pipelines=[pipeline_])
+    automl.search()
+
+    print(automl.full_rankings)
+    for pipeline in automl.full_rankings.parameters:
+        pp(pipeline)
 
 
 def test_pipelines_true_false_true():

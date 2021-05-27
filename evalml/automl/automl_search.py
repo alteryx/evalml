@@ -389,13 +389,6 @@ class AutoMLSearch:
                 self._frozen_pipeline_parameters['Drop Columns Transformer'] = {'columns': index_columns}
                 parameters['Drop Columns Transformer'] = {'columns': index_columns}
             self.allowed_pipelines = [make_pipeline(self.X_train, self.y_train, estimator, self.problem_type, parameters=parameters, sampler_name=self._sampler_name) for estimator in allowed_estimators]
-        else:
-            if self.pipeline_parameters:
-                if self.custom_hyperparameters:
-                    for component_name, params in self.custom_hyperparameters.items():
-                        self.custom_hyperparameters = params
-                else:
-                    self.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
