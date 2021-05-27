@@ -36,6 +36,9 @@ class Tuner(ABC):
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)
                 self._search_space_ranges.append(parameter_range)
+        print(f"Tuner - __init__ - self._parameter_names_map: {self._parameter_names_map}")
+        print(f"Tuner - __init__ - self._search_space_names: {self._search_space_names}")
+        print(f"Tuner - __init__ - self.self._search_space_ranges: {self._search_space_ranges}")
 
     def _convert_to_flat_parameters(self, pipeline_parameters):
         """Convert from pipeline parameters to a flat list of values"""

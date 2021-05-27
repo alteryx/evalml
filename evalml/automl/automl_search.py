@@ -363,6 +363,7 @@ class AutoMLSearch:
         self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
+        print(f"automl_search - init - parameters: {parameters}")
         custom_hyperparameters = copy.copy(self.custom_hyperparameters)
         if self.problem_configuration:
             parameters.update({'pipeline': self.problem_configuration})
@@ -447,6 +448,7 @@ class AutoMLSearch:
 
         for pipe_ in self.allowed_pipelines:
             print(f"automlsearch - init - pre iterative algorithm pipeline parameters: {pipe_.parameters}")
+        print(f"automlsearch - init - parameters: {parameters}")
 
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,

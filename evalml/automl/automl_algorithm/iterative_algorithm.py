@@ -172,27 +172,28 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
-        print('-------------------------')
+        print(f"****************************** Batch: {self._batch_number} ******************************")
+        print(f"iterativealgorithm - _transform_parameters - pipeline: {pipeline}")
+        print(f"iterativealgorithm - _transform_parameters - pipeline parameters: {pipeline.parameters}")
+        print(f"iterativealgorithm - _transform_parameters - proposed_parameters: {proposed_parameters}")
+        print(f"iterativealgorithm - _transform_parameters - self._pipeline_params: {self._pipeline_params}")
         parameters = {}
         if 'pipeline' in self._pipeline_params:
             parameters['pipeline'] = self._pipeline_params['pipeline']
+            print(f"iterativealgorithm - _transform_parameters - parameters['pipeline']: {parameters['pipeline']}")
+
         for name, component_class in pipeline.linearized_component_graph:
-            print(f"iterativealgorithm - _transform_parameters - pipeline: {pipeline}")
-            print(f"iterativealgorithm - _transform_parameters - pipeline.linearized_component_graph: {pipeline.linearized_component_graph}")
-            print(f"iterativealgorithm - _transform_parameters - pipeline parameters: {pipeline.parameters}")
+            print('-------------------------------------------------------------------------')
+            print(f"iterativealgorithm - _transform_parameters - component name: {name}")
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             print(f"iterativealgorithm - _transform_parameters - init_params: {init_params}")
-            # Inspects each component and adds the following parameters when needed
-            if 'n_jobs' in init_params:
-                component_parameters['n_jobs'] = self.n_jobs
-            print(f"iterativealgorithm - _transform_parameters - component_parameters 0: {component_parameters}")
             # For first batch, pass the pipeline params to the components that need them
-            print(f"iterativealgorithm - _transform_parameters - self._pipeline_params: {self._pipeline_params}")
+            print(f"iterativealgorithm - _transform_parameters - component_parameters - 0: {component_parameters}")
             if name in self._custom_hyperparameters and self._batch_number == 0:
                 print(f"iterativealgorithm - _transform_parameters - hyperparameter name: {name}")
                 for param_name, value in self._custom_hyperparameters[name].items():
-                    print(f"iterativealgorithm - _transform_parameters - hyperparam_name name/value: {param_name} - {value}")
+                    print(f"iterativealgorithm - _transform_parameters - hyperparameter_name name/value: {param_name} - {value}")
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
@@ -200,12 +201,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)
                     else:
                         component_parameters[param_name] = value
+            print(f"iterativealgorithm - _transform_parameters - component_parameters - 1: {component_parameters}")
             if name in pipeline.parameters and self._batch_number == 0:
                 for param_name, value in pipeline.parameters[name].items():
-                    if name in self._custom_hyperparameters.keys():
-                        if param_name in self._custom_hyperparameters[name]:
-                            print(f"iterativealgorithm - _transform_parameters - skipping param_name: {param_name}")
-                            continue
                     print(f"iterativealgorithm - _transform_parameters - pipeline.parameters name/value: {param_name} - {value}")
                     if isinstance(value, (Integer, Real, Categorical)):
                         raise ValueError("Pipeline parameters should not contain skopt.Space variables, please pass them "
@@ -213,26 +211,30 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     else:
 
                         component_parameters[param_name] = value
+            print(f"iterativealgorithm - _transform_parameters - component_parameters - 2: {component_parameters}")
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
-                    print(f"iterativealgorithm - _transform_parameters - param_name name/value: {param_name} - {value}")
+                    print(f"iterativealgorithm - _transform_parameters - self._pipeline_params name/value: {param_name} - {value}")
                     if isinstance(value, (Integer, Real, Categorical)):
                         raise ValueError("Pipeline parameters should not contain skopt.Space variables, please pass them "
                                          "to custom_hyperparameters instead!")
                     else:
                         component_parameters[param_name] = value
-            print(f"iterativealgorithm - _transform_parameters - component_parameters 1: {component_parameters}")
+            print(f"iterativealgorithm - _transform_parameters - component_parameters - 3: {component_parameters}")
+            # Inspects each component and adds the following parameters when needed
+            if 'n_jobs' in init_params:
+                component_parameters['n_jobs'] = self.n_jobs
             if 'number_features' in init_params:
-                print(f"iterativealgorithm - _transform_parameters - component_parameters 2: {component_parameters}")
                 component_parameters['number_features'] = self.number_features
             if name in self._pipeline_params and name == 'Drop Columns Transformer' and self._batch_number > 0:
                 component_parameters['columns'] = self._pipeline_params[name]['columns']
             if 'pipeline' in self._pipeline_params:
+                print(f"iterativealgorithm - _transform_parameters - self._pipeline_params end: {self._pipeline_params}")
                 for param_name, value in self._pipeline_params['pipeline'].items():
+                    print(f"iterativealgorithm - _transform_parameters - self._pipeline_params['pipeline'] name/value: {param_name} - {value}")
                     if param_name in init_params:
                         component_parameters[param_name] = value
-            print(f"iterativealgorithm - _transform_parameters - component_parameters: {component_parameters}")
+            print(f"iterativealgorithm - _transform_parameters - component_parameters - 4: {component_parameters}")
             parameters[name] = component_parameters
         print(f"iterativealgorithm - _transform_parameters - parameters: {parameters}")
-        print('-------------------------')
         return parameters
