@@ -71,17 +71,13 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
 def _update_progress(start_time, current_time, progress_stage, callback_function):
     """
     Helper function for updating progress of a function and making a call to the user-provided callback
-    function, if provided. Returns the current progress stage.
-
-    If provided, the callback function should accept the following parameters:
+    function, if provided. The callback function should accept the following parameters:
         - progress_stage: stage of computation
         - time_elapsed: total time in seconds that has elapsed since start of call
     """
     if callback_function is not None:
         elapsed_time = current_time - start_time
         callback_function(progress_stage, elapsed_time)
-        return progress_stage
-
 
 class PredictionStage(Enum):
     PREPROCESSING_STAGE = "preprocessing_stage",
