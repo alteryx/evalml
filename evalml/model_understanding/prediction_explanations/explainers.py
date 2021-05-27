@@ -1,6 +1,7 @@
 import sys
 import traceback
 from collections import namedtuple
+from enum import Enum
 from timeit import default_timer as timer
 
 import numpy as np
@@ -67,9 +68,7 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     return report_creator(data)
 
 
-
-def _update_progress(start_time, current_time, progress_increment,
-                     current_progress, total, callback_function):
+def _update_progress(start_time, current_time, progress_stage, callback_function):
     """
     Helper function for updating progress of a function and making a call to the progress callback
     function, if provided. Adds the progress increment to the current progress amount and returns the
@@ -81,11 +80,17 @@ def _update_progress(start_time, current_time, progress_increment,
         - time_elapsed: total time in seconds that has elapsed since start of call
     """
     if callback_function is not None:
-        new_total_progress = current_progress + progress_increment
         elapsed_time = current_time - start_time
-        callback_function((progress_increment / total) * 100, (new_total_progress / total) * 100, elapsed_time)
+        callback_function(progress_stage, elapsed_time)
+        return progress_stage
 
-        return new_total_progress
+
+class PredictionStage(Enum):
+    PREPROCESSING_STAGE = "preprocessing_stage",
+    PREDICT_STAGE = "predict_stage",
+    COMPUTE_FEATURE_STAGE = "compute_feature_stage",
+    COMPUTE_SHAP_VALUES_STAGE = "compute_shap_value_stage"
+
 
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
                                    include_shap_values=False, metric=None, output_format="text", callback=None):
@@ -107,8 +112,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             for classification problems.
         output_format (str): Either "text" or "dict". Default is "text".
         callback (callable): Function to be called with incremental updates. Has the following parameters:
-            - updated_progress: percentage change in progress since last call
-            - total_progress: percentage of total computation completed
+            - progress_stage: stage of computation
             - time_elapsed: total time in seconds that has elapsed since start of call
     Returns:
         str, dict, or pd.DataFrame - A report explaining the top contributing features for the best/worst predictions in the input_features.
@@ -121,11 +125,10 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
     start_time = timer()
+    _update_progress(start_time, timer(), PredictionStage.PREPROCESSING_STAGE, callback)
 
     input_features = infer_feature_types(input_features)
     y_true = infer_feature_types(y_true)
-
-    current_progress = _update_progress(start_time, timer(), 1, 0, 100, callback)
 
     if not (input_features.shape[0] >= num_to_explain * 2):
         raise ValueError(f"Input features must be a dataframe with more than {num_to_explain * 2} rows! "
@@ -140,6 +143,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
+    _update_progress(start_time, timer(), PredictionStage.PREDICT_STAGE, callback)
 
     try:
         if is_regression(pipeline.problem_type):
@@ -168,19 +172,17 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     best_indices = sorted_scores.index[:num_to_explain]
     worst_indices = sorted_scores.index[-num_to_explain:]
     index_list = best_indices.tolist() + worst_indices.tolist()
-
-    current_progress = _update_progress(start_time, timer(), 50, current_progress, 100, callback)
+    _update_progress(start_time, timer(), PredictionStage.COMPUTE_FEATURE_STAGE, callback)
 
     pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
 
-    current_progress = _update_progress(start_time, timer(), 40, current_progress, 100, callback)
+    _update_progress(start_time, timer(), PredictionStage.COMPUTE_SHAP_VALUES_STAGE, callback)
 
     data = _ReportData(pipeline, pipeline_features, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
-    current_progress = _update_progress(start_time, timer(), 9, current_progress, 100, callback)
     return report_creator(data)
 
 
