@@ -79,6 +79,7 @@ def _update_progress(start_time, current_time, progress_stage, callback_function
         elapsed_time = current_time - start_time
         callback_function(progress_stage, elapsed_time)
 
+
 class ExplainPredictionsStage(Enum):
     PREPROCESSING_STAGE = "preprocessing_stage",
     PREDICT_STAGE = "predict_stage",
