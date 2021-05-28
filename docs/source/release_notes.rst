@@ -7,7 +7,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
-        * Fixed lead scoring weights in the demos documentation :pr:``
+        * Fixed lead scoring weights in the demos documentation :pr:`2315`
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`
         * Removed MarkupSafe dependency version pin from requirements.txt and moved instead into RTD docs build CI :pr:`2261`
