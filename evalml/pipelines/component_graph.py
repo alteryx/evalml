@@ -97,12 +97,16 @@ class ComponentGraph:
             raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
 
         parameters = parameters or {}
+        print(f'component_graph - instantiate - parameters: {parameters}')
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
+            print(f'component_graph - instantiate - component_name/component_class: {component_name} - {component_class}')
             component_parameters = parameters.get(component_name, {})
+            print(f'component_graph - instantiate - component_parameters: {component_parameters}')
             try:
                 new_component = component_class(**component_parameters, random_seed=self.random_seed)
+                print(f'component_graph - instantiate - new_component: {new_component}')
             except (ValueError, TypeError) as e:
                 self._is_instantiated = False
                 err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
