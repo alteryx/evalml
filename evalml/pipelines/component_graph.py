@@ -5,7 +5,11 @@ from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import (
+    _retain_custom_types_and_initalize_woodwork,
+    import_or_raise,
+    infer_feature_types
+)
 
 
 class ComponentGraph:
@@ -128,6 +132,7 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
+        y = infer_feature_types(y)
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -215,6 +220,8 @@ class ComponentGraph:
             dict: Outputs from each component
         """
         X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
         most_recent_y = y
         if len(component_list) == 0:
             return X
@@ -323,13 +330,13 @@ class ComponentGraph:
             pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
         """
         if len(x_inputs) == 0:
-            return_x = X
+            return_x = X.to_dataframe()
         else:
             return_x = pd.concat(x_inputs, axis=1)
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = infer_feature_types(return_x)
+        return_x = _retain_custom_types_and_initalize_woodwork(X, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
         return return_x, return_y
