@@ -240,7 +240,7 @@ def test_featurizer_custom_types(text_df):
                               'POLARITY_SCORE(col_1)': Double,
                               'LSA(col_1)[0]': Double,
                               'LSA(col_1)[1]': Double}
-    assert X_t.logical_types == expected_logical_types
+    assert X_t.ww.logical_types == expected_logical_types
 
 
 def test_mean_characters_primitive_output():
