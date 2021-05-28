@@ -2509,14 +2509,14 @@ def test_pipelines_false_true_true(X_y_binary):
     custom_hyperparameters = {
         "Random Forest Classifier": {"max_depth": Integer(11, 12)}
     }
-    pipeine_parameters = {
+    pipeline_parameters = {
         "Random Forest Classifier": {'n_estimators': 222}
     }
 
     pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
 
     automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeine_parameters,
+                          max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeline_parameters,
                           custom_hyperparameters=custom_hyperparameters)
     automl.search()
 
@@ -2525,19 +2525,61 @@ def test_pipelines_false_true_true(X_y_binary):
         pp(pipeline)
 
 
-def test_pipelines_false_true_false():
-    pass
+@patch('evalml.pipelines.BinaryClassificationPipeline.score')
+@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+def test_pipelines_false_true_false(mock_fit, mock_score, X_y_binary):
+    X, y = X_y_binary
+
+    component_graph = ['Imputer', 'Random Forest Classifier']
+    pipeline_parameters = {
+        "Random Forest Classifier": {'n_estimators': 222}
+    }
+
+    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
+
+    automl = AutoMLSearch(X, y, problem_type="binary",
+                          max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeline_parameters)
+    automl.search()
+
+    print(automl.full_rankings)
+    for pipeline in automl.full_rankings.parameters:
+        pp(pipeline)
 
 
-def test_pipelines_false_false_true():
-    pass
+def test_pipelines_false_false_true(X_y_binary):
+    X, y = X_y_binary
+
+    component_graph = ['Imputer', 'Random Forest Classifier']
+    custom_hyperparameters = {
+        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
+    }
+
+    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
+
+    automl = AutoMLSearch(X, y, problem_type="binary",
+                          max_batches=3, allowed_pipelines=[pipeline_],
+                          custom_hyperparameters=custom_hyperparameters)
+    automl.search()
+
+    print(automl.full_rankings)
+    for pipeline in automl.full_rankings.parameters:
+        pp(pipeline)
 
 
-def test_pipelines_false_false_false():
-    pass
+def test_pipelines_false_false_false(X_y_binary):
+    X, y = X_y_binary
 
+    component_graph = ['Imputer', 'Random Forest Classifier']
 
+    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
 
+    automl = AutoMLSearch(X, y, problem_type="binary",
+                          max_batches=3, allowed_pipelines=[pipeline_])
+    automl.search()
+
+    print(automl.full_rankings)
+    for pipeline in automl.full_rankings.parameters:
+        pp(pipeline)
 
 
 
