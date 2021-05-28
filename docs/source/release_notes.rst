@@ -40,6 +40,7 @@ Release Notes
         * Added dictionary input functionality for the Oversampler components :pr:`2288`
     * Fixes
         * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
+        * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
         * Refactored ``calculate_permutation_importance`` method and add per-column permutation importance method :pr:`2302`
