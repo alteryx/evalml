@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import numpy as np
@@ -8,6 +9,7 @@ from pandas.testing import (
     assert_index_equal,
     assert_series_equal
 )
+from woodwork.logical_types import Integer
 
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
@@ -19,8 +21,10 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
+    SelectColumns,
     StandardScaler,
     TargetImputer,
+    TextFeaturizer,
     Transformer,
     Undersampler
 )
@@ -366,13 +370,13 @@ def test_fit_correct_inputs(mock_ohe_fit_transform, mock_imputer_fit_transform, 
     X = pd.DataFrame(X)
     y = pd.Series(y)
     graph = {'Imputer': [Imputer], 'OHE': [OneHotEncoder, 'Imputer.x', 'Imputer.y']}
-    expected_x = pd.DataFrame(index=X.index, columns=X.index).fillna(1)
+    expected_x = pd.DataFrame(index=X.index, columns=X.columns).fillna(1)
     expected_y = pd.Series(index=y.index).fillna(0)
     mock_imputer_fit_transform.return_value = tuple((expected_x, expected_y))
     mock_ohe_fit_transform.return_value = expected_x
     component_graph = ComponentGraph(graph).instantiate({})
     component_graph.fit(X, y)
-    expected_x_df = expected_x.astype("int64")
+    expected_x_df = expected_x.astype("float64")
     assert_frame_equal(expected_x_df, mock_ohe_fit_transform.call_args[0][0])
     assert_series_equal(expected_y, mock_ohe_fit_transform.call_args[0][1])
 
@@ -682,8 +686,8 @@ def test_iteration(example_graph):
 
 
 def test_custom_input_feature_types(example_graph):
-    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
-                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3]})
+    X = pd.DataFrame({'column_1': ['a', 'a', 'a', 'b', 'b', 'b', 'c', 'c', 'd'],
+                      'column_2': [1, 2, 3, 3, 4, 4, 5, 5, 6]})
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     X = infer_feature_types(X, {"column_2": "categorical"})
 
@@ -706,10 +710,13 @@ def test_component_graph_dataset_with_different_types():
     # Checks that types are converted correctly by Woodwork. Specifically, the standard scaler
     # should convert column_3 to float, so our code to try to convert back to the original boolean type
     # will catch the TypeError thrown and not convert the column.
+    # Also, column_4 will be treated as a datetime feature, but the identical column_5 set as natural language
+    # should be treated as natural language, not as datetime.
     graph = {'Imputer': [Imputer],
              'OneHot': [OneHotEncoder, 'Imputer.x'],
              'DateTime': [DateTimeFeaturizer, 'OneHot.x'],
-             'Scaler': [StandardScaler, 'DateTime.x'],
+             'Text': [TextFeaturizer, 'DateTime.x'],
+             'Scaler': [StandardScaler, 'Text.x'],
              'Random Forest': [RandomForestClassifier, 'Scaler.x'],
              'Elastic Net': [ElasticNetClassifier, 'Scaler.x'],
              'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net']}
@@ -717,8 +724,10 @@ def test_component_graph_dataset_with_different_types():
     X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
                       'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3],
                       'column_3': [True, False, True, False, True, False, True, False, False]})
+    X['column_4'] = [str((datetime(2021, 5, 21, 12, 0, 0) + timedelta(minutes=5 * x))) for x in range(len(X))]
+    X['column_5'] = X['column_4']
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
-    X = infer_feature_types(X, {"column_2": "categorical"})
+    X = infer_feature_types(X, {"column_2": "categorical", "column_5": "NaturalLanguage"})
 
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
@@ -726,17 +735,107 @@ def test_component_graph_dataset_with_different_types():
     component_graph.fit(X, y)
 
     input_feature_names = component_graph.input_feature_names
-    assert input_feature_names['Imputer'] == ['column_1', 'column_2', 'column_3']
-    assert input_feature_names['OneHot'] == ['column_1', 'column_2', 'column_3']
-    assert input_feature_names['DateTime'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+    assert input_feature_names['Imputer'] == ['column_1', 'column_2', 'column_3', 'column_4', 'column_5']
+    assert input_feature_names['OneHot'] == ['column_1', 'column_2', 'column_3', 'column_4', 'column_5']
+    assert input_feature_names['DateTime'] == ['column_3', 'column_4', 'column_5',
+                                               'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
                                                'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
-    assert input_feature_names['Scaler'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                             'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
-    assert input_feature_names['Random Forest'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                                    'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
-    assert input_feature_names['Elastic Net'] == ['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                                  'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
+    assert input_feature_names['Text'] == ['column_3', 'column_5', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                           'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                           'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour']
+    text_columns = ['DIVERSITY_SCORE(column_5)', 'MEAN_CHARACTERS_PER_WORD(column_5)', 'POLARITY_SCORE(column_5)',
+                    'LSA(column_5)[0]', 'LSA(column_5)[1]']
+    assert input_feature_names['Scaler'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                              'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                              'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
+                                             text_columns)
+    assert input_feature_names['Random Forest'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                     'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                                     'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
+                                                    text_columns)
+    assert input_feature_names['Elastic Net'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                   'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                                   'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
+                                                  text_columns)
     assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
+
+
+@patch('evalml.pipelines.components.RandomForestClassifier.fit')
+def test_component_graph_types_merge_mock(mock_rf_fit):
+    graph = {'Select numeric col_2': [SelectColumns],
+             'Imputer numeric col_2': [Imputer, 'Select numeric col_2.x'],
+             'Scaler col_2': [StandardScaler, 'Imputer numeric col_2.x'],
+             'Select categorical col_1': [SelectColumns],
+             'Imputer categorical col_1': [Imputer, 'Select categorical col_1.x'],
+             'OneHot col_1': [OneHotEncoder, 'Imputer categorical col_1.x'],
+             'Pass through col_3': [SelectColumns],
+             'Random Forest': [RandomForestClassifier, 'Scaler col_2.x', 'OneHot col_1.x', 'Pass through col_3.x']}
+
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3],
+                      'column_3': [True, False, True, False, True, False, True, False, False]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    # woodwork would infer this as boolean by default -- convert to a numeric type
+    X = infer_feature_types(X, {"column_3": "integer"})
+
+    component_graph = ComponentGraph(graph)
+    # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
+    # specify the types to select here.
+    # if the user-specified woodwork types are being respected, we should see the pass-through column_3 staying as numeric,
+    # meaning it won't cause a modeling error when it reaches the estimator
+    component_graph.instantiate({'Select numeric col_2': {'columns': ['column_2']},
+                                 'Select categorical col_1': {'columns': ['column_1']},
+                                 'Pass through col_3': {'columns': ['column_3']}})
+    assert component_graph.input_feature_names == {}
+    component_graph.fit(X, y)
+
+    input_feature_names = component_graph.input_feature_names
+    assert input_feature_names['Random Forest'] == (['column_2', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                     'column_3'])
+    assert mock_rf_fit.call_args[0][0].logical_types['column_3'] == Integer
+
+
+def test_component_graph_types_merge():
+    graph = {'Select numeric': [SelectColumns],
+             'Imputer numeric': [Imputer, 'Select numeric.x'],
+             'Scaler': [StandardScaler, 'Imputer numeric.x'],
+             'Select categorical': [SelectColumns],
+             'Imputer categorical': [Imputer, 'Select categorical.x'],
+             'OneHot': [OneHotEncoder, 'Imputer categorical.x'],
+             'Select datetime': [SelectColumns],
+             'Imputer datetime': [Imputer, 'Select datetime.x'],
+             'DateTime': [DateTimeFeaturizer, 'Imputer datetime.x'],
+             'Select text': [SelectColumns],
+             'Text': [TextFeaturizer, 'Select text.x'],
+             'Select pass through': [SelectColumns],
+             'Random Forest': [RandomForestClassifier, 'Scaler.x', 'OneHot.x', 'DateTime.x', 'Text.x', 'Select pass through.x']}
+
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3],
+                      'column_3': [True, False, True, False, True, False, True, False, False]})
+    X['column_4'] = [str((datetime(2021, 5, 21, 12, 0, 0) + timedelta(minutes=5 * x))) for x in range(len(X))]
+    X['column_5'] = X['column_4']
+    X['column_6'] = [42.0] * len(X)
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    X = infer_feature_types(X, {"column_5": "NaturalLanguage"})
+
+    component_graph = ComponentGraph(graph)
+    # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
+    # specify the types to select here.
+    component_graph.instantiate({'Select numeric': {'columns': ['column_2']},
+                                 'Select categorical': {'columns': ['column_1', 'column_3']},
+                                 'Select datetime': {'columns': ['column_4']},
+                                 'Select text': {'columns': ['column_5']},
+                                 'Select pass through': {'columns': ['column_6']}})
+    assert component_graph.input_feature_names == {}
+    component_graph.fit(X, y)
+
+    input_feature_names = component_graph.input_feature_names
+    assert input_feature_names['Random Forest'] == (['column_2', 'column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                     'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour',
+                                                     'DIVERSITY_SCORE(column_5)', 'MEAN_CHARACTERS_PER_WORD(column_5)',
+                                                     'POLARITY_SCORE(column_5)', 'LSA(column_5)[0]', 'LSA(column_5)[1]',
+                                                     'column_6'])
 
 
 def test_component_graph_sampler():
