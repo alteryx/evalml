@@ -1,10 +1,7 @@
 import numpy as np
 
 from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BalancedClassificationSampler(SamplerBase):
@@ -98,9 +95,8 @@ class BalancedClassificationSampler(SamplerBase):
         Returns:
             list: Indices to keep for training data
         """
-        y_ww = infer_feature_types(y)
-        y = _convert_woodwork_types_wrapper(y_ww.to_series())
-        # if we have a dictionary provided, opt to use that
+        y = infer_feature_types(y)
+
         if len(self.sampling_ratio_dict):
             result = self._sampling_dict_to_remove_dict(y)
         else:
@@ -112,6 +108,6 @@ class BalancedClassificationSampler(SamplerBase):
                 indices = y.index[y == key].values
                 indices_to_remove = self.random_state.choice(indices, value, replace=False)
                 indices_to_drop.extend(indices_to_remove)
-        # indices of the y datacolumn
+        # indices of the y series
         original_indices = list(set(y.index.values).difference(set(indices_to_drop)))
         return original_indices

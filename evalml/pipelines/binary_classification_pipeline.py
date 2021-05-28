@@ -16,11 +16,11 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
         """Make predictions using selected features.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
         Returns:
-            ww.DataColumn: Estimated labels
+            pd.Series: Estimated labels
         """
 
         if objective is not None:
@@ -30,7 +30,7 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
 
         if self.threshold is None:
             return self._component_graph.predict(X)
-        ypred_proba = self.predict_proba(X).to_dataframe()
+        ypred_proba = self.predict_proba(X)
         predictions = self._predict_with_objective(X, ypred_proba, objective)
         return infer_feature_types(predictions)
 
@@ -38,10 +38,10 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
-            ww.DataTable: Probability estimates
+            pd.Series: Probability estimates
         """
         return super().predict_proba(X)
 

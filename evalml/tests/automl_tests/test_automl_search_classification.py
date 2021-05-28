@@ -6,6 +6,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
+from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.exceptions import PipelineNotFoundError
 from evalml.model_family import ModelFamily
@@ -117,7 +118,7 @@ def test_binary_auto(X_y_binary):
     best_pipeline = automl.best_pipeline
     assert best_pipeline._is_fitted
     y_pred = best_pipeline.predict(X)
-    assert len(np.unique(y_pred.to_series())) == 2
+    assert len(np.unique(y_pred)) == 2
 
 
 def test_multi_auto(X_y_multi, multiclass_core_objectives):
@@ -128,7 +129,7 @@ def test_multi_auto(X_y_multi, multiclass_core_objectives):
     best_pipeline = automl.best_pipeline
     assert best_pipeline._is_fitted
     y_pred = best_pipeline.predict(X)
-    assert len(np.unique(y_pred.to_series())) == 3
+    assert len(np.unique(y_pred)) == 3
 
     objective_in_additional_objectives = next((obj for obj in multiclass_core_objectives if obj.name == objective.name), None)
     multiclass_core_objectives.remove(objective_in_additional_objectives)
@@ -184,7 +185,7 @@ def test_callback(X_y_binary):
         "add_result_callback": 0,
     }
 
-    def start_iteration_callback(pipeline_class, parameters, automl_obj, counts=counts):
+    def start_iteration_callback(pipeline, automl_obj, counts=counts):
         counts["start_iteration_callback"] += 1
 
     def add_result_callback(results, trained_pipeline, automl_obj, counts=counts):
@@ -574,51 +575,41 @@ def test_automl_allowed_pipelines_init_allowed_both_specified_multi(mock_fit, mo
     mock_score.assert_called()
 
 
+@pytest.mark.parametrize('is_linear', [True, False])
+@pytest.mark.parametrize('problem_type', [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 @patch('evalml.pipelines.BinaryClassificationPipeline.score')
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-    mock_score.return_value = {'Log Loss Binary': 1.0}
+def test_automl_allowed_pipelines_search(mock_binary_fit, mock_binary_score,
+                                         mock_multi_fit, mock_multi_score,
+                                         is_linear, problem_type,
+                                         dummy_binary_pipeline_class, nonlinear_binary_pipeline_class,
+                                         dummy_multiclass_pipeline_class, nonlinear_multiclass_pipeline_class,
+                                         X_y_binary, X_y_multi):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        mock_binary_score.return_value = {'Log Loss Binary': 1.0}
+        expected_mock_class = BinaryClassificationPipeline
+        pipeline_class = dummy_binary_pipeline_class if is_linear else nonlinear_binary_pipeline_class
+    else:
+        X, y = X_y_multi
+        mock_multi_score.return_value = {'Log Loss Multiclass': 1.0}
+        expected_mock_class = MulticlassClassificationPipeline
 
-    allowed_pipelines = [dummy_binary_pipeline_class({})]
+        pipeline_class = dummy_multiclass_pipeline_class if is_linear else nonlinear_multiclass_pipeline_class
+
+    allowed_pipelines = [pipeline_class({})]
+
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2, start_iteration_callback=start_iteration_callback,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
+                          max_iterations=5, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
     automl.search()
 
-    assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == dummy_binary_pipeline_class
-
-
-def test_automl_binary_nonlinear_pipeline_search(nonlinear_binary_pipeline_class, X_y_binary):
-    X, y = X_y_binary
-
-    allowed_pipelines = [nonlinear_binary_pipeline_class({})]
-    start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=2,
-                          start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines, n_jobs=1)
-    automl.search()
-
-    assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == BinaryClassificationPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_binary_pipeline_class
-
-
-def test_automl_multiclass_nonlinear_pipeline_search_more_iterations(nonlinear_multiclass_pipeline_class, X_y_multi):
-    X, y = X_y_multi
-
-    allowed_pipelines = [nonlinear_multiclass_pipeline_class({})]
-    start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_iterations=5,
-                          start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines, n_jobs=1)
-    automl.search()
-
-    assert start_iteration_callback.call_args_list[0][0][0] == MulticlassClassificationPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_multiclass_pipeline_class
-    assert start_iteration_callback.call_args_list[4][0][0] == nonlinear_multiclass_pipeline_class
+    assert isinstance(start_iteration_callback.call_args_list[0][0][0], expected_mock_class)
+    for i in range(1, 5):
+        assert isinstance(start_iteration_callback.call_args_list[i][0][0], pipeline_class)
 
 
 @pytest.mark.parametrize('problem_type', [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY])
@@ -758,3 +749,127 @@ def test_automl_search_sampler_method(sampler_method, categorical_features, prob
             sampler_method = 'Undersampler'
             assert 'Could not import imblearn.over_sampling' in caplog.text
         assert all(any(sampler_method in comp.name for comp in pipeline.component_graph) for pipeline in pipelines)
+
+
+@pytest.mark.parametrize("sampling_ratio", [0.1, 0.2, 0.5, 1])
+@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+def test_automl_search_ratio_overrides_sampler_ratio(sampler, sampling_ratio, mock_imbalanced_data_X_y, has_minimal_dependencies):
+    if has_minimal_dependencies and sampler == "SMOTE Oversampler":
+        pytest.skip("Skipping test with minimal dependencies")
+    X, y = mock_imbalanced_data_X_y("binary", 'none', 'small')
+    pipeline_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler_method=sampler, pipeline_parameters=pipeline_parameters, sampler_balanced_ratio=0.5)
+    # make sure that our sampling_balanced_ratio of 0.5 overrides the pipeline params passed in
+    pipelines = automl.allowed_pipelines
+    for pipeline in pipelines:
+        seen_sampler = False
+        for comp in pipeline._component_graph:
+            if comp.name == sampler:
+                assert comp.parameters['sampling_ratio'] == 0.5
+                seen_sampler = True
+        assert seen_sampler
+
+
+@pytest.mark.parametrize("problem_type,sampling_ratio_dict,length", [("binary", {0: 0.5, 1: 1}, 600),
+                                                                     ("binary", {0: 0.2, 1: 1}, 800),
+                                                                     ("multiclass", {0: 0.5, 1: 1, 2: 1}, 400),
+                                                                     ("multiclass", {0: 0.75, 1: 1, 2: 1}, 333)])
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.5})
+def test_automl_search_dictionary_undersampler(mock_multi_score, mock_binary_score, mock_est_fit,
+                                               problem_type, sampling_ratio_dict, length):
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    if problem_type == 'binary':
+        y = pd.Series([0] * 900 + [1] * 300)
+    else:
+        y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
+    pipeline_parameters = {"Undersampler": {"sampling_ratio_dict": sampling_ratio_dict}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='Undersampler', pipeline_parameters=pipeline_parameters)
+    # check that the sampling dict got set properly
+    pipelines = automl.allowed_pipelines
+    for pipeline in pipelines:
+        seen_under = False
+        for comp in pipeline._component_graph:
+            if comp.name == 'Undersampler':
+                assert comp.parameters['sampling_ratio_dict'] == sampling_ratio_dict
+                seen_under = True
+        assert seen_under
+    automl.search()
+    # assert we sample the right number of elements for our estimator
+    assert len(mock_est_fit.call_args[0][0]) == length
+
+
+@pytest.mark.parametrize("problem_type,sampling_ratio_dict,length", [("binary", {0: 1, 1: 0.5}, 900),
+                                                                     ("binary", {0: 1, 1: 0.8}, 1080),
+                                                                     ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1200),
+                                                                     ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 1560)])
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.5})
+def test_automl_search_dictionary_oversampler(mock_multi_score, mock_binary_score, mock_est_fit,
+                                              problem_type, sampling_ratio_dict, length):
+    pytest.importorskip("imblearn", reason="Skipping tests since imblearn isn't installed")
+    # split this from the undersampler since the dictionaries are formatted differently
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    if problem_type == 'binary':
+        y = pd.Series([0] * 900 + [1] * 300)
+    else:
+        y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
+    # we only test with SMOTE Oversampler since the oversamplers perform similarly
+    pipeline_parameters = {"SMOTE Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='SMOTE Oversampler', pipeline_parameters=pipeline_parameters)
+    # check that the sampling dict got set properly
+    pipelines = automl.allowed_pipelines
+    for pipeline in pipelines:
+        seen_under = False
+        for comp in pipeline._component_graph:
+            if comp.name == 'SMOTE Oversampler':
+                assert comp.parameters['sampling_ratio_dict'] == sampling_ratio_dict
+                seen_under = True
+        assert seen_under
+    automl.search()
+    # assert we sample the right number of elements for our estimator
+    assert len(mock_est_fit.call_args[0][0]) == length
+
+
+@pytest.mark.parametrize("sampling_ratio_dict,errors", [({0: 1, 1: 0.5}, False),
+                                                        ({"majority": 1, "minority": 0.5}, True)])
+@pytest.mark.parametrize("sampler", ['Undersampler', 'SMOTE Oversampler'])
+@patch('evalml.pipelines.components.estimators.Estimator.fit')
+@patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.5})
+def test_automl_search_sampler_dictionary_keys(mock_binary_score, mock_est_fit, sampler, sampling_ratio_dict, errors, has_minimal_dependencies):
+    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+        pytest.skip("Skipping tests since imblearn isn't installed")
+    # split this from the undersampler since the dictionaries are formatted differently
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    y = pd.Series(["majority"] * 900 + ["minority"] * 300)
+    pipeline_parameters = {sampler: {"sampling_ratio_dict": sampling_ratio_dict}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', error_callback=raise_error_callback, sampler_method=sampler, pipeline_parameters=pipeline_parameters)
+    if errors:
+        with pytest.raises(ValueError, match='Dictionary keys are different from target'):
+            automl.search()
+    else:
+        automl.search()
+
+
+@pytest.mark.parametrize("sampler", ['Undersampler', 'SMOTE Oversampler'])
+def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependencies):
+    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+        pytest.skip("Skipping tests since imblearn isn't installed")
+    # split this from the undersampler since the dictionaries are formatted differently
+    X = pd.DataFrame({"a": [i for i in range(1200)],
+                      "b": [i % 3 for i in range(1200)]})
+    y = pd.Series(["majority"] * 900 + ["minority"] * 300)
+    pipeline_parameters = {sampler: {"k_neighbors": 2}}
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', sampler_method=sampler, pipeline_parameters=pipeline_parameters)
+    for pipeline in automl.allowed_pipelines:
+        seen_under = False
+        for comp in pipeline._component_graph:
+            if comp.name == sampler:
+                assert comp.parameters['k_neighbors'] == 2
+                seen_under = True
+        assert seen_under

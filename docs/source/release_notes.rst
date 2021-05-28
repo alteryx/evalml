@@ -2,10 +2,29 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
-        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
     * Fixes
     * Changes
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+    * Documentation Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Due to the weak-ref in woodwork, set the result of ``infer_feature_types`` to a variable before accessing woodwork :pr:`2181`
+
+**v0.24.2 May. 24, 2021**
+    * Enhancements
+        * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
+        * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
+        * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
+        * Added dictionary input functionality for the Oversampler components :pr:`2288`
+    * Fixes
+        * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
+    * Changes
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
     * Documentation Changes
         * Fixed lead scoring weights in the demos documentation :pr:`2315`
     * Testing Changes
@@ -15,6 +34,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
 
 
 **v0.24.1 May. 16, 2021**
@@ -35,6 +55,7 @@ Release Notes
     * Testing Changes
         * Change number of cores for pytest from 4 to 2 :pr:`2266`
         * Add minimum dependency checker to generate minimum requirement files :pr:`2267`
+        * Add unit tests with minimum dependencies  :pr:`2277`
 
 
 **v0.24.0 May. 04, 2021**
@@ -46,7 +67,6 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
-        * Added oversamplers to AutoMLSearch :pr:`2213`
         * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
