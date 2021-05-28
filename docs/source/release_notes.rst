@@ -7,7 +7,9 @@ Release Notes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
     * Documentation Changes
-
+    * Testing Changes
+        * Update minimum unit tests to run on all pull requests :pr:`2314`
+        
 .. warning::
 
     **Breaking Changes**
