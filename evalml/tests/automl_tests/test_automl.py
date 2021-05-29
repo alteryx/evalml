@@ -1761,7 +1761,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     X, y = X_y_multi
     custom_hyperparameters = {
         "Imputer": {
-            "numeric_impute_strategy": ["most_frequent", "mean"]
+            "numeric_impute_strategy": Categorical(["most_frequent", "mean"])
         }
     }
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
