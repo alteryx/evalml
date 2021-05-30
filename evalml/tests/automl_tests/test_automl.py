@@ -1777,36 +1777,6 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     assert "Default parameters for components" not in str(error.value)
 
 
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_errors(mock_fit, mock_score, X_y_multi):
-    X, y = X_y_multi
-    invalid_custom_hyperparameters = {
-        "Imputer": {
-            "numeric_impute_strategy": ["most_frequent", "median"]
-        }
-    }
-    larger_invalid = {
-        "Imputer": {
-            "numeric_impute_strategy": ["most_frequent", "mean"]
-        },
-        "Extra Trees Classifier": {
-            "max_depth": [4, 5, 6, 7],
-            "max_features": ["sqrt", "log2"]
-        }
-    }
-    estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
-
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None) for estimator in estimators]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines, custom_hyperparameters=invalid_custom_hyperparameters)
-    with pytest.raises(ValueError, match="Default parameters for components"):
-        automl.search()
-
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None) for estimator in estimators]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=invalid_pipelines, custom_hyperparameters=larger_invalid)
-    with pytest.raises(ValueError, match="Default parameters for components"):
-        automl.search()
-
 '''
 TURN THIS INTO A MASSIVE GRID TEST
 TURN THIS INTO A MASSIVE GRID TEST
@@ -2226,8 +2196,10 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
-              "Logistic Regression Classifier": {"C": 20, "penalty": 'none'},
-              "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2}}
+              "Logistic Regression Classifier": {"C": 20,
+                                                 "penalty": 'none'},
+              "Elastic Net Classifier": {"alpha": 0.75,
+                                         "l1_ratio": 0.2}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
@@ -2439,7 +2411,7 @@ def test_pipelines_true_true_false(X_y_binary):
     component_graph = ['Imputer', 'Random Forest Classifier']
     parameters = {
         "Imputer": {'numeric_impute_strategy': 'most_frequent'},
-        "Random Forest Classifier": {'n_estimators': 200,
+        "Random Forest Classifier": {'n_estimators': 222,
                                      "max_depth": 11}
     }
     pipeine_parameters = {
@@ -2448,7 +2420,7 @@ def test_pipelines_true_true_false(X_y_binary):
 
     pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
 
-    automl = AutoMLSearch(X, y, problem_type="binary", pipeline_parameters=pipeine_parameters,
+    automl = AutoMLSearch(X, y, problem_type="binary",
                           max_batches=3, allowed_pipelines=[pipeline_])
     automl.search()
 
@@ -2930,9 +2902,10 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_batches=2)
     automl.search()
     for pipeline in automl.allowed_pipelines:
+        print(pipeline.parameters)
         assert pipeline.get_component('Drop Columns Transformer')
-        assert 'Drop Columns Transformer' in pipeline.hyperparameters
-        assert pipeline.hyperparameters['Drop Columns Transformer'] == {}
+        assert 'Drop Columns Transformer' in pipeline.parameters
+        assert pipeline.parameters['Drop Columns Transformer'] == {'columns': ['index_col']}
 
     all_drop_column_params = []
     for _, row in automl.full_rankings.iterrows():

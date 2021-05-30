@@ -215,6 +215,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             if 'number_features' in init_params:
                 component_parameters['number_features'] = self.number_features
             if name in self._pipeline_params and name == 'Drop Columns Transformer' and self._batch_number > 0:
+                print(f"iterativealgorithm - _transform_parameters - Drop Columns Transformer: {self._pipeline_params[name]}")
                 component_parameters['columns'] = self._pipeline_params[name]['columns']
             if 'pipeline' in self._pipeline_params:
                 print(f"iterativealgorithm - _transform_parameters - self._pipeline_params end: {self._pipeline_params}")
