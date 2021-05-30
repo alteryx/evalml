@@ -1799,36 +1799,38 @@ TURN THIS INTO A MASSIVE GRID TEST
 TURN THIS INTO A MASSIVE GRID TEST
 
 '''
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
+@patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.6})
+@patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
 def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_fit, mock_score, X_y_multi):
     X, y = X_y_multi
+
     custom_hyperparameters = {
         "Imputer": {
-            "numeric_impute_strategy": ["mean"]
-        }
-    }
-    larger_custom = {
-        "Imputer": {
-            "numeric_impute_strategy": ["most_frequent", "mean"]
+            "numeric_impute_strategy": Categorical(["mean"])
         },
         "Extra Trees Classifier": {
-            "max_depth": [4, 5, 6, 7],
-            "max_features": ["auto", "log2"]
+            "max_depth": Integer(4, 7),
+            "max_features": Categorical(["auto", "log2"])
         }
     }
+
     estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass', None) for estimator in estimators]
+    pipelines = [make_pipeline(X, y, estimator, 'multiclass') for estimator in estimators]
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines, custom_hyperparameters=custom_hyperparameters)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines,
+                          custom_hyperparameters=custom_hyperparameters, max_batches=4)
     automl.search()
-    assert automl.best_pipeline.parameters['Imputer']['numeric_impute_strategy'] == "mean"
 
-    invalid_pipelines = [make_pipeline(X, y, estimator, 'multiclass', None) for estimator in estimators]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', max_batches=2, allowed_pipelines=invalid_pipelines, custom_hyperparameters=larger_custom)
-    automl.search()
-    for params in automl.full_rankings['parameters'].values[:-1]:
-        assert params['Imputer']['numeric_impute_strategy'] in larger_custom['Imputer']['numeric_impute_strategy']
+    pp(automl.full_rankings)
+    for pipe in automl.full_rankings.parameters:
+        pp(pipe)
+
+    for i, row in automl.full_rankings.iterrows():
+        if "Mode Baseline Multiclass" in row['pipeline_name']:
+            continue
+        assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in custom_hyperparameters['Imputer']['numeric_impute_strategy']
+        assert 4 <= row["parameters"]["Extra Trees Classifier"]["max_depth"] <= 7
+        assert row["parameters"]["Extra Trees Classifier"]["max_features"] in custom_hyperparameters["Extra Trees Classifier"]["max_features"]
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.6})
