@@ -2196,8 +2196,8 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
     mock_score.return_value = {'Log Loss Binary': 1.0}
     X, y = X_y_binary
     params = {"Imputer": {"numeric_impute_strategy": "most_frequent"},
-              "Logistic Regression Classifier": {"C": 20,
-                                                 "penalty": 'none'},
+              "Logistic Regression Classifier": {"C": 10,
+                                                 "penalty": 'l2'},
               "Elastic Net Classifier": {"alpha": 0.75,
                                          "l1_ratio": 0.2}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", pipeline_parameters=params, n_jobs=1)
@@ -2206,22 +2206,22 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
         if 'Imputer' in row['parameters']:
             assert row['parameters']['Imputer']['numeric_impute_strategy'] == 'most_frequent'
         if 'Logistic Regression Classifier' in row['parameters']:
-            assert row['parameters']['Logistic Regression Classifier']['C'] == 20
-            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'none'
+            assert row['parameters']['Logistic Regression Classifier']['C'] == 10
+            assert row['parameters']['Logistic Regression Classifier']['penalty'] == 'l2'
         if 'Elastic Net Classifier' in row['parameters']:
             assert row['parameters']['Elastic Net Classifier']['alpha'] == 0.75
             assert row['parameters']['Elastic Net Classifier']['l1_ratio'] == 0.2
 
 
-'''@patch('evalml.pipelines.RegressionPipeline.fit')
+@patch('evalml.pipelines.RegressionPipeline.fit')
 @patch('evalml.pipelines.RegressionPipeline.score')
 def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
     mock_score.return_value = {'R2': 1.0}
     X, y = X_y_regression
-    params = {'Imputer': {'numeric_impute_strategy': Categorical(['median', 'most_frequent'])},
+    hyperparams = {'Imputer': {'numeric_impute_strategy': Categorical(['median', 'most_frequent'])},
               'Decision Tree Regressor': {'max_depth': Categorical([17, 18, 19]), 'max_features': Categorical(['auto'])},
               'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": Categorical((0.01, 0.02, 0.03))}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', pipeline_parameters=params, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', custom_hyperparameters=hyperparams, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
         if 'Imputer' in row['parameters']:
@@ -2231,7 +2231,7 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
             assert row['parameters']['Decision Tree Regressor']['max_features'] == 'auto'
         if 'Elastic Net Regressor' in row['parameters']:
             assert 0 < row['parameters']['Elastic Net Regressor']['alpha'] < 0.5
-            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)'''
+            assert row['parameters']['Elastic Net Regressor']['l1_ratio'] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
@@ -2329,7 +2329,7 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(mock_sco
     automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_one, pipeline_two, pipeline_three],
                           pipeline_parameters={"Imputer": {"numeric_impute_strategy": "most_frequent"}},
                           custom_hyperparameters={"One Hot Encoder": {"top_n": Categorical([12, 10])},
-                                                  "Imputer": {"numeric_impute_strategy": Categorical(["median"])}},
+                                                  "Imputer": {"numeric_impute_strategy": Categorical(["median", "most_frequent"])}},
                           max_batches=4)
     automl.search()
     from pprint import pp
@@ -2340,9 +2340,8 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(mock_sco
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row['pipeline_name']:
             continue
-        assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "most_frequent"
-    assert any(row['parameters']["One Hot Encoder"]["top_n"] == 12 for _, row in automl.full_rankings.iterrows() if row["pipeline_name"] == "Pipe Line Two")
-    assert any(row['parameters']["One Hot Encoder"]["top_n"] == 5 for _, row in automl.full_rankings.iterrows() if row["pipeline_name"] == "Pipe Line One")
+        assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in ["most_frequent", "median"]
+        assert 10 <= row['parameters']["One Hot Encoder"]["top_n"] <= 12
 
 
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score')
@@ -2361,198 +2360,6 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
         if 'Decision Tree Classifier' in row['parameters']:
             assert 0.1 < row['parameters']['Decision Tree Classifier']['ccp_alpha'] < 0.5
             assert row['parameters']['Decision Tree Classifier']['max_depth'] == 1
-
-
-#@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-#@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipelines_true_true_true(X_y_binary):
-    '''
-        The numeric_impute_strategy: most_frequent parameter of Imputer won't be found in the hyperparameter ranges.
-        The tuner will look for most_frequent but only find mean.
-        Solution is to ignore conflicting hyperparameters
-    '''
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    parameters = {
-        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
-        "Random Forest Classifier": {'n_estimators': 200,
-                                     "max_depth": 11}
-    }
-    custom_hyperparameters = {
-        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
-    }
-    pipeine_parameters = {
-        "Random Forest Classifier": {'n_estimators': 222}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                                    max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeine_parameters,
-                                    custom_hyperparameters=custom_hyperparameters)
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-
-def test_pipelines_true_true_false(X_y_binary):
-    '''
-        The parameters passed in pipeline_parameters are set for the first iteration but the remaining default
-        to the parameter in the estimator, here from 222 to 100.
-        The problem is that
-        Solution
-    '''
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    parameters = {
-        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
-        "Random Forest Classifier": {'n_estimators': 222,
-                                     "max_depth": 11}
-    }
-    pipeine_parameters = {
-        "Random Forest Classifier": {'n_estimators': 222}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_])
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-def test_pipelines_true_false_true(X_y_binary):
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    parameters = {
-        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
-        "Random Forest Classifier": {'n_estimators': 200,
-                                     "max_depth": 11}
-    }
-    custom_hyperparameters = {
-        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
-
-    automl = AutoMLSearch(X, y, problem_type="binary", custom_hyperparameters=custom_hyperparameters,
-                          max_batches=3, allowed_pipelines=[pipeline_])
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-def test_pipelines_true_false_false(X_y_binary):
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    parameters = {
-        "Imputer": {'numeric_impute_strategy': 'most_frequent'},
-        "Random Forest Classifier": {'n_estimators': 200,
-                                     "max_depth": 11}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph, parameters=parameters)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_])
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-def test_pipelines_false_true_true(X_y_binary):
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    custom_hyperparameters = {
-        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
-    }
-    pipeline_parameters = {
-        "Random Forest Classifier": {'n_estimators': 222}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeline_parameters,
-                          custom_hyperparameters=custom_hyperparameters)
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-def test_pipelines_false_true_false(mock_fit, mock_score, X_y_binary):
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    pipeline_parameters = {
-        "Random Forest Classifier": {'n_estimators': 222}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_], pipeline_parameters=pipeline_parameters)
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-def test_pipelines_false_false_true(X_y_binary):
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-    custom_hyperparameters = {
-        "Random Forest Classifier": {"max_depth": Integer(11, 12)}
-    }
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_],
-                          custom_hyperparameters=custom_hyperparameters)
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
-
-def test_pipelines_false_false_false(X_y_binary):
-    X, y = X_y_binary
-
-    component_graph = ['Imputer', 'Random Forest Classifier']
-
-    pipeline_ = BinaryClassificationPipeline(component_graph=component_graph)
-
-    automl = AutoMLSearch(X, y, problem_type="binary",
-                          max_batches=3, allowed_pipelines=[pipeline_])
-    automl.search()
-
-    print(automl.full_rankings)
-    for pipeline in automl.full_rankings.parameters:
-        pp(pipeline)
-
 
 
 @pytest.mark.parametrize("random_seed", [0, 1, 9])
