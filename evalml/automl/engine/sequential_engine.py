@@ -43,7 +43,6 @@ class SequentialEngine(EngineBase):
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y):
         logger = self.setup_job_log()
-        print(f"sequentialengine - submit_evaluation_job - pipeline: {pipeline}")
         return SequentialComputation(work=evaluate_pipeline,
                                      pipeline=pipeline,
                                      automl_config=automl_config, X=X,

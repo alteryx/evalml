@@ -1786,6 +1786,7 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_
                                                                            automl_parameters, pipelines, pipeline_parameters,
                                                                            X_y_multi):
     X, y = X_y_multi
+    X = pd.DataFrame(X, columns=[f'Column_{i}' for i in range(20)])
 
     pipeline_parameters_ = None
     pipeline_ = None
@@ -1794,17 +1795,19 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_
 
     if pipeline_parameters:
         pipeline_parameters_ = {
+            "Drop Columns Transformer": {'columns': ['Column_0', 'Column_1', 'Column_2']},
             "Imputer": {'numeric_impute_strategy': 'most_frequent'},
             "Random Forest Classifier": {'n_estimators': 200,
                                          "max_depth": 11}
         }
 
     if pipelines:
-        component_graph_ = ['Imputer', 'Random Forest Classifier']
+        component_graph_ = ['Drop Columns Transformer', 'Imputer', 'Random Forest Classifier']
         pipeline_ = [MulticlassClassificationPipeline(component_graph=component_graph_, parameters=pipeline_parameters_)]
 
     if automl_parameters:
         automl_parameters_ = {
+            "Drop Columns Transformer": {'columns': ['Column_0', 'Column_1', 'Column_2']},
             "Random Forest Classifier": {'n_estimators': 201}
         }
     if custom_hyperparameters:
@@ -1824,6 +1827,10 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_
 
     for i, row in automl.full_rankings.iterrows():
         if "Random Forest Classifier" in row['pipeline_name']:
+            if pipelines and automl_parameters:
+                assert row["parameters"]["Drop Columns Transformer"]["columns"] == ['Column_0', 'Column_1', 'Column_2']
+            elif pipeline_parameters:
+                assert row["parameters"]["Drop Columns Transformer"]["columns"] is None
             if custom_hyperparameters_:
                 assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in custom_hyperparameters_['Imputer']['numeric_impute_strategy']
                 assert 4 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 7
