@@ -1777,60 +1777,62 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     assert "Default parameters for components" not in str(error.value)
 
 
-'''
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-TURN THIS INTO A MASSIVE GRID TEST
-
-'''
+@pytest.mark.parametrize("pipelines,pipeline_parameters", [(True, False), (True, True), (False, False)])
+@pytest.mark.parametrize("automl_parameters", [True, False])
+@pytest.mark.parametrize("custom_hyperparameters", [True, False])
 @patch('evalml.pipelines.MulticlassClassificationPipeline.score', return_value={"Log Loss Multiclass": 0.6})
 @patch('evalml.pipelines.MulticlassClassificationPipeline.fit')
-def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_fit, mock_score, X_y_multi):
+def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_fit, mock_score, custom_hyperparameters,
+                                                                           automl_parameters, pipelines, pipeline_parameters,
+                                                                           X_y_multi):
     X, y = X_y_multi
 
-    custom_hyperparameters = {
-        "Imputer": {
-            "numeric_impute_strategy": Categorical(["mean"])
-        },
-        "Extra Trees Classifier": {
-            "max_depth": Integer(4, 7),
-            "max_features": Categorical(["auto", "log2"])
+    pipeline_parameters_ = None
+    pipeline_ = None
+    automl_parameters_ = None
+    custom_hyperparameters_ = None
+
+    if pipeline_parameters:
+        pipeline_parameters_ = {
+            "Imputer": {'numeric_impute_strategy': 'most_frequent'},
+            "Random Forest Classifier": {'n_estimators': 200,
+                                         "max_depth": 11}
         }
-    }
 
-    estimators = get_estimators('multiclass', [ModelFamily.EXTRA_TREES])
-    pipelines = [make_pipeline(X, y, estimator, 'multiclass') for estimator in estimators]
+    if pipelines:
+        component_graph_ = ['Imputer', 'Random Forest Classifier']
+        pipeline_ = [MulticlassClassificationPipeline(component_graph=component_graph_, parameters=pipeline_parameters_)]
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipelines,
-                          custom_hyperparameters=custom_hyperparameters, max_batches=4)
+    if automl_parameters:
+        automl_parameters_ = {
+            "Random Forest Classifier": {'n_estimators': 201}
+        }
+    if custom_hyperparameters:
+        custom_hyperparameters_ = {
+            "Imputer": {
+                "numeric_impute_strategy": Categorical(["mean"])
+            },
+            "Random Forest Classifier": {
+                "max_depth": Integer(4, 7),
+                'n_estimators': Integer(190, 210)
+            }
+        }
+
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', allowed_pipelines=pipeline_,
+                          pipeline_parameters=automl_parameters_, custom_hyperparameters=custom_hyperparameters_, max_batches=4)
     automl.search()
 
-    pp(automl.full_rankings)
-    for pipe in automl.full_rankings.parameters:
-        pp(pipe)
-
     for i, row in automl.full_rankings.iterrows():
-        if "Mode Baseline Multiclass" in row['pipeline_name']:
-            continue
-        assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in custom_hyperparameters['Imputer']['numeric_impute_strategy']
-        assert 4 <= row["parameters"]["Extra Trees Classifier"]["max_depth"] <= 7
-        assert row["parameters"]["Extra Trees Classifier"]["max_features"] in custom_hyperparameters["Extra Trees Classifier"]["max_features"]
+        if "Random Forest Classifier" in row['pipeline_name']:
+            if custom_hyperparameters_:
+                assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in custom_hyperparameters_['Imputer']['numeric_impute_strategy']
+                assert 4 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 7
+                assert 190 <= row["parameters"]["Random Forest Classifier"]["n_estimators"] <= 210
+            else:
+                assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in ["mean", "median", "most_frequent"]
+                assert 1 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 10
+                assert 10 <= row["parameters"]["Random Forest Classifier"]["n_estimators"] <= 1000
+
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.6})
