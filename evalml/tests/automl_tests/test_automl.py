@@ -2336,11 +2336,7 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(mock_sco
                                                   "Imputer": {"numeric_impute_strategy": Categorical(["median", "most_frequent"])}},
                           max_batches=4)
     automl.search()
-    from pprint import pp
-    print(automl.full_rankings)
-    for pipe in automl.full_rankings.parameters:
-        pp(pipe)
-    expected_top_n = {"Pipe Line One": {5, 10}, "Pipe Line Two": {12, 10}, "Pipe Line Three": {10}}
+
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row['pipeline_name']:
             continue

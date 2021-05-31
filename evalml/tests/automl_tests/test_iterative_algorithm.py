@@ -273,7 +273,7 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(n_jobs, linear_r
     assert seen_ensemble
 
 
-@pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Integer(2, 4)])
+@pytest.mark.parametrize("parameters", [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Integer(2, 4), Real(2, 6)])
 def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
     algo = IterativeAlgorithm(allowed_pipelines=dummy_binary_pipeline_classes,
@@ -282,7 +282,7 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
                                                'Mock Classifier': {'dummy_parameter': parameters}})
 
     parameter = parameters
-    if isinstance(parameter, (Categorical, Integer)):
+    if isinstance(parameter, (Categorical, Integer, Real)):
         with pytest.raises(ValueError, match="Pipeline parameters should not contain skopt.Space variables"):
             algo.next_batch()
     else:
@@ -294,14 +294,10 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
-        # make sure that future batches remain in the hyperparam range
+        # make sure that future batches have the same parameter value
         for i in range(1, 5):
             next_batch = algo.next_batch()
-            for p in next_batch:
-                if isinstance(parameters, Categorical):
-                    assert p.parameters['Mock Classifier']['dummy_parameter'] in parameters
-                else:
-                    assert p.parameters['Mock Classifier']['dummy_parameter'] == parameter
+            assert all([p.parameters['Mock Classifier']['dummy_parameter'] == parameter for p in next_batch])
 
 
 @pytest.mark.parametrize("parameters,hyperparameters", [(1, Categorical([1, 3, 4])), (3, Integer(2, 4))])
@@ -324,8 +320,7 @@ def test_iterative_algorithm_custom_hyperparameters(parameters, hyperparameters,
     # make sure that future batches remain in the hyperparam range
     for i in range(1, 5):
         next_batch = algo.next_batch()
-        for p in next_batch:
-            assert p.parameters['Mock Classifier']['dummy_parameter'] in hyperparameters
+        assert all([p.parameters['Mock Classifier']['dummy_parameter'] in hyperparameters for p in next_batch])
 
 
 def test_iterative_algorithm_frozen_parameters():

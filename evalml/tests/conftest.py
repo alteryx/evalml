@@ -44,7 +44,7 @@ def create_mock_pipeline(estimator, problem_type):
             component_graph = [estimator]
 
             def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
         return MockBinaryPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.MULTICLASS:
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
@@ -52,7 +52,7 @@ def create_mock_pipeline(estimator, problem_type):
             component_graph = [estimator]
 
             def __init__(self, parameters, random_seed=0):
-                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+                super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
         return MockMulticlassPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.REGRESSION:

@@ -3,16 +3,20 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
+from skopt.space import Categorical, Integer
 
+from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
+    get_hyperparameter_ranges,
     make_data_splitter,
     tune_binary_threshold
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit
@@ -207,3 +211,22 @@ def test_get_best_sampler_for_data_sampler_method(categorical_columns, sampler_m
             assert name_output == 'SMOTENC Oversampler'
         else:
             assert name_output == 'SMOTEN Oversampler'
+
+
+def test_get_hyperparameter_ranges():
+    pipeline_ = BinaryClassificationPipeline(component_graph=["Imputer", "Random Forest Classifier"])
+    custom_hyperparameters_ = {
+        "Imputer": {
+            "numeric_impute_strategy": Categorical(["most_frequent", "mean"])
+        },
+        "Random Forest Classifier": {
+            "n_estimators": Integer(150, 160)
+        }
+    }
+    algo = IterativeAlgorithm(allowed_pipelines=[pipeline_],
+                              random_seed=0,
+                              custom_hyperparameters=custom_hyperparameters_)
+    algo_ranges = algo._tuners['Random Forest Classifier w/ Imputer']._pipeline_hyperparameter_ranges
+    hyper_ranges = get_hyperparameter_ranges(pipeline_.component_graph, custom_hyperparameters_)
+
+    assert algo_ranges == hyper_ranges

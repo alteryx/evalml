@@ -104,8 +104,6 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective):
     Returns:
         pipeline (PipelineBase): trained pipeline.
     """
-    print(f"engine_base - train_pipeline - pipeline: {pipeline}")
-    print(f"engine_base - train_pipeline - pipeline parameters: {pipeline.parameters}")
     X_threshold_tuning = None
     y_threshold_tuning = None
     if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
@@ -131,8 +129,6 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
             Second - The pipeline class we trained and scored. Third - the job logger instance with all the recorded messages.
     """
-    print(f"engine_base - train_and_score_pipeline - pipeline: {pipeline}")
-    print(f"engine_base - train_and_score_pipeline - pipeline parameters: {pipeline.parameters}")
     start = time.time()
     cv_data = []
     logger.info("\tStarting cross validation")

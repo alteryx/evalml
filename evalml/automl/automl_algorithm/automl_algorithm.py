@@ -25,6 +25,7 @@ class AutoMLAlgorithm(ABC):
 
         Arguments:
             allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
+            custom_hyperparameters (dict): Custom hyperparameter ranges specified for pipelines to iterate over.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -35,16 +36,11 @@ class AutoMLAlgorithm(ABC):
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         for pipeline in self.allowed_pipelines:
-            print(f"AutoMLAlgorithm - init - pipeline: {pipeline}")
-            print(f"AutoMLAlgorithm - init - pipeline.parameters: {pipeline.parameters}")
             pipeline_hyperparameters = get_hyperparameter_ranges(pipeline.component_graph, custom_hyperparameters)
-            print(f"AutoMLAlgorithm - init - pipeline.pipeline_hyperparameters: {pipeline_hyperparameters}")
             if custom_hyperparameters:
                 for comp_name in custom_hyperparameters.keys():
                     if comp_name in pipeline.parameters.keys():
-                        print(f"AutoMLAlgorithm - init - hyperparameter in pipeline: {comp_name} - {custom_hyperparameters[comp_name]}")
                         pipeline_hyperparameters[comp_name].update(custom_hyperparameters[comp_name])
-            print(f"AutoMLAlgorithm - init - pipeline_hyperparameters: {pipeline_hyperparameters}")
             self._tuners[pipeline.name] = self._tuner_class(pipeline_hyperparameters, random_seed=self.random_seed)
         self._pipeline_number = 0
         self._batch_number = 0
@@ -67,8 +63,6 @@ class AutoMLAlgorithm(ABC):
         """
         if pipeline.name not in self._tuners:
             raise PipelineNotFoundError(f"No such pipeline allowed in this AutoML search: {pipeline.name}")
-        print(f"automlalgorithm - add_result - pipeline: {pipeline}")
-        print(f"automlalgorithm - add_result - pipeline parameters: {pipeline.parameters}")
         self._tuners[pipeline.name].add(pipeline.parameters, score_to_minimize)
 
     @property

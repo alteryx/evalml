@@ -36,21 +36,14 @@ class Tuner(ABC):
                 self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
                 self._search_space_names.append(flat_parameter_name)
                 self._search_space_ranges.append(parameter_range)
-        print(f"Tuner - __init__ - self._parameter_names_map: {self._parameter_names_map}")
-        print(f"Tuner - __init__ - self._search_space_names: {self._search_space_names}")
-        print(f"Tuner - __init__ - self.self._search_space_ranges: {self._search_space_ranges}")
 
     def _convert_to_flat_parameters(self, pipeline_parameters):
         """Convert from pipeline parameters to a flat list of values"""
         flat_parameter_values = []
-        print(f"tuner - _convert_to_flat_parameters - self._search_space_names: {self._search_space_names}")
         for flat_parameter_name in self._search_space_names:
-            print(f"tuner - _convert_to_flat_parameters - flat_parameter_name: {flat_parameter_name}")
-            print(f"tuner - _convert_to_flat_parameters - self._parameter_names_map[flat_parameter_name]: {self._parameter_names_map[flat_parameter_name]}")
             component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
             if component_name not in pipeline_parameters or parameter_name not in pipeline_parameters[component_name]:
                 raise TypeError('Pipeline parameters missing required field "{}" for component "{}"'.format(parameter_name, component_name))
-            print(f"tuner - _convert_to_flat_parameters - adding value to flat parameters: {component_name} - {parameter_name} - {pipeline_parameters[component_name][parameter_name]}")
             flat_parameter_values.append(pipeline_parameters[component_name][parameter_name])
         return flat_parameter_values
 

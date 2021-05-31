@@ -155,17 +155,22 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
             return 'Undersampler'
 
 
-def get_hyperparameter_ranges(linearized_component_graph, custom_hyperparameters):
-    """Returns hyperparameter ranges from all components as a dictionary"""
-    linearized_component_graph = ComponentGraph.linearized_component_graph(linearized_component_graph)
+def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
+    """
+    Returns hyperparameter ranges from all components as a dictionary.
+
+    Arguments:
+        component_graph (list): The component_graph of the pipeline.
+        custom_hyperparameters (dict): The custom hyperparameters to be passed to the pipeline.
+
+    Returns:
+        dict: Dictionary of hyperparameter ranges for each component in the component graph.
+    """
+    linearized_component_graph = ComponentGraph.linearized_component_graph(component_graph)
     hyperparameter_ranges = dict()
-    print(f"utils - get_hyperparameter_ranges - linearized_component_graph: {linearized_component_graph}")
-    print(f"utils - get_hyperparameter_ranges - custom_hyperparameters: {custom_hyperparameters}")
     for component_name, component_class in linearized_component_graph:
         component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-        print(f"utils - get_hyperparameter_ranges - component_hyperparameters: {component_name} - {component_hyperparameters}")
         if custom_hyperparameters and component_name in custom_hyperparameters:
             component_hyperparameters.update(custom_hyperparameters.get(component_name, {}))
         hyperparameter_ranges[component_name] = component_hyperparameters
-    print(f"utils - get_hyperparameter_ranges - hyperparameter_ranges: {hyperparameter_ranges}")
     return hyperparameter_ranges

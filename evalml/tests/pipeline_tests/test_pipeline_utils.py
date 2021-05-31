@@ -38,44 +38,6 @@ from evalml.pipelines.utils import (
 from evalml.problem_types import ProblemTypes, is_time_series
 
 
-def test_make_pipeline_error():
-    X = pd.DataFrame([[0, 1], [1, 0]])
-    y = pd.Series([1, 0])
-    estimators = get_estimators(problem_type="binary")
-    custom_hyperparameters = [{"Imputer": {"numeric_imput_strategy": ["median"]}}, {"One Hot Encoder": {"value1": ["value2"]}}]
-
-    for estimator in estimators:
-        with pytest.raises(ValueError, match="if custom_hyperparameters provided, must be dictionary"):
-            make_pipeline(X, y, estimator, "binary", {}, custom_hyperparameters)
-
-
-@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION,
-                                          ProblemTypes.TIME_SERIES_REGRESSION])
-def test_make_pipeline_custom_hyperparameters(problem_type):
-    X = pd.DataFrame({"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
-                      "categorical": ["a", "b", "a", "c", "c"],
-                      "some dates": pd.date_range('2000-02-03', periods=5, freq='W')})
-    custom_hyperparameters = {'Imputer': {
-        'numeric_impute_strategy': ['median']
-    }}
-
-    y = pd.Series([0, 0, 1, 0, 0])
-    estimators = get_estimators(problem_type=problem_type)
-
-    for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {"pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
-                              "Time Series Baseline Estimator": {"date_index": "some dates", "gap": 1, "max_delay": 1}}
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters, custom_hyperparameters)
-            assert pipeline.custom_hyperparameters == custom_hyperparameters
-
-            pipeline2 = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert not pipeline2.custom_hyperparameters
-
-
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
@@ -101,7 +63,6 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
                 delayed_features = [DelayedFeatureTransformer]
@@ -137,7 +98,6 @@ def test_make_pipeline(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -178,7 +138,6 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -219,7 +178,6 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -257,7 +215,6 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -298,7 +255,6 @@ def test_make_pipeline_text_columns(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -338,7 +294,6 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -375,7 +330,6 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -444,7 +398,6 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -649,17 +602,12 @@ def test_generate_code_pipeline_json_with_objects():
 
 
 def test_generate_code_pipeline():
-    custom_hyperparameters = {
-        "Imputer": {
-            "numeric_impute_strategy": 'most_frequent'
-        }
-    }
 
-    binary_pipeline = BinaryClassificationPipeline(['Imputer', 'Random Forest Classifier'], custom_hyperparameters=custom_hyperparameters)
+    binary_pipeline = BinaryClassificationPipeline(['Imputer', 'Random Forest Classifier'])
     expected_code = "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
         "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'Random Forest Classifier'], " \
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
-        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_hyperparameters={'Imputer':{'numeric_impute_strategy': 'most_frequent'}}, random_seed=0)"
+        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
     pipeline = generate_pipeline_code(binary_pipeline)
     assert expected_code == pipeline
 

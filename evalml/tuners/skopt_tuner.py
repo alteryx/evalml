@@ -34,12 +34,10 @@ class SKOptTuner(Tuner):
         Returns:
             None
         """
-        print(f'SKOptTuner - add - pipeline parameters: {pipeline_parameters}')
         # skip adding nan scores
         if pd.isnull(score):
             return
         flat_parameter_values = self._convert_to_flat_parameters(pipeline_parameters)
-        print(f'SKOptTuner - add - flat_parameter_values: {flat_parameter_values}')
         try:
             self.opt.tell(flat_parameter_values, score)
         except Exception as e:
