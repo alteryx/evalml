@@ -42,7 +42,7 @@ def make_test_pipeline(estimator, base_class):
         custom_name = estimator.name
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, custom_hyperparameters=None, random_seed=random_seed)
+            super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
 
     return Pipeline
 
