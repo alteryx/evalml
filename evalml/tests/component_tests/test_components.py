@@ -189,11 +189,11 @@ def test_describe_component():
     assert us.describe(return_dict=True) == {'name': 'Undersampler', 'parameters': {"sampling_ratio": 0.25, "sampling_ratio_dict": None, "min_samples": 100, "min_percentage": 0.1}}
     try:
         smote = SMOTESampler()
-        assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
+        assert smote.describe(return_dict=True) == {'name': 'SMOTE Oversampler', 'parameters': {'sampling_ratio': 0.25, "sampling_ratio_dict": None, 'k_neighbors': 5, 'n_jobs': -1}}
         smote = SMOTENCSampler()
-        assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
+        assert smote.describe(return_dict=True) == {'name': 'SMOTENC Oversampler', 'parameters': {'sampling_ratio': 0.25, "sampling_ratio_dict": None, 'k_neighbors': 5, 'n_jobs': -1}}
         smote = SMOTENSampler()
-        assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_ratio': 0.25, 'k_neighbors': 5, 'n_jobs': -1}}
+        assert smote.describe(return_dict=True) == {'name': 'SMOTEN Oversampler', 'parameters': {'sampling_ratio': 0.25, "sampling_ratio_dict": None, 'k_neighbors': 5, 'n_jobs': -1}}
     except ImportError:
         pass
     # testing estimators
