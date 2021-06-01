@@ -233,7 +233,7 @@ class AutoMLSearch:
                 Either 'auto', which will use our preferred sampler for the data, 'Undersampler', 'Oversampler', or None. Defaults to 'auto'.
 
             sampler_balanced_ratio (float): The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value,
-                then we will not add a sampler since the data is then considered balanced. Defaults to 0.25.
+                then we will not add a sampler since the data is then considered balanced. Overrides the `sampler_ratio` of the samplers. Defaults to 0.25.
 
             _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
                 Must be between 0 and 1, exclusive. Defaults to 0.2
@@ -432,9 +432,17 @@ class AutoMLSearch:
                     self.sampler_method,
                     self.sampler_balanced_ratio,
                 )
-            self._frozen_pipeline_parameters[self._sampler_name] = {
-                "sampling_ratio": self.sampler_balanced_ratio
-            }
+            if self._sampler_name not in parameters:
+                parameters[self._sampler_name] = {
+                    "sampling_ratio": self.sampler_balanced_ratio
+                }
+            else:
+                parameters[self._sampler_name].update(
+                    {"sampling_ratio": self.sampler_balanced_ratio}
+                )
+            self._frozen_pipeline_parameters[self._sampler_name] = parameters[
+                self._sampler_name
+            ]
 
         if self.allowed_pipelines is None:
             logger.info("Generating pipelines to search over...")

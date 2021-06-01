@@ -14,7 +14,12 @@ im = pytest.importorskip(
 
 @pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
 def test_init(sampler):
-    parameters = {"sampling_ratio": 0.5, "k_neighbors": 2, "n_jobs": -1}
+    parameters = {
+        "sampling_ratio": 0.5,
+        "k_neighbors": 2,
+        "n_jobs": -1,
+        "sampling_ratio_dict": None,
+    }
     oversampler = sampler(**parameters)
     assert oversampler.parameters == parameters
 
@@ -262,3 +267,73 @@ def test_smotenc_output_shape(X_y_binary):
 
         X_out, y_out = snc.fit_transform(X_ww, y)
         assert X_out.shape[1] == X_ww.shape[1]
+
+
+@pytest.mark.parametrize(
+    "sampling_ratio_dict,expected_dict_values",
+    [
+        ({0: 0.5, 1: 1}, {0: 425, 1: 850}),
+        ({0: 0.1, 1: 1}, {0: 150, 1: 850}),
+        ({0: 1, 1: 1}, {0: 850, 1: 850}),
+        ({0: 0.5, 1: 0.1}, {0: 425, 1: 850}),
+    ],
+)
+@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+def test_oversampler_sampling_dict(
+    oversampler, sampling_ratio_dict, expected_dict_values
+):
+    X = np.array(
+        [
+            [i for i in range(1000)],
+            [i % 7 for i in range(1000)],
+            [0.3 * (i % 3) for i in range(1000)],
+        ]
+    ).T
+    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
+    y = np.array([0] * 150 + [1] * 850)
+    overs = oversampler(sampling_ratio_dict=sampling_ratio_dict, random_seed=12)
+    new_X, new_y = overs.fit_transform(X_ww, y)
+
+    assert len(new_X) == sum(expected_dict_values.values())
+    assert new_y.value_counts().to_dict() == expected_dict_values
+    assert overs.random_seed == 12
+
+
+@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+def test_oversampler_dictionary_overrides_ratio(oversampler):
+    X = np.array(
+        [
+            [i for i in range(1000)],
+            [i % 7 for i in range(1000)],
+            [0.3 * (i % 3) for i in range(1000)],
+        ]
+    ).T
+    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
+    y = np.array([0] * 150 + [1] * 850)
+    dictionary = {0: 0.5, 1: 1}
+    expected_result = {0: 425, 1: 850}
+    overs = oversampler(sampling_ratio=0.1, sampling_ratio_dict=dictionary)
+    new_X, new_y = overs.fit_transform(X_ww, y)
+
+    assert len(new_X) == sum(expected_result.values())
+    assert new_y.value_counts().to_dict() == expected_result
+
+
+@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+def test_oversampler_sampling_dict_strings(oversampler):
+    X = np.array(
+        [
+            [i for i in range(1000)],
+            [i % 7 for i in range(1000)],
+            [0.3 * (i % 3) for i in range(1000)],
+        ]
+    ).T
+    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
+    y = np.array(["minority"] * 150 + ["majority"] * 850)
+    dictionary = {"minority": 0.5, "majority": 1}
+    expected_result = {"minority": 425, "majority": 850}
+    overs = oversampler(sampling_ratio_dict=dictionary)
+    new_X, new_y = overs.fit_transform(X_ww, y)
+
+    assert len(new_X) == sum(expected_result.values())
+    assert new_y.value_counts().to_dict() == expected_result
