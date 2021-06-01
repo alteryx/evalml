@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-from sklearn.utils import Bunch
 
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import is_classification
@@ -31,7 +30,9 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
         raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
 
     if pipeline._supports_fast_permutation_importance:
+        precomputed_features = pipeline.compute_estimator_features(X, y)
         perm_importance = _fast_permutation_importance(pipeline, X, y, objective,
+                                                       precomputed_features,
                                                        n_repeats=n_repeats,
                                                        n_jobs=n_jobs,
                                                        random_seed=random_seed)
@@ -71,38 +72,45 @@ def calculate_permutation_importance_one_column(pipeline, X, y, col_name, object
     objective = get_objective(objective, return_instance=True)
 
     if fast:
+        if not pipeline._supports_fast_permutation_importance:
+            raise ValueError("Pipeline does not support fast permutation importance calculation")
         if precomputed_features is None:
             raise ValueError("Fast method of calculating permutation importance requires precomputed_features")
-        if is_classification(pipeline.problem_type):
-            y = pipeline._encode_targets(y)
-        baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
-        scores = _calculate_permutation_scores_fast(
-            pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
-        )
+        permutation_importance = _fast_permutation_importance(pipeline, X, y, objective,
+                                                              precomputed_features,
+                                                              col_name=col_name,
+                                                              n_repeats=n_repeats,
+                                                              random_seed=random_seed)
     else:
-        baseline_score = _slow_scorer(pipeline, X, y, objective)
-        scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, objective, _slow_scorer, n_repeats, random_seed)
-    importances = baseline_score - np.array(scores)
-    return np.mean(importances)
+        permutation_importance = _slow_permutation_importance(pipeline, X, y, objective,
+                                                              col_name=col_name,
+                                                              n_repeats=n_repeats,
+                                                              random_seed=random_seed)
+    return permutation_importance["importances_mean"]
 
 
-def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
+def _fast_permutation_importance(pipeline, X, y, objective, precomputed_features, col_name=None, n_repeats=5, n_jobs=None, random_seed=None):
     """Calculate permutation importance faster by only computing the estimator features once.
 
     Only used for pipelines that support this optimization.
     """
-    precomputed_features = pipeline.compute_estimator_features(X, y)
-
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
 
     baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
-    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
-        pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
-    ) for col_name in X.columns)
-
+    if col_name is None:
+        scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
+            pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
+        ) for col_name in X.columns)
+        importances = baseline_score - np.array(scores)
+        return {'importances_mean': np.mean(importances, axis=1)}
+    else:
+        scores = _calculate_permutation_scores_fast(
+            pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
+        )
     importances = baseline_score - np.array(scores)
-    return {'importances_mean': np.mean(importances, axis=1)}
+    importances_mean = np.mean(importances, axis=1) if col_name is None else np.mean(importances)
+    return {'importances_mean': importances_mean}
 
 
 def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, objective, col_name,
@@ -123,18 +131,22 @@ def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, object
     return _shuffle_and_score_helper(pipeline, precomputed_features, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=True)
 
 
-def _slow_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
+def _slow_permutation_importance(pipeline, X, y, objective, col_name=None, n_repeats=5, n_jobs=None, random_seed=None):
+    """
+    If `col_name` is not None, calculates permutation importance for only the column with that name. Otherwise, calculates the
+    permutation importance for all columns in the input dataframe.
+    """
     baseline_score = _slow_scorer(pipeline, X, y, objective)
-
-    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_slow)(
-        pipeline, X, y, col_idx, objective, _slow_scorer, n_repeats, random_seed
-    ) for col_idx in range(X.shape[1]))
-
+    if col_name is None:
+        scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_slow)(
+            pipeline, X, y, col_idx, objective, _slow_scorer, n_repeats, random_seed
+        ) for col_idx in range(X.shape[1]))
+    else:
+        baseline_score = _slow_scorer(pipeline, X, y, objective)
+        scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, objective, _slow_scorer, n_repeats, random_seed)
     importances = baseline_score - np.array(scores)
-    perm_importance = Bunch(importances_mean=np.mean(importances, axis=1),
-                            importances_std=np.std(importances, axis=1),
-                            importances=importances)
-    return perm_importance
+    importances_mean = np.mean(importances, axis=1) if col_name is None else np.mean(importances)
+    return {'importances_mean': importances_mean}
 
 
 def _calculate_permutation_scores_slow(estimator, X, y, col_name, objective, scorer,

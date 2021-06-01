@@ -169,7 +169,10 @@ def test_fast_permutation_importance_matches_slow_output(mock_supports_fast_impo
 
     precomputed_features = pipeline.compute_estimator_features(X, y)
     for col in X.columns:
+        mock_supports_fast_importance.return_value = True
         permutation_importance_one_col_fast = calculate_permutation_importance_one_column(pipeline, X, y, col, 'Log Loss Binary', fast=True, precomputed_features=precomputed_features)
+
+        mock_supports_fast_importance.return_value = False
         permutation_importance_one_col_slow = calculate_permutation_importance_one_column(pipeline, X, y, col, 'Log Loss Binary', fast=False)
         np.testing.assert_almost_equal(permutation_importance_one_col_fast, permutation_importance_one_col_slow)
 
@@ -344,3 +347,12 @@ def test_get_permutation_importance_one_column_fast_no_precomputed_features(X_y_
                                                          random_seed=42)
     with pytest.raises(ValueError, match="Fast method of calculating permutation importance requires precomputed_features"):
         calculate_permutation_importance_one_column(pipeline, X, y, 0, "log loss binary", fast=True)
+
+
+@pytest.mark.parametrize('pipeline_class', pipelines_that_do_not_support_fast_permutation_importance)
+def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(X_y_binary, pipeline_class):
+    X, y = X_y_binary
+    params = {'Stacked Ensemble Classifier': {'input_pipelines': [PipelineWithDFS({})]}}
+    assert not pipeline_class(params)._supports_fast_permutation_importance
+    with pytest.raises(ValueError, match="Pipeline does not support fast permutation importance calculation"):
+        calculate_permutation_importance_one_column(pipeline_class(params), X, y, 0, "log loss binary", fast=True)
