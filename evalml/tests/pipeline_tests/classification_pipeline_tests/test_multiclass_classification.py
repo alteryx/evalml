@@ -1,6 +1,4 @@
 
-from skopt.space import Categorical
-
 from evalml.pipelines import MulticlassClassificationPipeline
 
 

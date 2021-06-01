@@ -3,7 +3,6 @@ import warnings
 from collections import OrderedDict
 from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
-from pprint import pp
 
 import cloudpickle
 import numpy as np
@@ -1834,12 +1833,17 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(mock_
             if custom_hyperparameters_:
                 assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in custom_hyperparameters_['Imputer']['numeric_impute_strategy']
                 assert 4 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 7
-                assert 190 <= row["parameters"]["Random Forest Classifier"]["n_estimators"] <= 210
+                if automl_parameters and row["id"] == 1:
+                    assert row["parameters"]["Random Forest Classifier"]["n_estimators"] == 201
+                else:
+                    assert 190 <= row["parameters"]["Random Forest Classifier"]["n_estimators"] <= 210
             else:
                 assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in ["mean", "median", "most_frequent"]
                 assert 1 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 10
-                assert 10 <= row["parameters"]["Random Forest Classifier"]["n_estimators"] <= 1000
-
+                if automl_parameters and row["id"] == 1:
+                    assert row["parameters"]["Random Forest Classifier"]["n_estimators"] == 201
+                else:
+                    assert 10 <= row["parameters"]["Random Forest Classifier"]["n_estimators"] <= 1000
 
 
 @patch('evalml.pipelines.BinaryClassificationPipeline.score', return_value={"Log Loss Binary": 0.6})
@@ -2230,8 +2234,8 @@ def test_automl_pipeline_params_multiple(mock_score, mock_fit, X_y_regression):
     mock_score.return_value = {'R2': 1.0}
     X, y = X_y_regression
     hyperparams = {'Imputer': {'numeric_impute_strategy': Categorical(['median', 'most_frequent'])},
-              'Decision Tree Regressor': {'max_depth': Categorical([17, 18, 19]), 'max_features': Categorical(['auto'])},
-              'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": Categorical((0.01, 0.02, 0.03))}}
+                   'Decision Tree Regressor': {'max_depth': Categorical([17, 18, 19]), 'max_features': Categorical(['auto'])},
+                   'Elastic Net Regressor': {"alpha": Real(0, 0.5), "l1_ratio": Categorical((0.01, 0.02, 0.03))}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', custom_hyperparameters=hyperparams, n_jobs=1)
     automl.search()
     for i, row in automl.rankings.iterrows():
@@ -2292,9 +2296,8 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
 
     if graph_type == 'linear':
         custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
-                                         "Imputer_1": {
-                                             "numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
-                                         "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
+                                  "Imputer_1": {"numeric_impute_strategy": Categorical(["most_frequent", 'mean'])},
+                                  "Random Forest Classifier": {"n_estimators": Categorical([100, 125])}}
         component_graph = ["Imputer", "Imputer", "Random Forest Classifier"]
         pipeline_ = BinaryClassificationPipeline(component_graph)
     else:
@@ -2302,8 +2305,8 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
                                   "Imputer_1": {"numeric_impute_strategy": Categorical(["median", 'mean'])},
                                   "Random Forest Classifier": {"n_estimators": Categorical([50, 100])}}
         component_graph = {"Imputer": ["Imputer"],
-                                "Imputer_1": ["Imputer", "Imputer"],
-                                "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
+                           "Imputer_1": ["Imputer", "Imputer"],
+                           "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"]}
         pipeline_ = BinaryClassificationPipeline(component_graph, custom_name="Pipeline from dict")
 
     automl = AutoMLSearch(X, y, problem_type="binary", allowed_pipelines=[pipeline_], custom_hyperparameters=custom_hyperparameters, max_batches=5)
@@ -2357,7 +2360,7 @@ def test_automl_pipeline_params_kwargs(mock_fit, mock_score, X_y_multi):
     mock_score.return_value = {'Log Loss Multiclass': 1.0}
     X, y = X_y_multi
     hyperparams = {'Imputer': {'numeric_impute_strategy': Categorical(['most_frequent'])},
-              'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
+                   'Decision Tree Classifier': {'max_depth': Integer(1, 2), 'ccp_alpha': Real(0.1, 0.5)}}
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='multiclass', custom_hyperparameters=hyperparams,
                           allowed_model_families=[ModelFamily.DECISION_TREE], n_jobs=1)
     automl.search()

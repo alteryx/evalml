@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 import woodwork as ww
-from skopt.space import Categorical
 
 from evalml.exceptions import PipelineScoreError
 from evalml.objectives import FraudCost, get_objective

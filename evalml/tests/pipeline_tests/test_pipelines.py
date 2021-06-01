@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
@@ -32,7 +31,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     ElasticNetClassifier,
-    Estimator,
     Imputer,
     LogisticRegressionClassifier,
     OneHotEncoder,

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
+from evalml.automl.utils import get_hyperparameter_ranges
 from evalml.exceptions import PipelineNotFoundError
 from evalml.tuners import SKOptTuner
-from evalml.automl.utils import get_hyperparameter_ranges
 
 
 class AutoMLAlgorithmException(Exception):

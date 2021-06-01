@@ -232,7 +232,7 @@ class AutoMLSearch:
                     }
 
             custom_hyperparameters (dict): A dict of the hyperparameter ranges used to iterate over during search.
-                Keys should consist of the component names and values should specify lists or skopt.Space with length greater than 1
+                Keys should consist of the component names and values should specify an skopt.Space.
                 e.g. custom_hyperparameters = {
                         'Imputer' : {
                             'numeric_impute_strategy': Categorical(['most_frequent', 'median'])
