@@ -67,4 +67,10 @@ jobs:
           echo "Running docker"
           docker system df --verbose
           df -h
+          echo "Docker df -h"
           docker run psalter/build:latest df -h
+          echo "Docker tmp file size"
+          docker run psalter/build:latest du -h /tmp
+          echo "Docker file size"
+          docker run psalter/build:latest du -h /
+
