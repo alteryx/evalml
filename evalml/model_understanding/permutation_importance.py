@@ -12,13 +12,13 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     """Calculates permutation importance for features.
 
     Arguments:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target data
-        objective (str, ObjectiveBase): Objective to score on
+        pipeline (PipelineBase or subclass): Fitted pipeline.
+        X (pd.DataFrame): The input data used to score and compute permutation importance.
+        y (pd.Series): The target data.
+        objective (str, ObjectiveBase): Objective to score on.
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
-            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
+            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     Returns:
         pd.DataFrame: Mean feature importance scores over a number of shuffles.
@@ -48,15 +48,16 @@ def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_j
     return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
-def calculate_permutation_importance_one_column(X, y, pipeline, col_name, objective,
-                                                n_repeats=5, fast=False, precomputed_features=None, random_seed=0):
+def calculate_permutation_importance_one_column(pipeline, X, y, col_name, objective,
+                                                n_repeats=5, fast=True, precomputed_features=None, random_seed=0):
     """Calculates permutation importance for one column in the original dataframe.
 
     Arguments:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target data
-        objective (str, ObjectiveBase): Objective to score on
+        pipeline (PipelineBase or subclass): Fitted pipeline.
+        X (pd.DataFrame): The input data used to score and compute permutation importance.
+        y (pd.Series): The target data.
+        col_name (str, int): The column in X to calculate permutation importance for.
+        objective (str, ObjectiveBase): Objective to score on.
         n_repeats (int): Number of times to permute a feature. Defaults to 5.
         fast (bool): Whether to use the fast method of calculating the permutation importance or not. Defaults to True.
         precomputed_features (pd.DataFrame): Precomputed features necessary to calculate permutation importance using the fast method. Defaults to None.
@@ -78,13 +79,11 @@ def calculate_permutation_importance_one_column(X, y, pipeline, col_name, object
         scores = _calculate_permutation_scores_fast(
             pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, _fast_scorer, baseline_score,
         )
-        importances = baseline_score - np.array(scores)
-        return np.mean(importances)
     else:
         baseline_score = _slow_scorer(pipeline, X, y, objective)
         scores = _calculate_permutation_scores_slow(pipeline, X, y, col_name, objective, _slow_scorer, n_repeats, random_seed)
-        importances = baseline_score - np.array(scores)
-        return np.mean(importances)
+    importances = baseline_score - np.array(scores)
+    return np.mean(importances)
 
 
 def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
@@ -148,7 +147,7 @@ def _calculate_permutation_scores_slow(estimator, X, y, col_name, objective, sco
     return _shuffle_and_score_helper(estimator, X, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=False)
 
 
-def _shuffle_and_score_helper(pipeline, X_features, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=False):
+def _shuffle_and_score_helper(pipeline, X_features, y, objective, col_idx, n_repeats, scorer, random_state, is_fast=True):
     scores = np.zeros(n_repeats)
 
     # This is what sk_permutation_importance does. Useful for thread safety
