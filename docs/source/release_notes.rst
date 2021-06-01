@@ -21,6 +21,7 @@ Release Notes
         * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
+        * Added dictionary input functionality for the Oversampler components :pr:`2288`
     * Fixes
         * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
     * Changes
