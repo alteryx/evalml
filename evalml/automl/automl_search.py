@@ -133,6 +133,7 @@ class AutoMLSearch:
                  add_result_callback=None,
                  error_callback=None,
                  additional_objectives=None,
+                 thresholding_objective="F1",
                  random_seed=0,
                  n_jobs=-1,
                  tuner_class=None,
@@ -206,6 +207,8 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
+            thresholding_objective (str): The objective to use for thresholding binary classification pipelines. Defaults to F1.
+
             random_seed (int): Seed for the random number generator. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
@@ -263,6 +266,7 @@ class AutoMLSearch:
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
+        self.thresholding_objective = get_objective(thresholding_objective, return_instance=False)
         if self.data_splitter is not None and not issubclass(self.data_splitter.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
         if not objective.is_defined_for_problem_type(self.problem_type):
@@ -422,7 +426,7 @@ class AutoMLSearch:
             self._engine = engine
 
         self.automl_config = AutoMLConfig(self.data_splitter, self.problem_type,
-                                          self.objective, self.additional_objectives, self.optimize_thresholds,
+                                          self.objective, self.additional_objectives, self.thresholding_objective, self.optimize_thresholds,
                                           self.error_callback, self.random_seed)
 
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))

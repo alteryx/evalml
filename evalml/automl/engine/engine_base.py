@@ -135,6 +135,11 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     X_pd = _convert_woodwork_types_wrapper(full_X_train.to_dataframe())
     y_pd = _convert_woodwork_types_wrapper(full_y_train.to_series())
     y_pd_encoded = y_pd
+    if is_binary(automl_config.problem_type) and automl_config.optimize_thresholds and not automl_config.objective.can_optimize_threshold:
+        # use the thresholding_objective
+        objective_to_train = automl_config.thresholding_objective
+    else:
+        objective_to_train = automl_config.objective
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
         y_mapping = {original_target: encoded_target for (encoded_target, original_target) in
@@ -159,7 +164,7 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
         objectives_to_score = [automl_config.objective] + automl_config.additional_objectives
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
-            cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_config.optimize_thresholds, automl_config.objective)
+            cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_config.optimize_thresholds, objective_to_train)
             logger.debug(f"\t\t\tFold {i}: finished training")
             if automl_config.optimize_thresholds and pipeline.can_tune_threshold_with_objective(automl_config.objective):
                 logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")

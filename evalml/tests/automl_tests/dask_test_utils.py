@@ -15,6 +15,7 @@ def err_call(*args, **kwargs):
 data_splitter = TrainingValidationSplit()
 problem_type = "binary"
 objective = get_objective("Log Loss Binary", return_instance=True)
+thresholding_objective = get_objective("F1", return_instance=True)
 additional_objectives = []
 optimize_thresholds = False
 error_callback = err_call
@@ -24,6 +25,7 @@ automl_data = AutoMLConfig(data_splitter=data_splitter,
                            objective=objective,
                            additional_objectives=additional_objectives,
                            optimize_thresholds=optimize_thresholds,
+                           thresholding_objective=thresholding_objective,
                            error_callback=error_callback,
                            random_seed=random_seed)
 

@@ -111,7 +111,7 @@ def check_all_pipeline_names_unique(pipelines):
 
 
 AutoMLConfig = namedtuple("AutoMLConfig", ["data_splitter", "problem_type",
-                                           "objective", "additional_objectives", "optimize_thresholds",
+                                           "objective", "additional_objectives", "thresholding_objective", "optimize_thresholds",
                                            "error_callback", "random_seed"])
 
 
