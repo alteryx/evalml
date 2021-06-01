@@ -66,4 +66,4 @@ jobs:
           export FEEDSTOCK_NAME=evalml-core-feedstock
           echo "Running docker"
           docker system df --verbose
-          df -l
+          df -h
