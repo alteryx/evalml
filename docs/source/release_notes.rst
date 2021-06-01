@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Separated `custom_hyperparameters` from pipelines and added them as an argument to `AutoMLSearch :pr:`2317`
     * Documentation Changes
 
 .. warning::

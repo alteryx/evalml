@@ -122,16 +122,16 @@ class TestPipelineFast(BinaryClassificationPipeline):
 
 class TestSchemaCheckPipeline(BinaryClassificationPipeline):
 
-    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0,
+    def __init__(self, component_graph, parameters=None, custom_name=None, random_seed=0,
                  X_schema_to_check=None, y_schema_to_check=None):
         self.X_schema_to_check = X_schema_to_check
         self.y_schema_to_check = y_schema_to_check
-        super().__init__(component_graph, parameters, custom_name, custom_hyperparameters, random_seed)
+        super().__init__(component_graph, parameters, custom_name, random_seed)
 
     def clone(self):
         return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name,
-                              custom_hyperparameters=self.custom_hyperparameters, random_seed=self.random_seed,
-                              X_schema_to_check=self.X_schema_to_check, y_schema_to_check=self.y_schema_to_check)
+                              random_seed=self.random_seed, X_schema_to_check=self.X_schema_to_check,
+                              y_schema_to_check=self.y_schema_to_check)
 
     def fit(self, X, y):
         assert X.ww.schema == self.X_schema_to_check
