@@ -67,3 +67,4 @@ jobs:
           echo "Running docker"
           docker system df --verbose
           df -h
+          docker run psalter/build:latest df -h
