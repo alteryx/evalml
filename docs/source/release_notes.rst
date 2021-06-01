@@ -28,6 +28,7 @@ Release Notes
         * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+        * Refactored ``calculate_permutation_importance`` method and add per-column permutation importance method :pr:`2302`
     * Documentation Changes
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`
