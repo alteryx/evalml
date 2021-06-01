@@ -30,7 +30,7 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         """Determine if an observation is high risk given an alert rate
 
         Arguments:
-            ypred_proba (ww.DataColumn, pd.Series): Predicted probabilities
+            ypred_proba (pd.Series): Predicted probabilities
         """
 
         ypred_proba = self._standardize_input_type(ypred_proba)
@@ -47,8 +47,8 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         """Calculate sensitivity across all predictions, using the top alert_rate percent of observations as the predicted positive class
 
         Arguments:
-            y_true (ww.DataColumn, pd.Series): True labels
-            y_predicted (ww.DataColumn, pd.Series): Predicted labels based on alert_rate
+            y_true (pd.Series): True labels
+            y_predicted (pd.Series): Predicted labels based on alert_rate
 
         Returns:
             float: sensitivity using the observations with the top scores as the predicted positive class

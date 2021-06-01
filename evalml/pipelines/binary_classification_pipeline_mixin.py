@@ -37,13 +37,13 @@ class BinaryClassificationPipelineMixin():
         """Optimize the pipeline threshold given the objective to use. Only used for binary problems with objectives whose thresholds can be tuned.
 
         Arguments:
-            X (ww.DataTable): Input features
-            y (ww.DataColumn): Input target values
-            y_pred_proba (ww.DataColumn): The predicted probabilities of the target outputted by the pipeline
+            X (pd.DataFrame): Input features
+            y (pd.Series): Input target values
+            y_pred_proba (pd.Series): The predicted probabilities of the target outputted by the pipeline
             objective (ObjectiveBase): The objective to threshold with. Must have a tunable threshold.
         """
         if self.can_tune_threshold_with_objective(objective):
-            targets = self._encode_targets(y.to_series())
+            targets = self._encode_targets(y)
             self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
         else:
             raise ValueError("Problem type must be binary and objective must be optimizable.")

@@ -2,9 +2,26 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+    * Fixes
+        * Added ''thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:``
+    * Changes
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+    * Documentation Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Due to the weak-ref in woodwork, set the result of ``infer_feature_types`` to a variable before accessing woodwork :pr:`2181`
+
+**v0.24.2 May. 24, 2021**
+    * Enhancements
         * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
+        * Added dictionary input functionality for the Oversampler components :pr:`2288`
     * Fixes
         * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
     * Changes
