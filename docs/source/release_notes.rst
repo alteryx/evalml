@@ -8,6 +8,8 @@ Release Notes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
     * Documentation Changes
         * Updated the release procedure documentation :pr:`2230`
+    * Testing Changes
+        * Ignoring ``test_saving_png_file`` while building conda package :pr:`2323`
 
 .. warning::
 
