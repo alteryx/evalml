@@ -1,13 +1,8 @@
 import pandas as pd
-import woodwork as ww
 from skopt.space import Integer
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
-    _convert_woodwork_types_wrapper,
-    import_or_raise,
-    infer_feature_types
-)
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class PolynomialDetrender(Transformer):
@@ -47,8 +42,8 @@ class PolynomialDetrender(Transformer):
         """Fits the PolynomialDetrender.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, optional): Ignored.
-            y (ww.DataColumn, pd.Series): Target variable to detrend.
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target variable to detrend.
 
         Returns:
             self
@@ -56,38 +51,36 @@ class PolynomialDetrender(Transformer):
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")
         y_dt = infer_feature_types(y)
-        y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
-        self._component_obj.fit(y_series)
+        self._component_obj.fit(y_dt)
         return self
 
     def transform(self, X, y=None):
         """Removes fitted trend from target variable.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, optional): Ignored.
-            y (ww.DataColumn, pd.Series): Target variable to detrend.
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target variable to detrend.
 
         Returns:
-            tuple of ww.DataTable, ww.DataColumn: The input features are returned without modification. The target
+            tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
                 variable y is detrended
         """
         if y is None:
             return X, y
-        y_dt = infer_feature_types(y)
-        y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
-        y_t = self._component_obj.transform(y_series)
-        y_t = ww.DataColumn(pd.Series(y_t, index=y_series.index))
+        y_ww = infer_feature_types(y)
+        y_t = self._component_obj.transform(y_ww)
+        y_t = infer_feature_types(pd.Series(y_t, index=y_ww.index))
         return X, y_t
 
     def fit_transform(self, X, y=None):
         """Removes fitted trend from target variable.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, optional): Ignored.
-            y (ww.DataColumn, pd.Series): Target variable to detrend.
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target variable to detrend.
 
         Returns:
-            tuple of ww.DataTable, ww.DataColumn: The first element are the input features returned without modification.
+            tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
                 The second element is the target variable y with the fitted trend removed.
         """
         return self.fit(X, y).transform(X, y)
@@ -96,17 +89,16 @@ class PolynomialDetrender(Transformer):
         """Adds back fitted trend to target variable.
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame, optional): Ignored.
-            y (ww.DataColumn, pd.Series): Target variable.
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target variable.
 
         Returns:
-            tuple of ww.DataTable, ww.DataColumn: The first element are the input features returned without modification.
+            tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
                 The second element is the target variable y with the trend added back.
         """
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")
         y_dt = infer_feature_types(y)
-        y_series = _convert_woodwork_types_wrapper(y_dt.to_series())
-        y_t = self._component_obj.inverse_transform(y_series)
-        y_t = ww.DataColumn(pd.Series(y_t, index=y_series.index))
+        y_t = self._component_obj.inverse_transform(y_dt)
+        y_t = infer_feature_types(pd.Series(y_t, index=y_dt.index))
         return X, y_t

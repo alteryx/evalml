@@ -70,7 +70,7 @@ def test_callback(X_y_regression):
         "add_result_callback": 0,
     }
 
-    def start_iteration_callback(pipeline_class, parameters, automl_obj, counts=counts):
+    def start_iteration_callback(pipeline, automl_obj, counts=counts):
         counts["start_iteration_callback"] += 1
 
     def add_result_callback(results, trained_pipeline, automl_obj, counts=counts):
@@ -220,35 +220,24 @@ def test_automl_allowed_pipelines_init_allowed_both_specified(mock_fit, mock_sco
     mock_score.assert_called()
 
 
+@pytest.mark.parametrize('is_linear', [True, False])
 @patch('evalml.pipelines.RegressionPipeline.score')
 @patch('evalml.pipelines.RegressionPipeline.fit')
-def test_automl_allowed_pipelines_search(mock_fit, mock_score, dummy_regression_pipeline_class, X_y_regression):
+def test_automl_allowed_pipelines_search(mock_fit, mock_score, is_linear, dummy_regression_pipeline_class, nonlinear_regression_pipeline_class, X_y_regression):
     X, y = X_y_regression
     mock_score.return_value = {'R2': 1.0}
+    pipeline_class = dummy_regression_pipeline_class if is_linear else nonlinear_regression_pipeline_class
+    allowed_pipelines = [pipeline_class({})]
 
-    allowed_pipelines = [dummy_regression_pipeline_class({})]
     start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression',
+                          max_iterations=2, start_iteration_callback=start_iteration_callback,
                           allowed_pipelines=allowed_pipelines)
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == RegressionPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == dummy_regression_pipeline_class
-
-
-def test_automl_regression_nonlinear_pipeline_search(nonlinear_regression_pipeline_class, X_y_regression):
-    X, y = X_y_regression
-
-    allowed_pipelines = [nonlinear_regression_pipeline_class({})]
-    start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='regression', max_iterations=2, start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines, n_jobs=1)
-    automl.search()
-
-    assert start_iteration_callback.call_count == 2
-    assert start_iteration_callback.call_args_list[0][0][0] == RegressionPipeline
-    assert start_iteration_callback.call_args_list[1][0][0] == nonlinear_regression_pipeline_class
+    assert isinstance(start_iteration_callback.call_args_list[0][0][0], RegressionPipeline)
+    assert isinstance(start_iteration_callback.call_args_list[1][0][0], pipeline_class)
 
 
 @patch('evalml.pipelines.TimeSeriesRegressionPipeline.score', return_value={"R2": 0.3})

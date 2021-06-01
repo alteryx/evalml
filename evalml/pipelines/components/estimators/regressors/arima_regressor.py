@@ -71,11 +71,11 @@ class ARIMARegressor(Estimator):
     def _get_dates(self, X, y):
         date_col = None
         if y is not None:
-            y_index_type = infer_feature_types(pd.Series(y.index)).logical_type.type_string
+            y_index_type = infer_feature_types(pd.Series(y.index)).ww.logical_type.type_string
             if y_index_type == 'datetime':
                 date_col = y.index
         if X is not None:
-            X_index_type = infer_feature_types(pd.Series(X.index)).logical_type.type_string
+            X_index_type = infer_feature_types(pd.Series(X.index)).ww.logical_type.type_string
             if self.parameters['date_index'] in X.columns:
                 date_col = X.pop(self.parameters['date_index'])
             elif X_index_type == 'datetime':
@@ -88,8 +88,10 @@ class ARIMARegressor(Estimator):
 
     def _match_indices(self, X, y, date_col):
         if X is not None:
+            X = X.copy()
             X.index = date_col
         if y is not None:
+            y = y.copy()
             y.index = date_col
         return X, y
 

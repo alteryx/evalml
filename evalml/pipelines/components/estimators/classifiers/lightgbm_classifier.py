@@ -11,7 +11,6 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,
-    _convert_woodwork_types_wrapper,
     _rename_column_names_to_numeric,
     import_or_raise,
     infer_feature_types
@@ -76,8 +75,7 @@ class LightGBMClassifier(Estimator):
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
         X = infer_feature_types(X)
-        cat_cols = list(X.select('category').columns)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
+        cat_cols = X.ww.select('category').columns
         if fit:
             self.input_feature_names = list(X.columns)
         X_encoded = _rename_column_names_to_numeric(X)
@@ -97,7 +95,6 @@ class LightGBMClassifier(Estimator):
 
     def _encode_labels(self, y):
         y_encoded = infer_feature_types(y)
-        y_encoded = _convert_woodwork_types_wrapper(y_encoded.to_series())
         # change only if dtype isn't int
         if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()
@@ -105,7 +102,7 @@ class LightGBMClassifier(Estimator):
         return y_encoded
 
     def fit(self, X, y=None):
-        X_encoded = infer_feature_types(X)
+        X = infer_feature_types(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
         self._component_obj.fit(X_encoded, y_encoded)
@@ -116,7 +113,7 @@ class LightGBMClassifier(Estimator):
         predictions = super().predict(X_encoded)
         if not self._label_encoder:
             return predictions
-        predictions = pd.Series(self._label_encoder.inverse_transform(predictions.to_series().astype(np.int64)))
+        predictions = pd.Series(self._label_encoder.inverse_transform(predictions.astype(np.int64)))
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):
