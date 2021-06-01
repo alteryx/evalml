@@ -1,0 +1,70 @@
+name: Linux Unit Tests with Minimum Dependencies
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - 'requirements.txt'
+      - 'core-requirements.txt'
+      - 'test-requirements.txt'
+      - 'evalml/tests/dependency_update_check/**'
+  push:
+    branches:
+      - main
+
+jobs:
+  unit_tests:
+    name: ${{ matrix.python_version }} min unit tests, core deps (${{ matrix.core_dependencies }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - python_version: "3.7"
+            core_dependencies: false
+          - python_version: "3.7"
+            core_dependencies: true
+    steps:
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 2
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - name: Create virtual environment, upgrade pip
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          python -m pip install --upgrade pip -q
+      - if: ${{ matrix.core_dependencies }}
+        name: install evalml with test dependencies & core dependencies
+        run: |
+          source test_python/bin/activate
+          pip install -e . --no-dependencies
+          pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
+          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+      - if: ${{ !matrix.core_dependencies }}
+        name: install evalml with test dependencies, core dependencies, & optional requirements
+        run: |
+          source test_python/bin/activate
+          pip install -e . --no-dependencies
+          pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
+          pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+          pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
+      - if: ${{ matrix.core_dependencies }}
+        name: run tests with minimal dependencies
+        run: |
+          source test_python/bin/activate
+          make git-test-minimal-deps-nocov
+      - if: ${{ !matrix.core_dependencies }}
+        name: run tests
+        run: |
+          source test_python/bin/activate
+          make git-test-nocov

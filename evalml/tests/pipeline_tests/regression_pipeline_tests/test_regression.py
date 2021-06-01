@@ -68,11 +68,11 @@ def test_regression_init():
 
 @pytest.mark.parametrize("target_type", ["category", "string", "bool"])
 def test_invalid_targets_regression_pipeline(target_type, dummy_regression_pipeline_class):
-    X, y = load_wine(return_pandas=True)
+    X, y = load_wine()
     if target_type == "category":
         y = pd.Series(y).astype("category")
     if target_type == "bool":
-        X, y = load_breast_cancer(return_pandas=True)
+        X, y = load_breast_cancer()
         y = y.map({"malignant": False, "benign": True})
     mock_regression_pipeline = dummy_regression_pipeline_class(parameters={})
     with pytest.raises(ValueError, match="Regression pipeline can only handle numeric target data"):
@@ -83,7 +83,7 @@ def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
     X, y = load_diabetes()
     regression_pipeline = linear_regression_pipeline_class(parameters={'Linear Regressor': {'n_jobs': 1}})
     regression_pipeline.fit(X, y)
-    assert not pd.isnull(regression_pipeline.predict(X).to_series()).any()
+    assert not pd.isnull(regression_pipeline.predict(X)).any()
 
 
 def test_custom_indices():
@@ -93,4 +93,4 @@ def test_custom_indices():
 
     pipeline = RegressionPipeline(component_graph=['Imputer', 'One Hot Encoder', 'Linear Regressor'], parameters={})
     pipeline.fit(x2, y2)
-    assert not pd.isnull(pipeline.predict(X).to_series()).any()
+    assert not pd.isnull(pipeline.predict(X)).any()

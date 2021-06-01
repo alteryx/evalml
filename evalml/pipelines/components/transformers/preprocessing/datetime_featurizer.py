@@ -1,6 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
-    _convert_woodwork_types_wrapper,
     _retain_custom_types_and_initalize_woodwork,
     infer_feature_types
 )
@@ -78,33 +77,33 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = X.select("datetime").columns
+        self._date_time_col_names = X.ww.select("datetime").columns.tolist()
         return self
 
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
 
         Arguments:
-            X (ww.DataTable, pd.DataFrame): Data to transform
-            y (ww.DataColumn, pd.Series, optional): Ignored.
+            X (pd.DataFrame): Data to transform
+            y (pd.Series, optional): Ignored.
 
         Returns:
-            ww.DataTable: Transformed X
+            pd.DataFrame: Transformed X
         """
-        X_ww = infer_feature_types(X)
-        X_t = _convert_woodwork_types_wrapper(X_ww.to_dataframe())
+        X = infer_feature_types(X)
+        X = X.ww.copy()
+        original_ltypes = X.ww.schema.logical_types
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
-            return infer_feature_types(X_t)
+            return X
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
-                features, categories = self._function_mappings[feature](X_t[col_name], self.encode_as_categories)
-                X_t[name] = features
+                features, categories = self._function_mappings[feature](X[col_name], self.encode_as_categories)
+                X[name] = features
                 if categories:
                     self._categories[name] = categories
-        X_t = X_t.drop(self._date_time_col_names, axis=1)
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X.drop(columns=self._date_time_col_names))
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.

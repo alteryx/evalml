@@ -46,8 +46,8 @@ def make_data_splitter(X, y, problem_type, problem_configuration=None, n_splits=
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
     Arguments:
-        X (ww.DataTable, pd.DataFrame): The input training data of shape [n_samples, n_features].
-        y (ww.DataColumn, pd.Series): The target training data of length [n_samples].
+        X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+        y (pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables. Defaults to None.
@@ -80,12 +80,12 @@ def tune_binary_threshold(pipeline, objective, problem_type, X_threshold_tuning,
         pipeline (Pipeline): Pipeline instance to threshold.
         objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
-        X_threshold_tuning (ww.DataTable): Features to tune pipeline to.
-        y_threshold_tuning (ww.DataColumn): Target data to tune pipeline to.
+        X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
+        y_threshold_tuning (pd.Series): Target data to tune pipeline to.
     """
     if is_binary(problem_type) and objective.is_defined_for_problem_type(problem_type) and objective.can_optimize_threshold:
         pipeline.threshold = 0.5
-        if X_threshold_tuning:
+        if X_threshold_tuning is not None:
             y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
             y_predict_proba = y_predict_proba.iloc[:, 1]
             pipeline.optimize_threshold(X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective)
@@ -114,16 +114,17 @@ def check_all_pipeline_names_unique(pipelines):
 
 AutoMLConfig = namedtuple("AutoMLConfig", ["data_splitter", "problem_type",
                                            "objective", "additional_objectives", "optimize_thresholds",
-                                           "error_callback", "random_seed"])
+                                           "error_callback", "random_seed",
+                                           "X_schema", "y_schema"])
 
 
 def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     """Returns the name of the sampler component to use for AutoMLSearch.
 
     Arguments:
-        X (ww.DataTable): The input feature data
-        y (ww.DataColumn): The input target data
-        sampler_method (str): The sampler_method argument passed to AutoMLSearch
+        X (pd.DataFrame): The input feature data
+        y (pd.Series): The input target data
+        sampler_method (str): The sampler_type argument passed to AutoMLSearch
         sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
             or should balance the classes to.
 
@@ -131,7 +132,7 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
         str, None: The string name of the sampling component to use, or None if no sampler is necessary
     """
     # we check for the class balances
-    counts = y.to_series().value_counts()
+    counts = y.value_counts()
     minority_class = min(counts)
     class_ratios = minority_class / counts
     # if all class ratios are larger than the ratio provided, we don't need to sample
@@ -143,7 +144,7 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     else:
         try:
             import_or_raise("imblearn.over_sampling", error_msg="imbalanced-learn is not installed")
-            cat_cols = X.select('Categorical').columns
+            cat_cols = X.ww.select('Categorical').columns
             # Use different samplers depending on the number of categorical columns
             if len(cat_cols) == X.shape[1]:
                 return 'SMOTEN Oversampler'

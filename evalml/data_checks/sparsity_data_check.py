@@ -6,10 +6,7 @@ from evalml.data_checks import (
     DataCheckWarning
 )
 from evalml.problem_types import handle_problem_types, is_multiclass
-from evalml.utils.woodwork_utils import (
-    _convert_woodwork_types_wrapper,
-    infer_feature_types
-)
+from evalml.utils.woodwork_utils import infer_feature_types
 
 warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
 
@@ -42,8 +39,8 @@ class SparsityDataCheck(DataCheck):
         """Calculates what percentage of each column's unique values exceed the count threshold and compare
         that percentage to the sparsity threshold stored in the class instance.
         Arguments:
-            X (ww.DataTable, pd.DataFrame, np.ndarray): Features.
-            y (ww.DataColumn, pd.Series, np.ndarray): Ignored.
+            X (pd.DataFrame, np.ndarray): Features.
+            y (pd.Series, np.ndarray): Ignored.
         Returns:
             dict: dict with a DataCheckWarning if there are any sparse columns.
         Example:
@@ -69,7 +66,6 @@ class SparsityDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
-        X = _convert_woodwork_types_wrapper(X.to_dataframe())
 
         res = X.apply(SparsityDataCheck.sparsity_score, count_threshold=self.unique_count_threshold)
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
