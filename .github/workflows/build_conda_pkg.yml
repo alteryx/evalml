@@ -65,4 +65,5 @@ jobs:
           export HOST_USER_ID=$(id -u)
           export FEEDSTOCK_NAME=evalml-core-feedstock
           echo "Running docker"
-          docker system df
+          docker system df --verbose
+          df -l
