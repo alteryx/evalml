@@ -13,8 +13,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
       - name: Shellcheck
         uses: reviewdog/action-shellcheck@v1
         with:
@@ -23,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: shellcheck
     steps:
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
