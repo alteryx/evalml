@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import BaseCrossValidator
 
-from .pipeline_search_plots import PipelineSearchPlots
+from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
@@ -312,10 +312,7 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
-        self.plot = None
-        try:
-            self.plot = PipelineSearchPlots(self)
-        except ImportError:
+        if not self.plot:
             logger.warning("Unable to import plotly; skipping pipeline search plotting\n")
 
         if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
@@ -820,8 +817,9 @@ class AutoMLSearch:
             except PipelineNotFoundError:
                 pass
 
-        if self.search_iteration_plot:
-            self.search_iteration_plot.update()
+        # True when running in a jupyter notebook, else the plot is an instance of plotly.Figure
+        if isinstance(self.search_iteration_plot, SearchIterationPlot):
+            self.search_iteration_plot.update(self.results, self.objective)
 
         if self.add_result_callback:
             self.add_result_callback(self._results['pipeline_results'][pipeline_id], pipeline, self)
@@ -1080,3 +1078,11 @@ class AutoMLSearch:
             else:
                 computations.append(computation)
         return scores
+
+    @property
+    def plot(self):
+        # Return an instance of the plot with the latest scores
+        try:
+            return PipelineSearchPlots(self.results, self.objective)
+        except ImportError:
+            return None

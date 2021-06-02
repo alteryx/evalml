@@ -36,7 +36,7 @@ def test_search_iteration_plot_class():
             })
 
     mock_data = MockResults()
-    plot = SearchIterationPlot(mock_data)
+    plot = SearchIterationPlot(mock_data.results, mock_data.objective)
 
     # Check best score trace
     plot_data = plot.best_score_by_iter_fig.data[0]
@@ -65,11 +65,11 @@ def test_jupyter(import_check, jupyter_check):
     pytest.importorskip('plotly.graph_objects', reason='Skipping plotting test because plotly not installed')
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        SearchIterationPlot(mock_data)
+        SearchIterationPlot(mock_data.results, mock_data.objective)
         assert len(graph_valid) == 0
         import_check.assert_called_with('ipywidgets', warning=True)
 
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:
-        SearchIterationPlot(mock_data)
+        SearchIterationPlot(mock_data.results, mock_data.objective)
         assert len(graph_valid) == 0
