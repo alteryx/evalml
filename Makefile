@@ -8,12 +8,12 @@ clean:
 
 .PHONY: lint
 lint:
-	flake8 evalml && isort --check-only --recursive evalml && python docs/notebook_version_standardizer.py check-versions
+	flake8 evalml && isort --check-only evalml && python docs/notebook_version_standardizer.py check-versions
 
 .PHONY: lint-fix
 lint-fix:
 	autopep8 --in-place --recursive --max-line-length=100 --select="E225,E222,E303,E261,E241,E302,E203,E128,E231,E251,E271,E127,E126,E301,W291,W293,E226,E306,E221" evalml
-	isort --recursive evalml
+	isort evalml
 	python docs/notebook_version_standardizer.py standardize
 
 .PHONY: test

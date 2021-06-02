@@ -1,8 +1,8 @@
+from .data_splitters import TimeSeriesSplit, TrainingValidationSplit
 from .utils import (
+    drop_nan_target_rows,
     load_data,
-    split_data,
     number_of_features,
-    target_distribution,
-    drop_nan_target_rows
+    split_data,
+    target_distribution
 )
-from .data_splitters import TrainingValidationSplit, TimeSeriesSplit

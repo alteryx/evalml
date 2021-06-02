@@ -19,11 +19,11 @@ from .graphs import (
     roc_curve,
     t_sne
 )
-from .prediction_explanations import (
-    explain_predictions,
-    explain_predictions_best_worst
-)
 from .permutation_importance import (
     calculate_permutation_importance,
     calculate_permutation_importance_one_column
+)
+from .prediction_explanations import (
+    explain_predictions,
+    explain_predictions_best_worst
 )
