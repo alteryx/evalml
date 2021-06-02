@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
     * Fixes
     * Changes
     * Documentation Changes
