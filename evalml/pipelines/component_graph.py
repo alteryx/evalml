@@ -38,8 +38,7 @@ class ComponentGraph:
             dict: Dictionary of all component default parameters.
         """
         defaults = {}
-        for c in self.component_instances:
-            component = handle_component_class(self.component_instances[c].__class__)
+        for component in self.component_instances.values():
             if component.default_parameters:
                 defaults[component.name] = component.default_parameters
         return defaults
