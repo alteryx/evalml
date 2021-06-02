@@ -326,9 +326,15 @@ def test_iterative_algorithm_custom_hyperparameters(parameters, hyperparameters,
         algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     # make sure that future batches remain in the hyperparam range
+    all_dummies = set()
     for i in range(1, 5):
         next_batch = algo.next_batch()
+        for p in next_batch:
+            dummy = p.parameters['Mock Classifier']['dummy_parameter']
+            if dummy not in all_dummies:
+                all_dummies.add(dummy)
         assert all([p.parameters['Mock Classifier']['dummy_parameter'] in hyperparameters for p in next_batch])
+    assert all_dummies == {1, 3, 4} if parameters == 1 else all_dummies == {2, 3, 4}
 
 
 def test_iterative_algorithm_frozen_parameters():
