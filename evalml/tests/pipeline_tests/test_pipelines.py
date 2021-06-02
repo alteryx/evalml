@@ -915,7 +915,7 @@ def test_hyperparameters_none(dummy_classifier_estimator_class):
             super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     pipeline = BinaryClassificationPipeline(component_graph=[MockEstimator])
-    assert pipeline.component_graph == [MockEstimator]
+    assert pipeline.component_graph.compute_order == [MockEstimator.name]
     assert pipeline.hyperparameters == {'Mock Classifier': {}}
 
 
