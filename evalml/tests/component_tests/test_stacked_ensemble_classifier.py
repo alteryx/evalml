@@ -10,7 +10,10 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
 )
-from evalml.pipelines.components import BaselineClassifier, RandomForestClassifier
+from evalml.pipelines.components import (
+    BaselineClassifier,
+    RandomForestClassifier,
+)
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
 from evalml.problem_types import ProblemTypes
 

@@ -18,7 +18,12 @@ from evalml.exceptions import (
     PipelineScoreError,
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost, Precision, get_objective
+from evalml.objectives import (
+    CostBenefitMatrix,
+    FraudCost,
+    Precision,
+    get_objective,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -41,7 +46,12 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
 )
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_time_series,
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):

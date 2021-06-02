@@ -3,7 +3,11 @@ import pandas as pd
 import pytest
 
 from evalml.exceptions import ComponentNotYetFittedError
-from evalml.pipelines.components import SMOTENCSampler, SMOTENSampler, SMOTESampler
+from evalml.pipelines.components import (
+    SMOTENCSampler,
+    SMOTENSampler,
+    SMOTESampler,
+)
 from evalml.utils.woodwork_utils import infer_feature_types
 
 im = pytest.importorskip(

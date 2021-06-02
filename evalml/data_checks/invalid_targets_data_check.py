@@ -16,7 +16,10 @@ from evalml.problem_types import (
     is_multiclass,
     is_regression,
 )
-from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
+from evalml.utils.woodwork_utils import (
+    infer_feature_types,
+    numeric_and_boolean_ww,
+)
 
 
 class InvalidTargetDataCheck(DataCheck):

@@ -8,13 +8,13 @@ clean:
 
 .PHONY: lint
 lint:
-	flake8 evalml && isort --check-only --recursive evalml && python docs/notebook_version_standardizer.py check-versions
+	flake8 evalml && isort --check-only evalml && python docs/notebook_version_standardizer.py check-versions
 	black evalml --check
 
 .PHONY: lint-fix
 lint-fix:
 	black evalml
-	isort --recursive evalml
+	isort evalml
 	python docs/notebook_version_standardizer.py standardize
 
 .PHONY: test

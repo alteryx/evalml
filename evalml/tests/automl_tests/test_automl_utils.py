@@ -13,7 +13,10 @@ from evalml.automl.utils import (
     tune_binary_threshold,
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
-from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
+from evalml.preprocessing.data_splitters import (
+    TimeSeriesSplit,
+    TrainingValidationSplit,
+)
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 

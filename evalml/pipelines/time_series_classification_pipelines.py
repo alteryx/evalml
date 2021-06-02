@@ -1,12 +1,18 @@
 import pandas as pd
 
-from .binary_classification_pipeline_mixin import BinaryClassificationPipelineMixin
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin,
+)
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
-from evalml.utils import drop_rows_with_nans, infer_feature_types, pad_with_nans
+from evalml.utils import (
+    drop_rows_with_nans,
+    infer_feature_types,
+    pad_with_nans,
+)
 
 
 class TimeSeriesClassificationPipeline(

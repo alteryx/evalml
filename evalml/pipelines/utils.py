@@ -1,7 +1,9 @@
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .multiclass_classification_pipeline import MulticlassClassificationPipeline
+from .multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
 from .regression_pipeline import RegressionPipeline
 from .time_series_classification_pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -12,18 +14,15 @@ from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import (  # noqa: F401
+from evalml.pipelines.components import (
     CatBoostClassifier,
     CatBoostRegressor,
-    ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
-    Estimator,
     Imputer,
     OneHotEncoder,
-    RandomForestClassifier,
     SMOTENCSampler,
     SMOTENSampler,
     SMOTESampler,

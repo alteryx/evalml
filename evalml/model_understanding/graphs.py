@@ -11,7 +11,9 @@ from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
-from sklearn.metrics import precision_recall_curve as sklearn_precision_recall_curve
+from sklearn.metrics import (
+    precision_recall_curve as sklearn_precision_recall_curve,
+)
 from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.tree import export_graphviz

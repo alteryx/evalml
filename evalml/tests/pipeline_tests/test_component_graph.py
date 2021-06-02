@@ -3,7 +3,11 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
+from pandas.testing import (
+    assert_frame_equal,
+    assert_index_equal,
+    assert_series_equal,
+)
 
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph

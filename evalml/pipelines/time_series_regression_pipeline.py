@@ -3,7 +3,11 @@ import pandas as pd
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
-from evalml.utils import drop_rows_with_nans, infer_feature_types, pad_with_nans
+from evalml.utils import (
+    drop_rows_with_nans,
+    infer_feature_types,
+    pad_with_nans,
+)
 
 
 class TimeSeriesRegressionPipeline(

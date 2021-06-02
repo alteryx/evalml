@@ -1,4 +1,6 @@
-from .binary_classification_pipeline_mixin import BinaryClassificationPipelineMixin
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin,
+)
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline

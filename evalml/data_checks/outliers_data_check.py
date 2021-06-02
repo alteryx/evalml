@@ -1,7 +1,11 @@
 import numpy as np
 from scipy.stats import gamma
 
-from evalml.data_checks import DataCheck, DataCheckMessageCode, DataCheckWarning
+from evalml.data_checks import (
+    DataCheck,
+    DataCheckMessageCode,
+    DataCheckWarning,
+)
 from evalml.utils import infer_feature_types
 
 

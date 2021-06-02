@@ -22,7 +22,12 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
 )
 from evalml.pipelines.components.utils import _all_estimators
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_regression
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_regression,
+)
 
 
 def compare_two_tables(table_1, table_2):
