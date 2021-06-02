@@ -274,6 +274,7 @@ Utility Methods
     precision_recall_curve
     roc_curve
     calculate_permutation_importance
+    calculate_permutation_importance_one_column
     binary_objective_vs_threshold
     get_prediction_vs_actual_over_time_data
     partial_dependence

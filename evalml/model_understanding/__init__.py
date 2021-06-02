@@ -1,6 +1,5 @@
 from .graphs import (
     binary_objective_vs_threshold,
-    calculate_permutation_importance,
     confusion_matrix,
     get_linear_coefficients,
     get_prediction_vs_actual_data,
@@ -21,3 +20,7 @@ from .graphs import (
     t_sne,
 )
 from .prediction_explanations import explain_predictions, explain_predictions_best_worst
+from .permutation_importance import (
+    calculate_permutation_importance,
+    calculate_permutation_importance_one_column,
+)
