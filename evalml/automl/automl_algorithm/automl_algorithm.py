@@ -37,10 +37,6 @@ class AutoMLAlgorithm(ABC):
         self._tuners = {}
         for pipeline in self.allowed_pipelines:
             pipeline_hyperparameters = get_hyperparameter_ranges(pipeline.component_graph, custom_hyperparameters)
-            if custom_hyperparameters:
-                for comp_name in custom_hyperparameters.keys():
-                    if comp_name in pipeline.parameters.keys():
-                        pipeline_hyperparameters[comp_name].update(custom_hyperparameters[comp_name])
             self._tuners[pipeline.name] = self._tuner_class(pipeline_hyperparameters, random_seed=self.random_seed)
         self._pipeline_number = 0
         self._batch_number = 0
