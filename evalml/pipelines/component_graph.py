@@ -54,8 +54,11 @@ class ComponentGraph:
                     component_name = f'{component_name}_{idx}'
                 seen.add(component_name)
                 names.append((component_name, component_class))
-        else:
+        elif isinstance(components, dict):
             for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        else:
+            for k, v in components.component_dict.items():
                 names.append((k, handle_component_class(v[0])))
         return names
 
@@ -466,3 +469,15 @@ class ComponentGraph:
         else:
             self._i = 0
             raise StopIteration
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
+            return False
+        attributes_to_check = ['component_dict', 'compute_order']
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True

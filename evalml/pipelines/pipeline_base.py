@@ -65,12 +65,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._custom_hyperparameters = custom_hyperparameters
         self.random_seed = random_seed
 
-        self.component_graph = component_graph
         if isinstance(component_graph, list):  # Backwards compatibility
             self._component_graph = ComponentGraph().from_list(component_graph, random_seed=self.random_seed)
-        else:
+        elif isinstance(component_graph, dict):
             self._component_graph = ComponentGraph(component_dict=component_graph, random_seed=self.random_seed)
+        else:
+            self._component_graph = ComponentGraph(component_dict=component_graph.component_dict, random_seed=self.random_seed)
         self._component_graph.instantiate(parameters)
+        self.component_graph = self._component_graph
 
         self.input_feature_names = {}
         self.input_target_name = None
@@ -189,7 +191,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             "components": dict()
         }
 
-        for number, component in enumerate(self._component_graph, 1):
+        for number, component in enumerate(self.component_graph.component_instances.values(), 1):
             component_string = str(number) + ". " + component.name
             logger.info(component_string)
             pipeline_dict["components"].update({component.name: component.describe(print_name=False, return_dict=return_dict)})
@@ -343,8 +345,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             dict: Dictionary of all component default parameters.
         """
         defaults = {}
-        for c in self.component_graph:
-            component = handle_component_class(c)
+        for component in self.component_graph.component_instances.values():
             if component.default_parameters:
                 defaults[component.name] = component.default_parameters
         return defaults
@@ -521,7 +522,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         def repr_component(parameters):
             return ', '.join([f"'{key}': {safe_repr(value)}" for key, value in parameters.items()])
 
-        component_graph_repr = ", ".join([f"'{component}'" if isinstance(component, str) else component.__name__ for component in self.component_graph])
+        component_graph_repr = ", ".join([f"'{component}'" if isinstance(component, str) else component.__name__ for component in self.component_graph.component_instances])
         component_graph_str = f"[{component_graph_repr}]"
 
         custom_hyperparameters_repr = ', '.join([f"'{component}':{{{repr_component(hyperparameters)}}}" for component, hyperparameters in self.custom_hyperparameters.items()]) if self.custom_hyperparameters else None

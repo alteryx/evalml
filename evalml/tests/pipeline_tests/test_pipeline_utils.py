@@ -109,7 +109,8 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
                 estimator_components = [StandardScaler, estimator_class]
             else:
                 estimator_components = [estimator_class]
-            assert pipeline.component_graph == [DropNullColumns, Imputer] + delayed_features + estimator_components
+            expected_components = [DropNullColumns, Imputer] + delayed_features + estimator_components
+            assert pipeline.component_graph.compute_order == [component.name for component in expected_components]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
