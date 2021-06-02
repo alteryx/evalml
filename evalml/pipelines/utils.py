@@ -14,15 +14,18 @@ from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
-from evalml.pipelines.components import (
+from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
+    ComponentBase,
     DateTimeFeaturizer,
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    Estimator,
     Imputer,
     OneHotEncoder,
+    RandomForestClassifier,
     SMOTENCSampler,
     SMOTENSampler,
     SMOTESampler,
