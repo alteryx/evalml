@@ -638,7 +638,6 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     automl.search()
     plot = automl.plot.search_iteration_plot(interactive_plot=True)
     assert isinstance(plot, SearchIterationPlot)
-    assert isinstance(plot.data, AutoMLSearch)
     mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
 
 
