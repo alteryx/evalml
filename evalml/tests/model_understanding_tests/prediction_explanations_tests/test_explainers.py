@@ -8,6 +8,7 @@ import woodwork as ww
 
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
+    ExplainPredictionsStage,
     abs_error,
     cross_entropy,
     explain_predictions,
@@ -835,3 +836,30 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
     report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format="dataframe", top_k_features=4)
     assert report['feature_names'].isnull().sum() == 0
     assert report['feature_values'].isnull().sum() == 0
+
+
+@patch("evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table")
+def test_explain_predictions_best_worst_callback(mock_make_table):
+    pipeline = MagicMock()
+    pipeline.parameters = "Mock parameters"
+    input_features = pd.DataFrame({"a": [5, 6]})
+    pipeline.problem_type = ProblemTypes.REGRESSION
+    pipeline.name = "Test Pipeline Name"
+    input_features.ww.init()
+    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
+    y_true = pd.Series([3, 2])
+
+    class MockCallback:
+        def __init__(self):
+            self.progress_stages = []
+            self.total_elapsed_time = 0
+
+        def __call__(self, progress_stage, time_elapsed):
+            self.progress_stages.append(progress_stage)
+            self.total_elapsed_time = time_elapsed
+
+    mock_callback = MockCallback()
+    explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=1, callback=mock_callback)
+    assert mock_callback.progress_stages == [e for e in ExplainPredictionsStage]
+    assert mock_callback.total_elapsed_time > 0
