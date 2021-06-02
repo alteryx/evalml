@@ -1,6 +1,8 @@
 import sys
 import traceback
 from collections import namedtuple
+from enum import Enum
+from timeit import default_timer as timer
 
 import numpy as np
 import pandas as pd
@@ -66,8 +68,28 @@ def explain_predictions(pipeline, input_features, y, indices_to_explain, top_k_f
     return report_creator(data)
 
 
+def _update_progress(start_time, current_time, progress_stage, callback_function):
+    """
+    Helper function for updating progress of a function and making a call to the user-provided callback
+    function, if provided. The callback function should accept the following parameters:
+        - progress_stage: stage of computation
+        - time_elapsed: total time in seconds that has elapsed since start of call
+    """
+    if callback_function is not None:
+        elapsed_time = current_time - start_time
+        callback_function(progress_stage, elapsed_time)
+
+
+class ExplainPredictionsStage(Enum):
+    PREPROCESSING_STAGE = "preprocessing_stage",
+    PREDICT_STAGE = "predict_stage",
+    COMPUTE_FEATURE_STAGE = "compute_feature_stage",
+    COMPUTE_SHAP_VALUES_STAGE = "compute_shap_value_stage",
+    DONE = "done"
+
+
 def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_explain=5, top_k_features=3,
-                                   include_shap_values=False, metric=None, output_format="text"):
+                                   include_shap_values=False, metric=None, output_format="text", callback=None):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
@@ -85,7 +107,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
             must be better. By default, this will be the absolute error for regression problems and cross entropy loss
             for classification problems.
         output_format (str): Either "text" or "dict". Default is "text".
-
+        callback (callable): Function to be called with incremental updates. Has the following parameters:
+            - progress_stage: stage of computation
+            - time_elapsed: total time in seconds that has elapsed since start of call
     Returns:
         str, dict, or pd.DataFrame - A report explaining the top contributing features for the best/worst predictions in the input_features.
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
@@ -96,6 +120,9 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         ValueError: if y_true and input_features have mismatched lengths.
         ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
     """
+    start_time = timer()
+    _update_progress(start_time, timer(), ExplainPredictionsStage.PREPROCESSING_STAGE, callback)
+
     input_features = infer_feature_types(input_features)
     y_true = infer_feature_types(y_true)
 
@@ -112,6 +139,7 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
         raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
+    _update_progress(start_time, timer(), ExplainPredictionsStage.PREDICT_STAGE, callback)
 
     try:
         if is_regression(pipeline.problem_type):
@@ -140,14 +168,20 @@ def explain_predictions_best_worst(pipeline, input_features, y_true, num_to_expl
     best_indices = sorted_scores.index[:num_to_explain]
     worst_indices = sorted_scores.index[-num_to_explain:]
     index_list = best_indices.tolist() + worst_indices.tolist()
+    _update_progress(start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback)
 
     pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
+
+    _update_progress(start_time, timer(), ExplainPredictionsStage.COMPUTE_SHAP_VALUES_STAGE, callback)
 
     data = _ReportData(pipeline, pipeline_features, input_features, y_true, y_pred, y_pred_values, errors, index_list, metric)
 
     report_creator = _report_creator_factory(data, report_type="explain_predictions_best_worst",
                                              output_format=output_format, top_k_features=top_k_features,
                                              include_shap_values=include_shap_values, num_to_explain=num_to_explain)
+
+    _update_progress(start_time, timer(), ExplainPredictionsStage.DONE, callback)
+
     return report_creator(data)
 
 

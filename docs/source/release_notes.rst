@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
+        * Added a new callback parameter for ``explain_predictions_best_worst`` :pr:`2308`
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
@@ -28,6 +29,7 @@ Release Notes
         * Set default `n_jobs` to 1 for `StackedEnsembleClassifier` and `StackedEnsembleRegressor` until fix for text-based parallelism in sklearn stacking can be found :pr:`2295`
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+        * Refactored ``calculate_permutation_importance`` method and add per-column permutation importance method :pr:`2302`
     * Documentation Changes
         * Minor changes to the release procedure :pr:`2230`
     * Testing Changes

@@ -6,11 +6,8 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from joblib import Parallel, delayed
 from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
-from sklearn.inspection import \
-    permutation_importance as sk_permutation_importance
 from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
@@ -24,8 +21,11 @@ from sklearn.utils.multiclass import unique_labels
 import evalml
 from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
 from evalml.model_family import ModelFamily
+from evalml.model_understanding.permutation_importance import (
+    calculate_permutation_importance
+)
 from evalml.objectives.utils import get_objective
-from evalml.problem_types import ProblemTypes, is_classification
+from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 
 
@@ -277,106 +277,6 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
                                   name='Trivial Model (AUC 0.5)',
                                   line=dict(dash='dash')))
     return _go.Figure(layout=layout, data=graph_data)
-
-
-def _calculate_permutation_scores_fast(pipeline, precomputed_features, y, objective, col_name,
-                                       random_seed, n_repeats, scorer, baseline_score):
-    """Calculate the permutation score when `col_name` is permuted."""
-
-    random_state = np.random.RandomState(random_seed)
-
-    scores = np.zeros(n_repeats)
-
-    # If column is not in the features or provenance, assume the column was dropped
-    if col_name not in precomputed_features.columns and col_name not in pipeline._get_feature_provenance():
-        return scores + baseline_score
-
-    if col_name in precomputed_features.columns:
-        col_idx = precomputed_features.columns.get_loc(col_name)
-    else:
-        col_idx = [precomputed_features.columns.get_loc(col) for col in pipeline._get_feature_provenance()[col_name]]
-
-    # This is what sk_permutation_importance does. Useful for thread safety
-    X_permuted = precomputed_features.copy()
-
-    shuffling_idx = np.arange(precomputed_features.shape[0])
-    for n_round in range(n_repeats):
-        random_state.shuffle(shuffling_idx)
-        col = X_permuted.iloc[shuffling_idx, col_idx]
-        col.index = X_permuted.index
-        X_permuted.iloc[:, col_idx] = col
-
-        feature_score = scorer(pipeline, X_permuted, y, objective)
-        scores[n_round] = feature_score
-
-    return scores
-
-
-def _fast_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=None):
-    """Calculate permutation importance faster by only computing the estimator features once.
-
-    Only used for pipelines that support this optimization.
-    """
-
-    precomputed_features = pipeline.compute_estimator_features(X, y)
-
-    if is_classification(pipeline.problem_type):
-        y = pipeline._encode_targets(y)
-
-    def scorer(pipeline, features, y, objective):
-        if objective.score_needs_proba:
-            preds = pipeline.estimator.predict_proba(features)
-        else:
-            preds = pipeline.estimator.predict(features)
-        score = pipeline._score(X, y, preds, objective)
-        return score if objective.greater_is_better else -score
-
-    baseline_score = scorer(pipeline, precomputed_features, y, objective)
-
-    scores = Parallel(n_jobs=n_jobs)(delayed(_calculate_permutation_scores_fast)(
-        pipeline, precomputed_features, y, objective, col_name, random_seed, n_repeats, scorer, baseline_score,
-    ) for col_name in X.columns)
-
-    importances = baseline_score - np.array(scores)
-    return {'importances_mean': np.mean(importances, axis=1)}
-
-
-def calculate_permutation_importance(pipeline, X, y, objective, n_repeats=5, n_jobs=None, random_seed=0):
-    """Calculates permutation importance for features.
-
-    Arguments:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target data
-        objective (str, ObjectiveBase): Objective to score on
-        n_repeats (int): Number of times to permute a feature. Defaults to 5.
-        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
-            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-        random_seed (int): Seed for the random number generator. Defaults to 0.
-    Returns:
-        pd.DataFrame, Mean feature importance scores over 5 shuffles.
-    """
-    X = infer_feature_types(X)
-    y = infer_feature_types(y)
-
-    objective = get_objective(objective, return_instance=True)
-    if not objective.is_defined_for_problem_type(pipeline.problem_type):
-        raise ValueError(f"Given objective '{objective.name}' cannot be used with '{pipeline.name}'")
-
-    if pipeline._supports_fast_permutation_importance:
-        perm_importance = _fast_permutation_importance(pipeline, X, y, objective, n_repeats=n_repeats, n_jobs=n_jobs,
-                                                       random_seed=random_seed)
-    else:
-        def scorer(pipeline, X, y):
-            scores = pipeline.score(X, y, objectives=[objective])
-            return scores[objective.name] if objective.greater_is_better else -scores[objective.name]
-        perm_importance = sk_permutation_importance(pipeline, X, y, n_repeats=n_repeats, scoring=scorer, n_jobs=n_jobs,
-                                                    random_state=random_seed)
-    mean_perm_importance = perm_importance["importances_mean"]
-    feature_names = list(X.columns)
-    mean_perm_importance = list(zip(feature_names, mean_perm_importance))
-    mean_perm_importance.sort(key=lambda x: x[1], reverse=True)
-    return pd.DataFrame(mean_perm_importance, columns=["feature", "importance"])
 
 
 def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
