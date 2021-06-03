@@ -835,3 +835,28 @@ def test_component_graph_sampler_same_given_components(mock_dt_fit, mock_rf_fit)
     component_graph2.fit(X, y)
     pd.testing.assert_frame_equal(mock_dt_fit.call_args[0][0], mock_rf_fit.call_args[0][0])
     pd.testing.assert_series_equal(mock_dt_fit.call_args[0][1], mock_rf_fit.call_args[0][1])
+
+
+def test_component_graph_equality(example_graph):
+    different_graph = {'Target Imputer': [TargetImputer],
+                       'OneHot': [OneHotEncoder, 'Target Imputer.x', 'Target Imputer.y'],
+                       'Random Forest': [RandomForestClassifier, 'OneHot.x', 'Target Imputer.y'],
+                       'Elastic Net': [ElasticNetClassifier, 'OneHot.x', 'Target Imputer.y'],
+                       'Logistic Regression': [LogisticRegressionClassifier, 'Random Forest', 'Elastic Net', 'Target Imputer.y']}
+
+    component_graph = ComponentGraph(example_graph, random_seed=0)
+    component_graph_eq = ComponentGraph(example_graph, random_seed=0)
+    component_graph_different_seed = ComponentGraph(example_graph, random_seed=5)
+    component_graph_not_eq = ComponentGraph(different_graph, random_seed=0)
+
+    component_graph.instantiate({})
+    component_graph_eq.instantiate({})
+    component_graph_different_seed.instantiate({})
+    component_graph_not_eq.instantiate({})
+
+    assert component_graph == component_graph
+    assert component_graph == component_graph_eq
+
+    assert component_graph != "not a component graph"
+    assert component_graph != component_graph_different_seed
+    assert component_graph != component_graph_not_eq
