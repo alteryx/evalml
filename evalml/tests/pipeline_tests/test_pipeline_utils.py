@@ -644,7 +644,7 @@ def test_generate_code_pipeline_json_with_objects():
                                             parameters={'My Custom Estimator': {'numpy_arg': np.array([0])}})
     generated_pipeline_code = generate_pipeline_code(pipeline)
     assert generated_pipeline_code == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
-        "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', CustomEstimator], " \
+        "pipeline = BinaryClassificationPipeline(component_graph=[Imputer, CustomEstimator], " \
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
         "'My Custom Estimator':{'random_arg': False, 'numpy_arg': array([0])}}, custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
 
@@ -652,7 +652,7 @@ def test_generate_code_pipeline_json_with_objects():
                                             parameters={'My Custom Estimator': {'random_arg': Imputer()}})
     generated_pipeline_code = generate_pipeline_code(pipeline)
     assert generated_pipeline_code == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n" \
-        "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', CustomEstimator], " \
+        "pipeline = BinaryClassificationPipeline(component_graph=[Imputer, CustomEstimator], " \
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
         "'My Custom Estimator':{'random_arg': Imputer(categorical_impute_strategy='most_frequent', numeric_impute_strategy='mean', categorical_fill_value=None, numeric_fill_value=None), 'numpy_arg': []}}, " \
         "custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
@@ -693,8 +693,7 @@ def test_generate_code_pipeline():
 
 def test_generate_code_nonlinear_pipeline_error(nonlinear_binary_pipeline_class):
     pipeline = nonlinear_binary_pipeline_class({})
-    with pytest.raises(ValueError, match="Code generation for nonlinear pipelines is not supported yet"):
-        generate_pipeline_code(pipeline)
+    generate_pipeline_code(pipeline)
 
 
 def test_generate_code_pipeline_with_custom_components():
