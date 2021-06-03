@@ -1655,7 +1655,7 @@ def test_automl_max_iterations_less_than_ensembling_disabled(mock_pipeline_fit, 
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_max_batches_less_than_ensembling_disabled(mock_pipeline_fit, mock_score, X_y_binary, caplog):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=2, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=2, optimize_thresholds=False, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
     automl.search()
     first_ensemble_batch = 1 + len(automl.allowed_pipelines) + 1  # First batch + each pipeline batch
     assert f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {first_ensemble_batch} to run ensembling." in caplog.text
@@ -2106,7 +2106,7 @@ def test_automl_woodwork_user_types_preserved(mock_binary_fit, mock_binary_score
     X['text col'] = pd.Series([f"{num}" for num in range(len(new_col))])
     X.ww.init(semantic_tags={'cat col': 'category', 'num col': 'numeric'},
               logical_types={'cat col': 'Categorical', 'num col': 'Integer', 'text col': 'NaturalLanguage'})
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_batches=5)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, max_batches=5, optimize_thresholds=False)
     automl.search()
     for arg in mock_fit.call_args[0]:
         assert isinstance(arg, (pd.DataFrame, pd.Series))
@@ -2149,13 +2149,12 @@ def test_automl_validates_problem_configuration(X_y_binary):
 @patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
 def test_automl_best_pipeline(mock_optimize, X_y_binary):
     X, y = X_y_binary
+    mock_optimize.return_value = 0.62
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', train_best_pipeline=False, n_jobs=1)
     automl.search()
     with pytest.raises(PipelineNotYetFittedError, match="not fitted"):
         automl.best_pipeline.predict(X)
-
-    mock_optimize.return_value = 0.62
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, objective="Accuracy Binary", n_jobs=1)
     automl.search()

@@ -253,6 +253,7 @@ class TestDaskEngine(unittest.TestCase):
         new_config = AutoMLConfig(data_splitter=automl_data.data_splitter,
                                   problem_type=automl_data.problem_type,
                                   objective=automl_data.objective,
+                                  thresholding_objective=automl_data.thresholding_objective,
                                   additional_objectives=automl_data.additional_objectives,
                                   optimize_thresholds=automl_data.optimize_thresholds,
                                   error_callback=automl_data.error_callback,
