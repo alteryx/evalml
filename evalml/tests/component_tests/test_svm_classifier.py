@@ -12,9 +12,12 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(SVMClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
-                                                          ProblemTypes.TIME_SERIES_BINARY,
-                                                          ProblemTypes.TIME_SERIES_MULTICLASS}
+    assert set(SVMClassifier.supported_problem_types) == {
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    }
 
 
 def test_fit_predict_binary(X_y_binary):
@@ -53,7 +56,7 @@ def test_fit_predict_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred_proba.values, y_pred_proba_sk, decimal=5)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'sigmoid'])
+@pytest.mark.parametrize("kernel", ["linear", "rbf", "sigmoid"])
 def test_feature_importance(kernel, X_y_binary):
     X, y = X_y_binary
 
@@ -61,7 +64,7 @@ def test_feature_importance(kernel, X_y_binary):
     sk_svc = SVC(kernel=kernel, random_state=0)
     sk_svc.fit(X, y)
 
-    if kernel == 'linear':
+    if kernel == "linear":
         sk_feature_importance = sk_svc.coef_
     else:
         sk_feature_importance = np.zeros(sk_svc.n_features_in_)

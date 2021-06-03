@@ -17,6 +17,7 @@ class ARIMARegressor(Estimator):
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
     """
+
     name = "ARIMA Regressor"
     hyperparameter_ranges = {
         "start_p": Integer(1, 3),
@@ -25,13 +26,26 @@ class ARIMARegressor(Estimator):
         "max_p": Integer(3, 10),
         "max_d": Integer(2, 5),
         "max_q": Integer(3, 10),
-        "seasonal": [True, False]
+        "seasonal": [True, False],
     }
     model_family = ModelFamily.ARIMA
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
 
-    def __init__(self, date_index=None, trend=None, start_p=2, d=0, start_q=2, max_p=5, max_d=2, max_q=5, seasonal=True,
-                 n_jobs=-1, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        date_index=None,
+        trend=None,
+        start_p=2,
+        d=0,
+        start_q=2,
+        max_p=5,
+        max_d=2,
+        max_q=5,
+        seasonal=True,
+        n_jobs=-1,
+        random_seed=0,
+        **kwargs,
+    ):
         """
         Arguments:
             date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
@@ -47,42 +61,54 @@ class ARIMARegressor(Estimator):
             seasonal (bool): Whether to fit a seasonal model to ARIMA.
         """
 
-        parameters = {'trend': trend,
-                      'start_p': start_p,
-                      'd': d,
-                      'start_q': start_q,
-                      'max_p': max_p,
-                      'max_d': max_d,
-                      'max_q': max_q,
-                      'seasonal': seasonal,
-                      "n_jobs": n_jobs,
-                      "date_index": date_index}
+        parameters = {
+            "trend": trend,
+            "start_p": start_p,
+            "d": d,
+            "start_q": start_q,
+            "max_p": max_p,
+            "max_d": max_d,
+            "max_q": max_q,
+            "seasonal": seasonal,
+            "n_jobs": n_jobs,
+            "date_index": date_index,
+        }
 
         parameters.update(kwargs)
 
-        arima_model_msg = "sktime is not installed. Please install using `pip install sktime.`"
-        sktime_arima = import_or_raise("sktime.forecasting.arima", error_msg=arima_model_msg)
+        arima_model_msg = (
+            "sktime is not installed. Please install using `pip install sktime.`"
+        )
+        sktime_arima = import_or_raise(
+            "sktime.forecasting.arima", error_msg=arima_model_msg
+        )
         arima_model = sktime_arima.AutoARIMA(**parameters)
 
-        super().__init__(parameters=parameters,
-                         component_obj=arima_model,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=arima_model, random_seed=random_seed
+        )
 
     def _get_dates(self, X, y):
         date_col = None
         if y is not None:
-            y_index_type = infer_feature_types(pd.Series(y.index)).ww.logical_type.type_string
-            if y_index_type == 'datetime':
+            y_index_type = infer_feature_types(
+                pd.Series(y.index)
+            ).ww.logical_type.type_string
+            if y_index_type == "datetime":
                 date_col = y.index
         if X is not None:
-            X_index_type = infer_feature_types(pd.Series(X.index)).ww.logical_type.type_string
-            if self.parameters['date_index'] in X.columns:
-                date_col = X.pop(self.parameters['date_index'])
-            elif X_index_type == 'datetime':
+            X_index_type = infer_feature_types(
+                pd.Series(X.index)
+            ).ww.logical_type.type_string
+            if self.parameters["date_index"] in X.columns:
+                date_col = X.pop(self.parameters["date_index"])
+            elif X_index_type == "datetime":
                 date_col = X.index
         if date_col is None:
-            msg = "ARIMA regressor requires input data X to have a datetime column specified by the 'date_index' parameter. " \
-                  "If not it will look for the datetime column in the index of X or y."
+            msg = (
+                "ARIMA regressor requires input data X to have a datetime column specified by the 'date_index' parameter. "
+                "If not it will look for the datetime column in the index of X or y."
+            )
             raise ValueError(msg)
         return date_col, X
 
@@ -102,14 +128,20 @@ class ARIMARegressor(Estimator):
             dates.set_index(dates.columns[0], drop=True, inplace=True)
             dates = pd.DatetimeIndex(dates.index)
         elif dates.shape[1] > 1:
-            raise ValueError(f"The dates parameter should not consist of any additional data outside of the datetime information located in the index or in a column."
-                             f" Found {dates.shape[1]} columns.")
-        freq = 'M' if pd.infer_freq(dates) == 'MS' else pd.infer_freq(dates)
+            raise ValueError(
+                f"The dates parameter should not consist of any additional data outside of the datetime information located in the index or in a column."
+                f" Found {dates.shape[1]} columns."
+            )
+        freq = "M" if pd.infer_freq(dates) == "MS" else pd.infer_freq(dates)
         dates = dates.to_period(freq=freq)
         X, y = self._match_indices(X, y, dates)
         if predict:
-            arima_model_msg = "sktime is not installed. Please install using `pip install sktime.`"
-            forecasting_ = import_or_raise("sktime.forecasting.base", error_msg=arima_model_msg)
+            arima_model_msg = (
+                "sktime is not installed. Please install using `pip install sktime.`"
+            )
+            forecasting_ = import_or_raise(
+                "sktime.forecasting.base", error_msg=arima_model_msg
+            )
             fh_ = forecasting_.ForecastingHorizon(dates, is_relative=False)
             return X, y, fh_
         else:
@@ -117,13 +149,13 @@ class ARIMARegressor(Estimator):
 
     def fit(self, X, y=None):
         if y is None:
-            raise ValueError('ARIMA Regressor requires y as input.')
+            raise ValueError("ARIMA Regressor requires y as input.")
 
         X, y = self._manage_woodwork(X, y)
         dates, X = self._get_dates(X, y)
         X, y, _ = self._format_dates(dates, X, y)
         if X is not None and not X.empty:
-            X = X.select_dtypes(exclude=['datetime64'])
+            X = X.select_dtypes(exclude=["datetime64"])
             self._component_obj.fit(y=y, X=X)
         else:
             self._component_obj.fit(y=y)
@@ -134,7 +166,7 @@ class ARIMARegressor(Estimator):
         dates, X = self._get_dates(X, y)
         X, y, fh_ = self._format_dates(dates, X, y, predict=True)
         if X is not None and not X.empty:
-            X = X.select_dtypes(exclude=['datetime64'])
+            X = X.select_dtypes(exclude=["datetime64"])
             y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
             try:
@@ -142,8 +174,10 @@ class ARIMARegressor(Estimator):
             except ValueError as ve:
                 error = str(ve)
                 if "When an ARIMA is fit with an X array" in error:
-                    raise ValueError("If X was passed to the fit method of the ARIMARegressor, "
-                                     "then it must be passed to the predict method as well.")
+                    raise ValueError(
+                        "If X was passed to the fit method of the ARIMARegressor, "
+                        "then it must be passed to the predict method as well."
+                    )
                 else:
                     raise ve
         return infer_feature_types(y_pred)

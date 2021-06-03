@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
+        * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Documentation Changes
     * Testing Changes
 

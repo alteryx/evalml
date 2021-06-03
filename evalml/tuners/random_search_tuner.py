@@ -14,8 +14,14 @@ class RandomSearchTuner(Tuner):
         >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
     """
 
-    def __init__(self, pipeline_hyperparameter_ranges, random_seed=0, with_replacement=False, replacement_max_attempts=10):
-        """ Sets up check for duplication if needed.
+    def __init__(
+        self,
+        pipeline_hyperparameter_ranges,
+        random_seed=0,
+        with_replacement=False,
+        replacement_max_attempts=10,
+    ):
+        """Sets up check for duplication if needed.
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
@@ -84,7 +90,9 @@ class RandomSearchTuner(Tuner):
             attempts = 0
             while curr_params in self._used_parameters:
                 if attempts >= self._replacement_max_attempts:
-                    raise NoParamsException("Cannot create a unique set of unexplored parameters. Try expanding the search space.")
+                    raise NoParamsException(
+                        "Cannot create a unique set of unexplored parameters. Try expanding the search space."
+                    )
                     return True
                 attempts += 1
                 curr_params = self._get_sample()

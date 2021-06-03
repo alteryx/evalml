@@ -9,12 +9,21 @@ _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
 class StackedEnsembleBase(Estimator):
     """Stacked Ensemble Base Class."""
+
     model_family = ModelFamily.ENSEMBLE
     _stacking_estimator_class = None
     _default_final_estimator = None
     _default_cv = None
 
-    def __init__(self, input_pipelines=None, final_estimator=None, cv=None, n_jobs=None, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        input_pipelines=None,
+        final_estimator=None,
+        cv=None,
+        n_jobs=None,
+        random_seed=0,
+        **kwargs,
+    ):
         """Stacked ensemble base class.
 
         Arguments:
@@ -36,15 +45,25 @@ class StackedEnsembleBase(Estimator):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if not input_pipelines:
-            raise EnsembleMissingPipelinesError("`input_pipelines` must not be None or an empty list.")
-        if [pipeline for pipeline in input_pipelines if pipeline.model_family in _nonstackable_model_families]:
-            raise ValueError("Pipelines with any of the following model families cannot be used as base pipelines: {}".format(_nonstackable_model_families))
+            raise EnsembleMissingPipelinesError(
+                "`input_pipelines` must not be None or an empty list."
+            )
+        if [
+            pipeline
+            for pipeline in input_pipelines
+            if pipeline.model_family in _nonstackable_model_families
+        ]:
+            raise ValueError(
+                "Pipelines with any of the following model families cannot be used as base pipelines: {}".format(
+                    _nonstackable_model_families
+                )
+            )
 
         parameters = {
             "input_pipelines": input_pipelines,
             "final_estimator": final_estimator,
             "cv": cv,
-            "n_jobs": n_jobs
+            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
 
@@ -52,33 +71,43 @@ class StackedEnsembleBase(Estimator):
             raise ValueError("All pipelines must have the same problem type.")
 
         cv = cv or self._default_cv(n_splits=3, random_state=random_seed, shuffle=True)
-        estimators = [scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines]
-        final_estimator = scikit_learn_wrapped_estimator(final_estimator or self._default_final_estimator())
+        estimators = [
+            scikit_learn_wrapped_estimator(pipeline) for pipeline in input_pipelines
+        ]
+        final_estimator = scikit_learn_wrapped_estimator(
+            final_estimator or self._default_final_estimator()
+        )
         sklearn_parameters = {
-            "estimators": [(f"({idx})", estimator) for idx, estimator in enumerate(estimators)],
+            "estimators": [
+                (f"({idx})", estimator) for idx, estimator in enumerate(estimators)
+            ],
             "final_estimator": final_estimator,
             "cv": cv,
-            "n_jobs": n_jobs
+            "n_jobs": n_jobs,
         }
         sklearn_parameters.update(kwargs)
-        super().__init__(parameters=parameters,
-                         component_obj=self._stacking_estimator_class(**sklearn_parameters),
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters,
+            component_obj=self._stacking_estimator_class(**sklearn_parameters),
+            random_seed=random_seed,
+        )
 
     @property
     def feature_importance(self):
         """Not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"""
-        raise NotImplementedError("feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor")
+        raise NotImplementedError(
+            "feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"
+        )
 
     @classproperty
     def default_parameters(cls):
         """Returns the default parameters for stacked ensemble classes.
 
-         Returns:
-             dict: default parameters for this component.
+        Returns:
+            dict: default parameters for this component.
         """
         return {
-            'final_estimator': None,
-            'cv': None,
-            'n_jobs': -1,
+            "final_estimator": None,
+            "cv": None,
+            "n_jobs": -1,
         }

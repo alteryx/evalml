@@ -1,4 +1,3 @@
-
 from functools import wraps
 
 import pandas as pd
@@ -9,7 +8,7 @@ from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
+    infer_feature_types,
 )
 
 
@@ -19,24 +18,31 @@ class TargetImputerMeta(ComponentBaseMeta):
     @classmethod
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
-            It raises an exception if `False` and calls and returns the wrapped method if `True`.
+        It raises an exception if `False` and calls and returns the wrapped method if `True`.
         """
+
         @wraps(method)
         def _check_for_fit(self, X=None, y=None):
             klass = type(self).__name__
             if not self._is_fitted and self.needs_fitting:
-                raise ComponentNotYetFittedError(f'This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}.')
+                raise ComponentNotYetFittedError(
+                    f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
+                )
             else:
                 return method(self, X, y)
+
         return _check_for_fit
 
 
 class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     """Imputes missing target data according to a specified imputation strategy."""
-    name = 'Target Imputer'
+
+    name = "Target Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs):
+    def __init__(
+        self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
+    ):
         """Initalizes an transformer that imputes missing target data according to the specified imputation strategy."
         Arguments:
             impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
@@ -45,15 +51,12 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        parameters = {"impute_strategy": impute_strategy,
-                      "fill_value": fill_value}
+        parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
-        imputer = SkImputer(strategy=impute_strategy,
-                            fill_value=fill_value,
-                            **kwargs)
-        super().__init__(parameters=parameters,
-                         component_obj=imputer,
-                         random_seed=random_seed)
+        imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
+        super().__init__(
+            parameters=parameters, component_obj=imputer, random_seed=random_seed
+        )
 
     def fit(self, X, y):
         """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are
@@ -72,7 +75,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         # Convert all bool dtypes to category for fitting
         if (y.dtypes == bool).all():
-            y = y.astype('category')
+            y = y.astype("category")
 
         self._component_obj.fit(y)
         return self
@@ -97,7 +100,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (y_df.dtypes == bool).all():
-            return X, _retain_custom_types_and_initalize_woodwork(y_ww.ww.logical_type, y)
+            return X, _retain_custom_types_and_initalize_woodwork(
+                y_ww.ww.logical_type, y
+            )
 
         transformed = self._component_obj.transform(y_df)
         if transformed.shape[1] == 0:

@@ -6,13 +6,20 @@ from texttable import Texttable
 from evalml.model_understanding.prediction_explanations._algorithms import (
     _aggregate_shap_values,
     _compute_shap_values,
-    _normalize_shap_values
+    _normalize_shap_values,
 )
 from evalml.problem_types import ProblemTypes
 
 
-def _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values=False,
-               convert_numeric_to_string=True):
+def _make_rows(
+    shap_values,
+    normalized_values,
+    pipeline_features,
+    original_features,
+    top_k,
+    include_shap_values=False,
+    convert_numeric_to_string=True,
+):
     """Makes the rows (one row for each feature) for the SHAP table.
 
     Arguments:
@@ -29,7 +36,9 @@ def _make_rows(shap_values, normalized_values, pipeline_features, original_featu
     Returns:
           list[str]
     """
-    tuples = [(value[0], feature_name) for feature_name, value in normalized_values.items()]
+    tuples = [
+        (value[0], feature_name) for feature_name, value in normalized_values.items()
+    ]
 
     # Sort the features s.t the top_k_features w the largest shap value magnitudes are the first
     # top_k_features elements
@@ -52,7 +61,9 @@ def _make_rows(shap_values, normalized_values, pipeline_features, original_featu
             feature_value = original_features[feature_name].iloc[0]
 
         if convert_numeric_to_string:
-            if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(feature_value):
+            if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(
+                feature_value
+            ):
                 feature_value = "{:.2f}".format(feature_value)
             else:
                 feature_value = str(feature_value)
@@ -84,9 +95,12 @@ def _rows_to_dict(rows):
         qualitative_explanations.append(qualitative)
         quantitative_explanations.append(quantitative)
 
-    return {"feature_names": feature_names, "feature_values": feature_values,
-            "qualitative_explanation": qualitative_explanations,
-            "quantitative_explanation": quantitative_explanations}
+    return {
+        "feature_names": feature_names,
+        "feature_values": feature_values,
+        "qualitative_explanation": qualitative_explanations,
+        "quantitative_explanation": quantitative_explanations,
+    }
 
 
 def _make_json_serializable(value):
@@ -104,8 +118,14 @@ def _make_json_serializable(value):
     return value
 
 
-def _make_text_table(shap_values, normalized_values, pipeline_features, original_features,
-                     top_k, include_shap_values=False):
+def _make_text_table(
+    shap_values,
+    normalized_values,
+    pipeline_features,
+    original_features,
+    top_k,
+    include_shap_values=False,
+):
     """Make a table displaying the SHAP values for a prediction.
 
     Arguments:
@@ -132,7 +152,14 @@ def _make_text_table(shap_values, normalized_values, pipeline_features, original
         header.append("SHAP Value")
 
     rows = [header]
-    rows += _make_rows(shap_values, normalized_values, pipeline_features, original_features, top_k, include_shap_values)
+    rows += _make_rows(
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+        top_k,
+        include_shap_values,
+    )
     table.add_rows(rows)
     return table.draw()
 
@@ -146,8 +173,14 @@ class _TableMaker(abc.ABC):
         self.provenance = provenance
 
     @staticmethod
-    def make_drill_down_dict(provenance, shap_values, normalized_values, pipeline_features,
-                             original_features, include_shap_values):
+    def make_drill_down_dict(
+        provenance,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+        include_shap_values,
+    ):
         """Format the 'drill_down' section of the explanation report when output_format="dict"
 
         This section will include the feature values, feature names, qualitative explanation
@@ -156,56 +189,126 @@ class _TableMaker(abc.ABC):
         """
         drill_down = {}
         for parent_feature, children_features in provenance.items():
-            shap_for_children = {k: v for k, v in shap_values.items() if k in children_features}
-            agg_for_children = {k: v for k, v in normalized_values.items() if k in children_features}
+            shap_for_children = {
+                k: v for k, v in shap_values.items() if k in children_features
+            }
+            agg_for_children = {
+                k: v for k, v in normalized_values.items() if k in children_features
+            }
             top_k = len(agg_for_children)
-            rows = _make_rows(shap_for_children, agg_for_children, pipeline_features, original_features,
-                              top_k=top_k, include_shap_values=include_shap_values, convert_numeric_to_string=False)
+            rows = _make_rows(
+                shap_for_children,
+                agg_for_children,
+                pipeline_features,
+                original_features,
+                top_k=top_k,
+                include_shap_values=include_shap_values,
+                convert_numeric_to_string=False,
+            )
             drill_down[parent_feature] = _rows_to_dict(rows)
         return drill_down
 
     @abc.abstractmethod
-    def make_text(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+    def make_text(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
         """Creates a table given shap values and formats it as text."""
 
     @abc.abstractmethod
-    def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+    def make_dict(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
         """Creates a table given shap values and formats it as dictionary."""
 
-    def make_dataframe(self, aggregated_shap_values, aggregated_normalized_values,
-                       shap_values, normalized_values, pipeline_features, original_features):
-        data = self.make_dict(aggregated_shap_values, aggregated_normalized_values,
-                              shap_values=shap_values, normalized_values=normalized_values,
-                              pipeline_features=pipeline_features, original_features=original_features)['explanations']
+    def make_dataframe(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
+        data = self.make_dict(
+            aggregated_shap_values,
+            aggregated_normalized_values,
+            shap_values=shap_values,
+            normalized_values=normalized_values,
+            pipeline_features=pipeline_features,
+            original_features=original_features,
+        )["explanations"]
 
         # Not including the drill down dict for dataframes
         # 'drill_down' is always included in the dict output so we can delete it
         for d in data:
-            del d['drill_down']
+            del d["drill_down"]
 
         df = pd.concat(map(pd.DataFrame, data)).reset_index(drop=True)
-        if "class_name" in df.columns and df['class_name'].isna().all():
-            df = df.drop(columns=['class_name'])
+        if "class_name" in df.columns and df["class_name"].isna().all():
+            df = df.drop(columns=["class_name"])
         return df
 
 
 class _RegressionSHAPTable(_TableMaker):
     """Makes a SHAP table explaining a prediction for a regression problems."""
 
-    def make_text(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
-        return _make_text_table(aggregated_shap_values, aggregated_normalized_values, pipeline_features, original_features,
-                                self.top_k, self.include_shap_values)
+    def make_text(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
+        return _make_text_table(
+            aggregated_shap_values,
+            aggregated_normalized_values,
+            pipeline_features,
+            original_features,
+            self.top_k,
+            self.include_shap_values,
+        )
 
-    def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
-        rows = _make_rows(aggregated_shap_values, aggregated_normalized_values, pipeline_features, original_features,
-                          self.top_k, self.include_shap_values, convert_numeric_to_string=False)
+    def make_dict(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
+        rows = _make_rows(
+            aggregated_shap_values,
+            aggregated_normalized_values,
+            pipeline_features,
+            original_features,
+            self.top_k,
+            self.include_shap_values,
+            convert_numeric_to_string=False,
+        )
         json_rows = _rows_to_dict(rows)
-        drill_down = self.make_drill_down_dict(self.provenance, shap_values, normalized_values,
-                                               pipeline_features, original_features, self.include_shap_values)
+        drill_down = self.make_drill_down_dict(
+            self.provenance,
+            shap_values,
+            normalized_values,
+            pipeline_features,
+            original_features,
+            self.include_shap_values,
+        )
         json_rows["class_name"] = None
         json_rows["drill_down"] = drill_down
         return {"explanations": [json_rows]}
@@ -218,20 +321,53 @@ class _BinarySHAPTable(_TableMaker):
         super().__init__(top_k, include_shap_values, provenance)
         self.class_names = class_names
 
-    def make_text(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+    def make_text(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
         # The SHAP algorithm will return a two-element list for binary problems.
         # By convention, we display the explanation for the dominant class.
-        return _make_text_table(aggregated_shap_values[1], aggregated_normalized_values[1],
-                                pipeline_features, original_features, self.top_k, self.include_shap_values)
+        return _make_text_table(
+            aggregated_shap_values[1],
+            aggregated_normalized_values[1],
+            pipeline_features,
+            original_features,
+            self.top_k,
+            self.include_shap_values,
+        )
 
-    def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
-        rows = _make_rows(aggregated_shap_values[1], aggregated_normalized_values[1], pipeline_features, original_features,
-                          self.top_k, self.include_shap_values, convert_numeric_to_string=False)
+    def make_dict(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
+        rows = _make_rows(
+            aggregated_shap_values[1],
+            aggregated_normalized_values[1],
+            pipeline_features,
+            original_features,
+            self.top_k,
+            self.include_shap_values,
+            convert_numeric_to_string=False,
+        )
         dict_rows = _rows_to_dict(rows)
-        drill_down = self.make_drill_down_dict(self.provenance, shap_values[1], normalized_values[1],
-                                               pipeline_features, original_features, self.include_shap_values)
+        drill_down = self.make_drill_down_dict(
+            self.provenance,
+            shap_values[1],
+            normalized_values[1],
+            pipeline_features,
+            original_features,
+            self.include_shap_values,
+        )
         dict_rows["drill_down"] = drill_down
         dict_rows["class_name"] = _make_json_serializable(self.class_names[1])
         return {"explanations": [dict_rows]}
@@ -244,37 +380,76 @@ class _MultiClassSHAPTable(_TableMaker):
         super().__init__(top_k, include_shap_values, provenance)
         self.class_names = class_names
 
-    def make_text(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+    def make_text(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
         strings = []
-        for class_name, class_values, normalized_class_values in zip(self.class_names, aggregated_shap_values,
-                                                                     aggregated_normalized_values):
+        for class_name, class_values, normalized_class_values in zip(
+            self.class_names, aggregated_shap_values, aggregated_normalized_values
+        ):
             strings.append(f"Class: {class_name}\n")
-            table = _make_text_table(class_values, normalized_class_values, pipeline_features, original_features,
-                                     self.top_k, self.include_shap_values)
+            table = _make_text_table(
+                class_values,
+                normalized_class_values,
+                pipeline_features,
+                original_features,
+                self.top_k,
+                self.include_shap_values,
+            )
             strings += table.splitlines()
             strings.append("\n")
         return "\n".join(strings)
 
-    def make_dict(self, aggregated_shap_values, aggregated_normalized_values,
-                  shap_values, normalized_values, pipeline_features, original_features):
+    def make_dict(
+        self,
+        aggregated_shap_values,
+        aggregated_normalized_values,
+        shap_values,
+        normalized_values,
+        pipeline_features,
+        original_features,
+    ):
         json_output = []
         for class_index, class_name in enumerate(self.class_names):
-            rows = _make_rows(aggregated_shap_values[class_index], aggregated_normalized_values[class_index],
-                              pipeline_features, original_features, self.top_k,
-                              self.include_shap_values, convert_numeric_to_string=False)
+            rows = _make_rows(
+                aggregated_shap_values[class_index],
+                aggregated_normalized_values[class_index],
+                pipeline_features,
+                original_features,
+                self.top_k,
+                self.include_shap_values,
+                convert_numeric_to_string=False,
+            )
             json_output_for_class = _rows_to_dict(rows)
-            drill_down = self.make_drill_down_dict(self.provenance, shap_values[class_index],
-                                                   normalized_values[class_index], pipeline_features, original_features,
-                                                   self.include_shap_values)
+            drill_down = self.make_drill_down_dict(
+                self.provenance,
+                shap_values[class_index],
+                normalized_values[class_index],
+                pipeline_features,
+                original_features,
+                self.include_shap_values,
+            )
             json_output_for_class["drill_down"] = drill_down
             json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
         return {"explanations": json_output}
 
 
-def _make_single_prediction_shap_table(pipeline, pipeline_features, input_features, index_to_explain, top_k=3,
-                                       include_shap_values=False, output_format="text"):
+def _make_single_prediction_shap_table(
+    pipeline,
+    pipeline_features,
+    input_features,
+    index_to_explain,
+    top_k=3,
+    include_shap_values=False,
+    output_format="text",
+):
     """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
     Arguments:
@@ -299,9 +474,13 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
     if pipeline_features_row.isna().any(axis=None):
-        raise ValueError(f"Requested index ({index_to_explain}) produces NaN in features.")
+        raise ValueError(
+            f"Requested index ({index_to_explain}) produces NaN in features."
+        )
 
-    shap_values = _compute_shap_values(pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0))
+    shap_values = _compute_shap_values(
+        pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)
+    )
     normalized_values = _normalize_shap_values(shap_values)
 
     provenance = pipeline._get_feature_provenance()
@@ -312,19 +491,42 @@ def _make_single_prediction_shap_table(pipeline, pipeline_features, input_featur
     if hasattr(pipeline, "classes_"):
         class_names = pipeline.classes_
 
-    table_makers = {ProblemTypes.REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, provenance),
-                    ProblemTypes.BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, provenance),
-                    ProblemTypes.MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, provenance),
-                    ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(top_k, include_shap_values, provenance),
-                    ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(top_k, include_shap_values, class_names, provenance),
-                    ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(top_k, include_shap_values, class_names, provenance)}
+    table_makers = {
+        ProblemTypes.REGRESSION: _RegressionSHAPTable(
+            top_k, include_shap_values, provenance
+        ),
+        ProblemTypes.BINARY: _BinarySHAPTable(
+            top_k, include_shap_values, class_names, provenance
+        ),
+        ProblemTypes.MULTICLASS: _MultiClassSHAPTable(
+            top_k, include_shap_values, class_names, provenance
+        ),
+        ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(
+            top_k, include_shap_values, provenance
+        ),
+        ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(
+            top_k, include_shap_values, class_names, provenance
+        ),
+        ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(
+            top_k, include_shap_values, class_names, provenance
+        ),
+    }
 
     table_maker_class = table_makers[pipeline.problem_type]
-    table_maker = {"text": table_maker_class.make_text, "dict": table_maker_class.make_dict,
-                   "dataframe": table_maker_class.make_dataframe}[output_format]
+    table_maker = {
+        "text": table_maker_class.make_text,
+        "dict": table_maker_class.make_dict,
+        "dataframe": table_maker_class.make_dataframe,
+    }[output_format]
 
-    return table_maker(aggregated_shap_values, aggregated_normalized_shap_values,
-                       shap_values, normalized_values, pipeline_features_row, input_features_row)
+    return table_maker(
+        aggregated_shap_values,
+        aggregated_normalized_shap_values,
+        shap_values,
+        normalized_values,
+        pipeline_features_row,
+        input_features_row,
+    )
 
 
 class _SectionMaker(abc.ABC):
@@ -349,7 +551,6 @@ class _SectionMaker(abc.ABC):
 
 
 class _Heading(_SectionMaker):
-
     def __init__(self, prefixes, n_indices):
         self.prefixes = prefixes
         self.n_indices = n_indices
@@ -407,27 +608,35 @@ class _ClassificationPredictedValues(_SectionMaker):
             dataframe_index (pd.Series): pandas index for the entire dataset. Used to display the index in the data
                 each explanation belongs to.
         """
-        pred_value = [f"{col_name}: {pred}" for col_name, pred in
-                      zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist())]
+        pred_value = [
+            f"{col_name}: {pred}"
+            for col_name, pred in zip(
+                y_pred.columns, round(y_pred.iloc[index], 3).tolist()
+            )
+        ]
         pred_value = "[" + ", ".join(pred_value) + "]"
         true_value = y_true.iloc[index]
 
-        return [f"\t\tPredicted Probabilities: {pred_value}\n",
-                f"\t\tPredicted Value: {self.predicted_values[index]}\n",
-                f"\t\tTarget Value: {true_value}\n",
-                f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
-                f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n"]
+        return [
+            f"\t\tPredicted Probabilities: {pred_value}\n",
+            f"\t\tPredicted Value: {self.predicted_values[index]}\n",
+            f"\t\tTarget Value: {true_value}\n",
+            f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
+            f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n",
+        ]
 
     def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for classification problem best/worst reports formatted as dictionary."""
         pred_values = dict(zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist()))
 
-        return {"probabilities": pred_values,
-                "predicted_value": _make_json_serializable(self.predicted_values[index]),
-                "target_value": _make_json_serializable(y_true.iloc[index]),
-                "error_name": self.error_name,
-                "error_value": _make_json_serializable(scores[index]),
-                "index_id": _make_json_serializable(dataframe_index.iloc[index])}
+        return {
+            "probabilities": pred_values,
+            "predicted_value": _make_json_serializable(self.predicted_values[index]),
+            "target_value": _make_json_serializable(y_true.iloc[index]),
+            "error_name": self.error_name,
+            "error_value": _make_json_serializable(scores[index]),
+            "index_id": _make_json_serializable(dataframe_index.iloc[index]),
+        }
 
     def make_dataframe(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for classification problem best/worst reports formatted as dataframe."""
@@ -452,17 +661,23 @@ class _RegressionPredictedValues(_SectionMaker):
             dataframe_index (pd.Series): pandas index for the entire dataset. Used to display the index in the data
                 each explanation belongs to.
         """
-        return [f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
-                f"\t\tTarget Value: {round(y_true.iloc[index], 3)}\n",
-                f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
-                f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n"]
+        return [
+            f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
+            f"\t\tTarget Value: {round(y_true.iloc[index], 3)}\n",
+            f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
+            f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n",
+        ]
 
     def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for regression problem best/worst reports formatted as a dictionary."""
-        return {"probabilities": None, "predicted_value": round(y_pred.iloc[index], 3),
-                "target_value": round(y_true.iloc[index], 3), "error_name": self.error_name,
-                "error_value": round(scores[index], 3),
-                "index_id": _make_json_serializable(dataframe_index.iloc[index])}
+        return {
+            "probabilities": None,
+            "predicted_value": round(y_pred.iloc[index], 3),
+            "target_value": round(y_true.iloc[index], 3),
+            "error_name": self.error_name,
+            "error_value": round(scores[index], 3),
+            "index_id": _make_json_serializable(dataframe_index.iloc[index]),
+        }
 
     def make_dataframe(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section formatted as a dataframe."""
@@ -491,32 +706,43 @@ class _SHAPTable(_SectionMaker):
             pipeline_features (pd.DataFrame): The dataframe of features created by the pipeline.
             input_features (pd.Dataframe): The dataframe of features passed to the pipeline.
         """
-        table = _make_single_prediction_shap_table(pipeline, pipeline_features,
-                                                   input_features,
-                                                   index_to_explain=index,
-                                                   top_k=self.top_k_features,
-                                                   include_shap_values=self.include_shap_values, output_format="text")
+        table = _make_single_prediction_shap_table(
+            pipeline,
+            pipeline_features,
+            input_features,
+            index_to_explain=index,
+            top_k=self.top_k_features,
+            include_shap_values=self.include_shap_values,
+            output_format="text",
+        )
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
 
     def make_dict(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section formatted as a dictionary."""
-        json_output = _make_single_prediction_shap_table(pipeline, pipeline_features, input_features,
-                                                         index_to_explain=index,
-                                                         top_k=self.top_k_features,
-                                                         include_shap_values=self.include_shap_values,
-                                                         output_format="dict")
+        json_output = _make_single_prediction_shap_table(
+            pipeline,
+            pipeline_features,
+            input_features,
+            index_to_explain=index,
+            top_k=self.top_k_features,
+            include_shap_values=self.include_shap_values,
+            output_format="dict",
+        )
         return json_output
 
     def make_dataframe(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section formatted as a dataframe."""
-        return _make_single_prediction_shap_table(pipeline, pipeline_features,
-                                                  input_features,
-                                                  index_to_explain=index,
-                                                  top_k=self.top_k_features,
-                                                  include_shap_values=self.include_shap_values,
-                                                  output_format="dataframe")
+        return _make_single_prediction_shap_table(
+            pipeline,
+            pipeline_features,
+            input_features,
+            index_to_explain=index,
+            top_k=self.top_k_features,
+            include_shap_values=self.include_shap_values,
+            output_format="dataframe",
+        )
 
 
 class _ReportMaker:
@@ -553,13 +779,22 @@ class _ReportMaker:
         for rank, index in enumerate(data.index_list):
             report.extend(self.heading_maker.make_text(rank))
             if self.make_predicted_values_maker:
-                report.extend(self.make_predicted_values_maker.make_text(index, data.y_pred, data.y_true,
-                                                                         data.errors,
-                                                                         pd.Series(data.pipeline_features.index)))
+                report.extend(
+                    self.make_predicted_values_maker.make_text(
+                        index,
+                        data.y_pred,
+                        data.y_true,
+                        data.errors,
+                        pd.Series(data.pipeline_features.index),
+                    )
+                )
             else:
                 report.extend([""])
-            report.extend(self.table_maker.make_text(index, data.pipeline, data.pipeline_features,
-                                                     data.input_features))
+            report.extend(
+                self.table_maker.make_text(
+                    index, data.pipeline, data.pipeline_features, data.input_features
+                )
+            )
         return "".join(report)
 
     def make_dict(self, data):
@@ -578,35 +813,47 @@ class _ReportMaker:
             if self.heading_maker:
                 section["rank"] = self.heading_maker.make_dict(rank)
             if self.make_predicted_values_maker:
-                section["predicted_values"] = self.make_predicted_values_maker.make_dict(index, data.y_pred,
-                                                                                         data.y_true, data.errors,
-                                                                                         pd.Series(data.pipeline_features.index))
-            section["explanations"] = self.table_maker.make_dict(index, data.pipeline,
-                                                                 data.pipeline_features,
-                                                                 data.input_features)["explanations"]
+                section[
+                    "predicted_values"
+                ] = self.make_predicted_values_maker.make_dict(
+                    index,
+                    data.y_pred,
+                    data.y_true,
+                    data.errors,
+                    pd.Series(data.pipeline_features.index),
+                )
+            section["explanations"] = self.table_maker.make_dict(
+                index, data.pipeline, data.pipeline_features, data.input_features
+            )["explanations"]
             report.append(section)
         return {"explanations": report}
 
     def make_dataframe(self, data):
         report = []
         for rank, index in enumerate(data.index_list):
-            shap_table = self.table_maker.make_dataframe(index, data.pipeline, data.pipeline_features,
-                                                         data.input_features)
+            shap_table = self.table_maker.make_dataframe(
+                index, data.pipeline, data.pipeline_features, data.input_features
+            )
             if self.make_predicted_values_maker:
-                heading = self.make_predicted_values_maker.make_dataframe(index, data.y_pred, data.y_true, data.errors,
-                                                                          pd.Series(data.pipeline_features.index))
+                heading = self.make_predicted_values_maker.make_dataframe(
+                    index,
+                    data.y_pred,
+                    data.y_true,
+                    data.errors,
+                    pd.Series(data.pipeline_features.index),
+                )
                 for key, value in heading.items():
                     if key == "probabilities":
                         for class_name, probability in value.items():
-                            shap_table[f'label_{class_name}_probability'] = probability
+                            shap_table[f"label_{class_name}_probability"] = probability
                     else:
                         shap_table[key] = value
             if self.heading_maker:
                 heading = self.heading_maker.make_dataframe(rank)
-                shap_table['rank'] = heading['index']
-                shap_table['prefix'] = heading['prefix']
+                shap_table["rank"] = heading["index"]
+                shap_table["prefix"] = heading["prefix"]
             else:
-                shap_table['prediction_number'] = rank
+                shap_table["prediction_number"] = rank
 
             report.append(shap_table)
         df = pd.concat(report).reset_index(drop=True)
