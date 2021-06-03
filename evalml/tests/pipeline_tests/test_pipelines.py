@@ -1439,7 +1439,9 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         },
     }
     assert (
-        logistic_regression_binary_pipeline_class({}).default_parameters
+        logistic_regression_binary_pipeline_class(
+            {}
+        )._component_graph.default_parameters
         == expected_defaults
     )
 

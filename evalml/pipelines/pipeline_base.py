@@ -389,20 +389,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return component_parameters
 
     @property
-    def default_parameters(self):
-        """The default parameter dictionary for this pipeline.
-
-        Returns:
-            dict: Dictionary of all component default parameters.
-        """
-        defaults = {}
-        for c in self.component_graph:
-            component = handle_component_class(c)
-            if component.default_parameters:
-                defaults[component.name] = component.default_parameters
-        return defaults
-
-    @property
     def feature_importance(self):
         """Importance associated with each feature. Features dropped by the feature selection are excluded.
 

@@ -117,7 +117,9 @@ def test_iterative_algorithm_results(
     ]
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
-    assert all([p.parameters == p.default_parameters for p in next_batch])
+    assert all(
+        [p.parameters == p._component_graph.default_parameters for p in next_batch]
+    )
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -276,7 +278,9 @@ def test_iterative_algorithm_one_allowed_pipeline(
     ] * len(next_batch)
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
-    assert all([p.parameters == p.default_parameters for p in next_batch])
+    assert all(
+        [p.parameters == p._component_graph.default_parameters for p in next_batch]
+    )
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -304,7 +308,10 @@ def test_iterative_algorithm_one_allowed_pipeline(
 
         assert any(
             [
-                p != logistic_regression_binary_pipeline_class({}).default_parameters
+                p
+                != logistic_regression_binary_pipeline_class(
+                    {}
+                )._component_graph.default_parameters
                 for p in all_parameters
             ]
         )
