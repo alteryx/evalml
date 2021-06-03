@@ -692,25 +692,6 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
         mock_split_data.assert_not_called()
 
 
-@pytest.mark.parametrize("objective", ['F1', 'Log Loss Binary', 'AUC'])
-@patch('evalml.objectives.BinaryClassificationObjective.optimize_threshold')
-@patch('evalml.pipelines.BinaryClassificationPipeline._encode_targets', side_effect=lambda y: y)
-@patch('evalml.pipelines.BinaryClassificationPipeline.score')
-@patch('evalml.pipelines.BinaryClassificationPipeline.fit')
-@patch('evalml.pipelines.BinaryClassificationPipeline.predict_proba')
-def test_tuning_threshold_objective(mock_predict, mock_fit, mock_score, mock_encode_targets, mock_optimize_threshold, objective, X_y_binary):
-    mock_optimize_threshold.return_value = 0.6
-    X, y = X_y_binary
-    mock_score.return_value = {objective: 0.5}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective=objective)
-    automl.search()
-
-    if objective != "F1":
-        assert automl.best_pipeline.threshold is None
-    else:
-        assert automl.best_pipeline.threshold == 0.6
-
-
 @pytest.mark.parametrize("problem_type", ['binary', 'multiclass'])
 @pytest.mark.parametrize("categorical_features", ['none', 'some', 'all'])
 @pytest.mark.parametrize("size", ['small', 'large'])

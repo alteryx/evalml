@@ -48,9 +48,9 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_binary,
     is_classification,
-    is_time_series,
-    is_binary
+    is_time_series
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
@@ -267,7 +267,9 @@ class AutoMLSearch:
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
-        self.thresholding_objective = get_objective(thresholding_objective, return_instance=False)
+        self.thresholding_objective = get_objective(thresholding_objective, return_instance=True)
+        if self.thresholding_objective.score_needs_proba:
+            raise ValueError("Thresholding objective must be thresholdable!")
         if self.data_splitter is not None and not issubclass(self.data_splitter.__class__, BaseCrossValidator):
             raise ValueError("Not a valid data splitter")
         if not objective.is_defined_for_problem_type(self.problem_type):
@@ -432,11 +434,11 @@ class AutoMLSearch:
                                           self.error_callback, self.random_seed,
                                           self.X_train.ww.schema,
                                           self.y_train.ww.schema)
-        self.threshold_automl_config = None
+        self.threshold_automl_config = self.automl_config
         if is_binary(self.problem_type) and self.optimize_thresholds and self.objective.score_needs_proba:
             # use the thresholding_objective
             self.threshold_automl_config = AutoMLConfig(self.data_splitter, self.problem_type,
-                                                        self.objective, self.additional_objectives, self.thresholding_objective, self.optimize_thresholds,
+                                                        self.thresholding_objective, self.additional_objectives, self.thresholding_objective, self.optimize_thresholds,
                                                         self.error_callback, self.random_seed,
                                                         self.X_train.ww.schema,
                                                         self.y_train.ww.schema)
@@ -660,8 +662,7 @@ class AutoMLSearch:
             if self._train_best_pipeline:
                 X_train = self.X_train
                 y_train = self.y_train
-                config = self.threshold_automl_config or self.automl_config
-                best_pipeline = self._engine.submit_training_job(config, best_pipeline,
+                best_pipeline = self._engine.submit_training_job(self.threshold_automl_config, best_pipeline,
                                                                  X_train, y_train).get_result()
 
             self._best_pipeline = best_pipeline

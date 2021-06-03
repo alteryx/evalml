@@ -835,7 +835,7 @@ def test_add_to_rankings_duplicate(mock_fit, mock_score, dummy_binary_pipeline_c
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 0.1234}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class({})])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, max_iterations=1, allowed_pipelines=[dummy_binary_pipeline_class({})])
     automl.search()
     best_pipeline = automl.best_pipeline
     test_pipeline = dummy_binary_pipeline_class(parameters={})
@@ -914,7 +914,7 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     with pytest.raises(PipelineNotFoundError, match="Pipeline not found in automl results"):
         automl.get_pipeline(1000)
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, max_iterations=1)
     automl.search()
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
     automl._results['pipeline_results'][0].pop('pipeline_class')
@@ -923,7 +923,7 @@ def test_get_pipeline_invalid(mock_fit, mock_score, X_y_binary):
     with pytest.raises(PipelineNotFoundError, match="Pipeline class or parameters not found in automl results"):
         automl.get_pipeline(0)
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, max_iterations=1)
     automl.search()
     assert automl.get_pipeline(0).name == 'Mode Baseline Binary Classification Pipeline'
     automl._results['pipeline_results'][0].pop('parameters')
@@ -937,7 +937,7 @@ def test_get_pipeline(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_iterations=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, max_iterations=1)
     automl.search()
     for _, ranking in automl.rankings.iterrows():
         pl = automl.get_pipeline(ranking.id)
@@ -1615,7 +1615,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.RANDOM_FOREST]) + 1
     # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.RANDOM_FOREST], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, optimize_thresholds=False, allowed_model_families=[ModelFamily.RANDOM_FOREST], ensembling=True)
     automl.search()
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
 
@@ -1624,14 +1624,14 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
 
     caplog.clear()
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL]) + 1
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_pipelines=[logistic_regression_binary_pipeline_class({})], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, optimize_thresholds=False, allowed_pipelines=[logistic_regression_binary_pipeline_class({})], ensembling=True)
     automl.search()
     pipeline_names = automl.rankings['pipeline_name']
     assert not pipeline_names.str.contains('Ensemble').any()
     assert "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run." in caplog.text
     # Check that ensembling runs when len(allowed_model_families) == 1 but len(allowed_pipelines) > 1
     caplog.clear()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations, optimize_thresholds=False, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
     automl.search()
     pipeline_names = automl.rankings['pipeline_name']
     assert pipeline_names.str.contains('Ensemble').any()
@@ -1643,7 +1643,7 @@ def test_automl_one_allowed_pipeline_ensembling_disabled(mock_pipeline_fit, mock
 def test_automl_max_iterations_less_than_ensembling_disabled(mock_pipeline_fit, mock_score, X_y_binary, caplog):
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL])
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations - 1, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=max_iterations - 1, optimize_thresholds=False, allowed_model_families=[ModelFamily.LINEAR_MODEL], ensembling=True)
     automl.search()
     assert f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {max_iterations} to run ensembling." in caplog.text
 
@@ -1669,7 +1669,7 @@ def test_automl_max_batches_less_than_ensembling_disabled(mock_pipeline_fit, moc
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_max_batches_output(mock_pipeline_fit, mock_score, max_batches, X_y_binary, caplog):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=None, optimize_threshold=False, max_batches=max_batches)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=None, optimize_thresholds=False, max_batches=max_batches)
     automl.search()
 
     output = caplog.text
@@ -1682,18 +1682,18 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(mock_fit, mock_scor
     X, y = X_y_binary
 
     # Use the old default when all are None
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", objective="Log Loss Binary", optimize_threshold=False)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", objective="Log Loss Binary", optimize_thresholds=False)
     automl.search()
     assert len(automl.results["pipeline_results"]) == len(get_estimators(problem_type='binary')) + 1
 
     # Use max_iterations when both max_iterations and max_batches are set
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", objective="Log Loss Binary", max_batches=10,
-                          optimize_threshold=False, max_iterations=6)
+                          optimize_thresholds=False, max_iterations=6)
     automl.search()
     assert len(automl.results["pipeline_results"]) == 6
 
     # Don't change max_iterations when only max_iterations is set
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=4, optimize_threshold=False)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=4, optimize_thresholds=False)
     automl.search()
     assert len(automl.results["pipeline_results"]) == 4
 
@@ -1736,7 +1736,7 @@ def test_data_splitter_binary(mock_fit, mock_score, X_y_binary):
             automl.search()
 
     y[2] = 1
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", optimize_threshold=False, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False, n_jobs=1)
     automl.search()
 
 
@@ -1878,7 +1878,7 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(mock_fit, mock_score, dum
         def __init__(self, n_jobs=-1, random_seed=0):
             super().__init__(parameters={"n_jobs": n_jobs}, component_obj=None, random_seed=random_seed)
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', n_jobs=3, max_batches=2, optimize_threshold=False,
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', n_jobs=3, max_batches=2, optimize_thresholds=False,
                           allowed_pipelines=[BinaryClassificationPipeline([MockEstimatorWithNJobs], custom_name="Pipeline 1"),
                                              BinaryClassificationPipeline([MockEstimatorWithNJobs], custom_name="Pipeline 2"),
                                              dummy_binary_pipeline_class({})])
@@ -1896,7 +1896,7 @@ def test_automl_ensembling_false(mock_fit, mock_score, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {'Log Loss Binary': 1.0}
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time='60 seconds', max_batches=20, optimize_threshold=False, ensembling=False)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', max_time='60 seconds', max_batches=20, optimize_thresholds=False, ensembling=False)
     automl.search()
     assert not automl.rankings['pipeline_name'].str.contains('Ensemble').any()
 
@@ -1919,7 +1919,7 @@ def test_search_with_text(mock_fit, mock_score):
                    'It was red and yellow and green and brown and scarlet and black and ochre and peach and ruby and olive and violet and fawn...']
          })
     y = [0, 1, 1, 0, 1, 0]
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_threshold=False)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False)
     automl.search()
     assert automl.rankings['pipeline_name'][1:].str.contains('Text').all()
 
@@ -2157,12 +2157,12 @@ def test_automl_best_pipeline(mock_optimize, X_y_binary):
 
     mock_optimize.return_value = 0.62
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, objective="Accuracy Binary", optimize_threshold=False, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=False, objective="Accuracy Binary", n_jobs=1)
     automl.search()
     automl.best_pipeline.predict(X)
     assert automl.best_pipeline.threshold == 0.5
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=True, objective="Log Loss Binary", optimize_threshold=False, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', optimize_thresholds=True, objective="Log Loss Binary", n_jobs=1)
     automl.search()
     automl.best_pipeline.predict(X)
     assert automl.best_pipeline.threshold == 0.62
@@ -2866,3 +2866,20 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     if is_classification(problem_type):
         pd.testing.assert_frame_equal(expected_predictions_proba, baseline.predict_proba(X, y))
     np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1]))
+
+
+@pytest.mark.parametrize("objective,errors", [("Log Loss Binary", True),
+                                              ("AUC", True),
+                                              ("F1", False),
+                                              ("Accuracy Binary", False)])
+@patch("evalml.objectives.binary_classification_objective.BinaryClassificationObjective.optimize_threshold", return_value=0.65)
+def test_automl_thresholding_objective(mock_optimize, objective, errors, X_y_binary):
+    X, y = X_y_binary
+    if errors:
+        with pytest.raises(ValueError, match="Thresholding objective must be thresholdable"):
+            AutoMLSearch(X_train=X, y_train=y, problem_type="binary", thresholding_objective=objective)
+    else:
+        automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", thresholding_objective=objective, max_iterations=2)
+        automl.search()
+        mock_optimize.assert_called()
+        assert automl.best_pipeline.threshold == 0.65
