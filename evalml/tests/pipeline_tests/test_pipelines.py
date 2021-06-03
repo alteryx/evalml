@@ -1152,7 +1152,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
             'solver': 'lbfgs'
         }
     }
-    assert logistic_regression_binary_pipeline_class({}).default_parameters == expected_defaults
+    assert logistic_regression_binary_pipeline_class({})._component_graph.default_parameters == expected_defaults
 
 
 @pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])

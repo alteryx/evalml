@@ -21,6 +21,7 @@ Release Notes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
         * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes :pr:`2332`
+        * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase`` :pr:`2307`
     * Documentation Changes
     * Testing Changes
         * Ignoring ``test_saving_png_file`` while building conda package :pr:`2323`
@@ -52,6 +53,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+        * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase``. A pipeline's ``default_parameters`` is now accessible via ``pipeline.component_graph.default_parameters`` :pr:`2307`
 
 
 **v0.24.1 May. 16, 2021**
