@@ -27,9 +27,15 @@ class DefaultDataChecks(DataChecks):
 
     """
 
-    _DEFAULT_DATA_CHECK_CLASSES = [HighlyNullDataCheck, IDColumnsDataCheck,
-                                   TargetLeakageDataCheck, InvalidTargetDataCheck, NoVarianceDataCheck,
-                                   NaturalLanguageNaNDataCheck, DateTimeNaNDataCheck]
+    _DEFAULT_DATA_CHECK_CLASSES = [
+        HighlyNullDataCheck,
+        IDColumnsDataCheck,
+        TargetLeakageDataCheck,
+        InvalidTargetDataCheck,
+        NoVarianceDataCheck,
+        NaturalLanguageNaNDataCheck,
+        DateTimeNaNDataCheck,
+    ]
 
     def __init__(self, problem_type, objective, n_splits=3):
         """
@@ -40,12 +46,27 @@ class DefaultDataChecks(DataChecks):
             objective (str or ObjectiveBase): Name or instance of the objective class.
             n_splits (int): The number of splits as determined by the data splitter being used.
         """
-        if handle_problem_types(problem_type) in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
-            super().__init__(self._DEFAULT_DATA_CHECK_CLASSES,
-                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type,
-                                                                           "objective": objective}})
+        if handle_problem_types(problem_type) in [
+            ProblemTypes.REGRESSION,
+            ProblemTypes.TIME_SERIES_REGRESSION,
+        ]:
+            super().__init__(
+                self._DEFAULT_DATA_CHECK_CLASSES,
+                data_check_params={
+                    "InvalidTargetDataCheck": {
+                        "problem_type": problem_type,
+                        "objective": objective,
+                    }
+                },
+            )
         else:
-            super().__init__(self._DEFAULT_DATA_CHECK_CLASSES + [ClassImbalanceDataCheck],
-                             data_check_params={"InvalidTargetDataCheck": {"problem_type": problem_type,
-                                                                           "objective": objective},
-                                                "ClassImbalanceDataCheck": {"num_cv_folds": n_splits}})
+            super().__init__(
+                self._DEFAULT_DATA_CHECK_CLASSES + [ClassImbalanceDataCheck],
+                data_check_params={
+                    "InvalidTargetDataCheck": {
+                        "problem_type": problem_type,
+                        "objective": objective,
+                    },
+                    "ClassImbalanceDataCheck": {"num_cv_folds": n_splits},
+                },
+            )

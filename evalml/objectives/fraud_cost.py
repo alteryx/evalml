@@ -1,17 +1,22 @@
-
 from .binary_classification_objective import BinaryClassificationObjective
 
 
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud."""
+
     name = "Fraud Cost"
     greater_is_better = False
     score_needs_proba = False
     perfect_score = 0.0
     is_bounded_like_percentage = True
 
-    def __init__(self, retry_percentage=.5, interchange_fee=.02,
-                 fraud_payout_percentage=1.0, amount_col='amount'):
+    def __init__(
+        self,
+        retry_percentage=0.5,
+        interchange_fee=0.02,
+        fraud_payout_percentage=1.0,
+        amount_col="amount",
+    ):
         """Create instance of FraudCost
 
         Arguments:
@@ -45,7 +50,7 @@ class FraudCost(BinaryClassificationObjective):
         if X is not None:
             X = self._standardize_input_type(X)
         ypred_proba = self._standardize_input_type(ypred_proba)
-        transformed_probs = (ypred_proba.values * X[self.amount_col])
+        transformed_probs = ypred_proba.values * X[self.amount_col]
         return transformed_probs > threshold
 
     def objective_function(self, y_true, y_predicted, X):
@@ -74,7 +79,9 @@ class FraudCost(BinaryClassificationObjective):
         fraud_cost = transaction_amount * self.fraud_payout_percentage
 
         # money made from interchange fees on transaction
-        interchange_cost = transaction_amount * (1 - self.retry_percentage) * self.interchange_fee
+        interchange_cost = (
+            transaction_amount * (1 - self.retry_percentage) * self.interchange_fee
+        )
 
         # calculate cost of missing fraudulent transactions
         false_negatives = (y_true & ~y_predicted) * fraud_cost

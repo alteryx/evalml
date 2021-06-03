@@ -5,6 +5,7 @@ Release Notes
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
     * Fixes
     * Changes
+        * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Documentation Changes
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`

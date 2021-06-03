@@ -5,7 +5,6 @@ from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
-
     def __init__(self, columns=None, random_seed=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
 
@@ -13,13 +12,15 @@ class ColumnSelector(Transformer):
             columns (list(string)): List of column names, used to determine which columns to drop.
         """
         if columns and not isinstance(columns, list):
-            raise ValueError(f"Parameter columns must be a list. Received {type(columns)}.")
+            raise ValueError(
+                f"Parameter columns must be a list. Received {type(columns)}."
+            )
 
         parameters = {"columns": columns}
         parameters.update(kwargs)
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def _check_input_for_columns(self, X):
         cols = self.parameters.get("columns") or []
@@ -29,7 +30,9 @@ class ColumnSelector(Transformer):
         missing_cols = set(cols) - set(column_names)
         if missing_cols:
             raise ValueError(
-                "Columns {} not found in input data".format(', '.join(f"'{col_name}'" for col_name in missing_cols))
+                "Columns {} not found in input data".format(
+                    ", ".join(f"'{col_name}'" for col_name in missing_cols)
+                )
             )
 
     @abstractmethod
@@ -60,6 +63,7 @@ class ColumnSelector(Transformer):
 
 class DropColumns(ColumnSelector):
     """Drops specified columns in input data."""
+
     name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
     needs_fitting = False
@@ -82,6 +86,7 @@ class DropColumns(ColumnSelector):
 
 class SelectColumns(ColumnSelector):
     """Selects specified columns in input data."""
+
     name = "Select Columns Transformer"
     hyperparameter_ranges = {}
     needs_fitting = False
