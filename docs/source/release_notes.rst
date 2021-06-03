@@ -2,11 +2,25 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.25.0 Jun. 01, 2021**
+    * Enhancements
         * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
         * Added a new callback parameter for ``explain_predictions_best_worst`` :pr:`2308`
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
+        * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase`` :pr:`2307`
     * Documentation Changes
         * Updated the release procedure documentation :pr:`2230`
     * Testing Changes
@@ -40,6 +54,7 @@ Release Notes
 
     **Breaking Changes**
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
+        * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase``. A pipeline's ``default_parameters`` is now accessible via ``pipeline.component_graph.default_parameters`` :pr:`2307`
 
 
 **v0.24.1 May. 16, 2021**
