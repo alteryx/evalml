@@ -1,4 +1,5 @@
 import copy
+from evalml.exceptions.exceptions import MissingComponentError
 import inspect
 import os
 import sys
@@ -511,7 +512,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         component_strs = []
         for component_name, component_info in self.component_graph.component_dict.items():
-            new_str = f"'{component_name}': [{type(self.component_graph.component_instances[component_name]).__name__}"
+            try:
+                if isinstance(component_info[0], str):
+                    component_class = handle_component_class(component_info[0])
+                else:
+                    component_class = handle_component_class(component_info[0].name)
+
+                new_str = f"'{component_name}': ['{component_class.name}'"
+            except MissingComponentError:
+                new_str = f"'{component_name}': [{type(self.component_graph.component_instances[component_name]).__name__}"
+
             rest = ""
             if len(component_info) > 1:
                 new_str = new_str + ", "
