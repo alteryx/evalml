@@ -124,6 +124,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
+                print(f"iterativealgorothm - next_batch - proposed_parameters: {proposed_parameters}")
                 parameters = self._combine_parameters(pipeline, proposed_parameters)
                 next_batch.append(pipeline.new(parameters=parameters, random_seed=self.random_seed))
         self._pipeline_number += len(next_batch)
@@ -173,9 +174,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         for name, component_class in pipeline.linearized_component_graph:
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
+            print(f"iterativealgorothm - _transform_parameters - init_params: {init_params}")
             # For first batch, pass the pipeline params to the components that need them
             if name in self._custom_hyperparameters and self._batch_number == 0:
                 for param_name, value in self._custom_hyperparameters[name].items():
+                    print(f"iterativealgorothm - _transform_parameters - hyperparameter name/param_name/value: {name}/{param_name}/{value}")
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
                         component_parameters[param_name] = value.rvs(random_state=self.random_seed)[0]
@@ -185,6 +188,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
+                    print(f"iterativealgorothm - _transform_parameters - pipeline name/param_name/value: {name}/{param_name}/{value}")
                     if isinstance(value, (Integer, Real, Categorical)):
                         raise ValueError("Pipeline parameters should not contain skopt.Space variables, please pass them "
                                          "to custom_hyperparameters instead!")
