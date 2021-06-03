@@ -1,5 +1,4 @@
 import copy
-from evalml.exceptions.exceptions import MissingComponentError
 import inspect
 import os
 import sys
@@ -21,6 +20,7 @@ from .components import (
 from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
+from evalml.exceptions.exceptions import MissingComponentError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
