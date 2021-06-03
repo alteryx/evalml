@@ -734,30 +734,35 @@ def test_component_graph_dataset_with_different_types():
     assert component_graph.input_feature_names == {}
     component_graph.fit(X, y)
 
-    input_feature_names = component_graph.input_feature_names
-    assert input_feature_names['Imputer'] == ['column_1', 'column_2', 'column_3', 'column_4', 'column_5']
-    assert input_feature_names['OneHot'] == ['column_1', 'column_2', 'column_3', 'column_4', 'column_5']
-    assert input_feature_names['DateTime'] == ['column_3', 'column_4', 'column_5',
-                                               'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                               'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
-    assert input_feature_names['Text'] == ['column_3', 'column_5', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                           'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
-                                           'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour']
-    text_columns = ['DIVERSITY_SCORE(column_5)', 'MEAN_CHARACTERS_PER_WORD(column_5)', 'POLARITY_SCORE(column_5)',
-                    'LSA(column_5)[0]', 'LSA(column_5)[1]']
-    assert input_feature_names['Scaler'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                              'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
-                                              'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
-                                             text_columns)
-    assert input_feature_names['Random Forest'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                                     'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
-                                                     'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
-                                                    text_columns)
-    assert input_feature_names['Elastic Net'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
-                                                   'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
-                                                   'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
-                                                  text_columns)
-    assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
+    def check_feature_names(input_feature_names):
+        assert input_feature_names['Imputer'] == ['column_1', 'column_2', 'column_3', 'column_4', 'column_5']
+        assert input_feature_names['OneHot'] == ['column_1', 'column_2', 'column_3', 'column_4', 'column_5']
+        assert input_feature_names['DateTime'] == ['column_3', 'column_4', 'column_5',
+                                                   'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                   'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6']
+        assert input_feature_names['Text'] == ['column_3', 'column_5', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                               'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                               'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour']
+        text_columns = ['DIVERSITY_SCORE(column_5)', 'MEAN_CHARACTERS_PER_WORD(column_5)', 'POLARITY_SCORE(column_5)',
+                        'LSA(column_5)[0]', 'LSA(column_5)[1]']
+        assert input_feature_names['Scaler'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                  'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                                  'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
+                                                 text_columns)
+        assert input_feature_names['Random Forest'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                         'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                                         'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
+                                                        text_columns)
+        assert input_feature_names['Elastic Net'] == (['column_3', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
+                                                       'column_2_1', 'column_2_2', 'column_2_3', 'column_2_4', 'column_2_5', 'column_2_6',
+                                                       'column_4_year', 'column_4_month', 'column_4_day_of_week', 'column_4_hour'] +
+                                                      text_columns)
+        assert input_feature_names['Logistic Regression'] == ['Random Forest', 'Elastic Net']
+
+    check_feature_names(component_graph.input_feature_names)
+    component_graph.input_feature_names = {}
+    component_graph.predict(X)
+    check_feature_names(component_graph.input_feature_names)
 
 
 @patch('evalml.pipelines.components.RandomForestClassifier.fit')
@@ -793,6 +798,69 @@ def test_component_graph_types_merge_mock(mock_rf_fit):
     assert input_feature_names['Random Forest'] == (['column_2', 'column_1_a', 'column_1_b', 'column_1_c', 'column_1_d',
                                                      'column_3'])
     assert mock_rf_fit.call_args[0][0].ww.logical_types['column_3'] == Integer
+
+
+def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
+
+    # This test checks that the component graph preserves logical types created during pipeline evaluation
+    # The other tests ensure that logical types set before pipeline evaluation are preserved
+
+    class ZipCodeExtractor(Transformer):
+        name = "Zip Code Extractor"
+
+        def fit(self, X, y=None):
+            return self
+
+        def transform(self, X, y=None):
+            X = pd.DataFrame({"zip_code": pd.Series(["02101", "02139", "02152"] * 3)})
+            X.ww.init(logical_types={'zip_code': "PostalCode"})
+            return X
+
+    class ZipCodeToAveragePrice(Transformer):
+        name = "Check Zip Code Preserved"
+
+        def fit(self, X, y=None):
+            return self
+
+        def transform(self, X, y=None):
+            X = infer_feature_types(X)
+            original_columns = list(X.columns)
+            X = X.ww.select(["PostalCode"])
+            # This would make the test fail if the componant graph
+            assert len(X.columns) > 0, "No Zip Code!"
+            X.ww['average_apartment_price'] = pd.Series([1000, 2000, 3000] * 3)
+            X = X.ww.drop(original_columns)
+            return X
+
+    graph = {'Select non address': [SelectColumns],
+             'OneHot': [OneHotEncoder, "Select non address.x"],
+             'Select address': [SelectColumns],
+             'Extract ZipCode': [ZipCodeExtractor, 'Select address.x'],
+             'Average Price From ZipCode': [ZipCodeToAveragePrice, "Extract ZipCode.x"],
+             'Random Forest': [RandomForestClassifier, 'OneHot.x', 'Average Price From ZipCode.x']}
+
+    X = pd.DataFrame({'column_1': ['a', 'b', 'c', 'd', 'a', 'a', 'b', 'c', 'b'],
+                      'column_2': [1, 2, 3, 4, 5, 6, 5, 4, 3],
+                      'column_3': [True, False, True, False, True, False, True, False, False],
+                      'address': [f'address-{i}' for i in range(9)]})
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+
+    # woodwork would infer this as boolean by default -- convert to a numeric type
+    X.ww.init(semantic_tags={"address": "address"})
+
+    component_graph = ComponentGraph(graph)
+    # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
+    # specify the types to select here.
+    # if the user-specified woodwork types are being respected, we should see the pass-through column_3 staying as numeric,
+    # meaning it won't cause a modeling error when it reaches the estimator
+    component_graph.instantiate({'Select non address': {'columns': ['column_1', 'column_2', 'column_3']},
+                                 'Select address': {'columns': ['address']}})
+    assert component_graph.input_feature_names == {}
+    component_graph.fit(X, y)
+
+    input_feature_names = component_graph.input_feature_names
+    assert sorted(input_feature_names['Random Forest']) == sorted(['column_2', 'column_1_a', 'column_1_b', 'column_1_c',
+                                                                   'column_1_d', 'column_3', 'average_apartment_price'])
 
 
 def test_component_graph_types_merge():

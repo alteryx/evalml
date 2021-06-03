@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
     * Fixes
+        * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -18,7 +19,6 @@ Release Notes
         * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
         * Added a new callback parameter for ``explain_predictions_best_worst`` :pr:`2308`
     * Fixes
-        * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
         * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase`` :pr:`2307`
