@@ -117,10 +117,10 @@ def _update_progress(start_time, current_time, progress_stage, callback_function
 
 
 class ExplainPredictionsStage(Enum):
-    PREPROCESSING_STAGE = ("preprocessing_stage",)
-    PREDICT_STAGE = ("predict_stage",)
-    COMPUTE_FEATURE_STAGE = ("compute_feature_stage",)
-    COMPUTE_SHAP_VALUES_STAGE = ("compute_shap_value_stage",)
+    PREPROCESSING_STAGE = "preprocessing_stage"
+    PREDICT_STAGE = "predict_stage"
+    COMPUTE_FEATURE_STAGE = "compute_feature_stage"
+    COMPUTE_SHAP_VALUES_STAGE = "compute_shap_value_stage"
     DONE = "done"
 
 
