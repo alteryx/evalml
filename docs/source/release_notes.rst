@@ -23,6 +23,7 @@ Release Notes
         * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes :pr:`2332`
         * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase`` :pr:`2307`
     * Documentation Changes
+        * Updated the release procedure documentation :pr:`2230`
     * Testing Changes
         * Ignoring ``test_saving_png_file`` while building conda package :pr:`2323`
 
@@ -45,6 +46,7 @@ Release Notes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
         * Refactored ``calculate_permutation_importance`` method and add per-column permutation importance method :pr:`2302`
     * Documentation Changes
+        * Minor changes to the release procedure :pr:`2230`
     * Testing Changes
         * Use codecov action to update coverage reports :pr:`2238`
         * Removed MarkupSafe dependency version pin from requirements.txt and moved instead into RTD docs build CI :pr:`2261`
