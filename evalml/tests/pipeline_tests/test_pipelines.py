@@ -1544,9 +1544,9 @@ def test_pipeline_repr(pipeline_class):
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name, custom_hyperparameters=custom_hyperparameters)
     component_graph_str = ""
     if pipeline_class == RegressionPipeline:
-        component_graph_str = f"{{'Imputer': [Imputer],'Random Forest Regressor': [RandomForestRegressor, 'Imputer.x']}}"
+        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}}"
     else:
-        component_graph_str = f"{{'Imputer': [Imputer],'Random Forest Classifier': [RandomForestClassifier, 'Imputer.x']}}"
+        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}}"
     expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, " \
         f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, " \
         f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, " \
@@ -1589,9 +1589,9 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     component_graph_str = ""
     if pipeline_class == RegressionPipeline:
-        component_graph_str = "{'Imputer': [Imputer],'OHE_1': [OneHotEncoder, 'Imputer'],'OHE_2': [OneHotEncoder, 'Imputer'],'Estimator': [RandomForestRegressor, 'OHE_1','OHE_2']}"
+        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Regressor', 'OHE_1','OHE_2']}"
     else:
-        component_graph_str = "{'Imputer': [Imputer],'OHE_1': [OneHotEncoder, 'Imputer'],'OHE_2': [OneHotEncoder, 'Imputer'],'Estimator': [RandomForestClassifier, 'OHE_1','OHE_2']}"
+        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Classifier', 'OHE_1','OHE_2']}"
     expected_repr = f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, " \
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, " \
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, " \

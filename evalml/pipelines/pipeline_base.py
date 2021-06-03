@@ -513,23 +513,24 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_strs = []
         for component_name, component_info in self.component_graph.component_dict.items():
             try:
+                component_key = f"'{component_name}': "
                 if isinstance(component_info[0], str):
                     component_class = handle_component_class(component_info[0])
                 else:
                     component_class = handle_component_class(component_info[0].name)
-
-                new_str = f"'{component_name}': ['{component_class.name}'"
+                component_name = f"'{component_class.name}'"
             except MissingComponentError:
-                new_str = f"'{component_name}': [{type(self.component_graph.component_instances[component_name]).__name__}"
+                # Not an EvalML component, use component class name
+                component_name = f"{component_info[0].__name__}"
 
-            rest = ""
+            component_edges_str = ""
             if len(component_info) > 1:
-                new_str = new_str + ", "
-                rest = ",".join([f"'{info}'" for info in component_info[1:]])
-            newstr = new_str + rest
-            newstr += "]"
-            component_strs.append(newstr)
-        component_dict_str = f"{{{','.join(component_strs)}}}"
+                component_edges_str = ", "
+                component_edges_str += ",".join([f"'{info}'" for info in component_info[1:]])
+
+            component_str = f"{component_key}[{component_name}{component_edges_str}]"
+            component_strs.append(component_str)
+        component_dict_str = f"{{{', '.join(component_strs)}}}"
 
         custom_hyperparameters_repr = ', '.join([f"'{component}':{{{repr_component(hyperparameters)}}}" for component, hyperparameters in self.custom_hyperparameters.items()]) if self.custom_hyperparameters else None
         custom_hyperparmeter_str = f"custom_hyperparameters={{{custom_hyperparameters_repr}}}" if custom_hyperparameters_repr else None
