@@ -1,4 +1,3 @@
-
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
@@ -9,11 +8,21 @@ from evalml.utils import infer_feature_types
 
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delayes input features and target variable for time series problems."""
+
     name = "Delayed Feature Transformer"
     hyperparameter_ranges = {}
     needs_fitting = False
 
-    def __init__(self, date_index=None, max_delay=2, delay_features=True, delay_target=True, gap=1, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        date_index=None,
+        max_delay=2,
+        delay_features=True,
+        delay_target=True,
+        gap=1,
+        random_seed=0,
+        **kwargs,
+    ):
         """Creates a DelayedFeatureTransformer.
 
         Arguments:
@@ -35,8 +44,13 @@ class DelayedFeatureTransformer(Transformer):
         # If 0, start at 1
         self.start_delay_for_target = int(gap == 0)
 
-        parameters = {"date_index": date_index, "max_delay": max_delay, "delay_target": delay_target, "delay_features": delay_features,
-                      "gap": gap}
+        parameters = {
+            "date_index": date_index,
+            "max_delay": max_delay,
+            "delay_target": delay_target,
+            "delay_features": delay_features,
+            "gap": gap,
+        }
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
 
@@ -60,12 +74,19 @@ class DelayedFeatureTransformer(Transformer):
 
     @staticmethod
     def _get_categorical_columns(X):
-        return [name for name, column in X.ww.columns.items() if column.logical_type == logical_types.Categorical]
+        return [
+            name
+            for name, column in X.ww.columns.items()
+            if column.logical_type == logical_types.Categorical
+        ]
 
     @staticmethod
     def _encode_X_while_preserving_index(X_categorical):
-        return pd.DataFrame(OrdinalEncoder().fit_transform(X_categorical),
-                            columns=X_categorical.columns, index=X_categorical.index)
+        return pd.DataFrame(
+            OrdinalEncoder().fit_transform(X_categorical),
+            columns=X_categorical.columns,
+            index=X_categorical.index,
+        )
 
     def transform(self, X, y=None):
         """Computes the delayed features for all features in X and y.
@@ -91,7 +112,9 @@ class DelayedFeatureTransformer(Transformer):
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
         if self.delay_features and len(X) > 0:
-            X_categorical = self._encode_X_while_preserving_index(X_ww[categorical_columns])
+            X_categorical = self._encode_X_while_preserving_index(
+                X_ww[categorical_columns]
+            )
             for col_name in X_ww:
                 col = X_ww[col_name]
                 if col_name in categorical_columns:

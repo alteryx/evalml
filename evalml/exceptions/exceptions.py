@@ -1,40 +1,48 @@
 class MethodPropertyNotFoundError(Exception):
     """Exception to raise when a class is does not have an expected method or property."""
+
     pass
 
 
 class PipelineNotFoundError(Exception):
     """An exception raised when a particular pipeline is not found in automl search results"""
+
     pass
 
 
 class ObjectiveNotFoundError(Exception):
     """Exception to raise when specified objective does not exist."""
+
     pass
 
 
 class MissingComponentError(Exception):
     """An exception raised when a component is not found in all_components()"""
+
     pass
 
 
 class ComponentNotYetFittedError(Exception):
     """An exception to be raised when predict/predict_proba/transform is called on a component without fitting first."""
+
     pass
 
 
 class PipelineNotYetFittedError(Exception):
     """An exception to be raised when predict/predict_proba/transform is called on a pipeline without fitting first."""
+
     pass
 
 
 class AutoMLSearchException(Exception):
     """Exception raised when all pipelines in an automl batch return a score of NaN for the primary objective."""
+
     pass
 
 
 class EnsembleMissingPipelinesError(Exception):
     """An exception raised when an ensemble is missing `estimators` (list) as a parameter."""
+
     pass
 
 
@@ -55,7 +63,9 @@ class PipelineScoreError(Exception):
         # Format the traceback message
         exception_list = []
         for objective, (exception, tb) in exceptions.items():
-            exception_list.append(f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n")
+            exception_list.append(
+                f"{objective} encountered {str(exception.__class__.__name__)} with message ({str(exception)}):\n"
+            )
             exception_list.extend(tb)
         message = "\n".join(exception_list)
 

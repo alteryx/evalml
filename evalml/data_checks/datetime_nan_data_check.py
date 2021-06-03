@@ -8,8 +8,7 @@ class DateTimeNaNDataCheck(DataCheck):
     """Checks if datetime columns contain NaN values."""
 
     def __init__(self):
-        """Checks each column in the input for datetime features and will issue an error if NaN values are present.
-        """
+        """Checks each column in the input for datetime features and will issue an error if NaN values are present."""
 
     def validate(self, X, y=None):
         """Checks if any datetime columns contain NaN values.
@@ -37,20 +36,22 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                                                                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
             ...                                                                     details={"columns": 'index'}).to_dict()]}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
         datetime_cols = X.ww.select("datetime")
         nan_columns = datetime_cols.columns[datetime_cols.isna().any()].tolist()
         if len(nan_columns) > 0:
             nan_columns = [str(col) for col in nan_columns]
-            cols_str = ', '.join(nan_columns) if len(nan_columns) > 1 else nan_columns[0]
-            results["errors"].append(DataCheckError(message=error_contains_nan.format(cols_str),
-                                                    data_check_name=self.name,
-                                                    message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                                                    details={"columns": cols_str}).to_dict())
+            cols_str = (
+                ", ".join(nan_columns) if len(nan_columns) > 1 else nan_columns[0]
+            )
+            results["errors"].append(
+                DataCheckError(
+                    message=error_contains_nan.format(cols_str),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+                    details={"columns": cols_str},
+                ).to_dict()
+            )
         return results

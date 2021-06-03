@@ -7,7 +7,9 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import PolynomialDetrender
 
-pytest.importorskip('sktime', reason='Skipping polynomial detrending tests because sktime not installed')
+pytest.importorskip(
+    "sktime", reason="Skipping polynomial detrending tests because sktime not installed"
+)
 
 
 def test_polynomial_detrender_init():
@@ -41,7 +43,7 @@ def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
         pdt.inverse_transform(X, None)
 
 
-@pytest.mark.parametrize("input_type", ['np', 'pd', 'ww'])
+@pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("use_int_index", [True, False])
 @pytest.mark.parametrize("degree", [1, 2, 3])
 def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, ts_data):
@@ -54,18 +56,20 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
 
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
-    features = PolynomialFeatures(degree=degree).fit_transform(np.arange(X_input.shape[0]).reshape(-1, 1))
+    features = PolynomialFeatures(degree=degree).fit_transform(
+        np.arange(X_input.shape[0]).reshape(-1, 1)
+    )
     lin_reg.fit(features, y_input)
     detrended_values = y_input.values - lin_reg.predict(features)
-    expected_index = y_input.index if input_type != 'np' else range(y_input.shape[0])
+    expected_index = y_input.index if input_type != "np" else range(y_input.shape[0])
     expected_answer = pd.Series(detrended_values, index=expected_index)
 
     X, y = X_input, y_input
 
-    if input_type == 'np':
+    if input_type == "np":
         X = X_input.values
         y = y_input.values
-    elif input_type == 'ww':
+    elif input_type == "ww":
         X = X_input.copy()
         X.ww.init()
         y = ww.init_series(y_input.copy())
@@ -99,10 +103,16 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
     X, y = ts_data
     detrender = PolynomialDetrender(degree=2)
 
-    with pytest.raises(ValueError, match="The \\(time\\) index must be sorted \\(monotonically increasing\\)"):
+    with pytest.raises(
+        ValueError,
+        match="The \\(time\\) index must be sorted \\(monotonically increasing\\)",
+    ):
         y_shuffled = y.sample(frac=1, replace=False)
         detrender.fit_transform(X, y_shuffled)
 
-    with pytest.raises(NotImplementedError, match="class 'pandas.core.indexes.base.Index'> is not supported"):
+    with pytest.raises(
+        NotImplementedError,
+        match="class 'pandas.core.indexes.base.Index'> is not supported",
+    ):
         y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
         detrender.fit_transform(X, y_string_index)
