@@ -1,5 +1,6 @@
 import networkx as nx
 import pandas as pd
+from woodwork.exceptions import WoodworkNotInitError
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
@@ -336,7 +337,12 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = _retain_custom_types_and_initalize_woodwork(X, return_x)
+        logical_types = {}
+        for x_input in x_inputs:
+            if x_input.ww.schema is not None:
+                logical_types.update(x_input.ww.logical_types)
+        logical_types.update(X.ww.logical_types)
+        return_x = _retain_custom_types_and_initalize_woodwork(logical_types, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
         return return_x, return_y
