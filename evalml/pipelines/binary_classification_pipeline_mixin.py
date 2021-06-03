@@ -1,5 +1,4 @@
-
-class BinaryClassificationPipelineMixin():
+class BinaryClassificationPipelineMixin:
     _threshold = None
 
     @property
@@ -22,9 +21,13 @@ class BinaryClassificationPipelineMixin():
         y_predicted = None
         y_predicted_proba = None
         if any(o.score_needs_proba for o in objectives) or self.threshold is not None:
-            y_predicted_proba = self.predict_proba(X, y) if time_series else self.predict_proba(X)
+            y_predicted_proba = (
+                self.predict_proba(X, y) if time_series else self.predict_proba(X)
+            )
         if any(not o.score_needs_proba for o in objectives) and self.threshold is None:
-            y_predicted = self._predict(X, y, pad=True) if time_series else self._predict(X)
+            y_predicted = (
+                self._predict(X, y, pad=True) if time_series else self._predict(X)
+            )
         return y_predicted, y_predicted_proba
 
     def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
@@ -46,4 +49,6 @@ class BinaryClassificationPipelineMixin():
             targets = self._encode_targets(y)
             self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
         else:
-            raise ValueError("Problem type must be binary and objective must be optimizable.")
+            raise ValueError(
+                "Problem type must be binary and objective must be optimizable."
+            )

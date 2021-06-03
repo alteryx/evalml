@@ -5,24 +5,45 @@ from evalml.model_family import ModelFamily, handle_model_family
 
 @pytest.fixture
 def correct_model_families():
-    correct_model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.LIGHTGBM,
-                              ModelFamily.RANDOM_FOREST, ModelFamily.XGBOOST,
-                              ModelFamily.CATBOOST, ModelFamily.EXTRA_TREES,
-                              ModelFamily.DECISION_TREE, ModelFamily.ENSEMBLE,
-                              ModelFamily.BASELINE, ModelFamily.K_NEIGHBORS,
-                              ModelFamily.SVM, ModelFamily.ARIMA, ModelFamily.NONE]
+    correct_model_families = [
+        ModelFamily.LINEAR_MODEL,
+        ModelFamily.LIGHTGBM,
+        ModelFamily.RANDOM_FOREST,
+        ModelFamily.XGBOOST,
+        ModelFamily.CATBOOST,
+        ModelFamily.EXTRA_TREES,
+        ModelFamily.DECISION_TREE,
+        ModelFamily.ENSEMBLE,
+        ModelFamily.BASELINE,
+        ModelFamily.K_NEIGHBORS,
+        ModelFamily.SVM,
+        ModelFamily.ARIMA,
+        ModelFamily.NONE,
+    ]
     yield correct_model_families
 
 
 def test_handle_string(correct_model_families):
-    model_families = ['linear_model', 'lightgbm', 'random_forest',
-                      'xgboost', 'catboost', 'extra_trees', 'decision_tree',
-                      'ensemble', 'baseline', 'k_neighbors', 'svm', 'ARIMA', 'none']
+    model_families = [
+        "linear_model",
+        "lightgbm",
+        "random_forest",
+        "xgboost",
+        "catboost",
+        "extra_trees",
+        "decision_tree",
+        "ensemble",
+        "baseline",
+        "k_neighbors",
+        "svm",
+        "ARIMA",
+        "none",
+    ]
     for model_family in zip(model_families, correct_model_families):
         assert handle_model_family(model_family[0]) == model_family[1]
 
-    model_family = 'fake'
-    error_msg = 'Model family \'fake\' does not exist'
+    model_family = "fake"
+    error_msg = "Model family 'fake' does not exist"
     with pytest.raises(KeyError, match=error_msg):
         handle_model_family(model_family) == ModelFamily.LINEAR_MODEL
 
@@ -33,7 +54,7 @@ def test_handle_model_family(correct_model_families):
 
 
 def test_handle_incorrect_type():
-    error_msg = '`handle_model_family` was not passed a str or ModelFamily object'
+    error_msg = "`handle_model_family` was not passed a str or ModelFamily object"
     with pytest.raises(ValueError, match=error_msg):
         handle_model_family(5)
 

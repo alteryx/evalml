@@ -10,7 +10,7 @@ def test_init():
         "sampling_ratio": 1,
         "min_samples": 1,
         "min_percentage": 0.5,
-        "sampling_ratio_dict": None
+        "sampling_ratio_dict": None,
     }
     undersampler = Undersampler(**parameters)
     assert undersampler.parameters == parameters
@@ -55,7 +55,9 @@ def test_undersample_imbalanced(data_type, make_data_type):
     assert len(new_y) == 750
     value_counts = new_y.value_counts()
     assert value_counts.values[1] / value_counts.values[0] == sampling_ratio
-    pd.testing.assert_series_equal(value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False)
+    pd.testing.assert_series_equal(
+        value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False
+    )
 
     transform_X, transform_y = undersampler.transform(X, y)
 
@@ -63,10 +65,15 @@ def test_undersample_imbalanced(data_type, make_data_type):
     np.testing.assert_equal(None, transform_y)
 
 
-@pytest.mark.parametrize("dictionary,msg", [({'majority': 0.5}, "Sampling dictionary contains a different number"),
-                                            ({'minority': 1}, "Sampling dictionary contains a different number"),
-                                            ({0: 1, 1: 0.1}, "Dictionary keys are different from"),
-                                            ({1: 0.1}, "Sampling dictionary contains a different number")])
+@pytest.mark.parametrize(
+    "dictionary,msg",
+    [
+        ({"majority": 0.5}, "Sampling dictionary contains a different number"),
+        ({"minority": 1}, "Sampling dictionary contains a different number"),
+        ({0: 1, 1: 0.1}, "Dictionary keys are different from"),
+        ({1: 0.1}, "Sampling dictionary contains a different number"),
+    ],
+)
 def test_undersampler_sampling_dict_errors(dictionary, msg):
     X = np.array([[i] for i in range(1000)])
     y = np.array(["minority"] * 150 + ["majority"] * 850)
@@ -76,11 +83,16 @@ def test_undersampler_sampling_dict_errors(dictionary, msg):
         undersampler.fit_transform(X, y)
 
 
-@pytest.mark.parametrize("sampling_ratio_dict,expected_dict_values", [({0: 1, 1: 0.5}, {0: 150, 1: 300}),
-                                                                      ({0: 1, 1: 0.25}, {0: 150, 1: 600}),
-                                                                      ({0: 1, 1: 0.1}, {0: 150, 1: 850}),
-                                                                      ({0: 0.1, 1: 0.1}, {0: 150, 1: 850}),
-                                                                      ({0: 0.1, 1: 1}, {0: 150, 1: 150})])
+@pytest.mark.parametrize(
+    "sampling_ratio_dict,expected_dict_values",
+    [
+        ({0: 1, 1: 0.5}, {0: 150, 1: 300}),
+        ({0: 1, 1: 0.25}, {0: 150, 1: 600}),
+        ({0: 1, 1: 0.1}, {0: 150, 1: 850}),
+        ({0: 0.1, 1: 0.1}, {0: 150, 1: 850}),
+        ({0: 0.1, 1: 1}, {0: 150, 1: 150}),
+    ],
+)
 def test_undersampler_sampling_dict(sampling_ratio_dict, expected_dict_values):
     X = np.array([[i] for i in range(1000)])
     y = np.array([0] * 150 + [1] * 850)

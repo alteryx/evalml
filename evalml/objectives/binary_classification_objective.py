@@ -14,7 +14,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     @property
     def can_optimize_threshold(cls):
         """Returns a boolean determining if we can optimize the binary classification objective threshold.
-            This will be false for any objective that works directly with predicted probabilities, like log loss and AUC. Otherwise, it will be true."""
+        This will be false for any objective that works directly with predicted probabilities, like log loss and AUC. Otherwise, it will be true."""
         return not cls.score_needs_proba
 
     def optimize_threshold(self, ypred_proba, y_true, X=None):
@@ -37,11 +37,13 @@ class BinaryClassificationObjective(ObjectiveBase):
             raise RuntimeError("Trying to optimize objective that can't be optimized!")
 
         def cost(threshold):
-            y_predicted = self.decision_function(ypred_proba=ypred_proba, threshold=threshold, X=X)
+            y_predicted = self.decision_function(
+                ypred_proba=ypred_proba, threshold=threshold, X=X
+            )
             cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost
 
-        optimal = minimize_scalar(cost, method='Golden', options={"maxiter": 100})
+        optimal = minimize_scalar(cost, method="Golden", options={"maxiter": 100})
         return optimal.x
 
     def decision_function(self, ypred_proba, threshold=0.5, X=None):

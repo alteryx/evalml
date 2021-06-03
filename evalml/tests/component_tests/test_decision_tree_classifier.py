@@ -11,15 +11,18 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(DecisionTreeClassifier.supported_problem_types) == {ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
-                                                                   ProblemTypes.TIME_SERIES_MULTICLASS,
-                                                                   ProblemTypes.TIME_SERIES_BINARY}
+    assert set(DecisionTreeClassifier.supported_problem_types) == {
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+    }
 
 
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKDecisionTreeClassifier(max_depth=6, max_features='auto', random_state=0)
+    sk_clf = SKDecisionTreeClassifier(max_depth=6, max_features="auto", random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -36,7 +39,7 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKDecisionTreeClassifier(max_depth=6, max_features='auto', random_state=0)
+    sk_clf = SKDecisionTreeClassifier(max_depth=6, max_features="auto", random_state=0)
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
     y_pred_proba_sk = sk_clf.predict_proba(X)
@@ -56,7 +59,7 @@ def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
     clf = DecisionTreeClassifier()
-    sk_clf = SKDecisionTreeClassifier(max_depth=6, max_features='auto', random_state=0)
+    sk_clf = SKDecisionTreeClassifier(max_depth=6, max_features="auto", random_state=0)
     sk_clf.fit(X, y)
     sk_feature_importance = sk_clf.feature_importances_
 

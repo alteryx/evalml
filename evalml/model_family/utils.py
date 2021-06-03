@@ -16,7 +16,7 @@ def handle_model_family(model_family):
             tpe = ModelFamily[model_family.upper()]
             return tpe
         except KeyError:
-            raise KeyError('Model family \'{}\' does not exist'.format(model_family))
+            raise KeyError("Model family '{}' does not exist".format(model_family))
     if isinstance(model_family, ModelFamily):
         return model_family
-    raise ValueError('`handle_model_family` was not passed a str or ModelFamily object')
+    raise ValueError("`handle_model_family` was not passed a str or ModelFamily object")

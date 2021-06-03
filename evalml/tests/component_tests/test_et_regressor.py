@@ -11,8 +11,10 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(ExtraTreesRegressor.supported_problem_types) == {ProblemTypes.REGRESSION,
-                                                                ProblemTypes.TIME_SERIES_REGRESSION}
+    assert set(ExtraTreesRegressor.supported_problem_types) == {
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    }
 
 
 def test_fit_predict(X_y_regression):

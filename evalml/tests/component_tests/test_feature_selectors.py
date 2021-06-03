@@ -8,7 +8,7 @@ from evalml.pipelines.components import (
     ComponentBase,
     FeatureSelector,
     RFClassifierSelectFromModel,
-    RFRegressorSelectFromModel
+    RFRegressorSelectFromModel,
 )
 
 
@@ -56,9 +56,15 @@ def test_feature_selector_missing_component_obj():
 
     mock_feature_selector = MockFeatureSelector()
     mock_feature_selector.fit(pd.DataFrame(), pd.Series())
-    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Feature selector requires a transform method or a component_obj that implements transform",
+    ):
         mock_feature_selector.transform(pd.DataFrame())
-    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Feature selector requires a transform method or a component_obj that implements transform",
+    ):
         mock_feature_selector.fit_transform(pd.DataFrame())
 
 
@@ -74,22 +80,40 @@ def test_feature_selector_component_obj_missing_transform():
 
     mock_feature_selector = MockFeatureSelector()
     mock_feature_selector.fit(pd.DataFrame(), pd.Series())
-    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Feature selector requires a transform method or a component_obj that implements transform",
+    ):
         mock_feature_selector.transform(pd.DataFrame())
-    with pytest.raises(MethodPropertyNotFoundError, match="Feature selector requires a transform method or a component_obj that implements transform"):
+    with pytest.raises(
+        MethodPropertyNotFoundError,
+        match="Feature selector requires a transform method or a component_obj that implements transform",
+    ):
         mock_feature_selector.fit_transform(pd.DataFrame())
 
 
-@pytest.mark.parametrize("X_df", [pd.DataFrame(pd.to_datetime(['20190902', '20200519', '20190607'], format='%Y%m%d')),
-                                  pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-                                  pd.DataFrame(pd.Series([1., 2., 3.], dtype="float")),
-                                  pd.DataFrame(pd.Series(['a', 'b', 'a'], dtype="category")),
-                                  pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
-                                  pd.DataFrame(pd.Series(['this will be a natural language column because length', 'yay', 'hay'], dtype="string"))])
+@pytest.mark.parametrize(
+    "X_df",
+    [
+        pd.DataFrame(
+            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+        ),
+        pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
+        pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
+        pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category")),
+        pd.DataFrame(pd.Series([True, False, True], dtype="boolean")),
+        pd.DataFrame(
+            pd.Series(
+                ["this will be a natural language column because length", "yay", "hay"],
+                dtype="string",
+            )
+        ),
+    ],
+)
 def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df):
     rf_classifier, rf_regressor = make_rf_feature_selectors()
     y = pd.Series([1, 2, 1])
-    X_df['another column'] = pd.Series([1., 2., 3.], dtype="float")
+    X_df["another column"] = pd.Series([1.0, 2.0, 3.0], dtype="float")
     override_types = [Integer, Double, Boolean]
     for logical_type in override_types:
         try:
@@ -101,9 +125,15 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
         rf_classifier.fit(X, y)
         transformed = rf_classifier.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {0: logical_type, 'another column': Double}
+        assert transformed.ww.logical_types == {
+            0: logical_type,
+            "another column": Double,
+        }
 
         rf_regressor.fit(X, y)
         transformed = rf_regressor.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {0: logical_type, 'another column': Double}
+        assert transformed.ww.logical_types == {
+            0: logical_type,
+            "another column": Double,
+        }
