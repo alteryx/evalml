@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update minimum unit tests to run on all pull requests :pr:`2314`
 
 .. warning::
 
@@ -24,8 +25,8 @@ Release Notes
     * Documentation Changes
         * Updated the release procedure documentation :pr:`2230`
     * Testing Changes
-        * Update minimum unit tests to run on all pull requests :pr:`2314`
         * Ignoring ``test_saving_png_file`` while building conda package :pr:`2323`
+
 .. warning::
 
     **Breaking Changes**
