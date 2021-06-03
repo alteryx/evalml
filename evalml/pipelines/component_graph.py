@@ -1,6 +1,5 @@
 import networkx as nx
 import pandas as pd
-from woodwork.exceptions import WoodworkNotInitError
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
