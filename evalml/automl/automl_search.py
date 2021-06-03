@@ -49,7 +49,8 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
-    is_time_series
+    is_time_series,
+    is_binary
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
@@ -431,7 +432,14 @@ class AutoMLSearch:
                                           self.error_callback, self.random_seed,
                                           self.X_train.ww.schema,
                                           self.y_train.ww.schema)
-
+        self.threshold_automl_config = None
+        if is_binary(self.problem_type) and self.optimize_thresholds and self.objective.score_needs_proba:
+            # use the thresholding_objective
+            self.threshold_automl_config = AutoMLConfig(self.data_splitter, self.problem_type,
+                                                        self.objective, self.additional_objectives, self.thresholding_objective, self.optimize_thresholds,
+                                                        self.error_callback, self.random_seed,
+                                                        self.X_train.ww.schema,
+                                                        self.y_train.ww.schema)
         self.allowed_model_families = list(set([p.model_family for p in (self.allowed_pipelines)]))
 
         logger.debug(f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}")
@@ -652,7 +660,8 @@ class AutoMLSearch:
             if self._train_best_pipeline:
                 X_train = self.X_train
                 y_train = self.y_train
-                best_pipeline = self._engine.submit_training_job(self.automl_config, best_pipeline,
+                config = self.threshold_automl_config or self.automl_config
+                best_pipeline = self._engine.submit_training_job(config, best_pipeline,
                                                                  X_train, y_train).get_result()
 
             self._best_pipeline = best_pipeline

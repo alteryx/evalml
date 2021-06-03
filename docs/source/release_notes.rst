@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
     * Fixes
+        * Added ''thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -18,7 +19,6 @@ Release Notes
         * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
         * Added a new callback parameter for ``explain_predictions_best_worst`` :pr:`2308`
     * Fixes
-        * Added ''thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:``
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
     * Documentation Changes

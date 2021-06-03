@@ -112,6 +112,7 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective, X_schema=None
         X.ww.init(schema=X_schema)
     if y_schema:
         y.ww.init(schema=y_schema)
+    objective_to_use = objective
     if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
         X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
                                                                   test_size=0.2, random_seed=pipeline.random_seed)
@@ -142,8 +143,6 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     if is_binary(automl_config.problem_type) and automl_config.optimize_thresholds and automl_config.objective.score_needs_proba:
         # use the thresholding_objective
         objective_to_train = automl_config.thresholding_objective
-    print(objective_to_train)
-    # breakpoint()
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
         y_mapping = {original_target: encoded_target for (encoded_target, original_target) in
@@ -167,6 +166,7 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
                 raise Exception(diff_string)
         objectives_to_score = [automl_config.objective] + automl_config.additional_objectives
         try:
+            # breakpoint()
             logger.debug(f"\t\t\tFold {i}: starting training")
             cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_config.optimize_thresholds, objective_to_train)
             logger.debug(f"\t\t\tFold {i}: finished training")

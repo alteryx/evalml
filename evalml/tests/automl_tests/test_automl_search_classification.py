@@ -280,7 +280,7 @@ def test_non_optimizable_threshold(mock_fit, mock_score, X_y_binary):
 
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=2, n_jobs=1)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', objective='AUC', max_iterations=2, optimize_thresholds=False, n_jobs=1)
     automl.search()
 
     automl.describe_pipeline(0)
@@ -421,7 +421,7 @@ def test_automl_allowed_pipelines_no_allowed_pipelines(automl_type, X_y_binary, 
 def test_automl_allowed_pipelines_specified_allowed_pipelines_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary',
-                          allowed_pipelines=[dummy_binary_pipeline_class({})], allowed_model_families=None)
+                          optimize_thresholds=False, allowed_pipelines=[dummy_binary_pipeline_class({})], allowed_model_families=None)
     expected_pipelines = [dummy_binary_pipeline_class({})]
     mock_score.return_value = {automl.objective.name: 1.0}
     assert automl.allowed_pipelines == expected_pipelines
@@ -456,7 +456,7 @@ def test_automl_allowed_pipelines_specified_allowed_pipelines_multi(mock_fit, mo
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_fit, mock_score, X_y_binary, assert_allowed_pipelines_equal_helper):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=[ModelFamily.RANDOM_FOREST], optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -469,7 +469,7 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_binary(mock_f
 
     mock_fit.reset_mock()
     mock_score.reset_mock()
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=['random_forest'])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=['random_forest'], optimize_thresholds=False)
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=[ModelFamily.RANDOM_FOREST])]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     automl.search()
@@ -510,7 +510,7 @@ def test_automl_allowed_pipelines_specified_allowed_model_families_multi(mock_fi
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_allowed_pipelines_init_allowed_both_not_specified_binary(mock_fit, mock_score, X_y_binary, assert_allowed_pipelines_equal_helper):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=None)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=None, allowed_model_families=None, optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [make_pipeline(X, y, estimator, ProblemTypes.BINARY) for estimator in get_estimators(ProblemTypes.BINARY, model_families=None)]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -542,7 +542,7 @@ def test_automl_allowed_pipelines_init_allowed_both_not_specified_multi(mock_fit
 @patch('evalml.pipelines.BinaryClassificationPipeline.fit')
 def test_automl_allowed_pipelines_init_allowed_both_specified_binary(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary, assert_allowed_pipelines_equal_helper):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class({})], allowed_model_families=[ModelFamily.RANDOM_FOREST])
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', allowed_pipelines=[dummy_binary_pipeline_class({})], allowed_model_families=[ModelFamily.RANDOM_FOREST], optimize_thresholds=False)
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [dummy_binary_pipeline_class({})]
     assert automl.allowed_pipelines == expected_pipelines
@@ -603,7 +603,7 @@ def test_automl_allowed_pipelines_search(mock_binary_fit, mock_binary_score,
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
                           max_iterations=5, start_iteration_callback=start_iteration_callback,
-                          allowed_pipelines=allowed_pipelines)
+                          optimize_thresholds=False, allowed_pipelines=allowed_pipelines)
     automl.search()
 
     assert isinstance(start_iteration_callback.call_args_list[0][0][0], expected_mock_class)
@@ -636,7 +636,7 @@ def test_automl_supports_time_series_classification(mock_binary_fit, mock_multi_
     configuration = {"date_index": None, "gap": 0, "max_delay": 0, 'delay_target': False, 'delay_features': True}
 
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type,
-                          problem_configuration=configuration,
+                          optimize_thresholds=False, problem_configuration=configuration,
                           max_batches=2)
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
@@ -673,9 +673,14 @@ def test_automl_time_series_classification_threshold(mock_binary_fit, mock_binar
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     if objective == 'Log Loss Binary':
-        mock_optimize_threshold.assert_not_called()
-        assert automl.best_pipeline.threshold is None
-        mock_split_data.assert_not_called()
+        if not optimize:
+            mock_optimize_threshold.assert_not_called()
+            assert automl.best_pipeline.threshold is None
+            mock_split_data.assert_not_called()
+        else:
+            mock_optimize_threshold.assert_called()
+            assert automl.best_pipeline.threshold == 0.62
+            mock_split_data.assert_called()
     elif optimize and objective == 'F1':
         mock_optimize_threshold.assert_called()
         assert automl.best_pipeline.threshold == 0.62
@@ -785,7 +790,7 @@ def test_automl_search_dictionary_undersampler(mock_multi_score, mock_binary_sco
     else:
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
     pipeline_parameters = {"Undersampler": {"sampling_ratio_dict": sampling_ratio_dict}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='Undersampler', pipeline_parameters=pipeline_parameters)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, optimize_thresholds=False, sampler_method='Undersampler', pipeline_parameters=pipeline_parameters)
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines
     for pipeline in pipelines:
@@ -819,7 +824,7 @@ def test_automl_search_dictionary_oversampler(mock_multi_score, mock_binary_scor
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
     # we only test with SMOTE Oversampler since the oversamplers perform similarly
     pipeline_parameters = {"SMOTE Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='SMOTE Oversampler', pipeline_parameters=pipeline_parameters)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type=problem_type, sampler_method='SMOTE Oversampler', optimize_thresholds=False, pipeline_parameters=pipeline_parameters)
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines
     for pipeline in pipelines:
@@ -847,7 +852,7 @@ def test_automl_search_sampler_dictionary_keys(mock_binary_score, mock_est_fit, 
                       "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
     pipeline_parameters = {sampler: {"sampling_ratio_dict": sampling_ratio_dict}}
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', error_callback=raise_error_callback, sampler_method=sampler, pipeline_parameters=pipeline_parameters)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type='binary', error_callback=raise_error_callback, sampler_method=sampler, optimize_thresholds=False, pipeline_parameters=pipeline_parameters)
     if errors:
         with pytest.raises(ValueError, match='Dictionary keys are different from target'):
             automl.search()
