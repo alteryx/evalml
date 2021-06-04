@@ -384,10 +384,10 @@ class ComponentGraph:
         if y_input is not None:
             return_y = y_input
         logical_types = {}
+        logical_types.update(X.ww.logical_types)
         for x_input in x_inputs:
             if x_input.ww.schema is not None:
                 logical_types.update(x_input.ww.logical_types)
-        logical_types.update(X.ww.logical_types)
         return_x = _retain_custom_types_and_initalize_woodwork(logical_types, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
