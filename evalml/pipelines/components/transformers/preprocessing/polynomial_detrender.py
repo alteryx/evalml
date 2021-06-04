@@ -7,6 +7,7 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 class PolynomialDetrender(Transformer):
     """Removes trends from time series by fitting a polynomial to the data."""
+
     name = "Polynomial Detrender"
 
     hyperparameter_ranges = {"degree": Integer(1, 3)}
@@ -23,20 +24,24 @@ class PolynomialDetrender(Transformer):
             if isinstance(degree, float) and degree.is_integer():
                 degree = int(degree)
             else:
-                raise TypeError(f"Parameter Degree must be an integer!: Received {type(degree).__name__}")
+                raise TypeError(
+                    f"Parameter Degree must be an integer!: Received {type(degree).__name__}"
+                )
 
         params = {"degree": degree}
         params.update(kwargs)
         error_msg = "sktime is not installed. Please install using 'pip install sktime'"
 
         trend = import_or_raise("sktime.forecasting.trend", error_msg=error_msg)
-        detrend = import_or_raise("sktime.transformations.series.detrend", error_msg=error_msg)
+        detrend = import_or_raise(
+            "sktime.transformations.series.detrend", error_msg=error_msg
+        )
 
         detrender = detrend.Detrender(trend.PolynomialTrendForecaster(degree=degree))
 
-        super().__init__(parameters=params,
-                         component_obj=detrender,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=params, component_obj=detrender, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         """Fits the PolynomialDetrender.

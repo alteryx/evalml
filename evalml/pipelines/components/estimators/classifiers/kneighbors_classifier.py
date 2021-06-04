@@ -11,36 +11,45 @@ class KNeighborsClassifier(Estimator):
     """
     K-Nearest Neighbors Classifier.
     """
+
     name = "KNN Classifier"
     hyperparameter_ranges = {
         "n_neighbors": Integer(2, 12),
         "weights": ["uniform", "distance"],
         "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
         "leaf_size": Integer(10, 30),
-        "p": Integer(1, 5)
+        "p": Integer(1, 5),
     }
     model_family = ModelFamily.K_NEIGHBORS
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
-                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
+    supported_problem_types = [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]
 
-    def __init__(self,
-                 n_neighbors=5,
-                 weights="uniform",
-                 algorithm="auto",
-                 leaf_size=30,
-                 p=2,
-                 random_seed=0,
-                 **kwargs):
-        parameters = {"n_neighbors": n_neighbors,
-                      "weights": weights,
-                      "algorithm": algorithm,
-                      "leaf_size": leaf_size,
-                      "p": p}
+    def __init__(
+        self,
+        n_neighbors=5,
+        weights="uniform",
+        algorithm="auto",
+        leaf_size=30,
+        p=2,
+        random_seed=0,
+        **kwargs
+    ):
+        parameters = {
+            "n_neighbors": n_neighbors,
+            "weights": weights,
+            "algorithm": algorithm,
+            "leaf_size": leaf_size,
+            "p": p,
+        }
         parameters.update(kwargs)
         knn_classifier = SKKNeighborsClassifier(**parameters)
-        super().__init__(parameters=parameters,
-                         component_obj=knn_classifier,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=knn_classifier, random_seed=random_seed
+        )
 
     @property
     def feature_importance(self):

@@ -3,7 +3,7 @@ from sklearn.linear_model import ElasticNet as SKElasticNetRegressor
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.regressors import (
-    ElasticNetRegressor
+    ElasticNetRegressor,
 )
 from evalml.problem_types import ProblemTypes
 
@@ -17,25 +17,25 @@ def test_en_parameters():
     expected_parameters = {
         "alpha": 0.75,
         "l1_ratio": 0.5,
-        'max_iter': 1000,
-        'normalize': False
+        "max_iter": 1000,
+        "normalize": False,
     }
     assert clf.parameters == expected_parameters
 
 
 def test_problem_types():
-    assert set(ElasticNetRegressor.supported_problem_types) == {ProblemTypes.REGRESSION,
-                                                                ProblemTypes.TIME_SERIES_REGRESSION}
+    assert set(ElasticNetRegressor.supported_problem_types) == {
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    }
 
 
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(alpha=0.0001,
-                                   l1_ratio=0.15,
-                                   random_state=0,
-                                   normalize=False,
-                                   max_iter=1000)
+    sk_clf = SKElasticNetRegressor(
+        alpha=0.0001, l1_ratio=0.15, random_state=0, normalize=False, max_iter=1000
+    )
     sk_clf.fit(X, y)
     y_pred_sk = sk_clf.predict(X)
 
@@ -50,11 +50,9 @@ def test_fit_predict(X_y_regression):
 def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(alpha=0.0001,
-                                   l1_ratio=0.15,
-                                   random_state=0,
-                                   normalize=False,
-                                   max_iter=1000)
+    sk_clf = SKElasticNetRegressor(
+        alpha=0.0001, l1_ratio=0.15, random_state=0, normalize=False, max_iter=1000
+    )
     sk_clf.fit(X, y)
 
     clf = ElasticNetRegressor()

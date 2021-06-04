@@ -5,16 +5,19 @@ from woodwork.logical_types import NaturalLanguage
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
+    infer_feature_types,
 )
 
 
 class SimpleImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
-    name = 'Simple Imputer'
+
+    name = "Simple Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
 
-    def __init__(self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs):
+    def __init__(
+        self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
+    ):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -24,16 +27,13 @@ class SimpleImputer(Transformer):
                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        parameters = {"impute_strategy": impute_strategy,
-                      "fill_value": fill_value}
+        parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
-        imputer = SkImputer(strategy=impute_strategy,
-                            fill_value=fill_value,
-                            **kwargs)
+        imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
         self._all_null_cols = None
-        super().__init__(parameters=parameters,
-                         component_obj=imputer,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=imputer, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
@@ -47,18 +47,20 @@ class SimpleImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        nan_ratio = X.ww.describe().loc['nan_count'] / X.shape[0]
+        nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         # Not using select because we just need column names, not a new dataframe
-        natural_language_columns = [col for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage]
+        natural_language_columns = [
+            col for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage
+        ]
         if natural_language_columns:
             X = X.ww.copy()
             X.ww.set_types({col: "Categorical" for col in natural_language_columns})
 
         # Convert all bool dtypes to category for fitting
         if (X.dtypes == bool).all():
-            X = X.astype('category')
+            X = X.astype("category")
 
         self._component_obj.fit(X, y)
         return self
@@ -84,7 +86,13 @@ class SimpleImputer(Transformer):
         original_index = X.index
 
         # Not using select because we just need column names, not a new dataframe
-        X.ww.set_types({col: "Categorical" for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage})
+        X.ww.set_types(
+            {
+                col: "Categorical"
+                for col, ltype in X.ww.logical_types.items()
+                if ltype == NaturalLanguage
+            }
+        )
 
         X = self._component_obj.transform(X)
         X = pd.DataFrame(X, columns=not_all_null_cols)

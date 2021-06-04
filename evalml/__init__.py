@@ -13,6 +13,7 @@ import evalml.utils
 import evalml.data_checks
 from evalml.automl import AutoMLSearch, search
 from evalml.utils import print_info
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     warnings.simplefilter("ignore", DeprecationWarning)
@@ -20,4 +21,4 @@ with warnings.catch_warnings():
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-__version__ = '0.24.2'
+__version__ = "0.25.0"

@@ -1,4 +1,3 @@
-
 from .exceptions import (
     MethodPropertyNotFoundError,
     PipelineNotFoundError,
@@ -12,5 +11,5 @@ from .exceptions import (
     EnsembleMissingPipelinesError,
     NullsInColumnWarning,
     ObjectiveCreationError,
-    NoPositiveLabelException
+    NoPositiveLabelException,
 )

@@ -4,59 +4,61 @@ from enum import Enum
 class ModelFamily(Enum):
     """Enum for family of machine learning models."""
 
-    K_NEIGHBORS = 'k_neighbors'
+    K_NEIGHBORS = "k_neighbors"
     """K Nearest Neighbors model family."""
 
-    RANDOM_FOREST = 'random_forest'
+    RANDOM_FOREST = "random_forest"
     """Random Forest model family."""
 
-    SVM = 'svm'
+    SVM = "svm"
     """SVM model family."""
 
-    XGBOOST = 'xgboost'
+    XGBOOST = "xgboost"
     """XGBoost model family."""
 
-    LIGHTGBM = 'lightgbm'
+    LIGHTGBM = "lightgbm"
     """LightGBM model family."""
 
-    LINEAR_MODEL = 'linear_model'
+    LINEAR_MODEL = "linear_model"
     """Linear model family."""
 
-    CATBOOST = 'catboost'
+    CATBOOST = "catboost"
     """CatBoost model family."""
 
-    EXTRA_TREES = 'extra_trees'
+    EXTRA_TREES = "extra_trees"
     """Extra Trees model family."""
 
-    ENSEMBLE = 'ensemble'
+    ENSEMBLE = "ensemble"
     """Ensemble model family."""
 
-    DECISION_TREE = 'decision_tree'
+    DECISION_TREE = "decision_tree"
     """Decision Tree model family."""
 
-    ARIMA = 'arima'
+    ARIMA = "arima"
     """ARIMA model family."""
 
-    BASELINE = 'baseline'
+    BASELINE = "baseline"
     """Baseline model family."""
 
-    NONE = 'none'
+    NONE = "none"
     """None"""
 
     def __str__(self):
-        model_family_dict = {ModelFamily.K_NEIGHBORS.name: "K Nearest Neighbors",
-                             ModelFamily.RANDOM_FOREST.name: "Random Forest",
-                             ModelFamily.SVM.name: "SVM",
-                             ModelFamily.XGBOOST.name: "XGBoost",
-                             ModelFamily.LIGHTGBM.name: "LightGBM",
-                             ModelFamily.LINEAR_MODEL.name: "Linear",
-                             ModelFamily.CATBOOST.name: "CatBoost",
-                             ModelFamily.EXTRA_TREES.name: "Extra Trees",
-                             ModelFamily.DECISION_TREE.name: "Decision Tree",
-                             ModelFamily.BASELINE.name: "Baseline",
-                             ModelFamily.ENSEMBLE.name: "Ensemble",
-                             ModelFamily.ARIMA.name: "ARIMA",
-                             ModelFamily.NONE.name: "None"}
+        model_family_dict = {
+            ModelFamily.K_NEIGHBORS.name: "K Nearest Neighbors",
+            ModelFamily.RANDOM_FOREST.name: "Random Forest",
+            ModelFamily.SVM.name: "SVM",
+            ModelFamily.XGBOOST.name: "XGBoost",
+            ModelFamily.LIGHTGBM.name: "LightGBM",
+            ModelFamily.LINEAR_MODEL.name: "Linear",
+            ModelFamily.CATBOOST.name: "CatBoost",
+            ModelFamily.EXTRA_TREES.name: "Extra Trees",
+            ModelFamily.DECISION_TREE.name: "Decision Tree",
+            ModelFamily.BASELINE.name: "Baseline",
+            ModelFamily.ENSEMBLE.name: "Ensemble",
+            ModelFamily.ARIMA.name: "ARIMA",
+            ModelFamily.NONE.name: "None",
+        }
         return model_family_dict[self.name]
 
     def __repr__(self):
@@ -64,6 +66,12 @@ class ModelFamily(Enum):
 
     def is_tree_estimator(self):
         """Checks whether the estimator's model family uses trees."""
-        tree_estimators = {self.CATBOOST, self.EXTRA_TREES, self.RANDOM_FOREST,
-                           self.DECISION_TREE, self.XGBOOST, self.LIGHTGBM}
+        tree_estimators = {
+            self.CATBOOST,
+            self.EXTRA_TREES,
+            self.RANDOM_FOREST,
+            self.DECISION_TREE,
+            self.XGBOOST,
+            self.LIGHTGBM,
+        }
         return self in tree_estimators

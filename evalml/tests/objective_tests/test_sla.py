@@ -4,7 +4,7 @@ import pytest
 
 from evalml.objectives import SensitivityLowAlert
 from evalml.tests.objective_tests.test_binary_classification_objective import (
-    TestBinaryObjective
+    TestBinaryObjective,
 )
 
 
@@ -29,21 +29,40 @@ class TestSLA(TestBinaryObjective):
         with pytest.raises(ValueError):
             SensitivityLowAlert(alert_rate)
 
-    @pytest.mark.parametrize("alert_rate, ypred_proba, high_risk", [
-        (0.1, pd.Series([0.5, 0.5, 0.5]), [True, True, True]),
-        (0.1, list(range(10)), [False if i != 9 else True for i in range(10)])])
+    @pytest.mark.parametrize(
+        "alert_rate, ypred_proba, high_risk",
+        [
+            (0.1, pd.Series([0.5, 0.5, 0.5]), [True, True, True]),
+            (0.1, list(range(10)), [False if i != 9 else True for i in range(10)]),
+        ],
+    )
     def test_high_risk_output(self, alert_rate, ypred_proba, high_risk):
         self.assign_objective(alert_rate)
         assert self.objective.decision_function(ypred_proba).tolist() == high_risk
 
-    @pytest.mark.parametrize("y_true, y_predicted, expected_score", [
-        (pd.Series([False, False, False]), pd.Series([True, True, False]), np.nan),
-        (pd.Series([True, True, True, True]), pd.Series([True, True, False, False]), 0.5)])
+    @pytest.mark.parametrize(
+        "y_true, y_predicted, expected_score",
+        [
+            (pd.Series([False, False, False]), pd.Series([True, True, False]), np.nan),
+            (
+                pd.Series([True, True, True, True]),
+                pd.Series([True, True, False, False]),
+                0.5,
+            ),
+        ],
+    )
     def test_score(self, y_true, y_predicted, expected_score):
         sensitivity = SensitivityLowAlert(0.1).objective_function(y_true, y_predicted)
         assert (sensitivity is expected_score) or (sensitivity == expected_score)
 
-    def test_all_base_tests(self, fix_y_pred_na, fix_y_true, fix_y_pred_diff_len, fix_empty_array, fix_y_pred_multi):
+    def test_all_base_tests(
+        self,
+        fix_y_pred_na,
+        fix_y_true,
+        fix_y_pred_diff_len,
+        fix_empty_array,
+        fix_y_pred_multi,
+    ):
         self.assign_objective(0.1)
         self.input_contains_nan_inf(fix_y_pred_na, fix_y_true)
         self.different_input_lengths(fix_y_pred_diff_len, fix_y_true)
