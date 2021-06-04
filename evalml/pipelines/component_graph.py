@@ -383,6 +383,16 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
+
+        # Expected behavior: Preserve types selected by user unless one of the components updates the
+        # type for that column. This requirement is important because the StandardScaler is expected to convert
+        # Ints to Doubles and converting back to an int would lose information.
+        # In order to meet this requirement, we start off with the user selected types (X.ww.logical_types) and then
+        # update them with the types created by components (if they are different).
+        # Components are not expected to create features with the same names
+        # so the only possible clash is between the types selected by the user and the types selected by a component.
+        # Because of that, the for-loop below is sufficient.
+
         logical_types = {}
         logical_types.update(X.ww.logical_types)
         for x_input in x_inputs:
