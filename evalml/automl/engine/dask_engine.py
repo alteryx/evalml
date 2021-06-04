@@ -6,7 +6,7 @@ from evalml.automl.engine.engine_base import (
     EngineComputation,
     evaluate_pipeline,
     score_pipeline,
-    train_pipeline
+    train_pipeline,
 )
 
 
@@ -44,7 +44,9 @@ class DaskEngine(EngineBase):
 
     def __init__(self, client):
         if not isinstance(client, Client):
-            raise TypeError(f"Expected dask.distributed.Client, received {type(client)}")
+            raise TypeError(
+                f"Expected dask.distributed.Client, received {type(client)}"
+            )
         self.client = client
         self._data_futures_cache = {}
 
@@ -65,7 +67,9 @@ class DaskEngine(EngineBase):
             X_future, y_future = self._data_futures_cache[data_hash]
             if not (X_future.cancelled() or y_future.cancelled()):
                 return X_future, y_future
-        self._data_futures_cache[data_hash] = self.client.scatter([X, y], broadcast=True)
+        self._data_futures_cache[data_hash] = self.client.scatter(
+            [X, y], broadcast=True
+        )
         return self._data_futures_cache[data_hash]
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
@@ -82,11 +86,14 @@ class DaskEngine(EngineBase):
         """
         logger = self.setup_job_log()
         X, y = self.send_data_to_cluster(X, y)
-        dask_future = self.client.submit(evaluate_pipeline, pipeline=pipeline,
-                                         automl_config=automl_config,
-                                         X=X,
-                                         y=y,
-                                         logger=logger)
+        dask_future = self.client.submit(
+            evaluate_pipeline,
+            pipeline=pipeline,
+            automl_config=automl_config,
+            X=X,
+            y=y,
+            logger=logger,
+        )
         return DaskComputation(dask_future)
 
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
@@ -102,16 +109,21 @@ class DaskEngine(EngineBase):
                 occurring in the dask cluster
         """
         X, y = self.send_data_to_cluster(X, y)
-        dask_future = self.client.submit(train_pipeline,
-                                         pipeline=pipeline, X=X,
-                                         y=y,
-                                         optimize_thresholds=automl_config.optimize_thresholds,
-                                         objective=automl_config.objective,
-                                         X_schema=automl_config.X_schema,
-                                         y_schema=automl_config.y_schema)
+        dask_future = self.client.submit(
+            train_pipeline,
+            pipeline=pipeline,
+            X=X,
+            y=y,
+            optimize_thresholds=automl_config.optimize_thresholds,
+            objective=automl_config.objective,
+            X_schema=automl_config.X_schema,
+            y_schema=automl_config.y_schema,
+        )
         return DaskComputation(dask_future)
 
-    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives) -> EngineComputation:
+    def submit_scoring_job(
+        self, automl_config, pipeline, X, y, objectives
+    ) -> EngineComputation:
         """Send scoring job to cluster.
 
         Args:
@@ -127,9 +139,15 @@ class DaskEngine(EngineBase):
         X_schema = X.ww.schema
         y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)
-        dask_future = self.client.submit(score_pipeline, pipeline=pipeline,
-                                         X=X, y=y, objectives=objectives,
-                                         X_schema=X_schema, y_schema=y_schema)
+        dask_future = self.client.submit(
+            score_pipeline,
+            pipeline=pipeline,
+            X=X,
+            y=y,
+            objectives=objectives,
+            X_schema=X_schema,
+            y_schema=y_schema,
+        )
         computation = DaskComputation(dask_future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation

@@ -28,8 +28,7 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def score_needs_proba(cls):
-        """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation.
-        """
+        """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation."""
 
     @property
     @classmethod
@@ -111,7 +110,11 @@ class ObjectiveBase(ABC):
             None
         """
         if y_predicted.shape[0] != y_true.shape[0]:
-            raise ValueError("Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(len(y_predicted), len(y_true)))
+            raise ValueError(
+                "Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(
+                    len(y_predicted), len(y_true)
+                )
+            )
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
         if np.isnan(y_true).any() or np.isinf(y_true).any():
@@ -121,7 +124,9 @@ class ObjectiveBase(ABC):
         if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
             raise ValueError("y_predicted contains NaN or infinity")
         if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
-            raise ValueError("y_predicted contains probability estimates not within [0, 1]")
+            raise ValueError(
+                "y_predicted contains probability estimates not within [0, 1]"
+            )
 
     @classmethod
     def calculate_percent_difference(cls, score, baseline_score):
@@ -145,15 +150,24 @@ class ObjectiveBase(ABC):
             return 0
 
         # Return inf when dividing by 0
-        if np.isclose(baseline_score, 0, atol=1e-10) and not cls.is_bounded_like_percentage:
+        if (
+            np.isclose(baseline_score, 0, atol=1e-10)
+            and not cls.is_bounded_like_percentage
+        ):
             return np.inf
 
         decrease = False
-        if (baseline_score > score and cls.greater_is_better) or (baseline_score < score and not cls.greater_is_better):
+        if (baseline_score > score and cls.greater_is_better) or (
+            baseline_score < score and not cls.greater_is_better
+        ):
             decrease = True
 
-        difference = (baseline_score - score)
-        change = difference if cls.is_bounded_like_percentage else difference / baseline_score
+        difference = baseline_score - score
+        change = (
+            difference
+            if cls.is_bounded_like_percentage
+            else difference / baseline_score
+        )
         return 100 * (-1) ** (decrease) * np.abs(change)
 
     @classmethod

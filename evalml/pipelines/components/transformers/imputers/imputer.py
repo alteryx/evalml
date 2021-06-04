@@ -4,25 +4,32 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
+    infer_feature_types,
 )
 
 
 class Imputer(Transformer):
     """Imputes missing data according to a specified imputation strategy."""
+
     name = "Imputer"
     hyperparameter_ranges = {
         "categorical_impute_strategy": ["most_frequent"],
-        "numeric_impute_strategy": ["mean", "median", "most_frequent"]
+        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
     }
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
-    _valid_numeric_impute_strategies = set(["mean", "median", "most_frequent", "constant"])
+    _valid_numeric_impute_strategies = set(
+        ["mean", "median", "most_frequent", "constant"]
+    )
 
-    def __init__(self, categorical_impute_strategy="most_frequent",
-                 categorical_fill_value=None,
-                 numeric_impute_strategy="mean",
-                 numeric_fill_value=None,
-                 random_seed=0, **kwargs):
+    def __init__(
+        self,
+        categorical_impute_strategy="most_frequent",
+        categorical_fill_value=None,
+        numeric_impute_strategy="mean",
+        numeric_fill_value=None,
+        random_seed=0,
+        **kwargs,
+    ):
         """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
 
         Arguments:
@@ -33,27 +40,37 @@ class Imputer(Transformer):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
-            raise ValueError(f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
+            raise ValueError(
+                f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+            )
         elif numeric_impute_strategy not in self._valid_numeric_impute_strategies:
-            raise ValueError(f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}")
+            raise ValueError(
+                f"{numeric_impute_strategy} is an invalid parameter. Valid impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
+            )
 
-        parameters = {"categorical_impute_strategy": categorical_impute_strategy,
-                      "numeric_impute_strategy": numeric_impute_strategy,
-                      "categorical_fill_value": categorical_fill_value,
-                      "numeric_fill_value": numeric_fill_value}
+        parameters = {
+            "categorical_impute_strategy": categorical_impute_strategy,
+            "numeric_impute_strategy": numeric_impute_strategy,
+            "categorical_fill_value": categorical_fill_value,
+            "numeric_fill_value": numeric_fill_value,
+        }
         parameters.update(kwargs)
-        self._categorical_imputer = SimpleImputer(impute_strategy=categorical_impute_strategy,
-                                                  fill_value=categorical_fill_value,
-                                                  **kwargs)
-        self._numeric_imputer = SimpleImputer(impute_strategy=numeric_impute_strategy,
-                                              fill_value=numeric_fill_value,
-                                              **kwargs)
+        self._categorical_imputer = SimpleImputer(
+            impute_strategy=categorical_impute_strategy,
+            fill_value=categorical_fill_value,
+            **kwargs,
+        )
+        self._numeric_imputer = SimpleImputer(
+            impute_strategy=numeric_impute_strategy,
+            fill_value=numeric_fill_value,
+            **kwargs,
+        )
         self._all_null_cols = None
         self._numeric_cols = None
         self._categorical_cols = None
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
@@ -67,10 +84,10 @@ class Imputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select(['category', 'boolean']).columns)
-        numeric_cols = list(X.ww.select(['numeric']).columns)
+        cat_cols = list(X.ww.select(["category", "boolean"]).columns)
+        numeric_cols = list(X.ww.select(["numeric"]).columns)
 
-        nan_ratio = X.ww.describe().loc['nan_count'] / X.shape[0]
+        nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
         X_numerics = X[[col for col in numeric_cols if col not in self._all_null_cols]]
@@ -101,7 +118,7 @@ class Imputer(Transformer):
             df = pd.DataFrame(index=X.index)
             return _retain_custom_types_and_initalize_woodwork(original_ltypes, df)
 
-        X.drop(self._all_null_cols, inplace=True, axis=1, errors='ignore')
+        X.drop(self._all_null_cols, inplace=True, axis=1, errors="ignore")
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
             X_numeric = X[self._numeric_cols.tolist()]

@@ -12,7 +12,10 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(SVMRegressor.supported_problem_types) == {ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION}
+    assert set(SVMRegressor.supported_problem_types) == {
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    }
 
 
 def test_fit_predict_regression(X_y_regression):
@@ -29,7 +32,7 @@ def test_fit_predict_regression(X_y_regression):
     np.testing.assert_almost_equal(y_pred.values, y_pred_sk, decimal=5)
 
 
-@pytest.mark.parametrize('kernel', ['linear', 'rbf', 'sigmoid'])
+@pytest.mark.parametrize("kernel", ["linear", "rbf", "sigmoid"])
 def test_feature_importance(kernel, X_y_regression):
     X, y = X_y_regression
 
@@ -37,7 +40,7 @@ def test_feature_importance(kernel, X_y_regression):
     sk_svr = SVR(kernel=kernel)
     sk_svr.fit(X, y)
 
-    if kernel == 'linear':
+    if kernel == "linear":
         sk_feature_importance = sk_svr.coef_
     else:
         sk_feature_importance = np.zeros(sk_svr.n_features_in_)

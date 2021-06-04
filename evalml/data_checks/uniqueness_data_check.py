@@ -3,16 +3,18 @@ from evalml.data_checks import (
     DataCheckAction,
     DataCheckActionCode,
     DataCheckMessageCode,
-    DataCheckWarning
+    DataCheckWarning,
 )
 from evalml.problem_types import (
     handle_problem_types,
     is_multiclass,
-    is_regression
+    is_regression,
 )
 from evalml.utils.woodwork_utils import infer_feature_types
 
-warning_not_unique_enough = "Input columns ({}) for {} problem type are not unique enough."
+warning_not_unique_enough = (
+    "Input columns ({}) for {} problem type are not unique enough."
+)
 warning_too_unique = "Input columns ({}) for {} problem type are too unique."
 
 
@@ -63,11 +65,7 @@ class UniquenessDataCheck(DataCheck):
                                                          "actions": [{"code": "DROP_COL",\
                                                                       "metadata": {"column": "regression_not_unique_enough"}}]}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
 
@@ -75,26 +73,56 @@ class UniquenessDataCheck(DataCheck):
 
         if is_regression(self.problem_type):
             not_unique_enough_cols = list(res.index[res < self.threshold])
-            results["warnings"].extend([DataCheckWarning(message=warning_not_unique_enough.format(col_name,
-                                                                                                  self.problem_type),
-                                                         data_check_name=self.name,
-                                                         message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
-                                                         details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
-                                        for col_name in not_unique_enough_cols])
-            results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
-                                                       metadata={"column": col_name}).to_dict()
-                                       for col_name in not_unique_enough_cols])
+            results["warnings"].extend(
+                [
+                    DataCheckWarning(
+                        message=warning_not_unique_enough.format(
+                            col_name, self.problem_type
+                        ),
+                        data_check_name=self.name,
+                        message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
+                        details={
+                            "column": col_name,
+                            "uniqueness_score": res.loc[col_name],
+                        },
+                    ).to_dict()
+                    for col_name in not_unique_enough_cols
+                ]
+            )
+            results["actions"].extend(
+                [
+                    DataCheckAction(
+                        action_code=DataCheckActionCode.DROP_COL,
+                        metadata={"column": col_name},
+                    ).to_dict()
+                    for col_name in not_unique_enough_cols
+                ]
+            )
         elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
-            results["warnings"].extend([DataCheckWarning(message=warning_too_unique.format(col_name,
-                                                                                           self.problem_type),
-                                                         data_check_name=self.name,
-                                                         message_code=DataCheckMessageCode.TOO_UNIQUE,
-                                                         details={"column": col_name, "uniqueness_score": res.loc[col_name]}).to_dict()
-                                        for col_name in too_unique_cols])
-            results["actions"].extend([DataCheckAction(action_code=DataCheckActionCode.DROP_COL,
-                                                       metadata={"columns": [col_name]}).to_dict()
-                                       for col_name in too_unique_cols])
+            results["warnings"].extend(
+                [
+                    DataCheckWarning(
+                        message=warning_too_unique.format(col_name, self.problem_type),
+                        data_check_name=self.name,
+                        message_code=DataCheckMessageCode.TOO_UNIQUE,
+                        details={
+                            "column": col_name,
+                            "uniqueness_score": res.loc[col_name],
+                        },
+                    ).to_dict()
+                    for col_name in too_unique_cols
+                ]
+            )
+            results["actions"].extend(
+                [
+                    DataCheckAction(
+                        action_code=DataCheckActionCode.DROP_COL,
+                        metadata={"columns": [col_name]},
+                    ).to_dict()
+                    for col_name in too_unique_cols
+                ]
+            )
         return results
 
     @staticmethod

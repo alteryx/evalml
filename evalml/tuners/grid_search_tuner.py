@@ -17,7 +17,7 @@ class GridSearchTuner(Tuner):
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_seed=0):
-        """ Generate all of the possible points to search for in the grid
+        """Generate all of the possible points to search for in the grid
 
         Arguments:
             pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
@@ -32,7 +32,11 @@ class GridSearchTuner(Tuner):
             if isinstance(dimension, list):
                 range_values = dimension
             elif isinstance(dimension, (Real, Integer, tuple)):
-                if isinstance(dimension, (tuple)) and isinstance(dimension[0], (int, float)) and isinstance(dimension[1], (int, float)):
+                if (
+                    isinstance(dimension, (tuple))
+                    and isinstance(dimension[0], (int, float))
+                    and isinstance(dimension[1], (int, float))
+                ):
                     if dimension[1] > dimension[0]:
                         low = dimension[0]
                         high = dimension[1]
@@ -90,5 +94,7 @@ class GridSearchTuner(Tuner):
             self.curr_params = next(self._grid_points)
             return False
         except StopIteration:
-            raise NoParamsException("Grid search has exhausted all possible parameters.")
+            raise NoParamsException(
+                "Grid search has exhausted all possible parameters."
+            )
             return True

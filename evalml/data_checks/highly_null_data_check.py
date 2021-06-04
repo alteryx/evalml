@@ -3,7 +3,7 @@ from evalml.data_checks import (
     DataCheckAction,
     DataCheckActionCode,
     DataCheckMessageCode,
-    DataCheckWarning
+    DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
 
@@ -20,7 +20,9 @@ class HighlyNullDataCheck(DataCheck):
 
         """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
-            raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
+            raise ValueError(
+                "pct_null_threshold must be a float between 0 and 1, inclusive."
+            )
         self.pct_null_threshold = pct_null_threshold
 
     def validate(self, X, y=None):
@@ -66,34 +68,58 @@ class HighlyNullDataCheck(DataCheck):
                                                             "metadata": {"columns": "lots_of_null"}}]}
 
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
 
         percent_null_rows = X.isnull().mean(axis=1)
-        highly_null_rows = percent_null_rows[percent_null_rows >= self.pct_null_threshold]
+        highly_null_rows = percent_null_rows[
+            percent_null_rows >= self.pct_null_threshold
+        ]
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are more than {self.pct_null_threshold*100}% null"
-            results["warnings"].append(DataCheckWarning(message=warning_msg,
-                                                        data_check_name=self.name,
-                                                        message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                                                        details={"pct_null_cols": highly_null_rows}).to_dict())
-            results["actions"].append(DataCheckAction(DataCheckActionCode.DROP_ROWS,
-                                                      metadata={"rows": highly_null_rows.index.tolist()}).to_dict())
+            results["warnings"].append(
+                DataCheckWarning(
+                    message=warning_msg,
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
+                    details={"pct_null_cols": highly_null_rows},
+                ).to_dict()
+            )
+            results["actions"].append(
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    metadata={"rows": highly_null_rows.index.tolist()},
+                ).to_dict()
+            )
 
         percent_null_cols = (X.isnull().mean()).to_dict()
-        highly_null_cols = {key: value for key, value in percent_null_cols.items() if value >= self.pct_null_threshold and value != 0}
+        highly_null_cols = {
+            key: value
+            for key, value in percent_null_cols.items()
+            if value >= self.pct_null_threshold and value != 0
+        }
         warning_msg = "Column '{}' is {}% or more null"
-        results["warnings"].extend([DataCheckWarning(message=warning_msg.format(col_name, self.pct_null_threshold * 100),
-                                                     data_check_name=self.name,
-                                                     message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                                                     details={"column": col_name, "pct_null_rows": highly_null_cols[col_name]}).to_dict()
-                                    for col_name in highly_null_cols])
-        results["actions"].extend([DataCheckAction(DataCheckActionCode.DROP_COL,
-                                                   metadata={"columns": [col_name]}).to_dict()
-                                   for col_name in highly_null_cols])
+        results["warnings"].extend(
+            [
+                DataCheckWarning(
+                    message=warning_msg.format(col_name, self.pct_null_threshold * 100),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+                    details={
+                        "column": col_name,
+                        "pct_null_rows": highly_null_cols[col_name],
+                    },
+                ).to_dict()
+                for col_name in highly_null_cols
+            ]
+        )
+        results["actions"].extend(
+            [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL, metadata={"columns": [col_name]}
+                ).to_dict()
+                for col_name in highly_null_cols
+            ]
+        )
         return results

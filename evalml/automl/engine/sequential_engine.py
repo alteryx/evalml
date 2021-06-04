@@ -3,7 +3,7 @@ from evalml.automl.engine.engine_base import (
     EngineComputation,
     evaluate_pipeline,
     score_pipeline,
-    train_pipeline
+    train_pipeline,
 )
 from evalml.objectives.utils import get_objective
 
@@ -44,26 +44,37 @@ class SequentialEngine(EngineBase):
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y):
         logger = self.setup_job_log()
-        return SequentialComputation(work=evaluate_pipeline,
-                                     pipeline=pipeline,
-                                     automl_config=automl_config, X=X,
-                                     y=y,
-                                     logger=logger)
+        return SequentialComputation(
+            work=evaluate_pipeline,
+            pipeline=pipeline,
+            automl_config=automl_config,
+            X=X,
+            y=y,
+            logger=logger,
+        )
 
     def submit_training_job(self, automl_config, pipeline, X, y):
-        return SequentialComputation(work=train_pipeline,
-                                     pipeline=pipeline, X=X,
-                                     y=y,
-                                     optimize_thresholds=automl_config.optimize_thresholds,
-                                     objective=automl_config.objective,
-                                     X_schema=automl_config.X_schema,
-                                     y_schema=automl_config.y_schema)
+        return SequentialComputation(
+            work=train_pipeline,
+            pipeline=pipeline,
+            X=X,
+            y=y,
+            optimize_thresholds=automl_config.optimize_thresholds,
+            objective=automl_config.objective,
+            X_schema=automl_config.X_schema,
+            y_schema=automl_config.y_schema,
+        )
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         objectives = [get_objective(o, return_instance=True) for o in objectives]
-        computation = SequentialComputation(work=score_pipeline,
-                                            pipeline=pipeline,
-                                            X=X, y=y, objectives=objectives,
-                                            X_schema=X.ww.schema, y_schema=y.ww.schema)
+        computation = SequentialComputation(
+            work=score_pipeline,
+            pipeline=pipeline,
+            X=X,
+            y=y,
+            objectives=objectives,
+            X_schema=X.ww.schema,
+            y_schema=y.ww.schema,
+        )
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation

@@ -6,16 +6,25 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     drop_rows_with_nans,
     infer_feature_types,
-    pad_with_nans
+    pad_with_nans,
 )
 
 
-class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesRegressionPipeline(
+    RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta
+):
     """Pipeline base class for time series regression problems."""
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
-    def __init__(self, component_graph, parameters=None, custom_name=None, custom_hyperparameters=None, random_seed=0):
+    def __init__(
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        custom_hyperparameters=None,
+        random_seed=0,
+    ):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 
         Arguments:
@@ -31,17 +40,21 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if "pipeline" not in parameters:
-            raise ValueError("date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
-                             "Please specify them as a dictionary with the key 'pipeline'.")
+            raise ValueError(
+                "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
+                "Please specify them as a dictionary with the key 'pipeline'."
+            )
         pipeline_params = parameters["pipeline"]
-        self.date_index = pipeline_params['date_index']
-        self.gap = pipeline_params['gap']
-        self.max_delay = pipeline_params['max_delay']
-        super().__init__(component_graph,
-                         custom_name=custom_name,
-                         parameters=parameters,
-                         custom_hyperparameters=custom_hyperparameters,
-                         random_seed=random_seed)
+        self.date_index = pipeline_params["date_index"]
+        self.gap = pipeline_params["gap"]
+        self.max_delay = pipeline_params["max_delay"]
+        super().__init__(
+            component_graph,
+            custom_name=custom_name,
+            parameters=parameters,
+            custom_hyperparameters=custom_hyperparameters,
+            random_seed=random_seed,
+        )
 
     def fit(self, X, y):
         """Fit a time series regression pipeline.
@@ -89,7 +102,9 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
             y_arg = y
         predictions = self.estimator.predict(features_no_nan, y_arg)
         predictions = predictions.rename(self.input_target_name)
-        padded = pad_with_nans(predictions, max(0, features.shape[0] - predictions.shape[0]))
+        padded = pad_with_nans(
+            predictions, max(0, features.shape[0] - predictions.shape[0])
+        )
         return infer_feature_types(padded)
 
     def score(self, X, y, objectives):
@@ -114,7 +129,6 @@ class TimeSeriesRegressionPipeline(RegressionPipeline, metaclass=TimeSeriesPipel
         y_shifted = y.shift(-self.gap)
         objectives = self.create_objectives(objectives)
         y_shifted, y_predicted = drop_rows_with_nans(y_shifted, y_predicted)
-        return self._score_all_objectives(X, y_shifted,
-                                          y_predicted,
-                                          y_pred_proba=None,
-                                          objectives=objectives)
+        return self._score_all_objectives(
+            X, y_shifted, y_predicted, y_pred_proba=None, objectives=objectives
+        )
