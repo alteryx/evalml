@@ -17,6 +17,7 @@ class Estimator(ComponentBase):
 
     To see some examples, check out the definitions of any Estimator component.
     """
+
     # We can't use the inspect module to dynamically determine this because of issue 1582
     predict_uses_y = False
     model_family = ModelFamily.NONE
@@ -29,7 +30,12 @@ class Estimator(ComponentBase):
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         self.input_feature_names = None
-        super().__init__(parameters=parameters, component_obj=component_obj, random_seed=random_seed, **kwargs)
+        super().__init__(
+            parameters=parameters,
+            component_obj=component_obj,
+            random_seed=random_seed,
+            **kwargs
+        )
 
     def _manage_woodwork(self, X, y=None):
         """Function to convert the input and target data to Pandas data structures."""
@@ -58,7 +64,9 @@ class Estimator(ComponentBase):
             X = infer_feature_types(X)
             predictions = self._component_obj.predict(X)
         except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a predict method or a component_obj that implements predict")
+            raise MethodPropertyNotFoundError(
+                "Estimator requires a predict method or a component_obj that implements predict"
+            )
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):
@@ -74,7 +82,9 @@ class Estimator(ComponentBase):
             X = infer_feature_types(X)
             pred_proba = self._component_obj.predict_proba(X)
         except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a predict_proba method or a component_obj that implements predict_proba")
+            raise MethodPropertyNotFoundError(
+                "Estimator requires a predict_proba method or a component_obj that implements predict_proba"
+            )
         return infer_feature_types(pred_proba)
 
     @property
@@ -87,7 +97,12 @@ class Estimator(ComponentBase):
         try:
             return self._component_obj.feature_importances_
         except AttributeError:
-            raise MethodPropertyNotFoundError("Estimator requires a feature_importance property or a component_obj that implements feature_importances_")
+            raise MethodPropertyNotFoundError(
+                "Estimator requires a feature_importance property or a component_obj that implements feature_importances_"
+            )
 
     def __eq__(self, other):
-        return super().__eq__(other) and self.supported_problem_types == other.supported_problem_types
+        return (
+            super().__eq__(other)
+            and self.supported_problem_types == other.supported_problem_types
+        )

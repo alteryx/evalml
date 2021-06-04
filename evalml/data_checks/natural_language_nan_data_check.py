@@ -8,8 +8,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
     """Checks if natural language columns contain NaN values."""
 
     def __init__(self):
-        """Checks each column in the input for natural language features and will issue an error if NaN values are present.
-        """
+        """Checks each column in the input for natural language features and will issue an error if NaN values are present."""
 
     def validate(self, X, y=None):
         """Checks if any natural language columns contain NaN values.
@@ -40,20 +39,22 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             ...                      details={"columns": 'A'}).to_dict()]
             ...    }
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
-        X = X.ww.select('natural_language')
+        X = X.ww.select("natural_language")
         X_describe = X.ww.describe_dict()
-        nan_columns = [str(col) for col in X_describe if X_describe[col]['nan_count'] > 0]
+        nan_columns = [
+            str(col) for col in X_describe if X_describe[col]["nan_count"] > 0
+        ]
         if len(nan_columns) > 0:
-            cols_str = ', '.join(nan_columns)
-            results["errors"].append(DataCheckError(message=error_contains_nan.format(cols_str),
-                                                    data_check_name=self.name,
-                                                    message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                                                    details={"columns": cols_str}).to_dict())
+            cols_str = ", ".join(nan_columns)
+            results["errors"].append(
+                DataCheckError(
+                    message=error_contains_nan.format(cols_str),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+                    details={"columns": cols_str},
+                ).to_dict()
+            )
         return results

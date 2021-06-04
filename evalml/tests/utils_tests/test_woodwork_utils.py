@@ -14,8 +14,9 @@ def test_infer_feature_types_no_type_change():
     X_dc = ww.init_series(pd.Series([1, 2, 3, 4]))
     pd.testing.assert_series_equal(X_dc, infer_feature_types(X_dc))
 
-    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="int64"),
-                         1: pd.Series([3, 4], dtype="int64")})
+    X_pd = pd.DataFrame(
+        {0: pd.Series([1, 2], dtype="int64"), 1: pd.Series([3, 4], dtype="int64")}
+    )
     pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd))
 
     X_list = [1, 2, 3, 4]
@@ -44,18 +45,22 @@ def test_infer_feature_types_series_name():
 
 
 def test_infer_feature_types_dataframe():
-    X_pd = pd.DataFrame({0: pd.Series([1, 2]),
-                         1: pd.Series([3, 4])})
+    X_pd = pd.DataFrame({0: pd.Series([1, 2]), 1: pd.Series([3, 4])})
     pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd), check_dtype=False)
 
-    X_pd = pd.DataFrame({0: pd.Series([1, 2], dtype="int64"),
-                         1: pd.Series([3, 4], dtype="int64")})
+    X_pd = pd.DataFrame(
+        {0: pd.Series([1, 2], dtype="int64"), 1: pd.Series([3, 4], dtype="int64")}
+    )
     pd.testing.assert_frame_equal(X_pd, infer_feature_types(X_pd))
 
     X_expected = X_pd.copy()
     X_expected[0] = X_expected[0].astype("category")
-    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: "categorical"}))
-    pd.testing.assert_frame_equal(X_expected, infer_feature_types(X_pd, {0: ww.logical_types.Categorical}))
+    pd.testing.assert_frame_equal(
+        X_expected, infer_feature_types(X_pd, {0: "categorical"})
+    )
+    pd.testing.assert_frame_equal(
+        X_expected, infer_feature_types(X_pd, {0: ww.logical_types.Categorical})
+    )
 
 
 def test_infer_feature_types_series():
@@ -72,15 +77,22 @@ def test_infer_feature_types_series():
 
     X_pd = pd.Series([1, 2, 3, 4], dtype="int64")
     X_expected = X_pd.astype("category")
-    pd.testing.assert_series_equal(X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical))
+    pd.testing.assert_series_equal(
+        X_expected, infer_feature_types(X_pd, ww.logical_types.Categorical)
+    )
 
 
-@pytest.mark.parametrize("value,error",
-                         [
-                             (1, False), (-1, False),
-                             (2.3, False), (None, True),
-                             (np.nan, True), ("hello", True)
-                         ])
+@pytest.mark.parametrize(
+    "value,error",
+    [
+        (1, False),
+        (-1, False),
+        (2.3, False),
+        (None, True),
+        (np.nan, True),
+        ("hello", True),
+    ],
+)
 @pytest.mark.parametrize("datatype", ["np", "pd", "ww"])
 def test_convert_numeric_dataset_pandas(datatype, value, error, make_data_type):
     if datatype == "np" and value == "hello":
@@ -92,7 +104,9 @@ def test_convert_numeric_dataset_pandas(datatype, value, error, make_data_type):
     y = make_data_type(datatype, y)
 
     if error:
-        with pytest.raises(ValueError, match="Values not all numeric or there are null"):
+        with pytest.raises(
+            ValueError, match="Values not all numeric or there are null"
+        ):
             _convert_numeric_dataset_pandas(X, y)
     else:
         X_transformed, y_transformed = _convert_numeric_dataset_pandas(X, y)
@@ -105,39 +119,58 @@ def test_convert_numeric_dataset_pandas(datatype, value, error, make_data_type):
 
 def test_infer_feature_types_value_error():
 
-    df = pd.DataFrame({"a": pd.Series([1, 2, 3]),
-                       "b": pd.Series([4, 5, 6]),
-                       "c": pd.Series([True, False, True])})
+    df = pd.DataFrame(
+        {
+            "a": pd.Series([1, 2, 3]),
+            "b": pd.Series([4, 5, 6]),
+            "c": pd.Series([True, False, True]),
+        }
+    )
     df.ww.init(logical_types={"a": "IntegerNullable", "c": "BooleanNullable"})
     msg = "These are the columns with nullable types: \\[\\('a', 'Int64'\\), \\('c', 'boolean'\\)\\]"
     with pytest.raises(ValueError, match=msg):
         infer_feature_types(df)
 
-    y = pd.Series([1, 2, 3], name='series')
+    y = pd.Series([1, 2, 3], name="series")
     y = ww.init_series(y, logical_type="IntegerNullable")
 
-    with pytest.raises(ValueError, match="These are the columns with nullable types: \\[\\('series', 'Int64'\\)]"):
+    with pytest.raises(
+        ValueError,
+        match="These are the columns with nullable types: \\[\\('series', 'Int64'\\)]",
+    ):
         infer_feature_types(y)
 
-    df = pd.DataFrame({"A": pd.Series([4, 5, 6], dtype='Float64'), "b": [1, 2, 3]})
-    with pytest.raises(ValueError, match="These are the columns with nullable types: \\[\\('A', 'Float64'\\)]"):
+    df = pd.DataFrame({"A": pd.Series([4, 5, 6], dtype="Float64"), "b": [1, 2, 3]})
+    with pytest.raises(
+        ValueError,
+        match="These are the columns with nullable types: \\[\\('A', 'Float64'\\)]",
+    ):
         infer_feature_types(df)
 
 
 def test_infer_feature_types_preserves_semantic_tags():
-    df = pd.DataFrame({"a": pd.Series([1, 2, 3]),
-                       "b": pd.Series([4, 5, 6]),
-                       "c": pd.Series([True, False, True]),
-                       "my_index": [1, 2, 3],
-                       "time_index": ["2020-01-01", "2020-01-02", "2020-01-03"]})
-    df.ww.init(logical_types={"a": "Integer", "c": "Categorical", "b": "Double"},
-               semantic_tags={"a": "My Integer", "c": "My Categorical", "b": "My Double"},
-               index='my_index', time_index='time_index')
+    df = pd.DataFrame(
+        {
+            "a": pd.Series([1, 2, 3]),
+            "b": pd.Series([4, 5, 6]),
+            "c": pd.Series([True, False, True]),
+            "my_index": [1, 2, 3],
+            "time_index": ["2020-01-01", "2020-01-02", "2020-01-03"],
+        }
+    )
+    df.ww.init(
+        logical_types={"a": "Integer", "c": "Categorical", "b": "Double"},
+        semantic_tags={"a": "My Integer", "c": "My Categorical", "b": "My Double"},
+        index="my_index",
+        time_index="time_index",
+    )
     new_df = infer_feature_types(df)
     assert new_df.ww.schema == df.ww.schema
 
-    series = pd.Series([1, 2, 3], name='target')
-    series.ww.init(logical_type="Integer", semantic_tags=["Cool Series"], description="Great data")
+    series = pd.Series([1, 2, 3], name="target")
+    series.ww.init(
+        logical_type="Integer", semantic_tags=["Cool Series"], description="Great data"
+    )
     assert series.ww.schema == infer_feature_types(series).ww.schema
 
 

@@ -4,6 +4,7 @@ from evalml.utils import infer_feature_types
 
 class DropNullColumns(Transformer):
     """Transformer to drop features whose percentage of NaN values exceeds a specified threshold"""
+
     name = "Drop Null Columns Transformer"
     hyperparameter_ranges = {}
 
@@ -17,14 +18,16 @@ class DropNullColumns(Transformer):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
-            raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
+            raise ValueError(
+                "pct_null_threshold must be a float between 0 and 1, inclusive."
+            )
         parameters = {"pct_null_threshold": pct_null_threshold}
         parameters.update(kwargs)
 
         self._cols_to_drop = None
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         pct_null_threshold = self.parameters["pct_null_threshold"]

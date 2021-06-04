@@ -14,7 +14,7 @@ class DummyAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         if len(self._dummy_pipelines) > 0:
             return self._dummy_pipelines.pop()
-        raise StopIteration('No more pipelines!')
+        raise StopIteration("No more pipelines!")
 
 
 def test_automl_algorithm_dummy():
@@ -22,24 +22,27 @@ def test_automl_algorithm_dummy():
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
 
-    algo = DummyAlgorithm(dummy_pipelines=['pipeline 3', 'pipeline 2', 'pipeline 1'])
+    algo = DummyAlgorithm(dummy_pipelines=["pipeline 3", "pipeline 2", "pipeline 1"])
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.next_batch() == 'pipeline 1'
+    assert algo.next_batch() == "pipeline 1"
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
-    assert algo.next_batch() == 'pipeline 2'
+    assert algo.next_batch() == "pipeline 2"
     assert algo.pipeline_number == 2
     assert algo.batch_number == 2
-    assert algo.next_batch() == 'pipeline 3'
+    assert algo.next_batch() == "pipeline 3"
     assert algo.pipeline_number == 3
     assert algo.batch_number == 3
-    with pytest.raises(StopIteration, match='No more pipelines!'):
+    with pytest.raises(StopIteration, match="No more pipelines!"):
         algo.next_batch()
 
 
 def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline_class):
     algo = DummyAlgorithm()
     pipeline = dummy_regression_pipeline_class(parameters={})
-    with pytest.raises(PipelineNotFoundError, match="No such pipeline allowed in this AutoML search: Mock Regression Pipeline"):
+    with pytest.raises(
+        PipelineNotFoundError,
+        match="No such pipeline allowed in this AutoML search: Mock Regression Pipeline",
+    ):
         algo.add_result(0.1234, pipeline, {})
