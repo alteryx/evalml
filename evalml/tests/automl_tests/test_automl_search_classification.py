@@ -1172,24 +1172,17 @@ def test_automl_time_series_classification_threshold(
     )
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
-    if objective == "Log Loss Binary":
-        if not optimize:
-            mock_optimize_threshold.assert_not_called()
-            assert automl.best_pipeline.threshold is None
-            mock_split_data.assert_not_called()
-        else:
-            mock_optimize_threshold.assert_called()
-            assert automl.best_pipeline.threshold == 0.62
-            mock_split_data.assert_called()
-    elif optimize and objective == "F1":
+    if optimize:
         mock_optimize_threshold.assert_called()
         assert automl.best_pipeline.threshold == 0.62
         mock_split_data.assert_called()
-        assert str(mock_split_data.call_args[0][2]) == problem_type
-    elif not optimize and objective == "F1":
+    else:
         mock_optimize_threshold.assert_not_called()
-        assert automl.best_pipeline.threshold == 0.5
         mock_split_data.assert_not_called()
+        if objective == "Log Loss Binary":
+            assert automl.best_pipeline.threshold is None
+        else:
+            assert automl.best_pipeline.threshold == 0.5
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
