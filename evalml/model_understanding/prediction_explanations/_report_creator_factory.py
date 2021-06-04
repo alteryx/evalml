@@ -3,18 +3,27 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
     _Heading,
     _RegressionPredictedValues,
     _ReportMaker,
-    _SHAPTable
+    _SHAPTable,
 )
 from evalml.problem_types import is_regression
 
 
 def _best_worst_predicted_values_section(data, regression, classification):
     """Get and initialize the predicted values section maker given the data."""
-    predicted_values_class = regression if is_regression(data.pipeline.problem_type) else classification
+    predicted_values_class = (
+        regression if is_regression(data.pipeline.problem_type) else classification
+    )
     return predicted_values_class(data.metric.__name__, data.y_pred_values)
 
 
-def _report_creator_factory(data, report_type, output_format, top_k_features, include_shap_values, num_to_explain=None):
+def _report_creator_factory(
+    data,
+    report_type,
+    output_format,
+    top_k_features,
+    include_shap_values,
+    num_to_explain=None,
+):
     """Get and initialize the report creator class given the ReportData and parameters passed in by the user.
 
     Arguments:
@@ -40,21 +49,32 @@ def _report_creator_factory(data, report_type, output_format, top_k_features, in
         report_maker = _ReportMaker(None, None, shap_table).make_dataframe
     elif report_type == "explain_predictions_best_worst" and output_format == "text":
         heading_maker = _Heading(["Best ", "Worst "], n_indices=num_to_explain)
-        predicted_values = _best_worst_predicted_values_section(data, _RegressionPredictedValues,
-                                                                _ClassificationPredictedValues)
+        predicted_values = _best_worst_predicted_values_section(
+            data, _RegressionPredictedValues, _ClassificationPredictedValues
+        )
         table_maker = _SHAPTable(top_k_features, include_shap_values)
-        report_maker = _ReportMaker(heading_maker, predicted_values, table_maker).make_text
-    elif report_type == "explain_predictions_best_worst" and output_format == "dataframe":
+        report_maker = _ReportMaker(
+            heading_maker, predicted_values, table_maker
+        ).make_text
+    elif (
+        report_type == "explain_predictions_best_worst" and output_format == "dataframe"
+    ):
         heading_maker = _Heading(["best", "worst"], n_indices=num_to_explain)
         table_maker = _SHAPTable(top_k_features, include_shap_values)
-        predicted_values = _best_worst_predicted_values_section(data, _RegressionPredictedValues,
-                                                                _ClassificationPredictedValues)
-        report_maker = _ReportMaker(heading_maker, predicted_values, table_maker).make_dataframe
+        predicted_values = _best_worst_predicted_values_section(
+            data, _RegressionPredictedValues, _ClassificationPredictedValues
+        )
+        report_maker = _ReportMaker(
+            heading_maker, predicted_values, table_maker
+        ).make_dataframe
     else:
         heading_maker = _Heading(["best", "worst"], n_indices=num_to_explain)
         table_maker = _SHAPTable(top_k_features, include_shap_values)
-        predicted_values = _best_worst_predicted_values_section(data, _RegressionPredictedValues,
-                                                                _ClassificationPredictedValues)
-        report_maker = _ReportMaker(heading_maker, predicted_values, table_maker).make_dict
+        predicted_values = _best_worst_predicted_values_section(
+            data, _RegressionPredictedValues, _ClassificationPredictedValues
+        )
+        report_maker = _ReportMaker(
+            heading_maker, predicted_values, table_maker
+        ).make_dict
 
     return report_maker

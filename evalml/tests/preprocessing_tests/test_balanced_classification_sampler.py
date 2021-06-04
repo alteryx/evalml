@@ -6,11 +6,16 @@ import pytest
 from evalml.preprocessing.data_splitters import BalancedClassificationSampler
 
 
-@pytest.mark.parametrize("ratio,samples,percentage,seed",
-                         [(1, 1, 0.2, 1),
-                          (0.3, 101, 0.5, 100)])
+@pytest.mark.parametrize(
+    "ratio,samples,percentage,seed", [(1, 1, 0.2, 1), (0.3, 101, 0.5, 100)]
+)
 def test_balanced_classification_init(ratio, samples, percentage, seed):
-    bcs = BalancedClassificationSampler(sampling_ratio=ratio, min_samples=samples, min_percentage=percentage, random_seed=seed)
+    bcs = BalancedClassificationSampler(
+        sampling_ratio=ratio,
+        min_samples=samples,
+        min_percentage=percentage,
+        random_seed=seed,
+    )
     assert bcs.sampling_ratio == ratio
     assert bcs.min_samples == samples
     assert bcs.min_percentage == percentage
@@ -91,9 +96,15 @@ def test_classification_imbalanced_sampling_ratio(num_classes, sampling_ratio):
         pd.testing.assert_series_equal(y, y2)
     else:
         # remove some samples
-        assert len(X2) == {2: (250 + int(250 / sampling_ratio)), 3: (400 + int(200 / sampling_ratio))}[num_classes]
+        assert len(X2) == {
+            2: (250 + int(250 / sampling_ratio)),
+            3: (400 + int(200 / sampling_ratio)),
+        }[num_classes]
         assert len(y2) == len(X2)
-        assert y2.value_counts().values[0] == int(1 / sampling_ratio) * {2: 250, 3: 200}[num_classes]
+        assert (
+            y2.value_counts().values[0]
+            == int(1 / sampling_ratio) * {2: 250, 3: 200}[num_classes]
+        )
 
 
 @pytest.mark.parametrize("min_samples", [10, 50, 100, 200, 500])
@@ -148,7 +159,9 @@ def test_classification_imbalanced_min_percentage(num_classes, min_percentage):
 def test_classification_imbalanced_severe_imbalance_binary(min_samples, min_percentage):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 850 + [1] * 150)  # minority class is 15% of total distribution
-    bcs = BalancedClassificationSampler(sampling_ratio=0.5, min_samples=min_samples, min_percentage=min_percentage)
+    bcs = BalancedClassificationSampler(
+        sampling_ratio=0.5, min_samples=min_samples, min_percentage=min_percentage
+    )
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
@@ -165,8 +178,12 @@ def test_classification_imbalanced_severe_imbalance_binary(min_samples, min_perc
 @pytest.mark.parametrize("min_samples", [10, 50, 100, 200, 500])
 def test_classification_imbalanced_normal_imbalance_binary(min_samples, sampling_ratio):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
-    y = pd.Series([0] * 850 + [1] * 150)  # minority class is 15% of total distribution, never counts as severe imbalance
-    bcs = BalancedClassificationSampler(sampling_ratio=sampling_ratio, min_samples=min_samples)
+    y = pd.Series(
+        [0] * 850 + [1] * 150
+    )  # minority class is 15% of total distribution, never counts as severe imbalance
+    bcs = BalancedClassificationSampler(
+        sampling_ratio=sampling_ratio, min_samples=min_samples
+    )
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
@@ -176,19 +193,27 @@ def test_classification_imbalanced_normal_imbalance_binary(min_samples, sampling
     else:
         # rebalance according to the ratio and min_samples
         assert len(X2) == 150 + max(min_samples, int(150 / sampling_ratio))
-        assert y2.value_counts().values[0] == max(min_samples, int(150 / sampling_ratio))
+        assert y2.value_counts().values[0] == max(
+            min_samples, int(150 / sampling_ratio)
+        )
 
 
-@pytest.mark.parametrize("data_type", ['n', 's'])
+@pytest.mark.parametrize("data_type", ["n", "s"])
 @pytest.mark.parametrize("min_percentage", [0.01, 0.05, 0.2, 0.3])
 @pytest.mark.parametrize("min_samples", [10, 50, 100, 200, 500])
-def test_classification_imbalanced_severe_imbalance_multiclass(data_type, min_samples, min_percentage):
+def test_classification_imbalanced_severe_imbalance_multiclass(
+    data_type, min_samples, min_percentage
+):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
-    if data_type == 'n':
-        y = pd.Series([0] * 800 + [1] * 100 + [2] * 100)  # minority class is 10% of total distribution
+    if data_type == "n":
+        y = pd.Series(
+            [0] * 800 + [1] * 100 + [2] * 100
+        )  # minority class is 10% of total distribution
     else:
         y = pd.Series(["class_1"] * 800 + ["class_2"] * 100 + ["class_3"] * 100)
-    bcs = BalancedClassificationSampler(sampling_ratio=0.5, min_samples=min_samples, min_percentage=min_percentage)
+    bcs = BalancedClassificationSampler(
+        sampling_ratio=0.5, min_samples=min_samples, min_percentage=min_percentage
+    )
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
@@ -201,16 +226,22 @@ def test_classification_imbalanced_severe_imbalance_multiclass(data_type, min_sa
         assert y2.value_counts().values[0] == max(min_samples, 2 * 100)
 
 
-@pytest.mark.parametrize("data_type", ['n', 's'])
+@pytest.mark.parametrize("data_type", ["n", "s"])
 @pytest.mark.parametrize("sampling_ratio", [1, 0.5, 0.33, 0.25, 0.2, 0.1])
 @pytest.mark.parametrize("min_samples", [10, 50, 100, 200, 500])
-def test_classification_imbalanced_normal_imbalance_multiclass(data_type, min_samples, sampling_ratio):
+def test_classification_imbalanced_normal_imbalance_multiclass(
+    data_type, min_samples, sampling_ratio
+):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
-    if data_type == 'n':
-        y = pd.Series([0] * 800 + [1] * 100 + [2] * 100)  # minority class is 10% of total distribution
+    if data_type == "n":
+        y = pd.Series(
+            [0] * 800 + [1] * 100 + [2] * 100
+        )  # minority class is 10% of total distribution
     else:
         y = pd.Series(["class_1"] * 800 + ["class_2"] * 100 + ["class_3"] * 100)
-    bcs = BalancedClassificationSampler(sampling_ratio=sampling_ratio, min_samples=min_samples)
+    bcs = BalancedClassificationSampler(
+        sampling_ratio=sampling_ratio, min_samples=min_samples
+    )
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
@@ -220,7 +251,9 @@ def test_classification_imbalanced_normal_imbalance_multiclass(data_type, min_sa
     else:
         # rebalance according to the ratio and min_samples
         assert len(X2) == 200 + max(min_samples, int(100 / sampling_ratio))
-        assert y2.value_counts().values[0] == max(min_samples, int(100 / sampling_ratio))
+        assert y2.value_counts().values[0] == max(
+            min_samples, int(100 / sampling_ratio)
+        )
 
 
 @pytest.mark.parametrize("sampling_ratio", [1, 0.5, 0.33, 0.25, 0.2, 0.1])
@@ -228,8 +261,12 @@ def test_classification_imbalanced_normal_imbalance_multiclass(data_type, min_sa
 def test_classification_imbalanced_random_seed(random_seed, sampling_ratio):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 800 + [1] * 200)
-    bcs1 = BalancedClassificationSampler(sampling_ratio=sampling_ratio, random_seed=random_seed)
-    bcs2 = BalancedClassificationSampler(sampling_ratio=sampling_ratio, random_seed=random_seed)
+    bcs1 = BalancedClassificationSampler(
+        sampling_ratio=sampling_ratio, random_seed=random_seed
+    )
+    bcs2 = BalancedClassificationSampler(
+        sampling_ratio=sampling_ratio, random_seed=random_seed
+    )
     indices1 = bcs1.fit_resample(X, y)
     X1 = X.loc[indices1]
     y1 = y.loc[indices1]
@@ -247,12 +284,16 @@ def test_classification_imbalanced_random_seed(random_seed, sampling_ratio):
     pd.testing.assert_series_equal(y1, y2)
 
 
-@pytest.mark.parametrize("index", [[f'hello_{i}' for i in range(1000)],
-                                   random.shuffle([i + 0.5 for i in range(1000)]),
-                                   pd.MultiIndex.from_arrays([
-                                       [f"index_{i}" for i in range(1000)],
-                                       [i for i in range(1000)]
-                                   ])])
+@pytest.mark.parametrize(
+    "index",
+    [
+        [f"hello_{i}" for i in range(1000)],
+        random.shuffle([i + 0.5 for i in range(1000)]),
+        pd.MultiIndex.from_arrays(
+            [[f"index_{i}" for i in range(1000)], [i for i in range(1000)]]
+        ),
+    ],
+)
 def test_classification_imbalanced_custom_indices(index):
     X = pd.DataFrame({"a": [i for i in range(1000)]}, index=index)
     y = pd.Series([0] * 900 + [1] * 100, index=index)
@@ -311,7 +352,7 @@ def test_classification_imbalanced_multiple_multiclass():
     assert all(y2.value_counts().values == [800, 800, 200])
     assert y2.value_counts()[2] == 200
 
-    bcs = BalancedClassificationSampler(sampling_ratio=.3333)
+    bcs = BalancedClassificationSampler(sampling_ratio=0.3333)
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
@@ -321,7 +362,7 @@ def test_classification_imbalanced_multiple_multiclass():
     assert y2.value_counts()[2] == 200
 
 
-@pytest.mark.parametrize("data_type", ['li', 'np', 'pd', 'ww'])
+@pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
 def test_classification_imbalanced_data_type(data_type, make_data_type):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 900 + [1] * 100)
@@ -331,21 +372,29 @@ def test_classification_imbalanced_data_type(data_type, make_data_type):
     bcs = BalancedClassificationSampler()
     indices = bcs.fit_resample(X, y)
     assert len(indices) == 500
-    if data_type in ['pd', 'np']:
+    if data_type in ["pd", "np"]:
         y2 = y.loc[indices]
         assert all(y2.value_counts().values == [400, 100])
         assert y2.value_counts()[1] == 100
 
 
 def test_classification_data_frame_dtypes():
-    X = pd.DataFrame({
-        "integers": [i for i in range(1000)],
-        "strings": [f"string_{i % 3}" for i in range(1000)],
-        "text": [f"this should be text data because {i} think it's a long string. Let's hope it behaves in that way" for i in range(1000)],
-        "float": [i / 10000 for i in range(1000)],
-        "bool": [bool(i % 2) for i in range(1000)],
-        "datetime": [random.choice([2012 / 1 / 2, 2012 / 2 / 1, 2012 / 4 / 2]) for i in range(1000)]
-    })
+    X = pd.DataFrame(
+        {
+            "integers": [i for i in range(1000)],
+            "strings": [f"string_{i % 3}" for i in range(1000)],
+            "text": [
+                f"this should be text data because {i} think it's a long string. Let's hope it behaves in that way"
+                for i in range(1000)
+            ],
+            "float": [i / 10000 for i in range(1000)],
+            "bool": [bool(i % 2) for i in range(1000)],
+            "datetime": [
+                random.choice([2012 / 1 / 2, 2012 / 2 / 1, 2012 / 4 / 2])
+                for i in range(1000)
+            ],
+        }
+    )
     y = pd.Series([0] * 900 + [1] * 100)
     bcs = BalancedClassificationSampler()
     indices = bcs.fit_resample(X, y)
@@ -355,7 +404,7 @@ def test_classification_data_frame_dtypes():
     assert all(y2.value_counts().values == [400, 100])
     assert y2.value_counts()[1] == 100
 
-    X['integers'][0] = None
+    X["integers"][0] = None
     indices = bcs.fit_resample(X, y)
     X2 = X.loc[indices]
     y2 = y.loc[indices]
@@ -391,18 +440,25 @@ def test_dict_overrides_ratio():
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 200 + [1] * 800)
     sampling_ratio_dict = {0: 200, 1: 800}
-    bcs = BalancedClassificationSampler(sampling_ratio=0.1, sampling_ratio_dict=sampling_ratio_dict)
+    bcs = BalancedClassificationSampler(
+        sampling_ratio=0.1, sampling_ratio_dict=sampling_ratio_dict
+    )
     indices = bcs.fit_resample(X, y)
     y_new = y.iloc[indices]
     y_sampled_count = y_new.value_counts().to_dict()
     assert y_sampled_count == sampling_ratio_dict
 
 
-@pytest.mark.parametrize("sampling_ratio_dict,expected", [({0: 200, 1: 700}, {0: 200, 1: 700}),
-                                                          ({0: 100, 1: 100}, {0: 100, 1: 100}),
-                                                          ({0: 200, 1: 800}, {0: 200, 1: 800}),
-                                                          ({0: 100, 1: 805}, {0: 100, 1: 800}),
-                                                          ({0: 200, 1: 805}, {0: 200, 1: 800})])
+@pytest.mark.parametrize(
+    "sampling_ratio_dict,expected",
+    [
+        ({0: 200, 1: 700}, {0: 200, 1: 700}),
+        ({0: 100, 1: 100}, {0: 100, 1: 100}),
+        ({0: 200, 1: 800}, {0: 200, 1: 800}),
+        ({0: 100, 1: 805}, {0: 100, 1: 800}),
+        ({0: 200, 1: 805}, {0: 200, 1: 800}),
+    ],
+)
 def test_sampler_ratio_dictionary_binary(sampling_ratio_dict, expected):
     X = pd.DataFrame({"a": [i for i in range(1000)]})
     y = pd.Series([0] * 200 + [1] * 800)
@@ -413,11 +469,16 @@ def test_sampler_ratio_dictionary_binary(sampling_ratio_dict, expected):
     assert y_sampled_count == expected
 
 
-@pytest.mark.parametrize("sampling_ratio_dict,expected", [({0: 200, 1: 700, 2: 150}, {0: 200, 1: 700, 2: 150}),
-                                                          ({0: 100, 1: 100, 2: 150}, {0: 100, 1: 100, 2: 150}),
-                                                          ({0: 200, 1: 800, 2: 200}, {0: 200, 1: 800, 2: 200}),
-                                                          ({0: 100, 1: 805, 2: 400}, {0: 100, 1: 800, 2: 200}),
-                                                          ({0: 200, 1: 805, 2: 400}, {0: 200, 1: 800, 2: 200})])
+@pytest.mark.parametrize(
+    "sampling_ratio_dict,expected",
+    [
+        ({0: 200, 1: 700, 2: 150}, {0: 200, 1: 700, 2: 150}),
+        ({0: 100, 1: 100, 2: 150}, {0: 100, 1: 100, 2: 150}),
+        ({0: 200, 1: 800, 2: 200}, {0: 200, 1: 800, 2: 200}),
+        ({0: 100, 1: 805, 2: 400}, {0: 100, 1: 800, 2: 200}),
+        ({0: 200, 1: 805, 2: 400}, {0: 200, 1: 800, 2: 200}),
+    ],
+)
 def test_sampler_ratio_dictionary_multiclass(sampling_ratio_dict, expected):
     X = pd.DataFrame({"a": [i for i in range(1200)]})
     y = pd.Series([0] * 200 + [1] * 800 + [2] * 200)

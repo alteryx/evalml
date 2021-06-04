@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 
@@ -13,6 +12,7 @@ class BaselineClassifier(Estimator):
 
     This is useful as a simple baseline classifier to compare with other classifiers.
     """
+
     name = "Baseline Classifier"
     hyperparameter_ranges = {}
     model_family = ModelFamily.BASELINE
@@ -26,7 +26,9 @@ class BaselineClassifier(Estimator):
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
         if strategy not in ["mode", "random", "random_weighted"]:
-            raise ValueError("'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'")
+            raise ValueError(
+                "'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'"
+            )
         parameters = {"strategy": strategy}
         parameters.update(kwargs)
         self._classes = None
@@ -34,9 +36,9 @@ class BaselineClassifier(Estimator):
         self._num_features = None
         self._num_unique = None
         self._mode = None
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         if y is None:
@@ -60,9 +62,13 @@ class BaselineClassifier(Estimator):
         if strategy == "mode":
             predictions = pd.Series([self._mode] * len(X))
         elif strategy == "random":
-            predictions = get_random_state(self.random_seed).choice(self._classes, len(X))
+            predictions = get_random_state(self.random_seed).choice(
+                self._classes, len(X)
+            )
         else:
-            predictions = get_random_state(self.random_seed).choice(self._classes, len(X), p=self._percentage_freq)
+            predictions = get_random_state(self.random_seed).choice(
+                self._classes, len(X), p=self._percentage_freq
+            )
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):
@@ -70,11 +76,18 @@ class BaselineClassifier(Estimator):
         strategy = self.parameters["strategy"]
         if strategy == "mode":
             mode_index = self._classes.index(self._mode)
-            proba_arr = np.array([[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]] * len(X))
+            proba_arr = np.array(
+                [[1.0 if i == mode_index else 0.0 for i in range(self._num_unique)]]
+                * len(X)
+            )
         elif strategy == "random":
-            proba_arr = np.array([[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X))
+            proba_arr = np.array(
+                [[1.0 / self._num_unique for i in range(self._num_unique)]] * len(X)
+            )
         else:
-            proba_arr = np.array([[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X))
+            proba_arr = np.array(
+                [[self._percentage_freq[i] for i in range(self._num_unique)]] * len(X)
+            )
         predictions = pd.DataFrame(proba_arr, columns=self._classes)
         return infer_feature_types(predictions)
 

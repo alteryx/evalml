@@ -5,6 +5,7 @@ from .binary_classification_objective import BinaryClassificationObjective
 
 class LeadScoring(BinaryClassificationObjective):
     """Lead scoring."""
+
     name = "Lead Scoring"
     greater_is_better = True
     score_needs_proba = False
@@ -24,13 +25,13 @@ class LeadScoring(BinaryClassificationObjective):
     def objective_function(self, y_true, y_predicted, X=None):
         """Calculate the profit per lead.
 
-            Arguments:
-                y_predicted (pd.Series): Predicted labels
-                y_true (pd.Series): True labels
-                X (pd.DataFrame): Ignored.
+        Arguments:
+            y_predicted (pd.Series): Predicted labels
+            y_true (pd.Series): True labels
+            X (pd.DataFrame): Ignored.
 
-            Returns:
-                float: Profit per lead
+        Returns:
+            float: Profit per lead
         """
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)

@@ -1,6 +1,4 @@
-from .binary_classification_pipeline_mixin import (
-    BinaryClassificationPipelineMixin
-)
+from .binary_classification_pipeline_mixin import BinaryClassificationPipelineMixin
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
@@ -8,8 +6,11 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
-class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, ClassificationPipeline):
+class BinaryClassificationPipeline(
+    BinaryClassificationPipelineMixin, ClassificationPipeline
+):
     """Pipeline subclass for all binary classification pipelines."""
+
     problem_type = ProblemTypes.BINARY
 
     def _predict(self, X, objective=None):
@@ -26,7 +27,9 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
-                raise ValueError("You can only use a binary classification objective to make predictions for a binary classification pipeline.")
+                raise ValueError(
+                    "You can only use a binary classification objective to make predictions for a binary classification pipeline."
+                )
 
         if self.threshold is None:
             return self._component_graph.predict(X)
@@ -47,8 +50,7 @@ class BinaryClassificationPipeline(BinaryClassificationPipelineMixin, Classifica
 
     @staticmethod
     def _score(X, y, predictions, objective):
-        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
-        """
+        """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score."""
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
         return ClassificationPipeline._score(X, y, predictions, objective)

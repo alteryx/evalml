@@ -1,11 +1,7 @@
 import numpy as np
 from scipy.stats import gamma
 
-from evalml.data_checks import (
-    DataCheck,
-    DataCheckMessageCode,
-    DataCheckWarning
-)
+from evalml.data_checks import DataCheck, DataCheckMessageCode, DataCheckWarning
 from evalml.utils import infer_feature_types
 
 
@@ -41,14 +37,10 @@ class OutliersDataCheck(DataCheck):
                                                        "errors": [],\
                                                        "actions": []}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": []
-        }
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X)
-        X = X.ww.select('numeric')
+        X = X.ww.select("numeric")
 
         if len(X.columns) == 0:
             return results
@@ -56,13 +48,21 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         for col in X.columns:
             outlier_results = OutliersDataCheck._outlier_score(X[col], False)
-            if outlier_results is not None and outlier_results["score"] <= 0.9:  # 0.9 is threshold indicating data needs improvement
+            if (
+                outlier_results is not None and outlier_results["score"] <= 0.9
+            ):  # 0.9 is threshold indicating data needs improvement
                 has_outliers.append(col)
-        warning_msg = "Column(s) {} are likely to have outlier data.".format(", ".join([f"'{col}'" for col in has_outliers]))
-        results["warnings"].append(DataCheckWarning(message=warning_msg,
-                                                    data_check_name=self.name,
-                                                    message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                                                    details={"columns": has_outliers}).to_dict())
+        warning_msg = "Column(s) {} are likely to have outlier data.".format(
+            ", ".join([f"'{col}'" for col in has_outliers])
+        )
+        results["warnings"].append(
+            DataCheckWarning(
+                message=warning_msg,
+                data_check_name=self.name,
+                message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                details={"columns": has_outliers},
+            ).to_dict()
+        )
         return results
 
     @staticmethod
@@ -102,25 +102,25 @@ class OutliersDataCheck(DataCheck):
         # model
         log_n = np.log(num_records)
         log_shape = (
-            25.8218734380722 +
-            -29.2320460088643 * log_n +
-            14.8228030299864 * log_n ** 2 +
-            -4.08052512660036 * log_n ** 3 +
-            0.641429075842177 * log_n ** 4 +
-            -0.0571252717322226 * log_n ** 5 +
-            0.00268694343911156 * log_n ** 6 +
-            -5.19415149920567e-05 * log_n ** 7
+            25.8218734380722
+            + -29.2320460088643 * log_n
+            + 14.8228030299864 * log_n ** 2
+            + -4.08052512660036 * log_n ** 3
+            + 0.641429075842177 * log_n ** 4
+            + -0.0571252717322226 * log_n ** 5
+            + 0.00268694343911156 * log_n ** 6
+            + -5.19415149920567e-05 * log_n ** 7
         )
         shape_param = np.exp(log_shape)
         log_scale = (
-            -19.8196822259052 +
-            8.5359212447622 * log_n +
-            -8.80487628113388 * log_n ** 2 +
-            2.27711870991327 * log_n ** 3 +
-            -0.344443407676357 * log_n ** 4 +
-            0.029820831994345 * log_n ** 5 +
-            -0.00136611527293756 * log_n ** 6 +
-            2.56727158170901e-05 * log_n ** 7
+            -19.8196822259052
+            + 8.5359212447622 * log_n
+            + -8.80487628113388 * log_n ** 2
+            + 2.27711870991327 * log_n ** 3
+            + -0.344443407676357 * log_n ** 4
+            + 0.029820831994345 * log_n ** 5
+            + -0.00136611527293756 * log_n ** 6
+            + 2.56727158170901e-05 * log_n ** 7
         )
         scale_param = np.exp(log_scale)
 

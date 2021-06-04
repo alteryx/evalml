@@ -9,8 +9,12 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
 from evalml.problem_types import ProblemTypes
 
-sktime_arima = importorskip('sktime.forecasting.arima', reason='Skipping test because sktime not installed')
-forecasting = importorskip('sktime.forecasting.base', reason='Skipping test because sktime not installed')
+sktime_arima = importorskip(
+    "sktime.forecasting.arima", reason="Skipping test because sktime not installed"
+)
+forecasting = importorskip(
+    "sktime.forecasting.base", reason="Skipping test because sktime not installed"
+)
 
 
 def test_model_family():
@@ -18,7 +22,9 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(ARIMARegressor.supported_problem_types) == {ProblemTypes.TIME_SERIES_REGRESSION}
+    assert set(ARIMARegressor.supported_problem_types) == {
+        ProblemTypes.TIME_SERIES_REGRESSION
+    }
 
 
 def test_model_instance(ts_data):
@@ -47,8 +53,8 @@ def test_match_indices(ts_data):
     assert X_.index.equals(date_index)
 
 
-@pytest.mark.parametrize('predict', [True, False])
-@pytest.mark.parametrize('dates_shape', [0, 1, 2])
+@pytest.mark.parametrize("predict", [True, False])
+@pytest.mark.parametrize("dates_shape", [0, 1, 2])
 def test_format_dates(predict, dates_shape, ts_data):
     X, y = ts_data
     date_index = pd.date_range("2020-10-02", "2020-11-01")
@@ -65,7 +71,7 @@ def test_format_dates(predict, dates_shape, ts_data):
             assert X_.index.equals(y_.index)
             assert isinstance(fh_, forecasting.ForecastingHorizon)
         elif dates_shape == 2:
-            with pytest.raises(ValueError, match='Found 2 columns'):
+            with pytest.raises(ValueError, match="Found 2 columns"):
                 clf._format_dates(date_index, X, y, True)
     else:
         if dates_shape != 2:
@@ -73,7 +79,7 @@ def test_format_dates(predict, dates_shape, ts_data):
             assert X_.index.equals(y_.index)
             assert _ is None
         elif dates_shape == 2:
-            with pytest.raises(ValueError, match='Found 2 columns'):
+            with pytest.raises(ValueError, match="Found 2 columns"):
                 clf._format_dates(date_index, X, y, False)
 
 
@@ -93,7 +99,7 @@ def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
     m_clf.fit(X=X[:250], y=y[:250])
     y_pred = m_clf.predict(X=X[250:])
 
-    X['Sample'] = pd.date_range(start='1/1/2016', periods=500)
+    X["Sample"] = pd.date_range(start="1/1/2016", periods=500)
 
     dt_clf = ARIMARegressor(d=None)
     dt_clf.fit(X=X[:250], y=y[:250])
@@ -120,7 +126,7 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal):
     m_clf.fit(X=X[:250], y=y[:250])
     y_pred = m_clf.predict(X=X[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
 def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
@@ -138,12 +144,18 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     m_clf.fit(X=X[:250], y=y[:250])
     y_pred = m_clf.predict(X=X[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
-@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
-@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
-def test_fit_predict_ts_with_X_and_y_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
+@patch(
+    "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates"
+)
+@patch(
+    "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
+)
+def test_fit_predict_ts_with_X_and_y_index(
+    mock_get_dates, mock_format_dates, ts_data_seasonal
+):
     X, y = ts_data_seasonal
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -165,9 +177,15 @@ def test_fit_predict_ts_with_X_and_y_index(mock_get_dates, mock_format_dates, ts
     assert (y_pred_sk == y_pred).all()
 
 
-@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
-@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
-def test_fit_predict_ts_with_X_not_y_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
+@patch(
+    "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates"
+)
+@patch(
+    "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
+)
+def test_fit_predict_ts_with_X_not_y_index(
+    mock_get_dates, mock_format_dates, ts_data_seasonal
+):
     X, y = ts_data_seasonal
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -192,9 +210,15 @@ def test_fit_predict_ts_with_X_not_y_index(mock_get_dates, mock_format_dates, ts
     assert (y_pred_sk == y_pred).all()
 
 
-@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates')
-@patch('evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates')
-def test_fit_predict_ts_with_y_not_X_index(mock_get_dates, mock_format_dates, ts_data_seasonal):
+@patch(
+    "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._format_dates"
+)
+@patch(
+    "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
+)
+def test_fit_predict_ts_with_y_not_X_index(
+    mock_get_dates, mock_format_dates, ts_data_seasonal
+):
     X, y = ts_data_seasonal
 
     mock_get_dates.return_value = (y.index, X)
@@ -223,11 +247,13 @@ def test_predict_ts_without_X_error(ts_data):
 
     m_clf = ARIMARegressor()
     clf_ = m_clf.fit(X=X, y=y)
-    with pytest.raises(ValueError, match='If X was passed to the fit method of the ARIMARegressor'):
+    with pytest.raises(
+        ValueError, match="If X was passed to the fit method of the ARIMARegressor"
+    ):
         clf_.predict(y=y)
 
 
-@patch('sktime.forecasting.base._sktime._SktimeForecaster.predict')
+@patch("sktime.forecasting.base._sktime._SktimeForecaster.predict")
 def test_predict_ts_X_error(mock_sktime_predict, ts_data):
     X, y = ts_data
 
@@ -235,7 +261,7 @@ def test_predict_ts_X_error(mock_sktime_predict, ts_data):
 
     m_clf = ARIMARegressor()
     clf_ = m_clf.fit(X=X, y=y)
-    with pytest.raises(ValueError, match='Sktime value error'):
+    with pytest.raises(ValueError, match="Sktime value error"):
         clf_.predict(y=y)
 
 
@@ -247,7 +273,10 @@ def test_fit_ts_with_not_X_not_y_index(ts_data):
     assert not isinstance(X.index, pd.DatetimeIndex)
 
     clf = ARIMARegressor()
-    with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X or y."):
+    with pytest.raises(
+        ValueError,
+        match="If not it will look for the datetime column in the index of X or y.",
+    ):
         clf.fit(X=X, y=y)
 
 
@@ -258,7 +287,10 @@ def test_predict_ts_with_not_X_index(ts_data):
 
     m_clf = ARIMARegressor()
     clf_ = m_clf.fit(X=X, y=y)
-    with pytest.raises(ValueError, match="If not it will look for the datetime column in the index of X."):
+    with pytest.raises(
+        ValueError,
+        match="If not it will look for the datetime column in the index of X.",
+    ):
         clf_.predict(X)
 
 
@@ -283,7 +315,7 @@ def test_fit_predict_ts_no_X_out_of_sample(ts_data_seasonal):
     m_clf.fit(X=None, y=y[:250])
     y_pred = m_clf.predict(X=None, y=y[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
 @pytest.mark.parametrize("X_none", [True, False])
@@ -302,7 +334,7 @@ def test_fit_predict_date_index_named_out_of_sample(X_none, ts_data_seasonal):
 
     X = X.reset_index()
     assert not isinstance(X.index, pd.DatetimeIndex)
-    m_clf = ARIMARegressor(date_index='index', d=None)
+    m_clf = ARIMARegressor(date_index="index", d=None)
     if X_none:
         m_clf.fit(X=None, y=y[:250])
         y_pred = m_clf.predict(X=None, y=y[250:])
@@ -310,4 +342,4 @@ def test_fit_predict_date_index_named_out_of_sample(X_none, ts_data_seasonal):
         m_clf.fit(X=X[:250], y=y[:250])
         y_pred = m_clf.predict(X=X[250:], y=y[250:])
 
-    assert (y_pred_sk.to_period('D') == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()

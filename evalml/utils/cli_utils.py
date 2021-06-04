@@ -63,22 +63,28 @@ def get_sys_info():
     """
     blob = []
     try:
-        (sysname, nodename, release,
-         version, machine, processor) = platform.uname()
-        blob.extend([
-            ("python", '.'.join(map(str, sys.version_info))),
-            ("python-bits", struct.calcsize("P") * 8),
-            ("OS", "{sysname}".format(sysname=sysname)),
-            ("OS-release", "{release}".format(release=release)),
-            ("machine", "{machine}".format(machine=machine)),
-            ("processor", "{processor}".format(processor=processor)),
-            ("byteorder", "{byteorder}".format(byteorder=sys.byteorder)),
-            ("LC_ALL", "{lc}".format(lc=os.environ.get('LC_ALL', "None"))),
-            ("LANG", "{lang}".format(lang=os.environ.get('LANG', "None"))),
-            ("LOCALE", '.'.join(map(str, locale.getlocale()))),
-            ("# of CPUS", "{cpus}".format(cpus=psutil.cpu_count())),
-            ("Available memory", "{memory}".format(memory=bytes2human(psutil.virtual_memory().available)))
-        ])
+        (sysname, nodename, release, version, machine, processor) = platform.uname()
+        blob.extend(
+            [
+                ("python", ".".join(map(str, sys.version_info))),
+                ("python-bits", struct.calcsize("P") * 8),
+                ("OS", "{sysname}".format(sysname=sysname)),
+                ("OS-release", "{release}".format(release=release)),
+                ("machine", "{machine}".format(machine=machine)),
+                ("processor", "{processor}".format(processor=processor)),
+                ("byteorder", "{byteorder}".format(byteorder=sys.byteorder)),
+                ("LC_ALL", "{lc}".format(lc=os.environ.get("LC_ALL", "None"))),
+                ("LANG", "{lang}".format(lang=os.environ.get("LANG", "None"))),
+                ("LOCALE", ".".join(map(str, locale.getlocale()))),
+                ("# of CPUS", "{cpus}".format(cpus=psutil.cpu_count())),
+                (
+                    "Available memory",
+                    "{memory}".format(
+                        memory=bytes2human(psutil.virtual_memory().available)
+                    ),
+                ),
+            ]
+        )
     except (KeyError, ValueError):
         pass
 

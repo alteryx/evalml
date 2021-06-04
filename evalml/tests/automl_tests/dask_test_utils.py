@@ -19,19 +19,21 @@ additional_objectives = []
 optimize_thresholds = False
 error_callback = err_call
 random_seed = 0
-automl_data = AutoMLConfig(data_splitter=data_splitter,
-                           problem_type=problem_type,
-                           objective=objective,
-                           additional_objectives=additional_objectives,
-                           optimize_thresholds=optimize_thresholds,
-                           error_callback=error_callback,
-                           random_seed=random_seed,
-                           X_schema=None,
-                           y_schema=None)
+automl_data = AutoMLConfig(
+    data_splitter=data_splitter,
+    problem_type=problem_type,
+    objective=objective,
+    additional_objectives=additional_objectives,
+    optimize_thresholds=optimize_thresholds,
+    error_callback=error_callback,
+    random_seed=random_seed,
+    X_schema=None,
+    y_schema=None,
+)
 
 
 def delayed(delay):
-    """ Decorator to delay function evaluation. """
+    """Decorator to delay function evaluation."""
 
     def wrap(a_method):
         def do_delay(*args, **kw):
@@ -48,7 +50,12 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
     custom_name = "PipelineWithError"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+        super().__init__(
+            self.component_graph,
+            parameters=parameters,
+            custom_name=self.custom_name,
+            random_seed=random_seed,
+        )
 
     def new(self, parameters, random_seed=0):
         return self.__class__(parameters, random_seed=random_seed)
@@ -66,27 +73,41 @@ class TestPipelineWithScoreError(BinaryClassificationPipeline):
     custom_name = "PipelineWithError"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+        super().__init__(
+            self.component_graph,
+            parameters=parameters,
+            custom_name=self.custom_name,
+            random_seed=random_seed,
+        )
 
     def score(self, X, y, objectives):
-        raise PipelineScoreError(exceptions={"AUC": (Exception(), []),
-                                             "Log Loss Binary": (Exception(), [])},
-                                 scored_successfully={"F1": 0.2,
-                                                      "MCC Binary": 0.2,
-                                                      "Precision": 0.8,
-                                                      "Balanced Accuracy Binary": 0.2,
-                                                      "Accuracy Binary": 0.2})
+        raise PipelineScoreError(
+            exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
+            scored_successfully={
+                "F1": 0.2,
+                "MCC Binary": 0.2,
+                "Precision": 0.8,
+                "Balanced Accuracy Binary": 0.2,
+                "Accuracy Binary": 0.2,
+            },
+        )
 
 
 class TestPipelineSlow(BinaryClassificationPipeline):
-    """ Pipeline for testing whose fit() should take longer than the
+    """Pipeline for testing whose fit() should take longer than the
     fast pipeline.  This exists solely to test AutoMLSearch termination
-    and not complete fitting. """
+    and not complete fitting."""
+
     component_graph = ["Baseline Classifier"]
     custom_name = "SlowPipeline"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+        super().__init__(
+            self.component_graph,
+            parameters=parameters,
+            custom_name=self.custom_name,
+            random_seed=random_seed,
+        )
 
     def new(self, parameters, random_seed=0):
         return self.__class__(parameters, random_seed=random_seed)
@@ -100,14 +121,20 @@ class TestPipelineSlow(BinaryClassificationPipeline):
 
 
 class TestPipelineFast(BinaryClassificationPipeline):
-    """ Pipeline for testing whose fit() should complete before the
+    """Pipeline for testing whose fit() should complete before the
     slow pipeline.  This exists solely to test AutoMLSearch termination
-    and complete fitting. """
+    and complete fitting."""
+
     component_graph = ["Baseline Classifier"]
     custom_name = "FastPipeline"
 
     def __init__(self, parameters, random_seed=0):
-        super().__init__(self.component_graph, parameters=parameters, custom_name=self.custom_name, random_seed=random_seed)
+        super().__init__(
+            self.component_graph,
+            parameters=parameters,
+            custom_name=self.custom_name,
+            random_seed=random_seed,
+        )
 
     def new(self, parameters, random_seed=0):
         return self.__class__(parameters, random_seed=random_seed)
@@ -121,17 +148,28 @@ class TestPipelineFast(BinaryClassificationPipeline):
 
 
 class TestSchemaCheckPipeline(BinaryClassificationPipeline):
-
-    def __init__(self, component_graph, parameters=None, custom_name=None, random_seed=0,
-                 X_schema_to_check=None, y_schema_to_check=None):
+    def __init__(
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        random_seed=0,
+        X_schema_to_check=None,
+        y_schema_to_check=None,
+    ):
         self.X_schema_to_check = X_schema_to_check
         self.y_schema_to_check = y_schema_to_check
         super().__init__(component_graph, parameters, custom_name, random_seed)
 
     def clone(self):
-        return self.__class__(self.component_graph, parameters=self.parameters, custom_name=self.custom_name,
-                              random_seed=self.random_seed, X_schema_to_check=self.X_schema_to_check,
-                              y_schema_to_check=self.y_schema_to_check)
+        return self.__class__(
+            self.component_graph,
+            parameters=self.parameters,
+            custom_name=self.custom_name,
+            random_seed=self.random_seed,
+            X_schema_to_check=self.X_schema_to_check,
+            y_schema_to_check=self.y_schema_to_check,
+        )
 
     def fit(self, X, y):
         assert X.ww.schema == self.X_schema_to_check

@@ -2,11 +2,7 @@ import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
-from evalml.problem_types import (
-    is_classification,
-    is_regression,
-    is_time_series
-)
+from evalml.problem_types import is_classification, is_regression, is_time_series
 from evalml.utils import infer_feature_types
 
 
@@ -33,11 +29,11 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
 
     if verbose:
         # number of features
-        print(number_of_features(X.dtypes), end='\n\n')
+        print(number_of_features(X.dtypes), end="\n\n")
 
         # number of total training examples
-        info = 'Number of training examples: {}'
-        print(info.format(len(X)), end='\n')
+        info = "Number of training examples: {}"
+        print(info.format(len(X)), end="\n")
 
         # target distribution
         print(target_distribution(y))
@@ -45,7 +41,9 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     return infer_feature_types(X), infer_feature_types(y)
 
 
-def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, random_seed=0):
+def split_data(
+    X, y, problem_type, problem_configuration=None, test_size=0.2, random_seed=0
+):
     """Splits data into train and test sets.
 
     Arguments:
@@ -65,11 +63,17 @@ def split_data(X, y, problem_type, problem_configuration=None, test_size=.2, ran
 
     data_splitter = None
     if is_time_series(problem_type):
-        data_splitter = TrainingValidationSplit(test_size=test_size, shuffle=False, stratify=None, random_seed=random_seed)
+        data_splitter = TrainingValidationSplit(
+            test_size=test_size, shuffle=False, stratify=None, random_seed=random_seed
+        )
     elif is_regression(problem_type):
-        data_splitter = ShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
+        data_splitter = ShuffleSplit(
+            n_splits=1, test_size=test_size, random_state=random_seed
+        )
     elif is_classification(problem_type):
-        data_splitter = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_seed)
+        data_splitter = StratifiedShuffleSplit(
+            n_splits=1, test_size=test_size, random_state=random_seed
+        )
 
     train, test = next(data_splitter.split(X, y))
 
@@ -91,16 +95,16 @@ def number_of_features(dtypes):
         pd.Series: dtypes and the number of features for each input type
     """
     dtype_to_vtype = {
-        'bool': 'Boolean',
-        'int32': 'Numeric',
-        'int64': 'Numeric',
-        'float64': 'Numeric',
-        'object': 'Categorical',
-        'datetime64[ns]': 'Datetime',
+        "bool": "Boolean",
+        "int32": "Numeric",
+        "int64": "Numeric",
+        "float64": "Numeric",
+        "object": "Categorical",
+        "datetime64[ns]": "Datetime",
     }
 
     vtypes = dtypes.astype(str).map(dtype_to_vtype).value_counts()
-    return vtypes.sort_index().to_frame('Number of Features')
+    return vtypes.sort_index().to_frame("Number of Features")
 
 
 def target_distribution(targets):
@@ -113,7 +117,7 @@ def target_distribution(targets):
         pd.Series: Target data and their frequency distribution as percentages.
     """
     distribution = targets.value_counts() / len(targets)
-    return distribution.mul(100).apply('{:.2f}%'.format).rename_axis('Targets')
+    return distribution.mul(100).apply("{:.2f}%".format).rename_axis("Targets")
 
 
 def drop_nan_target_rows(X, y):
