@@ -14,11 +14,11 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_multiclass,
-    is_regression
+    is_regression,
 )
 from evalml.utils.woodwork_utils import (
     infer_feature_types,
-    numeric_and_boolean_ww
+    numeric_and_boolean_ww,
 )
 
 
