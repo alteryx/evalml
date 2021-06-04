@@ -1,8 +1,8 @@
-catboost==0.25.1
+catboost==0.26
 click==8.0.1
 cloudpickle==1.6.0
 colorama==0.4.4
-dask==2021.5.0
+dask==2021.5.1
 featuretools==0.24.1
 graphviz==0.16
 imbalanced-learn==0.8.0

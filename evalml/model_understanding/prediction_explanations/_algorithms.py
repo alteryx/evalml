@@ -46,7 +46,9 @@ def _compute_shap_values(pipeline, features, training_data=None):
     """
     estimator = pipeline.estimator
     if estimator.model_family == ModelFamily.BASELINE:
-        raise ValueError("You passed in a baseline pipeline. These are simple enough that SHAP values are not needed.")
+        raise ValueError(
+            "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed."
+        )
 
     feature_names = features.columns
 
@@ -59,7 +61,9 @@ def _compute_shap_values(pipeline, features, training_data=None):
     if estimator.model_family.is_tree_estimator():
         # Use tree_path_dependent to avoid linear runtime with dataset size
         with warnings.catch_warnings(record=True) as ws:
-            explainer = shap.TreeExplainer(estimator._component_obj, feature_perturbation="tree_path_dependent")
+            explainer = shap.TreeExplainer(
+                estimator._component_obj, feature_perturbation="tree_path_dependent"
+            )
         if ws:
             logger.debug(f"_compute_shap_values TreeExplainer: {ws[0].message}")
         shap_values = explainer.shap_values(features, check_additivity=False)
@@ -67,13 +71,22 @@ def _compute_shap_values(pipeline, features, training_data=None):
         # this modifies the output to match the output format of other binary estimators.
         # Ok to fill values of negative class with zeros since the negative class will get dropped
         # in the UI anyways.
-        if estimator.model_family in {ModelFamily.CATBOOST, ModelFamily.XGBOOST} and is_binary(pipeline.problem_type):
+        if (
+            estimator.model_family
+            in {
+                ModelFamily.CATBOOST,
+                ModelFamily.XGBOOST,
+            }
+            and is_binary(pipeline.problem_type)
+        ):
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
         if training_data is None:
-            raise ValueError("You must pass in a value for parameter 'training_data' when the pipeline "
-                             "does not have a tree-based estimator. "
-                             f"Current estimator model family is {estimator.model_family}.")
+            raise ValueError(
+                "You must pass in a value for parameter 'training_data' when the pipeline "
+                "does not have a tree-based estimator. "
+                f"Current estimator model family is {estimator.model_family}."
+            )
 
         # More than 100 datapoints can negatively impact runtime according to SHAP
         # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
@@ -86,7 +99,9 @@ def _compute_shap_values(pipeline, features, training_data=None):
             link_function = "logit"
             decision_function = estimator._component_obj.predict_proba
         with warnings.catch_warnings(record=True) as ws:
-            explainer = shap.KernelExplainer(decision_function, sampled_training_data_features, link_function)
+            explainer = shap.KernelExplainer(
+                decision_function, sampled_training_data_features, link_function
+            )
             shap_values = explainer.shap_values(features)
         if ws:
             logger.debug(f"_compute_shap_values KernelExplainer: {ws[0].message}")
@@ -165,7 +180,10 @@ def _aggregate_shap_values(values, provenance):
     if isinstance(values, dict):
         return _aggreggate_shap_values_dict(values, provenance)
     else:
-        return [_aggreggate_shap_values_dict(class_values, provenance) for class_values in values]
+        return [
+            _aggreggate_shap_values_dict(class_values, provenance)
+            for class_values in values
+        ]
 
 
 def _normalize_values_dict(values):
@@ -192,7 +210,10 @@ def _normalize_values_dict(values):
 
     scaled_values = all_values / np.abs(all_values).sum(axis=1)[:, np.newaxis]
 
-    return {feature_name: scaled_values[:, i].tolist() for i, feature_name in enumerate(feature_names)}
+    return {
+        feature_name: scaled_values[:, i].tolist()
+        for i, feature_name in enumerate(feature_names)
+    }
 
 
 def _normalize_shap_values(values):
@@ -210,4 +231,6 @@ def _normalize_shap_values(values):
     elif isinstance(values, list):
         return [_normalize_values_dict(class_values) for class_values in values]
     else:
-        raise ValueError(f"Unsupported data type for _normalize_shap_values: {str(type(values))}.")
+        raise ValueError(
+            f"Unsupported data type for _normalize_shap_values: {str(type(values))}."
+        )

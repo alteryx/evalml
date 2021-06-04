@@ -6,7 +6,14 @@ from sklearn.model_selection._split import BaseCrossValidator
 class TrainingValidationSplit(BaseCrossValidator):
     """Split the training data into training and validation sets"""
 
-    def __init__(self, test_size=None, train_size=None, shuffle=False, stratify=None, random_seed=0):
+    def __init__(
+        self,
+        test_size=None,
+        train_size=None,
+        shuffle=False,
+        stratify=None,
+        random_seed=0,
+    ):
         """Create a TrainingValidation instance
 
         Arguments:
@@ -35,12 +42,19 @@ class TrainingValidationSplit(BaseCrossValidator):
     def split(self, X, y=None):
         """Divides the data into training and testing sets
 
-            Arguments:
-                X (pd.DataFrame): Dataframe of points to split
-                y (pd.Series): Series of points to split
+        Arguments:
+            X (pd.DataFrame): Dataframe of points to split
+            y (pd.Series): Series of points to split
 
-            Returns:
-                list: Indices to split data into training and test set
+        Returns:
+            list: Indices to split data into training and test set
         """
-        train, test = train_test_split(np.arange(X.shape[0]), test_size=self.test_size, train_size=self.train_size, shuffle=self.shuffle, stratify=self.stratify, random_state=self.random_seed)
+        train, test = train_test_split(
+            np.arange(X.shape[0]),
+            test_size=self.test_size,
+            train_size=self.train_size,
+            shuffle=self.shuffle,
+            stratify=self.stratify,
+            random_state=self.random_seed,
+        )
         return iter([(train, test)])

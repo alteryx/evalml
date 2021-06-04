@@ -27,11 +27,13 @@ class DataCheckMessage:
 
     def __eq__(self, other):
         """Checks for equality. Two DataCheckMessage objs are considered equivalent if all of their attributes are equivalent."""
-        return (self.message_type == other.message_type and
-                self.message == other.message and
-                self.data_check_name == other.data_check_name and
-                self.message_code == other.message_code and
-                self.details == other.details)
+        return (
+            self.message_type == other.message_type
+            and self.message == other.message
+            and self.data_check_name == other.data_check_name
+            and self.message_code == other.message_code
+            and self.details == other.details
+        )
 
     def to_dict(self):
         message_dict = {
@@ -48,9 +50,11 @@ class DataCheckMessage:
 
 class DataCheckError(DataCheckMessage):
     """DataCheckMessage subclass for errors returned by data checks."""
+
     message_type = DataCheckMessageType.ERROR
 
 
 class DataCheckWarning(DataCheckMessage):
     """DataCheckMessage subclass for warnings returned by data checks."""
+
     message_type = DataCheckMessageType.WARNING

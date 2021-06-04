@@ -3,9 +3,7 @@ from .cost_benefit_matrix import CostBenefitMatrix
 from .fraud_cost import FraudCost
 from .lead_scoring import LeadScoring
 from .sensitivity_low_alert import SensitivityLowAlert
-from .multiclass_classification_objective import (
-    MulticlassClassificationObjective
-)
+from .multiclass_classification_objective import MulticlassClassificationObjective
 from .objective_base import ObjectiveBase
 from .regression_objective import RegressionObjective
 from .standard_metrics import (
@@ -42,7 +40,12 @@ from .standard_metrics import (
     Recall,
     RecallMacro,
     RecallMicro,
-    RecallWeighted
+    RecallWeighted,
 )
-from .utils import get_objective, get_core_objectives, get_all_objective_names, get_non_core_objectives,\
-    get_core_objective_names
+from .utils import (
+    get_objective,
+    get_core_objectives,
+    get_all_objective_names,
+    get_non_core_objectives,
+    get_core_objective_names,
+)

@@ -1,11 +1,14 @@
-
 import numpy as np
 import pandas as pd
 import woodwork as ww
 
 from evalml.utils.gen_utils import is_all_numeric
 
-numeric_and_boolean_ww = [ww.logical_types.Integer, ww.logical_types.Double, ww.logical_types.Boolean]
+numeric_and_boolean_ww = [
+    ww.logical_types.Integer,
+    ww.logical_types.Double,
+    ww.logical_types.Boolean,
+]
 
 
 def _numpy_to_pandas(array):
@@ -20,18 +23,24 @@ def _list_to_pandas(list):
     return _numpy_to_pandas(np.array(list))
 
 
-_nullable_types = {'Int64', 'Float64', 'boolean'}
+_nullable_types = {"Int64", "Float64", "boolean"}
 
 
 def _raise_value_error_if_nullable_types_detected(data):
     types = {data.name: data.dtype} if isinstance(data, pd.Series) else data.dtypes
-    cols_with_nullable_types = {col: str(ptype) for col, ptype in dict(types).items() if str(ptype) in _nullable_types}
+    cols_with_nullable_types = {
+        col: str(ptype)
+        for col, ptype in dict(types).items()
+        if str(ptype) in _nullable_types
+    }
     if cols_with_nullable_types:
-        raise ValueError("Evalml does not support the new pandas nullable types because "
-                         "our dependencies (sklearn, xgboost, lightgbm) do not support them yet."
-                         "If your data does not have missing values, please use the non-nullable types (bool, int64, float64). "
-                         "If your data does have missing values, use float64 for int and float columns and category for boolean columns. "
-                         f"These are the columns with nullable types: {list(cols_with_nullable_types.items())}")
+        raise ValueError(
+            "Evalml does not support the new pandas nullable types because "
+            "our dependencies (sklearn, xgboost, lightgbm) do not support them yet."
+            "If your data does not have missing values, please use the non-nullable types (bool, int64, float64). "
+            "If your data does have missing values, use float64 for int and float columns and category for boolean columns. "
+            f"These are the columns with nullable types: {list(cols_with_nullable_types.items())}"
+        )
 
 
 def infer_feature_types(data, feature_types=None):
@@ -55,7 +64,9 @@ def infer_feature_types(data, feature_types=None):
     _raise_value_error_if_nullable_types_detected(data)
 
     if data.ww.schema is not None:
-        if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(data, data.ww.schema):
+        if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
+            data, data.ww.schema
+        ):
             raise ValueError(ww.get_invalid_schema_message(data, data.ww.schema))
         data.ww.init(schema=data.ww.schema)
         return data
@@ -68,7 +79,9 @@ def infer_feature_types(data, feature_types=None):
         return ww_data
 
 
-def _retain_custom_types_and_initalize_woodwork(old_logical_types, new_dataframe, ltypes_to_ignore=None):
+def _retain_custom_types_and_initalize_woodwork(
+    old_logical_types, new_dataframe, ltypes_to_ignore=None
+):
     """
     Helper method which will take an old Woodwork data structure and a new pandas data structure and return a
     new data structure that will try to retain as many logical types from the old data structure that exist in the new
@@ -88,8 +101,14 @@ def _retain_custom_types_and_initalize_woodwork(old_logical_types, new_dataframe
         return ww.init_series(new_dataframe, old_logical_types)
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
-    col_intersection = set(old_logical_types.keys()).intersection(set(new_dataframe.columns))
-    retained_logical_types = {col: ltype for col, ltype in old_logical_types.items() if col in col_intersection and ltype not in ltypes_to_ignore}
+    col_intersection = set(old_logical_types.keys()).intersection(
+        set(new_dataframe.columns)
+    )
+    retained_logical_types = {
+        col: ltype
+        for col, ltype in old_logical_types.items()
+        if col in col_intersection and ltype not in ltypes_to_ignore
+    }
     new_dataframe.ww.init(logical_types=retained_logical_types)
     return new_dataframe
 
@@ -106,6 +125,8 @@ def _convert_numeric_dataset_pandas(X, y):
         Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
     X_ww = infer_feature_types(X)
     if not is_all_numeric(X_ww):
-        raise ValueError('Values not all numeric or there are null values provided in the dataset')
+        raise ValueError(
+            "Values not all numeric or there are null values provided in the dataset"
+        )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww

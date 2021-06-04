@@ -10,25 +10,40 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 class ComponentGraph:
     def __init__(self, component_dict=None, random_seed=0):
-        """ Initializes a component graph for a pipeline as a directed acyclic graph (DAG).
+        """Initializes a component graph for a pipeline as a directed acyclic graph (DAG).
 
         Example:
             >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
             >>> component_graph = ComponentGraph(component_dict)
-           """
+        """
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
             if not isinstance(component_info, list):
-                raise ValueError('All component information should be passed in as a list')
+                raise ValueError(
+                    "All component information should be passed in as a list"
+                )
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
         self.compute_order = self.generate_order(self.component_dict)
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
+
+    @property
+    def default_parameters(self):
+        """The default parameter dictionary for this pipeline.
+
+        Returns:
+            dict: Dictionary of all component default parameters.
+        """
+        defaults = {}
+        for component in self.component_instances.values():
+            if component.default_parameters:
+                defaults[component.name] = component.default_parameters
+        return defaults
 
     @classmethod
     def linearized_component_graph(cls, components):
@@ -51,7 +66,7 @@ class ComponentGraph:
                 component_name = component_class.name
 
                 if component_name in seen:
-                    component_name = f'{component_name}_{idx}'
+                    component_name = f"{component_name}_{idx}"
                 seen.add(component_name)
                 names.append((component_name, component_class))
         else:
@@ -69,12 +84,16 @@ class ComponentGraph:
         """
         component_dict = {}
         previous_component = None
-        for component_name, component_class in cls.linearized_component_graph(component_list):
+        for component_name, component_class in cls.linearized_component_graph(
+            component_list
+        ):
 
             component_dict[component_name] = [component_class]
             if previous_component is not None:
                 if "sampler" in previous_component:
-                    component_dict[component_name].extend([f"{previous_component}.x", f"{previous_component}.y"])
+                    component_dict[component_name].extend(
+                        [f"{previous_component}.x", f"{previous_component}.y"]
+                    )
                 else:
                     component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
@@ -89,7 +108,9 @@ class ComponentGraph:
                                An empty dictionary {} or None implies using all default values for component parameters.
         """
         if self._is_instantiated:
-            raise ValueError(f"Cannot reinstantiate a component graph that was previously instantiated")
+            raise ValueError(
+                f"Cannot reinstantiate a component graph that was previously instantiated"
+            )
 
         parameters = parameters or {}
         self._is_instantiated = True
@@ -97,10 +118,14 @@ class ComponentGraph:
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
             try:
-                new_component = component_class(**component_parameters, random_seed=self.random_seed)
+                new_component = component_class(
+                    **component_parameters, random_seed=self.random_seed
+                )
             except (ValueError, TypeError) as e:
                 self._is_instantiated = False
-                err = "Error received when instantiating component {} with the following arguments {}".format(component_name, component_parameters)
+                err = "Error received when instantiating component {} with the following arguments {}".format(
+                    component_name, component_parameters
+                )
                 raise ValueError(err) from e
 
             component_instances[component_name] = new_component
@@ -159,18 +184,26 @@ class ComponentGraph:
             X = infer_feature_types(X)
             self.input_feature_names.update({self.compute_order[0]: list(X.columns)})
             return X
-        component_outputs = self._compute_features(self.compute_order[:-1], X, y=y, fit=needs_fitting)
+        component_outputs = self._compute_features(
+            self.compute_order[:-1], X, y=y, fit=needs_fitting
+        )
         final_component_inputs = []
         for parent in self.get_parents(self.compute_order[-1]):
-            parent_output = component_outputs.get(parent, component_outputs.get(f'{parent}.x'))
+            parent_output = component_outputs.get(
+                parent, component_outputs.get(f"{parent}.x")
+            )
             if isinstance(parent_output, pd.Series):
                 parent_output = pd.DataFrame(parent_output, columns=[parent])
                 parent_output = infer_feature_types(parent_output)
             if parent_output is not None:
                 final_component_inputs.append(parent_output)
-        concatted = pd.concat([component_input for component_input in final_component_inputs], axis=1)
+        concatted = pd.concat(
+            [component_input for component_input in final_component_inputs], axis=1
+        )
         if needs_fitting:
-            self.input_feature_names.update({self.compute_order[-1]: list(concatted.columns)})
+            self.input_feature_names.update(
+                {self.compute_order[-1]: list(concatted.columns)}
+            )
         return infer_feature_types(concatted)
 
     def predict(self, X):
@@ -186,7 +219,9 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(outputs.get(final_component, outputs.get(f'{final_component}.x')))
+        return infer_feature_types(
+            outputs.get(final_component, outputs.get(f"{final_component}.x"))
+        )
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -209,20 +244,28 @@ class ComponentGraph:
         for component_name in component_list:
             component_instance = self.get_component(component_name)
             if not isinstance(component_instance, ComponentBase):
-                raise ValueError('All components must be instantiated before fitting or predicting')
+                raise ValueError(
+                    "All components must be instantiated before fitting or predicting"
+                )
             x_inputs = []
             y_input = None
             for parent_input in self.get_parents(component_name):
-                if parent_input[-2:] == '.y':
+                if parent_input[-2:] == ".y":
                     if y_input is not None:
-                        raise ValueError(f'Cannot have multiple `y` parents for a single component {component_name}')
+                        raise ValueError(
+                            f"Cannot have multiple `y` parents for a single component {component_name}"
+                        )
                     y_input = output_cache[parent_input]
                 else:
-                    parent_x = output_cache.get(parent_input, output_cache.get(f'{parent_input}.x'))
+                    parent_x = output_cache.get(
+                        parent_input, output_cache.get(f"{parent_input}.x")
+                    )
                     if isinstance(parent_x, pd.Series):
                         parent_x = parent_x.rename(parent_input)
                     x_inputs.append(parent_x)
-            input_x, input_y = self._consolidate_inputs(x_inputs, y_input, X, most_recent_y)
+            input_x, input_y = self._consolidate_inputs(
+                x_inputs, y_input, X, most_recent_y
+            )
             self.input_feature_names.update({component_name: list(input_x.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
@@ -240,7 +283,9 @@ class ComponentGraph:
             else:
                 if fit:
                     component_instance.fit(input_x, input_y)
-                if not (fit and component_name == self.compute_order[-1]):  # Don't call predict on the final component during fit
+                if not (
+                    fit and component_name == self.compute_order[-1]
+                ):  # Don't call predict on the final component during fit
                     output = component_instance.predict(input_x)
                 else:
                     output = None
@@ -272,29 +317,44 @@ class ComponentGraph:
         # each one starts with an empty set
         provenance = {col: set([]) for col in input_feature_names}
 
-        transformers = filter(lambda c: isinstance(c, Transformer), [self.get_component(c) for c in self.compute_order])
+        transformers = filter(
+            lambda c: isinstance(c, Transformer),
+            [self.get_component(c) for c in self.compute_order],
+        )
         for component_instance in transformers:
             component_provenance = component_instance._get_feature_provenance()
             for component_input, component_output in component_provenance.items():
 
                 # Case 1: The transformer created features from one of the original features
                 if component_input in provenance:
-                    provenance[component_input] = provenance[component_input].union(set(component_output))
+                    provenance[component_input] = provenance[component_input].union(
+                        set(component_output)
+                    )
 
                 # Case 2: The transformer created features from a feature created from an original feature.
                 # Add it to the provenance of the original feature it was created from
                 else:
                     for in_feature, out_feature in provenance.items():
                         if component_input in out_feature:
-                            provenance[in_feature] = out_feature.union(set(component_output))
+                            provenance[in_feature] = out_feature.union(
+                                set(component_output)
+                            )
 
         # Get rid of features that are not in the dataset the final estimator uses
-        final_estimator_features = set(self.input_feature_names.get(self.compute_order[-1], []))
+        final_estimator_features = set(
+            self.input_feature_names.get(self.compute_order[-1], [])
+        )
         for feature in provenance:
-            provenance[feature] = provenance[feature].intersection(final_estimator_features)
+            provenance[feature] = provenance[feature].intersection(
+                final_estimator_features
+            )
 
         # Delete features that weren't used to create other features
-        return {feature: children for feature, children in provenance.items() if len(children)}
+        return {
+            feature: children
+            for feature, children in provenance.items()
+            if len(children)
+        }
 
     @staticmethod
     def _consolidate_inputs(x_inputs, y_input, X, y):
@@ -333,7 +393,7 @@ class ComponentGraph:
         try:
             return self.component_instances[component_name]
         except KeyError:
-            raise ValueError(f'Component {component_name} is not in the graph')
+            raise ValueError(f"Component {component_name} is not in the graph")
 
     def get_last_component(self):
         """Retrieves the component that is computed last in the graph, usually the final estimator.
@@ -342,7 +402,7 @@ class ComponentGraph:
             ComponentBase object
         """
         if len(self.compute_order) == 0:
-            raise ValueError('Cannot get last component from edgeless graph')
+            raise ValueError("Cannot get last component from edgeless graph")
         last_component_name = self.compute_order[-1]
         return self.get_component(last_component_name)
 
@@ -353,8 +413,14 @@ class ComponentGraph:
             list: All estimator objects within the graph
         """
         if not isinstance(self.get_last_component(), ComponentBase):
-            raise ValueError('Cannot get estimators until the component graph is instantiated')
-        return [component_class for component_class in self.component_instances.values() if isinstance(component_class, Estimator)]
+            raise ValueError(
+                "Cannot get estimators until the component graph is instantiated"
+            )
+        return [
+            component_class
+            for component_class in self.component_instances.values()
+            if isinstance(component_class, Estimator)
+        ]
 
     def get_parents(self, component_name):
         """Finds the names of all parent nodes of the given component
@@ -383,31 +449,39 @@ class ComponentGraph:
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
         """
-        graphviz = import_or_raise('graphviz', error_msg='Please install graphviz to visualize pipelines.')
+        graphviz = import_or_raise(
+            "graphviz", error_msg="Please install graphviz to visualize pipelines."
+        )
 
         # Try rendering a dummy graph to see if a working backend is installed
         try:
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             raise RuntimeError(
-                "To visualize component graphs, a graphviz backend is required.\n" +
-                "Install the backend using one of the following commands:\n" +
-                "  Mac OS: brew install graphviz\n" +
-                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-                "  Windows: conda install python-graphviz\n"
+                "To visualize component graphs, a graphviz backend is required.\n"
+                + "Install the backend using one of the following commands:\n"
+                + "  Mac OS: brew install graphviz\n"
+                + "  Linux (Ubuntu): sudo apt-get install graphviz\n"
+                + "  Windows: conda install python-graphviz\n"
             )
 
-        graph = graphviz.Digraph(name=name, format=graph_format,
-                                 graph_attr={'splines': 'ortho'})
-        graph.attr(rankdir='LR')
+        graph = graphviz.Digraph(
+            name=name, format=graph_format, graph_attr={"splines": "ortho"}
+        )
+        graph.attr(rankdir="LR")
         for component_name, component_class in self.component_instances.items():
-            label = '%s\l' % (component_name)  # noqa: W605
+            label = "%s\l" % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
-                parameters = '\l'.join([key + ' : ' + "{:0.2f}".format(val) if (isinstance(val, float))
-                                        else key + ' : ' + str(val)
-                                        for key, val in component_class.parameters.items()])  # noqa: W605
-                label = '%s |%s\l' % (component_name, parameters)  # noqa: W605
-            graph.node(component_name, shape='record', label=label)
+                parameters = "\l".join(
+                    [
+                        key + " : " + "{:0.2f}".format(val)
+                        if (isinstance(val, float))
+                        else key + " : " + str(val)
+                        for key, val in component_class.parameters.items()
+                    ]
+                )  # noqa: W605
+                label = "%s |%s\l" % (component_name, parameters)  # noqa: W605
+            graph.node(component_name, shape="record", label=label)
         edges = self._get_edges(self.component_dict)
         graph.edges(edges)
         return graph
@@ -418,7 +492,7 @@ class ComponentGraph:
         for component_name, component_info in component_dict.items():
             if len(component_info) > 1:
                 for parent in component_info[1:]:
-                    if parent[-2:] == '.x' or parent[-2:] == '.y':
+                    if parent[-2:] == ".x" or parent[-2:] == ".y":
                         parent = parent[:-2]
                     edges.append((parent, component_name))
         return edges
@@ -434,14 +508,20 @@ class ComponentGraph:
         digraph = nx.DiGraph()
         digraph.add_edges_from(edges)
         if not nx.is_weakly_connected(digraph):
-            raise ValueError('The given graph is not completely connected')
+            raise ValueError("The given graph is not completely connected")
         try:
             compute_order = list(topological_sort(digraph))
         except NetworkXUnfeasible:
-            raise ValueError('The given graph contains a cycle')
-        end_components = [component for component in compute_order if len(nx.descendants(digraph, component)) == 0]
+            raise ValueError("The given graph contains a cycle")
+        end_components = [
+            component
+            for component in compute_order
+            if len(nx.descendants(digraph, component)) == 0
+        ]
         if len(end_components) != 1:
-            raise ValueError('The given graph has more than one final (childless) component')
+            raise ValueError(
+                "The given graph has more than one final (childless) component"
+            )
         return compute_order
 
     def __getitem__(self, index):

@@ -9,7 +9,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
 )
 from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
@@ -17,7 +17,7 @@ from evalml.pipelines.components.utils import (
     all_components,
     handle_component_class,
     make_balancing_dictionary,
-    scikit_learn_wrapped_estimator
+    scikit_learn_wrapped_estimator,
 )
 from evalml.problem_types import ProblemTypes
 
@@ -25,7 +25,9 @@ binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
-def test_all_components(has_minimal_dependencies, is_running_py_39_or_above, is_using_conda):
+def test_all_components(
+    has_minimal_dependencies, is_running_py_39_or_above, is_using_conda
+):
     if has_minimal_dependencies:
         n_components = 37
     elif is_using_conda:
@@ -46,12 +48,16 @@ def test_handle_component_class_names():
         assert inspect.isclass(name_ret)
         assert issubclass(name_ret, ComponentBase)
 
-    invalid_name = 'This Component Does Not Exist'
-    with pytest.raises(MissingComponentError, match='Component "This Component Does Not Exist" was not found'):
+    invalid_name = "This Component Does Not Exist"
+    with pytest.raises(
+        MissingComponentError,
+        match='Component "This Component Does Not Exist" was not found',
+    ):
         handle_component_class(invalid_name)
 
     class NonComponent:
         pass
+
     with pytest.raises(ValueError):
         handle_component_class(NonComponent())
 
@@ -59,12 +65,18 @@ def test_handle_component_class_names():
 def test_scikit_learn_wrapper_invalid_problem_type():
     evalml_pipeline = MulticlassClassificationPipeline([RandomForestClassifier])
     evalml_pipeline.problem_type = None
-    with pytest.raises(ValueError, match="Could not wrap EvalML object in scikit-learn wrapper."):
+    with pytest.raises(
+        ValueError, match="Could not wrap EvalML object in scikit-learn wrapper."
+    ):
         scikit_learn_wrapped_estimator(evalml_pipeline)
 
 
 def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression, ts_data):
-    for estimator in [estimator for estimator in _all_estimators() if estimator.model_family != ModelFamily.ENSEMBLE]:
+    for estimator in [
+        estimator
+        for estimator in _all_estimators()
+        if estimator.model_family != ModelFamily.ENSEMBLE
+    ]:
         for problem_type in estimator.supported_problem_types:
             if problem_type == ProblemTypes.BINARY:
                 X, y = X_y_binary
@@ -78,7 +90,11 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression, ts_data):
                 X, y = X_y_regression
                 pipeline_class = RegressionPipeline
 
-            elif problem_type in [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_BINARY]:
+            elif problem_type in [
+                ProblemTypes.TIME_SERIES_REGRESSION,
+                ProblemTypes.TIME_SERIES_MULTICLASS,
+                ProblemTypes.TIME_SERIES_BINARY,
+            ]:
                 continue
 
             evalml_pipeline = pipeline_class([estimator])
@@ -107,16 +123,20 @@ def test_make_balancing_dictionary_errors():
         make_balancing_dictionary(pd.Series([]), 0.5)
 
 
-@pytest.mark.parametrize("y,sampling_ratio,result",
-                         [(binary, 1, {0: 800, 1: 800}),
-                          (binary, 0.5, {0: 800, 1: 400}),
-                          (binary, 0.25, {0: 800, 1: 200}),
-                          (binary, 0.1, {0: 800, 1: 200}),
-                          (multiclass, 1, {0: 800, 1: 800, 2: 800}),
-                          (multiclass, 0.5, {0: 800, 1: 400, 2: 400}),
-                          (multiclass, 0.25, {0: 800, 1: 200, 2: 200}),
-                          (multiclass, 0.1, {0: 800, 1: 150, 2: 80}),
-                          (multiclass, 0.01, {0: 800, 1: 150, 2: 50})])
+@pytest.mark.parametrize(
+    "y,sampling_ratio,result",
+    [
+        (binary, 1, {0: 800, 1: 800}),
+        (binary, 0.5, {0: 800, 1: 400}),
+        (binary, 0.25, {0: 800, 1: 200}),
+        (binary, 0.1, {0: 800, 1: 200}),
+        (multiclass, 1, {0: 800, 1: 800, 2: 800}),
+        (multiclass, 0.5, {0: 800, 1: 400, 2: 400}),
+        (multiclass, 0.25, {0: 800, 1: 200, 2: 200}),
+        (multiclass, 0.1, {0: 800, 1: 150, 2: 80}),
+        (multiclass, 0.01, {0: 800, 1: 150, 2: 50}),
+    ],
+)
 def test_make_balancing_dictionary(y, sampling_ratio, result):
     dic = make_balancing_dictionary(y, sampling_ratio)
     assert dic == result

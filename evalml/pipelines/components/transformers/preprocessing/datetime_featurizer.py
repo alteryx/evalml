@@ -1,7 +1,7 @@
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
+    infer_feature_types,
 )
 
 
@@ -9,8 +9,20 @@ def _extract_year(col, encode_as_categories=False):
     return col.dt.year, None
 
 
-_month_to_int_mapping = {"January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
-                         "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11}
+_month_to_int_mapping = {
+    "January": 0,
+    "February": 1,
+    "March": 2,
+    "April": 3,
+    "May": 4,
+    "June": 5,
+    "July": 6,
+    "August": 7,
+    "September": 8,
+    "October": 9,
+    "November": 10,
+    "December": 11,
+}
 
 
 def _extract_month(col, encode_as_categories=False):
@@ -22,8 +34,15 @@ def _extract_month(col, encode_as_categories=False):
     return months_encoded, {m: _month_to_int_mapping[m] for m in months_unique}
 
 
-_day_to_int_mapping = {"Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5,
-                       "Saturday": 6}
+_day_to_int_mapping = {
+    "Sunday": 0,
+    "Monday": 1,
+    "Tuesday": 2,
+    "Wednesday": 3,
+    "Thursday": 4,
+    "Friday": 5,
+    "Saturday": 6,
+}
 
 
 def _extract_day_of_week(col, encode_as_categories=False):
@@ -41,14 +60,24 @@ def _extract_hour(col, encode_as_categories=False):
 
 class DateTimeFeaturizer(Transformer):
     """Transformer that can automatically featurize DateTime columns."""
+
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}
-    _function_mappings = {"year": _extract_year,
-                          "month": _extract_month,
-                          "day_of_week": _extract_day_of_week,
-                          "hour": _extract_hour}
+    _function_mappings = {
+        "year": _extract_year,
+        "month": _extract_month,
+        "day_of_week": _extract_day_of_week,
+        "hour": _extract_hour,
+    }
 
-    def __init__(self, features_to_extract=None, encode_as_categories=False, date_index=None, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        features_to_extract=None,
+        encode_as_categories=False,
+        date_index=None,
+        random_seed=0,
+        **kwargs,
+    ):
         """Extracts features from DateTime columns
 
         Arguments:
@@ -60,20 +89,28 @@ class DateTimeFeaturizer(Transformer):
         """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
-        invalid_features = set(features_to_extract) - set(self._function_mappings.keys())
+        invalid_features = set(features_to_extract) - set(
+            self._function_mappings.keys()
+        )
         if len(invalid_features) > 0:
-            raise ValueError("{} are not valid options for features_to_extract".format(", ".join([f"'{feature}'" for feature in invalid_features])))
+            raise ValueError(
+                "{} are not valid options for features_to_extract".format(
+                    ", ".join([f"'{feature}'" for feature in invalid_features])
+                )
+            )
 
-        parameters = {"features_to_extract": features_to_extract,
-                      "encode_as_categories": encode_as_categories,
-                      "date_index": date_index}
+        parameters = {
+            "features_to_extract": features_to_extract,
+            "encode_as_categories": encode_as_categories,
+            "date_index": date_index,
+        }
         parameters.update(kwargs)
         self._date_time_col_names = None
         self._categories = {}
         self.encode_as_categories = encode_as_categories
-        super().__init__(parameters=parameters,
-                         component_obj=None,
-                         random_seed=random_seed)
+        super().__init__(
+            parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
@@ -99,11 +136,15 @@ class DateTimeFeaturizer(Transformer):
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
-                features, categories = self._function_mappings[feature](X[col_name], self.encode_as_categories)
+                features, categories = self._function_mappings[feature](
+                    X[col_name], self.encode_as_categories
+                )
                 X[name] = features
                 if categories:
                     self._categories[name] = categories
-        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X.drop(columns=self._date_time_col_names))
+        return _retain_custom_types_and_initalize_woodwork(
+            original_ltypes, X.drop(columns=self._date_time_col_names)
+        )
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.
@@ -118,6 +159,6 @@ class DateTimeFeaturizer(Transformer):
         provenance = {}
         for col_name in self._date_time_col_names:
             provenance[col_name] = []
-            for feature in self.parameters['features_to_extract']:
-                provenance[col_name].append(f'{col_name}_{feature}')
+            for feature in self.parameters["features_to_extract"]:
+                provenance[col_name].append(f"{col_name}_{feature}")
         return provenance
