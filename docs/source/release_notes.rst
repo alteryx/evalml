@@ -9,6 +9,7 @@ Release Notes
     * Separated `custom_hyperparameters` from pipelines and added them as an argument to `AutoMLSearch :pr:`2317`
     * Documentation Changes
     * Testing Changes
+        * Update minimum unit tests to run on all pull requests :pr:`2314`
 
 .. warning::
 
