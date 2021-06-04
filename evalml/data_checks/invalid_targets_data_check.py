@@ -14,7 +14,7 @@ from evalml.problem_types import (
     is_binary,
     is_multiclass,
     is_regression,
-    ProblemTypes
+    ProblemTypes,
 )
 from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
 
