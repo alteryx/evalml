@@ -10,11 +10,11 @@ from evalml.data_checks import (
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import (
-    ProblemTypes,
     handle_problem_types,
     is_binary,
     is_multiclass,
     is_regression,
+    ProblemTypes
 )
 from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
 
