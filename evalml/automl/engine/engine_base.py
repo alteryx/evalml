@@ -63,17 +63,18 @@ class JobLogger:
 
     def write_to_logger(self, logger):
         """Write all the messages to the logger. First In First Out order."""
-        logger_method = {"info": logger.info,
-                         "debug": logger.debug,
-                         "warning": logger.warning,
-                         "error": logger.warning}
+        logger_method = {
+            "info": logger.info,
+            "debug": logger.debug,
+            "warning": logger.warning,
+            "error": logger.warning,
+        }
         for level, message in self.logs:
             method = logger_method[level]
             method(message)
 
 
 class EngineBase(ABC):
-
     @staticmethod
     def setup_job_log():
         return JobLogger()
@@ -91,7 +92,9 @@ class EngineBase(ABC):
         """Submit job for pipeline scoring."""
 
 
-def train_pipeline(pipeline, X, y, optimize_thresholds, objective, X_schema=None, y_schema=None):
+def train_pipeline(
+    pipeline, X, y, optimize_thresholds, objective, X_schema=None, y_schema=None
+):
     """Train a pipeline and tune the threshold if necessary.
 
     Arguments:
@@ -113,16 +116,24 @@ def train_pipeline(pipeline, X, y, optimize_thresholds, objective, X_schema=None
     if y_schema:
         y.ww.init(schema=y_schema)
     if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
-        X, X_threshold_tuning, y, y_threshold_tuning = split_data(X, y, pipeline.problem_type,
-                                                                  test_size=0.2, random_seed=pipeline.random_seed)
+        X, X_threshold_tuning, y, y_threshold_tuning = split_data(
+            X, y, pipeline.problem_type, test_size=0.2, random_seed=pipeline.random_seed
+        )
     cv_pipeline = pipeline.clone()
     cv_pipeline.fit(X, y)
-    tune_binary_threshold(cv_pipeline, objective, cv_pipeline.problem_type,
-                          X_threshold_tuning, y_threshold_tuning)
+    tune_binary_threshold(
+        cv_pipeline,
+        objective,
+        cv_pipeline.problem_type,
+        X_threshold_tuning,
+        y_threshold_tuning,
+    )
     return cv_pipeline
 
 
-def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train, logger):
+def train_and_score_pipeline(
+    pipeline, automl_config, full_X_train, full_y_train, logger
+):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
 
     Arguments:
@@ -139,53 +150,106 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
     cv_data = []
     logger.info("\tStarting cross validation")
     objective_to_train = automl_config.objective
-    if is_binary(automl_config.problem_type) and automl_config.optimize_thresholds and automl_config.objective.score_needs_proba:
+    if (
+        is_binary(automl_config.problem_type)
+        and automl_config.optimize_thresholds
+        and automl_config.objective.score_needs_proba
+    ):
         # use the thresholding_objective
         objective_to_train = automl_config.thresholding_objective
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
-        y_mapping = {original_target: encoded_target for (encoded_target, original_target) in
-                     enumerate(full_y_train.value_counts().index)}
+        y_mapping = {
+            original_target: encoded_target
+            for (encoded_target, original_target) in enumerate(
+                full_y_train.value_counts().index
+            )
+        }
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
-    for i, (train, valid) in enumerate(automl_config.data_splitter.split(full_X_train, full_y_train)):
+    for i, (train, valid) in enumerate(
+        automl_config.data_splitter.split(full_X_train, full_y_train)
+    ):
         if pipeline.model_family == ModelFamily.ENSEMBLE and i > 0:
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
-            logger.debug(f"Skipping fold {i} because CV for stacked ensembles is not supported.")
+            logger.debug(
+                f"Skipping fold {i} because CV for stacked ensembles is not supported."
+            )
             break
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
         y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        if is_binary(automl_config.problem_type) or is_multiclass(automl_config.problem_type):
+        if is_binary(automl_config.problem_type) or is_multiclass(
+            automl_config.problem_type
+        ):
             diff_train = set(np.setdiff1d(full_y_train, y_train))
             diff_valid = set(np.setdiff1d(full_y_train, y_valid))
-            diff_string = f"Missing target values in the training set after data split: {diff_train}. " if diff_train else ""
-            diff_string += f"Missing target values in the validation set after data split: {diff_valid}." if diff_valid else ""
+            diff_string = (
+                f"Missing target values in the training set after data split: {diff_train}. "
+                if diff_train
+                else ""
+            )
+            diff_string += (
+                f"Missing target values in the validation set after data split: {diff_valid}."
+                if diff_valid
+                else ""
+            )
             if diff_string:
                 raise Exception(diff_string)
-        objectives_to_score = [automl_config.objective] + automl_config.additional_objectives
+        objectives_to_score = [
+            automl_config.objective
+        ] + automl_config.additional_objectives
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
-            cv_pipeline = train_pipeline(pipeline, X_train, y_train, automl_config.optimize_thresholds, objective_to_train)
+            cv_pipeline = train_pipeline(
+                pipeline,
+                X_train,
+                y_train,
+                automl_config.optimize_thresholds,
+                objective_to_train,
+            )
             logger.debug(f"\t\t\tFold {i}: finished training")
-            if automl_config.optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective_to_train):
-                logger.debug(f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})")
+            if (
+                automl_config.optimize_thresholds
+                and pipeline.can_tune_threshold_with_objective(objective_to_train)
+            ):
+                logger.debug(
+                    f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
+                )
             logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
             scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
-            logger.debug(f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}")
+            logger.debug(
+                f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
+            )
             score = scores[automl_config.objective.name]
         except Exception as e:
             if automl_config.error_callback is not None:
-                automl_config.error_callback(exception=e, traceback=traceback.format_tb(sys.exc_info()[2]), automl=automl_config,
-                                             fold_num=i, pipeline=pipeline)
+                automl_config.error_callback(
+                    exception=e,
+                    traceback=traceback.format_tb(sys.exc_info()[2]),
+                    automl=automl_config,
+                    fold_num=i,
+                    pipeline=pipeline,
+                )
             if isinstance(e, PipelineScoreError):
                 nan_scores = {objective: np.nan for objective in e.exceptions}
                 scores = {**nan_scores, **e.scored_successfully}
-                scores = OrderedDict({o.name: scores[o.name] for o in [automl_config.objective] + automl_config.additional_objectives})
+                scores = OrderedDict(
+                    {
+                        o.name: scores[o.name]
+                        for o in [automl_config.objective]
+                        + automl_config.additional_objectives
+                    }
+                )
                 score = scores[automl_config.objective.name]
             else:
                 score = np.nan
-                scores = OrderedDict(zip([n.name for n in automl_config.additional_objectives], [np.nan] * len(automl_config.additional_objectives)))
+                scores = OrderedDict(
+                    zip(
+                        [n.name for n in automl_config.additional_objectives],
+                        [np.nan] * len(automl_config.additional_objectives),
+                    )
+                )
 
         ordered_scores = OrderedDict()
         ordered_scores.update({automl_config.objective.name: score})
@@ -193,17 +257,34 @@ def train_and_score_pipeline(pipeline, automl_config, full_X_train, full_y_train
         ordered_scores.update({"# Training": y_train.shape[0]})
         ordered_scores.update({"# Validation": y_valid.shape[0]})
 
-        evaluation_entry = {"all_objective_scores": ordered_scores, "mean_cv_score": score, 'binary_classification_threshold': None}
-        if is_binary(automl_config.problem_type) and cv_pipeline is not None and cv_pipeline.threshold is not None:
-            evaluation_entry['binary_classification_threshold'] = cv_pipeline.threshold
+        evaluation_entry = {
+            "all_objective_scores": ordered_scores,
+            "mean_cv_score": score,
+            "binary_classification_threshold": None,
+        }
+        if (
+            is_binary(automl_config.problem_type)
+            and cv_pipeline is not None
+            and cv_pipeline.threshold is not None
+        ):
+            evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
     training_time = time.time() - start
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
-    logger.info(f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}")
-    return {"scores": {'cv_data': cv_data, 'training_time': training_time, 'cv_scores': cv_scores, 'cv_score_mean': cv_score_mean},
-            "pipeline": cv_pipeline,
-            "logger": logger}
+    logger.info(
+        f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}"
+    )
+    return {
+        "scores": {
+            "cv_data": cv_data,
+            "training_time": training_time,
+            "cv_scores": cv_scores,
+            "cv_score_mean": cv_score_mean,
+        },
+        "pipeline": cv_pipeline,
+        "logger": logger,
+    }
 
 
 def evaluate_pipeline(pipeline, automl_config, X, y, logger):
@@ -224,9 +305,13 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     X.ww.init(schema=automl_config.X_schema)
     y.ww.init(schema=automl_config.y_schema)
 
-    return train_and_score_pipeline(pipeline, automl_config=automl_config,
-                                    full_X_train=X, full_y_train=y,
-                                    logger=logger)
+    return train_and_score_pipeline(
+        pipeline,
+        automl_config=automl_config,
+        full_X_train=X,
+        full_y_train=y,
+        logger=logger,
+    )
 
 
 def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):

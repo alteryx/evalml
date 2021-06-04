@@ -4,27 +4,30 @@ from woodwork.logical_types import Categorical
 from ..transformer import Transformer
 
 from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
-    OneHotEncoderMeta
+    OneHotEncoderMeta,
 )
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
     import_or_raise,
-    infer_feature_types
+    infer_feature_types,
 )
 
 
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """Target encoder to encode categorical data"""
-    name = 'Target Encoder'
+
+    name = "Target Encoder"
     hyperparameter_ranges = {}
 
-    def __init__(self,
-                 cols=None,
-                 smoothing=1.0,
-                 handle_unknown='value',
-                 handle_missing='value',
-                 random_seed=0,
-                 **kwargs):
+    def __init__(
+        self,
+        cols=None,
+        smoothing=1.0,
+        handle_unknown="value",
+        handle_missing="value",
+        random_seed=0,
+        **kwargs
+    ):
         """Initializes a transformer that encodes categorical features into target encodings.
 
         Arguments:
@@ -37,26 +40,41 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             handle_missing (string): Determines how to handle missing values encountered during `fit` or `transform`. Options are 'value', 'error', and 'return_nan'.
                 Defaults to 'value', which replaces with the target mean
             random_seed (int): Seed for the random number generator. Defaults to 0.
-            """
+        """
 
-        parameters = {"cols": cols,
-                      "smoothing": smoothing,
-                      "handle_unknown": handle_unknown,
-                      "handle_missing": handle_missing}
+        parameters = {
+            "cols": cols,
+            "smoothing": smoothing,
+            "handle_unknown": handle_unknown,
+            "handle_missing": handle_missing,
+        }
         parameters.update(kwargs)
 
-        unknown_and_missing_input_options = ['error', 'return_nan', 'value']
+        unknown_and_missing_input_options = ["error", "return_nan", "value"]
         if handle_unknown not in unknown_and_missing_input_options:
-            raise ValueError("Invalid input '{}' for handle_unknown".format(handle_unknown))
+            raise ValueError(
+                "Invalid input '{}' for handle_unknown".format(handle_unknown)
+            )
         if handle_missing not in unknown_and_missing_input_options:
-            raise ValueError("Invalid input '{}' for handle_missing".format(handle_missing))
+            raise ValueError(
+                "Invalid input '{}' for handle_missing".format(handle_missing)
+            )
         if smoothing <= 0:
-            raise ValueError("Smoothing value needs to be strictly larger than 0. {} provided".format(smoothing))
+            raise ValueError(
+                "Smoothing value needs to be strictly larger than 0. {} provided".format(
+                    smoothing
+                )
+            )
 
-        category_encode = import_or_raise('category_encoders', error_msg='category_encoders not installed. Please install using `pip install category_encoders`')
-        super().__init__(parameters=parameters,
-                         component_obj=category_encode.target_encoder.TargetEncoder(**parameters),
-                         random_seed=random_seed)
+        category_encode = import_or_raise(
+            "category_encoders",
+            error_msg="category_encoders not installed. Please install using `pip install category_encoders`",
+        )
+        super().__init__(
+            parameters=parameters,
+            component_obj=category_encode.target_encoder.TargetEncoder(**parameters),
+            random_seed=random_seed,
+        )
 
     def fit(self, X, y):
         return super().fit(X, y)
@@ -67,7 +85,9 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
             y = infer_feature_types(y)
         X_t = self._component_obj.transform(X, y)
         X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
-        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, X_t_df, ltypes_to_ignore=[Categorical])
+        return _retain_custom_types_and_initalize_woodwork(
+            X_ww.ww.logical_types, X_t_df, ltypes_to_ignore=[Categorical]
+        )
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)

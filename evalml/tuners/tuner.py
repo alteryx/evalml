@@ -21,19 +21,36 @@ class Tuner(ABC):
         self._search_space_names = []
         self._search_space_ranges = []
         if not isinstance(pipeline_hyperparameter_ranges, dict):
-            raise ValueError('pipeline_hyperparameter_ranges must be a dict but is of type {}'.format(type(pipeline_hyperparameter_ranges)))
+            raise ValueError(
+                "pipeline_hyperparameter_ranges must be a dict but is of type {}".format(
+                    type(pipeline_hyperparameter_ranges)
+                )
+            )
         self._component_names = list(pipeline_hyperparameter_ranges.keys())
         for component_name, component_ranges in pipeline_hyperparameter_ranges.items():
             if not isinstance(component_ranges, dict):
-                raise ValueError('pipeline_hyperparameter_ranges has invalid entry for {}: {}'.format(component_name, component_ranges))
+                raise ValueError(
+                    "pipeline_hyperparameter_ranges has invalid entry for {}: {}".format(
+                        component_name, component_ranges
+                    )
+                )
             for parameter_name, parameter_range in component_ranges.items():
                 if parameter_range is None:
-                    raise ValueError('pipeline_hyperparameter_ranges has invalid dimensions for ' +
-                                     '{} parameter {}: None.'.format(component_name, parameter_name))
-                if not isinstance(parameter_range, (Real, Integer, Categorical, list, tuple)):
+                    raise ValueError(
+                        "pipeline_hyperparameter_ranges has invalid dimensions for "
+                        + "{} parameter {}: None.".format(
+                            component_name, parameter_name
+                        )
+                    )
+                if not isinstance(
+                    parameter_range, (Real, Integer, Categorical, list, tuple)
+                ):
                     continue
-                flat_parameter_name = '{}: {}'.format(component_name, parameter_name)
-                self._parameter_names_map[flat_parameter_name] = (component_name, parameter_name)
+                flat_parameter_name = "{}: {}".format(component_name, parameter_name)
+                self._parameter_names_map[flat_parameter_name] = (
+                    component_name,
+                    parameter_name,
+                )
                 self._search_space_names.append(flat_parameter_name)
                 self._search_space_ranges.append(parameter_range)
 
@@ -41,17 +58,34 @@ class Tuner(ABC):
         """Convert from pipeline parameters to a flat list of values"""
         flat_parameter_values = []
         for flat_parameter_name in self._search_space_names:
-            component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
-            if component_name not in pipeline_parameters or parameter_name not in pipeline_parameters[component_name]:
-                raise TypeError('Pipeline parameters missing required field "{}" for component "{}"'.format(parameter_name, component_name))
-            flat_parameter_values.append(pipeline_parameters[component_name][parameter_name])
+            component_name, parameter_name = self._parameter_names_map[
+                flat_parameter_name
+            ]
+            if (
+                component_name not in pipeline_parameters
+                or parameter_name not in pipeline_parameters[component_name]
+            ):
+                raise TypeError(
+                    'Pipeline parameters missing required field "{}" for component "{}"'.format(
+                        parameter_name, component_name
+                    )
+                )
+            flat_parameter_values.append(
+                pipeline_parameters[component_name][parameter_name]
+            )
         return flat_parameter_values
 
     def _convert_to_pipeline_parameters(self, flat_parameters):
         """Convert from a flat list of values to a dict of pipeline parameters"""
-        pipeline_parameters = {component_name: dict() for component_name in self._component_names}
-        for flat_parameter_name, parameter_value in zip(self._search_space_names, flat_parameters):
-            component_name, parameter_name = self._parameter_names_map[flat_parameter_name]
+        pipeline_parameters = {
+            component_name: dict() for component_name in self._component_names
+        }
+        for flat_parameter_name, parameter_value in zip(
+            self._search_space_names, flat_parameters
+        ):
+            component_name, parameter_name = self._parameter_names_map[
+                flat_parameter_name
+            ]
             pipeline_parameters[component_name][parameter_name] = parameter_value
         return pipeline_parameters
 

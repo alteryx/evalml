@@ -23,7 +23,7 @@ from .estimators import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
-    ARIMARegressor
+    ARIMARegressor,
 )
 from .transformers import (
     Transformer,
@@ -51,9 +51,6 @@ from .transformers import (
     PolynomialDetrender,
     SMOTESampler,
     SMOTENCSampler,
-    SMOTENSampler
+    SMOTENSampler,
 )
-from .ensemble import (
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor
-)
+from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor

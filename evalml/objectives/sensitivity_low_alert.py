@@ -35,7 +35,9 @@ class SensitivityLowAlert(BinaryClassificationObjective):
 
         ypred_proba = self._standardize_input_type(ypred_proba)
         if len(ypred_proba.unique()) == 1:
-            logger.debug(f"All predicted probabilities have the same value: {ypred_proba.unique()}")
+            logger.debug(
+                f"All predicted probabilities have the same value: {ypred_proba.unique()}"
+            )
 
         prob_thresh = np.quantile(ypred_proba, 1 - self.alert_rate)
         if (prob_thresh == 0) or (prob_thresh == 1):

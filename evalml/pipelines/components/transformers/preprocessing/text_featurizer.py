@@ -5,13 +5,14 @@ import nlp_primitives
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
-    TextTransformer
+    TextTransformer,
 )
 from evalml.utils import infer_feature_types
 
 
 class TextFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns."""
+
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
@@ -21,20 +22,21 @@ class TextFeaturizer(TextTransformer):
         Arguments:
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._trans = [nlp_primitives.DiversityScore,
-                       nlp_primitives.MeanCharactersPerWord,
-                       nlp_primitives.PolarityScore]
+        self._trans = [
+            nlp_primitives.DiversityScore,
+            nlp_primitives.MeanCharactersPerWord,
+            nlp_primitives.PolarityScore,
+        ]
         self._features = None
         self._lsa = LSA(random_seed=random_seed)
         self._primitives_provenance = {}
-        super().__init__(random_seed=random_seed,
-                         **kwargs)
+        super().__init__(random_seed=random_seed, **kwargs)
 
     def _clean_text(self, X):
         """Remove all non-alphanum chars other than spaces, and make lowercase"""
 
         def normalize(text):
-            text = text.translate(str.maketrans('', '', string.punctuation))
+            text = text.translate(str.maketrans("", "", string.punctuation))
             return text.lower()
 
         for col_name in X.columns:
@@ -49,11 +51,18 @@ class TextFeaturizer(TextTransformer):
 
         # featuretools expects str-type column names
         X_text.rename(columns=str, inplace=True)
-        all_text_variable_types = {col_name: 'natural_language' for col_name in X_text.columns}
+        all_text_variable_types = {
+            col_name: "natural_language" for col_name in X_text.columns
+        }
 
         es = ft.EntitySet()
-        es.entity_from_dataframe(entity_id='X', dataframe=X_text, index='index', make_index=True,
-                                 variable_types=all_text_variable_types)
+        es.entity_from_dataframe(
+            entity_id="X",
+            dataframe=X_text,
+            index="index",
+            make_index=True,
+            variable_types=all_text_variable_types,
+        )
         return es
 
     def fit(self, X, y=None):
@@ -74,11 +83,13 @@ class TextFeaturizer(TextTransformer):
         self._lsa.fit(X)
 
         es = self._make_entity_set(X, self._text_columns)
-        self._features = ft.dfs(entityset=es,
-                                target_entity='X',
-                                trans_primitives=self._trans,
-                                max_depth=1,
-                                features_only=True)
+        self._features = ft.dfs(
+            entityset=es,
+            target_entity="X",
+            trans_primitives=self._trans,
+            max_depth=1,
+            features_only=True,
+        )
         return self
 
     @staticmethod
@@ -108,7 +119,9 @@ class TextFeaturizer(TextTransformer):
         if self._features is None or len(self._features) == 0:
             return X_ww
         es = self._make_entity_set(X_ww, self._text_columns)
-        X_nlp_primitives = ft.calculate_feature_matrix(features=self._features, entityset=es)
+        X_nlp_primitives = ft.calculate_feature_matrix(
+            features=self._features, entityset=es
+        )
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 

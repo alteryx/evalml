@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Added ''thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
+        * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Documentation Changes
     * Testing Changes
 

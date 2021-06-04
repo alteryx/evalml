@@ -3,6 +3,6 @@ from .utils import (
     split_data,
     number_of_features,
     target_distribution,
-    drop_nan_target_rows
+    drop_nan_target_rows,
 )
 from .data_splitters import TrainingValidationSplit, TimeSeriesSplit

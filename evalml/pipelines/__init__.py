@@ -32,7 +32,7 @@ from .components import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
-    ARIMARegressor
+    ARIMARegressor,
 )
 
 from .component_graph import ComponentGraph
@@ -44,6 +44,6 @@ from .regression_pipeline import RegressionPipeline
 from .time_series_classification_pipelines import (
     TimeSeriesClassificationPipeline,
     TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline
+    TimeSeriesMulticlassClassificationPipeline,
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline

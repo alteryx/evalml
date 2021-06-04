@@ -18,6 +18,7 @@ class CatBoostClassifier(Estimator):
 
     For more information, check out https://catboost.ai/
     """
+
     name = "CatBoost Classifier"
     hyperparameter_ranges = {
         "n_estimators": Integer(4, 100),
@@ -25,35 +26,53 @@ class CatBoostClassifier(Estimator):
         "max_depth": Integer(4, 10),
     }
     model_family = ModelFamily.CATBOOST
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
-                               ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]
+    supported_problem_types = [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]
 
-    def __init__(self, n_estimators=10, eta=0.03, max_depth=6, bootstrap_type=None, silent=True,
-                 allow_writing_files=False, random_seed=0, **kwargs):
-        parameters = {"n_estimators": n_estimators,
-                      "eta": eta,
-                      "max_depth": max_depth,
-                      'bootstrap_type': bootstrap_type,
-                      'silent': silent,
-                      'allow_writing_files': allow_writing_files}
+    def __init__(
+        self,
+        n_estimators=10,
+        eta=0.03,
+        max_depth=6,
+        bootstrap_type=None,
+        silent=True,
+        allow_writing_files=False,
+        random_seed=0,
+        **kwargs
+    ):
+        parameters = {
+            "n_estimators": n_estimators,
+            "eta": eta,
+            "max_depth": max_depth,
+            "bootstrap_type": bootstrap_type,
+            "silent": silent,
+            "allow_writing_files": allow_writing_files,
+        }
         parameters.update(kwargs)
 
-        cb_error_msg = "catboost is not installed. Please install using `pip install catboost.`"
+        cb_error_msg = (
+            "catboost is not installed. Please install using `pip install catboost.`"
+        )
         catboost = import_or_raise("catboost", error_msg=cb_error_msg)
         self._label_encoder = None
         # catboost will choose an intelligent default for bootstrap_type, so only set if provided
         cb_parameters = copy.copy(parameters)
         if bootstrap_type is None:
-            cb_parameters.pop('bootstrap_type')
-        cb_classifier = catboost.CatBoostClassifier(**cb_parameters,
-                                                    random_seed=random_seed)
-        super().__init__(parameters=parameters,
-                         component_obj=cb_classifier,
-                         random_seed=random_seed)
+            cb_parameters.pop("bootstrap_type")
+        cb_classifier = catboost.CatBoostClassifier(
+            **cb_parameters, random_seed=random_seed
+        )
+        super().__init__(
+            parameters=parameters, component_obj=cb_classifier, random_seed=random_seed
+        )
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select('category').columns)
+        cat_cols = list(X.ww.select("category").columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -69,7 +88,9 @@ class CatBoostClassifier(Estimator):
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()
         if self._label_encoder:
-            predictions = self._label_encoder.inverse_transform(predictions.astype(np.int64))
+            predictions = self._label_encoder.inverse_transform(
+                predictions.astype(np.int64)
+            )
         return infer_feature_types(predictions)
 
     @property

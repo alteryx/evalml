@@ -9,17 +9,29 @@ from evalml.problem_types import ProblemTypes
 
 class StackedEnsembleClassifier(StackedEnsembleBase):
     """Stacked Ensemble Classifier."""
+
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
-    supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_BINARY,
-                               ProblemTypes.TIME_SERIES_MULTICLASS]
+    supported_problem_types = [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]
     hyperparameter_ranges = {}
     _stacking_estimator_class = StackingClassifier
     _default_final_estimator = LogisticRegressionClassifier
     _default_cv = StratifiedKFold
 
-    def __init__(self, input_pipelines=None, final_estimator=None,
-                 cv=None, n_jobs=-1, random_seed=0, **kwargs):
+    def __init__(
+        self,
+        input_pipelines=None,
+        final_estimator=None,
+        cv=None,
+        n_jobs=-1,
+        random_seed=0,
+        **kwargs
+    ):
         """Stacked ensemble classifier.
 
         Arguments:
@@ -40,5 +52,11 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
                 - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        super().__init__(input_pipelines=input_pipelines, final_estimator=final_estimator,
-                         cv=cv, n_jobs=n_jobs, random_seed=random_seed, **kwargs)
+        super().__init__(
+            input_pipelines=input_pipelines,
+            final_estimator=final_estimator,
+            cv=cv,
+            n_jobs=n_jobs,
+            random_seed=random_seed,
+            **kwargs
+        )
