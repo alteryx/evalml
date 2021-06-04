@@ -4339,7 +4339,6 @@ def test_automl_drop_index_columns(mock_train, mock_binary_score, X_y_binary):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_batches=2)
     automl.search()
     for pipeline in automl.allowed_pipelines:
-        print(pipeline.parameters)
         assert pipeline.get_component("Drop Columns Transformer")
         assert "Drop Columns Transformer" in pipeline.parameters
         assert pipeline.parameters["Drop Columns Transformer"] == {

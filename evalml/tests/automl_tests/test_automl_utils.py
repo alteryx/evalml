@@ -293,6 +293,7 @@ def test_get_hyperparameter_ranges():
         component_graph=["Imputer", "Random Forest Classifier"]
     )
     custom_hyperparameters_ = {
+        "One Hot Encoder": {"top_n": 3},
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
         "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
     }
