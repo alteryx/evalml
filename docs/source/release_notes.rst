@@ -3,8 +3,10 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
+        * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
     * Fixes
     * Changes
+        * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Documentation Changes
     * Testing Changes
@@ -21,7 +23,6 @@ Release Notes
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
-        * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes :pr:`2332`
         * Moved ``default_parameters`` to ``ComponentGraph`` from ``PipelineBase`` :pr:`2307`
     * Documentation Changes
         * Updated the release procedure documentation :pr:`2230`
