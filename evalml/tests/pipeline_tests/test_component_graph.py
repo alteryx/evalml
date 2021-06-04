@@ -9,7 +9,7 @@ from pandas.testing import (
     assert_index_equal,
     assert_series_equal,
 )
-from woodwork.logical_types import Integer, Double
+from woodwork.logical_types import Double, Integer
 
 from evalml.exceptions import MissingComponentError
 from evalml.pipelines import ComponentGraph
