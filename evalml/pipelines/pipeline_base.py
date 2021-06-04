@@ -69,32 +69,31 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            self._component_graph = ComponentGraph().from_list(
+            self.component_graph = ComponentGraph().from_list(
                 component_graph, random_seed=self.random_seed
             )
         elif isinstance(component_graph, dict):
-            self._component_graph = ComponentGraph(
+            self.component_graph = ComponentGraph(
                 component_dict=component_graph, random_seed=self.random_seed
             )
         elif isinstance(component_graph, ComponentGraph):
-            self._component_graph = ComponentGraph(
+            self.component_graph = ComponentGraph(
                 component_dict=component_graph.component_dict,
                 random_seed=self.random_seed,
             )
-        self._component_graph.instantiate(parameters)
-        self.component_graph = self._component_graph
+        self.component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
         self.input_target_name = None
 
         self.estimator = None
-        if len(self._component_graph.compute_order) > 0:
-            final_component = self._component_graph.get_last_component()
+        if len(self.component_graph.compute_order) > 0:
+            final_component = self.component_graph.get_last_component()
             self.estimator = (
                 final_component if isinstance(final_component, Estimator) else None
             )
         self._estimator_name = (
-            self._component_graph.compute_order[-1]
+            self.component_graph.compute_order[-1]
             if self.estimator is not None
             else None
         )
@@ -174,7 +173,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def __getitem__(self, index):
         if isinstance(index, slice):
             raise NotImplementedError("Slicing pipelines is currently not supported.")
-        return self._component_graph[index]
+        return self.component_graph[index]
 
     def __setitem__(self, index, value):
         raise NotImplementedError("Setting pipeline components is not supported.")
@@ -189,7 +188,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             Component: Component to return
 
         """
-        return self._component_graph.get_component(name)
+        return self.component_graph.get_component(name)
 
     def describe(self, return_dict=False):
         """Outputs pipeline details including component parameters
@@ -245,19 +244,19 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame: New transformed features.
         """
-        X_t = self._component_graph.compute_final_component_features(X, y=y)
+        X_t = self.component_graph.compute_final_component_features(X, y=y)
         return X_t
 
     def _compute_features_during_fit(self, X, y):
         self.input_target_name = y.name
-        X_t = self._component_graph.fit_features(X, y)
-        self.input_feature_names = self._component_graph.input_feature_names
+        X_t = self.component_graph.fit_features(X, y)
+        self.input_feature_names = self.component_graph.input_feature_names
         return X_t
 
     def _fit(self, X, y):
         self.input_target_name = y.name
-        self._component_graph.fit(X, y)
-        self.input_feature_names = self._component_graph.input_feature_names
+        self.component_graph.fit(X, y)
+        self.input_feature_names = self.component_graph.input_feature_names
 
     @abstractmethod
     def fit(self, X, y):
@@ -283,7 +282,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pd.Series: Predicted values.
         """
         X = infer_feature_types(X)
-        predictions = self._component_graph.predict(X)
+        predictions = self.component_graph.predict(X)
         predictions.name = self.input_target_name
         return infer_feature_types(predictions)
 
@@ -352,7 +351,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @property
     def model_family(self):
         """Returns model family of this pipeline template"""
-        component_graph = copy.copy(self._component_graph)
+        component_graph = copy.copy(self.component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
         else:
@@ -387,7 +386,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         components = [
             (component_name, component_class)
-            for component_name, component_class in self._component_graph.component_instances.items()
+            for component_name, component_class in self.component_graph.component_instances.items()
         ]
         component_parameters = {
             c_name: copy.copy(c.parameters) for c_name, c in components if c.parameters
@@ -459,7 +458,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     ).format(graph_format, supported_filetypes)
                 )
 
-        graph = self._component_graph.graph(path_and_name, graph_format)
+        graph = self.component_graph.graph(path_and_name, graph_format)
 
         if filepath:
             graph.render(path_and_name, cleanup=True)
@@ -673,28 +672,28 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self
 
     def __next__(self):
-        return next(self._component_graph)
+        return next(self.component_graph)
 
     def _get_feature_provenance(self):
-        return self._component_graph._feature_provenance
+        return self.component_graph._feature_provenance
 
     @property
     def _supports_fast_permutation_importance(self):
         has_more_than_one_estimator = (
-            sum(isinstance(c, Estimator) for c in self._component_graph) > 1
+            sum(isinstance(c, Estimator) for c in self.component_graph) > 1
         )
         _all_components = set(all_components())
         has_custom_components = any(
-            c.__class__ not in _all_components for c in self._component_graph
+            c.__class__ not in _all_components for c in self.component_graph
         )
         has_dim_reduction = any(
             isinstance(c, (PCA, LinearDiscriminantAnalysis))
-            for c in self._component_graph
+            for c in self.component_graph
         )
-        has_dfs = any(isinstance(c, DFSTransformer) for c in self._component_graph)
+        has_dfs = any(isinstance(c, DFSTransformer) for c in self.component_graph)
         has_stacked_ensembler = any(
             isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor))
-            for c in self._component_graph
+            for c in self.component_graph
         )
         return not any(
             [
