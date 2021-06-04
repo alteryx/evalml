@@ -9,7 +9,11 @@ class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines."""
 
     def __init__(
-        self, component_graph, parameters=None, custom_name=None, random_seed=0
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        random_seed=0,
     ):
         self._encoder = LabelEncoder()
         super().__init__(

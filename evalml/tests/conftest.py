@@ -10,7 +10,10 @@ from skopt.space import Integer, Real
 
 from evalml.demos import load_fraud
 from evalml.model_family import ModelFamily
-from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
+from evalml.objectives.utils import (
+    get_core_objectives,
+    get_non_core_objectives,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,

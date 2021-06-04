@@ -6,7 +6,10 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
-from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
+from evalml.preprocessing.data_splitters import (
+    TimeSeriesSplit,
+    TrainingValidationSplit,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,

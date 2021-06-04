@@ -1,12 +1,18 @@
 import pandas as pd
 
-from .binary_classification_pipeline_mixin import BinaryClassificationPipelineMixin
+from .binary_classification_pipeline_mixin import (
+    BinaryClassificationPipelineMixin,
+)
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.problem_types import ProblemTypes
-from evalml.utils import drop_rows_with_nans, infer_feature_types, pad_with_nans
+from evalml.utils import (
+    drop_rows_with_nans,
+    infer_feature_types,
+    pad_with_nans,
+)
 
 
 class TimeSeriesClassificationPipeline(
@@ -15,7 +21,11 @@ class TimeSeriesClassificationPipeline(
     """Pipeline base class for time series classification problems."""
 
     def __init__(
-        self, component_graph, parameters=None, custom_name=None, random_seed=0
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        random_seed=0,
     ):
         """Machine learning pipeline for time series classification problems made out of transformers and a classifier.
 

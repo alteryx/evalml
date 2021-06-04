@@ -3,4 +3,4 @@
 -r docs-requirements.txt
 flake8==3.7.0
 black==21.5b1
-isort==4.3.4
+isort==5.0.0

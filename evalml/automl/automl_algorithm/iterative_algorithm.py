@@ -168,11 +168,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def _combine_parameters(self, pipeline, proposed_parameters):
         """Helper function for logic to transform proposed parameters and frozen parameters."""
-        _returning = {
+        return {
             **self._transform_parameters(pipeline, proposed_parameters),
             **self._frozen_pipeline_parameters,
         }
-        return _returning
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline

@@ -1,6 +1,8 @@
 import pandas as pd
 
-from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
+from evalml.pipelines.components.transformers.samplers.base_sampler import (
+    BaseSampler,
+)
 from evalml.preprocessing.data_splitters.balanced_classification_sampler import (
     BalancedClassificationSampler,
 )

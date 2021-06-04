@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import BaseCrossValidator
 
-from .pipeline_search_plots import PipelineSearchPlots
+from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
@@ -53,7 +53,12 @@ from evalml.problem_types import (
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
-from evalml.utils.logger import get_logger, log_subtitle, log_title, time_elapsed
+from evalml.utils.logger import (
+    get_logger,
+    log_subtitle,
+    log_title,
+    time_elapsed,
+)
 
 logger = get_logger(__file__)
 
@@ -375,10 +380,7 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
-        self.plot = None
-        try:
-            self.plot = PipelineSearchPlots(self)
-        except ImportError:
+        if not self.plot:
             logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
@@ -1095,8 +1097,9 @@ class AutoMLSearch:
             except PipelineNotFoundError:
                 pass
 
-        if self.search_iteration_plot:
-            self.search_iteration_plot.update()
+        # True when running in a jupyter notebook, else the plot is an instance of plotly.Figure
+        if isinstance(self.search_iteration_plot, SearchIterationPlot):
+            self.search_iteration_plot.update(self.results, self.objective)
 
         if self.add_result_callback:
             self.add_result_callback(
@@ -1226,6 +1229,7 @@ class AutoMLSearch:
         for parameter in pipeline_rows["parameters"]:
             if pipeline.parameters == parameter:
                 return
+
         computation = self._engine.submit_evaluation_job(
             self.automl_config, pipeline, self.X_train, self.y_train
         )
@@ -1412,3 +1416,11 @@ class AutoMLSearch:
             else:
                 computations.append(computation)
         return scores
+
+    @property
+    def plot(self):
+        # Return an instance of the plot with the latest scores
+        try:
+            return PipelineSearchPlots(self.results, self.objective)
+        except ImportError:
+            return None

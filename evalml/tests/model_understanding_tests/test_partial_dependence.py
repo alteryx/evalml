@@ -5,7 +5,10 @@ import woodwork as ww
 
 from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
-from evalml.model_understanding import graph_partial_dependence, partial_dependence
+from evalml.model_understanding import (
+    graph_partial_dependence,
+    partial_dependence,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ClassificationPipeline,

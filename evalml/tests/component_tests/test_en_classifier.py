@@ -3,7 +3,9 @@ import pytest
 from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components.estimators.classifiers import ElasticNetClassifier
+from evalml.pipelines.components.estimators.classifiers import (
+    ElasticNetClassifier,
+)
 from evalml.problem_types import ProblemTypes
 
 

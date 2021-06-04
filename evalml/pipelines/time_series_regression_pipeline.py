@@ -3,7 +3,11 @@ import pandas as pd
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.problem_types import ProblemTypes
-from evalml.utils import drop_rows_with_nans, infer_feature_types, pad_with_nans
+from evalml.utils import (
+    drop_rows_with_nans,
+    infer_feature_types,
+    pad_with_nans,
+)
 
 
 class TimeSeriesRegressionPipeline(
@@ -14,7 +18,11 @@ class TimeSeriesRegressionPipeline(
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
     def __init__(
-        self, component_graph, parameters=None, custom_name=None, random_seed=0
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        random_seed=0,
     ):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
 

@@ -8,7 +8,10 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import EnsembleMissingPipelinesError, MissingComponentError
+from evalml.exceptions import (
+    EnsembleMissingPipelinesError,
+    MissingComponentError,
+)
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)

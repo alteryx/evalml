@@ -43,7 +43,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     problem_type = None
 
     def __init__(
-        self, component_graph, parameters=None, custom_name=None, random_seed=0
+        self,
+        component_graph,
+        parameters=None,
+        custom_name=None,
+        random_seed=0,
     ):
         """Machine learning pipeline made out of transformers and a estimator.
 
@@ -356,20 +360,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return component_parameters
 
     @property
-    def default_parameters(self):
-        """The default parameter dictionary for this pipeline.
-
-        Returns:
-            dict: Dictionary of all component default parameters.
-        """
-        defaults = {}
-        for c in self.component_graph:
-            component = handle_component_class(c)
-            if component.default_parameters:
-                defaults[component.name] = component.default_parameters
-        return defaults
-
-    @property
     def feature_importance(self):
         """Importance associated with each feature. Features dropped by the feature selection are excluded.
 
@@ -593,7 +583,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         additional_args_str = ", ".join(
             [
                 arg
-                for arg in [parameters_str, custom_name_repr, random_seed_str]
+                for arg in [
+                    parameters_str,
+                    custom_name_repr,
+                    random_seed_str,
+                ]
                 if arg is not None
             ]
         )

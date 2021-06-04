@@ -7,7 +7,10 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning,
 )
-from evalml.utils.woodwork_utils import infer_feature_types, numeric_and_boolean_ww
+from evalml.utils.woodwork_utils import (
+    infer_feature_types,
+    numeric_and_boolean_ww,
+)
 
 
 class TargetLeakageDataCheck(DataCheck):

@@ -17,7 +17,12 @@ from evalml.exceptions import (
     PipelineScoreError,
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import CostBenefitMatrix, FraudCost, Precision, get_objective
+from evalml.objectives import (
+    CostBenefitMatrix,
+    FraudCost,
+    Precision,
+    get_objective,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -39,7 +44,12 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
 )
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_time_series,
+)
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -352,7 +362,9 @@ def test_nonlinear_model_family():
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     class DummyTransformerEndPipeline(BinaryClassificationPipeline):
@@ -366,7 +378,9 @@ def test_nonlinear_model_family():
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed
+                self.component_graph,
+                parameters=parameters,
+                random_seed=random_seed,
             )
 
     nlbp = DummyNonlinearPipeline({})
@@ -1226,7 +1240,9 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         },
     }
     assert (
-        logistic_regression_binary_pipeline_class({}).default_parameters
+        logistic_regression_binary_pipeline_class(
+            {}
+        )._component_graph.default_parameters
         == expected_defaults
     )
 

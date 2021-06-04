@@ -3,7 +3,10 @@ import string
 import featuretools as ft
 import nlp_primitives
 
-from evalml.pipelines.components.transformers.preprocessing import LSA, TextTransformer
+from evalml.pipelines.components.transformers.preprocessing import (
+    LSA,
+    TextTransformer,
+)
 from evalml.utils import infer_feature_types
 
 

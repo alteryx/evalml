@@ -31,7 +31,7 @@ def test_search_iteration_plot_class():
             self.rankings = pd.DataFrame({"mean_cv_score": [0.75, 0.60, 0.50]})
 
     mock_data = MockResults()
-    plot = SearchIterationPlot(mock_data)
+    plot = SearchIterationPlot(mock_data.results, mock_data.objective)
 
     # Check best score trace
     plot_data = plot.best_score_by_iter_fig.data[0]
@@ -63,11 +63,11 @@ def test_jupyter(import_check, jupyter_check):
     )
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        SearchIterationPlot(mock_data)
+        SearchIterationPlot(mock_data.results, mock_data.objective)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
 
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:
-        SearchIterationPlot(mock_data)
+        SearchIterationPlot(mock_data.results, mock_data.objective)
         assert len(graph_valid) == 0

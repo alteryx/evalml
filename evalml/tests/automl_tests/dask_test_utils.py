@@ -159,7 +159,12 @@ class TestSchemaCheckPipeline(BinaryClassificationPipeline):
     ):
         self.X_schema_to_check = X_schema_to_check
         self.y_schema_to_check = y_schema_to_check
-        super().__init__(component_graph, parameters, custom_name, random_seed)
+        super().__init__(
+            component_graph,
+            parameters,
+            custom_name,
+            random_seed,
+        )
 
     def clone(self):
         return self.__class__(

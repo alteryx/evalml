@@ -3,7 +3,11 @@ import string
 import numpy as np
 import pandas as pd
 
-from evalml.data_checks import DataCheckMessageCode, DataCheckWarning, OutliersDataCheck
+from evalml.data_checks import (
+    DataCheckMessageCode,
+    DataCheckWarning,
+    OutliersDataCheck,
+)
 
 outliers_data_check_name = OutliersDataCheck.name
 

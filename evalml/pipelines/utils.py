@@ -1,7 +1,9 @@
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .multiclass_classification_pipeline import MulticlassClassificationPipeline
+from .multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
 from .regression_pipeline import RegressionPipeline
 from .time_series_classification_pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -143,7 +145,14 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
-def make_pipeline(X, y, estimator, problem_type, parameters=None, sampler_name=None):
+def make_pipeline(
+    X,
+    y,
+    estimator,
+    problem_type,
+    parameters=None,
+    sampler_name=None,
+):
     """Given input data, target data, an estimator class and the problem type,
          generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
          The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
@@ -178,7 +187,10 @@ def make_pipeline(X, y, estimator, problem_type, parameters=None, sampler_name=N
     complete_component_graph = preprocessing_components + [estimator]
 
     base_class = _get_pipeline_base_class(problem_type)
-    return base_class(complete_component_graph, parameters=parameters)
+    return base_class(
+        complete_component_graph,
+        parameters=parameters,
+    )
 
 
 def generate_pipeline_code(element):
