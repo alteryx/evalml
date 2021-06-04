@@ -172,6 +172,6 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
     for component_name, component_class in linearized_component_graph:
         component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
         if custom_hyperparameters and component_name in custom_hyperparameters:
-            component_hyperparameters.update(custom_hyperparameters.get(component_name, {}))
+            component_hyperparameters.update(custom_hyperparameters[component_name])
         hyperparameter_ranges[component_name] = component_hyperparameters
     return hyperparameter_ranges
