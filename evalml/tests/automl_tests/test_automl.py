@@ -2756,7 +2756,8 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
         allowed_pipelines=pipeline_,
         pipeline_parameters=automl_parameters_,
         custom_hyperparameters=custom_hyperparameters_,
-        max_batches=4,
+        allowed_model_families=["random_forest"],
+        max_batches=2,
     )
     automl.search()
 

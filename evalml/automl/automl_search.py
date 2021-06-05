@@ -423,18 +423,13 @@ class AutoMLSearch:
             random_seed=self.random_seed,
         )
         self.data_splitter = self.data_splitter or default_data_splitter
-        self.pipeline_parameters = (
-            pipeline_parameters if pipeline_parameters is not None else {}
-        )
-        self.custom_hyperparameters = (
-            custom_hyperparameters if custom_hyperparameters is not None else {}
-        )
+        self.pipeline_parameters = pipeline_parameters or {}
+        self.custom_hyperparameters = custom_hyperparameters or {}
         self.search_iteration_plot = None
         self._interrupted = False
         self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
-        custom_hyperparameters = copy.copy(self.custom_hyperparameters)
 
         if self.problem_configuration:
             parameters.update({"pipeline": self.problem_configuration})
@@ -595,7 +590,7 @@ class AutoMLSearch:
             ensembling=run_ensembling,
             text_in_ensembling=text_in_ensembling,
             pipeline_params=parameters,
-            custom_hyperparameters=custom_hyperparameters,
+            custom_hyperparameters=self.custom_hyperparameters,
             _frozen_pipeline_parameters=self._frozen_pipeline_parameters,
         )
 
