@@ -235,6 +235,7 @@ class AutoMLSearch:
 
             pipeline_parameters (dict): A dict of the parameters used to initialize a pipeline with.
                 Keys should consist of the component names and values should specify parameter values
+
                 e.g. pipeline_parameters = {
                     'Imputer' : {
                         'numeric_impute_strategy': 'most_frequent'
@@ -243,6 +244,7 @@ class AutoMLSearch:
 
             custom_hyperparameters (dict): A dict of the hyperparameter ranges used to iterate over during search.
                 Keys should consist of the component names and values should specify a singular value or skopt.Space.
+
                 e.g. custom_hyperparameters = {
                     'Imputer' : {
                         'numeric_impute_strategy': Categorical(['most_frequent', 'median'])
