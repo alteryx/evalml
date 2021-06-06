@@ -236,16 +236,12 @@ class AutoMLSearch:
             pipeline_parameters (dict): A dict of the parameters used to initialize a pipeline with.
                 Keys should consist of the component names and values should specify parameter values
 
-                e.g. pipeline_parameters = {
-                    'Imputer' : { 'numeric_impute_strategy': 'most_frequent' }
-                }
+                e.g. pipeline_parameters = { 'Imputer' : { 'numeric_impute_strategy': 'most_frequent' } }
 
             custom_hyperparameters (dict): A dict of the hyperparameter ranges used to iterate over during search.
                 Keys should consist of the component names and values should specify a singular value or skopt.Space.
 
-                e.g. custom_hyperparameters = {
-                    'Imputer' : { 'numeric_impute_strategy': Categorical(['most_frequent', 'median']) }
-                }
+                e.g. custom_hyperparameters = { 'Imputer' : { 'numeric_impute_strategy': Categorical(['most_frequent', 'median']) } }
 
             sampler_method (str): The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
                 Either 'auto', which will use our preferred sampler for the data, 'Undersampler', 'Oversampler', or None. Defaults to 'auto'.
