@@ -4726,3 +4726,31 @@ def test_automl_thresholding_objective(mock_optimize, objective, errors, X_y_bin
         automl.search()
         mock_optimize.assert_called()
         assert automl.best_pipeline.threshold == 0.65
+
+
+@pytest.mark.parametrize("threshold", [False, True])
+@patch('evalml.objectives.standard_metrics.F1.optimize_threshold', return_value=0.42)
+def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=threshold,
+        max_iterations=2,
+    )
+    automl.search()
+    if threshold:
+        mock_objective.assert_called()
+        assert automl.best_pipeline.threshold == 0.42
+    else:
+        mock_objective.assert_not_called()
+        assert automl.best_pipeline.threshold is None
+    pipelines_to_train = [automl.get_pipeline(0), automl.get_pipeline(1)]
+    pipes = automl.train_pipelines(pipelines_to_train)
+    if threshold:
+        mock_objective.assert_called()
+        assert all([p.threshold == 0.42 for p in pipes.values()])
+    else:
+        mock_objective.assert_not_called()
+        assert all([p.threshold is None for p in pipes.values()])

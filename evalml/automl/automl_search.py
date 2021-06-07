@@ -1359,7 +1359,7 @@ class AutoMLSearch:
         for pipeline in pipelines:
             computations.append(
                 self._engine.submit_training_job(
-                    self.automl_config, pipeline, X_train, y_train
+                    self.threshold_automl_config, pipeline, X_train, y_train
                 )
             )
 
