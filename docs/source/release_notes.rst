@@ -4,12 +4,12 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
     * Fixes
-        * Pass token to authorize uploading of codecov reports :pr:
     * Changes
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Documentation Changes
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`
+        * Pass token to authorize uploading of codecov reports :pr:`2344`
 
 .. warning::
 
