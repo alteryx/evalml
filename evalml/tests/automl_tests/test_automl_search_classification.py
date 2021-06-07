@@ -482,7 +482,6 @@ def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
         problem_type="binary",
         objective="AUC",
         max_iterations=2,
-        optimize_thresholds=False,
         n_jobs=1,
     )
     automl.search()

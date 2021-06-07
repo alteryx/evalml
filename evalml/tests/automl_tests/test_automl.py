@@ -4703,29 +4703,32 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     "evalml.objectives.binary_classification_objective.BinaryClassificationObjective.optimize_threshold",
     return_value=0.65,
 )
-def test_automl_thresholding_objective(mock_optimize, objective, errors, X_y_binary):
+def test_automl_alternate_thresholding_objective(
+    mock_optimize, objective, errors, X_y_binary
+):
     X, y = X_y_binary
     if errors:
         with pytest.raises(
-            ValueError, match="Thresholding objective must be thresholdable"
+            ValueError,
+            match="Alternate thresholding objective must be a tuneable objective",
         ):
             AutoMLSearch(
                 X_train=X,
                 y_train=y,
                 problem_type="binary",
-                thresholding_objective=objective,
+                alternate_thresholding_objective=objective,
             )
-    else:
-        automl = AutoMLSearch(
-            X_train=X,
-            y_train=y,
-            problem_type="binary",
-            thresholding_objective=objective,
-            max_iterations=2,
-        )
-        automl.search()
-        mock_optimize.assert_called()
-        assert automl.best_pipeline.threshold == 0.65
+        return
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        alternate_thresholding_objective=objective,
+        max_iterations=1,
+    )
+    automl.search()
+    mock_optimize.assert_called()
+    assert automl.best_pipeline.threshold == 0.65
 
 
 @pytest.mark.parametrize("threshold", [False, True])
@@ -4737,7 +4740,7 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
         y_train=y,
         problem_type="binary",
         optimize_thresholds=threshold,
-        max_iterations=2,
+        max_iterations=1,
     )
     automl.search()
     if threshold:
@@ -4746,7 +4749,7 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
     else:
         mock_objective.assert_not_called()
         assert automl.best_pipeline.threshold is None
-    pipelines_to_train = [automl.get_pipeline(0), automl.get_pipeline(1)]
+    pipelines_to_train = [automl.get_pipeline(0)]
     pipes = automl.train_pipelines(pipelines_to_train)
     if threshold:
         mock_objective.assert_called()

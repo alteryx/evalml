@@ -93,7 +93,13 @@ class EngineBase(ABC):
 
 
 def train_pipeline(
-    pipeline, X, y, optimize_thresholds, objective, X_schema=None, y_schema=None
+    pipeline,
+    X,
+    y,
+    optimize_thresholds,
+    threshold_tuning_objective,
+    X_schema=None,
+    y_schema=None,
 ):
     """Train a pipeline and tune the threshold if necessary.
 
@@ -102,7 +108,7 @@ def train_pipeline(
         X (pd.DataFrame): Features to train on.
         y (pd.Series): Target to train on.
         optimize_thresholds (bool): Whether to tune the threshold (if pipeline supports it).
-        objective (ObjectiveBase): Objective used in threshold tuning.
+        threshold_tuning_objective (ObjectiveBase): Objective used in threshold tuning.
         X_schema (ww.TableSchema): Woodwork schema.
         y_schema (ww.ColumnSchema): Woodwork schema.
 
@@ -115,7 +121,9 @@ def train_pipeline(
         X.ww.init(schema=X_schema)
     if y_schema:
         y.ww.init(schema=y_schema)
-    if optimize_thresholds and pipeline.can_tune_threshold_with_objective(objective):
+    if optimize_thresholds and pipeline.can_tune_threshold_with_objective(
+        threshold_tuning_objective
+    ):
         X, X_threshold_tuning, y, y_threshold_tuning = split_data(
             X, y, pipeline.problem_type, test_size=0.2, random_seed=pipeline.random_seed
         )
@@ -123,7 +131,7 @@ def train_pipeline(
     cv_pipeline.fit(X, y)
     tune_binary_threshold(
         cv_pipeline,
-        objective,
+        threshold_tuning_objective,
         cv_pipeline.problem_type,
         X_threshold_tuning,
         y_threshold_tuning,
@@ -149,14 +157,14 @@ def train_and_score_pipeline(
     start = time.time()
     cv_data = []
     logger.info("\tStarting cross validation")
-    objective_to_train = automl_config.objective
+    threshold_tuning_objective = automl_config.objective
     if (
         is_binary(automl_config.problem_type)
         and automl_config.optimize_thresholds
         and automl_config.objective.score_needs_proba
     ):
-        # use the thresholding_objective
-        objective_to_train = automl_config.thresholding_objective
+        # use the alternate_thresholding_objective
+        threshold_tuning_objective = automl_config.alternate_thresholding_objective
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
         y_mapping = {
@@ -206,12 +214,14 @@ def train_and_score_pipeline(
                 X_train,
                 y_train,
                 automl_config.optimize_thresholds,
-                objective_to_train,
+                threshold_tuning_objective,
             )
             logger.debug(f"\t\t\tFold {i}: finished training")
             if (
                 automl_config.optimize_thresholds
-                and pipeline.can_tune_threshold_with_objective(objective_to_train)
+                and pipeline.can_tune_threshold_with_objective(
+                    threshold_tuning_objective
+                )
             ):
                 logger.debug(
                     f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"

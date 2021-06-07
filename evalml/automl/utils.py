@@ -147,7 +147,7 @@ AutoMLConfig = namedtuple(
         "problem_type",
         "objective",
         "additional_objectives",
-        "thresholding_objective",
+        "alternate_thresholding_objective",
         "optimize_thresholds",
         "error_callback",
         "random_seed",
