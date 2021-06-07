@@ -22,7 +22,6 @@ class TimeSeriesRegressionPipeline(
         component_graph,
         parameters=None,
         custom_name=None,
-        custom_hyperparameters=None,
         random_seed=0,
     ):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
@@ -52,7 +51,6 @@ class TimeSeriesRegressionPipeline(
             component_graph,
             custom_name=custom_name,
             parameters=parameters,
-            custom_hyperparameters=custom_hyperparameters,
             random_seed=random_seed,
         )
 
@@ -101,6 +99,9 @@ class TimeSeriesRegressionPipeline(
         if self.estimator.predict_uses_y:
             y_arg = y
         predictions = self.estimator.predict(features_no_nan, y_arg)
+
+        predictions.index = y.index
+        predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(
             predictions, max(0, features.shape[0] - predictions.shape[0])

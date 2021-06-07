@@ -3,17 +3,21 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
+        * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
+    * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
     * Documentation Changes
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`
+        * Pass token to authorize uploading of codecov reports :pr:`2344`
 
 .. warning::
 
     **Breaking Changes**
+        * `pipeline_parameters` will no longer accept `skopt.space` variables since hyperparameter ranges will now be specified through `custom_hyperparameters` :pr:`2317`
 
 
 **v0.25.0 Jun. 01, 2021**
@@ -47,6 +51,7 @@ Release Notes
     * Changes
         * Updated ``start_iteration_callback`` to accept a pipeline instance instead of a pipeline class and no longer accept pipeline parameters as a parameter :pr:`2290`
         * Refactored ``calculate_permutation_importance`` method and add per-column permutation importance method :pr:`2302`
+        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
     * Documentation Changes
         * Minor changes to the release procedure :pr:`2230`
     * Testing Changes
@@ -70,7 +75,6 @@ Release Notes
         * Set minimum required version for for pyzmq, colorama, and docutils :pr:`2254`
         * Changed BaseSampler to return None instead of y :pr:`2272`
     * Changes
-        * Updated logging information in ``AutoMLSearch.__init__`` to clarify pipeline generation :pr:`2263`
         * Removed ensemble split and indices in ``AutoMLSearch`` :pr:`2260`
         * Updated pipeline ``repr()`` and ``generate_pipeline_code`` to return pipeline instances without generating custom pipeline class :pr:`2227`
     * Documentation Changes
