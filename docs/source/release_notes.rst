@@ -45,6 +45,7 @@ Release Notes
 
 **v0.24.2 May. 24, 2021**
     * Enhancements
+        * Adds force plots for prediction explanations :pr:`2157`
         * Added oversamplers to AutoMLSearch :pr:`2213` :pr:`2286`
         * Added dictionary input functionality for ``Undersampler`` component :pr:`2271`
         * Changed the default parameter values for ``Elastic Net Classifier`` and ``Elastic Net Regressor`` :pr:`2269`
