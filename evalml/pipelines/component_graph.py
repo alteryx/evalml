@@ -5,7 +5,9 @@ from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -441,6 +443,29 @@ class ComponentGraph:
         if len(component_info) > 1:
             return component_info[1:]
         return []
+
+    def describe(self, return_dict=False):
+        """Outputs component graph details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
+
+        Returns:
+            dict: Dictionary of all component parameters if return_dict is True, else None
+        """
+        components = {}
+        for number, component in enumerate(self.component_instances.values(), 1):
+            component_string = str(number) + ". " + component.name
+            logger.info(component_string)
+            components.update(
+                {
+                    component.name: component.describe(
+                        print_name=False, return_dict=return_dict
+                    )
+                }
+            )
+        if return_dict:
+            return components
 
     def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph

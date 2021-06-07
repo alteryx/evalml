@@ -1032,10 +1032,8 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     automl.add_to_rankings(test_pipeline)
     assert automl.best_pipeline.name == test_pipeline.name
     assert automl.best_pipeline.parameters == test_pipeline.parameters
-    assert (
-        automl.best_pipeline.component_graph.component_dict
-        == test_pipeline.component_graph.component_dict
-    )
+    assert automl.best_pipeline.component_graph == test_pipeline.component_graph
+
     assert len(automl.rankings) == 2
     assert len(automl.full_rankings) == 2
     assert 0.1234 in automl.rankings["mean_cv_score"].values
@@ -1047,10 +1045,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
     automl.add_to_rankings(test_pipeline_2)
     assert automl.best_pipeline.name == test_pipeline.name
     assert automl.best_pipeline.parameters == test_pipeline.parameters
-    assert (
-        automl.best_pipeline.component_graph.component_dict
-        == test_pipeline.component_graph.component_dict
-    )
+    assert automl.best_pipeline.component_graph == test_pipeline.component_graph
     assert len(automl.rankings) == 2
     assert len(automl.full_rankings) == 3
     assert 0.5678 not in automl.rankings["mean_cv_score"].values

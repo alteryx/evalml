@@ -14,6 +14,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Removed ``PipelineBase``'s ``_component_graph`` attribute. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
 
 
 **v0.25.0 Jun. 01, 2021**

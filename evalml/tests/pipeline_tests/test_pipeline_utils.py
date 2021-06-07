@@ -875,26 +875,14 @@ def test_get_estimators(has_minimal_dependencies):
 
 
 def test_generate_code_pipeline_errors():
-    class MockBinaryPipeline(BinaryClassificationPipeline):
-        name = "Mock Binary Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-    class MockMulticlassPipeline(MulticlassClassificationPipeline):
-        name = "Mock Multiclass Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-    class MockRegressionPipeline(RegressionPipeline):
-        name = "Mock Regression Pipeline"
-        component_graph = ["Imputer", "Random Forest Regressor"]
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(BinaryClassificationPipeline)
 
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
-        generate_pipeline_code(MockBinaryPipeline)
+        generate_pipeline_code(RegressionPipeline)
 
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
-        generate_pipeline_code(MockMulticlassPipeline)
-
-    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
-        generate_pipeline_code(MockRegressionPipeline)
+        generate_pipeline_code(MulticlassClassificationPipeline)
 
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
         generate_pipeline_code([Imputer])

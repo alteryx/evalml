@@ -220,18 +220,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             "components": dict(),
         }
 
-        for number, component in enumerate(
-            self.component_graph.component_instances.values(), 1
-        ):
-            component_string = str(number) + ". " + component.name
-            logger.info(component_string)
-            pipeline_dict["components"].update(
-                {
-                    component.name: component.describe(
-                        print_name=False, return_dict=return_dict
-                    )
-                }
-            )
+        pipeline_dict.update(self.component_graph.describe(return_dict=return_dict))
         if return_dict:
             return pipeline_dict
 
@@ -617,7 +606,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_edges_str = ""
             if len(component_info) > 1:
                 component_edges_str = ", "
-                component_edges_str += ",".join(
+                component_edges_str += ", ".join(
                     [f"'{info}'" for info in component_info[1:]]
                 )
 
