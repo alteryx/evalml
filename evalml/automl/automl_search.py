@@ -289,7 +289,7 @@ class AutoMLSearch:
             thresholding_objective, return_instance=True
         )
         if self.thresholding_objective.score_needs_proba:
-            raise ValueError("Thresholding objective must be thresholdable!")
+            raise ValueError("Thresholding objective must be thresholdable and cannot need probabilities!")
         if self.data_splitter is not None and not issubclass(
             self.data_splitter.__class__, BaseCrossValidator
         ):
