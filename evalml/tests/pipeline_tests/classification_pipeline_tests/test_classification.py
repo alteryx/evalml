@@ -1,10 +1,13 @@
 from itertools import product
+from unittest.mock import patch
 
+import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_series_equal
 
 from evalml.demos import load_breast_cancer, load_wine
+from evalml.objectives.utils import get_core_objectives
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multi"])
@@ -79,3 +82,21 @@ def test_woodwork_classification_pipeline(logistic_regression_binary_pipeline_cl
     mock_pipeline.fit(X, y)
     assert not pd.isnull(mock_pipeline.predict(X)).any()
     assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict")
+def test_classification_pipeline_scoring_with_nan_in_target(
+    mock_predict, logistic_regression_binary_pipeline_class
+):
+    X, y = load_breast_cancer()
+    mock_pipeline = logistic_regression_binary_pipeline_class(
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+    )
+
+    mock_predict.return_value = pd.Series(np.resize([0, 1, np.nan], len(y)))
+    mock_pipeline.fit(X, y)
+    assert pd.isnull(mock_pipeline.predict(X)).any()
+    # assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()
+    scores = mock_pipeline.score(X, y, get_core_objectives("binary"))
+    for score in scores.values():
+        assert not np.isnan(score)

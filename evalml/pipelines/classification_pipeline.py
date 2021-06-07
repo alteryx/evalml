@@ -132,9 +132,15 @@ class ClassificationPipeline(PipelineBase):
         y_without_nans = y.drop(y_nan_indices)
         y_without_nans = self._encode_targets(y_without_nans)
         X_without_nan_target_indices = X.drop(y_nan_indices)
-        y_predicted, y_predicted_proba = self._compute_predictions(X_without_nan_target_indices, y_without_nans, objectives)
+        y_predicted, y_predicted_proba = self._compute_predictions(
+            X_without_nan_target_indices, y_without_nans, objectives
+        )
         return self._score_all_objectives(
-            X_without_nan_target_indices, y_without_nans, y_predicted, y_predicted_proba, objectives
+            X_without_nan_target_indices,
+            y_without_nans,
+            y_predicted,
+            y_predicted_proba,
+            objectives,
         )
 
     def _compute_predictions(self, X, y, objectives, time_series=False):
