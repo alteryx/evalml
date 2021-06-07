@@ -20,7 +20,6 @@ Release Notes
 **v0.25.0 Jun. 01, 2021**
     * Enhancements
         * Upgraded minimum woodwork to version 0.3.1. Previous versions will not be supported :pr:`2181`
-        * Added a new callback parameter for ``explain_predictions_best_worst`` :pr:`2308`
     * Fixes
     * Changes
         * Deleted the ``return_pandas`` flag from our demo data loaders :pr:`2181`
