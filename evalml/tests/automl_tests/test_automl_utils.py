@@ -3,16 +3,19 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
+from skopt.space import Categorical, Integer
 
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
+    get_hyperparameter_ranges,
     make_data_splitter,
     tune_binary_threshold,
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
@@ -282,3 +285,34 @@ def test_get_best_sampler_for_data_sampler_method(
             assert name_output == "SMOTENC Oversampler"
         else:
             assert name_output == "SMOTEN Oversampler"
+
+
+def test_get_hyperparameter_ranges():
+    pipeline_ = BinaryClassificationPipeline(
+        component_graph=["Imputer", "Random Forest Classifier"]
+    )
+    custom_hyperparameters_ = {
+        "One Hot Encoder": {"top_n": 3},
+        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
+        "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
+    }
+
+    algo_ranges = {
+        "Imputer": {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": Categorical(
+                categories=("most_frequent", "mean"), prior=None
+            ),
+        },
+        "Random Forest Classifier": {
+            "n_estimators": Integer(
+                low=150, high=160, prior="uniform", transform="identity"
+            ),
+            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
+        },
+    }
+    hyper_ranges = get_hyperparameter_ranges(
+        pipeline_.component_graph, custom_hyperparameters_
+    )
+
+    assert algo_ranges == hyper_ranges

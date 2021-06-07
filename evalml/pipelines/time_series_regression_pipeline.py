@@ -22,7 +22,6 @@ class TimeSeriesRegressionPipeline(
         component_graph,
         parameters=None,
         custom_name=None,
-        custom_hyperparameters=None,
         random_seed=0,
     ):
         """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
@@ -52,7 +51,6 @@ class TimeSeriesRegressionPipeline(
             component_graph,
             custom_name=custom_name,
             parameters=parameters,
-            custom_hyperparameters=custom_hyperparameters,
             random_seed=random_seed,
         )
 

@@ -338,7 +338,6 @@ class PipelineWithDimReduction(BinaryClassificationPipeline):
         super().__init__(
             self.component_graph,
             parameters=parameters,
-            custom_hyperparameters=None,
             random_seed=random_seed,
         )
 
@@ -360,7 +359,6 @@ class EnsembleDag(BinaryClassificationPipeline):
         super().__init__(
             self.component_graph,
             parameters=parameters,
-            custom_hyperparameters=None,
             random_seed=random_seed,
         )
 
@@ -372,7 +370,6 @@ class PipelineWithDFS(BinaryClassificationPipeline):
         super().__init__(
             self.component_graph,
             parameters=parameters,
-            custom_hyperparameters=None,
             random_seed=random_seed,
         )
 
@@ -384,7 +381,6 @@ class PipelineWithCustomComponent(BinaryClassificationPipeline):
         super().__init__(
             self.component_graph,
             parameters=parameters,
-            custom_hyperparameters=None,
             random_seed=random_seed,
         )
 
@@ -396,7 +392,6 @@ class StackedEnsemblePipeline(BinaryClassificationPipeline):
         super().__init__(
             self.component_graph,
             parameters=parameters,
-            custom_hyperparameters=None,
             random_seed=random_seed,
         )
 
