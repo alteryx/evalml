@@ -125,8 +125,9 @@ class TextFeaturizer(TextTransformer):
         )
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
-        X_nlp_primitives.set_index(X_ww.index, inplace=True)
+
         X_lsa = self._lsa.transform(X_ww.ww[self._text_columns])
+        X_nlp_primitives.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._text_columns)
         for col in X_nlp_primitives:
