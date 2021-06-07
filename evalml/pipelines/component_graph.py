@@ -4,6 +4,9 @@ from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
@@ -89,10 +92,23 @@ class ComponentGraph:
         """
         component_dict = {}
         previous_component = None
-        for component_name, component_class in cls.linearized_component_graph(
-            component_list
-        ):
 
+        component_list = cls.linearized_component_graph(component_list)
+
+        # Logic is as follows: Create the component dict for the non-target transformers as expected.
+        # If there are target transformers present, connect them together and then pass the final output
+        # to the sampler (if present) or the final estimator
+
+        target_transformers = list(
+            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
+        )
+        not_target_transformers = list(
+            filter(
+                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
+            )
+        )
+
+        for component_name, component_class in not_target_transformers:
             component_dict[component_name] = [component_class]
             if previous_component is not None:
                 if "sampler" in previous_component:
@@ -102,6 +118,29 @@ class ComponentGraph:
                 else:
                     component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
+
+        previous_component = None
+        for component_name, component_class in target_transformers:
+            component_dict[component_name] = [component_class]
+            if previous_component is not None:
+                component_dict[component_name].append(f"{previous_component}.y")
+            previous_component = component_name
+
+        if target_transformers:
+            sampler_index = next(
+                iter(
+                    [
+                        i
+                        for i, tup in enumerate(not_target_transformers)
+                        if "sampler" in tup[0]
+                    ]
+                ),
+                -1,
+            )
+            component_dict[not_target_transformers[sampler_index][0]].append(
+                f"{target_transformers[-1][0]}.y"
+            )
+
         return cls(component_dict, random_seed=random_seed)
 
     def instantiate(self, parameters):
@@ -586,3 +625,31 @@ class ComponentGraph:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def _get_parent_y(self, component_name):
+        """Helper for inverse_transform method."""
+        parents = self.get_parents(component_name)
+        return next(iter(p[:-2] for p in parents if ".y" in p), None)
+
+    def inverse_transform(self, y):
+        """Apply component inverse_transform methods to estimator predictions in reverse order.
+
+        Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
+
+        Arguments:
+            y: (pd.Series): Final component features
+        """
+        data_to_transform = infer_feature_types(y)
+        current_component = self.compute_order[-1]
+        has_incoming_y_from_parent = True
+        while has_incoming_y_from_parent:
+            parent_y = self._get_parent_y(current_component)
+            if parent_y:
+                component = self.get_component(parent_y)
+                if isinstance(component, TargetTransformer):
+                    data_to_transform = component.inverse_transform(data_to_transform)
+                current_component = parent_y
+            else:
+                has_incoming_y_from_parent = False
+
+        return data_to_transform

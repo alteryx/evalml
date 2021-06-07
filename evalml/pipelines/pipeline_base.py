@@ -723,3 +723,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             and objective.is_defined_for_problem_type(self.problem_type)
             and objective.can_optimize_threshold
         )
+
+    def inverse_transform(self, y):
+        """Apply component inverse_transform methods to estimator predictions in reverse order.
+
+        Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
+
+        Arguments:
+            y (pd.Series): Final component features
+        """
+        return self._component_graph.inverse_transform(y)
