@@ -20,7 +20,7 @@ from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
-    make_data_splitter,
+    make_data_splitter, get_pipelines_from_component_graphs,
 )
 from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
@@ -188,9 +188,12 @@ class AutoMLSearch:
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            allowed_component_graphs (list(str or ComponentBase) or dict): A list or dict of ComponentBase subclasses indicating the component graphs allowed in the search.
+            allowed_component_graphs (list): A list of dictionaries indicating the component graphs allowed in the search.
+                The format should follow [ {Name_of_graph: [list_of_components]} ].
                 The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
                 allowed_model_families to be ignored.
+
+                e.g. allowed_component_graphs = [ {"Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]} ]
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
@@ -384,16 +387,10 @@ class AutoMLSearch:
             logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
-
+        print(allowed_component_graphs)
         if allowed_component_graphs is not None and not isinstance(allowed_component_graphs, list):
             raise ValueError(
                 "Parameter allowed_component_graphs must be either None or a list!"
-            )
-        if allowed_component_graphs is not None and not all(
-            isinstance(p, PipelineBase) for p in allowed_component_graphs
-        ):
-            raise ValueError(
-                "Every element of allowed_component_graphs an instance of PipelineBase!"
             )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
@@ -496,6 +493,10 @@ class AutoMLSearch:
                 )
                 for estimator in allowed_estimators
             ]
+        else:
+            print()
+            print(f'Automlsearch __ init __ - self.allowed_component_graphs: {self.allowed_component_graphs}')
+            self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs, self.problem_type)
 
         if self.allowed_component_graphs == []:
             raise ValueError("No allowed component graphs to search")
@@ -924,14 +925,6 @@ class AutoMLSearch:
                 raise ValueError(
                     "Additional objective {} is not compatible with a {} problem.".format(
                         obj.name, self.problem_type.value
-                    )
-                )
-
-        for pipeline in self.allowed_pipelines or []:
-            if pipeline.problem_type != self.problem_type:
-                raise ValueError(
-                    "Given pipeline {} is not compatible with problem_type {}.".format(
-                        pipeline.name, self.problem_type.value
                     )
                 )
 

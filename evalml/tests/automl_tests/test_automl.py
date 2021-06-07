@@ -1010,7 +1010,7 @@ def test_default_objective(X_y_binary):
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary):
+def test_add_to_rankings(mock_fit, mock_score, dummy_binary_component_graph, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 1.0}
 
@@ -1019,7 +1019,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_pipelines=[dummy_binary_pipeline_class({})],
+        allowed_component_graphs=[dummy_binary_component_graph]
     )
     automl.search()
     assert len(automl.rankings) == 1
@@ -1054,7 +1054,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_pipeline_class, X_y_
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_add_to_rankings_no_search(
-    mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary
+    mock_fit, mock_score, dummy_binary_component_graph, dummy_binary_pipeline_class, X_y_binary
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -1062,7 +1062,7 @@ def test_add_to_rankings_no_search(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_pipelines=[dummy_binary_pipeline_class({})],
+        allowed_component_graphs=[dummy_binary_component_graph],
     )
 
     mock_score.return_value = {"Log Loss Binary": 0.5234}

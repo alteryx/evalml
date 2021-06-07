@@ -20,7 +20,7 @@ from evalml.pipelines import (
     RegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline,
+    TimeSeriesRegressionPipeline, ComponentGraph, RandomForestClassifier,
 )
 from evalml.pipelines.components import (
     DecisionTreeClassifier,
@@ -345,6 +345,12 @@ def dummy_classifier_estimator_class():
             return self
 
     return MockEstimator
+
+
+@pytest.fixture
+def dummy_binary_component_graph(dummy_classifier_estimator_class):
+    component_graph = {"Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]}
+    return component_graph
 
 
 @pytest.fixture

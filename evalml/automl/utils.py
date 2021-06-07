@@ -5,7 +5,9 @@ import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
-from evalml.pipelines import ComponentGraph
+from evalml.pipelines import ComponentGraph, BinaryClassificationPipeline, MulticlassClassificationPipeline, \
+    RegressionPipeline, TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline, \
+    TimeSeriesRegressionPipeline
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
@@ -219,3 +221,19 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
             component_hyperparameters.update(custom_hyperparameters[component_name])
         hyperparameter_ranges[component_name] = component_hyperparameters
     return hyperparameter_ranges
+
+
+def get_pipelines_from_component_graphs(component_graphs_list, problem_type):
+    pipeline_class = {
+        ProblemTypes.BINARY: BinaryClassificationPipeline,
+        ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
+        ProblemTypes.REGRESSION: RegressionPipeline,
+        ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBinaryClassificationPipeline,
+        ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesMulticlassClassificationPipeline,
+        ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline
+    }[handle_problem_types(problem_type)]
+    allowed_pipelines = []
+    for component_graph in component_graphs_list:
+        for comp_name, comp_graph in component_graph.items():
+            allowed_pipelines.append(pipeline_class(component_graph=comp_graph, custom_name=comp_name))
+    return allowed_pipelines
