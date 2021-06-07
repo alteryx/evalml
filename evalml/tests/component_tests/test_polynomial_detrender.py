@@ -40,7 +40,7 @@ def test_polynomial_detrender_raises_value_error_target_is_none(ts_data):
     pdt = PolynomialDetrender(degree=3).fit(X, y)
 
     with pytest.raises(ValueError, match="y cannot be None for PolynomialDetrender!"):
-        pdt.inverse_transform(X, None)
+        pdt.inverse_transform(None)
 
 
 @pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
@@ -94,9 +94,8 @@ def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
 
     detrender = PolynomialDetrender(degree=degree)
     output_X, output_y = detrender.fit_transform(X, y)
-    output_inverse_X, output_inverse_y = detrender.inverse_transform(output_X, output_y)
+    output_inverse_y = detrender.inverse_transform(output_y)
     pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
-    pd.testing.assert_frame_equal(X, output_inverse_X)
 
 
 def test_polynomial_detrender_needs_monotonic_index(ts_data):
