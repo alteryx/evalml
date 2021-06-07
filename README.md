@@ -24,7 +24,7 @@ pip install evalml
 
 ## Start
 
-#### Load and split example data 
+#### Load and split example data
 ```python
 import evalml
 X, y = evalml.demos.load_breast_cancer()
