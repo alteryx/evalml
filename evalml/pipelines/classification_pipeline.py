@@ -13,7 +13,6 @@ class ClassificationPipeline(PipelineBase):
         component_graph,
         parameters=None,
         custom_name=None,
-        custom_hyperparameters=None,
         random_seed=0,
     ):
         self._encoder = LabelEncoder()
@@ -21,7 +20,6 @@ class ClassificationPipeline(PipelineBase):
             component_graph,
             custom_name=custom_name,
             parameters=parameters,
-            custom_hyperparameters=custom_hyperparameters,
             random_seed=random_seed,
         )
 

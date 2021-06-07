@@ -36,6 +36,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         ensembling=False,
         text_in_ensembling=False,
         pipeline_params=None,
+        custom_hyperparameters=None,
         _frozen_pipeline_parameters=None,
         _estimator_family_order=None,
     ):
@@ -52,6 +53,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
+            custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over.
             _frozen_pipeline_parameters (dict or None): Pipeline-level parameters are frozen and used in the proposed pipelines.
             _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to _ESTIMATOR_FAMILY_ORDER.
         """
@@ -79,6 +81,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         super().__init__(
             allowed_pipelines=allowed_pipelines,
+            custom_hyperparameters=custom_hyperparameters,
             max_iterations=max_iterations,
             tuner_class=tuner_class,
             random_seed=random_seed,
@@ -91,7 +94,28 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.ensembling = ensembling and len(self.allowed_pipelines) > 1
         self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
+        self._custom_hyperparameters = custom_hyperparameters or {}
         self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
+
+        if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
+            raise ValueError(
+                f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
+            )
+
+        for param_name_val in self._pipeline_params.values():
+            for _, param_val in param_name_val.items():
+                if isinstance(param_val, (Integer, Real, Categorical)):
+                    raise ValueError(
+                        "Pipeline parameters should not contain skopt.Space variables, please pass them "
+                        "to custom_hyperparameters instead!"
+                    )
+        for hyperparam_name_val in self._custom_hyperparameters.values():
+            for _, hyperparam_val in hyperparam_name_val.items():
+                if not isinstance(hyperparam_val, (Integer, Real, Categorical)):
+                    raise ValueError(
+                        "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
+                        " and Real!"
+                    )
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -219,18 +243,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         parameters = {}
         if "pipeline" in self._pipeline_params:
             parameters["pipeline"] = self._pipeline_params["pipeline"]
+
         for name, component_class in pipeline.linearized_component_graph:
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-
-            # Inspects each component and adds the following parameters when needed
-            if "n_jobs" in init_params:
-                component_parameters["n_jobs"] = self.n_jobs
-            if "number_features" in init_params:
-                component_parameters["number_features"] = self.number_features
             # For first batch, pass the pipeline params to the components that need them
-            if name in self._pipeline_params and self._batch_number == 0:
-                for param_name, value in self._pipeline_params[name].items():
+            if name in self._custom_hyperparameters and self._batch_number == 0:
+                for param_name, value in self._custom_hyperparameters[name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
                         component_parameters[param_name] = value.rvs(
@@ -242,6 +261,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         )
                     else:
                         component_parameters[param_name] = value
+            if name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[name].items():
+                    component_parameters[param_name] = value
+            # Inspects each component and adds the following parameters when needed
+            if "n_jobs" in init_params:
+                component_parameters["n_jobs"] = self.n_jobs
+            if "number_features" in init_params:
+                component_parameters["number_features"] = self.number_features
             if (
                 name in self._pipeline_params
                 and name == "Drop Columns Transformer"
