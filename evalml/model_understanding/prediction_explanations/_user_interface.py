@@ -725,11 +725,10 @@ class _RegressionPredictedValues(_SectionMaker):
 
 class _SHAPTable(_SectionMaker):
     def __init__(
-        self, top_k_features, include_shap_values, include_expected_value=False
+        self, top_k_features, include_shap_values
     ):
         self.top_k_features = top_k_features
         self.include_shap_values = include_shap_values
-        self.include_expected_value = include_expected_value
 
     def make_text(self, index, pipeline, pipeline_features, input_features):
         """Makes the SHAP table section for reports formatted as text.
@@ -768,7 +767,6 @@ class _SHAPTable(_SectionMaker):
             index_to_explain=index,
             top_k=self.top_k_features,
             include_shap_values=self.include_shap_values,
-            include_expected_value=self.include_expected_value,
             output_format="dict",
         )
         return json_output
@@ -782,7 +780,6 @@ class _SHAPTable(_SectionMaker):
             index_to_explain=index,
             top_k=self.top_k_features,
             include_shap_values=self.include_shap_values,
-            include_expected_value=self.include_expected_value,
             output_format="dataframe",
         )
 

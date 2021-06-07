@@ -45,7 +45,7 @@ def _report_creator_factory(
         report_maker = _ReportMaker(heading, None, shap_table).make_text
     elif report_type == "explain_predictions" and output_format == "dict":
         shap_table = _SHAPTable(
-            top_k_features, include_shap_values, include_expected_value
+            top_k_features, include_shap_values
         )
         report_maker = _ReportMaker(None, None, shap_table).make_dict
     elif report_type == "explain_predictions" and output_format == "dataframe":
