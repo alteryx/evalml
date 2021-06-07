@@ -1252,6 +1252,7 @@ class AutoMLSearch:
 
         full_rankings_cols = [
             "id",
+            "search_order",
             "pipeline_name",
             "mean_cv_score",
             "standard_deviation_cv_score",
