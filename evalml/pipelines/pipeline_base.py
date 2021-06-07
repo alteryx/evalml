@@ -732,4 +732,4 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             y (pd.Series): Final component features
         """
-        return self._component_graph.inverse_transform(y)
+        return self.component_graph.inverse_transform(y)
