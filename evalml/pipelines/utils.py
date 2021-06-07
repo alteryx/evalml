@@ -151,7 +151,6 @@ def make_pipeline(
     estimator,
     problem_type,
     parameters=None,
-    custom_hyperparameters=None,
     sampler_name=None,
 ):
     """Given input data, target data, an estimator class and the problem type,
@@ -165,8 +164,6 @@ def make_pipeline(
          problem_type (ProblemTypes or str): Problem type for pipeline to generate
          parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary or None implies using all default values for component parameters.
-         custom_hyperparameters (dictionary): Dictionary of custom hyperparameters,
-             with component name as key and dictionary of parameters as the value
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
 
@@ -189,16 +186,10 @@ def make_pipeline(
     )
     complete_component_graph = preprocessing_components + [estimator]
 
-    if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
-        raise ValueError(
-            f"if custom_hyperparameters provided, must be dictionary. Received {type(custom_hyperparameters)}"
-        )
-
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
         complete_component_graph,
         parameters=parameters,
-        custom_hyperparameters=custom_hyperparameters,
     )
 
 
