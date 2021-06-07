@@ -5,26 +5,29 @@ from evalml.utils import classproperty
 
 class ProblemTypes(Enum):
     """Enum defining the supported types of machine learning problems."""
-    BINARY = 'binary'
+
+    BINARY = "binary"
     """Binary classification problem."""
-    MULTICLASS = 'multiclass'
+    MULTICLASS = "multiclass"
     """Multiclass classification problem."""
-    REGRESSION = 'regression'
+    REGRESSION = "regression"
     """Regression problem."""
-    TIME_SERIES_REGRESSION = 'time series regression'
+    TIME_SERIES_REGRESSION = "time series regression"
     """Time series regression problem."""
-    TIME_SERIES_BINARY = 'time series binary'
+    TIME_SERIES_BINARY = "time series binary"
     """Time series binary classification problem."""
-    TIME_SERIES_MULTICLASS = 'time series multiclass'
+    TIME_SERIES_MULTICLASS = "time series multiclass"
     """Time series multiclass classification problem."""
 
     def __str__(self):
-        problem_type_dict = {ProblemTypes.BINARY.name: "binary",
-                             ProblemTypes.MULTICLASS.name: "multiclass",
-                             ProblemTypes.REGRESSION.name: "regression",
-                             ProblemTypes.TIME_SERIES_REGRESSION.name: "time series regression",
-                             ProblemTypes.TIME_SERIES_BINARY.name: "time series binary",
-                             ProblemTypes.TIME_SERIES_MULTICLASS.name: "time series multiclass"}
+        problem_type_dict = {
+            ProblemTypes.BINARY.name: "binary",
+            ProblemTypes.MULTICLASS.name: "multiclass",
+            ProblemTypes.REGRESSION.name: "regression",
+            ProblemTypes.TIME_SERIES_REGRESSION.name: "time series regression",
+            ProblemTypes.TIME_SERIES_BINARY.name: "time series binary",
+            ProblemTypes.TIME_SERIES_MULTICLASS.name: "time series multiclass",
+        }
         return problem_type_dict[self.name]
 
     @classproperty

@@ -44,7 +44,10 @@ def allowed_model_families(problem_type):
     estimators = []
     problem_type = handle_problem_types(problem_type)
     for estimator in _all_estimators_used_in_search():
-        if problem_type in set(handle_problem_types(problem) for problem in estimator.supported_problem_types):
+        if problem_type in set(
+            handle_problem_types(problem)
+            for problem in estimator.supported_problem_types
+        ):
             estimators.append(estimator)
 
     return list(set([e.model_family for e in estimators]))
@@ -68,15 +71,23 @@ def get_estimators(problem_type, model_families=None):
     if model_families is None:
         model_families = allowed_model_families(problem_type)
 
-    model_families = [handle_model_family(model_family) for model_family in model_families]
+    model_families = [
+        handle_model_family(model_family) for model_family in model_families
+    ]
     all_model_families = allowed_model_families(problem_type)
     for model_family in model_families:
         if model_family not in all_model_families:
-            raise RuntimeError("Unrecognized model type for problem type %s: %s" % (problem_type, model_family))
+            raise RuntimeError(
+                "Unrecognized model type for problem type %s: %s"
+                % (problem_type, model_family)
+            )
 
     estimator_classes = []
     for estimator_class in _all_estimators_used_in_search():
-        if problem_type not in [handle_problem_types(supported_pt) for supported_pt in estimator_class.supported_problem_types]:
+        if problem_type not in [
+            handle_problem_types(supported_pt)
+            for supported_pt in estimator_class.supported_problem_types
+        ]:
             continue
         if estimator_class.model_family not in model_families:
             continue
@@ -100,11 +111,16 @@ def handle_component_class(component_class):
     if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
         return component_class
     if not isinstance(component_class, str):
-        raise ValueError(("component_graph may only contain str or ComponentBase subclasses, not '{}'")
-                         .format(type(component_class)))
+        raise ValueError(
+            (
+                "component_graph may only contain str or ComponentBase subclasses, not '{}'"
+            ).format(type(component_class))
+        )
     component_classes = {component.name: component for component in all_components()}
     if component_class not in component_classes:
-        raise MissingComponentError('Component "{}" was not found'.format(component_class))
+        raise MissingComponentError(
+            'Component "{}" was not found'.format(component_class)
+        )
     component_class = component_classes[component_class]
     return component_class
 
@@ -152,7 +168,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Returns:
             np.ndarray: Predicted values
         """
-        check_is_fitted(self, 'is_fitted_')
+        check_is_fitted(self, "is_fitted_")
 
         return self.pipeline.predict(X).to_numpy()
 
@@ -214,16 +230,29 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 
     """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
     if isinstance(evalml_obj, PipelineBase):
-        if evalml_obj.problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
+        if evalml_obj.problem_type in [
+            ProblemTypes.REGRESSION,
+            ProblemTypes.TIME_SERIES_REGRESSION,
+        ]:
             return WrappedSKRegressor(evalml_obj)
-        elif evalml_obj.problem_type == ProblemTypes.BINARY or evalml_obj.problem_type == ProblemTypes.MULTICLASS:
+        elif (
+            evalml_obj.problem_type == ProblemTypes.BINARY
+            or evalml_obj.problem_type == ProblemTypes.MULTICLASS
+        ):
             return WrappedSKClassifier(evalml_obj)
     else:
         # EvalML Estimator
-        if evalml_obj.supported_problem_types == [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
+        if evalml_obj.supported_problem_types == [
+            ProblemTypes.REGRESSION,
+            ProblemTypes.TIME_SERIES_REGRESSION,
+        ]:
             return WrappedSKRegressor(evalml_obj)
-        elif evalml_obj.supported_problem_types == [ProblemTypes.BINARY, ProblemTypes.MULTICLASS,
-                                                    ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
+        elif evalml_obj.supported_problem_types == [
+            ProblemTypes.BINARY,
+            ProblemTypes.MULTICLASS,
+            ProblemTypes.TIME_SERIES_BINARY,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]:
             return WrappedSKClassifier(evalml_obj)
     raise ValueError("Could not wrap EvalML object in scikit-learn wrapper.")
 
@@ -243,16 +272,21 @@ def generate_component_code(element):
     base_string = ""
 
     if not isinstance(element, ComponentBase):
-        raise ValueError("Element must be a component instance, received {}".format(type(element)))
+        raise ValueError(
+            "Element must be a component instance, received {}".format(type(element))
+        )
 
     if element.__class__ in all_components():
-        code_strings.append("from {} import {}\n".format(element.__class__.__module__, element.__class__.__name__))
+        code_strings.append(
+            "from {} import {}\n".format(
+                element.__class__.__module__, element.__class__.__name__
+            )
+        )
     component_parameters = element.parameters
-    name = element.name[0].lower() + element.name[1:].replace(' ', '')
-    base_string += "{0} = {1}(**{2})" \
-                   .format(name,
-                           element.__class__.__name__,
-                           component_parameters)
+    name = element.name[0].lower() + element.name[1:].replace(" ", "")
+    base_string += "{0} = {1}(**{2})".format(
+        name, element.__class__.__name__, component_parameters
+    )
 
     code_strings.append(base_string)
     return "\n".join(code_strings)
@@ -272,7 +306,9 @@ def make_balancing_dictionary(y, sampling_ratio):
         for each class that will satisfy sampling_ratio.
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:
-        raise ValueError("Sampling ratio must be in range (0, 1], received {}".format(sampling_ratio))
+        raise ValueError(
+            "Sampling ratio must be in range (0, 1], received {}".format(sampling_ratio)
+        )
     if len(y) == 0:
         raise ValueError("Target data must not be empty")
     value_counts = y.value_counts()

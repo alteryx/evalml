@@ -12,7 +12,7 @@ def test_time_series_baseline_regressor_init():
 
 
 def test_time_series_baseline_gap_negative():
-    with pytest.raises(ValueError, match='gap value must be a positive integer.'):
+    with pytest.raises(ValueError, match="gap value must be a positive integer."):
         TimeSeriesBaselineEstimator(gap=-1)
 
 

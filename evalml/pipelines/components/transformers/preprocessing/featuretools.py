@@ -3,16 +3,17 @@ from featuretools import EntitySet, calculate_feature_matrix, dfs
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types
+    infer_feature_types,
 )
 
 
 class DFSTransformer(Transformer):
     """Featuretools DFS component that generates features for pd.DataFrames"""
+
     name = "DFS Transformer"
     hyperparameter_ranges = {}
 
-    def __init__(self, index='index', random_seed=0, **kwargs):
+    def __init__(self, index="index", random_seed=0, **kwargs):
         """Allows for featuretools to be used in EvalML.
 
         Arguments:
@@ -27,16 +28,19 @@ class DFSTransformer(Transformer):
         self.index = index
         self.features = None
         parameters.update(kwargs)
-        super().__init__(parameters=parameters,
-                         random_seed=random_seed)
+        super().__init__(parameters=parameters, random_seed=random_seed)
 
     def _make_entity_set(self, X):
         """Helper method that creates and returns the entity set given the input data"""
         ft_es = EntitySet()
         if self.index not in X.columns:
-            es = ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index=self.index, make_index=True)
+            es = ft_es.entity_from_dataframe(
+                entity_id="X", dataframe=X, index=self.index, make_index=True
+            )
         else:
-            es = ft_es.entity_from_dataframe(entity_id="X", dataframe=X, index=self.index)
+            es = ft_es.entity_from_dataframe(
+                entity_id="X", dataframe=X, index=self.index
+            )
         return es
 
     def fit(self, X, y=None):
@@ -52,10 +56,9 @@ class DFSTransformer(Transformer):
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
         es = self._make_entity_set(X_ww)
-        self.features = dfs(entityset=es,
-                            target_entity='X',
-                            features_only=True,
-                            max_depth=1)
+        self.features = dfs(
+            entityset=es, target_entity="X", features_only=True, max_depth=1
+        )
         return self
 
     def transform(self, X, y=None):
@@ -72,4 +75,6 @@ class DFSTransformer(Transformer):
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
         es = self._make_entity_set(X_ww)
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return _retain_custom_types_and_initalize_woodwork(X_ww.ww.logical_types, feature_matrix)
+        return _retain_custom_types_and_initalize_woodwork(
+            X_ww.ww.logical_types, feature_matrix
+        )

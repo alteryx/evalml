@@ -15,7 +15,7 @@ from .gen_utils import (
     is_all_numeric,
     get_importable_subclasses,
     _rename_column_names_to_numeric,
-    deprecate_arg
+    deprecate_arg,
 )
 from .cli_utils import (
     get_evalml_root,
@@ -23,7 +23,7 @@ from .cli_utils import (
     get_sys_info,
     print_deps,
     print_info,
-    print_sys_info
+    print_sys_info,
 )
 from .woodwork_utils import (
     _retain_custom_types_and_initalize_woodwork,
