@@ -2098,9 +2098,9 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     component_graph_str = ""
     if pipeline_class == RegressionPipeline:
-        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Regressor', 'OHE_1','OHE_2']}"
+        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Regressor', 'OHE_1', 'OHE_2']}"
     else:
-        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Classifier', 'OHE_1','OHE_2']}"
+        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Classifier', 'OHE_1', 'OHE_2']}"
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "

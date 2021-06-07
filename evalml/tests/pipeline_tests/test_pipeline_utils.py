@@ -1009,7 +1009,7 @@ def test_generate_code_nonlinear_pipeline():
         "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'], "
         "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'], "
         "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'], "
-        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest','Elastic Net']}, "
+        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'OneHot_RandomForest':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OneHot_ElasticNet':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
