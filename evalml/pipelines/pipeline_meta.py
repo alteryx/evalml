@@ -24,7 +24,7 @@ class PipelineBaseMeta(BaseMeta):
                 return method(self, X)
             elif method.__name__ == "predict":
                 return method(self, X, objective)
-            elif method.__name__ == 'inverse_transform':
+            elif method.__name__ == "inverse_transform":
                 return method(self, X)
             else:
                 return method(self)

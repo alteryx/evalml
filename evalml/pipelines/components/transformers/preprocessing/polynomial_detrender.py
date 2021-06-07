@@ -2,7 +2,7 @@ import pandas as pd
 from skopt.space import Integer
 
 from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer
+    TargetTransformer,
 )
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -97,7 +97,7 @@ class PolynomialDetrender(TargetTransformer):
 
         Arguments:
             X (pd.DataFrame, optional): Ignored.
-            y (ww.DataColumn, pd.Series): Target variable.
+            y (pd.Series): Target variable.
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.

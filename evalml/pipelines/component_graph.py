@@ -94,8 +94,14 @@ class ComponentGraph:
         # If there are target transformers present, connect them together and then pass the final output
         # to the sampler (if present) or the final estimator
 
-        target_transformers = list(filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list))
-        not_target_transformers = list(filter(lambda tup: not issubclass(tup[1], TargetTransformer), component_list))
+        target_transformers = list(
+            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
+        )
+        not_target_transformers = list(
+            filter(
+                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
+            )
+        )
 
         for component_name, component_class in not_target_transformers:
             component_dict[component_name] = [component_class]
@@ -116,8 +122,19 @@ class ComponentGraph:
             previous_component = component_name
 
         if target_transformers:
-            sampler_index = next(iter([i for i, tup in enumerate(not_target_transformers) if "sampler" in tup[0]]), -1)
-            component_dict[not_target_transformers[sampler_index][0]].append(f"{target_transformers[-1][0]}.y")
+            sampler_index = next(
+                iter(
+                    [
+                        i
+                        for i, tup in enumerate(not_target_transformers)
+                        if "sampler" in tup[0]
+                    ]
+                ),
+                -1,
+            )
+            component_dict[not_target_transformers[sampler_index][0]].append(
+                f"{target_transformers[-1][0]}.y"
+            )
 
         return cls(component_dict, random_seed=random_seed)
 
@@ -580,7 +597,7 @@ class ComponentGraph:
         Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
 
         Arguments:
-            y: (pd.Series, ww.DataColumn): Final component features
+            y: (pd.Series): Final component features
         """
         data_to_transform = infer_feature_types(y)
         current_component = self.compute_order[-1]

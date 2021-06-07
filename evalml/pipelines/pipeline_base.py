@@ -715,6 +715,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
 
         Arguments:
-            y (pd.Series, ww.DataColumn): Final component features
+            y (pd.Series): Final component features
         """
         return self._component_graph.inverse_transform(y)

@@ -86,8 +86,8 @@ class TargetTransformer(Transformer):
         """Inverts the transformation done by the transform method.
 
          Arguments:
-            y (ww.DataColumn, pd.Series): Target transformed by this component.
+            y (pd.Series): Target transformed by this component.
 
         Returns:
-            ww.DataColumn: Target without the transformation.
+            pd.Seriesø: Target without the transformation.
         """
