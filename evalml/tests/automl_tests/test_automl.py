@@ -4729,7 +4729,7 @@ def test_automl_thresholding_objective(mock_optimize, objective, errors, X_y_bin
 
 
 @pytest.mark.parametrize("threshold", [False, True])
-@patch('evalml.objectives.standard_metrics.F1.optimize_threshold', return_value=0.42)
+@patch("evalml.objectives.standard_metrics.F1.optimize_threshold", return_value=0.42)
 def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(
