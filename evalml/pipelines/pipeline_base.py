@@ -219,9 +219,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             "model_family": self.model_family,
             "components": dict(),
         }
-
-        pipeline_dict.update(self.component_graph.describe(return_dict=return_dict))
+        component_dict = self.component_graph.describe(return_dict=return_dict)
         if return_dict:
+            pipeline_dict.update({"components": component_dict})
             return pipeline_dict
 
     def compute_estimator_features(self, X, y=None):
