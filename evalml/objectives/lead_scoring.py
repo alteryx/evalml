@@ -43,5 +43,7 @@ class LeadScoring(BinaryClassificationObjective):
         profit += self.false_positives * false_positives
 
         profit_per_lead = profit / len(y_true)
+        # penalty if our estimator only predicts 1 output
+        same_class_penalty = (2 - len(set(y_predicted))) * (abs(profit_per_lead) / 2)
 
-        return profit_per_lead
+        return profit_per_lead - same_class_penalty
