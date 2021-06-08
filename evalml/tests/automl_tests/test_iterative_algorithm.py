@@ -137,7 +137,7 @@ def test_iterative_algorithm_results(
     assert algo.pipeline_number == len(dummy_binary_pipeline_classes)
     assert algo.batch_number == 1
     assert all(
-        [p.parameters == p._component_graph.default_parameters for p in next_batch]
+        [p.parameters == p.component_graph.default_parameters for p in next_batch]
     )
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
@@ -298,7 +298,7 @@ def test_iterative_algorithm_one_allowed_pipeline(
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
     assert all(
-        [p.parameters == p._component_graph.default_parameters for p in next_batch]
+        [p.parameters == p.component_graph.default_parameters for p in next_batch]
     )
     # the "best" score will be the 1st dummy pipeline
     scores = np.arange(0, len(next_batch))
@@ -330,7 +330,7 @@ def test_iterative_algorithm_one_allowed_pipeline(
                 p
                 != logistic_regression_binary_pipeline_class(
                     {}
-                )._component_graph.default_parameters
+                ).component_graph.default_parameters
                 for p in all_parameters
             ]
         )
@@ -816,7 +816,7 @@ def test_iterative_algorithm_sampling_params(
     )
     next_batch = algo.next_batch()
     for p in next_batch:
-        for component in p._component_graph:
+        for component in p.component_graph:
             if "sampler" in component.name:
                 assert component.parameters["sampling_ratio"] == 0.5
 
@@ -828,6 +828,6 @@ def test_iterative_algorithm_sampling_params(
     for i in range(1, 5):
         next_batch = algo.next_batch()
         for p in next_batch:
-            for component in p._component_graph:
+            for component in p.component_graph:
                 if "sampler" in component.name:
                     assert component.parameters["sampling_ratio"] == 0.5

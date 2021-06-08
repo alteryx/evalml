@@ -1104,6 +1104,7 @@ def test_add_to_rankings(
     assert automl.best_pipeline.name == test_pipeline.name
     assert automl.best_pipeline.parameters == test_pipeline.parameters
     assert automl.best_pipeline.component_graph == test_pipeline.component_graph
+
     assert len(automl.rankings) == 2
     assert len(automl.full_rankings) == 2
     assert 0.1234 in automl.rankings["mean_cv_score"].values

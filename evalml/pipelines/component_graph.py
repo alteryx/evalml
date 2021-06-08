@@ -10,9 +10,12 @@ from evalml.pipelines.components.transformers.transformer import (
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
+    get_logger,
     import_or_raise,
     infer_feature_types,
 )
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -76,8 +79,11 @@ class ComponentGraph:
                     component_name = f"{component_name}_{idx}"
                 seen.add(component_name)
                 names.append((component_name, component_class))
-        else:
+        elif isinstance(components, dict):
             for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        else:
+            for k, v in components.component_dict.items():
                 names.append((k, handle_component_class(v[0])))
         return names
 
@@ -500,6 +506,29 @@ class ComponentGraph:
             return component_info[1:]
         return []
 
+    def describe(self, return_dict=False):
+        """Outputs component graph details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
+
+        Returns:
+            dict: Dictionary of all component parameters if return_dict is True, else None
+        """
+        components = {}
+        for number, component in enumerate(self.component_instances.values(), 1):
+            component_string = str(number) + ". " + component.name
+            logger.info(component_string)
+            components.update(
+                {
+                    component.name: component.describe(
+                        print_name=False, return_dict=return_dict
+                    )
+                }
+            )
+        if return_dict:
+            return components
+
     def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph
 
@@ -607,6 +636,18 @@ class ComponentGraph:
         else:
             self._i = 0
             raise StopIteration
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
+            return False
+        attributes_to_check = ["component_dict", "compute_order"]
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
 
     def _get_parent_y(self, component_name):
         """Helper for inverse_transform method."""
