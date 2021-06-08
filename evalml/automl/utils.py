@@ -224,6 +224,16 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
 
 
 def get_pipelines_from_component_graphs(component_graphs_list, problem_type):
+    """
+    Returns created pipelines from passed component graphs based on the specified problem type.
+
+    Arguments:
+        component_graphs_list (list): The list of component graphs.
+        problem_type (str or ProblemType): The problem type for which pipelines will be created.
+
+    Returns:
+        list: List of pipelines made from the passed component graphs.
+    """
     pipeline_class = {
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
@@ -232,8 +242,8 @@ def get_pipelines_from_component_graphs(component_graphs_list, problem_type):
         ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesMulticlassClassificationPipeline,
         ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline
     }[handle_problem_types(problem_type)]
-    allowed_pipelines = []
+    created_pipelines = []
     for component_graph in component_graphs_list:
         for comp_name, comp_graph in component_graph.items():
-            allowed_pipelines.append(pipeline_class(component_graph=comp_graph, custom_name=comp_name))
-    return allowed_pipelines
+            created_pipelines.append(pipeline_class(component_graph=comp_graph, custom_name=comp_name))
+    return created_pipelines
