@@ -11,6 +11,7 @@ import evalml.preprocessing
 import evalml.problem_types
 import evalml.utils
 import evalml.data_checks
+from evalml import update_checker
 from evalml.automl import AutoMLSearch, search
 from evalml.utils import print_info
 
