@@ -8,7 +8,11 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import (
+    _retain_custom_types_and_initalize_woodwork,
+    import_or_raise,
+    infer_feature_types,
+)
 
 
 class ComponentGraph:
@@ -179,6 +183,7 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
+        y = infer_feature_types(y)
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -276,6 +281,8 @@ class ComponentGraph:
             dict: Outputs from each component
         """
         X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
         most_recent_y = y
         if len(component_list) == 0:
             return X
@@ -415,7 +422,22 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = infer_feature_types(return_x)
+
+        # Expected behavior: Preserve types selected by user unless one of the components updates the
+        # type for that column. This requirement is important because the StandardScaler is expected to convert
+        # Ints to Doubles and converting back to an int would lose information.
+        # In order to meet this requirement, we start off with the user selected types (X.ww.logical_types) and then
+        # update them with the types created by components (if they are different).
+        # Components are not expected to create features with the same names
+        # so the only possible clash is between the types selected by the user and the types selected by a component.
+        # Because of that, the for-loop below is sufficient.
+
+        logical_types = {}
+        logical_types.update(X.ww.logical_types)
+        for x_input in x_inputs:
+            if x_input.ww.schema is not None:
+                logical_types.update(x_input.ww.logical_types)
+        return_x = _retain_custom_types_and_initalize_woodwork(logical_types, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
         return return_x, return_y

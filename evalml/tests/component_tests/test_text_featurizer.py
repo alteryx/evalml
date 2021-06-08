@@ -286,6 +286,37 @@ def test_lsa_primitive_output():
     assert_frame_equal(expected_features, features, atol=1e-3)
 
 
+def test_featurizer_custom_types(text_df):
+    # force one of the two provided columns to be a user-specified type.
+    # if the output contains text features for col_2, then the text featurizer didn't pass the right
+    # ww types to LSA, because LSA still thought col_2 was natural language even though the user said otherwise.
+    X = infer_feature_types(text_df, {"col_2": "categorical"})
+    tf = TextFeaturizer()
+    tf.fit(X)
+
+    expected_col_names = set(
+        [
+            "col_2",
+            "DIVERSITY_SCORE(col_1)",
+            "LSA(col_1)[0]",
+            "LSA(col_1)[1]",
+            "MEAN_CHARACTERS_PER_WORD(col_1)",
+            "POLARITY_SCORE(col_1)",
+        ]
+    )
+    X_t = tf.transform(X)
+    assert set(X_t.columns) == expected_col_names
+    expected_logical_types = {
+        "col_2": Categorical,
+        "DIVERSITY_SCORE(col_1)": Double,
+        "MEAN_CHARACTERS_PER_WORD(col_1)": Double,
+        "POLARITY_SCORE(col_1)": Double,
+        "LSA(col_1)[0]": Double,
+        "LSA(col_1)[1]": Double,
+    }
+    assert X_t.ww.logical_types == expected_logical_types
+
+
 def test_mean_characters_primitive_output():
     X = pd.DataFrame(
         {
