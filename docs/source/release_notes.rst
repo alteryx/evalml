@@ -3,11 +3,13 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
+        * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
         * Added ``inverse_transform`` method to pipelines :pr:`2256``
         * Added ``search_order`` to ``AutoMLSearch``'s ``rankings`` and ``full_rankings`` tables :pr:`2345`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
+        * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
     * Documentation Changes
@@ -18,6 +20,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Removed ``PipelineBase``'s ``_component_graph`` attribute. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * `pipeline_parameters` will no longer accept `skopt.space` variables since hyperparameter ranges will now be specified through `custom_hyperparameters` :pr:`2317`
 
 
