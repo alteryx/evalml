@@ -1557,6 +1557,141 @@ def test_component_graph_sampler_same_given_components(mock_dt_fit, mock_rf_fit)
     )
 
 
+def test_component_graph_equality(example_graph):
+    different_graph = {
+        "Target Imputer": [TargetImputer],
+        "OneHot": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
+        "Random Forest": [RandomForestClassifier, "OneHot.x", "Target Imputer.y"],
+        "Elastic Net": [ElasticNetClassifier, "OneHot.x", "Target Imputer.y"],
+        "Logistic Regression": [
+            LogisticRegressionClassifier,
+            "Random Forest",
+            "Elastic Net",
+            "Target Imputer.y",
+        ],
+    }
+
+    same_graph_different_order = {
+        "Imputer": [Imputer],
+        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x"],
+        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x"],
+        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x"],
+        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x"],
+        "Logistic Regression": [
+            LogisticRegressionClassifier,
+            "Random Forest",
+            "Elastic Net",
+        ],
+    }
+
+    component_graph = ComponentGraph(example_graph, random_seed=0)
+    component_graph_eq = ComponentGraph(example_graph, random_seed=0)
+    component_graph_different_seed = ComponentGraph(example_graph, random_seed=5)
+    component_graph_not_eq = ComponentGraph(different_graph, random_seed=0)
+    component_graph_different_order = ComponentGraph(
+        same_graph_different_order, random_seed=0
+    )
+
+    component_graph.instantiate({})
+    component_graph_eq.instantiate({})
+    component_graph_different_seed.instantiate({})
+    component_graph_not_eq.instantiate({})
+    component_graph_different_order.instantiate({})
+
+    assert component_graph == component_graph
+    assert component_graph == component_graph_eq
+
+    assert component_graph != "not a component graph"
+    assert component_graph != component_graph_different_seed
+    assert component_graph != component_graph_not_eq
+    assert component_graph != component_graph_different_order
+
+
+def test_component_graph_equality_same_graph():
+    # Same component nodes and edges, just specified in a different order in the input dictionary
+    cg = ComponentGraph(
+        {
+            "Component A": [DateTimeFeaturizer],
+            "Component B": [OneHotEncoder],
+            "Random Forest": [RandomForestClassifier, "Component A.x", "Component B.x"],
+        }
+    )
+
+    cg2 = ComponentGraph(
+        {
+            "Component B": [OneHotEncoder],
+            "Component A": [DateTimeFeaturizer],
+            "Random Forest": [RandomForestClassifier, "Component A.x", "Component B.x"],
+        }
+    )
+    cg2 == cg
+
+
+@pytest.mark.parametrize("return_dict", [True, False])
+def test_describe_component_graph(return_dict, example_graph, caplog):
+    component_graph = ComponentGraph(example_graph, random_seed=0)
+    component_graph.instantiate({})
+    expected_component_graph_dict = {
+        "Imputer": {
+            "name": "Imputer",
+            "parameters": {
+                "categorical_impute_strategy": "most_frequent",
+                "numeric_impute_strategy": "mean",
+                "categorical_fill_value": None,
+                "numeric_fill_value": None,
+            },
+        },
+        "One Hot Encoder": {
+            "name": "One Hot Encoder",
+            "parameters": {
+                "top_n": 10,
+                "features_to_encode": None,
+                "categories": None,
+                "drop": "if_binary",
+                "handle_unknown": "ignore",
+                "handle_missing": "error",
+            },
+        },
+        "Random Forest Classifier": {
+            "name": "Random Forest Classifier",
+            "parameters": {"n_estimators": 100, "max_depth": 6, "n_jobs": -1},
+        },
+        "Elastic Net Classifier": {
+            "name": "Elastic Net Classifier",
+            "parameters": {
+                "alpha": 0.0001,
+                "l1_ratio": 0.15,
+                "n_jobs": -1,
+                "max_iter": 1000,
+                "penalty": "elasticnet",
+                "loss": "log",
+            },
+        },
+        "Logistic Regression Classifier": {
+            "name": "Logistic Regression Classifier",
+            "parameters": {
+                "penalty": "l2",
+                "C": 1.0,
+                "n_jobs": -1,
+                "multi_class": "auto",
+                "solver": "lbfgs",
+            },
+        },
+    }
+    component_graph_dict = component_graph.describe(return_dict=return_dict)
+    if return_dict:
+        assert component_graph_dict == expected_component_graph_dict
+    else:
+        assert component_graph_dict is None
+
+    out = caplog.text
+    for component in component_graph.component_instances.values():
+        if component.hyperparameter_ranges:
+            for parameter in component.hyperparameter_ranges:
+                assert parameter in out
+        assert component.name in out
+
+
 class LogTransform(TargetTransformer):
     name = "Log Transform"
 
