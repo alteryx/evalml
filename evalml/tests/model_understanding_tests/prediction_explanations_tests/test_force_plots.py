@@ -201,3 +201,77 @@ def test_force_plot_regression(
             assert isinstance(
                 result["regression"]["plot"], shap.plots._force.AdditiveForceVisualizer
             )
+
+from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_explainers import pipeline_test_cases, transform_y_for_problem_type
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
+    X, y = fraud_100
+    columns_to_select = ["datetime", "amount", "provider", "currency"]
+
+    pipeline = pipeline_class(
+        component_graph=[
+            "Select Columns Transformer",
+            "DateTime Featurization Component",
+            "One Hot Encoder",
+            estimator,
+        ],
+        parameters={
+            "Select Columns Transformer": {
+                "columns": columns_to_select
+            },
+            "DateTime Featurization Component": {"encode_as_categories": True},
+            estimator: {"n_jobs": 1},
+        },
+    )
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    force_plots_dict = force_plot(pipeline, [0], X, y)
+    for plot in force_plots_dict:
+        for cls in plot:
+            assert set(plot[cls]["feature_names"]) == set(columns_to_select)
+
+    force_plots = graph_force_plot(pipeline, [0,1,2], X, y)
+    for plot in force_plots:
+        for cls in plot:
+            assert set(plot[cls]["feature_names"]) == set(columns_to_select)
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
+    X, y = fraud_100
+    columns_to_select = ["datetime", "amount", "provider", "currency"]
+
+    X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
+    component_graph = [
+        "Select Columns Transformer",
+        "One Hot Encoder",
+        "Text Featurization Component",
+        "DateTime Featurization Component",
+        estimator,
+    ]
+
+    pipeline = pipeline_class(
+        component_graph,
+        parameters={
+            "Select Columns Transformer": {
+                "columns": ["amount", "provider", "currency", "datetime"]
+            },
+            estimator: {"n_jobs": 1},
+        },
+    )
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    force_plots_dict = force_plot(pipeline, [0], X, y)
+    for plot in force_plots_dict:
+        for cls in plot:
+            assert set(plot[cls]["feature_names"]) == set(columns_to_select)
+
+    force_plots = graph_force_plot(pipeline, [0,1,2], X, y)
+    for plot in force_plots:
+        for cls in plot:
+            assert set(plot[cls]["feature_names"]) == set(columns_to_select)
