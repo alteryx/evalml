@@ -64,7 +64,6 @@ class IDColumnsDataCheck(DataCheck):
         X = X.ww.select(include=["Integer", "Categorical"])
 
         check_all_unique = X.nunique() == len(X)
-
         cols_with_all_unique = check_all_unique[
             check_all_unique
         ].index.tolist()  # columns whose values are all unique

@@ -196,8 +196,9 @@ class TestDaskEngine(unittest.TestCase):
         assert all([s._is_fitted for s in par_pipelines])
 
         # Ensure the scores in parallel and sequence are same
-        assert set(par_scores) == set(seq_scores)
         assert not any([np.isnan(s) for s in par_scores])
+        assert not any([np.isnan(s) for s in seq_scores])
+        np.testing.assert_allclose(par_scores, seq_scores, rtol=1e-10)
 
         # Ensure the parallel and sequence pipelines match
         assert len(par_pipelines) == len(seq_pipelines)
@@ -284,7 +285,9 @@ class TestDaskEngine(unittest.TestCase):
 
         # Check there are the proper number of pipelines and all their scores are same.
         assert len(par_eval_results) == len(pipelines)
-        assert set(par_scores) == set(seq_scores)
+        assert not any([np.isnan(s) for s in par_scores])
+        assert not any([np.isnan(s) for s in seq_scores])
+        np.testing.assert_allclose(par_scores, seq_scores, rtol=1e-10)
 
     def test_cancel_job(self):
         """Test that training a single pipeline using the parallel engine produces the

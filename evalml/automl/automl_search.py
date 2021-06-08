@@ -151,6 +151,7 @@ class AutoMLSearch:
         problem_configuration=None,
         train_best_pipeline=True,
         pipeline_parameters=None,
+        custom_hyperparameters=None,
         sampler_method="auto",
         sampler_balanced_ratio=0.25,
         _ensembling_split_size=0.2,
@@ -232,7 +233,15 @@ class AutoMLSearch:
 
             train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
-            pipeline_parameters (dict): A dict of the parameters used to initalize a pipeline with.
+            pipeline_parameters (dict): A dict of the parameters used to initialize a pipeline with.
+                Keys should consist of the component names and values should specify parameter values
+
+                e.g. pipeline_parameters = { 'Imputer' : { 'numeric_impute_strategy': 'most_frequent' } }
+
+            custom_hyperparameters (dict): A dict of the hyperparameter ranges used to iterate over during search.
+                Keys should consist of the component names and values should specify a singular value or skopt.Space.
+
+                e.g. custom_hyperparameters = { 'Imputer' : { 'numeric_impute_strategy': Categorical(['most_frequent', 'median']) } }
 
             sampler_method (str): The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
                 Either 'auto', which will use our preferred sampler for the data, 'Undersampler', 'Oversampler', or None. Defaults to 'auto'.
@@ -408,14 +417,14 @@ class AutoMLSearch:
             random_seed=self.random_seed,
         )
         self.data_splitter = self.data_splitter or default_data_splitter
-        self.pipeline_parameters = (
-            pipeline_parameters if pipeline_parameters is not None else {}
-        )
+        self.pipeline_parameters = pipeline_parameters or {}
+        self.custom_hyperparameters = custom_hyperparameters or {}
         self.search_iteration_plot = None
         self._interrupted = False
         self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
+
         if self.problem_configuration:
             parameters.update({"pipeline": self.problem_configuration})
             self._frozen_pipeline_parameters.update(
@@ -425,6 +434,7 @@ class AutoMLSearch:
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
         self._sampler_name = None
+
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
             if self.sampler_method in ["auto", "Oversampler"]:
@@ -471,19 +481,10 @@ class AutoMLSearch:
                     estimator,
                     self.problem_type,
                     parameters=self._frozen_pipeline_parameters,
-                    custom_hyperparameters=parameters,
                     sampler_name=self._sampler_name,
                 )
                 for estimator in allowed_estimators
             ]
-        else:
-            for pipeline in self.allowed_pipelines:
-                if self.pipeline_parameters:
-                    if pipeline.custom_hyperparameters:
-                        for component_name, params in self.pipeline_parameters.items():
-                            pipeline.custom_hyperparameters[component_name] = params
-                    else:
-                        pipeline.custom_hyperparameters = self.pipeline_parameters
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -583,6 +584,7 @@ class AutoMLSearch:
             ensembling=run_ensembling,
             text_in_ensembling=text_in_ensembling,
             pipeline_params=parameters,
+            custom_hyperparameters=self.custom_hyperparameters,
             _frozen_pipeline_parameters=self._frozen_pipeline_parameters,
         )
 

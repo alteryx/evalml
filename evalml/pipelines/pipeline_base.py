@@ -47,7 +47,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_graph,
         parameters=None,
         custom_name=None,
-        custom_hyperparameters=None,
         random_seed=0,
     ):
         """Machine learning pipeline made out of transformers and a estimator.
@@ -61,10 +60,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary or None implies using all default values for component parameters. Defaults to None.
             custom_name (str): Custom name for the pipeline. Defaults to None.
-            custom_hyperparameters (dict): Custom hyperparameter range for the pipeline. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        self._custom_hyperparameters = custom_hyperparameters
         self.random_seed = random_seed
 
         self.component_graph = component_graph
@@ -101,16 +98,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self._pipeline_params = parameters.get("pipeline", {})
 
         self._custom_name = custom_name
-
-    @property
-    def custom_hyperparameters(self):
-        """Custom hyperparameters for the pipeline."""
-        return self._custom_hyperparameters
-
-    @custom_hyperparameters.setter
-    def custom_hyperparameters(self, value):
-        """Custom hyperparameters for the pipeline."""
-        self._custom_hyperparameters = value
 
     @property
     def custom_name(self):
@@ -355,22 +342,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             ).model_family
 
     @property
-    def hyperparameters(self):
-        """Returns hyperparameter ranges from all components as a dictionary"""
-        hyperparameter_ranges = dict()
-        for component_name, component_class in self.linearized_component_graph:
-            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-            if (
-                self.custom_hyperparameters
-                and component_name in self.custom_hyperparameters
-            ):
-                component_hyperparameters.update(
-                    self.custom_hyperparameters.get(component_name, {})
-                )
-            hyperparameter_ranges[component_name] = component_hyperparameters
-        return hyperparameter_ranges
-
-    @property
     def parameters(self):
         """Parameter dictionary for this pipeline
 
@@ -541,7 +512,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self.component_graph,
             parameters=self.parameters,
             custom_name=self.custom_name,
-            custom_hyperparameters=self.custom_hyperparameters,
             random_seed=self.random_seed,
         )
 
@@ -560,7 +530,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self.component_graph,
             parameters=parameters,
             custom_name=self.custom_name,
-            custom_hyperparameters=self.custom_hyperparameters,
             random_seed=random_seed,
         )
 
@@ -599,22 +568,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
         component_graph_str = f"[{component_graph_repr}]"
 
-        custom_hyperparameters_repr = (
-            ", ".join(
-                [
-                    f"'{component}':{{{repr_component(hyperparameters)}}}"
-                    for component, hyperparameters in self.custom_hyperparameters.items()
-                ]
-            )
-            if self.custom_hyperparameters
-            else None
-        )
-        custom_hyperparmeter_str = (
-            f"custom_hyperparameters={{{custom_hyperparameters_repr}}}"
-            if custom_hyperparameters_repr
-            else None
-        )
-
         parameters_repr = ", ".join(
             [
                 f"'{component}':{{{repr_component(parameters)}}}"
@@ -632,7 +585,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 arg
                 for arg in [
                     parameters_str,
-                    custom_hyperparmeter_str,
                     custom_name_repr,
                     random_seed_str,
                 ]

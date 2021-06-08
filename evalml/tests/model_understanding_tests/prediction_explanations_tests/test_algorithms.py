@@ -46,7 +46,6 @@ def make_test_pipeline(estimator, base_class):
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
