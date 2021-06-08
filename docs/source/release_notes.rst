@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added ``inverse_transform`` method to pipelines :pr:`2256`
-        * Add optional automatic update checker (:pr:`2350`)
+        * Add optional automatic update checker :pr:`2350`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
