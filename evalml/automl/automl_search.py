@@ -1259,7 +1259,7 @@ class AutoMLSearch:
             "high_variance_cv",
             "parameters",
         ]
-        full_rankings_cols = ["search_order"] + pipeline_results_cols
+        full_rankings_cols = pipeline_results_cols + ["search_order"]
 
         if not self._results["pipeline_results"]:
             return pd.DataFrame(columns=full_rankings_cols)

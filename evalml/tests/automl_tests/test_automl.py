@@ -160,6 +160,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 np.dtype("float64"),
                 np.dtype("bool"),
                 np.dtype("O"),
+                np.dtype("int64"),
             ],
             index=[
                 "id",
@@ -170,6 +171,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "percent_better_than_baseline",
                 "high_variance_cv",
                 "parameters",
+                "search_order",
             ],
         )
     )
@@ -185,6 +187,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 np.dtype("float64"),
                 np.dtype("bool"),
                 np.dtype("O"),
+                np.dtype("int64"),
             ],
             index=[
                 "id",
@@ -195,6 +198,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
                 "percent_better_than_baseline",
                 "high_variance_cv",
                 "parameters",
+                "search_order",
             ],
         )
     )
@@ -1229,6 +1233,7 @@ def test_no_search(X_y_binary):
         "percent_better_than_baseline",
         "high_variance_cv",
         "parameters",
+        "search_order",
     ]
     assert (automl.rankings.columns == df_columns).all()
     assert (automl.full_rankings.columns == df_columns).all()
