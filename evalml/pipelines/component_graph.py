@@ -8,7 +8,14 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import (
+    _retain_custom_types_and_initalize_woodwork,
+    get_logger,
+    import_or_raise,
+    infer_feature_types,
+)
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -72,8 +79,11 @@ class ComponentGraph:
                     component_name = f"{component_name}_{idx}"
                 seen.add(component_name)
                 names.append((component_name, component_class))
-        else:
+        elif isinstance(components, dict):
             for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        else:
+            for k, v in components.component_dict.items():
                 names.append((k, handle_component_class(v[0])))
         return names
 
@@ -179,6 +189,7 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
+        y = infer_feature_types(y)
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -276,6 +287,8 @@ class ComponentGraph:
             dict: Outputs from each component
         """
         X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
         most_recent_y = y
         if len(component_list) == 0:
             return X
@@ -415,7 +428,22 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = infer_feature_types(return_x)
+
+        # Expected behavior: Preserve types selected by user unless one of the components updates the
+        # type for that column. This requirement is important because the StandardScaler is expected to convert
+        # Ints to Doubles and converting back to an int would lose information.
+        # In order to meet this requirement, we start off with the user selected types (X.ww.logical_types) and then
+        # update them with the types created by components (if they are different).
+        # Components are not expected to create features with the same names
+        # so the only possible clash is between the types selected by the user and the types selected by a component.
+        # Because of that, the for-loop below is sufficient.
+
+        logical_types = {}
+        logical_types.update(X.ww.logical_types)
+        for x_input in x_inputs:
+            if x_input.ww.schema is not None:
+                logical_types.update(x_input.ww.logical_types)
+        return_x = _retain_custom_types_and_initalize_woodwork(logical_types, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
         return return_x, return_y
@@ -477,6 +505,29 @@ class ComponentGraph:
         if len(component_info) > 1:
             return component_info[1:]
         return []
+
+    def describe(self, return_dict=False):
+        """Outputs component graph details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
+
+        Returns:
+            dict: Dictionary of all component parameters if return_dict is True, else None
+        """
+        components = {}
+        for number, component in enumerate(self.component_instances.values(), 1):
+            component_string = str(number) + ". " + component.name
+            logger.info(component_string)
+            components.update(
+                {
+                    component.name: component.describe(
+                        print_name=False, return_dict=return_dict
+                    )
+                }
+            )
+        if return_dict:
+            return components
 
     def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph
@@ -585,6 +636,18 @@ class ComponentGraph:
         else:
             self._i = 0
             raise StopIteration
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
+            return False
+        attributes_to_check = ["component_dict", "compute_order"]
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
 
     def _get_parent_y(self, component_name):
         """Helper for inverse_transform method."""

@@ -37,7 +37,5 @@ def log_error_callback(exception, traceback, automl, **kwargs):
     logger.info(
         f"\t\t\tFold {fold_num}: Exception during automl search: {str(exception)}"
     )
-    logger.debug(
-        f"\t\t\tFold {fold_num}: Hyperparameters:\n\t{pipeline.hyperparameters}"
-    )
+    logger.debug(f"\t\t\tFold {fold_num}: Parameters:\n\t{pipeline.parameters}")
     logger.debug(f"\t\t\tFold {fold_num}: Traceback:\n{trace}")
