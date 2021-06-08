@@ -1268,7 +1268,7 @@ def test_automl_search_sampler_ratio(
                 )
                 for pipeline in pipelines
             )
-        for comp in pipelines[0]._component_graph:
+        for comp in pipelines[0].component_graph:
             if "sampler" in comp.name:
                 assert comp.parameters["sampling_ratio"] == sampling_ratio
 
@@ -1339,7 +1339,7 @@ def test_automl_search_ratio_overrides_sampler_ratio(
     pipelines = automl.allowed_pipelines
     for pipeline in pipelines:
         seen_sampler = False
-        for comp in pipeline._component_graph:
+        for comp in pipeline.component_graph:
             if comp.name == sampler:
                 assert comp.parameters["sampling_ratio"] == 0.5
                 seen_sampler = True
@@ -1389,7 +1389,7 @@ def test_automl_search_dictionary_undersampler(
     pipelines = automl.allowed_pipelines
     for pipeline in pipelines:
         seen_under = False
-        for comp in pipeline._component_graph:
+        for comp in pipeline.component_graph:
             if comp.name == "Undersampler":
                 assert comp.parameters["sampling_ratio_dict"] == sampling_ratio_dict
                 seen_under = True
@@ -1449,7 +1449,7 @@ def test_automl_search_dictionary_oversampler(
     pipelines = automl.allowed_pipelines
     for pipeline in pipelines:
         seen_under = False
-        for comp in pipeline._component_graph:
+        for comp in pipeline.component_graph:
             if comp.name == "SMOTE Oversampler":
                 assert comp.parameters["sampling_ratio_dict"] == sampling_ratio_dict
                 seen_under = True
@@ -1517,7 +1517,7 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
     )
     for pipeline in automl.allowed_pipelines:
         seen_under = False
-        for comp in pipeline._component_graph:
+        for comp in pipeline.component_graph:
             if comp.name == sampler:
                 assert comp.parameters["k_neighbors"] == 2
                 seen_under = True

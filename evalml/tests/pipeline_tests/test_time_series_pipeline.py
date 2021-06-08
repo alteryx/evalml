@@ -738,7 +738,7 @@ def test_time_series_pipeline_with_detrender(component_graph, ts_data):
     pipeline.fit(X, y)
     predictions = pipeline.predict(X, y)
     features = pipeline.compute_estimator_features(X, y)
-    detrender = pipeline._component_graph.get_component("Polynomial Detrender")
+    detrender = pipeline.component_graph.get_component("Polynomial Detrender")
     preds = pipeline.estimator.predict(features.iloc[2:])
     preds.index = y.index[2:]
     expected = detrender.inverse_transform(preds)
