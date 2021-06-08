@@ -5,6 +5,7 @@ Release Notes
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
+        * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
     * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
