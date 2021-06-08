@@ -57,6 +57,9 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         """
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
+        y_true = y_true.astype("int64")
+        y_predicted = y_predicted.astype("int64")
+
         self.validate_inputs(y_true, y_predicted)
 
         tp = y_true & y_predicted

@@ -90,12 +90,12 @@ def test_cbm_input_contains_nan(X_y_binary):
     cbm = CostBenefitMatrix(
         true_positive=10, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+    with pytest.raises(ValueError, match="y_predicted contains infinity values"):
         cbm.score(y_true, y_predicted)
 
     y_true = pd.Series([np.nan, 0, 0])
     y_predicted = pd.Series([1, 2, 0])
-    with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+    with pytest.raises(ValueError, match="y_true contains infinity values"):
         cbm.score(y_true, y_predicted)
 
 
@@ -105,12 +105,12 @@ def test_cbm_input_contains_inf(capsys):
     )
     y_predicted = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
-    with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+    with pytest.raises(ValueError, match="y_predicted contains infinity values"):
         cbm.score(y_true, y_predicted)
 
     y_true = pd.Series([np.inf, 0, 0])
     y_predicted = pd.Series([1, 0, 0])
-    with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+    with pytest.raises(ValueError, match="y_true contains infinity values"):
         cbm.score(y_true, y_predicted)
 
 

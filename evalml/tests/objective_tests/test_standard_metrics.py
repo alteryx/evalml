@@ -5,6 +5,7 @@ import pandas as pd
 import pytest
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
+from evalml import objectives
 from evalml.objectives import (
     F1,
     MAPE,
@@ -34,6 +35,9 @@ from evalml.objectives import (
     RootMeanSquaredError,
     RootMeanSquaredLogError,
 )
+from evalml.objectives.multiclass_classification_objective import (
+    MulticlassClassificationObjective,
+)
 from evalml.objectives.utils import (
     _all_objectives_dict,
     get_non_core_objectives,
@@ -49,39 +53,42 @@ all_automl_objectives = {
 
 
 def test_input_contains_nan():
-    y_predicted = np.array([np.nan, 0, 0])
-    y_true = np.array([1, 2, 1])
+    y_predicted = np.array([np.nan, 0, 1])
+    y_true = np.array([1, 0, 1])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
-            objective.score(y_true, y_predicted)
+        objective.score(y_true, y_predicted)
 
-    y_true = np.array([np.nan, 0, 0])
-    y_predicted = np.array([1, 2, 0])
+    y_true = np.array([np.nan, 1, 0])
+    y_predicted = np.array([1, 0, 0])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
-            objective.score(y_true, y_predicted)
+        objective.score(y_true, y_predicted)
 
-    y_true = np.array([1, 0])
-    y_predicted_proba = np.array([[1, np.nan], [0.1, 0]])
+    y_true_binary = np.array([1, 1, 0, 0])
+    y_predicted_proba_binary = np.array(
+        [[1, np.nan, 0.0], [0.1, 0.5, 0.4], [0.1, 0.1, 0.8], [0.1, 0.1, 0.8]]
+    )
+    y_true_multi = np.array([1, 1, 0, 2])
+    y_predicted_proba_multi = np.array([[1, np.nan], [0.1, 0.9], [0.1, 0.9]])
     for objective in all_automl_objectives.values():
-        if objective.score_needs_proba:
-            with pytest.raises(
-                ValueError, match="y_predicted contains NaN or infinity"
-            ):
-                objective.score(y_true, y_predicted_proba)
+        if isinstance(objectives, BinaryClassificationObjective):
+            if objective.score_needs_proba:
+                objective.score(y_true_binary, y_predicted_proba_binary)
+        elif isinstance(objectives, MulticlassClassificationObjective):
+            if objective.score_needs_proba:
+                objective.score(y_true_multi, y_predicted_proba_multi)
 
 
 def test_input_contains_inf():
     y_predicted = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+        with pytest.raises(ValueError, match="y_predicted contains infinity values"):
             objective.score(y_true, y_predicted)
 
     y_true = np.array([np.inf, 0, 0])
     y_predicted = np.array([1, 0, 0])
     for objective in all_automl_objectives.values():
-        with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+        with pytest.raises(ValueError, match="y_true contains infinity values"):
             objective.score(y_true, y_predicted)
 
     y_true = np.array([1, 0])
@@ -89,7 +96,7 @@ def test_input_contains_inf():
     for objective in all_automl_objectives.values():
         if objective.score_needs_proba:
             with pytest.raises(
-                ValueError, match="y_predicted contains NaN or infinity"
+                ValueError, match="y_predicted contains infinity values"
             ):
                 objective.score(y_true, y_predicted_proba)
 

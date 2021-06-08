@@ -95,12 +95,17 @@ def test_classification_pipeline_scoring_with_nan_in_target(
     )
 
     mock_predict.return_value = pd.Series(np.resize([0, 1, np.nan], len(y)))
-    mock_predict_proba_df = pd.DataFrame({"benign": pd.Series(np.resize([0.4, 0.6], len(y))),
-    "malignant": pd.Series(np.resize([0.6, 0.4], len(y)))
-    })
+    mock_predict_proba_df = pd.DataFrame(
+        {
+            "benign": pd.Series(np.resize([0.4, 0.6], len(y))),
+            "malignant": pd.Series(np.resize([0.6, 0.4], len(y))),
+        }
+    )
     mock_predict_proba_df.loc[0, "benign"] = np.nan
     mock_predict_proba_df.loc[2, "malignant"] = np.nan
-    mock_rows_with_nan = list(mock_predict_proba_df[mock_predict_proba_df.isnull().any(axis=1)].index)
+    mock_rows_with_nan = list(
+        mock_predict_proba_df[mock_predict_proba_df.isnull().any(axis=1)].index
+    )
     assert mock_rows_with_nan == [0, 2]
     mock_predict_proba.return_value = mock_predict_proba_df
 

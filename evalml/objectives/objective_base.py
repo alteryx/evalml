@@ -71,11 +71,17 @@ class ObjectiveBase(ABC):
         Returns:
             score
         """
-        if X is not None:
-            X = self._standardize_input_type(X)
+
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
-        y_true, y_predicted = self.drop_target_with_nan_values(y_true, y_predicted)
+        y_true, y_predicted, indices_dropped = self.drop_target_with_nan_values(
+            y_true, y_predicted
+        )
+
+        if X is not None:
+            X = self._standardize_input_type(X)
+            X = X.drop(indices_dropped)
+
         self.validate_inputs(y_true, y_predicted)
         return self.objective_function(y_true, y_predicted, X=X)
 
@@ -119,7 +125,7 @@ class ObjectiveBase(ABC):
         if len(y_true) == 0:
             raise ValueError("Length of inputs is 0")
         if np.isnan(y_true).any() or np.isinf(y_true).any():
-            raise ValueError("y_true contains NaN or infinity")
+            raise ValueError("y_true contains infinity values")
         # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
         y_pred_flat = y_predicted.to_numpy().flatten()
         if np.isinf(y_pred_flat).any():
@@ -139,7 +145,7 @@ class ObjectiveBase(ABC):
         indices_to_drop = y_true_nan_indices.union(y_predicted_nan_indices)
         y_true_without_nans = y_true.drop(indices_to_drop)
         y_predicted_without_nans = y_predicted.drop(indices_to_drop)
-        return y_true_without_nans, y_predicted_without_nans
+        return y_true_without_nans, y_predicted_without_nans, indices_to_drop
 
     @classmethod
     def calculate_percent_difference(cls, score, baseline_score):

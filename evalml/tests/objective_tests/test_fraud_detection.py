@@ -54,29 +54,31 @@ def test_fraud_objective_function_amount_col(X_y_binary):
         objective.objective_function(y_true, y_predicted, X.tolist())
 
 
-def test_input_contains_nan(X_y_binary):
+def test_input_contains_nan():
     fraud_cost = FraudCost(amount_col="value")
     y_predicted = np.array([np.nan, 0, 0])
-    y_true = np.array([1, 2, 1])
-    with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
-        fraud_cost.score(y_true, y_predicted)
+    y_true = np.array([1, 0, 1])
+    extra_columns = pd.DataFrame({"value": [100, 5, 250]})
+
+    fraud_cost.score(y_true, y_predicted, extra_columns)
 
     y_true = np.array([np.nan, 0, 0])
-    y_predicted = np.array([1, 2, 0])
-    with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
-        fraud_cost.score(y_true, y_predicted)
+    y_predicted = np.array([1, 0, 0])
+    extra_columns = pd.DataFrame({"value": [100, 5, 250]})
+
+    fraud_cost.score(y_true, y_predicted, extra_columns)
 
 
-def test_input_contains_inf(capsys):
+def test_input_contains_inf():
     fraud_cost = FraudCost(amount_col="value")
     y_predicted = np.array([np.inf, 0, 0])
     y_true = np.array([1, 0, 0])
-    with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+    with pytest.raises(ValueError, match="y_predicted contains infinity values"):
         fraud_cost.score(y_true, y_predicted)
 
     y_true = np.array([np.inf, 0, 0])
     y_predicted = np.array([1, 0, 0])
-    with pytest.raises(ValueError, match="y_true contains NaN or infinity"):
+    with pytest.raises(ValueError, match="y_true contains infinity values"):
         fraud_cost.score(y_true, y_predicted)
 
 

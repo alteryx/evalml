@@ -128,7 +128,7 @@ class TestBinaryObjective(metaclass=ABCMeta):
         return np.array([0, 1, 2])
 
     def input_contains_nan_inf(self, fix_y_pred_na, fix_y_true):
-        with pytest.raises(ValueError, match="y_predicted contains NaN or infinity"):
+        with pytest.raises(ValueError, match="y_predicted contains infinity values"):
             self.objective.score(fix_y_true, fix_y_pred_na)
 
     def different_input_lengths(self, fix_y_pred_diff_len, fix_y_true):

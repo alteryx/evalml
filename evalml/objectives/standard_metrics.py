@@ -130,6 +130,9 @@ class Precision(BinaryClassificationObjective):
     is_bounded_like_percentage = True
 
     def objective_function(self, y_true, y_predicted, X=None):
+        y_true = y_true.astype("int64")
+        y_predicted = y_predicted.astype("int64")
+
         return metrics.precision_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -288,6 +291,9 @@ class AUCWeighted(MulticlassClassificationObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
+        import pdb
+
+        pdb.set_trace()
         return metrics.roc_auc_score(y_true, y_predicted, average="weighted")
 
 
