@@ -49,7 +49,6 @@ def create_mock_pipeline(estimator, problem_type):
                     self.component_graph,
                     parameters=parameters,
                     custom_name=self.custom_name,
-                    custom_hyperparameters=None,
                     random_seed=random_seed,
                 )
 
@@ -65,7 +64,6 @@ def create_mock_pipeline(estimator, problem_type):
                     self.component_graph,
                     parameters=parameters,
                     custom_name=self.custom_name,
-                    custom_hyperparameters=None,
                     random_seed=random_seed,
                 )
 
@@ -516,7 +514,6 @@ def logistic_regression_multiclass_pipeline_class():
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -542,7 +539,6 @@ def logistic_regression_binary_pipeline_class():
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 

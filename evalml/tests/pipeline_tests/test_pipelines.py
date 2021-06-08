@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from skopt.space import Integer, Real
 
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
@@ -32,7 +31,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     ElasticNetClassifier,
-    Estimator,
     Imputer,
     LogisticRegressionClassifier,
     OneHotEncoder,
@@ -366,7 +364,6 @@ def test_nonlinear_model_family():
             super().__init__(
                 self.component_graph,
                 parameters=parameters,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -383,7 +380,6 @@ def test_nonlinear_model_family():
             super().__init__(
                 self.component_graph,
                 parameters=parameters,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -506,28 +502,6 @@ def test_name():
     )
     assert pipeline_with_neat_name.name == "some_neat_name"
     assert pipeline_with_neat_name.custom_name == "some_neat_name"
-
-
-def test_custom_hyperparameters():
-    custom_hyperparameters = {
-        "Imputer": {"numeric_impute_strategy": ["most_frequent", "median"]}
-    }
-    pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Logistic Regression Classifier"],
-        custom_hyperparameters=custom_hyperparameters,
-    )
-    assert pipeline.custom_hyperparameters == custom_hyperparameters
-    expected_hyperparameters = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["most_frequent", "median"],
-        },
-        "Logistic Regression Classifier": {
-            "penalty": ["l2"],
-            "C": Real(low=0.01, high=10, prior="uniform", transform="identity"),
-        },
-    }
-    assert pipeline.hyperparameters == expected_hyperparameters
 
 
 def test_multi_format_creation(X_y_binary):
@@ -992,179 +966,6 @@ def test_correct_nonlinear_parameters(nonlinear_binary_pipeline_class):
     assert nlb_pipeline["OneHot_ElasticNet"].parameters["top_n"] == 10
 
 
-def test_hyperparameters():
-    expected_hyperparameters = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        },
-        "Random Forest Classifier": {
-            "n_estimators": Integer(10, 1000),
-            "max_depth": Integer(1, 10),
-        },
-    }
-    component_graph = ["Imputer", "Random Forest Classifier"]
-    assert (
-        BinaryClassificationPipeline(
-            component_graph=component_graph, parameters={}
-        ).hyperparameters
-        == expected_hyperparameters
-    )
-
-
-def test_nonlinear_hyperparameters(nonlinear_regression_pipeline_class):
-    hyperparameters = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["mean", "median", "most_frequent"],
-        },
-        "OneHot": {},
-        "Random Forest": {
-            "n_estimators": Integer(10, 1000),
-            "max_depth": Integer(1, 32),
-        },
-        "Elastic Net": {"alpha": Real(0, 1), "l1_ratio": Real(0, 1)},
-        "Linear Regressor": {
-            "fit_intercept": [True, False],
-            "normalize": [True, False],
-        },
-    }
-    assert (
-        nonlinear_regression_pipeline_class(parameters={}).hyperparameters
-        == hyperparameters
-    )
-
-
-def test_hyperparameters_override():
-    class MockPipelineOverRide(BinaryClassificationPipeline):
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-        custom_hyperparameters = {
-            "Imputer": {
-                "categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["median", "most_frequent"],
-            },
-            "Random Forest Classifier": {
-                "n_estimators": [1, 100, 200],
-                "max_depth": [5],
-            },
-        }
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                None,
-                parameters,
-                custom_hyperparameters=self.custom_hyperparameters,
-            )
-
-    hyperparameters = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["median", "most_frequent"],
-        },
-        "Random Forest Classifier": {"n_estimators": [1, 100, 200], "max_depth": [5]},
-    }
-
-    assert MockPipelineOverRide.custom_hyperparameters == hyperparameters
-    assert MockPipelineOverRide(parameters={}).hyperparameters == hyperparameters
-
-
-def test_nonlinear_hyperparameters_override():
-    class NonLinearRegressionPipelineOverRide(RegressionPipeline):
-        component_graph = {
-            "Imputer": ["Imputer"],
-            "OneHot": ["One Hot Encoder", "Imputer.x"],
-            "Random Forest": ["Random Forest Regressor", "OneHot.x"],
-            "Elastic Net": ["Elastic Net Regressor", "OneHot.x"],
-            "Linear Regressor": ["Linear Regressor", "Random Forest", "Elastic Net"],
-        }
-        custom_hyperparameters = {
-            "Imputer": {
-                "categorical_impute_strategy": ["most_frequent"],
-                "numeric_impute_strategy": ["median", "most_frequent"],
-            },
-            "Random Forest": {"n_estimators": [1, 100, 200], "max_depth": [5]},
-        }
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                None,
-                parameters,
-                custom_hyperparameters=self.custom_hyperparameters,
-            )
-
-    hyperparameters = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": ["median", "most_frequent"],
-        },
-        "OneHot": {},
-        "Random Forest": {"n_estimators": [1, 100, 200], "max_depth": [5]},
-        "Elastic Net": {"alpha": Real(0, 1), "l1_ratio": Real(0, 1)},
-        "Linear Regressor": {
-            "fit_intercept": [True, False],
-            "normalize": [True, False],
-        },
-    }
-    assert (
-        NonLinearRegressionPipelineOverRide(parameters={}).hyperparameters
-        == hyperparameters
-    )
-
-
-def test_hyperparameters_none(dummy_classifier_estimator_class):
-    class MockEstimator(Estimator):
-        name = "Mock Classifier"
-        model_family = ModelFamily.NONE
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-        hyperparameter_ranges = {}
-
-        def __init__(self, random_seed=0):
-            super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
-
-    pipeline = BinaryClassificationPipeline(component_graph=[MockEstimator])
-    assert pipeline.component_graph == [MockEstimator]
-    assert pipeline.hyperparameters == {"Mock Classifier": {}}
-
-
-def test_hyperparameters_linear_pipeline_duplicate_components():
-    pipeline = BinaryClassificationPipeline(
-        component_graph=[
-            "One Hot Encoder",
-            "One Hot Encoder",
-            "Random Forest Classifier",
-        ]
-    )
-    assert pipeline.hyperparameters == {
-        "One Hot Encoder": {},
-        "One Hot Encoder_1": {},
-        "Random Forest Classifier": {
-            "n_estimators": Integer(10, 1000),
-            "max_depth": Integer(1, 10),
-        },
-    }
-
-    pipeline = BinaryClassificationPipeline(
-        component_graph=[
-            "One Hot Encoder",
-            "One Hot Encoder",
-            "Random Forest Classifier",
-        ],
-        custom_hyperparameters={"One Hot Encoder_1": {"top_n": Integer(10, 50)}},
-    )
-
-    assert pipeline.hyperparameters == {
-        "One Hot Encoder": {},
-        "One Hot Encoder_1": {"top_n": Integer(10, 50)},
-        "Random Forest Classifier": {
-            "n_estimators": Integer(10, 1000),
-            "max_depth": Integer(1, 10),
-        },
-    }
-
-
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_score_with_objective_that_requires_predict_proba(
     mock_predict, dummy_regression_pipeline_class, X_y_binary
@@ -1439,9 +1240,7 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
         },
     }
     assert (
-        logistic_regression_binary_pipeline_class(
-            {}
-        )._component_graph.default_parameters
+        logistic_regression_binary_pipeline_class({}).component_graph.default_parameters
         == expected_defaults
     )
 
@@ -1670,7 +1469,6 @@ def test_pipeline_equality_different_attributes(pipeline_class):
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -1683,7 +1481,6 @@ def test_pipeline_equality_different_attributes(pipeline_class):
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -1718,7 +1515,6 @@ def test_pipeline_equality_subclasses(pipeline_class):
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -1769,7 +1565,6 @@ def test_pipeline_equality(mock_fit, pipeline_class):
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -1947,7 +1742,6 @@ def test_pipeline_str():
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -1960,7 +1754,6 @@ def test_pipeline_str():
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -1973,7 +1766,6 @@ def test_pipeline_str():
                 self.component_graph,
                 parameters=parameters,
                 custom_name=self.custom_name,
-                custom_hyperparameters=None,
                 random_seed=random_seed,
             )
 
@@ -2005,19 +1797,16 @@ def test_pipeline_repr(pipeline_class):
 
     custom_name = "Mock Pipeline"
     component_graph = ["Imputer", final_estimator]
-    custom_hyperparameters = {
-        "Imputer": {"numeric_impute_strategy": ["mean", "median"]},
-        final_estimator: {"n_estimators": Integer(50, 100)},
-    }
-    pipeline = pipeline_class(
-        component_graph=component_graph,
-        custom_name=custom_name,
-        custom_hyperparameters=custom_hyperparameters,
-    )
+    component_graph_str = ""
+    if pipeline_class == RegressionPipeline:
+        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}}"
+    else:
+        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}}"
+
+    pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, "
-        f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, "
         "custom_name='Mock Pipeline', random_seed=0)"
     )
     assert repr(pipeline) == expected_repr
@@ -2026,12 +1815,10 @@ def test_pipeline_repr(pipeline_class):
         component_graph=component_graph,
         parameters={"Imputer": {"numeric_fill_value": 42}},
         custom_name=custom_name,
-        custom_hyperparameters=custom_hyperparameters,
     )
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, "
-        f"custom_hyperparameters={{'Imputer':{{'numeric_impute_strategy': ['mean', 'median']}}, '{final_estimator}':{{'n_estimators': Integer(low=50, high=100, prior='uniform', transform='identity')}}}}, "
         "custom_name='Mock Pipeline', random_seed=0)"
     )
     assert repr(pipeline_with_parameters) == expected_repr
@@ -2046,7 +1833,7 @@ def test_pipeline_repr(pipeline_class):
         },
     )
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
     )
     assert repr(pipeline_with_inf_parameters) == expected_repr
@@ -2061,7 +1848,7 @@ def test_pipeline_repr(pipeline_class):
         },
     )
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', '{final_estimator}'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         f"parameters={{'Imputer':{{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}}, '{final_estimator}':{{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}}}, random_seed=0)"
     )
     assert repr(pipeline_with_nan_parameters) == expected_repr
@@ -2093,8 +1880,13 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     }
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
+    component_graph_str = ""
+    if pipeline_class == RegressionPipeline:
+        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Regressor', 'OHE_1', 'OHE_2']}"
+    else:
+        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Classifier', 'OHE_1', 'OHE_2']}"
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
@@ -2108,7 +1900,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         parameters={"Imputer": {"numeric_fill_value": 42}},
     )
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': 42}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
@@ -2127,7 +1919,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         },
     )
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': float('inf'), 'numeric_fill_value': float('inf')}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
@@ -2146,7 +1938,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
         },
     )
     expected_repr = (
-        f"pipeline = {pipeline_class.__name__}(component_graph=['Imputer', 'OHE_1', 'OHE_2', 'Estimator'], "
+        f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': np.nan, 'numeric_fill_value': np.nan}, "
         "'OHE_1':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OHE_2':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "

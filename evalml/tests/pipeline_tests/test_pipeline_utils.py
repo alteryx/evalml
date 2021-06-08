@@ -37,66 +37,6 @@ from evalml.pipelines.utils import (
 from evalml.problem_types import ProblemTypes, is_time_series
 
 
-def test_make_pipeline_error():
-    X = pd.DataFrame([[0, 1], [1, 0]])
-    y = pd.Series([1, 0])
-    estimators = get_estimators(problem_type="binary")
-    custom_hyperparameters = [
-        {"Imputer": {"numeric_imput_strategy": ["median"]}},
-        {"One Hot Encoder": {"value1": ["value2"]}},
-    ]
-
-    for estimator in estimators:
-        with pytest.raises(
-            ValueError, match="if custom_hyperparameters provided, must be dictionary"
-        ):
-            make_pipeline(X, y, estimator, "binary", {}, custom_hyperparameters)
-
-
-@pytest.mark.parametrize(
-    "problem_type",
-    [
-        ProblemTypes.BINARY,
-        ProblemTypes.MULTICLASS,
-        ProblemTypes.REGRESSION,
-        ProblemTypes.TIME_SERIES_REGRESSION,
-    ],
-)
-def test_make_pipeline_custom_hyperparameters(problem_type):
-    X = pd.DataFrame(
-        {
-            "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
-            "categorical": ["a", "b", "a", "c", "c"],
-            "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
-        }
-    )
-    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": ["median"]}}
-
-    y = pd.Series([0, 0, 1, 0, 0])
-    estimators = get_estimators(problem_type=problem_type)
-
-    for estimator_class in estimators:
-        for problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": "some dates",
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(
-                X, y, estimator_class, problem_type, parameters, custom_hyperparameters
-            )
-            assert pipeline.custom_hyperparameters == custom_hyperparameters
-
-            pipeline2 = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert not pipeline2.custom_hyperparameters
-
-
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
@@ -129,7 +69,6 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if (
                 is_time_series(problem_type)
@@ -140,10 +79,12 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
                 estimator_components = [StandardScaler, estimator_class]
             else:
                 estimator_components = [estimator_class]
-            assert (
-                pipeline.component_graph
-                == [DropNullColumns, Imputer] + delayed_features + estimator_components
+            expected_components = (
+                [DropNullColumns, Imputer] + delayed_features + estimator_components
             )
+            assert pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -181,7 +122,6 @@ def test_make_pipeline(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -192,17 +132,16 @@ def test_make_pipeline(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer] + estimator_components
-                )
+                expected_components = [DropNullColumns, Imputer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer, DateTimeFeaturizer]
+                expected_components = (
+                    [DropNullColumns, Imputer, DateTimeFeaturizer]
                     + delayed_features
                     + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -240,7 +179,6 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -251,14 +189,16 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert pipeline.component_graph == [Imputer] + estimator_components
+                expected_components = [Imputer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [Imputer, DateTimeFeaturizer]
+                expected_components = (
+                    [Imputer, DateTimeFeaturizer]
                     + delayed_features
                     + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -296,7 +236,6 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -307,17 +246,14 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer] + estimator_components
-                )
+                expected_components = [DropNullColumns, Imputer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer]
-                    + delayed_features
-                    + estimator_components
+                expected_components = (
+                    [DropNullColumns, Imputer] + delayed_features + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -348,7 +284,6 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -359,17 +294,14 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer] + estimator_components
-                )
+                expected_components = [DropNullColumns, Imputer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer]
-                    + delayed_features
-                    + estimator_components
+                expected_components = (
+                    [DropNullColumns, Imputer] + delayed_features + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -413,7 +345,6 @@ def test_make_pipeline_text_columns(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -424,17 +355,14 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert (
-                    pipeline.component_graph
-                    == [Imputer, TextFeaturizer] + estimator_components
-                )
+                expected_components = [Imputer, TextFeaturizer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [Imputer, TextFeaturizer]
-                    + delayed_features
-                    + estimator_components
+                expected_components = (
+                    [Imputer, TextFeaturizer] + delayed_features + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -483,7 +411,6 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -491,13 +418,19 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 standard_scaler = [StandardScaler]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert pipeline.component_graph == [
-                    TextFeaturizer
-                ] + standard_scaler + [estimator_class]
+                expected_components = (
+                    [TextFeaturizer] + standard_scaler + [estimator_class]
+                )
             else:
-                assert pipeline.component_graph == [
-                    TextFeaturizer
-                ] + delayed_features + standard_scaler + [estimator_class]
+                expected_components = (
+                    [TextFeaturizer]
+                    + delayed_features
+                    + standard_scaler
+                    + [estimator_class]
+                )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -534,7 +467,6 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -542,11 +474,17 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 standard_scaler = [StandardScaler]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert pipeline.component_graph == standard_scaler + [estimator_class]
+                expected_components = standard_scaler + [estimator_class]
             else:
-                assert pipeline.component_graph == [
-                    DateTimeFeaturizer
-                ] + delayed_features + standard_scaler + [estimator_class]
+                expected_components = (
+                    [DateTimeFeaturizer]
+                    + delayed_features
+                    + standard_scaler
+                    + [estimator_class]
+                )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
@@ -582,17 +520,14 @@ def test_make_pipeline_numpy_input(problem_type):
             else:
                 estimator_components = [estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer] + estimator_components
-                )
+                expected_components = [DropNullColumns, Imputer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [DropNullColumns, Imputer]
-                    + delayed_features
-                    + estimator_components
+                expected_components = (
+                    [DropNullColumns, Imputer] + delayed_features + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -629,7 +564,6 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            assert pipeline.custom_hyperparameters is None
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
@@ -640,14 +574,16 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
             else:
                 estimator_components = [estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                assert pipeline.component_graph == [Imputer] + estimator_components
+                expected_components = [Imputer] + estimator_components
             else:
-                assert (
-                    pipeline.component_graph
-                    == [Imputer, DateTimeFeaturizer]
+                expected_components = (
+                    [Imputer, DateTimeFeaturizer]
                     + delayed_features
                     + estimator_components
                 )
+            pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 def test_make_pipeline_problem_type_mismatch():
@@ -870,26 +806,14 @@ def test_get_estimators(has_minimal_dependencies):
 
 
 def test_generate_code_pipeline_errors():
-    class MockBinaryPipeline(BinaryClassificationPipeline):
-        name = "Mock Binary Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-    class MockMulticlassPipeline(MulticlassClassificationPipeline):
-        name = "Mock Multiclass Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-    class MockRegressionPipeline(RegressionPipeline):
-        name = "Mock Regression Pipeline"
-        component_graph = ["Imputer", "Random Forest Regressor"]
+    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
+        generate_pipeline_code(BinaryClassificationPipeline)
 
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
-        generate_pipeline_code(MockBinaryPipeline)
+        generate_pipeline_code(RegressionPipeline)
 
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
-        generate_pipeline_code(MockMulticlassPipeline)
-
-    with pytest.raises(ValueError, match="Element must be a pipeline instance"):
-        generate_pipeline_code(MockRegressionPipeline)
+        generate_pipeline_code(MulticlassClassificationPipeline)
 
     with pytest.raises(ValueError, match="Element must be a pipeline instance"):
         generate_pipeline_code([Imputer])
@@ -925,7 +849,7 @@ def test_generate_code_pipeline_json_with_objects():
     assert (
         generated_pipeline_code
         == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', CustomEstimator], "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': False, 'numpy_arg': array([0])}}, custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
     )
@@ -939,7 +863,7 @@ def test_generate_code_pipeline_json_with_objects():
     assert (
         generated_pipeline_code
         == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', CustomEstimator], "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': Imputer(categorical_impute_strategy='most_frequent', numeric_impute_strategy='mean', categorical_fill_value=None, numeric_fill_value=None), 'numpy_arg': []}}, "
         "custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
@@ -947,17 +871,15 @@ def test_generate_code_pipeline_json_with_objects():
 
 
 def test_generate_code_pipeline():
-    custom_hyperparameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
 
     binary_pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Random Forest Classifier"],
-        custom_hyperparameters=custom_hyperparameters,
+        ["Imputer", "Random Forest Classifier"]
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph=['Imputer', 'Random Forest Classifier'], "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
-        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_hyperparameters={'Imputer':{'numeric_impute_strategy': 'most_frequent'}}, random_seed=0)"
+        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
     )
     pipeline = generate_pipeline_code(binary_pipeline)
     assert expected_code == pipeline
@@ -967,7 +889,7 @@ def test_generate_code_pipeline():
     )
     expected_code = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph=['Imputer', 'Random Forest Regressor'], parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
     )
     pipeline = generate_pipeline_code(regression_pipeline)
@@ -983,7 +905,7 @@ def test_generate_code_pipeline():
     )
     expected_code_params = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph=['Imputer', 'Random Forest Regressor'], "
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
     )
@@ -991,12 +913,42 @@ def test_generate_code_pipeline():
     assert pipeline == expected_code_params
 
 
-def test_generate_code_nonlinear_pipeline_error(nonlinear_binary_pipeline_class):
-    pipeline = nonlinear_binary_pipeline_class({})
-    with pytest.raises(
-        ValueError, match="Code generation for nonlinear pipelines is not supported yet"
-    ):
-        generate_pipeline_code(pipeline)
+def test_generate_code_nonlinear_pipeline():
+    custom_name = "Non Linear Binary Pipeline"
+    component_graph = {
+        "Imputer": ["Imputer"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
+        "Logistic Regression": [
+            "Logistic Regression Classifier",
+            "Random Forest",
+            "Elastic Net",
+        ],
+    }
+    pipeline = BinaryClassificationPipeline(
+        component_graph=component_graph, custom_name=custom_name
+    )
+    expected = (
+        "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
+        "pipeline = BinaryClassificationPipeline("
+        "component_graph={'Imputer': ['Imputer'], "
+        "'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'], "
+        "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'], "
+        "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'], "
+        "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'], "
+        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "'OneHot_RandomForest':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
+        "'OneHot_ElasticNet':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
+        "'Random Forest':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}, "
+        "'Elastic Net':{'alpha': 0.0001, 'l1_ratio': 0.15, 'n_jobs': -1, 'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}, "
+        "'Logistic Regression':{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}, "
+        "custom_name='Non Linear Binary Pipeline', random_seed=0)"
+    )
+    pipeline_code = generate_pipeline_code(pipeline)
+    assert pipeline_code == expected
 
 
 def test_generate_code_pipeline_with_custom_components():
@@ -1029,7 +981,7 @@ def test_generate_code_pipeline_with_custom_components():
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph=[CustomTransformer, CustomEstimator], "
+        "pipeline = BinaryClassificationPipeline(component_graph={'My Custom Transformer': [CustomTransformer], 'My Custom Estimator': [CustomEstimator, 'My Custom Transformer.x']}, "
         "parameters={'My Custom Estimator':{'random_arg': False}}, random_seed=0)"
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
