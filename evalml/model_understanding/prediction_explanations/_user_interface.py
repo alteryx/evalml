@@ -287,7 +287,6 @@ class _RegressionSHAPTable(_TableMaker):
             original_features,
             self.top_k,
             self.include_shap_values,
-            self.include_expected_value,
         )
 
     def make_dict(
