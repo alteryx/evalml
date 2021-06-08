@@ -155,7 +155,6 @@ class TestSchemaCheckPipeline(BinaryClassificationPipeline):
         component_graph,
         parameters=None,
         custom_name=None,
-        custom_hyperparameters=None,
         random_seed=0,
         X_schema_to_check=None,
         y_schema_to_check=None,
@@ -166,7 +165,6 @@ class TestSchemaCheckPipeline(BinaryClassificationPipeline):
             component_graph,
             parameters,
             custom_name,
-            custom_hyperparameters,
             random_seed,
         )
 
@@ -175,7 +173,6 @@ class TestSchemaCheckPipeline(BinaryClassificationPipeline):
             self.component_graph,
             parameters=self.parameters,
             custom_name=self.custom_name,
-            custom_hyperparameters=self.custom_hyperparameters,
             random_seed=self.random_seed,
             X_schema_to_check=self.X_schema_to_check,
             y_schema_to_check=self.y_schema_to_check,

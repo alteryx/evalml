@@ -375,6 +375,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
         0.13357573073236878: 1,
         0.06778096366056789: 1,
     }
+
     part_dep_ans_rounded = round_dict_keys(part_dep_ans)
 
     # Check the case where grid_resolution < number of categorical features

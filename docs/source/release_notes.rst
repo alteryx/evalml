@@ -6,8 +6,10 @@ Release Notes
         * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
+        * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
+    * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
     * Documentation Changes
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`
@@ -16,6 +18,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * `pipeline_parameters` will no longer accept `skopt.space` variables since hyperparameter ranges will now be specified through `custom_hyperparameters` :pr:`2317`
 
 
 **v0.25.0 Jun. 01, 2021**
