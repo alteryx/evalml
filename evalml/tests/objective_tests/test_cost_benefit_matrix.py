@@ -84,22 +84,20 @@ def test_cbm_objective_function_floats():
     )
 
 
-def test_cbm_input_contains_nan(X_y_binary):
+def test_cbm_input_contains_nan():
     y_predicted = pd.Series([np.nan, 0, 0])
-    y_true = pd.Series([1, 2, 1])
+    y_true = pd.Series([1, 0, 1])
     cbm = CostBenefitMatrix(
         true_positive=10, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    with pytest.raises(ValueError, match="y_predicted contains infinity values"):
-        cbm.score(y_true, y_predicted)
+    cbm.score(y_true, y_predicted)
 
     y_true = pd.Series([np.nan, 0, 0])
-    y_predicted = pd.Series([1, 2, 0])
-    with pytest.raises(ValueError, match="y_true contains infinity values"):
-        cbm.score(y_true, y_predicted)
+    y_predicted = pd.Series([1, 0, 0])
+    cbm.score(y_true, y_predicted)
 
 
-def test_cbm_input_contains_inf(capsys):
+def test_cbm_input_contains_inf():
     cbm = CostBenefitMatrix(
         true_positive=10, true_negative=-1, false_positive=-7, false_negative=-2
     )

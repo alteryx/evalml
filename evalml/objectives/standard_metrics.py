@@ -291,9 +291,6 @@ class AUCWeighted(MulticlassClassificationObjective):
 
     def objective_function(self, y_true, y_predicted, X=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
-        import pdb
-
-        pdb.set_trace()
         return metrics.roc_auc_score(y_true, y_predicted, average="weighted")
 
 

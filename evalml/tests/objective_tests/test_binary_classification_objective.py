@@ -108,8 +108,8 @@ class TestBinaryObjective(metaclass=ABCMeta):
         """Run all relevant tests from the base class"""
 
     @pytest.fixture(scope="class")
-    def fix_y_pred_na(self):
-        return np.array([np.nan, 0, 0])
+    def fix_y_pred_inf(self):
+        return np.array([np.inf, 0, 0])
 
     @pytest.fixture(scope="class")
     def fix_y_true(self):
@@ -127,9 +127,9 @@ class TestBinaryObjective(metaclass=ABCMeta):
     def fix_y_pred_multi(self):
         return np.array([0, 1, 2])
 
-    def input_contains_nan_inf(self, fix_y_pred_na, fix_y_true):
+    def input_contains_nan_inf(self, fix_y_pred_inf, fix_y_true):
         with pytest.raises(ValueError, match="y_predicted contains infinity values"):
-            self.objective.score(fix_y_true, fix_y_pred_na)
+            self.objective.score(fix_y_true, fix_y_pred_inf)
 
     def different_input_lengths(self, fix_y_pred_diff_len, fix_y_true):
         with pytest.raises(ValueError, match="Inputs have mismatched dimensions"):
