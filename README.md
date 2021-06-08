@@ -22,6 +22,12 @@ EvalML is an AutoML library which builds, optimizes, and evaluates machine learn
 pip install evalml
 ```
 
+### Add-ons
+**Update checker** - Receive automatic notifications of new Compose releases
+```
+python -m pip install evalml[update_checker]
+```
+
 ## Start
 
 #### Load and split example data 
