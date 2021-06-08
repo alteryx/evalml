@@ -23,7 +23,7 @@ pip install evalml
 ```
 
 ### Add-ons
-**Update checker** - Receive automatic notifications of new Compose releases
+**Update checker** - Receive automatic notifications of new EvalML releases
 ```
 python -m pip install evalml[update_checker]
 ```
