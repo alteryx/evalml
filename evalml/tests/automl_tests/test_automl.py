@@ -4719,7 +4719,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     return_value=0.65,
 )
 def test_automl_alternate_thresholding_objective(
-    mock_optimize, objective, errors, X_y_binary
+    mock_optimize, objective, errors, X_y_binary, caplog
 ):
     X, y = X_y_binary
     if errors:
@@ -4743,6 +4743,7 @@ def test_automl_alternate_thresholding_objective(
     )
     automl.search()
     mock_optimize.assert_called()
+    assert "Optimal threshold found" in caplog.text
     assert automl.best_pipeline.threshold == 0.65
 
 

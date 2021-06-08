@@ -157,14 +157,6 @@ def train_and_score_pipeline(
     start = time.time()
     cv_data = []
     logger.info("\tStarting cross validation")
-    threshold_tuning_objective = automl_config.objective
-    if (
-        is_binary(automl_config.problem_type)
-        and automl_config.optimize_thresholds
-        and automl_config.objective.score_needs_proba
-        and automl_config.alternate_thresholding_objective is not None
-    ):
-        threshold_tuning_objective = automl_config.alternate_thresholding_objective
     # Encode target for classification problems so that we can support float targets. This is okay because we only use split to get the indices to split on
     if is_classification(automl_config.problem_type):
         y_mapping = {
@@ -215,9 +207,8 @@ def train_and_score_pipeline(
             logger.debug(f"\t\t\tFold {i}: finished training")
             if (
                 automl_config.optimize_thresholds
-                and pipeline.can_tune_threshold_with_objective(
-                    threshold_tuning_objective
-                )
+                and is_binary(automl_config.problem_type)
+                and cv_pipeline.threshold is not None
             ):
                 logger.debug(
                     f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
