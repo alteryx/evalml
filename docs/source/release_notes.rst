@@ -6,6 +6,7 @@ Release Notes
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
         * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
+        * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
