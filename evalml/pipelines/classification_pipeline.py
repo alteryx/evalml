@@ -125,7 +125,9 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             dict: Ordered dictionary of objective scores
         """
+        X = infer_feature_types(X)
         y = infer_feature_types(y)
+
         objectives = self.create_objectives(objectives)
 
         y_nan_indices = y.index[y.isnull()]
