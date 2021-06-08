@@ -54,18 +54,13 @@ class SequentialEngine(EngineBase):
         )
 
     def submit_training_job(self, automl_config, pipeline, X, y):
-        tuning_objective = automl_config.alternate_thresholding_objective
-        if tuning_objective is None:
-            tuning_objective = automl_config.objective
         return SequentialComputation(
             work=train_pipeline,
             pipeline=pipeline,
             X=X,
             y=y,
-            optimize_thresholds=automl_config.optimize_thresholds,
-            threshold_tuning_objective=tuning_objective,
-            X_schema=automl_config.X_schema,
-            y_schema=automl_config.y_schema,
+            automl_config=automl_config,
+            schema=False,
         )
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
