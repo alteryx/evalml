@@ -125,7 +125,6 @@ def _make_text_table(
     original_features,
     top_k,
     include_shap_values=False,
-    include_expected_value=False,
 ):
     """Make a table displaying the SHAP values for a prediction.
 
@@ -135,7 +134,6 @@ def _make_text_table(
         normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
         top_k (int): How many of the highest/lowest features to include in the table.
         include_shap_values (bool): Whether to include the SHAP values in their own column.
-        include_expected_value (bool): Whether to include the expected value in their own column.
 
     Returns:
         str
@@ -261,8 +259,7 @@ class _TableMaker(abc.ABC):
         # 'drill_down' is always included in the dict output so we can delete it
         for d in data:
             del d["drill_down"]
-            if "expected_value" in d.keys():
-                del d["expected_value"]
+            del d["expected_value"]
 
         df = pd.concat(map(pd.DataFrame, data)).reset_index(drop=True)
         if "class_name" in df.columns and df["class_name"].isna().all():
@@ -724,9 +721,7 @@ class _RegressionPredictedValues(_SectionMaker):
 
 
 class _SHAPTable(_SectionMaker):
-    def __init__(
-        self, top_k_features, include_shap_values
-    ):
+    def __init__(self, top_k_features, include_shap_values):
         self.top_k_features = top_k_features
         self.include_shap_values = include_shap_values
 
