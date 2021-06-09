@@ -834,6 +834,8 @@ def test_jupyter_graph_check(
         reason="Skipping plotting test because plotly not installed",
     )
     X, y = X_y_binary
+    X = X[:20, :5]
+    y = y[:20]
     clf = test_pipeline
     clf.fit(X, y)
     cbm = CostBenefitMatrix(
@@ -849,11 +851,11 @@ def test_jupyter_graph_check(
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
+        graph_partial_dependence(clf, X, features=0, grid_resolution=5)
         assert len(graph_valid) == 1
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
-        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm)
+        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm, steps=5)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
