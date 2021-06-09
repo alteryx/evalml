@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -18,7 +19,6 @@ Release Notes
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
         * Added ``inverse_transform`` method to pipelines :pr:`2256``
     * Fixes
-        * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
