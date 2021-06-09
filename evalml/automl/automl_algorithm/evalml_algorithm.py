@@ -12,13 +12,13 @@ from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 class EvalMLAlgorithm(AutoMLAlgorithm):
     """An automl algorithm that consists of two modes: fast and long. Where fast is a subset of long.
-    
+
     1. Naive pipelines:
         a. run baseline with default preprocessing pipeline
         b. run naive linear model with default preprocessing pipeline
         c. run basic RF pipeline (for feature selection) with default preprocessing pipeline
     2. Feature engineering and naive pipelines with feature selection:
-        a. create feature selection component with previous batches’ RF estimator then add to another linear model 
+        a. create feature selection component with previous batches’ RF estimator then add to another linear model
         b. Run feature engineering: leveraging featuretools and our DFSTransformer
     3. Naive pipelines with feature engineering
         a. Use FT component from previous batch with naive linear model and RF pipeline
@@ -41,16 +41,32 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         b. Run ensembling
     """
 
-    def __init__(self,
-                 tuner_class=None,
-                 random_seed=0,
-                 pipeline_params=None,
-                 custom_hyperparameters=None,
-                 _frozen_pipeline_parameters=None,
-                 n_jobs=-1, # TODO: necessary? 
-                 number_features=None, # TODO: necessary?
-                 text_in_ensembling): # TODO: necessary? 
+    """
+    Jeremy notes:
+        Do we need to allow users to select what models and pipelines are allowed?
+            - originally my thinking was we would remove that choice from user
+            - however, how does the automl_search impl affect it?
         
+        options:
+            - top level user can select and pass down
+            - do not let users select
+        
+        considerations
+            - change `AutoMLAlgorithm` init impl to not create tuners for each pipeline?
+            - ignore `AutoMLAlgorithm` init and do our own thing here
+    """
+
+    def __init__(
+        self,
+        tuner_class=None,
+        random_seed=0,
+        pipeline_params=None,
+        custom_hyperparameters=None,
+        _frozen_pipeline_parameters=None,
+        n_jobs=-1,  # TODO: necessary?
+        number_features=None,  # TODO: necessary?
+        text_in_ensembling=None,
+    ):  # TODO: necessary?
 
         super().__init__(
             allowed_pipelines=[],
@@ -59,6 +75,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             tuner_class=None,
             random_seed=random_seed,
         )
+
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._best_pipeline_info = {}
@@ -87,3 +104,11 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                         " and Real!"
                     )
 
+    def next_batch(self):
+        """Get the next batch of pipelines to evaluate
+
+        Returns:
+            list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+        """
+
+        pass
