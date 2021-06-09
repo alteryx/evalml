@@ -94,6 +94,26 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
 
+        if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
+            raise ValueError(
+                f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
+            )
+
+        for param_name_val in self._pipeline_params.values():
+            for _, param_val in param_name_val.items():
+                if isinstance(param_val, (Integer, Real, Categorical)):
+                    raise ValueError(
+                        "Pipeline parameters should not contain skopt.Space variables, please pass them "
+                        "to custom_hyperparameters instead!"
+                    )
+        for hyperparam_name_val in self._custom_hyperparameters.values():
+            for _, hyperparam_val in hyperparam_name_val.items():
+                if not isinstance(hyperparam_val, (Integer, Real, Categorical)):
+                    raise ValueError(
+                        "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
+                        " and Real!"
+                    )
+
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
 

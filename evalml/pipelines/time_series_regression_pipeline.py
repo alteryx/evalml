@@ -74,7 +74,7 @@ class TimeSeriesRegressionPipeline(
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
-        self.input_feature_names = self._component_graph.input_feature_names
+        self.input_feature_names = self.component_graph.input_feature_names
 
         return self
 
@@ -99,6 +99,9 @@ class TimeSeriesRegressionPipeline(
         if self.estimator.predict_uses_y:
             y_arg = y
         predictions = self.estimator.predict(features_no_nan, y_arg)
+
+        predictions.index = y.index
+        predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
         padded = pad_with_nans(
             predictions, max(0, features.shape[0] - predictions.shape[0])

@@ -1,11 +1,13 @@
 import pandas as pd
 from skopt.space import Integer
 
-from evalml.pipelines.components.transformers.transformer import Transformer
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class PolynomialDetrender(Transformer):
+class PolynomialDetrender(TargetTransformer):
     """Removes trends from time series by fitting a polynomial to the data."""
 
     name = "Polynomial Detrender"
@@ -90,7 +92,7 @@ class PolynomialDetrender(Transformer):
         """
         return self.fit(X, y).transform(X, y)
 
-    def inverse_transform(self, X, y):
+    def inverse_transform(self, y):
         """Adds back fitted trend to target variable.
 
         Arguments:
@@ -106,4 +108,4 @@ class PolynomialDetrender(Transformer):
         y_dt = infer_feature_types(y)
         y_t = self._component_obj.inverse_transform(y_dt)
         y_t = infer_feature_types(pd.Series(y_t, index=y_dt.index))
-        return X, y_t
+        return y_t

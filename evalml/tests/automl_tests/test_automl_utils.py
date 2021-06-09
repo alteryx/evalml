@@ -295,17 +295,25 @@ def test_get_hyperparameter_ranges():
         component_graph=["Imputer", "Random Forest Classifier"]
     )
     custom_hyperparameters_ = {
+        "One Hot Encoder": {"top_n": 3},
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
         "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
     }
-    algo = IterativeAlgorithm(
-        allowed_pipelines=[pipeline_],
-        random_seed=0,
-        custom_hyperparameters=custom_hyperparameters_,
-    )
-    algo_ranges = algo._tuners[
-        "Random Forest Classifier w/ Imputer"
-    ]._pipeline_hyperparameter_ranges
+
+    algo_ranges = {
+        "Imputer": {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": Categorical(
+                categories=("most_frequent", "mean"), prior=None
+            ),
+        },
+        "Random Forest Classifier": {
+            "n_estimators": Integer(
+                low=150, high=160, prior="uniform", transform="identity"
+            ),
+            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
+        },
+    }
     hyper_ranges = get_hyperparameter_ranges(
         pipeline_.component_graph, custom_hyperparameters_
     )

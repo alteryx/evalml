@@ -4,8 +4,18 @@ from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils import (
+    _retain_custom_types_and_initalize_woodwork,
+    get_logger,
+    import_or_raise,
+    infer_feature_types,
+)
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -69,8 +79,11 @@ class ComponentGraph:
                     component_name = f"{component_name}_{idx}"
                 seen.add(component_name)
                 names.append((component_name, component_class))
-        else:
+        elif isinstance(components, dict):
             for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        else:
+            for k, v in components.component_dict.items():
                 names.append((k, handle_component_class(v[0])))
         return names
 
@@ -84,10 +97,23 @@ class ComponentGraph:
         """
         component_dict = {}
         previous_component = None
-        for component_name, component_class in cls.linearized_component_graph(
-            component_list
-        ):
 
+        component_list = cls.linearized_component_graph(component_list)
+
+        # Logic is as follows: Create the component dict for the non-target transformers as expected.
+        # If there are target transformers present, connect them together and then pass the final output
+        # to the sampler (if present) or the final estimator
+
+        target_transformers = list(
+            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
+        )
+        not_target_transformers = list(
+            filter(
+                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
+            )
+        )
+
+        for component_name, component_class in not_target_transformers:
             component_dict[component_name] = [component_class]
             if previous_component is not None:
                 if "sampler" in previous_component:
@@ -97,6 +123,29 @@ class ComponentGraph:
                 else:
                     component_dict[component_name].append(f"{previous_component}.x")
             previous_component = component_name
+
+        previous_component = None
+        for component_name, component_class in target_transformers:
+            component_dict[component_name] = [component_class]
+            if previous_component is not None:
+                component_dict[component_name].append(f"{previous_component}.y")
+            previous_component = component_name
+
+        if target_transformers:
+            sampler_index = next(
+                iter(
+                    [
+                        i
+                        for i, tup in enumerate(not_target_transformers)
+                        if "sampler" in tup[0]
+                    ]
+                ),
+                -1,
+            )
+            component_dict[not_target_transformers[sampler_index][0]].append(
+                f"{target_transformers[-1][0]}.y"
+            )
+
         return cls(component_dict, random_seed=random_seed)
 
     def instantiate(self, parameters):
@@ -140,6 +189,7 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples]
         """
         X = infer_feature_types(X)
+        y = infer_feature_types(y)
         self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -237,6 +287,8 @@ class ComponentGraph:
             dict: Outputs from each component
         """
         X = infer_feature_types(X)
+        if y is not None:
+            y = infer_feature_types(y)
         most_recent_y = y
         if len(component_list) == 0:
             return X
@@ -376,7 +428,22 @@ class ComponentGraph:
         return_y = y
         if y_input is not None:
             return_y = y_input
-        return_x = infer_feature_types(return_x)
+
+        # Expected behavior: Preserve types selected by user unless one of the components updates the
+        # type for that column. This requirement is important because the StandardScaler is expected to convert
+        # Ints to Doubles and converting back to an int would lose information.
+        # In order to meet this requirement, we start off with the user selected types (X.ww.logical_types) and then
+        # update them with the types created by components (if they are different).
+        # Components are not expected to create features with the same names
+        # so the only possible clash is between the types selected by the user and the types selected by a component.
+        # Because of that, the for-loop below is sufficient.
+
+        logical_types = {}
+        logical_types.update(X.ww.logical_types)
+        for x_input in x_inputs:
+            if x_input.ww.schema is not None:
+                logical_types.update(x_input.ww.logical_types)
+        return_x = _retain_custom_types_and_initalize_woodwork(logical_types, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
         return return_x, return_y
@@ -438,6 +505,29 @@ class ComponentGraph:
         if len(component_info) > 1:
             return component_info[1:]
         return []
+
+    def describe(self, return_dict=False):
+        """Outputs component graph details including component parameters
+
+        Arguments:
+            return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
+
+        Returns:
+            dict: Dictionary of all component parameters if return_dict is True, else None
+        """
+        components = {}
+        for number, component in enumerate(self.component_instances.values(), 1):
+            component_string = str(number) + ". " + component.name
+            logger.info(component_string)
+            components.update(
+                {
+                    component.name: component.describe(
+                        print_name=False, return_dict=return_dict
+                    )
+                }
+            )
+        if return_dict:
+            return components
 
     def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph
@@ -546,3 +636,43 @@ class ComponentGraph:
         else:
             self._i = 0
             raise StopIteration
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        random_seed_eq = self.random_seed == other.random_seed
+        if not random_seed_eq:
+            return False
+        attributes_to_check = ["component_dict", "compute_order"]
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
+
+    def _get_parent_y(self, component_name):
+        """Helper for inverse_transform method."""
+        parents = self.get_parents(component_name)
+        return next(iter(p[:-2] for p in parents if ".y" in p), None)
+
+    def inverse_transform(self, y):
+        """Apply component inverse_transform methods to estimator predictions in reverse order.
+
+        Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
+
+        Arguments:
+            y: (pd.Series): Final component features
+        """
+        data_to_transform = infer_feature_types(y)
+        current_component = self.compute_order[-1]
+        has_incoming_y_from_parent = True
+        while has_incoming_y_from_parent:
+            parent_y = self._get_parent_y(current_component)
+            if parent_y:
+                component = self.get_component(parent_y)
+                if isinstance(component, TargetTransformer):
+                    data_to_transform = component.inverse_transform(data_to_transform)
+                current_component = parent_y
+            else:
+                has_incoming_y_from_parent = False
+
+        return data_to_transform

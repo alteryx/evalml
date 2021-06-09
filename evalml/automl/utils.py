@@ -205,7 +205,7 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
     Returns hyperparameter ranges from all components as a dictionary.
 
     Arguments:
-        component_graph (list): The component_graph of the pipeline.
+        component_graph (list(str, ComponentBase)): The component_graph of the pipeline.
         custom_hyperparameters (dict): The custom hyperparameters to be passed to the pipeline.
 
     Returns:

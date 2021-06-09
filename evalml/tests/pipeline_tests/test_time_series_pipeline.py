@@ -15,6 +15,7 @@ from evalml.pipelines import (
 )
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types, pad_with_nans
 
 
 @pytest.mark.parametrize(
@@ -704,3 +705,42 @@ def test_binary_predict_pipeline_use_objective(
     fraud_cost = FraudCost(amount_col=0)
     binary_pipeline.score(X, y, ["precision", "auc", fraud_cost])
     mock_decision_function.assert_called()
+
+
+@pytest.mark.parametrize(
+    "component_graph",
+    [
+        {
+            "Polynomial Detrender": ["Polynomial Detrender"],
+            "DelayedFeatures": ["Delayed Feature Transformer"],
+            "Regressor": [
+                "Linear Regressor",
+                "DelayedFeatures.x",
+                "Polynomial Detrender.y",
+            ],
+        },
+        ["Polynomial Detrender", "Delayed Feature Transformer", "Linear Regressor"],
+    ],
+)
+def test_time_series_pipeline_with_detrender(component_graph, ts_data):
+    pytest.importorskip(
+        "sktime",
+        reason="Skipping polynomial detrending tests because sktime not installed",
+    )
+    X, y = ts_data
+    pipeline = TimeSeriesRegressionPipeline(
+        component_graph=component_graph,
+        parameters={
+            "pipeline": {"gap": 1, "max_delay": 2, "date_index": None},
+            "DelayedFeatures": {"max_delay": 2},
+        },
+    )
+    pipeline.fit(X, y)
+    predictions = pipeline.predict(X, y)
+    features = pipeline.compute_estimator_features(X, y)
+    detrender = pipeline.component_graph.get_component("Polynomial Detrender")
+    preds = pipeline.estimator.predict(features.iloc[2:])
+    preds.index = y.index[2:]
+    expected = detrender.inverse_transform(preds)
+    expected = infer_feature_types(pad_with_nans(expected, 2))
+    pd.testing.assert_series_equal(predictions, expected)
