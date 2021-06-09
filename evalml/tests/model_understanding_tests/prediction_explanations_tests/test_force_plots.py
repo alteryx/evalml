@@ -12,6 +12,10 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
+from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_explainers import (
+    pipeline_test_cases,
+    transform_y_for_problem_type,
+)
 
 
 def test_exceptions():
@@ -201,12 +205,6 @@ def test_force_plot_regression(
             assert isinstance(
                 result["regression"]["plot"], shap.plots._force.AdditiveForceVisualizer
             )
-
-
-from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_explainers import (
-    pipeline_test_cases,
-    transform_y_for_problem_type,
-)
 
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
