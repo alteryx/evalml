@@ -202,7 +202,12 @@ def test_force_plot_regression(
                 result["regression"]["plot"], shap.plots._force.AdditiveForceVisualizer
             )
 
-from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_explainers import pipeline_test_cases, transform_y_for_problem_type
+
+from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_explainers import (
+    pipeline_test_cases,
+    transform_y_for_problem_type,
+)
+
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
@@ -217,9 +222,7 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
             estimator,
         ],
         parameters={
-            "Select Columns Transformer": {
-                "columns": columns_to_select
-            },
+            "Select Columns Transformer": {"columns": columns_to_select},
             "DateTime Featurization Component": {"encode_as_categories": True},
             estimator: {"n_jobs": 1},
         },
@@ -233,10 +236,11 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
         for cls in plot:
             assert set(plot[cls]["feature_names"]) == set(columns_to_select)
 
-    force_plots = graph_force_plot(pipeline, [0,1,2], X, y)
+    force_plots = graph_force_plot(pipeline, [0, 1, 2], X, y)
     for plot in force_plots:
         for cls in plot:
             assert set(plot[cls]["feature_names"]) == set(columns_to_select)
+
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
@@ -271,7 +275,7 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
         for cls in plot:
             assert set(plot[cls]["feature_names"]) == set(columns_to_select)
 
-    force_plots = graph_force_plot(pipeline, [0,1,2], X, y)
+    force_plots = graph_force_plot(pipeline, [0, 1, 2], X, y)
     for plot in force_plots:
         for cls in plot:
             assert set(plot[cls]["feature_names"]) == set(columns_to_select)
