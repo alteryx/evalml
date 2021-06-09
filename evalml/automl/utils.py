@@ -223,7 +223,7 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
     return hyperparameter_ranges
 
 
-def get_pipelines_from_component_graphs(component_graphs_list, problem_type):
+def get_pipelines_from_component_graphs(component_graphs_list, problem_type, parameters):
     """
     Returns created pipelines from passed component graphs based on the specified problem type.
 
@@ -249,5 +249,6 @@ def get_pipelines_from_component_graphs(component_graphs_list, problem_type):
             comp_seed = component_graph.pop("random_seed")
         comp_name = next(iter(component_graph))
         comp_graph = component_graph[comp_name]
-        created_pipelines.append(pipeline_class(component_graph=comp_graph, custom_name=comp_name, random_seed=comp_seed))
+        print(f"utils - get_pipelines_from_component_graphs - parameters: {parameters}")
+        created_pipelines.append(pipeline_class(component_graph=comp_graph, parameters=parameters, custom_name=comp_name, random_seed=comp_seed))
     return created_pipelines

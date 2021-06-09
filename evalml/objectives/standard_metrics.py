@@ -414,6 +414,7 @@ class R2(RegressionObjective):
     is_bounded_like_percentage = False  # Range (-Inf, 1]
 
     def objective_function(self, y_true, y_predicted, X=None):
+        print(f"standard metrics - R2 - score: {metrics.r2_score(y_true, y_predicted)}")
         return metrics.r2_score(y_true, y_predicted)
 
 

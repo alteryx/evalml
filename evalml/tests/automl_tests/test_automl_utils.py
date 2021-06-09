@@ -17,7 +17,8 @@ from evalml.automl.utils import (
     tune_binary_threshold,
 )
 from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
-from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines import BinaryClassificationPipeline, MulticlassClassificationPipeline, RegressionPipeline, \
+    TimeSeriesRegressionPipeline
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
@@ -312,4 +313,25 @@ def test_get_hyperparameter_ranges():
     assert algo_ranges == hyper_ranges
 
 
-def test_get_pipelines_from_component_graphs():
+@pytest.mark.parametrize("problem_type,estimator", [("binary", "Random Forest Classifier"),
+                                                    ("multiclass", "Random Forest Classifier"),
+                                                    ("regression", "Random Forest Regressor"),
+                                                    ("time series regression", "ARIMA Regressor")])
+def test_get_pipelines_from_component_graphs(problem_type, estimator):
+    component_graphs = [{"Name_0": ["Imputer", estimator]},
+                        {"Name_1": {
+                            "Imputer": ["Imputer"],
+                            "Imputer_1": ["Imputer", "Imputer"],
+                            estimator: [estimator, "Imputer_1"],
+                        }}]
+    if problem_type == "time series regression":
+        with pytest.raises(ValueError, match="date_index, gap, and max_delay"):
+            get_pipelines_from_component_graphs(component_graphs, problem_type)
+    else:
+        returned_pipelines = get_pipelines_from_component_graphs(component_graphs, problem_type)
+        if problem_type == "binary":
+            assert all(isinstance(pipe_, BinaryClassificationPipeline) for pipe_ in returned_pipelines)
+        elif problem_type == "multiclass":
+            assert all(isinstance(pipe_, MulticlassClassificationPipeline) for pipe_ in returned_pipelines)
+        elif problem_type == "regression":
+            assert all(isinstance(pipe_, RegressionPipeline) for pipe_ in returned_pipelines)

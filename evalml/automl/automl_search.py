@@ -387,11 +387,16 @@ class AutoMLSearch:
             logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
-        print(allowed_component_graphs)
-        if allowed_component_graphs is not None and not isinstance(allowed_component_graphs, list):
-            raise ValueError(
-                "Parameter allowed_component_graphs must be either None or a list!"
-            )
+        if allowed_component_graphs is not None:
+            if not isinstance(allowed_component_graphs, list):
+                raise ValueError(
+                    "Parameter allowed_component_graphs must be either None or a list!"
+                )
+            for graph in allowed_component_graphs:
+                if not isinstance(graph, dict):
+                    raise ValueError(
+                        "Every component graph passed must be of type dictionary!"
+                    )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -435,9 +440,6 @@ class AutoMLSearch:
 
         if self.problem_configuration:
             parameters.update({"pipeline": self.problem_configuration})
-            self._frozen_pipeline_parameters.update(
-                {"pipeline": self.problem_configuration}
-            )
 
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
@@ -460,9 +462,6 @@ class AutoMLSearch:
                 parameters[self._sampler_name].update(
                     {"sampling_ratio": self.sampler_balanced_ratio}
                 )
-            self._frozen_pipeline_parameters[self._sampler_name] = parameters[
-                self._sampler_name
-            ]
 
         if self.allowed_component_graphs is None:
             logger.info("Generating pipelines to search over...")
@@ -488,16 +487,14 @@ class AutoMLSearch:
                     self.y_train,
                     estimator,
                     self.problem_type,
-                    parameters=self._frozen_pipeline_parameters,
+                    parameters=parameters,
                     sampler_name=self._sampler_name,
                 )
                 for estimator in allowed_estimators
             ]
         else:
-            self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs, self.problem_type)
-            print("AutoMLSearch - init - self.allowed_pipelines")
-            print('---------------------------------------------')
-            print(self.allowed_pipelines)
+            self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs, self.problem_type, parameters
+                                                                         )
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -598,7 +595,6 @@ class AutoMLSearch:
             text_in_ensembling=text_in_ensembling,
             pipeline_params=parameters,
             custom_hyperparameters=custom_hyperparameters,
-            _frozen_pipeline_parameters=self._frozen_pipeline_parameters,
         )
 
     def _get_batch_number(self):

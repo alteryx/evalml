@@ -70,6 +70,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component_graph, random_seed=self.random_seed
             )
         else:
+            print(f"pipeline_base - __init__ - component_graph: {component_graph}")
             self._component_graph = ComponentGraph(
                 component_dict=component_graph, random_seed=self.random_seed
             )
