@@ -494,14 +494,15 @@ class AutoMLSearch:
                 for estimator in allowed_estimators
             ]
         else:
-            print()
-            print(f'Automlsearch __ init __ - self.allowed_component_graphs: {self.allowed_component_graphs}')
             self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs, self.problem_type)
+            print("AutoMLSearch - init - self.allowed_pipelines")
+            print('---------------------------------------------')
+            print(self.allowed_pipelines)
 
-        if self.allowed_component_graphs == []:
-            raise ValueError("No allowed component graphs to search")
+        if self.allowed_pipelines == []:
+            raise ValueError("No allowed pipelines to search")
 
-        logger.info(f"{len(self.allowed_component_graphs)} component graphs ready for search.")
+        logger.info(f"{len(self.allowed_pipelines)} component graphs ready for search.")
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling

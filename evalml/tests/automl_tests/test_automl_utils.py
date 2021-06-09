@@ -10,6 +10,7 @@ from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
     get_best_sampler_for_data,
+    get_pipelines_from_component_graphs,
     get_default_primary_search_objective,
     get_hyperparameter_ranges,
     make_data_splitter,
@@ -309,3 +310,6 @@ def test_get_hyperparameter_ranges():
     )
 
     assert algo_ranges == hyper_ranges
+
+
+def test_get_pipelines_from_component_graphs():
