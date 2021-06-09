@@ -238,7 +238,13 @@ class ComponentGraph:
             self.compute_order[:-1], X, y=y, fit=needs_fitting
         )
         final_component_inputs = []
-        for parent in self.get_parents(self.compute_order[-1]):
+
+        parent_inputs = [
+            parent_input
+            for parent_input in self.get_parents(self.compute_order[-1])
+            if parent_input[-2:] != ".y"
+        ]
+        for parent in parent_inputs:
             parent_output = component_outputs.get(
                 parent, component_outputs.get(f"{parent}.x")
             )
@@ -301,6 +307,7 @@ class ComponentGraph:
                 )
             x_inputs = []
             y_input = None
+
             for parent_input in self.get_parents(component_name):
                 if parent_input[-2:] == ".y":
                     if y_input is not None:
