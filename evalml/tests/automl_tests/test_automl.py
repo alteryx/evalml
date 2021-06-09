@@ -154,24 +154,24 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             [
                 np.dtype("int64"),
                 np.dtype("O"),
+                np.dtype("int64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("bool"),
                 np.dtype("O"),
-                np.dtype("int64"),
             ],
             index=[
                 "id",
                 "pipeline_name",
+                "search_order",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
                 "validation_score",
                 "percent_better_than_baseline",
                 "high_variance_cv",
                 "parameters",
-                "search_order",
             ],
         )
     )
@@ -181,24 +181,24 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             [
                 np.dtype("int64"),
                 np.dtype("O"),
+                np.dtype("int64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("bool"),
                 np.dtype("O"),
-                np.dtype("int64"),
             ],
             index=[
                 "id",
                 "pipeline_name",
+                "search_order",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
                 "validation_score",
                 "percent_better_than_baseline",
                 "high_variance_cv",
                 "parameters",
-                "search_order",
             ],
         )
     )
@@ -1228,13 +1228,13 @@ def test_no_search(X_y_binary):
     df_columns = [
         "id",
         "pipeline_name",
+        "search_order",
         "mean_cv_score",
         "standard_deviation_cv_score",
         "validation_score",
         "percent_better_than_baseline",
         "high_variance_cv",
         "parameters",
-        "search_order",
     ]
     assert (automl.rankings.columns == df_columns).all()
     assert (automl.full_rankings.columns == df_columns).all()

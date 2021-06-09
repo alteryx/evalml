@@ -1261,14 +1261,21 @@ class AutoMLSearch:
             "high_variance_cv",
             "parameters",
         ]
-        full_rankings_cols = pipeline_results_cols + ["search_order"]
 
         if not self._results["pipeline_results"]:
+            full_rankings_cols = (
+                pipeline_results_cols[0:2]
+                + ["search_order"]
+                + pipeline_results_cols[2:]
+            )  # place search_order after pipeline_name
+
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results["pipeline_results"].values())
         rankings_df = rankings_df[pipeline_results_cols]
-        rankings_df["search_order"] = pd.Series(self._results["search_order"])
+        rankings_df.insert(
+            2, "search_order", pd.Series(self._results["search_order"])
+        )  # place search_order after pipeline_name
         rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
