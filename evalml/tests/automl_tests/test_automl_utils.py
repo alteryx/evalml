@@ -326,7 +326,8 @@ def test_get_hyperparameter_ranges():
                                                     ("regression", "Random Forest Regressor"),
                                                     ("time series regression", "ARIMA Regressor")])
 def test_get_pipelines_from_component_graphs(problem_type, estimator):
-    component_graphs = [{"Name_0": ["Imputer", estimator]},
+    component_graphs = [{"Name_0": ["Imputer", estimator],
+                         "random_seed": 42},
                         {"Name_1": {
                             "Imputer": ["Imputer"],
                             "Imputer_1": ["Imputer", "Imputer"],
@@ -337,6 +338,8 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
             get_pipelines_from_component_graphs(component_graphs, problem_type)
     else:
         returned_pipelines = get_pipelines_from_component_graphs(component_graphs, problem_type)
+        assert returned_pipelines[0].random_seed == 42
+        assert returned_pipelines[1].random_seed == 0
         if problem_type == "binary":
             assert all(isinstance(pipe_, BinaryClassificationPipeline) for pipe_ in returned_pipelines)
         elif problem_type == "multiclass":

@@ -215,7 +215,7 @@ def test_log_metrics_only_passed_directly(X_y_regression):
     assert ar.additional_objectives[1].name == "Mean Squared Log Error"
 
 
-def test_automl_allowed_pipelines_no_allowed_component_graphs(X_y_regression):
+def test_automl_component_graphs_no_allowed_component_graphs(X_y_regression):
     X, y = X_y_regression
     with pytest.raises(ValueError, match="No allowed pipelines to search"):
         AutoMLSearch(
@@ -229,7 +229,7 @@ def test_automl_allowed_pipelines_no_allowed_component_graphs(X_y_regression):
 
 @patch("evalml.pipelines.RegressionPipeline.score")
 @patch("evalml.pipelines.RegressionPipeline.fit")
-def test_automl_allowed_component_graphs_specified_allowed_pipelines(
+def test_automl_allowed_component_graphs_specified_component_graphs(
     mock_fit, mock_score, dummy_regressor_estimator_class, dummy_regression_pipeline_class, X_y_regression
 ):
     X, y = X_y_regression

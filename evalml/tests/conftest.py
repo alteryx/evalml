@@ -348,8 +348,64 @@ def dummy_classifier_estimator_class():
 
 
 @pytest.fixture
-def dummy_binary_linear_component_graph(dummy_classifier_estimator_class):
+def dummy_binary_estimator_class():
+    class MockEstimator(Estimator):
+        name = "Mock Binary Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [
+            ProblemTypes.BINARY,
+            ProblemTypes.TIME_SERIES_BINARY,
+        ]
+        hyperparameter_ranges = {"a": Integer(0, 10), "b": Real(0, 10)}
+
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(
+                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed
+            )
+
+        def fit(self, X, y):
+            return self
+
+    return MockEstimator
+
+
+@pytest.fixture
+def dummy_multiclass_estimator_class():
+    class MockEstimator(Estimator):
+        name = "Mock Multiclass Classifier"
+        model_family = ModelFamily.NONE
+        supported_problem_types = [
+            ProblemTypes.MULTICLASS,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]
+        hyperparameter_ranges = {"a": Integer(0, 10), "b": Real(0, 10)}
+
+        def __init__(self, a=1, b=0, random_seed=0):
+            super().__init__(
+                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed
+            )
+
+        def fit(self, X, y):
+            return self
+
+    return MockEstimator
+
+
+@pytest.fixture
+def dummy_classifier_linear_component_graph(dummy_classifier_estimator_class):
     component_graph_linear = {"Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]}
+    return component_graph_linear
+
+
+@pytest.fixture
+def dummy_binary_linear_component_graph(dummy_binary_estimator_class):
+    component_graph_linear = {"Name": ["Imputer", "One Hot Encoder", dummy_binary_estimator_class]}
+    return component_graph_linear
+
+
+@pytest.fixture
+def dummy_multiclass_linear_component_graph(dummy_multiclass_estimator_class):
+    component_graph_linear = {"Name": ["Imputer", "One Hot Encoder", dummy_multiclass_estimator_class]}
     return component_graph_linear
 
 
@@ -360,11 +416,31 @@ def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
 
 
 @pytest.fixture
-def dummy_binary_dict_component_graph(dummy_classifier_estimator_class):
+def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
     component_graph_dict = {"Name": {
         "Imputer": ["Imputer"],
         "Imputer_1": ["Imputer", "Imputer"],
         "Random Forest Classifier": [dummy_classifier_estimator_class, "Imputer_1"],
+    }}
+    return component_graph_dict
+
+
+@pytest.fixture
+def dummy_binary_dict_component_graph(dummy_binary_estimator_class):
+    component_graph_dict = {"Name": {
+        "Imputer": ["Imputer"],
+        "Imputer_1": ["Imputer", "Imputer"],
+        "Random Forest Classifier": [dummy_binary_estimator_class, "Imputer_1"],
+    }}
+    return component_graph_dict
+
+
+@pytest.fixture
+def dummy_multiclass_dict_component_graph(dummy_multiclass_estimator_class):
+    component_graph_dict = {"Name": {
+        "Imputer": ["Imputer"],
+        "Imputer_1": ["Imputer", "Imputer"],
+        "Random Forest Classifier": [dummy_multiclass_estimator_class, "Imputer_1"],
     }}
     return component_graph_dict
 
@@ -412,7 +488,7 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         estimator = MockEstimator
         component_graph = [MockEstimator]
-        custom_name = None
+        custom_name = "Mock Multiclass Classification Pipeline"
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(

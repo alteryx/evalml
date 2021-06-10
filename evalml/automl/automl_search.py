@@ -423,7 +423,6 @@ class AutoMLSearch:
         self.custom_hyperparameters = custom_hyperparameters or {}
         self.search_iteration_plot = None
         self._interrupted = False
-        self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
 
@@ -467,7 +466,7 @@ class AutoMLSearch:
             )
             index_columns = list(self.X_train.ww.select("index").columns)
             if len(index_columns) > 0 and drop_columns is None:
-                self._frozen_pipeline_parameters["Drop Columns Transformer"] = {
+                parameters["Drop Columns Transformer"] = {
                     "columns": index_columns
                 }
             self.allowed_pipelines = [
@@ -482,8 +481,9 @@ class AutoMLSearch:
                 for estimator in allowed_estimators
             ]
         else:
-            self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs, self.problem_type, parameters
-                                                                         )
+            self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs,
+                                                                         self.problem_type,
+                                                                         parameters)
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
