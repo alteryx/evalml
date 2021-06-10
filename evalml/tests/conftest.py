@@ -363,9 +363,6 @@ def dummy_binary_estimator_class():
                 parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed
             )
 
-        def fit(self, X, y):
-            return self
-
     return MockEstimator
 
 
@@ -384,9 +381,6 @@ def dummy_multiclass_estimator_class():
             super().__init__(
                 parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed
             )
-
-        def fit(self, X, y):
-            return self
 
     return MockEstimator
 
@@ -421,18 +415,6 @@ def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
         "Name": ["Imputer", "One Hot Encoder", dummy_regressor_estimator_class]
     }
     return component_graph_linear
-
-
-@pytest.fixture
-def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
-    component_graph_dict = {
-        "Name": {
-            "Imputer": ["Imputer"],
-            "Imputer_1": ["Imputer", "Imputer"],
-            "Random Forest Classifier": [dummy_classifier_estimator_class, "Imputer_1"],
-        }
-    }
-    return component_graph_dict
 
 
 @pytest.fixture
