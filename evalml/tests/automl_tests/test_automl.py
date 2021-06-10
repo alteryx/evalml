@@ -916,10 +916,14 @@ def test_component_graph_with_incorrect_problem_type(
         )
 
 
-def test_component_graph_with_nonunique_names(X_y_binary, dummy_classifier_estimator_class):
+def test_component_graph_with_nonunique_names(
+    X_y_binary, dummy_classifier_estimator_class
+):
     X, y = X_y_binary
 
-    with pytest.raises(ValueError, match="Every name of allowed_component_graphs must be unique!"):
+    with pytest.raises(
+        ValueError, match="Every name of allowed_component_graphs must be unique!"
+    ):
         AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -927,10 +931,9 @@ def test_component_graph_with_nonunique_names(X_y_binary, dummy_classifier_estim
             allowed_component_graphs=[
                 {"Name_0": [dummy_classifier_estimator_class]},
                 {"Name_1": [dummy_classifier_estimator_class]},
-                {"Name_0": [dummy_classifier_estimator_class]}
+                {"Name_0": [dummy_classifier_estimator_class]},
             ],
         )
-
 
 
 def test_main_objective_problem_type_mismatch(X_y_binary):

@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from skopt.space import Categorical, Integer, Real
 
-from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import (
     AutoMLAlgorithmException,
     IterativeAlgorithm,

@@ -38,7 +38,6 @@ from evalml.objectives import (
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    PipelineBase,
     RegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
