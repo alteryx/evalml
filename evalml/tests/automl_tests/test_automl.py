@@ -13,6 +13,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
+from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import (
     log_error_callback,
     raise_error_callback,
@@ -64,7 +65,7 @@ from evalml.problem_types import (
     is_classification,
     is_time_series,
 )
-from evalml.tuners import NoParamsException, RandomSearchTuner
+from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
 
 
 @pytest.mark.parametrize(
@@ -994,7 +995,7 @@ def test_default_objective(X_y_binary):
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-def test_add_to_rankings(mock_fit, mock_score, dummy_binary_linear_component_graph, dummy_binary_pipeline_class, X_y_binary):
+def test_add_to_rankings(mock_fit, mock_score, dummy_classifier_linear_component_graph, dummy_binary_pipeline_class, X_y_binary):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 1.0}
 
@@ -1003,7 +1004,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_linear_component_gra
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[dummy_binary_linear_component_graph]
+        allowed_component_graphs=[dummy_classifier_linear_component_graph]
     )
     automl.search()
     assert len(automl.rankings) == 1
@@ -1039,7 +1040,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_binary_linear_component_gra
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_add_to_rankings_no_search(
-    mock_fit, mock_score, dummy_binary_linear_component_graph, dummy_binary_pipeline_class, X_y_binary
+    mock_fit, mock_score, dummy_classifier_linear_component_graph, dummy_binary_pipeline_class, X_y_binary
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -1047,7 +1048,7 @@ def test_add_to_rankings_no_search(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[dummy_binary_linear_component_graph],
+        allowed_component_graphs=[dummy_classifier_linear_component_graph],
     )
 
     mock_score.return_value = {"Log Loss Binary": 0.5234}
@@ -1135,7 +1136,7 @@ def test_add_to_rankings_regression(
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_add_to_rankings_duplicate(
-    mock_fit, mock_score, dummy_binary_linear_component_graph, dummy_binary_pipeline_class, X_y_binary
+    mock_fit, mock_score, dummy_classifier_linear_component_graph, dummy_binary_pipeline_class, X_y_binary
 ):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 0.1234}
@@ -1145,7 +1146,7 @@ def test_add_to_rankings_duplicate(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[dummy_binary_linear_component_graph],
+        allowed_component_graphs=[dummy_classifier_linear_component_graph],
     )
     automl.search()
     best_pipeline = automl.best_pipeline
@@ -1842,9 +1843,6 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_scores,
     baseline_score,
     problem_type_value,
-    dummy_classifier_estimator_class,
-    dummy_regressor_estimator_class,
-    dummy_time_series_regressor_estimator_class,
     dummy_binary_pipeline_class,
     dummy_multiclass_pipeline_class,
     dummy_regression_pipeline_class,
@@ -1857,11 +1855,11 @@ def test_percent_better_than_baseline_in_rankings(
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = X_y_binary
 
-    estimator_class = {
-        ProblemTypes.BINARY: dummy_classifier_estimator_class,
-        ProblemTypes.MULTICLASS: dummy_classifier_estimator_class,
-        ProblemTypes.REGRESSION: dummy_regressor_estimator_class,
-        ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regressor_estimator_class,
+    pipeline_class = {
+        ProblemTypes.BINARY: dummy_binary_pipeline_class,
+        ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
+        ProblemTypes.REGRESSION: dummy_regression_pipeline_class,
+        ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regression_pipeline_class,
     }[problem_type_value]
     baseline_pipeline_class = {
         ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
@@ -1870,15 +1868,35 @@ def test_percent_better_than_baseline_in_rankings(
         ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
     }[problem_type_value]
 
-    created_pipelines = get_pipelines_from_component_graphs(component_graphs_list=[{"Pipeline1": [estimator_class]},
-                                                                                   {"Pipeline2": [estimator_class]}],
-                                                            problem_type=problem_type_value)
+
+    class DummyPipeline(pipeline_class):
+        problem_type = problem_type_value
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(parameters=parameters)
+
+        def new(self, parameters, random_seed=0):
+            return self.__class__(parameters, random_seed=random_seed)
+
+        def clone(self):
+            return self.__class__(self.parameters, random_seed=self.random_seed)
+
+        def fit(self, *args, **kwargs):
+            """Mocking fit"""
+
+    class Pipeline1(DummyPipeline):
+        custom_name = "Pipeline1"
+
+    class Pipeline2(DummyPipeline):
+        custom_name = "Pipeline2"
+
     mock_score_1 = MagicMock(return_value={objective.name: pipeline_scores[0]})
     mock_score_2 = MagicMock(return_value={objective.name: pipeline_scores[1]})
-    created_pipelines[0].score = mock_score_1
-    created_pipelines[1].score = mock_score_2
-    print('##################################')
-    print(created_pipelines[0].score)
+    Pipeline1.score = mock_score_1
+    Pipeline2.score = mock_score_2
+
+    pipeline_parameters = {"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}} if problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION else {}
+    allowed_pipelines = [Pipeline1(pipeline_parameters), Pipeline2(pipeline_parameters)]
 
     if objective.name.lower() == "cost benefit matrix":
         automl = AutoMLSearch(
@@ -1897,10 +1915,6 @@ def test_percent_better_than_baseline_in_rankings(
             y_train=y,
             problem_type=problem_type_value,
             max_iterations=3,
-            allowed_component_graphs=[
-                Pipeline1({"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}}),
-                Pipeline2({"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}}),
-            ],
             objective=objective,
             additional_objectives=[],
             problem_configuration={"date_index": None, "gap": 0, "max_delay": 0},
@@ -1913,14 +1927,24 @@ def test_percent_better_than_baseline_in_rankings(
             y_train=y,
             problem_type=problem_type_value,
             max_iterations=3,
-            allowed_component_graphs=[{"Pipeline1": [estimator_class]},
-                                      {"Pipeline2": [estimator_class]}],
             objective=objective,
             additional_objectives=[],
             optimize_thresholds=False,
             n_jobs=1,
         )
-    #automl.allowed_pipelines = created_pipelines
+    automl._automl_algorithm = IterativeAlgorithm(
+        max_iterations=2,
+        allowed_pipelines=allowed_pipelines,
+        tuner_class=SKOptTuner,
+        random_seed=0,
+        n_jobs=1,
+        number_features=X.shape[1],
+        pipelines_per_batch=5,
+        ensembling=False,
+        text_in_ensembling=False,
+        pipeline_params=pipeline_parameters,
+        custom_hyperparameters=None,
+    )
 
     with patch(
         baseline_pipeline_class + ".score",
@@ -1963,8 +1987,6 @@ def test_percent_better_than_baseline_in_rankings(
                 2,
             ),
         }
-        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-        print(scores)
         for name in answers:
             np.testing.assert_almost_equal(scores[name], answers[name], decimal=3)
 
@@ -2062,10 +2084,22 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         y_train=y,
         problem_type=problem_type,
         max_iterations=2,
-        allowed_component_graphs=[{"Name_0": ["Imputer", "ARIMA Regressor"]}],
         objective="auto",
         problem_configuration={"date_index": None, "gap": 1, "max_delay": 1},
         additional_objectives=additional_objectives,
+    )
+    automl._automl_algorithm = IterativeAlgorithm(
+        max_iterations=2,
+        allowed_pipelines=[DummyPipeline(parameters)],
+        tuner_class=SKOptTuner,
+        random_seed=0,
+        n_jobs=-1,
+        number_features=X.shape[1],
+        pipelines_per_batch=5,
+        ensembling=False,
+        text_in_ensembling=False,
+        pipeline_params={"pipeline": {"date_index": None, "gap": 1, "max_delay": 1}},
+        custom_hyperparameters=None,
     )
 
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
@@ -2092,7 +2126,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
 def test_time_series_regression_with_parameters(ts_data):
     X, y = ts_data
     X.index.name = "Date"
-    problem_configuration = {"date_index": "ssate", "gap": 1, "max_delay": 0}
+    problem_configuration = {"date_index": "Date", "gap": 1, "max_delay": 0}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -2103,8 +2137,6 @@ def test_time_series_regression_with_parameters(ts_data):
         max_batches=3
     )
     automl.search()
-    print("--------------------------")
-    print(automl.allowed_pipelines[0].parameters)
     assert automl.allowed_pipelines[0].parameters["pipeline"] == problem_configuration
 
 
@@ -2151,6 +2183,19 @@ def test_percent_better_than_baseline_scores_different_folds(
         max_iterations=2,
         objective="log loss binary",
         additional_objectives=["f1"],
+    )
+    automl._automl_algorithm = IterativeAlgorithm(
+        max_iterations=2,
+        allowed_pipelines=[DummyPipeline({})],
+        tuner_class=SKOptTuner,
+        random_seed=0,
+        n_jobs=-1,
+        number_features=X.shape[1],
+        pipelines_per_batch=5,
+        ensembling=False,
+        text_in_ensembling=False,
+        pipeline_params={},
+        custom_hyperparameters=None,
     )
 
     automl.search()

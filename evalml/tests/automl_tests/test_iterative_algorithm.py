@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from skopt.space import Categorical, Integer, Real
 
+from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import (
     AutoMLAlgorithmException,
     IterativeAlgorithm,
@@ -413,8 +414,31 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
     "parameters",
     [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Integer(2, 4), Real(2, 6)],
 )
-def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_classes):
+def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_classes, X_y_binary, dummy_classifier_estimator_class):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
+
+    class MockEstimator(Estimator):
+        name = "Mock Classifier"
+        model_family = ModelFamily.RANDOM_FOREST
+        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+        if isinstance(hyperparameters, (list, tuple, Real, Categorical, Integer)):
+            hyperparameter_ranges = {"dummy_parameter": hyperparameters}
+        else:
+            hyperparameter_ranges = {"dummy_parameter": [hyperparameters]}
+
+        def __init__(
+                self, dummy_parameter="default", n_jobs=-1, random_seed=0, **kwargs
+        ):
+            super().__init__(
+                parameters={
+                    "dummy_parameter": dummy_parameter,
+                    **kwargs,
+                    "n_jobs": n_jobs,
+                },
+                component_obj=None,
+                random_seed=random_seed,
+            )
+
     if isinstance(parameters, (Categorical, Integer, Real)):
         with pytest.raises(
             ValueError,
@@ -430,6 +454,18 @@ def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_c
             )
         return
     else:
+        X, y = X_y_binary
+        automl = AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_iterations=3,
+            allowed_component_graphs=[{"Mock Classifier": [dummy_classifier_estimator_class]}],
+            pipeline_parameters={
+                "Mock Classifier": {"dummy_parameter": parameters},
+            },
+            problem_configuration={"gap": 2, "max_delay": 10},
+        )
         algo = IterativeAlgorithm(
             allowed_pipelines=dummy_binary_pipeline_classes,
             random_seed=0,
@@ -543,94 +579,6 @@ def test_iterative_algorithm_custom_hyperparameters(
                 ]
             )
         assert all_dummies == {1, 3, 4} if parameters == 1 else all_dummies == {2, 3, 4}
-
-
-def test_iterative_algorithm_frozen_parameters():
-    class MockEstimator(Estimator):
-        name = "Mock Classifier"
-        model_family = ModelFamily.RANDOM_FOREST
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-        hyperparameter_ranges = {
-            "dummy_int_parameter": Integer(1, 10),
-            "dummy_categorical_parameter": Categorical(["random", "dummy", "test"]),
-            "dummy_real_parameter": Real(0, 1),
-        }
-
-        def __init__(
-            self,
-            dummy_int_parameter=0,
-            dummy_categorical_parameter="dummy",
-            dummy_real_parameter=1.0,
-            n_jobs=-1,
-            random_seed=0,
-            **kwargs
-        ):
-            super().__init__(
-                parameters={
-                    "dummy_int_parameter": dummy_int_parameter,
-                    "dummy_categorical_parameter": dummy_categorical_parameter,
-                    "dummy_real_parameter": dummy_real_parameter,
-                    **kwargs,
-                    "n_jobs": n_jobs,
-                },
-                component_obj=None,
-                random_seed=random_seed,
-            )
-
-    pipeline = BinaryClassificationPipeline([MockEstimator])
-    algo = IterativeAlgorithm(
-        allowed_pipelines=[pipeline, pipeline, pipeline],
-        pipeline_params={"pipeline": {"date_index": "Date", "gap": 2, "max_delay": 10}},
-        random_seed=0,
-        _frozen_pipeline_parameters={
-            "Mock Classifier": {
-                "dummy_int_parameter": 6,
-                "dummy_categorical_parameter": "random",
-                "dummy_real_parameter": 0.1,
-            }
-        },
-    )
-
-    next_batch = algo.next_batch()
-    assert all(
-        [
-            p.parameters["pipeline"]
-            == {"date_index": "Date", "gap": 2, "max_delay": 10}
-            for p in next_batch
-        ]
-    )
-    assert all(
-        [
-            p.parameters["Mock Classifier"]
-            == {
-                "dummy_int_parameter": 6,
-                "dummy_categorical_parameter": "random",
-                "dummy_real_parameter": 0.1,
-                "n_jobs": -1,
-            }
-            for p in next_batch
-        ]
-    )
-
-    scores = np.arange(0, len(next_batch))
-    for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
-
-    # make sure that future batches remain in the hyperparam range
-    for i in range(1, 5):
-        next_batch = algo.next_batch()
-        assert all(
-            [
-                p.parameters["Mock Classifier"]
-                == {
-                    "dummy_int_parameter": 6,
-                    "dummy_categorical_parameter": "random",
-                    "dummy_real_parameter": 0.1,
-                    "n_jobs": -1,
-                }
-                for p in next_batch
-            ]
-        )
 
 
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
@@ -815,7 +763,6 @@ def test_iterative_algorithm_sampling_params(
     algo = IterativeAlgorithm(
         allowed_pipelines=pipelines,
         random_seed=0,
-        _frozen_pipeline_parameters={sampler: {"sampling_ratio": 0.5}},
     )
     next_batch = algo.next_batch()
     for p in next_batch:

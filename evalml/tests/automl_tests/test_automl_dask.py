@@ -5,14 +5,17 @@ import pytest
 from distributed import Client
 
 from evalml.automl import AutoMLSearch
+from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import DaskEngine, SequentialEngine
+from evalml.automl.utils import get_pipelines_from_component_graphs
 from evalml.tests.automl_tests.dask_test_utils import (
     TestPipelineFast,
     TestPipelineSlow,
     TestPipelineWithFitError,
     TestPipelineWithScoreError,
 )
+from evalml.tuners import SKOptTuner
 
 
 @pytest.mark.usefixtures("X_y_binary_cls")
@@ -97,7 +100,19 @@ class TestAutoMLSearchDask(unittest.TestCase):
             problem_type="binary",
             engine=self.parallel_engine,
             max_iterations=2,
+        )
+        automl._automl_algorithm = IterativeAlgorithm(
+            max_iterations=2,
             allowed_pipelines=pipelines,
+            tuner_class=SKOptTuner,
+            random_seed=0,
+            n_jobs=-1,
+            number_features=X.shape[1],
+            pipelines_per_batch=5,
+            ensembling=False,
+            text_in_ensembling=False,
+            pipeline_params={},
+            custom_hyperparameters=None,
         )
         automl.train_pipelines(pipelines)
         assert "Train error for PipelineWithError: Yikes" in self._caplog.text
@@ -113,7 +128,19 @@ class TestAutoMLSearchDask(unittest.TestCase):
             problem_type="binary",
             engine=self.parallel_engine,
             max_iterations=2,
+        )
+        automl._automl_algorithm = IterativeAlgorithm(
+            max_iterations=2,
             allowed_pipelines=pipelines,
+            tuner_class=SKOptTuner,
+            random_seed=0,
+            n_jobs=-1,
+            number_features=X.shape[1],
+            pipelines_per_batch=5,
+            ensembling=False,
+            text_in_ensembling=False,
+            pipeline_params={},
+            custom_hyperparameters=None,
         )
         automl.score_pipelines(
             pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"]
@@ -135,9 +162,21 @@ class TestAutoMLSearchDask(unittest.TestCase):
             problem_type="binary",
             engine=self.parallel_engine,
             max_iterations=4,
-            allowed_pipelines=pipelines,
             error_callback=raise_error_callback,
             optimize_thresholds=False,
+        )
+        automl._automl_algorithm = IterativeAlgorithm(
+            max_iterations=4,
+            allowed_pipelines=pipelines,
+            tuner_class=SKOptTuner,
+            random_seed=0,
+            n_jobs=-1,
+            number_features=X.shape[1],
+            pipelines_per_batch=5,
+            ensembling=False,
+            text_in_ensembling=False,
+            pipeline_params={},
+            custom_hyperparameters=None,
         )
 
         # Ensure the broken pipeline raises the error
