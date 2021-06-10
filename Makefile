@@ -71,11 +71,11 @@ git-test-automl:
 
 .PHONY: git-test-modelunderstanding-core
 git-test-modelunderstanding-core:
-	pytest evalml/tests/model_understanding -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+	pytest evalml/tests/model_understanding_tests -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
 
 .PHONY: git-test-modelunderstanding
 git-test-modelunderstanding:
-	pytest evalml/tests/model_understanding -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/model_understanding_tests -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-other-core
 git-test-other-core:
