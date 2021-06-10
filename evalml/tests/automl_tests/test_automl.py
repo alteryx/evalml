@@ -3927,61 +3927,69 @@ def test_automl_check_high_variance_logs_warning(mock_fit_binary, X_y_binary, ca
         assert "High coefficient of variation" in out
 
 
-def test_automl_raises_error_with_duplicate_pipeline_names(dummy_classifier_estimator_class,
-                                                           X_y_binary):
+def test_automl_raises_error_with_duplicate_pipeline_names(
+    dummy_classifier_estimator_class, X_y_binary
+):
     X, y = X_y_binary
 
     class MyPipeline(BinaryClassificationPipeline):
         estimator = dummy_classifier_estimator_class
 
-    pipeline_0 = MyPipeline(custom_name="Custom Pipeline", component_graph=[dummy_classifier_estimator_class])
-    pipeline_1 = MyPipeline(custom_name="Custom Pipeline", component_graph=[dummy_classifier_estimator_class])
-    pipeline_2 = MyPipeline(custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class])
-    pipeline_3 = MyPipeline(custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class])
+    pipeline_0 = MyPipeline(
+        custom_name="Custom Pipeline",
+        component_graph=[dummy_classifier_estimator_class],
+    )
+    pipeline_1 = MyPipeline(
+        custom_name="Custom Pipeline",
+        component_graph=[dummy_classifier_estimator_class],
+    )
+    pipeline_2 = MyPipeline(
+        custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
+    )
+    pipeline_3 = MyPipeline(
+        custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
+    )
 
     with pytest.raises(
         ValueError,
         match="All pipeline names must be unique. The name 'Custom Pipeline' was repeated.",
     ):
-        AutoMLSearch(
-            X,
-            y,
-            problem_type="binary",
-        ).train_pipelines([
+        AutoMLSearch(X, y, problem_type="binary",).train_pipelines(
+            [
                 pipeline_0,
                 pipeline_1,
                 pipeline_2,
-            ],)
+            ],
+        )
 
     with pytest.raises(
         ValueError,
         match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated.",
     ):
-        AutoMLSearch(
-            X,
-            y,
-            problem_type="binary",
-        ).train_pipelines([
-            pipeline_0,
-            pipeline_1,
-            pipeline_2,
-            pipeline_3,
-        ], )
+        AutoMLSearch(X, y, problem_type="binary",).train_pipelines(
+            [
+                pipeline_0,
+                pipeline_1,
+                pipeline_2,
+                pipeline_3,
+            ],
+        )
 
     with pytest.raises(
         ValueError,
         match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated.",
     ):
-        AutoMLSearch(
-            X,
-            y,
-            problem_type="binary",
-        ).score_pipelines([
-            pipeline_0,
-            pipeline_1,
-            pipeline_2,
-            pipeline_3,
-        ], pd.DataFrame(), pd.Series(), None)
+        AutoMLSearch(X, y, problem_type="binary",).score_pipelines(
+            [
+                pipeline_0,
+                pipeline_1,
+                pipeline_2,
+                pipeline_3,
+            ],
+            pd.DataFrame(),
+            pd.Series(),
+            None,
+        )
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
