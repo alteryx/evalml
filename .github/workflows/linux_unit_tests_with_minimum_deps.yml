@@ -9,7 +9,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} min unit tests, core deps (${{ matrix.core_dependencies }})
+    name: ${{ matrix.python_version }} min dep ${{ matrix.command }}, core deps (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -17,8 +17,22 @@ jobs:
         include:
           - python_version: "3.7"
             core_dependencies: false
+            command: 'git-test-automl'
+          - python_version: "3.7"
+            core_dependencies: false
+            command: 'git-test-model-understanding'
+          - python_version: "3.7"
+            core_dependencies: false
+            command: 'git-test-other'
           - python_version: "3.7"
             core_dependencies: true
+            command: 'git-test-automl'
+          - python_version: "3.7"
+            core_dependencies: true
+            command: 'git-test-model-understanding'
+          - python_version: "3.7"
+            core_dependencies: true
+            command: 'git-test-other'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -57,9 +71,9 @@ jobs:
         name: run tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps-nocov
+          make ${{ matrix.command }}
       - if: ${{ !matrix.core_dependencies }}
         name: run tests
         run: |
           source test_python/bin/activate
-          make git-test-nocov
+          make ${{ matrix.command }}
