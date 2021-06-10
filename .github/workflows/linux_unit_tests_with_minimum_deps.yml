@@ -20,7 +20,7 @@ jobs:
             command: 'git-test-automl'
           - python_version: "3.7"
             core_dependencies: false
-            command: 'git-test-model-understanding'
+            command: 'git-test-modelunderstanding'
           - python_version: "3.7"
             core_dependencies: false
             command: 'git-test-other'
@@ -29,7 +29,7 @@ jobs:
             command: 'git-test-automl'
           - python_version: "3.7"
             core_dependencies: true
-            command: 'git-test-model-understanding'
+            command: 'git-test-modelunderstanding'
           - python_version: "3.7"
             core_dependencies: true
             command: 'git-test-other'
