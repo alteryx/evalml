@@ -3741,7 +3741,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
                 100,
                 125,
             }
-        if row["pipeline_name"] == "Pipe Line Linear":
+        if row["pipeline_name"] == "Name_dict":
             assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in {
                 "most_frequent",
                 "mean",

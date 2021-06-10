@@ -257,12 +257,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
-                    if isinstance(value, (Integer, Real, Categorical)):
-                        raise ValueError(
-                            "Pipeline parameters should not contain skopt.Space variables, please pass them "
-                            "to custom_hyperparameters instead!"
-                        )
-                    else:
                         component_parameters[param_name] = value
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
