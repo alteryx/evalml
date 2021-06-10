@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
     * Testing Changes
 

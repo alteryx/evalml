@@ -72,7 +72,7 @@ class TimeSeriesRegressionPipeline(
 
         self.input_target_name = y.name
         X_t = self.component_graph.fit_features(X, y)
-    
+
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
