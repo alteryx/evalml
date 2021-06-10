@@ -257,7 +257,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
-                        component_parameters[param_name] = value
+                    component_parameters[param_name] = value
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
