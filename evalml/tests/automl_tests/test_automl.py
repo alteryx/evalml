@@ -3838,8 +3838,9 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
     "evalml.pipelines.BinaryClassificationPipeline.score",
     return_value={"Log Loss Binary": 0.02},
 )
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(
-    mock_score, mock_fit, graph_type, X_y_binary
+    mock_opt_tell, mock_score, mock_fit, graph_type, X_y_binary
 ):
     X, y = X_y_binary
 
@@ -3879,6 +3880,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         optimize_thresholds=False,
         max_batches=5,
     )
+    automl._SLEEP_TIME = 0.00001
     automl.search()
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row["pipeline_name"]:
