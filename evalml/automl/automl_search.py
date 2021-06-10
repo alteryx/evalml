@@ -20,8 +20,8 @@ from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
-    make_data_splitter,
     get_pipelines_from_component_graphs,
+    make_data_splitter,
 )
 from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (

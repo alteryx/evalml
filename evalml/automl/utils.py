@@ -6,8 +6,8 @@ from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.pipelines import (
-    ComponentGraph,
     BinaryClassificationPipeline,
+    ComponentGraph,
     MulticlassClassificationPipeline,
     RegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
