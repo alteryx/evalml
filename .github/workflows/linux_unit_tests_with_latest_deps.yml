@@ -18,51 +18,51 @@ jobs:
           - python_version: "3.7"
             core_dependencies: false
             codecov: false
-            dir: 'automl'
+            dir: 'git-test-automl'
           - python_version: "3.7"
             core_dependencies: false
             codecov: false
-            dir: 'model understanding'
+            dir: 'git-test-modelunderstanding'
           - python_version: "3.7"
             core_dependencies: false
             codecov: false
-            dir: 'all other'
+            dir: 'git-test-other'
           - python_version: "3.8"
             core_dependencies: false
             codecov: true
-            dir: 'automl'
+            dir: 'git-test-automl'
           - python_version: "3.8"
             core_dependencies: false
             codecov: true
-            dir: 'model understanding'
+            dir: 'git-test-modelunderstanding'
           - python_version: "3.8"
             core_dependencies: false
             codecov: true
-            dir: 'all other'
-          - python_version: "3.8"
-            core_dependencies: true
-            codecov: true
-            dir: 'automl'
+            dir: 'git-test-other'
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
-            dir: 'model understanding'
+            dir: 'git-test-automl-core'
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
-            dir: 'all other'
+            dir: 'git-test-modelunderstanding-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            codecov: true
+            dir: 'git-test-other-core'
           - python_version: "3.9"
             core_dependencies: false
             codecov: false
-            dir: 'automl'
+            dir: 'git-test-automl'
           - python_version: "3.9"
             core_dependencies: false
             codecov: false
-            dir: 'model understanding'
+            dir: 'git-test-modelunderstanding'
           - python_version: "3.9"
             core_dependencies: false
             codecov: false
-            dir: 'all other'
+            dir: 'git-test-other'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -106,12 +106,12 @@ jobs:
         name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          pytest ${{env.TEST_DIR}} -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+          make ${{matrix.dir}}
       - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
-          pytest ${{env.TEST_DIR}} -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+          make ${{matrix.dir}}
       - if: ${{ matrix.codecov }}
         name: install coverage
         run: pip install coverage
