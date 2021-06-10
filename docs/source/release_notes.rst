@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
 
 .. warning::
