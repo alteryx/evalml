@@ -2196,7 +2196,7 @@ def test_time_series_regression_with_parameters(ts_data):
         X_train=X,
         y_train=y,
         problem_type="time series regression",
-        allowed_component_graphs=[{"Name_0": ["Imputer", "ARIMA Regressor"]}],
+        allowed_component_graphs=[{"Name_0": ["Imputer", "Linear Regressor"]}],
         objective="auto",
         problem_configuration=problem_configuration,
         max_batches=3,
