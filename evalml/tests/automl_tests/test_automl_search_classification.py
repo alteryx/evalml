@@ -608,7 +608,7 @@ def test_plot_iterations_max_time(mock_score, mock_fit, X_y_binary):
         objective="f1",
         max_time=2,
         n_jobs=1,
-        optimize_thresholds=False
+        optimize_thresholds=False,
     )
     automl.search(show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()

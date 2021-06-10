@@ -1089,7 +1089,7 @@ def test_all_transformers_check_fit(X_y_binary):
 
 
 def test_all_estimators_check_fit(
-        X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions
+    X_y_binary, ts_data, test_estimator_needs_fitting_false, helper_functions
 ):
     estimators_to_check = [
         estimator
@@ -1116,7 +1116,8 @@ def test_all_estimators_check_fit(
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
         with patch.object(component, "_component_obj"):
             with pytest.raises(
-                ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
+                ComponentNotYetFittedError,
+                match=f"You must fit {component_class.__name__}",
             ):
                 component.predict(X)
             if (
@@ -1130,7 +1131,8 @@ def test_all_estimators_check_fit(
                     component.predict_proba(X)
 
             with pytest.raises(
-                ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
+                ComponentNotYetFittedError,
+                match=f"You must fit {component_class.__name__}",
             ):
                 component.feature_importance
 
