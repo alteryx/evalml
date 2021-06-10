@@ -14,20 +14,55 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        dir: ['automl', 'model understanding', 'all other']
         include:
           - python_version: "3.7"
             core_dependencies: false
             codecov: false
+            dir: 'automl'
+          - python_version: "3.7"
+            core_dependencies: false
+            codecov: false
+            dir: 'model understanding'
+          - python_version: "3.7"
+            core_dependencies: false
+            codecov: false
+            dir: 'all other'
           - python_version: "3.8"
             core_dependencies: false
             codecov: true
+            dir: 'automl'
+          - python_version: "3.8"
+            core_dependencies: false
+            codecov: true
+            dir: 'model understanding'
+          - python_version: "3.8"
+            core_dependencies: false
+            codecov: true
+            dir: 'all other'
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
+            dir: 'automl'
+          - python_version: "3.8"
+            core_dependencies: true
+            codecov: true
+            dir: 'model understanding'
+          - python_version: "3.8"
+            core_dependencies: true
+            codecov: true
+            dir: 'all other'
           - python_version: "3.9"
             core_dependencies: false
             codecov: false
+            dir: 'automl'
+          - python_version: "3.9"
+            core_dependencies: false
+            codecov: false
+            dir: 'model understanding'
+          - python_version: "3.9"
+            core_dependencies: false
+            codecov: false
+            dir: 'all other'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -71,12 +106,12 @@ jobs:
         name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          pytest $TEST_DIR -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+          pytest ${{env.TEST_DIR}} -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
       - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
-          pytest $TEST_DIR -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+          pytest ${{env.TEST_DIR}} -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
       - if: ${{ matrix.codecov }}
         name: install coverage
         run: pip install coverage
