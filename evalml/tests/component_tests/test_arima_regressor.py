@@ -86,8 +86,9 @@ def test_format_dates(predict, dates_shape, ts_data):
 def test_feature_importance(ts_data):
     X, y = ts_data
     clf = ARIMARegressor()
-    clf.fit(X, y)
-    clf.feature_importance == np.zeros(1)
+    with patch.object(clf, "_component_obj"):
+        clf.fit(X, y)
+        clf.feature_importance == np.zeros(1)
 
 
 def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
@@ -254,7 +255,8 @@ def test_predict_ts_without_X_error(ts_data):
 
 
 @patch("sktime.forecasting.base._sktime._SktimeForecaster.predict")
-def test_predict_ts_X_error(mock_sktime_predict, ts_data):
+@patch("sktime.forecasting.base._sktime._SktimeForecaster.fit")
+def test_predict_ts_X_error(mock_sktime_fit, mock_sktime_predict, ts_data):
     X, y = ts_data
 
     mock_sktime_predict.side_effect = ValueError("Sktime value error")

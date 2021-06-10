@@ -114,7 +114,12 @@ def test_data_splitter(X_y_binary):
     assert len(automl.results["pipeline_results"][0]["cv_data"]) == cv_folds
 
 
-def test_max_iterations(X_y_binary):
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.score",
+    return_value={"Log Loss Binary": 0.8},
+)
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+def test_max_iterations(mock_binary_fit, mock_binary_score, X_y_binary):
     X, y = X_y_binary
     max_iterations = 5
     automl = AutoMLSearch(
@@ -164,7 +169,7 @@ def test_binary_auto(X_y_binary):
         y_train=y,
         problem_type="binary",
         objective="Log Loss Binary",
-        max_iterations=5,
+        max_iterations=3,
         n_jobs=1,
     )
     automl.search()
@@ -183,7 +188,7 @@ def test_multi_auto(X_y_multi, multiclass_core_objectives):
         y_train=y,
         problem_type="multiclass",
         objective=objective,
-        max_iterations=5,
+        max_iterations=3,
         n_jobs=1,
     )
     automl.search()
@@ -587,7 +592,9 @@ def test_plot_iterations_max_iterations(X_y_binary):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(X_y_binary):
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@patch("evalml.pipelines.BinaryClassificationPipeline.score", return_value={"F1": 0.3})
+def test_plot_iterations_max_time(mock_score, mock_fit, X_y_binary):
     go = pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
@@ -599,8 +606,9 @@ def test_plot_iterations_max_time(X_y_binary):
         y_train=y,
         problem_type="binary",
         objective="f1",
-        max_time=10,
+        max_time=2,
         n_jobs=1,
+        optimize_thresholds=False
     )
     automl.search(show_iteration_plot=False)
     plot = automl.plot.search_iteration_plot()

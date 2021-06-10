@@ -737,9 +737,9 @@ def test_cost_benefit_matrix_vs_threshold(
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     original_pipeline_threshold = pipeline.threshold
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=5)
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
-    assert cost_benefit_df.shape == (101, 2)
+    assert cost_benefit_df.shape == (6, 2)
     assert not cost_benefit_df.isnull().all().all()
     assert pipeline.threshold == original_pipeline_threshold
 
@@ -766,9 +766,9 @@ def test_binary_objective_vs_threshold(
         binary_objective_vs_threshold(pipeline, X, y, "f1 micro")
 
     # test objective with score_needs_proba == False
-    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1")
+    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1", steps=5)
     assert list(results_df.columns) == ["threshold", "score"]
-    assert results_df.shape == (101, 2)
+    assert results_df.shape == (6, 2)
     assert not results_df.isnull().all().all()
 
 

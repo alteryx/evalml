@@ -255,7 +255,8 @@ def test_iterative_algorithm_passes_pipeline_params(
             )
 
 
-def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+def test_iterative_algorithm_passes_njobs(mock_opt_tell, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
         allowed_pipelines=dummy_binary_pipeline_classes, n_jobs=2, ensembling=False
